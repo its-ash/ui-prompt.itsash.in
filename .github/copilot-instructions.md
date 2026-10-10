@@ -30,4 +30,4 @@ GitHub Pages via `docs/` folder. Repo settings: Pages -> deploy from branch -> m
 
 ## Prompt pipeline
 
-`scripts/process-prompts.mjs` reads each `design/raw/*.md`, extracts the AI prompt block, sends it with `design/agent.md` as system prompt to OpenRouter (glm-5.3), writes `design/prompts/<same-name>.md` in English. State files `.prompt-state.json` track progress; the script is resumable and skips completed files.
+`scripts/process-prompts.mjs` reads each `design/raw/*.md`, extracts the AI prompt block, sends it with `design/agent.md` as system prompt to OpenRouter (glm-5.3), writes `design/prompts/<same-name>.md` in English, then deletes the processed raw file. State files `.prompt-state.json` track progress; the script is resumable and skips completed files.

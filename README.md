@@ -14,7 +14,7 @@ GitHub Pages settings: Pages -> Deploy from branch -> `main` -> `/docs`.
 
 ## Prompt pipeline
 
-Source theme specs live in `design/raw/` (833 markdown files). `scripts/process-prompts.mjs` reads each file, extracts the AI prompt block, and sends it to OpenRouter (glm) with `design/agent.md` as the system prompt. Output is written to `design/prompts/` in English, one file per source file. `scripts/categorize.mjs` labels every theme with a category, name, keywords and era into `design/categories.json`.
+Source theme specs live in `design/raw/` (remaining unprocessed files). `scripts/process-prompts.mjs` reads each file, extracts the AI prompt block, and sends it to OpenRouter with `design/agent.md` as the system prompt. Output is written to `design/prompts/` in English, one file per source file; the source raw file is deleted after a successful write. `scripts/categorize.mjs` labels every theme with a category, name, keywords and era into `design/categories.json`.
 
 Run `make process` or `make categorize` with `OPENROUTER_API_KEY` set. Both scripts are resumable - they skip files already done.
 
