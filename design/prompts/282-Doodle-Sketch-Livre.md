@@ -1,0 +1,141 @@
+# BUILD PROMPT — Landing Page: "Doodle / Freehand Sketch" Theme
+
+**Role:** You are a Senior Frontend Engineer and Expert UI Designer. Build a complete, production-quality Landing Page on the first attempt for the theme **"Doodle / Freehand Sketch"** — a hand-drawn, sketchy-line-art infographic aesthetic: whimsical doodles, varied stroke weights, organic imperfect lines, playful casual arrangement, paper-white background with colorful doodles.
+
+**Product Concept:** Invent one coherent fictional product (e.g., a collaborative freehand sketching / whiteboard app) and give it a name. Write **all user-facing copy in English**, in a playful, casual, creative tone that matches the doodle aesthetic. No lorem ipsum.
+
+**Required Sections:** Header/Nav, Hero, Features (3 cards), How It Works (3 steps), Testimonials, Pricing (3 tiers), FAQ, Final CTA, Footer with secondary links.
+
+---
+
+## 1. STRICT RULES & ARCHITECTURE
+
+### 1.1 CSS-First Architecture & Zero Inline CSS
+- **No Inline CSS:** The `style="..."` attribute is forbidden in HTML.
+- **Class/ID Selectors Only:** All design properties, layout rules, and states must be targeted via class or ID selectors in `style.css`.
+- **Minimal HTML Modifications:** HTML must remain semantic and style-agnostic; re-theming requires editing only `style.css`.
+- **SVG Clarification:** SVG *presentation attributes* (`stroke`, `fill`, `stroke-width`, `stroke-linecap`, `pathLength`) on doodle paths are permitted — they are not inline CSS. Shared stroke styles should still live in CSS classes (e.g., `.doodle-path`).
+
+### 1.2 CSS Variables & Theme Tokens
+Store all tokens in `:root` and override per theme:
+
+- **Colors:** `--primary: #9B59B6` (purple), `--secondary: #E74C3C` (red), `--primary-deep: #7D3C98` (purple darkened for small-text AA contrast), `--accent-amber: #F39C12`, `--accent-blue: #3498DB`, `--accent-teal: #1ABC9C`, `--accent-grey: #95A5A6`.
+- **Backgrounds:** `--bg-primary: #fefefe` (paper white — **never `#ffffff`**), `--bg-secondary: #f7f5f0` (warm sketch-paper tint for alternating sections).
+- **Text:** `--text-primary: #2A2A2A`, `--text-secondary: #5D6D66` (darkened cool grey — raw `#95A5A6` is reserved for decorative sketch lines only, never body text), `--text-success: #148F77`, `--text-error: #C0392B`.
+- **Ink token:** `--ink: #2A2A2A` — the master doodle stroke color that flips in dark mode.
+- **Borders:** `--border-default: #2A2A2A`, `--border-error: #E74C3C`, `--border-success: #1ABC9C`.
+- **Contrast Pairing:** Every light background token pairs with dark text; every dark background token pairs with light text — enforced in **both** themes. Purple `#9B59B6` and red `#E74C3C` may be used for large text (≥24px / 18.66px bold) and UI components only; small accent text uses `--primary-deep` / `--text-error`. Amber is decorative-only on light backgrounds.
+- **Wobbly Radii (replaces uniform radii for doodle borders):**
+  ```css
+  --wobble-1: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  --wobble-2: 15px 225px 15px 255px / 225px 15px 255px 15px;
+  --wobble-3: 125px 10px 20px 185px / 25px 205px 205px 25px;
+  --radius-sm / --radius-md / --radius-lg: for any non-doodle rounding.
+  ```
+- **Shadows (comic offset style):** `--shadow-sm: 2px 2px 0 var(--ink)`, `--shadow-md: 4px 4px 0 var(--ink)`.
+- **Spacing & Transitions:** `--spacing-gap`, `--transition-fast: 150ms`, `--transition-normal: 300ms`, `--ease-standard: cubic-bezier(0.4, 0, 0.2, 1)`, `--ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1)`.
+- **Elevation/Stacking:** `--z-dropdown`, `--z-modal`, `--z-toast`.
+
+### 1.3 Mandatory Dark Mode Support
+- **Implementation:** Define dark tokens under both `@media (prefers-color-scheme: dark)` and a `.dark` class on `<html>`.
+- **Dark Palette (dark sketchbook):** `--bg-primary: #232329`, `--bg-secondary: #2B2B32`, `--text-primary: #F5F3EC`, `--text-secondary: #B8B7BC`, `--ink: #F5F3EC`, brightened accents: `--primary: #B985D6`, `--secondary: #EC7063`, `--accent-amber: #F5B041`, `--accent-blue: #5DADE2`, `--accent-teal: #48C9B0`. Verify WCAG AA for all text in dark mode.
+- **Theme Switching:** Backgrounds, text, ink strokes, and doodle stroke colors must flip via variables only — no HTML restructuring.
+- **Persistence:** Store choice in `localStorage` (fallback to `prefers-color-scheme` on first visit); apply on script load. Provide a visible toggle (Material Symbols `light_mode` / `dark_mode`) with correct `aria-pressed` and `aria-label` states.
+
+### 1.4 Flexbox Layout & Mobile-First Alignment
+- **Default Alignment Rule:** Every flex container defaults to `align-items: center` (`items-center`) unless an exception is explicitly justified in a CSS comment.
+- **Mobile-Friendly First:** All rows convert to columns on small viewports; **zero horizontal scrolling at 320px** — absolutely-positioned decorative doodles must live inside `overflow: hidden` containers and have `pointer-events: none`.
+
+### 1.5 Framework Default & Tailwind CSS Integration
+- Use Tailwind CSS (CDN) for **structural/layout utilities only** (flex, grid, spacing, sizing, responsive prefixes).
+- **All colors, typography, borders, shadows, and animations live in `style.css`** as reusable component classes (`.btn`, `.card`, `.input-group`, `.badge`) driven by CSS variables. **Tailwind color utilities are forbidden.**
+
+### 1.6 Typography & Icons (Google Fonts Mandatory)
+- **Text:** Google Fonts via `<link>`: **Caveat** (600/700) for display headings, prices, and badges; **Patrick Hand** or **Kalam** (400) for body copy. Bind to `--font-hand` and `--font-base`.
+- **Icons:** Google Material Symbols (Rounded variant) for all functional icons (menu, close, check, star, arrows, person, expand_more, theme toggle). Raw inline SVGs are forbidden for functional icons.
+- **Exception Clause:** Decorative hand-drawn doodle illustrations (hero art, squiggle underlines, connector paths, stars, arrows, scribble badges) are explicitly permitted as inline SVG `<path>`/`<circle>` elements using `stroke-linecap="round"`, `stroke-linejoin="round"`, varied `stroke-width` (1–3px), and `pathLength="1"` for draw animations. All decorative SVGs must be `aria-hidden="true"` and `focusable="false"`.
+
+---
+
+## 2. COMPONENT DESIGN SPECIFICATIONS
+
+### 2.1 Button Component Requirements
+- **Default:** `.btn` — `display: flex; align-items: center; justify-content: center; gap: 0.5rem;` minimum touch target 44×44px, 2px solid `var(--ink)` border, a `--wobble-*` radius, handwritten font, `cursor: pointer`. Variants: `.btn--primary` (purple fill, white text), `.btn--secondary` (paper fill, ink text), `.btn--danger` (red — visually distinct in both themes).
+- **Hover:** Playful wobble (rotate ±1deg via `--ease-bounce`) and offset shadow grows (`--shadow-sm` → `--shadow-md`).
+- **Focus:** Distinct sketchy focus ring: `outline: 2px dashed var(--primary); outline-offset: 3px;` — visible in both themes.
+- **Active/Pressed:** `transform: translate(2px, 2px) scale(0.97)` with offset shadow collapsing to 0 (pressed-into-paper effect).
+- **Loading:** `.is-loading` disables interaction, prevents double-clicks (`pointer-events: none; aria-busy="true"`), and renders a CSS spinner (a rotating sketchy circle: `border` + `--wobble-*` radius + `animation: spin`) that does not change button dimensions.
+- **Disabled:** `opacity: 0.5`, greyscale filter, `cursor: not-allowed`.
+- **Success/Error:** Temporary state classes using `--text-success` / `--text-error` with icon + `aria-live` announcement.
+
+### 2.2 Card Component Requirements
+- **Default:** `.card` — flexible flexbox layout, `--bg-secondary` or paper fill, 2px `var(--ink)` border, `--wobble-*` radius, `--shadow-sm`. Alternate wobble variants across sibling cards (`:nth-child`) so no two look identical.
+- **Hover (interactive):** `transform: translateY(-2px)` + shadow grows + subtle wobble rotation.
+- **Focus-within:** Border color shifts to `var(--primary)` when a child link/button receives focus.
+- **Loading (Skeleton):** Shimmer animation class defined in CSS; no layout jumps.
+- **Empty State:** Doodle icon + clear guidance text fallback layout.
+
+### 2.3 Form & Input Requirements
+- **Structure:** `.input-group` — flex container wrapping a `<label>`, the input, and a dedicated error feedback container with `aria-live="polite"`.
+- **States:** Empty, Focused (dashed outline ring), Filled, Valid (teal border + Material `check` icon), Invalid (red border, `--text-error` message, Material `error` icon), Disabled, Read-only.
+- **Styling:** Inputs look hand-drawn — 2px ink border, `--wobble-*` radius, paper background, handwritten font at ≥16px to prevent iOS zoom.
+- **Behavior:** On submit, validate email format; invalid → `.is-invalid` + message + focus first invalid field; valid → button loading state → success state with check icon and confirmation message in the `aria-live` region. Prevent double submission.
+
+### 2.4 Modal / Popup Requirements
+- **States:** Opening, Open, Loading, Success/Error, Closing — all animated via CSS transitions.
+- **UX Features:** Centered flex container (`align-items: center`), backdrop overlay, Material `close` icon button, keyboard focus trapping, close via `Esc` and overlay click, `role="dialog"`, `aria-modal="true"`.
+- **Note:** The FAQ must be an accordion, not a modal. Apply this spec only if any popup is implemented.
+
+---
+
+## 3. CORE UX & MICRO-INTERACTION RULES
+
+- **Responsive by Default:** Fluid `clamp()` typography, responsive breakpoints, no horizontal overflow at any width.
+- **Sketch Reveal on Scroll:** Use `IntersectionObserver` in `script.js` to add `.in-view` (threshold ≈ 0.2, unobserve after firing). Apply reveal-hidden styles only when a `.js` class exists on `<html>` so content remains visible if JS fails.
+- **Draw-In Animation (signature effect):** Every doodle SVG path gets `pathLength="1"` and:
+  ```css
+  .doodle-path { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 1.2s var(--ease-standard); }
+  .in-view .doodle-path { stroke-dashoffset: 0; }
+  ```
+  Stagger paths via `transition-delay`. Filled (non-stroked) doodle shapes fade in with opacity instead.
+- **Wobble & Float:** Define `@keyframes wobble` (rotate −1.5deg ↔ 1.5deg) for hover feedback and `@keyframes float-doodle` (translateY ±8px + slight rotate) for idle decorative doodles.
+- **Reduced Motion:** Under `prefers-reduced-motion: disable all draw, wobble, and float animations; force `stroke-dashoffset: 0` and reveal all content statically; disable smooth scrolling.
+- **Accessibility (a11y):** AA contrast in both themes; never rely on color alone — pair icons/text with every state; semantic HTML5 (`header`, `nav`, `main`, `section`, `footer`, correct `h1`–`h3` hierarchy); ARIA roles/labels on custom widgets (accordion, mobile menu, toggle); logical DOM/focus order; full keyboard operability; `aria-live` regions for form feedback and dynamic states; decorative SVGs `aria-hidden`.
+- **Mandatory Visual Feedback:** Every click, hover, focus, and submission triggers a visible state change.
+- **Destructive Actions:** `.btn--danger` visually distinct in both light and dark themes.
+
+---
+
+## 4. DELIVERABLE & OUTPUT FORMAT
+
+- **File Structure:** Separate `index.html`, `style.css`, `script.js`. Only one `<script>` tag: `<script src="script.js" defer></script>`. Google Fonts and Material Symbols via `<link>` in `<head>`.
+- **Naming Convention:** BEM throughout (`.hero__title`, `.card--feature`, `.btn--primary`, `.faq__question`). Never mix conventions.
+- **No Unrequested Placeholders:** Write real, playful English copy for the invented product; placeholders only where content was genuinely unspecified.
+- **script.js scope (behavior only):** theme toggle + persistence, IntersectionObserver reveals, FAQ accordion, mobile menu, email form validation/submit states, footer year auto-update.
+
+---
+
+## 5. DOODLE THEME DESIGN SYSTEM
+
+- **Aesthetic:** Sketchbook paper (`#fefefe`), dark ink lines, colorful doodles in purple/red/amber/blue/teal, imperfect organic curves — avoid perfect geometric shapes.
+- **Hand-Drawwn Borders:** All cards, buttons, inputs, and badges use 2px `var(--ink)` borders with `--wobble-*` radii (alternate variants so elements don't look cloned).
+- **Comic Offset Shadows:** `box-shadow: var(--shadow-sm/md)` using `var(--ink)` — never blurry drop shadows.
+- **Doodle Underlines:** SVG squiggle under each section heading that draws in on scroll.
+- **Section Dividers:** Dashed hand-drawn horizontal lines between sections.
+- **Handwritten Annotations:** Small rotated (≤3deg) casual asides (e.g., "psst… it's free!") near CTAs — real text, kept readable; pointing arrows are decorative SVGs (`aria-hidden`).
+- **Floating Doodles:** Stars, squiggles, circles, arrows scattered in Hero and Final CTA — `aria-hidden`, `pointer-events: none`, `float-doodle` animation, contained to prevent overflow.
+- **Stroke Discipline:** `stroke-linecap: round`, `stroke-linejoin: round`, varied `stroke-width` 1–3px, `fill: none` for line art.
+
+---
+
+## 6. LANDING PAGE SECTION-BY-SECTION REQUIREMENTS
+
+- **Header (sticky):** Logo wordmark in Caveat + small doodle mark; nav anchors (Features, How It Works, Testimonials, Pricing, FAQ) with CSS smooth scroll (reduced-motion safe); theme toggle; `.btn--primary` CTA. Mobile: Material `menu` hamburger → animated dropdown, `aria-expanded`/`aria-controls`, Esc closes, links keyboard-reachable. Header background adapts to dark mode.
+- **Hero:** Two-column desktop (stacked mobile), both `align-items: center`. H1 in Caveat (`clamp()` sizing) with squiggle underline doodle; subheadline; two CTAs ("Start Doodling — it's free" primary, "See how it works" secondary). Hero illustration: inline SVG doodle scene (e.g., sketchbook/rocket/lightbulb) that self-draws on load with staggered path delays. 4–6 floating decorative doodles. Small trust line with Material icons.
+- **Features (3 cards):** Section heading + doodle underline. Each `.card--feature`: Material Symbol inside a wobbly accent-colored circle (purple / blue / teal), h3, description. Staggered scroll reveal; hover wobble + shadow growth.
+- **How It Works (3 steps):** Numbered badges (1, 2, 3 in wobbly circles, Caveat numerals), h3 + text per step. Desktop: horizontal row connected by a curvy dashed SVG path that draws on scroll; Mobile: vertical stack with simplified/rotated connector.
+- **Testimonials (3 cards):** Wobbly-circled avatar (Material `person` or doodle SVG face, accent colors), quote, name + role, 5-star rating via Material `star` icons. Cards alternate ±1–2deg rotation for playful arrangement; straighten on hover/focus. Decorative doodle quotation marks.
+- **Pricing (3 tiers):** Free / featured Pro / Studio (invent fitting names). Featured tier: "Most Popular" badge wrapped in a scribble-circle doodle, accent header, slight desktop scale, stronger shadow, doodle border. Prices in Caveat; feature lists with Material `check` (teal) and `close` (grey) icons; each tier has a CTA (featured gets `.btn--primary`). Distinct tier separation in dark mode.
+- **FAQ:** 5–6 items. Accordion: full-row `<button class="faq__question">` (min-height 44px) with `aria-expanded`/`aria-controls`, panel animated via `grid-template-rows: 0fr → 1fr`, Material `expand_more` icon rotating 180deg.
+- **Final CTA:** Full-width wobbly-bordered panel with `--shadow-md`, corner doodles, big Caveat headline, supporting line, and the email capture form per §2.3 (validation → loading → success with `aria-live` confirmation).
+- **Footer:** Secondary links grouped (Product, Company, Support, Legal — About, Blog, Careers, Help Center, Privacy, Terms); social row using generic Material Symbols or text links (no brand SVGs); auto-updating copyright year; mini doodle logo; "Back to top" link. Links get dashed hand-drawn underlines on hover/focus; fully readable in dark mode.
