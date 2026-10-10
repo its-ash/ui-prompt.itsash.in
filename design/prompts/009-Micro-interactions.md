@@ -1,0 +1,143 @@
+# CODING AGENT PROMPT — "Micro-Interactions" Landing Page (Glass & Soft UI)
+
+**Role:** You are a Senior Frontend Engineer and Expert UI Designer. Build a complete, production-quality landing page on the first attempt. The page markets a fictional micro-interaction design toolkit (invent a product name, e.g., "Pulse") and must itself demonstrate the micro-interaction craft it sells: snappy 50–100ms feedback, tactile press states, gesture support, and polished loading/success/error states — all rendered in a Glass & Soft UI aesthetic with full Light and Dark themes.
+
+---
+
+### **1. STRICT RULES & ARCHITECTURE**
+
+**1.1 CSS-First Architecture & Zero Inline CSS**
+* All styling must live exclusively in `style.css`. The `style="..."` attribute is **forbidden** anywhere in the HTML.
+* All design properties, layout rules, and states must be targeted via class or ID selectors only.
+* HTML must remain clean, semantic, and style-agnostic: re-theming the entire site must require editing only `style.css`, never the markup.
+
+**1.2 CSS Variables & Theme Tokens**
+Store every visual token in `:root` (and override in theme scopes):
+* **Colors:** `--primary` (soft indigo, e.g., `#6366F1`), `--secondary` (soft teal accent, used sparingly), `--bg-primary`, `--bg-secondary`, `--text-primary`, `--text-secondary`, `--text-success: #22C55E`, `--text-error: #EF4444`, `--text-warning: #F59E0B`, `--border-default`, `--border-error`, `--border-success`.
+* **Subtle Color Shift Rule:** Hover/active color changes must be 10–20% lightness shifts of the base token, implemented with `color-mix()` (e.g., `color-mix(in srgb, var(--primary), white 14%)`). Never jump to a different hue on hover.
+* **Contrast Pairing:** Every light background token must pair with a dark text token and every dark background token with a light text token — enforced in **both** themes, not just the default.
+* **Light Mode Background:** Do not use pure white. Use a soft cool off-white (e.g., `#f4f6fb`) as the base; where a near-white surface is required, use `#fefefe`, never `#ffffff`.
+* **Radii & Shadows (Soft UI):** `--radius-sm: 12px`, `--radius-md: 18px`, `--radius-lg: 26px`, `--shadow-sm`, `--shadow-md`, plus `--shadow-soft` (large-blur, low-opacity, layered) and `--shadow-lifted` for hover elevation.
+* **Spacing & Transitions:** `--spacing-gap`, `--transition-fast: 80ms`, `--transition-normal: 160ms`, `--ease-standard: cubic-bezier(0.4, 0, 0.2, 1)`, `--ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1)` (for tactile "pop" feedback only).
+* **Elevation/Stacking:** `--z-header: 90`, `--z-dropdown: 100`, `--z-modal: 200`, `--z-toast: 300` — no hardcoded z-index values elsewhere.
+* **Glass Tokens:** `--glass-bg`, `--glass-border`, `--glass-blur`, `--glass-highlight` (see §1.7).
+* **Typography Tokens:** `--font-base: 'Inter'`, `--font-heading: 'Space Grotesk'`.
+
+**1.3 Mandatory Dark Mode Support**
+* Define dark mode tokens under **both** `@media (prefers-color-scheme: dark)` **and** a `.dark` class on `<html>`, so switching requires zero HTML restructuring.
+* On first visit, follow `prefers-color-scheme`; once the user toggles, persist their choice in `localStorage` and apply it before paint to avoid a flash of the wrong theme.
+* Include a visible theme toggle in the header with correct `aria-pressed` and `aria-label` ("Switch to dark mode" / "Switch to light mode"), swapping Material sun/moon icons with a 150ms rotate/fade crossfade. Both themes must be fully designed — this spec demands Full Light **and** Full Dark.
+
+**1.4 Flexbox Layout & Mobile-First Alignment**
+* Build every layout structure with Flexbox (`display: flex`).
+* **Every flex container must default to `align-items: center`** unless an exception is explicitly justified in a CSS comment (e.g., card body columns stretching).
+* Mobile-first: rows must collapse to columns on small viewports; prevent any horizontal scrolling at any width; use fluid type via `clamp()`.
+
+**1.5 Styling Approach — Clean Custom CSS**
+* Use pure custom CSS in `style.css`, organized with native `@layer` (reset → tokens → base → components → utilities). Tailwind's CDN is intentionally omitted because it would violate the single-script rule in §5; this is the sanctioned "clean custom CSS" branch of the framework policy.
+* All utilities must map back to CSS variables or generic reusable component classes (`.btn`, `.card`, `.input-group`).
+
+**1.6 Typography & Icons (Google Fonts Mandatory)**
+* Load **Google Fonts** via `<link>` in `<head>`: `Space Grotesk` (headings, weights 500–700) and `Inter` (body, weights 400–600). Bind them to `--font-heading` / `--font-base`.
+* Icons must be **Google Material Symbols (Rounded style)** loaded from Google Fonts. **Inline SVGs, local icon files, and emoji-as-icons are forbidden.**
+
+**1.7 Glass & Soft UI Surface Treatment**
+* Cards, panels, header, and modal surfaces use: `background: var(--glass-bg)` (Light: `rgba(255,255,255,0.62)`; Dark: `rgba(15,20,35,0.6)`), `backdrop-filter: blur(var(--glass-blur)) saturate(160%)` (`--glass-blur: 18px`), a 1px `var(--glass-border)` (Light: `rgba(255,255,255,0.55)`; Dark: `rgba(255,255,255,0.12)`), and `--glass-highlight` as an inset top edge light.
+* Page background: a fixed, soft "aurora" — 2–3 large, heavily blurred radial-gradient blobs (primary hue plus pastel complements; Dark: deep navy `#0b1020` base with muted glowing blobs at reduced opacity).
+* Provide an `@supports not (backdrop-filter: blur(1px))` fallback that raises glass background opacity to ~0.92 so text stays readable.
+* **Contrast safeguard:** glass opacity must keep all text at WCAG AA (4.5:1) in both themes; never place body text over the densest part of a background blob. Hover elevation deepens and softens shadows — never hardens them.
+
+---
+
+### **2. COMPONENT DESIGN SPECIFICATIONS**
+
+**2.1 Button Component (`.btn`, `.btn--primary`, `.btn--ghost`, `.btn--danger`)**
+* **Default:** `display: flex; align-items: center; justify-content: center; gap: 0.5rem;` minimum touch target 44×44px, `--radius-md`, weight 500.
+* **Hover:** 10–20% lightness shift (per §1.2) plus deepened soft shadow, 80ms, `cursor: pointer` — gated behind `@media (hover: hover) and (pointer: fine)`.
+* **Focus:** distinct `:focus-visible` ring built from CSS variables (`outline` + offset), clearly visible on glass in both themes.
+* **Active/Pressed:** `transform: scale(0.97)` with `--ease-spring`, 80ms.
+* **Loading (`.is-loading`):** disables pointer events and prevents double-submission; swaps the label for a CSS border spinner or animated Material `progress` icon; button dimensions must not change; set `aria-busy="true"`.
+* **Disabled:** `opacity: 0.5`, grayscale, `cursor: not-allowed`.
+* **Success/Error (`.is-success` / `.is-error`):** temporary states — success shows a `check_circle` icon in `--text-success` for ~1.2s then reverts; error applies a short shake keyframe plus `--text-error` border/text. Never communicate these states by color alone — always include the icon.
+* **Haptic:** on coarse pointers, fire a feature-detected `navigator.vibrate(8)` on press.
+
+**2.2 Card Component (`.card`)**
+* **Default:** flexible Flexbox column (centered content), glass surface per §1.7, `--radius-lg`, generous padding, subtle border.
+* **Hover:** `transform: translateY(-2px)` + shadow lift, 100ms; optionally a pointer-following radial highlight driven by `--mx`/`--my` custom properties updated via JS — only on hover-capable devices, disabled under reduced motion.
+* **Focus-within:** border shifts to `--primary` when a child link/button receives focus.
+* **Loading (Skeleton):** `.card--skeleton` with a shimmer sweep animation (linear-gradient keyframes) that preserves exact card dimensions; static soft gray under reduced motion.
+* **Empty State:** centered Material icon + short guidance text + optional action button.
+
+**2.3 Form & Input (`.input-group`)**
+* **Structure:** flex container wrapping a `<label>`, the input, and a dedicated error feedback element (`.input-group__error`, `aria-live="polite"`).
+* **States — all styled in CSS:** empty, focused (outline ring), filled, valid (success border + `check_circle` icon), invalid (error border, red text, `error` icon, message), disabled, read-only.
+* Validate the email on blur and on submit; announce errors via the live region; the submit button must run the full loading → success cycle.
+
+**2.4 Modal / Popup (`.modal`)**
+* **States:** opening (backdrop fade + panel scale 0.96→1, ~120ms), open, loading, success/error, closing (reverse animation) — all via CSS transitions.
+* **UX:** centered overlay flex container (`align-items: center`), backdrop blur, Material icon close button (44×44px), keyboard focus trap, close via `Esc` and overlay click, `role="dialog"`, `aria-modal="true"`, `aria-labelledby`, body scroll lock, and focus returned to the trigger on close.
+* **Usage:** each pricing tier CTA opens a "Start with [Plan]" confirmation modal whose confirm button demonstrates the loading → success sequence.
+
+**2.5 Accordion (FAQ)**
+* Button-triggered pattern with `aria-expanded` / `aria-controls`; panel expands via the `grid-template-rows: 0fr → 1fr` technique (~150ms); chevron Material icon rotates 90° in 100ms; fully keyboard operable.
+
+**2.6 Carousel (Testimonials)**
+* 3 slides; single-slide view on mobile with **horizontal swipe** via Pointer Events (~40px threshold) and snap behavior; prev/next buttons (44px, Material icons) and dot indicators (real buttons with `aria-current`).
+* Semantics: `aria-roledescription="carousel"`, slides as `role="group"` with `aria-roledescription="slide"`; optional 6s auto-advance that pauses on hover/focus and is disabled under reduced motion; haptic tick on swipe commit.
+
+**2.7 Header / Navigation**
+* Sticky glass header that intensifies blur and shadow when scrolled (`.is-scrolled`, 150ms transition).
+* Contains: logo (Material icon + wordmark), anchor links (Features, How It Works, Testimonials, Pricing, FAQ) with an 80ms underline-grow hover, the theme toggle (§1.3), and a "Get started" `.btn--primary`.
+* Mobile: hamburger (three spans morphing into an X, 150ms) opens a dropdown panel at `--z-dropdown`, `aria-expanded` on the trigger, 44px link targets, `Esc` closes.
+
+---
+
+### **3. CORE UX & MICRO-INTERACTION RULES**
+
+**3.1 Timing Standards (Micro-Interaction Discipline)**
+* Hover and press feedback: **50–100ms** (`--transition-fast`). Larger surface movements: ≤160ms. Entrance reveals: 200–300ms with 40–60ms child stagger. No animation may exceed 400ms. Use `--ease-standard` for movement and `--ease-spring` only for small tactile pops.
+
+**3.2 Gestures & Haptics**
+* Gate all hover-only effects behind `@media (hover: hover) and (pointer: fine)`; touch devices get `:active` press states instead.
+* Support swipe on the testimonial carousel; fire feature-detected `navigator.vibrate(8)` on primary button presses and swipe commits, coarse pointers only. **Never hijack native pinch-zoom or block scrolling.**
+
+**3.3 Loading, Success & Error Feedback**
+* Every click, hover, and submission triggers a visible state change. Loading spinners must be smooth infinite CSS loops that never shift layout. Success = `#22C55E` + `check_circle` icon; error = `#EF4444` + icon + shake; pending/warning accents = `#F59E0B` (e.g., the pricing "Save 20%" badge). Never rely on color alone — always pair with an icon or text.
+
+**3.4 Scroll Reveal**
+* Use `IntersectionObserver` to add `.is-visible` (opacity + `translateY(12px)` → 0), triggering once per element, with staggered children in card/step grids. Disabled entirely under reduced motion.
+
+**3.5 Responsive by Default**
+* Mobile-first breakpoints (≥640px, ≥1024px); fluid typography with `clamp()`; zero horizontal overflow at any viewport; grids collapse to a single column on mobile.
+
+**3.6 Accessibility (a11y)**
+* WCAG AA contrast in both themes — pay special attention to text over glass surfaces. Semantic HTML5 landmarks (`header`, `nav`, `main`, `section`, `footer`) with a strict `h1`→`h3` hierarchy. Full keyboard operability for the menu, carousel, accordion, and modal; logical DOM/focus order; visible focus everywhere. `aria-live` regions for form errors, toasts, and loading outcomes. Under `prefers-reduced-motion`: disable transforms, parallax, spinners, auto-advance, and pointer-follow highlights; retain only ≤100ms opacity fades. All touch targets ≥44×44px.
+
+**3.7 Feedback Systems & Destructive Actions**
+* Implement a toast system (bottom of viewport, `--z-toast`, slide-up 150ms, auto-dismiss 3s, dismissible, `role="status"`) for form and modal outcomes. `.btn--danger` must be visually distinct in **both** light and dark themes.
+
+---
+
+### **4. LANDING PAGE STRUCTURE & CONTENT**
+
+Write all user-facing copy in **English** — realistic, on-theme marketing copy for the fictional micro-interaction toolkit. No lorem ipsum anywhere.
+
+* **4.1 Header:** per §2.7.
+* **4.2 Hero:** `h1` headline + subheadline, dual CTA (`.btn--primary` "Get started free" + `.btn--ghost` "See it in action" that smooth-scrolls to Features), and an **interactive demo panel**: a small glass playground containing a live button, a toggle switch, and a like/heart counter — each demonstrating the micro-interaction states from §2.1. Add a trust row (stat chips or "Trusted by" line). Staggered entrance animation.
+* **4.3 Features:** exactly **3 glass cards**, each with a Material icon, title, and two-line copy (e.g., 50ms feedback engine, gesture support, tactile state system). Hover lift + pointer highlight + staggered reveal per §2.2.
+* **4.4 How It Works:** exactly **3 numbered steps** in glass circles connected by a soft dashed line on desktop, revealed sequentially on scroll.
+* **4.5 Testimonials:** 3 quotes with avatar initials in colored glass circles (no external images), name, role, and 5-star ratings using Material `star` icons; swipeable carousel per §2.6.
+* **4.6 Pricing:** exactly **3 tiers** (Starter — free, Pro — highlighted with a "Most popular" badge, Team), a monthly/annual toggle with an animated sliding thumb (100ms) and an amber "Save 20%" badge; prices swap with a quick fade-slide micro-animation; each tier CTA opens the confirmation modal per §2.4.
+* **4.7 FAQ:** 5–6 realistic questions about the product as an accordion per §2.5.
+* **4.8 Final CTA:** centered glass panel with headline and the email capture `.input-group` per §2.3 — submit demonstrates loading → success, inline validation, and a toast; include a one-line privacy microcopy.
+* **4.9 Footer:** brand + tagline, 3–4 secondary link groups (Product, Company, Resources, Legal), social icons (Material Symbols), and copyright. Links may use `href="#"` but must have visible hover/focus states.
+
+---
+
+### **5. DELIVERABLE & OUTPUT FORMAT**
+
+* **Files:** separate `index.html`, `style.css`, and `script.js`. The HTML may contain **only one** script reference: `<script src="script.js" defer></script>`. No inline `<script>` blocks, no inline event handlers (`onclick=` etc.), no inline styles.
+* **Naming:** BEM convention exclusively (`.btn`, `.btn--primary`, `.card__title`, `nav__link`, `is-loading` state classes) — never mix conventions.
+* **Assets:** Google Fonts and Material Symbols via `<link>` tags in `<head>` only; no inline SVGs; no local icon files.
+* **Copy:** all user-facing text and code comments in English; real content everywhere per §4 — placeholders are not permitted.
+* **Verification:** before finalizing, mentally test both themes, keyboard-only navigation, and 360px mobile width; fix any contrast, overflow, or focus-order issue you find.

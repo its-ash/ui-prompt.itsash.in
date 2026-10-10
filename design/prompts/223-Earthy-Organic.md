@@ -1,0 +1,192 @@
+# CODING AGENT PROMPT — Complete Landing Page: "Earthy & Organic" (Sustainable Packaging Brand)
+
+**Role & Mission:** Act as a Senior Frontend Engineer and Expert UI Designer. Build a complete, production-ready landing page on the **first attempt** — no TODOs, no stubs, no lorem ipsum. Deliver finished, fully functional code for a sustainable, handcrafted packaging brand (invent a fitting brand name). All user-facing copy must be written in **English**, in a warm, authentic, sustainability-focused brand voice.
+
+**Theme Identity — "Earthy & Organic":** Natural, Warm, Sustainable, Authentic. Contemporary Sustainable Design. Keywords: organic, earthy, sustainable, packaging, natural, eco-friendly, handcrafted, botanical, warm, calm.
+
+**Design Language — enforce strict 60/30/10 palette discipline:**
+- **60% — Warm Beige `#F5E6CC`:** dominant neutral for page backgrounds and packaging-surface visuals.
+- **30% — Forest Green `#2D4F1E` + Slate Grey `#4A4A4A`:** structure, headings, body text, natural illustrations, functional information.
+- **10% — Terracotta `#E27D60`:** badges/seals, calls-to-action, product highlights, active states. Never exceed ~10% of visual weight.
+- **Signature effects:** subtle recycled-paper dot texture, organic (asymmetric) border radii, soft micro-animations at 220–280ms.
+
+**Page sections, in this exact order:** Sticky Header/Nav → Hero → Features (3 cards) → How It Works (3 steps) → Testimonials → Pricing (3 tiers) → FAQ → Final CTA → Footer with secondary links.
+
+---
+
+## 1. STRICT RULES & ARCHITECTURE
+
+### 1.1 CSS-First Architecture & Zero Inline CSS
+- All styling lives in `style.css`. **The `style="..."` attribute is forbidden anywhere in the HTML.**
+- Target every element exclusively via class or ID selectors.
+- HTML must remain semantic and style-agnostic: retheming the entire page must be achievable by editing `style.css` alone, with zero markup changes.
+
+### 1.2 CSS Variables & Theme Tokens
+Define all tokens in `:root`, then override under `.dark`. Use exactly these mandatory names (you may add tokens; never rename these):
+
+```css
+:root {
+  /* Color */
+  --primary: #2D4F1E;            /* Forest Green — brand, headings, primary buttons */
+  --secondary: #4A4A4A;          /* Slate Grey — body copy, functional info */
+  --accent: #E27D60;             /* Terracotta — badges, highlights, key CTAs */
+  --accent-strong: #C2583B;     /* Darkened terracotta — CTA fills carrying #FEFEFE text at AA contrast */
+  --bg-primary: #F5E6CC;         /* Warm Beige — page background (the 60%) */
+  --bg-secondary: #FAF1DE;       /* Elevated card surfaces */
+  --bg-inverse: #2D4F1E;         /* Deep bands: Final CTA, footer */
+  --text-primary: #2D4F1E;
+  --text-secondary: #4A4A4A;
+  --text-on-primary: #F5E6CC;    /* Text on green/terracotta fills */
+  --text-success: #3E6B2E;
+  --text-error: #B3402A;
+  --border-default: rgba(45, 79, 30, 0.18);
+  --border-error: #B3402A;
+  --border-success: #3E6B2E;
+  /* Shape & depth */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 24px;
+  --radius-organic: 255px 15px 225px 15px / 15px 225px 15px 255px; /* hand-drawn wobble — decorative shapes only */
+  --shadow-sm: 0 4px 14px rgba(74, 74, 74, 0.12);
+  --shadow-md: 0 10px 28px rgba(74, 74, 74, 0.18);
+  /* Motion & space */
+  --spacing-gap: 1.5rem;
+  --transition-fast: 220ms;
+  --transition-normal: 280ms;
+  --ease-standard: cubic-bezier(0.25, 0.8, 0.25, 1);
+  /* Elevation */
+  --z-dropdown: 100;
+  --z-modal: 1000;
+  --z-toast: 1100;
+  /* Type */
+  --font-display: "Fraunces", serif;
+  --font-base: "Nunito Sans", sans-serif;
+}
+```
+
+Dark mode overrides (suggested starting values — **verify WCAG AA before shipping**):
+
+```css
+.dark {
+  --bg-primary: #1E2419;        /* deep forest floor */
+  --bg-secondary: #2A3122;
+  --bg-inverse: #F5E6CC;
+  --text-primary: #F2E8D5;
+  --text-secondary: #C7BFA6;
+  --primary: #8FB573;           /* sage green for accents/links on dark */
+  --accent: #E8906F;
+  --accent-strong: #E27D60;
+  --text-on-primary: #1E2419;   /* primary buttons invert: cream fill, dark text */
+  --text-success: #9CCB7C;
+  --text-error: #F2927D;
+  --border-default: rgba(245, 230, 204, 0.16);
+  --shadow-sm: 0 4px 14px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 10px 28px rgba(0, 0, 0, 0.45);
+}
+```
+
+- **Contrast pairing is mandatory in every theme:** light background tokens pair with dark text tokens, dark background tokens with light text tokens. No theme may ship a `--bg-*` / `--text-*` combination failing WCAG AA (4.5:1 body text, 3:1 large text/UI components).
+- Never use pure `#ffffff`; where a near-white is required (e.g., text on `--accent-strong`), use `#FEFEFE`.
+- **Recycled-paper texture (signature effect):** apply to `body` (and to inverse bands with an inverted dot color):
+  `background-image: radial-gradient(rgba(74, 74, 74, 0.04) 1px, transparent 1px); background-size: 12px 12px;`
+  In dark mode, switch the dot color to `rgba(245, 230, 204, 0.05)`. The texture must remain subtle and never compete with content.
+
+### 1.3 Mandatory Dark Mode Support
+- Implement via a `.dark` class on `<html>`, and respect `@media (prefers-color-scheme: dark)` for first-visit behavior.
+- **Persistence:** store the user's choice in `localStorage` (e.g., key `"theme"`); on load, apply the stored value, otherwise fall back to the OS preference. Apply the theme before first paint — no wrong-theme flash.
+- **Visible toggle:** a header button using Material Symbols (`light_mode` / `dark_mode`), with `aria-pressed` reflecting the current state and a descriptive `aria-label` (e.g., "Toggle dark mode"). All color switching must happen purely through CSS variables — zero HTML restructuring.
+
+### 1.4 Flexbox Layout & Mobile-First Alignment
+- Build all layout structures with Flexbox (`display: flex` / Tailwind flex utilities).
+- **Every flex container defaults to `align-items: center`** unless an explicitly justified exception exists (e.g., stacked form fields use `stretch`).
+- **Mobile-first:** single-column stacks below 768px; multi-column layouts at ≥768px and ≥1024px. **No horizontal scrolling at any viewport from 320px up.**
+
+### 1.5 Framework Default & Tailwind CSS Integration
+- Use Tailwind CSS (Play CDN acceptable) plus a custom `style.css` driving all theming.
+- Reusable component classes (`.btn`, `.card`, `.input-group`, `.badge`, `.accordion`) must be defined once — via `@layer components` / `@apply` or plain CSS — and map back to the CSS variables above. Utilities handle layout only; color, radius, and shadow identity always come from tokens.
+
+### 1.6 Typography & Icons (Google Fonts Mandatory)
+- Load **Google Fonts** in `<head>`: `Fraunces` (display/headings — soft, botanical serif) and `Nunito Sans` (body). Bind to `--font-display` / `--font-base`.
+- Icons: **Google Material Symbols (Rounded variant)** via the Google Fonts link. **Inline SVGs, local icon files, and emoji icons are forbidden.** Suggested set: `eco`, `recycling`, `spa`, `inventory_2`, `local_shipping`, `workspace_premium`, `format_quote`, `star`, `check_circle`, `expand_more`, `arrow_forward`, `light_mode`, `dark_mode`, `menu`, `close`, `arrow_upward`, `progress_activity` (spinner).
+
+## 2. COMPONENT DESIGN SPECIFICATIONS
+
+### 2.1 Button Component Requirements
+Style all states via CSS classes — `.btn` base plus variants `.btn--primary`, `.btn--accent`, `.btn--outline`, `.btn--ghost`, `.btn--danger`:
+- **Default:** `display: flex; align-items: center; justify-content: center; gap: 0.5rem;` minimum touch target 44×44px; font-weight 600.
+- **Variants:** `.btn--primary` = `--primary` fill + `--text-on-primary` text (inverts to cream fill/dark text in dark mode); `.btn--accent` = `--accent-strong` fill + `#FEFEFE` text (guaranteed AA) — reserve for the single key CTA per viewport; `.btn--outline` = transparent fill, `1px solid var(--border-default)`, `--primary` text.
+- **Hover:** brightness shift and/or `--shadow-sm`; `cursor: pointer`.
+- **Focus:** distinct ring — `outline: 2px solid var(--accent); outline-offset: 3px;` — clearly visible in both themes.
+- **Active/Pressed:** `transform: scale(0.97)`.
+- **Loading:** `.is-loading` class — disables pointer events (prevents double-clicks/double submits), swaps the label for a rotating `progress_activity` icon (CSS `@keyframes` spin), and preserves exact button dimensions.
+- **Disabled:** `opacity: 0.5; filter: grayscale(0.6); cursor: not-allowed;` with hover/active transforms removed.
+- **Success/Error:** transient `.is-success` / `.is-error` states tinted by `--text-success` / `--text-error`, announced through an `aria-live` region.
+- **`.btn--danger`** must be visually distinct in both light and dark themes.
+
+### 2.2 Card Component Requirements
+Base `.card`: `--bg-secondary` fill, `1px solid var(--border-default)`, `--radius-lg` (a gentle asymmetric variant is welcome for the handcrafted feel), `--shadow-sm`, internal flexbox layout.
+- **Hover (interactive cards — features, pricing):** `transform: translateY(-2px)` + `--shadow-md`, at `--transition-fast`.
+- **Focus-within:** border color shifts to `--primary` when a child link/button receives focus.
+- **Loading (Skeleton):** define a `.skeleton` shimmer (animated `linear-gradient` sweep) matching final card dimensions so any async content never causes layout shift.
+- **Empty State:** reusable fallback pattern — Material Symbol + clear guidance text.
+
+### 2.3 Form & Input Requirements
+Used by the Final CTA email capture. Structure `.input-group` as a flex column: `<label>` + `<input>` + dedicated error-message container.
+- **States:** empty; focused (`outline: 2px solid var(--primary); outline-offset: 2px`); filled; **valid** (`--border-success` + `check_circle` icon); **invalid** (`--border-error`, error icon, message in `--text-error`); disabled; read-only.
+- Errors render in the dedicated container wired to `aria-live="polite"` and `aria-describedby`. Never rely on color alone — always pair icon + text.
+- **Submit flow:** click → `.is-loading` on the button → simulated async → success feedback (icon swap + `aria-live` announcement). Validate email format client-side in `script.js`.
+
+### 2.4 FAQ Accordion & Mobile Menu (Disclosure/Overlay Components)
+**FAQ accordion:**
+- Each item: `<button class="faq__trigger" aria-expanded="false" aria-controls="...">` + panel. Animate open/close via CSS (`grid-template-rows: 0fr → 1fr` or max-height) at `--transition-normal`.
+- Trigger shows the question plus an `expand_more` icon rotating 180° when open. Fully keyboard operable (Enter/Space); focus ring per 2.1. JS keeps `aria-expanded` accurate; only one open panel at a time is allowed.
+**Mobile menu (overlay):**
+- Full-screen overlay at `--z-modal`, centered flex container (`align-items: center`), dimmed backdrop, `close` icon button; closes on `Esc` and backdrop click; traps focus while open; restores focus to the hamburger on close. Hamburger carries `aria-expanded` + `aria-label`.
+- The sticky header itself stacks at `--z-dropdown`.
+
+## 3. CORE UX & MICRO-INTERACTION RULES
+
+- **Responsive by default:** fluid type via `clamp()`, fluid spacing, breakpoints at 768px/1024px; verify zero horizontal overflow down to 320px.
+- **Smooth animations:** every state change transitions with `var(--transition-fast)` (220ms) or `var(--transition-normal)` (280ms) and `var(--ease-standard)`. Wrap all motion — floats, transforms, smooth scrolling — in `@media (prefers-reduced-motion: reduce)` to disable it.
+- **Scroll reveals:** sections fade/rise in (`opacity`, `translateY(12px)`) via `IntersectionObserver` in `script.js`; disabled under reduced motion. Keep the motion calm and subtle — this is a warm, grounded brand, not a showy one.
+- **Accessibility (a11y):** WCAG AA contrast in both themes; semantic HTML5 landmarks (`header`, `nav`, `main`, `section[aria-labelledby]`, `footer`); a skip-to-content link; logical DOM/focus order; full keyboard operability with no mouse-only interactions; `aria-live` regions for all dynamic feedback; never communicate state by color alone.
+- **Mandatory visual feedback:** every hover, click, toggle, and submission triggers a visible state change.
+- **Organic borders:** apply `--radius-organic` to decorative shapes (hero visual, illustration frames, badges); keep standard radii on inputs and dense UI for usability.
+- **Sticky header:** gains `--shadow-sm` and a solid background after scrolling past the hero (JS class toggle).
+- **Anchor navigation:** in-page links smooth-scroll (`scroll-behavior: smooth` + `scroll-margin-top` compensating the sticky header).
+
+## 4. DELIVERABLE & OUTPUT FORMAT
+
+- **Files:** `index.html`, `style.css`, `script.js`, delivered complete in a single response. `<head>` may load Google Fonts, Material Symbols, and Tailwind via external links. The only script reference is `<script src="script.js" defer></script>` — **no inline `<script>` blocks, no inline styles, no inline SVGs.**
+- **Naming convention:** BEM throughout (`block__element--modifier`), e.g., `.hero`, `.hero__title`, `.card--featured`. Never mix conventions.
+- **Copy:** all user-facing text in **English**, written as real, finished marketing copy for the sustainable packaging brand — lorem ipsum and placeholder strings are prohibited.
+- **Completeness:** theme toggle, accordion, mobile menu, form validation, scroll reveals, and all states in Section 2 must work on first delivery.
+
+## 5. PAGE BLUEPRINT — SECTION-BY-SECTION REQUIREMENTS
+
+### 5.1 Header (sticky)
+Flex row: brand wordmark + `eco` icon; nav links (Features, How It Works, Testimonials, Pricing, FAQ); theme toggle (per 1.3); `menu` hamburger below 768px. Translucent `--bg-primary` with `backdrop-filter: blur`.
+
+### 5.2 Hero
+Two-column flex (stacks on mobile). **Left:** terracotta eyebrow badge (`eco` icon + "Sustainable Packaging"), H1 in `--font-display` (e.g., "Packaging that returns to the earth."), subheadline in `--text-secondary`, CTA pair — `.btn--accent` "Get a Quote" + `.btn--outline` "See How It Works" — and a compact trust row (three mini-stats or certification chips). **Right:** a pure CSS/HTML packaging mockup — layered organic-radius shapes suggesting a kraft box/pouch, a terracotta seal badge (`workspace_premium`), `recycling` icon accents, gentle floating animation (reduced-motion aware). Background: paper texture plus one soft, low-opacity radial green blob and one terracotta blob.
+
+### 5.3 Features — 3 cards
+Section header (eyebrow, H2, one-line intro) + responsive grid (1 → 3 columns). Cards per 2.2, each with a Material Symbol in a `--primary`-tinted icon chip, a title, and a 2–3 sentence description. Suggested angles: 100% compostable materials, handcrafted custom design, carbon-neutral delivery.
+
+### 5.4 How It Works — 3 steps
+Horizontal flex on desktop with a connecting line; vertical on mobile. Each step: terracotta number badge (01/02/03), Material Symbol (`design_services`, `precision_manufacturing`, `local_shipping`), step title, short supporting text.
+
+### 5.5 Testimonials
+Three cards: `format_quote` icon, five `star` icons in `--accent`, quote text, avatar as an initials circle (`--primary` fill, `--text-on-primary` initials — no external images), name + role/company. Write realistic English quotes.
+
+### 5.6 Pricing — 3 tiers
+Grid of `.card` variants: "Seedling" (starter), "Grove" (featured), "Forest" (enterprise). Featured card: `.card--featured` — terracotta "Most Popular" badge, emphasized border, slight elevation/scale. Each tier: name, price, feature list with `check_circle` icons, CTA (`.btn--outline` for side tiers, `.btn--accent` for the featured tier). Invent coherent English pricing.
+
+### 5.7 FAQ
+5–6 realistic questions (materials, compostability certifications, minimum order quantities, customization, shipping, returns). Accordion behavior per 2.4.
+
+### 5.8 Final CTA
+Full-bleed band on `--bg-inverse` (forest green in light mode; cream in dark mode — pair text tokens per the contrast rule in 1.2). H2 + supporting line + email capture form (per 2.3) with a `.btn--accent` submit and `aria-live` feedback.
+
+### 5.9 Footer
+On `--bg-inverse` (or a slightly deeper band): brand block (wordmark, one-line mission, social/text links), three secondary link columns (Company, Support, Legal — real, descriptive anchor labels linking to page sections where applicable), and a bottom bar with an auto-updated © year (via JS) and an `arrow_upward` back-to-top button that smooth-scrolls to the header.

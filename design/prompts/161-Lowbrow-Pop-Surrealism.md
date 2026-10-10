@@ -1,0 +1,168 @@
+# CODING PROMPT — Landing Page: "Candy Crypt" (Lowbrow / Pop Surrealism)
+
+**Your role:** Senior Frontend Engineer & Expert UI Designer. Build the complete, production-ready landing page described below on the first attempt. Follow every rule in this document literally.
+
+---
+
+## 0. THEME BRIEF & CREATIVE DIRECTION
+
+**0.1 Product Concept:** The page promotes a fictional brand you will name **"Candy Crypt"** — a pop-surrealist illustration studio and limited-run art print shop (category: Art & Illustration). Write all user-facing copy in **English**, on-brand, and fully written out — never lorem ipsum.
+
+**0.2 Visual Direction:** Lowbrow / Pop Surrealism, late 20th century–present. Hyper-detailed cartoon-surrealist illustration with glossy airbrushed rendering; playful-but-unsettling juxtapositions (cute rendering, uncanny subject); a candy-bright palette laid on a dark, muted ground; thick black kustom-kulture / hot-rod-adjacent keyline outlines. Reference mood: Robert Williams' *Juxtapoz*-era hot-rod paintings; Mark Ryden's candy-bright porcelain-doll surrealism.
+
+**0.3 Signature Move:** Every raised surface (buttons, cards, badges, inputs) must combine three ingredients: the **candy sheen** (`--candy-sheen`), the **thick black keyline** (`--keyline-outline`), and a **glossy shadow**. Repeat this sheen + keyline pair consistently across the entire page.
+
+**0.4 Copy Tone:** Carnival-barker sweetness with a wink of the uncanny — confident, playful, slightly eerie (e.g., headline direction: *"Too Cute to Look Away. Too Weird to Ignore."*). Refine, don't copy verbatim.
+
+**0.5 Illustration Note:** Do **not** use external image files or photo placeholders. Compose all decorative art (hero vignette, ornaments) purely from layered CSS gradients and Google Material Symbols, marked `aria-hidden="true"`.
+
+---
+
+## 1. STRICT RULES & ARCHITECTURE
+
+**1.1 CSS-First Architecture & Zero Inline CSS**
+* **No Inline CSS:** The `style="..."` attribute is forbidden anywhere in the HTML. No inline event handlers (`onclick=` etc.) — all JS behavior goes through `addEventListener` in `script.js`.
+* **Class/ID Selectors Only:** All design properties, layout rules, and states are targeted via class or ID selectors in `style.css`.
+* **Minimal HTML Modifications:** HTML stays semantic and style-agnostic — restyling the site must only require editing `style.css`.
+
+**1.2 CSS Variables & Theme Tokens**
+Adopt the following token block **verbatim** as your default (dark) `:root`, then **extend** it with the additional required tokens listed after:
+
+```css
+:root {
+  /* color */
+  --color-bg: #17151f;
+  --color-surface: #201c2c;
+  --color-surface-2: #2c2740;
+  --color-text: #f4eefc;
+  --color-text-muted: #b8aed0;
+  --color-primary: #ff5fa2;
+  --color-accent: #4fd8e0;
+  --color-gold: #ffcc33;
+  --color-lineweight: #0e0c14;
+  /* radius */
+  --radius-sm: 6px; --radius-md: 16px; --radius-lg: 32px; --radius-pill: 999px;
+  /* shadow */
+  --shadow-glossy: 0 10px 30px rgba(255,95,162,0.25), 0 2px 0 var(--color-lineweight);
+  --shadow-glossy-sm: 0 4px 14px rgba(79,216,224,0.25), 0 1px 0 var(--color-lineweight);
+  /* font */
+  --font-sans: 'Baloo 2', 'Nunito', system-ui, sans-serif;
+  --font-display: 'Bungee', 'Baloo 2', 'Arial Rounded MT Bold', sans-serif;
+  --font-mono: ui-monospace, monospace;
+  /* text scale */
+  --text-xs: 0.75rem; --text-sm: 0.875rem; --text-base: 1rem; --text-lg: 1.125rem;
+  --text-xl: 1.375rem; --text-2xl: 1.75rem; --text-3xl: 2.25rem; --text-4xl: 3rem; --text-5xl: 4rem;
+  /* space */
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-6: 24px;
+  --space-8: 32px; --space-12: 48px; --space-16: 64px; --space-24: 96px;
+  /* ease */
+  --ease-standard: cubic-bezier(0.34, 1.4, 0.3, 1);
+  /* signature effects */
+  --candy-sheen: radial-gradient(60% 45% at 30% 20%, rgba(255,255,255,0.35), transparent 60%);
+  --keyline-outline: 0 0 0 3px var(--color-lineweight);
+  --bg-image: radial-gradient(120% 90% at 80% -10%, #2c2740 0%, #17151f 55%, #0e0c14 100%);
+}
+```
+
+**Mandatory additional tokens** (define alongside the block above):
+* **Aliases:** `--bg-primary: var(--color-bg); --bg-secondary: var(--color-surface); --text-primary: var(--color-text); --text-secondary: var(--color-text-muted);`
+* **Feedback colors:** `--color-success: #7ce8a4; --color-error: #ff7a7a;` plus `--text-success` / `--text-error` mapped to them.
+* **Borders:** `--border-default: 3px solid var(--color-lineweight); --border-error: 2px solid var(--color-error); --border-success: 2px solid var(--color-success);`
+* **Spacing & transitions:** `--spacing-gap: var(--space-4); --transition-fast: 150ms var(--ease-standard); --transition-normal: 300ms var(--ease-standard);`
+* **Stacking:** `--z-dropdown: 100; --z-modal: 500; --z-toast: 900;` — use `--z-dropdown` for the sticky header and mobile menu panel.
+
+**Contrast Pairing (enforced in every theme):** light backgrounds must pair with dark text tokens and dark backgrounds with light text tokens. Never use pure `#ffffff`; where a near-white is required use `#fefefe`.
+
+**1.3 Mandatory Dark Mode Support**
+The source spec does not declare modes — therefore you must build and validate **both** modes before considering the page done.
+* **Dark is the canonical default** (the provided palette). Keep it in `:root`.
+* **Light theme:** define a full token override under `:root[data-theme="light"]` AND under `@media (prefers-color-scheme: light) { :root:not([data-theme]) { … } }`. Required starting point (you may fine-tune, but contrast must pass): `--color-bg: #f6effd; --color-surface: #fefefe; --color-surface-2: #ece2f7; --color-text: #17151f; --color-text-muted: #5d5377;` keep `--color-lineweight: #0e0c14` (the keyline is signature in both themes); keep candy fills (`--color-primary`, `--color-accent`, `--color-gold`) for surfaces paired with `--color-lineweight` text, and add darker "ink" variants for accent-as-text usage: `--color-primary-ink: #c9165f; --color-accent-ink: #0b7f8c; --color-gold-ink: #8a6200;` (use `--color-gold-ink` for the focus ring in light mode). Provide a light `--bg-image` (lavender→cream radial) and softened glossy shadows.
+* **Persistence & toggle:** `script.js` reads `localStorage('theme')`; if absent, fall back to `prefers-color-scheme`; if that is also absent, default to dark. Apply via `data-theme` on `<html>` — switching must require **zero HTML restructuring**, only variable overrides. Render a visible toggle in the nav using Material Symbols `dark_mode` / `light_mode`, with `aria-pressed` reflecting the dark state and an updated `aria-label`.
+
+**1.4 Flexbox Layout & Mobile-First Alignment**
+* Build all layout structures with **Flexbox**. Every flex container defaults to `align-items: center` unless an exception is explicitly justified in a CSS comment (the one sanctioned exception: card grids may use `align-items: stretch` for equal-height cards — inner content still centers).
+* Mobile-first: all rows convert to columns on small viewports (≤768px). Fluid `clamp()` typography. **No horizontal scrolling at any width down to 320px.**
+
+**1.5 Framework**
+The source specification supplies a custom-CSS foundation — build with **vanilla CSS** (no Tailwind, no frameworks). All utilities must map back to the CSS variables and generic reusable classes (`.btn`, `.card`, `.input`, `.badge`).
+
+**1.6 Typography & Icons (Google Fonts Mandatory)**
+* **Fonts:** include Google Fonts `<link>` for **Baloo 2** (400;600;700;800), **Bungee** (400), and **Nunito** (400;600;700). Bind them to `--font-sans` / `--font-display` as tokenized above. Bungee is for display headings and buttons only; Baloo 2 for body.
+* **Icons:** Google **Material Symbols Rounded** via the official stylesheet. **Explicitly forbidden:** raw inline SVGs, local icon files, emoji-as-icons. Decorative icons get `aria-hidden="true"`; meaningful icons get accessible names.
+
+---
+
+## 2. COMPONENT DESIGN SPECIFICATIONS
+
+Extend the provided base component CSS (`.nav`, `.btn`, `.btn--primary`, `.card`, `.input`, `.badge` — adopt them verbatim, then extend) as follows:
+
+**2.1 Button Component**
+* **Default:** `display: flex; align-items: center; justify-content: center; gap: 0.5rem;` with `min-height: 44px` (touch target). Variants: `.btn` (ghost, surface-2 fill), `.btn--primary` (candy pink + sheen + keyline + glossy shadow), `.btn--danger` (error-red fill, lineweight text, keyline — visually distinct in **both** themes).
+* **Hover:** `translateY(-2px) scale(1.02)` + shadow shift, `cursor: pointer`.
+* **Focus:** `:focus-visible { outline: 3px solid var(--color-gold); outline-offset: 3px; }` (gold-ink in light mode).
+* **Active/Pressed:** `transform: scale(0.97)`.
+* **Loading (`.is-loading`):** set `disabled` + `aria-busy="true"` in JS; render a spinning Material Symbol `progress_activity` (CSS rotation) replacing the label **without changing button dimensions** (lock with `min-width`); prevents double-submits.
+* **Disabled:** `opacity: 0.45; cursor: not-allowed;` no transforms.
+* **Success/Error feedback:** `.btn--success` / `.btn--error` temporary states using `--color-success` / `--color-error` fills with lineweight text, plus `check` / `error` icons — never color alone.
+
+**2.2 Card Component** (used for Features, Testimonials, Pricing tiers)
+* **Default:** `.card` base (surface + sheen + keyline + glossy shadow, `--radius-lg`).
+* **Hover:** `transform: translateY(-2px)` with shadow intensification (suppressed under reduced motion).
+* **Focus-within:** when a child link/button receives focus, the card gains a gold keyline ring (`box-shadow` addition) — visible keyboard navigation.
+* **Featured variant:** `.card--featured` — primary-colored keyline ring + `--shadow-glossy` + a `.badge` ("Cult Favorite").
+* **Loading (skeleton):** define a `.skeleton` shimmer utility (animated gradient, `prefers-reduced-motion` safe) in CSS even if no runtime fetch triggers it.
+* **Empty state:** define an `.empty-state` pattern (large Material Symbol + short guidance text) in CSS.
+
+**2.3 Form & Input Component** (newsletter capture in the Final CTA)
+* **Structure:** flex `.input-group` wrapping a `<label>`, the `.input` field, and a dedicated `.form-error` container (`aria-live="polite"`) plus a `.form-success` container.
+* **States:** empty; focused (accent ring: `box-shadow: 0 0 0 3px var(--color-accent), var(--keyline-outline)`); filled; valid (`.input--valid`: success border + trailing `check_circle` icon); invalid (`.input--invalid`: error border, error icon, red error **text** message — not color alone); disabled; read-only.
+* **Behavior:** `script.js` validates the email on submit; invalid → error state + message; valid → button enters loading → success state with confirmation copy ("You're on the list. Welcome to the crypt.").
+
+**2.4 FAQ Accordion (Disclosure Component)**
+* Build each item as `<details class="faq-item">` + `<summary>` containing the question, a `expand_more` chevron icon that rotates 180° when `[open]`, and `.faq-item__content` that animates in (fade/slide, CSS only).
+* **States:** collapsed, expanded, summary hover, summary `:focus-visible` ring.
+* **Behavior:** `script.js` enforces single-open accordion behavior (opening one closes others). Fully keyboard operable natively.
+* No modals are required for this build; if you add any overlay anyway, it must trap focus, close on `Esc`/backdrop click, and use `--z-modal`.
+
+---
+
+## 3. PAGE STRUCTURE & SECTION-BY-SECTION SPEC
+
+Global: `<html lang="en">`, a skip link, sticky `.nav` header (`--z-dropdown`), `main` with landmark `<section>`s (each with `aria-labelledby` + `scroll-margin-top` for anchor offsets), smooth scrolling guarded by `@media (prefers-reduced-motion: no-preference)`. Max content width ~1200px, centered.
+
+**3.1 Header / Nav:** `.nav` — Bungee wordmark "Candy Crypt" with a small candy `.badge` containing a Material Symbol mark; anchor links (Features, How It Works, Testimonials, Pricing, FAQ); theme toggle (rule 1.3); `.btn--primary` "Shop the Drop". On mobile: links collapse behind a `menu` icon button toggling a dropdown panel (`aria-expanded`, `aria-controls`, closes on `Esc` and returns focus).
+
+**3.2 Hero:** Two-column flex (stacks on mobile). Left: `.badge` eyebrow ("New Drop: Sugar Skull Serenade — 50 prints"), `<h1>` in Bungee with fluid `clamp()` sizing, subhead in muted text, CTA pair (`.btn--primary` "Enter the Gallery" + `.btn` "See the Process"). Right: CSS-composed surreal vignette — layered radial gradients (airbrushed glow), a large circular "porcelain medallion" (keyline + candy sheen) holding a big tinted Material Symbol (e.g., `skull`), orbited by smaller floating candy badges (`cake`, `auto_awesome`, `local_fire_department`) with a gentle float animation. All decorative, `aria-hidden`.
+
+**3.3 Features (3 cards):** `<h2>` + three `.card`s in a flex-wrap row. Each: candy `.badge` icon (`brush`, `print`, `diamond`), `<h3>`, 2–3 sentences of real on-theme copy (e.g., hand-drawn weirdness, museum-grade giclée, numbered limited runs).
+
+**3.4 How It Works (3 steps):** Three steps with gold numbered badges (01/02/03), titles + copy, connected by a dashed keyline (CSS pseudo-element) that becomes vertical on mobile.
+
+**3.5 Testimonials:** Three `.card`s — circular candy avatar badge with the person's initial letter (no photos), quote, fictional name + role, and a 5-star row of gold `star` icons (`aria-hidden`) with visually-hidden text "Rated 5 out of 5".
+
+**3.6 Pricing (3 tiers):** Three `.card`s; middle tier uses `.card--featured` + `.badge` "Cult Favorite". Each: Bungee tier name, real price + period, feature list with `check_circle` icons, CTA (featured = `.btn--primary`, others = `.btn`). Suggested on-theme tiers: "Sticker Fiend $9/mo", "Print Devotee $29/mo", "Vault Keeper $79/mo" — refine copy as needed.
+
+**3.7 FAQ:** Five to six `faq-item` disclosures with genuine Q&A copy (shipping, print quality, licensing, returns, commissions).
+
+**3.8 Final CTA:** Full-width `.card` (sheen + keyline + glossy shadow): `<h2>`, one line of copy, and the newsletter `.input-group` per rule 2.3.
+
+**3.9 Footer:** Flex-wrap columns on `--color-surface` with keyline top border: brand blurb, secondary link groups (About, Licensing, Shipping & Returns, Privacy, Terms, Contact), a social row using generic Material Symbols with visually-hidden labels, and a copyright line with the current year.
+
+---
+
+## 4. CORE UX & MICRO-INTERACTION RULES
+
+* **Responsive by default:** fluid sizing, breakpoints without horizontal overflow; validate at 320px, 768px, 1200px+.
+* **Smooth animations:** every state change transitions with `var(--transition-fast)` / `var(--transition-normal)` and `--ease-standard`. All transforms, shimmer, and float animations are disabled under `@media (prefers-reduced-motion: reduce)`.
+* **Accessibility (a11y):** verify WCAG AA contrast in **both** light and dark modes before publishing (4.5:1 body text, 3:1 large text/UI). Never rely on color alone. Use semantic HTML5 landmarks, a logical heading order (one `<h1>`), logical DOM/focus order, full keyboard operability (no mouse-only interactions), and `aria-live` regions for all dynamic feedback (form errors, success messages, loading).
+* **Mandatory visual feedback:** every click, hover, focus, and submission produces a visible state change.
+* **Destructive/distinct actions:** `.btn--danger` must remain visually distinct in both themes.
+
+---
+
+## 5. DELIVERABLE & OUTPUT FORMAT
+
+* **Files:** three separate files — `index.html`, `style.css`, `script.js`. The HTML contains exactly one `<script src="script.js" defer></script>`; no inline `<script>` blocks, no inline styles.
+* **Naming convention:** BEM throughout (matching the provided `.btn--primary` pattern — e.g., `.nav__toggle`, `.hero__art`, `.faq-item__summary`). Never mix conventions.
+* **Copy:** all user-facing copy is real, final, on-theme English — no lorem ipsum, no filler. Placeholders are permitted only for content genuinely impossible to invent (there is none here).
+* **Organization:** comment `style.css` by section (tokens, base, components, sections, themes, utilities, reduced-motion).

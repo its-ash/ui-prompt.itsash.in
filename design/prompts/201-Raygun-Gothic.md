@@ -1,0 +1,163 @@
+### **SYSTEM PROMPT — SENIOR FRONTEND ENGINEER & UI DESIGNER: "RAYGUN GOTHIC" LANDING PAGE**
+
+**Role:** Act as a Senior Frontend Engineer and Expert UI Designer. Code a complete, production-ready landing page on the first attempt. Theme: **Raygun Gothic** (retrofuturism, 1930s–1960s revived). The reference specification (`references/00-flagship-implementation-specs/raygun-gothic.md`) is reproduced in condensed form in Section 0.4 — treat it as the canonical design system and extend it exactly as directed below. Output the full code for all three files.
+
+---
+
+### **0. PROJECT BRIEF**
+
+**0.1 Art Direction**
+* Mood: Raygun Gothic / Googie / "World of Tomorrow" — sleek rockets, ray guns, chrome fins, starbursts, bold geometric type, streamlined 1950s optimism (The Jetsons, Forbidden Planet, Tomorrowland).
+* Signature moves (mandatory): (a) a **chrome-fin gradient stripe** on the leading edge of every raised surface (nav bottom edge, card/CTA top edge, footer top edge) via `border-image: var(--chrome-gradient) 1`; (b) a **starburst conic-gradient** fixed behind the page, intensified behind the hero headline; (c) **pill geometry** (fully rounded buttons, inputs, badges); (d) bouncy `--ease-standard` easing on hover/pop interactions.
+
+**0.2 Required Sections (in order):** Sticky Nav, Hero, Features (3 cards), How It Works (3 steps), Testimonials, Pricing (3 tiers), FAQ, Final CTA, Footer with secondary links. Per-section requirements in Section 5.
+
+**0.3 Copy Direction:** All user-facing copy in **English**. Optimistic pulp-sci-fi voice ("The World of Tomorrow, Today") — playful but professional and readable. Write real copy for every section; no lorem ipsum.
+
+**0.4 Canonical Tokens & Component Foundations (adopt exactly, extend per Sections 1–2):**
+
+```css
+:root { /* DARK theme — default */
+  --bg-primary:#0b1e3d; --bg-secondary:#12315e; --bg-tertiary:#1a4180;
+  --text-primary:#f2f6ff; --text-secondary:#aac2e8;
+  --primary:#ff5a36;        /* FILL only — always pair with ink #1a0800 */
+  --primary-ink:#ff5a36;    /* primary used AS TEXT (AA-safe on dark) */
+  --secondary:#2ee6d0;      /* accent FILL — always pair with ink #04211d */
+  --secondary-ink:#2ee6d0;  /* accent used AS TEXT/ICONS on dark */
+  --text-success:#2ee6d0; --border-success:#2ee6d0;
+  --text-error:#ff7a5c;  --border-error:#ff7a5c;
+  --border-default:#8fb4e6; --chrome:#c9d6e8;
+  --radius-sm:4px; --radius-md:12px; --radius-lg:999px; --radius-pill:999px;
+  --shadow-sm:0 2px 6px rgba(0,0,0,.3); --shadow-md:0 6px 18px rgba(0,0,0,.4);
+  --shadow-lg:0 14px 36px rgba(0,0,0,.5);
+  --spacing-gap:1rem; --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px;
+  --space-6:24px; --space-8:32px; --space-12:48px; --space-16:64px; --space-24:96px;
+  --transition-fast:150ms; --transition-normal:250ms;
+  --ease-standard:cubic-bezier(0.34,1.56,0.64,1);
+  --z-dropdown:100; --z-modal:200; --z-toast:300;
+  --font-base:'Poppins','Century Gothic','Futura',sans-serif;
+  --font-display:'Archivo Black','Broadway','Arial Black',sans-serif;
+  --font-mono:ui-monospace,monospace;
+  --text-xs:.75rem; --text-sm:.875rem; --text-base:1rem; --text-lg:1.125rem;
+  --text-xl:1.375rem; --text-2xl:1.75rem; --text-3xl:2.25rem; --text-4xl:3rem; --text-5xl:4rem;
+  --chrome-gradient:linear-gradient(135deg,#eef3ff 0%,#9fb6d8 45%,#4a6a9c 55%,#eef3ff 100%);
+  --starburst:repeating-conic-gradient(from 0deg,rgba(46,230,208,.10) 0deg 8deg,transparent 8deg 20deg);
+}
+html.theme-light { /* LIGHT "Chrome Diner" variant */
+  --bg-primary:#eef3ff; --bg-secondary:#fefefe; --bg-tertiary:#d8e4f7;
+  --text-primary:#0b1e3d; --text-secondary:#46618f;
+  --primary-ink:#c22f12; --secondary-ink:#0b6e62;
+  --text-success:#0b6e62; --border-success:#0b6e62;
+  --text-error:#bf3617; --border-error:#bf3617;
+  --border-default:#6b8fc7; --chrome:#5e7cae;
+  /* --primary / --secondary fills stay #ff5a36 / #2ee6d0, always with dark ink */
+}
+```
+
+* Base: `body { margin:0; color:var(--text-primary); font-family:var(--font-base); background:var(--starburst), var(--bg-primary); background-attachment:fixed; min-height:100vh; }`
+* Foundations to adopt: `.nav` (flex, `gap:var(--space-4)`, `align-items:center`, `padding:var(--space-3) var(--space-6)`, `background:var(--bg-secondary)`, `border-bottom:3px solid; border-image:var(--chrome-gradient) 1`); `.btn` (display font 700, `letter-spacing:.04em`, pill, `padding:var(--space-3) var(--space-6)`, `background:var(--bg-tertiary)`, `border:2px solid var(--chrome)`, `box-shadow:var(--shadow-sm)`, bouncy hover `translateY(-2px) scale(1.02)` + `--shadow-md`, active reset, `:focus-visible` outline offset 3px, disabled `opacity:.5`); `.btn--primary` (`background:var(--primary)`, `border-color:#ffd7c9`, `color:#1a0800`); `.card` (`background:var(--bg-secondary)`, `--radius-md`, `--shadow-md`, `padding:var(--space-6)`, `border-top:4px solid; border-image:var(--chrome-gradient) 1`); `.input` (pill, `background:var(--bg-tertiary)`, `border:2px solid var(--chrome)`, focus: accent border + `box-shadow:0 0 0 3px color-mix(in srgb, var(--secondary-ink) 30%, transparent)`); `.badge` (pill, `background:var(--secondary)`, `color:#04211d`, 700 xs).
+
+---
+
+### **1. STRICT RULES & ARCHITECTURE**
+
+**1.1 CSS-First Architecture & Zero Inline CSS**
+* All styling lives in `style.css`. **Forbidden:** `style="..."` attributes, `<style>` blocks in HTML, presentational attributes.
+* Style exclusively via class/ID selectors. HTML stays semantic and styling-agnostic — a re-theme must require CSS edits only.
+
+**1.2 CSS Variables & Theme Tokens**
+* Use the canonical token set from 0.4 verbatim. No hardcoded hex values outside the token blocks (the ink literals `#1a0800`, `#04211d`, `#ffd7c9` live only in tokens/foundations).
+* **Contrast pairing (both themes):** every light background pairs with dark text and vice versa. `--primary`/`--secondary` are fills and must always carry dark ink; when primary/secondary appear as text, icons, or focus rings, use `--primary-ink`/`--secondary-ink`, which are contrast-safe per theme.
+* Light-mode background is `#eef3ff` (pale chrome blue) — never pure white; use `#fefefe` for near-white surfaces.
+* Layered components must resolve overlap via `--z-dropdown`, `--z-modal`, `--z-toast`.
+
+**1.3 Mandatory Dark Mode & Theme Switching**
+* The reference palette is dark-native: default `:root` = dark theme (dark mode is therefore always defined). Define `html.theme-light` overrides per 0.4, plus a no-JS first-paint fallback: `@media (prefers-color-scheme: light)` applies light tokens to `html:not(.theme-light):not(.theme-dark)`.
+* `script.js` resolves preference on load: `localStorage` key `"raygun-theme"` → fallback to `matchMedia('(prefers-color-scheme: light)')` → sets `.theme-light` or `.theme-dark` explicitly on `<html>`.
+* Visible toggle in the nav: Material `dark_mode`/`light_mode` icon, `min 44x44`, `aria-pressed="true"` when dark is active, `aria-label="Toggle dark theme"`.
+* Switching swaps CSS variables only — zero HTML restructuring. The source spec explicitly requires validating in **both light and dark before publishing**: verify AA contrast (4.5:1 body text, 3:1 large text/borders/UI) for every token pair in both themes.
+
+**1.4 Flexbox Layout & Mobile-First Alignment**
+* Build all layout containers with Flexbox. Every flex container defaults to `align-items: center`; exceptions only with a justifying CSS comment (permitted: card/step internal text stacks and footer link columns may use `flex-start`).
+* Mobile-first: rows collapse to columns at breakpoints; use `flex-wrap` + `flex-basis` instead of fixed widths; **no horizontal scrolling from 320px up**.
+
+**1.5 CSS Architecture**
+* Clean custom CSS in `style.css` organized with `@layer tokens, base, components, utilities` (Tailwind-style layer discipline; no Tailwind CDN required). If you use Tailwind, it may supply structural utilities only — every themed component remains a reusable BEM class (`.btn`, `.card`, `.input-group`) bound to the CSS variables.
+* Adopt the 0.4 foundations and extend them with the states in Section 2.
+
+**1.6 Typography & Icons (Google Fonts Mandatory)**
+* Load via `<link>` (with preconnect): **Poppins** 400/500/600/700 → `--font-base`, and **Archivo Black** → `--font-display`. *Exception clause:* 'Century Gothic', 'Futura', 'Broadway', 'Arial Black' are not on Google Fonts — they may appear only as local fallbacks inside the token stacks; the loaded webfonts must be Google Fonts.
+* Icons: **Google Material Symbols (Rounded)** via the standard stylesheet link. **Forbidden:** inline SVGs, local icon files, emoji-as-icons. Decorative icons get `aria-hidden="true"`; meaningful icons get an accessible label. Rocket/fin/starburst motifs must be built from CSS gradients, `clip-path`, and Material Symbols — not SVG.
+
+---
+
+### **2. COMPONENT DESIGN SPECIFICATIONS**
+
+**2.1 Buttons (.btn)** — foundation per 0.4, plus `min-height:44px; min-width:44px`. All states as classes:
+* **Default:** `display:flex; align-items:center; justify-content:center; gap:.5rem`.
+* **Hover:** lift + `--shadow-md`, `cursor:pointer`.
+* **Focus:** `:focus-visible` ring using `var(--secondary-ink)` (visible in both themes) for keyboard navigation.
+* **Active/Pressed:** transform reset (`scale(1)`) as click feedback.
+* **Loading:** `.is-loading` + `aria-busy="true"` + `disabled` — pointer-events none (prevents double-clicks); CSS spinner (accent border-top) or animated `progress_activity` symbol; button dimensions must not change.
+* **Disabled:** `opacity:.5`, `filter:grayscale(.6)`, `cursor:not-allowed`, no transform.
+* **Success/Error:** `.is-success` / `.is-error` temporary feedback driven by `--text-success` / `--text-error` with an icon swap, announced via `aria-live`.
+* **Variants:** `.btn--primary` (per 0.4), `.btn--ghost` (transparent, `--border-default`, `--text-primary`), `.btn--accent` (teal fill, ink `#04211d`), `.btn--danger` (distinct in both themes — define only if a destructive action is added; none exists by default).
+
+**2.2 Cards (.card)** — foundation per 0.4 (chrome-fin top edge).
+* **Default:** flexbox internals; text stacks may top-align (documented exception).
+* **Hover (interactive cards only — pricing, testimonials):** `translateY(-2px)` + `--shadow-lg`.
+* **Focus-within:** accent/chrome edge glow when a child control is focused.
+* **Loading (skeleton):** `.card--skeleton` shimmer (linear-gradient sweep, ~1.2s) that preserves dimensions; static under reduced motion.
+* **Empty state:** `.card--empty` — Material icon + short guidance text; define the pattern.
+
+**2.3 Forms & Inputs (.input-group)**
+* Structure: flex column, `gap:var(--space-2)`, wrapping a visible `<label>` (with `for`/`id`), the `.input` field, and a dedicated error container `<p class="input-group__error" aria-live="polite">` (empty until error; input references it via `aria-describedby`).
+* States: empty; focused (accent border + ring per 0.4, using `--secondary-ink`); filled; valid `.is-valid` (`--border-success` + trailing `check_circle` — never color-only); invalid `.is-invalid` (`--border-error` + error icon + error text); disabled; read-only.
+* Applied to the Final CTA newsletter form (5.8).
+
+**2.4 FAQ Accordion & Dialogs**
+* **Accordion:** each item = `<h3><button class="faq__question" aria-expanded aria-controls></button></h3>` + panel `<div>`. Animate open/close in CSS (`grid-template-rows: 0fr → 1fr`); instant under reduced motion. `expand_more` symbol rotates 180° when open. Buttons are natively keyboard-operable with a visible focus ring.
+* **Modal (build only if you add a dialog — none is required by default):** opening/open/loading/success/closing states animated in CSS; centered flex overlay (`align-items:center`) + backdrop; Material icon close button; keyboard focus trap; close via `Esc` and overlay click; `role="dialog"`, `aria-modal`, labelled by its heading; focus restored to the trigger; `z-index:var(--z-modal)`. Reserve `--z-toast`; all dynamic feedback on this page uses inline `aria-live` messages instead of toasts.
+
+---
+
+### **3. CORE UX & MICRO-INTERACTION RULES**
+
+* **Responsive by default:** fluid type via `clamp()` within the `--text-*` scale (hero headline `--text-5xl` → `--text-2xl` on mobile); zero horizontal overflow at any width ≥ 320px.
+* **Smooth animations:** `transition: var(--transition-normal) var(--ease-standard)` on all state changes; a global `prefers-reduced-motion` block disables transforms, float, shimmer, and smooth scrolling (the reference does this for `.btn` — extend it to everything).
+* **Accessibility:** AA contrast in both themes; never communicate state by color alone (pair color with icon/text/shape); semantic landmarks (`header`, `nav`, `main`, `section[aria-labelledby]`, `footer`); skip-to-content link; logical DOM/focus order; full keyboard operability; `aria-live` regions for form errors, loading, and success feedback.
+* **Mandatory visual feedback:** every click, hover, and submission triggers a visible state change.
+* **Anchors:** smooth in-page scrolling for nav links (reduced-motion aware); `scroll-margin-top` on sections so the sticky nav never covers focused targets.
+
+---
+
+### **4. DELIVERABLE & OUTPUT FORMAT**
+
+* **Files:** exactly `index.html`, `style.css`, `script.js`. The only script reference is a single deferred `<script src="script.js" defer>` — no inline JS, no other scripts, no libraries.
+* **script.js implements:** theme resolution/persistence/toggle (1.3), FAQ accordion, and the newsletter form state machine (validate → loading → success/error with `aria-live` announcements).
+* **Naming:** BEM only (`block__element--modifier`), consistent with the reference (`.btn--primary`, `.faq__question`, `.input-group__error`). Never mix conventions; no one-off presentational class names.
+* **Copy:** real themed English copy everywhere — no lorem ipsum. All content (names, quotes, prices, questions) is inventable on-voice, so no placeholders are permitted.
+* **Assets:** fully self-contained — no external images; decorative art via CSS gradients, `clip-path`, and Material Symbols; testimonial "avatars" are chrome-gradient initial circles.
+* **QA gate (verify before submitting):** light + dark contrast pass; full keyboard pass through the page; no horizontal scroll at 320px; reduced-motion pass; every button/input exhibits all defined states; zero console errors; zero `style` attributes in the HTML.
+
+---
+
+### **5. SECTION-BY-SECTION BUILD BLUEPRINT**
+
+**5.1 Sticky Nav (.nav)** — foundation per 0.4; sticky, `z-index:var(--z-dropdown)`. Contents: wordmark in `--font-display` (e.g., "ASTROCORP" with a starburst accent dot), anchor links (Features, How It Works, Testimonials, Pricing, FAQ) with hover underlines in `--secondary-ink`, the theme toggle (1.3), and a `.btn--primary` "Get Started" → `#cta`. Mobile: links wrap or collapse behind an accessible menu button (`aria-expanded`); no overflow.
+
+**5.2 Hero** — flex row (column on mobile), generous `min-height`. Left: `.badge` "Now Boarding"; display-font headline (e.g., "The World of Tomorrow, Delivered Today."); `--text-secondary` subhead; CTA row: `.btn--primary` "Blast Off Free" + `.btn--ghost` "See How It Works" (anchor). Right: a CSS-built rocket — chrome-gradient fuselage, `clip-path` fins, `rocket_launch` symbol, accent exhaust glow, starburst halo — with a gentle float animation (disabled under reduced motion). Intensified `--starburst` layer behind the headline.
+
+**5.3 Features** — section heading + three `.card`s in a `flex-wrap` row (`flex:1 1 280px`). Each: circular icon chip (chrome ring + Material symbol: `bolt`, `query_stats`, `rocket_launch`), display-font title, body copy. Titles in the Atomic-Age voice, e.g., "Atomic-Fast Performance", "Ray-Sharp Insights", "Zero-Gravity Onboarding". Hover lift per 2.2.
+
+**5.4 How It Works** — three steps in a flex row (column on mobile) joined by a dashed "flight-path" connector (CSS, hidden on mobile). Each step: starburst numeral badge (1/2/3 in display font on a conic starburst), Material icon, title, short copy — e.g., "Plot Your Course", "Ignite the Engines", "Blast Off".
+
+**5.5 Testimonials** — three quote `.card`s (`flex-wrap`). Each: `format_quote` symbol, quote text, author row with chrome-gradient initials circle, name, and role (invented, on-voice: "Nova Starr — CTO, Astro Dynamics"). Hover/focus-within per 2.2.
+
+**5.6 Pricing** — three tier `.card`s (`flex-wrap`). Middle tier featured: starburst "Most Popular" badge, `--shadow-lg`, accent top edge (chrome fin swapped for an accent fin), slight desktop scale. Each: tier name in display font ("Cadet", "Commander", "Starfleet Admiral"), price row (display-font price + muted period), feature list with `check_circle` icons, CTA (featured: `.btn--primary`; others: `.btn--ghost`) → `#cta`. Price text uses `--text-primary` (never `--primary` as text without `--primary-ink`).
+
+**5.7 FAQ** — 4–6 themed Q&As (pricing, security, cancelation, integrations) as the accessible accordion per 2.4, with a `--text-secondary` section intro.
+
+**5.8 Final CTA (#cta)** — full-width band: chrome-fin top edge + intensified starburst background. Display-font headline ("Ready for Liftoff?"), sub, and the newsletter `.input-group` per 2.3: label "Email address", email `.input`, `.btn--primary` "Join the Crew". Flow: prevent default → validate (required + email regex) → `.is-loading` (spinner, `aria-busy`, disabled, "Transmitting…" announced via `aria-live`) → ~900ms simulated async → success (`.is-success`, check icon, "Welcome aboard, cadet!") or error (`.is-invalid` + "That signal didn't parse — check your email."). Inline feedback only; never `alert()`.
+
+**5.9 Footer** — chrome-fin top edge (`border-top:3px solid; border-image:var(--chrome-gradient) 1`). Flex columns (top-align permitted — documented exception): brand column (wordmark + one-line tagline) plus Product / Company / Resources / Legal secondary link lists; stacked on mobile. Bottom bar: flex, `align-items:center` — copyright, Material-symbol social links (each with `aria-label`), and a back-to-top `rocket_launch` button (smooth scroll, reduced-motion aware). All links have visible hover/focus states.

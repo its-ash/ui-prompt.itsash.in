@@ -1,0 +1,132 @@
+# BUILD PROMPT — Frutiger Aero Landing Page (Glass & Soft UI)
+
+**Role:** You are a Senior Frontend Engineer and Expert UI Designer. Build a complete, production-quality landing page on the first attempt. Theme: **Frutiger Aero** (2004–2013 retrofuturism — Web 2.0 gloss, glossy skeuomorphic bubbles and glass, nature imagery of water/grass/blue skies, Aqua gradients, lens flares, clean tech, auto-glow). Output category: **Glass & Soft UI**.
+
+**Product concept (commit to it):** All copy promotes one coherent fictional product — **"AquaFlow," a smart hydration & water-care app** (hydration tracking, water-quality insights, eco habits). Write real, polished English copy for every section. Lorem ipsum is forbidden.
+
+---
+
+## 1. STRICT RULES & ARCHITECTURE
+
+**1.1 CSS-First Architecture & Zero Inline CSS**
+* All styling lives in `style.css`. The `style="..."` attribute is forbidden anywhere in the HTML.
+* All design properties, layout rules, and states are targeted via class/ID selectors only.
+* HTML stays clean, semantic, and style-agnostic — retheming must require editing CSS only, never markup.
+
+**1.2 CSS Variables & Theme Tokens**
+Define ALL tokens in `:root` (light) and override under the dark selector (1.3). Core tokens (both themes required):
+
+| Token | Light "Clear Skies" | Dark "Deep Aqua Night" |
+|---|---|---|
+| `--bg-primary` | `#eaf6ff` | `#061826` |
+| `--bg-secondary` | `rgba(255,255,255,0.55)` | `rgba(13,42,60,0.55)` |
+| `--text-primary` | `#0b3d2e` | `#eaf6ff` |
+| `--text-secondary` | `#2f6b57` | `#9cc9e0` |
+| `--primary` | `#38b6ff` | `#4cc4ff` |
+| `--secondary` | `#7ed957` | `#7ed957` |
+| `--text-success` | `#157a3a` | `#8ce0a0` |
+| `--text-error` | `#c0392b` | `#ff8a7a` |
+| `--border-default` | `rgba(11,61,46,0.15)` | `rgba(143,211,255,0.25)` |
+| `--border-success` | `#5bd06a` | `#5bd06a` |
+| `--border-error` | `#ff6b5e` | `#ff8a7a` |
+
+Extended theme tokens (define in `:root`; override listed ones in dark): `--sky: #8fd3ff`; `--green: #5bd06a`; `--aqua: #00c2c7`; `--glossy: linear-gradient(180deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.25) 50%, rgba(255,255,255,0.4) 51%, rgba(255,255,255,0.65) 100%)`; `--sky-bg: linear-gradient(180deg, #eaf6ff 0%, #bfe8ff 55%, #d9f7d0 100%)` (dark override: `linear-gradient(180deg, #061826 0%, #0a2c42 55%, #0e3a30 100%)`); `--shadow-gloss: inset 0 1px 0 rgba(255,255,255,0.9), 0 8px 20px rgba(56,182,255,0.25)` (dark override: `inset 0 1px 0 rgba(143,211,255,0.35), 0 8px 24px rgba(0,194,199,0.35)`); `--shadow-sm: 0 4px 12px rgba(56,182,255,0.2)`; `--blur-backdrop: 10px`; `--radius-sm: 8px; --radius-md: 16px; --radius-lg: 24px; --radius-pill: 999px`; `--spacing-gap: 16px` plus the `--space-1…--space-24` scale (4/8/12/16/24/32/48/64/96px); `--transition-fast: 120ms; --transition-normal: 240ms; --ease-standard: cubic-bezier(0.4, 0, 0.2, 1)`; `--z-nav: 90; --z-dropdown: 100; --z-modal: 200; --z-toast: 300`; `--font-base` / `--font-display` per 1.6; the `--text-xs…--text-5xl` type scale.
+
+* **Contrast pairing (enforced in both themes):** light backgrounds pair with dark text; dark backgrounds pair with light text. Bright fills (`--primary`, `--secondary`, badges) always carry near-black text (`#0b1f26`) — never white text on aqua/green fills.
+* Never use pure white `#ffffff`; where a near-white is needed, use `#fefefe`.
+* Verify `--text-secondary` on translucent glass surfaces meets ≥4.5:1; darken to `#245a48` in light mode if the blur reduces contrast.
+
+**1.3 Mandatory Dark Mode Support**
+* Light tokens in `:root`; the full dark token set under `html.dark`. Provide a no-JS fallback: duplicate dark tokens inside `@media (prefers-color-scheme: dark)` targeting `html:not(.light)` so first paint respects the OS preference.
+* Theme switching swaps CSS variable values only — no HTML restructuring.
+* Persistence: store choice in `localStorage` (key `theme`), falling back to `prefers-color-scheme` on first visit. The deferred script reconciles the stored preference immediately on execution to minimize flash.
+* A visible toggle in the nav: Material icon (`dark_mode`/`light_mode`), correct `aria-pressed` state, dynamic `aria-label` ("Switch to dark theme" / "Switch to light theme"), and a visually-hidden `aria-live` announcement ("Dark theme enabled").
+
+**1.4 Flexbox Layout & Mobile-First Alignment**
+* Build all layout structures with Flexbox (grid allowed only for multi-column card grids).
+* Every flex container defaults to `align-items: center` unless there is an explicitly justified exception (document each exception with a CSS comment — e.g., `.input-group` uses `stretch` for full-width fields).
+* Mobile-first: all rows convert to columns below ~768px; nav wraps or collapses; nothing overflows horizontally at any viewport down to 320px.
+
+**1.5 CSS Organization**
+Use hand-written modern CSS in `style.css`, organized with native cascade layers: `@layer tokens, base, layout, components, utilities;`. All styling maps to CSS variables and reusable semantic classes (`.btn`, `.card`, `.input-group`, `.nav`, `.badge`). If you opt for Tailwind instead, drive it through `@layer`/`@apply` with utilities mapped back to these tokens — either way, zero inline styles.
+
+**1.6 Typography & Icons (Google Fonts Mandatory)**
+* Text: load **Nunito Sans** (400/600/700/800) as `--font-base` and **Source Sans 3** (600/700/900) as `--font-display` via Google Fonts `<link>` with `preconnect`. **Explicit exception clause:** local `Frutiger` and `Myriad Pro` may appear in the font stacks only as fallbacks *after* the Google Fonts families — never as the sole or primary family.
+* Icons: Google **Material Symbols Rounded** (single variable-font `<link>`), rendered as `<span class="material-symbols-rounded" aria-hidden="true">icon_name</span>`. Inline SVGs, local icon files, and emoji-as-icons are forbidden. Suggested set: `water_drop`, `eco`, `bubble_chart`, `waves`, `cloud`, `wb_sunny`, `grass`, `spa`, `rocket_launch`, `verified`, `check_circle`, `cancel`, `format_quote`, `expand_more`, `dark_mode`, `light_mode`, `arrow_forward`, `mail`.
+
+---
+
+## 2. COMPONENT DESIGN SPECIFICATIONS
+
+**2.1 Buttons**
+* Base `.btn`: `display: flex; align-items: center; justify-content: center; gap: 0.5rem;` minimum touch target 44×44px; `transition: transform var(--transition-fast) var(--ease-standard), box-shadow, filter`.
+* Variants: `.btn--primary` (fill `var(--primary)`, text `#0b1f26`, `--radius-pill`, gloss overlay via `::before` using `var(--glossy)`, `--shadow-gloss`); `.btn--secondary` (glass: `--bg-secondary` + blur + `--border-default`); `.btn--ghost`; `.btn--danger` (solid error fill, `#fefefe` text in light / `#061826` text in dark — distinct in both themes).
+* **Hover:** `filter: brightness(1.05)`, `translateY(-1px)`, glow shadow, `cursor: pointer`. **Focus-visible:** `outline: 2px solid var(--secondary); outline-offset: 2px`. **Active:** `transform: scale(0.97)`.
+* **Loading (`.is-loading`):** `aria-busy="true"`, pointer-events disabled to prevent double-clicks, CSS spinner (`::after` conic-gradient ring) occupying the icon slot without changing button dimensions.
+* **Disabled:** `opacity: 0.5`, `filter: grayscale(0.5)`, `cursor: not-allowed`, no transform.
+* **Success/Error (`.is-success` / `.is-error`):** temporary feedback swapping the icon to `check_circle`/`cancel` colored via `--text-success`/`--text-error`.
+
+**2.2 Cards**
+* `.card`: `background: var(--bg-secondary)`; `backdrop-filter: blur(var(--blur-backdrop))` with an `@supports` fallback (opaque `rgba(255,255,255,0.92)` / `rgba(13,42,60,0.92)`); 1px `--border-default`; `--shadow-gloss`; `--radius-lg`; flex column, `gap: var(--spacing-gap)`.
+* **Hover (`.card--interactive`):** `translateY(-2px)` + intensified glow. **Focus-within:** border shifts to `var(--primary)` when a child link/button receives focus.
+* **Loading (`.card--skeleton`):** shimmer keyframe sweep with reserved heights (no layout jump). **Empty state (`.card--empty`):** centered 64px Material icon + heading + guidance text — define the pattern even if unused here.
+
+**2.3 Forms & Inputs**
+* Structure: `.input-group` (flex column, `align-items: stretch` — documented exception) wrapping a `<label>`, the `.input`, and a dedicated `.form__error` container (`min-height: 1.25em` reserved, `aria-live="polite"`).
+* `.input` per the token catalog (100% width, `box-sizing: border-box`, `--radius-sm`, `--text-base`).
+* States: empty; focused (`outline: 2px solid var(--primary); outline-offset: 2px`); filled; valid (`.is-valid`: `--border-success` + `check_circle` icon); invalid (`.is-invalid`: `--border-error`, error icon, error text in `--text-error` — never color alone); disabled; read-only. Icon-in-field uses a `.input-wrapper` flex row with a trailing status icon slot.
+
+**2.4 FAQ Accordion**
+* Per item: `h3 > button.accordion__trigger` (`aria-expanded`, `aria-controls`) + `div.accordion__panel` (`role="region"`, `aria-labelledby`).
+* Trigger: flex, align center, justify-between, min-height 44px, glass surface, `expand_more` chevron rotating 180° on open (`transition: transform var(--transition-normal)`).
+* Panel animation: CSS grid technique (`grid-template-rows: 0fr → 1fr` with inner `overflow: hidden`), toggled via `.is-open` from JS. Native buttons give free Enter/Space operability. Items toggle independently. Reduced motion: instant open/close.
+
+**2.5 Overlays (Conditional)**
+If any modal is introduced (not required by this page), it must use: fixed full-viewport flex container (`align-items: center`), blurred backdrop, `var(--z-modal)`, Material icon close button, keyboard focus trap, Esc/overlay-click closing, and CSS-animated opening/open/closing states.
+
+---
+
+## 3. CORE UX & MICRO-INTERACTION RULES
+
+* **Responsive by default:** fluid `clamp()` display sizes, breakpoints ~640/768/1024px, rows→columns stacking, zero horizontal overflow.
+* **Smooth animations:** all state changes use `transition: var(--transition-normal) var(--ease-standard)`; `@media (prefers-reduced-motion: reduce)` disables float/shimmer/reveal loops and replaces spinners with static states.
+* **Accessibility:** skip-to-content link; semantic landmarks (`header`/`nav`/`main`/`footer`); each `<section aria-labelledby>`; a single `h1`; contrast ≥4.5:1 body text and ≥3:1 large text/UI borders in **both** modes — the source spec explicitly requires validating light and dark before publishing; never communicate state by color alone; full keyboard operability for the theme toggle, accordion, forms, and nav; visible focus everywhere; `aria-live` feedback for form results and theme changes.
+* **Mandatory visual feedback:** every hover, click, and submission produces a visible state change.
+* **Destructive actions:** any danger action uses `.btn--danger`, visually distinct in both themes.
+
+---
+
+## 4. DELIVERABLE & OUTPUT FORMAT
+
+* **Files:** separate `index.html`, `style.css`, `script.js`. No inline `<script>` blocks beyond a single `<script src="script.js" defer></script>`. No inline styles. No inline SVGs. No external image files — all visuals are CSS-generated.
+* **Naming:** BEM only (`block__element--modifier`, matching `.btn--primary`); never mix conventions.
+* **Copy:** real English copy for the AquaFlow concept; placeholders only where content was genuinely unspecified; footer links point to real in-page anchors where targets exist.
+* **script.js scope:** theme toggle + persistence (1.3); accordion behavior (2.4); newsletter form simulation (validate → `.is-loading` ~900ms → `.is-success` or `.is-invalid`, all feedback in the `aria-live` region); smooth in-page anchor scrolling (respect reduced motion); optional IntersectionObserver reveal that must leave content visible when JS is absent (JS opt-in only).
+
+---
+
+## 5. FRUTIGER AERO SIGNATURE EFFECTS (CSS-only recipes)
+
+* **Aqua gloss:** `::before` overlay with `var(--glossy)`, `border-radius: inherit`, `pointer-events: none` — applied to `.btn--primary`, `.badge`, step-number pills, and the featured pricing tier.
+* **Glass:** `--bg-secondary` + `backdrop-filter: blur(var(--blur-backdrop))` + 1px `--border-default` + `--shadow-gloss` inset top highlight; `@supports` fallback required.
+* **Bubbles:** an `aria-hidden="true"`, `pointer-events: none` `.bubbles` layer behind hero content with 6–10 `.bubble` divs — `radial-gradient(circle at 30% 30%, rgba(255,255,255,0.95), rgba(143,211,255,0.35) 55%, rgba(56,182,255,0.15) 80%, transparent)`, 40–220px, `border-radius: 50%`, gentle staggered float animation (translateY ±20px, 8–14s, alternate). Dark mode: bubbles gain a bioluminescent aqua glow (`box-shadow: 0 0 24px rgba(0,194,199,0.35)`).
+* **Lens flare:** one or two decorative `.flare` elements of layered radial gradients (bright core + halo + faint ring), `mix-blend-mode: screen`, positioned in the hero's upper corners.
+* **Sky & grass:** hero background uses `var(--sky-bg)` (sky → pale grass green; night sky → deep green in dark); the footer carries a thin grass-green gradient edge evoking Windows XP "Bliss".
+* **Auto-glow:** primary CTAs and the featured tier receive soft outer glows (`box-shadow: 0 0 24px rgba(56,182,255,0.35)`), intensified in dark mode.
+* **Era styling:** pill badges, generous radii, glossy buttons, humanist type with slightly tightened display tracking, optimistic clean-tech copy tone.
+
+---
+
+## 6. PAGE BLUEPRINT — REQUIRED SECTIONS
+
+1. **Nav (sticky):** glass bar (blur + `--shadow-gloss`, `var(--z-nav)`), flex align center justify-between; logo = `water_drop` icon + "AquaFlow" wordmark; center links (Features, How It Works, Testimonials, Pricing, FAQ) wrapping or collapsing accessibly on mobile; right side: theme toggle + `.btn--primary` "Get the App".
+2. **Hero:** `--sky-bg` section with `.bubbles` + `.flare`; centered flex column; `h1` (e.g., "Hydration, made effortless.") at `clamp()` display size; subcopy in `--text-secondary`; CTA row (flex, gap, wrap): `.btn--primary` "Start free" (`arrow_forward`) + `.btn--secondary` "See how it works"; 2–3 glossy `.badge` stat pills beneath.
+3. **Features:** 3 `.card--interactive` glass cards in a 3→1 column grid; each with a glossy circular icon chip (`water_drop`, `eco`, `bubble_chart`), `h3`, and copy; hover lift + glow; focus-within highlight.
+4. **How It Works:** 3 steps; each with a glossy pill number badge (01/02/03), Material icon, `h3`, copy; horizontal gradient connector line on desktop via `::before`, hidden on mobile.
+5. **Testimonials:** 3 glass cards; `format_quote` icon, quote copy, footer row (flex align center) with a CSS radial-gradient `.avatar` circle showing initials, name, and role.
+6. **Pricing:** 3 tiers (3→1 grid); tier name, price, feature list with `check_circle` icons, per-tier CTA. Middle tier `.card--featured`: `--primary` border, auto-glow, elevated shadow, glossy `.badge` "Most Popular".
+7. **FAQ:** 5–6 accordion items per 2.4 with real questions about AquaFlow (billing, devices, privacy, cancellation).
+8. **Final CTA:** large glass panel over `--sky-bg` + bubbles; `h2`, copy, and the newsletter `.input-group` (email `.input` + `.btn--primary` "Join the waitlist") exercising the full idle→loading→success/error state machine with `aria-live` feedback.
+9. **Footer:** glass surface with grass gradient edge; brand block, secondary link columns (Product / Company / Support), bottom row with copyright and secondary links; all links keyboard focusable.
+
+**Final QA before publishing:** validate BOTH light and dark modes (explicit source requirement); zero horizontal scroll at 320px; full keyboard-only pass; contrast checks in both themes; reduced-motion pass; no inline styles/scripts/SVG; single deferred script; every token used is defined in `:root` or the dark selector.
