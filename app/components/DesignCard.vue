@@ -16,7 +16,7 @@ const swatch = computed(() => {
 </script>
 
 <template>
-  <NuxtLink :to="`/design/${item.id}`" class="tk" :aria-label="`View ${item.name} prompt`">
+  <NuxtLink :to="`/design/${item.id}`" class="tk" :aria-label="`View ${item.name} theme and prompt`">
     <span class="tk__swatch" :style="{ background: swatch.bg }" aria-hidden="true">
       <span class="tk__dot" :style="{ background: swatch.fg }"></span>
     </span>
@@ -24,7 +24,8 @@ const swatch = computed(() => {
       <span class="tk__name">{{ item.name }}</span>
       <span class="tk__meta mono">{{ item.category }}</span>
     </span>
-    <span v-if="!item.ready" class="tk__pending mono" title="Prompt generating">·</span>
+    <span v-if="item.hasDemo" class="tk__demo mono">demo</span>
+    <span v-else-if="!item.ready" class="tk__pending mono" title="Prompt generating">·</span>
   </NuxtLink>
 </template>
 
@@ -102,6 +103,16 @@ const swatch = computed(() => {
   margin-left: auto;
   color: var(--text-faint);
   flex-shrink: 0;
+}
+
+.tk__demo {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-size: 0.625rem;
+  color: var(--text-dim);
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  padding: 0.125rem 0.5rem;
 }
 
 @media (max-width: 640px) {

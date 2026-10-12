@@ -7,6 +7,7 @@ export interface DesignItem {
   description: string;
   ready: boolean;
   promptLength: number;
+  hasDemo: boolean;
 }
 
 export interface LibraryIndex {

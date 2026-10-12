@@ -1,0 +1,154 @@
+# LANDING PAGE BUILD SPECIFICATION — "BOLD POSTER" THEME
+
+**Role & Task:** You are a Senior Frontend Engineer and Expert UI Designer. Build a complete, production-quality Landing Page in a single pass — generate the full final code (`index.html`, `style.css`, `script.js`) immediately after reading this specification. Do not ask clarifying questions. Do not deliver partial results.
+
+**Theme:** *Bold Poster* — Editorial Poster / High-Contrast / Manifesto / Typographic (2020s Design Studio).
+**Required sections, in order:** Sticky Header/Nav, Hero, Features (3 cards), How It Works (3 steps), Testimonials, Pricing (3 tiers), FAQ, Final CTA, Footer with secondary links.
+**Language:** All user-facing copy, labels, comments, class names, and file names must be in English/ASCII.
+
+---
+
+## 1. THEME & CREATIVE DIRECTION
+
+**1.1 Visual Identity**
+- Feel: a magazine cover, not a data deck. Loud, confident, poster-scale, generous whitespace, minimal copy per section — each section reads like a single poster slide: one massive statement plus one short supporting line.
+- Use a single fire-engine red accent discipline: red appears sparingly and boldly — one headline accent word per section, buttons, active/expanded states, and index numerals. Never paint large zones red except button fills and one badge.
+- Editorial framing: 2px solid ink borders as section/card frames, near-sharp corners, red oversized index numerals (`01`, `02`, `03`) set in Shrikhand.
+
+**1.2 Color Tokens (define exactly; verify WCAG AA in both modes)**
+
+| Token | Light | Dark |
+|---|---|---|
+| `--primary` | `#D8000F` | `#D8000F` (fills only) |
+| `--secondary` (ink) | `#1C1410` | `#1C1410` |
+| `--bg-primary` | `#FFFFFF` | `#1C1410` |
+| `--bg-secondary` | `#F5F2EF` | `#251C16` |
+| `--text-primary` | `#1C1410` | `#F5F2EF` |
+| `--text-secondary` | `#5C5148` | `#B3A79D` |
+| `--accent-lift` (red for text/borders/icons on current bg) | `#D8000F` | `#FF4D42` |
+| `--text-success` / `--border-success` | `#1E7A46` | `#4CC38A` |
+| `--text-error` / `--border-error` | `#B00020` | `#FF6B61` |
+| `--border-default` | `#1C1410` | `#F5F2EF` |
+
+- **Exception (explicit theme override):** The Bold Poster source spec explicitly mandates `#FFFFFF` as the light-mode canvas; `--bg-primary` may therefore be `#FFFFFF` in light mode. All other near-white surfaces (cards, inputs, panels, footer) must use `#F5F2EF` or `#fefefe` — never `#ffffff`.
+- **Contrast rules:** Every light background token must pair with dark text and every dark background token with light text — enforce this in both themes. Red text on `--bg-primary` is only permitted at large display sizes (≥ 24px, or ≥ 18.66px bold); body-size text uses ink. On `--bg-secondary` (`#F5F2EF`), red is reserved for display type, icons, and borders only.
+
+**1.3 Typography**
+- **Display:** Google Font `Shrikhand` — it ships a single weight (400); never apply any other weight or faux bold to it. Bind it to `--font-display: 'Shrikhand', cursive`.
+- **Body:** Google Font `Space Grotesk` (weights 400/500/700), bound to `--font-base: 'Space Grotesk', sans-serif`.
+- Hero headline: `font-size: clamp(3rem, 8vw, 7rem); letter-spacing: -0.02em; line-height: 1.05`. Section headlines: `--display-size: clamp(2.25rem, 5vw, 4.5rem)`. Body copy: 1rem–1.125rem, `line-height: 1.6`. Eyebrow labels: `--font-base`, uppercase, `letter-spacing: 0.2em`, 0.75rem.
+- High typographic contrast is mandatory: enormous Shrikhand statements against small, tight, letterspaced grotesque labels.
+
+**1.4 Spacing & Structure**
+- Section gaps: `--section-gap: clamp(4rem, 8vw, 8rem)`. Single centered container, `max-width: 1200px`, fluid horizontal padding (`clamp(1.25rem, 5vw, 3rem)`). No horizontal overflow at any viewport.
+
+**1.5 Motion Flavor**
+- Bold hover color shifts at exactly `--transition-fast: 150ms` (e.g., ink → red). High-contrast active/pressed states. All other state transitions use `--transition-normal: 300ms` with `--ease-standard: cubic-bezier(0.33, 1, 0.68, 1)`.
+- `--radius-sm: 0px; --radius-md: 2px; --radius-lg: 4px;` `--shadow-sm`/`--shadow-md`: subtle ink-tinted; an optional `--shadow-hard: 0.5rem 0.5rem 0 var(--secondary)` hard poster shadow may be used on hover for cards and the highlighted pricing tier.
+- `--z-dropdown: 1000; --z-modal: 2000; --z-toast: 3000;` `--spacing-gap: 1.5rem`.
+
+---
+
+## 2. STRICT RULES & ARCHITECTURE
+
+**2.1 CSS-First Architecture & Zero Inline CSS**
+- All styling lives in `style.css`. **Forbidden:** `style="…"` attributes and any `<style>` blocks in the HTML.
+- All design properties, layout rules, and states must be targeted via class or ID selectors.
+- HTML stays clean and semantic; changing the theme must only require editing `style.css`, never the markup.
+
+**2.2 CSS Variables & Theme Tokens**
+- Define every token from 1.2 in `:root` (light) and override them in both `@media (prefers-color-scheme: dark)` and a `.dark` class on `<html>` (the class wins).
+- All component styles must reference `var(--…)` — no hardcoded hex values inside component rules.
+
+**2.3 Mandatory Dark Mode Support**
+- Dark mode is fully required. Background and text tokens must flip seamlessly with zero HTML restructuring.
+- **Persistence:** Store the user's choice in `localStorage` (key: `theme`), falling back to `prefers-color-scheme` on first visit. The very first lines of `script.js` (deferred) must apply the stored/system theme to minimize flash.
+- **Toggle:** A visible theme-toggle button in the nav with a Google Material icon (`dark_mode` / `light_mode`), correct `aria-pressed`, and an `aria-label` that reflects the action ("Switch to dark mode" / "Switch to light mode").
+
+**2.4 Flexbox Layout & Mobile-First Alignment**
+- Build every layout with Flexbox. **Default rule: every flex container uses `align-items: center` unless an exception is explicitly justified.** Documented exceptions allowed: the Features/Pricing/Testimonial card rows use `align-items: stretch` (equal-height cards), and text-heavy blocks (FAQ answers, step copy) may use `align-items: flex-start`.
+- Mobile-first: all multi-column rows collapse to a single column below 768px. No horizontal scrolling at 320px width.
+
+**2.5 Framework Default & Tailwind CSS Integration**
+- Use Tailwind CSS as the styling foundation — either the Play CDN (an external `<script src>` tag; this is the one permitted additional script reference) or a compiled build. All reusable styles live in `style.css` inside `@layer components`, written with `@apply` or plain CSS referencing `var(--…))` tokens.
+- **Do not scatter raw Tailwind utilities in the HTML.** Markup carries BEM class names only, so a single naming convention is maintained end-to-end.
+
+**2.6 Typography & Icons (Google Fonts Mandatory)**
+- Load fonts only via Google `<link>` tags (with `preconnect`): Shrikhand + Space Grotesk + Material Symbols Outlined.
+- **Icons:** Google Material Symbols only. **Forbidden: raw inline SVGs, local icon fonts, and emoji used as icons.** The logo must be a typographic wordmark set in Shrikhand — no image assets anywhere on the page.
+
+---
+
+## 3. COMPONENT DESIGN SPECIFICATIONS
+
+**3.1 Button (`.btn`, `.btn--primary`, `.btn--secondary`, `.btn--ghost`, `.btn--danger`, `.btn--lg`)**
+- **Default:** `display: flex; align-items: center; justify-content: center; gap: 0.5rem;` minimum 44×44px touch target (poster buttons: `padding: 1rem 2rem`). Labels in Space Grotesk 700, uppercase, `letter-spacing: 0.08em`.
+- **Hover:** bold color-shift at 150ms (primary: red → ink, or ink → red; ghost: border/text → red), `cursor: pointer`.
+- **Focus:** distinct visible focus ring built from CSS variables (`outline: 3px solid var(--accent-lift); outline-offset: 3px`) — never remove it.
+- **Active:** `transform: scale(0.97)` plus a high-contrast pressed treatment (e.g., hard shadow collapse).
+- **Loading (`.is-loading`):** disables interaction (double-click-proof), swaps the label for a spinning Material icon (`progress` with a CSS rotation animation) without changing button dimensions.
+- **Disabled:** `opacity: 0.5`, greyscale, `cursor: not-allowed`.
+- **Success/Error (`.is-success` / `.is-error`):** temporary feedback styles driven by `--text-success` / `--text-error`, always paired with `aria-live` text, never color alone.
+- **Danger:** `.btn--danger` must be visually distinct in both themes (ink button with red border that fills red on hover in light; in dark, red fill with cream text and a lifted-red border).
+
+**3.2 Card (`.card`)**
+- **Default:** Flexbox column layout, `--bg-secondary` background, `2px solid var(--border-default)` border, `--radius-md`, generous padding, red Shrikhand index numeral for Features/Steps.
+- **Hover:** `transform: translateY(-2px)` plus an elevation shift (soft or hard shadow) and a red accent shift on the numeral/icon.
+- **Focus-within:** border color changes to `var(--accent-lift)` when any child link/button receives focus.
+- **Loading:** a `.card--skeleton` variant with a CSS shimmer animation and reserved dimensions (no layout jump).
+- **Empty:** a `.card--empty` fallback layout with a Material icon and short guidance text.
+
+**3.3 Form & Input (`.input-group`)**
+- Structure: flex container wrapping `<label>`, the field, and a dedicated `.input-group__error` container with `aria-live="polite"`.
+- **States via classes:** empty, focused (variable-driven outline ring), filled, valid (`--border-success` + `check` Material icon), invalid (`--border-error` + `error` icon + message text — never color alone, since the theme accent is also red), disabled, read-only.
+- Apply this pattern to the email capture in the Final CTA: validate format in `script.js`, show inline errors, and demonstrate loading → success feedback on submit.
+
+**3.4 Modal / Popup (`.modal`)**
+- Used for each Pricing tier's "Full plan details" text link.
+- **States:** opening, open, loading, success/error, closing — all animated via CSS `transform`/`opacity` transitions.
+- **UX:** centered flex overlay (`align-items: center; justify-content: center`), backdrop using `--z-modal`, Material `close` icon button, keyboard focus trap, close via `Esc` and backdrop click, focus returns to the trigger, `role="dialog"` + `aria-modal="true"`, body scroll locked while open.
+
+---
+
+## 4. CORE UX & MICRO-INTERACTION RULES
+
+- **Responsive by default:** fluid `clamp()` sizing, breakpoints at 768px/1024px, zero horizontal overflow.
+- **Smooth animations:** every state change transitions with `var(--transition-normal)`; hover color shifts at 150ms. All transitions, transforms, and shimmer animations must be disabled/reduced under `@media (prefers-reduced-motion: reduce)`. Use `scroll-behavior: smooth` only inside `@media (prefers-reduced-motion: no-preference)`.
+- **Accessibility (a11y):** AA contrast in both themes; never communicate state by color alone (especially errors, given the red accent); semantic HTML5 (`header`, `nav`, `main`, `section`, `article`, `footer`); a logical heading hierarchy (one `h1` in the Hero, `h2` per section, `h3` per card/step/tier); correct ARIA roles/labels on the accordion, modal, and toggle; logical DOM/focus order; full keyboard operability; `aria-live` regions for all dynamic feedback (form results, loading states).
+- **Mandatory visual feedback:** every click, hover, and submission triggers a visible state change — link underline/color shifts, button states, card lifts, accordion indicators.
+- **Destructive actions:** none are core to this page, but `.btn--danger` styling must exist and remain distinct in both themes.
+
+---
+
+## 5. PAGE SPECIFICATION — SECTION BY SECTION
+
+**5.0 Header/Nav (sticky):** `--bg-primary` with a `2px solid var(--border-default)` bottom border; Shrikhand wordmark; links to `#features`, `#how-it-works`, `#pricing`, `#faq` (150ms red hover shift); theme-toggle (2.3); primary CTA `.btn--sm`. On mobile, a Material `menu` button toggles a flex-column panel with `aria-expanded`, closable via `Esc`.
+
+**5.1 Hero:** full-height poster composition, flex column, `align-items: center`. Shrikhand `h1` at `--hero-size` with one red accent word (`<span class="hero__accent">`), small uppercase eyebrow above, one short supporting line below, and two CTAs (`.btn--primary--lg` + `.btn--ghost--lg`). Minimal copy — no feature lists here.
+
+**5.2 Features (3 cards):** section eyebrow + Shrikhand `h2` at `--display-size`; a 3-column `.card` row (collapsing to one column on mobile), each with a Material icon (`bolt`, `palette`, `auto_awesome`), `h3` title, one-line manifesto copy, and a red Shrikhand index numeral.
+
+**5.3 How It Works (3 steps):** three steps with huge Shrikhand numerals `01/02/03` (red or ink with red accent), `h3` step titles, one line of copy each; connected by 2px ink/red rules built purely with CSS borders — no SVG, no images.
+
+**5.4 Testimonials:** one featured pull-quote styled like a magazine cover line (Shrikhand, red opening quotation mark via Material `format_quote` icon), followed by a 3-card row of shorter quotes with initials medallions (Shrikhand in a bordered circle — no photos, no avatars) and uppercase attribution lines.
+
+**5.5 Pricing (3 tiers):** three `.card` tiers; the middle tier is highlighted — `2px solid var(--accent-lift)` border, hard poster shadow, slight `transform: scale(1.02)`, and a red "MOST POPULAR" badge (red fill, white text). Each tier: uppercase name, Shrikhand price, feature list with Material `check` icons, a CTA (`.btn--primary` on the highlighted tier, `.btn--secondary` elsewhere), and a "Full plan details" link opening the modal (3.4). CTAs must demonstrate the loading state on click (~1s) followed by a success state announced via `aria-live`.
+
+**5.6 FAQ (accessible accordion, 6 items):** each item is a `<button>` with `aria-expanded` + `aria-controls`, and a panel with `role="region"` + `aria-labelledby`; smooth CSS height animation on open/close; a Material `add` icon that rotates 45° when expanded; expanded items get a high-contrast treatment (red left rule or red icon). Fully keyboard operable.
+
+**5.7 Final CTA:** an inverted ink poster band — `--secondary` background, `--text-primary` cream text — with a massive Shrikhand manifesto statement containing one red accent word, plus the email-capture `.input-group` + submit `.btn--primary` implementing all form states and loading → success/error feedback with `aria-live`.
+
+**5.8 Footer:** `--bg-secondary`; wordmark, three minimal secondary link columns (Product / Company / Legal), Material-icon social links, copyright line, and a "Back to top" link with an `arrow_upward` icon. All links use the 150ms red hover shift.
+
+**5.9 Copy direction (mandatory):** Author all copy yourself — original, loud, confident, editorial English in the manifesto voice of a fictional design-studio product; keep the brand name, feature names, prices, and quotes consistent across all sections. **Never use lorem ipsum or filler placeholders** — finished, realistic copy is part of the deliverable.
+
+**5.10 JavaScript scope (`script.js`, referenced once, `defer`):** theme initialization and toggle only; mobile nav toggle; FAQ accordion; modal open/close + focus trap; newsletter validation + button loading/success states. Nothing else.
+
+---
+
+## 6. DELIVERABLE & OUTPUT FORMAT
+
+- **Files:** exactly three — `index.html`, `style.css`, `script.js` — output in full, in that order. `script.js` is referenced once with `defer`; no inline `<script>` blocks. **Exception:** if Tailwind Play CDN is used, its single external `<script src>` tag is permitted.
+- **Naming convention:** BEM only (`block__element--modifier`), consistent across the entire deliverable — never mixed with ad-hoc utility class names.
+- **No unrequested placeholders:** no lorem ipsum, no placeholder images (the page is purely typographic — no raster images at all).
+- Generate the complete, working code now, on this first attempt.

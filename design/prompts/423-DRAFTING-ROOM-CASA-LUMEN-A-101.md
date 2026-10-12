@@ -1,0 +1,113 @@
+# BUILD PROMPT — Landing Page: "DRAFTING ROOM — CASA LUMEN · A-101"
+
+**Your Role:** Act as a Senior Frontend Engineer and Expert UI Designer. Deliver a complete, production-quality, single-page landing site **on the first attempt** — all sections, all component states, both themes, fully functional. The design language is an industrial/technical drafting-room aesthetic (2020s contemporary) for a precision architecture offering: "DRAFTING ROOM — CASA LUMEN · A-101". Every rule below is mandatory.
+
+---
+
+## 1. STRICT RULES & ARCHITECTURE
+
+**1.1 CSS-First Architecture & Zero Inline CSS**
+* All styling must live exclusively in `style.css`. The `style="..."` attribute is **forbidden** anywhere in the HTML.
+* Style only through class/ID selectors. Markup must remain semantic and styling-agnostic — a full retheme must be achievable by editing CSS alone.
+* No `!important`, no presentational tags (`<b>`, `<i>`, `<font>`), no inline event handlers.
+
+**1.2 CSS Variables & Theme Tokens**
+Define all tokens in `:root` (Light) and override them for Dark (Rule 1.3). Map the given palette as follows:
+
+* Light (`:root`): `--primary: #b3412b` (oxide red — CTAs, accents, annotations); `--secondary: #8d8264` (bronze); `--bg-primary: #f3ecd9` (parchment); `--bg-secondary: #ece3cb` (aged paper — cards, wells); `--text-primary: #2b2620` (ink); `--text-secondary: #8d8264` (verify ≥ 4.5:1 for small text; darken within the same hue, e.g., toward `#6a5f47`, if it fails); `--text-error` / `--border-error: #b3412b` family (darken to ≈ `#9c331f` if contrast requires); `--text-success` / `--border-success`: a muted moss green harmonized with the palette (≈ `#4e6b45`), AA-compliant; `--border-default: rgba(43,38,32,0.18)`; `--bg-footer: #221d15` paired with `--text-on-footer: #f3ecd9`. **Never use pure white**; if a near-white is required, use `#fefefe`.
+* Required structural tokens: `--radius-sm: 4px`, `--radius-md: 8px`, `--radius-lg: 16px`; `--shadow-sm`, `--shadow-md`, plus a neumorphic pair `--shadow-neu-out` (e.g., `8px 8px 16px rgba(43,38,32,0.18), -8px -8px 16px rgba(254,254,254,0.7)`) and `--shadow-neu-in` (inverted); `--spacing-gap: 1.25rem`; `--transition-fast: 150ms`; `--transition-normal: 300ms`; `--ease-standard: cubic-bezier(0.4, 0, 0.2, 1)`; `--z-dropdown: 100`, `--z-modal: 200`, `--z-toast: 300`, `--z-header: 90`; `--font-heading`, `--font-base`, `--font-mono`.
+* **Contrast pairing:** every light background token pairs with a dark text token and every dark background token pairs with a light text token — in **both** themes, no exceptions.
+
+**1.3 Mandatory Dark Mode Support**
+* Dark Mode must be **fully defined and fully usable** even though Light is this theme's default. Provide tokens under both a `.dark` class on `<html>` and `@media (prefers-color-scheme: dark)`. Switching themes must never require HTML restructuring.
+* Dark overrides: `--bg-primary: #221d15`, `--bg-secondary: #2b2620`, `--text-primary: #f3ecd9`, `--text-secondary: ≈ #cdc2a4` (AA on dark), `--primary: ≈ #d1553c` (brightened oxide), `--border-default: rgba(243,236,217,0.16)`, `--bg-footer: #1a1611` with `--text-on-footer: #f3ecd9`. Neumorphic shadows switch to deep-black/soft-light variants so surfaces stay visible.
+* **Persistence:** store the user's choice in `localStorage` (key `casa-lumen-theme`). Provide a **visible theme toggle** in the site header using Google Material Symbols (`dark_mode` / `light_mode`), with `aria-pressed` reflecting state and a dynamically updated `aria-label` ("Activate dark mode" / "Activate light mode").
+* **Default-Mode Exception (explicit):** Per the source style specification, Light Mode is this theme's primary presentation — on a first visit with no stored preference, render **Light Mode**, overriding the `prefers-color-scheme` fallback; all other persistence behavior remains unchanged.
+
+**1.4 Flexbox Layout & Mobile-First Alignment**
+* Build every layout with Flexbox. Every flex container **must default to `align-items: center`**; the only sanctioned exceptions (justify each with a code comment): equal-height card rows (Features, Steps, Pricing, Testimonials) using `align-items: stretch`, and full-height hero stretch.
+* Mobile-first: all rows collapse to columns on small viewports; **zero horizontal scrolling** at any width (validate at 320px). One centered container (max-width ≈ 72rem) with fluid inline padding.
+
+**1.5 CSS Approach & Naming Convention**
+* Use clean, hand-authored modern CSS in `style.css`, organized with native `@layer` (tokens → base → layout → components → utilities). Do not load the Tailwind CDN; if any utility is used it must map back to the tokens.
+* One convention only: **BEM** (`block__element--modifier`) — e.g., `.hero`, `.hero__title`, `.card--featured`, `.btn--primary`. Never mix conventions.
+
+**1.6 Typography & Icons (Google Fonts Mandatory)**
+* Google Fonts via `<link>` (one combined request, `display=swap`, with `preconnect`): **Archivo** (headings, 600/700 — strong, industrial), **Inter** (body, 400/500), **IBM Plex Mono** (technical annotations, labels, numerals). Bind to `--font-heading`, `--font-base`, `--font-mono`.
+* Icons: **Google Material Symbols (Outlined)** via the official stylesheet. Raw inline SVGs and local icon files are **forbidden**. Decorative icons get `aria-hidden="true"`; meaningful icons carry accessible labels.
+
+---
+
+## 2. THEME DESIGN SYSTEM — DRAFTING ROOM — CASA LUMEN · A-101
+
+* **Mood/keywords:** drafting room, industrial, technical, animated, gradient; 2020s contemporary.
+* **Motifs (all CSS-only — no external images anywhere):**
+  * *Blueprint grid:* faint drafting-grid backgrounds built from repeating linear-gradients of the ink color at low opacity (Hero, Final CTA, section accents). All decorative layers: `aria-hidden="true"`, `pointer-events: none`.
+  * *Title-block annotations:* mono-font sheet metadata (e.g., "SHEET NO. A-101 · SCALE 1:50 · REV 03", "DRAFTING ROOM — CASA LUMEN") placed as decorative framing.
+  * *Neumorphism:* soft double shadows on parchment for cards, icon wells, buttons, and the toggle — always paired with a 1px visible `--border-default` so state is never communicated by shadow alone.
+  * *Animated gradients:* a slow `background-position` keyframe animation on the Hero wash and Final CTA panel (ink → oxide-red hint). Must pause under `prefers-reduced-motion`.
+  * *Gradient text:* at most one key word per H1/H2 may use a `#b3412b → #8d8264` `background-clip: text` gradient.
+* **Motion:** hover lifts (`translateY(-2px)`), chevron rotations, press feedback `scale(0.97)` — all on `var(--transition-normal)`.
+* **Form:** restrained radii from the `--radius-*` tokens (technical-drawing feel, never bubbly). Use CSS `aspect-ratio` for the hero plan panel (4/3) and avatars (1/1).
+
+---
+
+## 3. COMPONENT DESIGN SPECIFICATIONS
+
+**3.1 Buttons (`.btn`, `.btn--primary`, `.btn--ghost`, `.btn--danger`)** — all states as CSS classes:
+* **Default:** `display: flex; align-items: center; justify-content: center; gap: 0.5rem;` minimum touch target 44×44px. Primary: `#b3412b` fill, `#fefefe` text. Ghost: transparent, 1px ink border. Define `.btn--danger` (distinct in both themes) even if unused.
+* **Hover:** brightness/shadow shift, `cursor: pointer`. **Focus:** distinct 2px offset outline using `--primary`, visible on all backgrounds. **Active:** `transform: scale(0.97)`.
+* **Loading:** class disables pointer events (prevents double-clicks/double submits), keeps button dimensions stable, and renders a spinning Google Symbol (`progress_activity`) or CSS spinner.
+* **Disabled:** `opacity: 0.5`, grayscale, `cursor: not-allowed`. **Success/Error:** temporary classes driven by `--text-success` / `--text-error`, always icon + text (never color alone).
+
+**3.2 Cards (`.card`)** — used by Features, Steps, Testimonials, Pricing:
+* **Default:** flex column, `--bg-secondary` surface, 1px `--border-default`, `--shadow-neu-out`, `--radius-md`.
+* **Hover:** `translateY(-2px)` with shadow deepening. **Focus-within:** border highlights when a child control is focused.
+* **Skeleton:** define `.card--skeleton` with a shimmer keyframe that preserves layout dimensions. **Empty state:** define a pattern (Material Symbol + guidance text) available for dynamic slots.
+
+**3.3 Forms & Inputs (`.input-group`)** — used by the Final CTA email capture:
+* **Structure:** flex container wrapping a `<label>`, the field, and a dedicated error container `<p class="input-group__error" aria-live="polite">`.
+* **States:** empty, `:focus` (outline ring), filled, `.is-valid` (success border + check icon), `.is-invalid` (error border + error icon + message text), disabled, read-only.
+* Validate on blur + submit; the submit button must run its loading state, then success/error feedback announced via `aria-live`. Simulate submission in JS (no backend).
+
+**3.4 FAQ Accordion (`.accordion`):**
+* Each item: `<h3><button class="accordion__trigger" aria-expanded="…" aria-controls="…">` + `<div class="accordion__panel" role="region">`. Chevron Material Symbol rotates 180° via transition. Open/close animated in pure CSS (grid-rows or max-height technique) without layout jank. Fully keyboard operable; first item open by default; items toggle independently.
+
+**3.5 Overlays (conditional):** No modal is in scope. If you add any overlay, it must implement opening/open/loading/success/closing states, a centered flex container, backdrop, focus trapping, Esc + overlay-click close, and a Google Icon close button.
+
+---
+
+## 4. PAGE SECTIONS & CONTENT REQUIREMENTS
+
+Author **all user-facing copy in English** (no lorem ipsum) in the voice of a precision drafting studio presenting residence A-101. Every content section uses the shared pattern: mono eyebrow label in oxide red (e.g., "01 — FEATURES"), H2, one supporting sentence.
+
+* **0. Site Header (navigation shell, sticky):** wordmark "DRAFTING ROOM — CASA LUMEN · A-101", anchor links to each section, theme toggle (Rule 1.3). Below 768px: a `menu` symbol button toggles a flex-column nav list (`aria-expanded`; closes on link click and Esc; stacked via `--z-dropdown`).
+* **1. Hero:** min-height ≈ 88vh, flex-centered; drafting-grid + animated gradient background; H1 (fluid `clamp()`, one gradient-accent word), subheadline; primary CTA "Request the Drawing Set" + ghost CTA "Explore the Floor Plans" (full Rule 3.1 matrix); a CSS-only abstract floor-plan panel (`aspect-ratio: 4/3`, rooms implied purely by borders/lines/gradients) in a neumorphic frame with mono title-block strip; decorative sheet annotations.
+* **2. Features — 3 cards:** three distinct authored selling points; each card: Material Symbol in a neumorphic inset well, title, two-line body, mono spec footnote (e.g., "DIM. 6.20 × 4.80 M"). Equal-height row (stretch), column on mobile, states per 3.2.
+* **3. How It Works — 3 steps:** authored step titles (consultation → drafting → delivery), mono numbered badges (01/02/03), a dashed connector line via CSS pseudo-elements on desktop (hidden or vertical on mobile), step cards per 3.2.
+* **4. Testimonials:** 3 quote cards: `format_quote` symbol, authored quote, CSS avatar circle (gradient + initials, `aspect-ratio: 1/1`), name + role in mono, star rating via repeated `star` symbols with a text alternative ("Rated 5 of 5"). Hover lift.
+* **5. Pricing — 3 tiers:** authored drawing-set packages (e.g., Sketch Set / Working Drawings / Full Supervision). Featured middle tier: `.card--featured`, oxide ribbon "MOST REQUESTED", stronger shadow/scale. Mono price numerals + period label, feature list with `check` icons, CTA per tier (featured = primary fill, others = ghost); CTAs show loading feedback on click; all card states per 3.2.
+* **6. FAQ:** 5 authored Q&As (process, timelines, revisions, delivery, customization) as an accordion per 3.4.
+* **7. Final CTA:** full-width panel with animated gradient (ink → oxide) + drafting-grid overlay; H2, supporting line, email capture form per 3.3 with the complete state matrix and `aria-live` feedback.
+* **8. Footer with secondary links:** `--bg-footer` background with `--text-on-footer` in both themes. Columns: wordmark + one-line studio blurb; "Explore" anchor links; "Resources" secondary links (e.g., Technical Specifications, Material Palette, Privacy, Terms — `href="#"` permitted only for these unspecified destinations); mono contact block; social icons (Material Symbols) with `aria-label`s. Legal bar: © current year + "DRAFTING ROOM — CASA LUMEN · A-101" + back-to-top link (smooth scroll, reduced-motion aware). All links: hover underline + visible focus ring.
+
+---
+
+## 5. CORE UX & MICRO-INTERACTION RULES
+
+* **Responsive by default:** fluid type/spacing, breakpoints without horizontal overflow at any width.
+* **Mandatory visual feedback:** every click, hover, and submission triggers a perceivable state change; all state changes transition on `var(--transition-normal)`.
+* **Reduced motion:** `prefers-reduced-motion: reduce` disables transforms, gradient animation, and nonessential motion.
+* **Accessibility:** semantic HTML5 landmarks (`header`/`nav`/`main`/`section`/`footer`), logical DOM/focus order, skip-to-content link, full keyboard operability (Tab/Enter/Space/Esc), ARIA only where semantics fall short, WCAG AA contrast in both themes, never color-alone state communication, `aria-live` regions for all dynamic feedback (form errors, loading, success), visible focus rings everywhere.
+* Anchor navigation uses `scroll-margin-top` to compensate for the sticky header.
+
+---
+
+## 6. DELIVERABLES & OUTPUT FORMAT
+
+* **Exactly three files:** `index.html`, `style.css`, `script.js`. A single `<script src="script.js" defer></script>` reference — no other inline script blocks. No build step, no external JS libraries.
+* `index.html`: `lang="en"`, meta viewport, descriptive `<title>`, meta description, Google Fonts + Material Symbols links, semantic sections with IDs matching nav anchors.
+* `style.css`: organized with `@layer`; all tokens per 1.2; both themes per 1.3.
+* `script.js` (vanilla): theme toggle + persistence, mobile nav disclosure, FAQ accordion, form validation + simulated submit (loading/success/error + `aria-live`), CTA loading states, back-to-top, current-year stamp.
+* **Naming:** BEM everywhere per 1.5 — never mix conventions. No unrequested placeholders: author real thematic copy; placeholder `href`s only for unspecified footer destinations.
+* Deliver the complete landing page on the first attempt — every section, every component state, both themes, fully functional, with no follow-up questions.

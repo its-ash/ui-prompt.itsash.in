@@ -1,0 +1,191 @@
+# CODING-AI PROMPT — Build the "COLONY" Landing Page (Complete, First Attempt)
+
+**Your role:** Senior Frontend Engineer & Expert UI Designer. Build the complete, production-quality landing page specified below in a single first attempt. Do not ask clarifying questions; make expert decisions where the spec grants latitude, and follow every mandatory rule exactly.
+
+---
+
+## 0. PROJECT BRIEF & ART DIRECTION
+
+- **Product:** *COLONY* — an ant colony toy: a see-through, self-sustaining ant-habitat kit that lets people watch a live colony dig, build, and grow on their desk.
+- **Theme type:** Creative/Experimental, 2020s contemporary. **Mood:** warm, tactile, organic, "playful naturalist" — soil browns, parchment creams, sprout greens; soft, generous, tunnel-like border radii.
+- **Sections required, in order:** sticky Header (nav + theme toggle), Hero, Features (3 cards), How It Works (3 steps), Testimonials (3 quotes), Pricing (3 tiers), FAQ (accordion), Final CTA, Footer with secondary link columns.
+- **Signature visual effects:** hover feedback on every interactive element; smooth transitions; transforms (`translateY`, `rotate`, `scale`); organic border-radius; a CSS-only "ant trail" dashed-path motif used sparingly as a decorative divider.
+- **All visuals must be CSS-composed** (gradients, layered radii, dashed borders, Google Material Symbols icons). Do not use external image files, photos, or placeholder images. Avatars are CSS monogram circles.
+- **All user-facing copy must be written in English** and must be real, on-theme product copy (see §5). Lorem ipsum is forbidden.
+
+---
+
+## 1. STRICT RULES & ARCHITECTURE
+
+### 1.1 CSS-First Architecture & Zero Inline CSS
+
+- **No Inline CSS:** The `style="..."` attribute is forbidden anywhere in the HTML. No `<style>` blocks in the HTML either — all styles live in `style.css`.
+- **Class Selectors Only:** All design properties, layout rules, and states must be targeted via class (or ID) selectors in `style.css`.
+- **Minimal HTML Modifications:** HTML must remain clean and semantic (landmarks, headings, buttons, forms). All theming, layout, and state changes are achievable by editing CSS only, with no markup restructuring required.
+
+### 1.2 CSS Variables (`var(--...)`) & Theme Tokens
+
+Store every visual token in `:root` and override for dark mode (§1.3). Use exactly this token sheet (you may add tokens, never remove them):
+
+**Light theme (default, in `:root`):**
+```css
+--primary: #2a1f14;          /* deep soil brown — headings, primary button bg */
+--secondary: #a08c6e;        /* dry tan — decorative borders and accents ONLY */
+--accent: #8aae64;           /* sprout green — highlights, icons, hover accents */
+--accent-strong: #6a8a4a;    /* moss green — success borders, badges, focus rings */
+--bg-primary: #f2e6d0;      /* parchment page background (NOT white) */
+--bg-secondary: #e8dcc8;     /* cream cards / alternating surfaces */
+--text-primary: #2a1f14;    /* pairs with both light backgrounds */
+--text-secondary: #6a5a41;   /* darkened derivative of #a08c6e for AA contrast */
+--text-success: #55763a;     /* darkened moss — readable on cream */
+--text-error: #b3432b;      /* warm terracotta */
+--border-default: #d5c4a5;
+--border-error: #b3432b;
+--border-success: #6a8a4a;
+--font-display: 'Fraunces', Georgia, serif;
+--font-base: 'Inter', system-ui, sans-serif;
+--radius-sm: 8px; --radius-md: 16px; --radius-lg: 28px; --radius-full: 999px;
+--shadow-sm: 0 2px 8px rgba(42, 31, 20, 0.08);
+--shadow-md: 0 12px 28px rgba(42, 31, 20, 0.16);
+--ring: 0 0 0 3px rgba(106, 138, 74, 0.25);
+--spacing-gap: 1.5rem;
+--transition-fast: 150ms; --transition-normal: 300ms;
+--ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+--z-dropdown: 1000; --z-modal: 2000; --z-toast: 3000;
+```
+
+**Dark theme (override the same tokens under both `@media (prefers-color-scheme: dark)` — scoped so a `.light` class can force light — and a `.dark` class):**
+```css
+--primary: #f2e6d0;          /* primary button bg inverts to cream */
+--secondary: #a08c6e;
+--accent: #8aae64;
+--accent-strong: #6a8a4a;
+--bg-primary: #1c140d;       /* deep soil night background */
+--bg-secondary: #2a1f14;     /* the signature brown becomes card surface */
+--text-primary: #f2e6d0;
+--text-secondary: #c9b896;
+--text-success: #8aae64;
+--text-error: #e08764;
+--border-default: #4a3b28;
+--border-error: #e08764;
+--border-success: #8aae64;
+--shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+--shadow-md: 0 12px 28px rgba(0, 0, 0, 0.45);
+--ring: 0 0 0 3px rgba(138, 174, 100, 0.3);
+```
+
+- **Contrast Pairing (mandatory, both themes):** every light background token pairs with dark text; every dark background token pairs with light text. Primary buttons use `background: var(--primary); color: var(--bg-primary);` so the pairing inverts correctly in both themes. Never place `#a08c6e` text on `--bg-primary`/`--bg-secondary` (it fails contrast) — `--text-secondary` exists for that reason. Verify ≥ 4.5:1 for body text and ≥ 3:1 for large text/UI components in both themes.
+- **Light Background Rule:** the page background is `#f2e6d0`, never `#ffffff`. If a near-white surface is genuinely needed (e.g., input fields inside cream cards in light mode), use `#fefefe`.
+- **Token-driven everything:** radii, shadows, spacing, transitions, easing, and z-index layers must come from the variables above so components stay consistent.
+
+### 1.3 Mandatory Dark Mode Support
+
+- **Implementation:** define dark tokens via BOTH `@media (prefers-color-scheme: dark)` and a `.dark` class on `<html>` (light-mode class `.light` as the manual override), so system-preference users get the correct theme with zero flash and manual toggling works everywhere.
+- **Persistence:** store the user's explicit choice in `localStorage` (e.g., key `colony-theme`, values `light`/`dark`). On first visit with no stored choice, follow `prefers-color-scheme`.
+- **Visible toggle control:** a 44px icon button in the header showing the Material Symbols `light_mode` / `dark_mode` icon, with `aria-pressed` reflecting the current dark-mode state and a descriptive, dynamically updated `aria-label` ("Switch to dark theme" / "Switch to light theme"). Background and text tokens must switch seamlessly with no HTML restructuring.
+- **Exception clause:** the source style spec marks Light as the primary mode; Light remains the default showcase theme, but Dark Mode is still a fully designed, first-class theme per this mandatory rule — never a simple invert filter.
+
+### 1.4 Flexbox Layout & Mobile-First Alignment
+
+- **Flexbox for all layout:** build every container (header, hero, grids of cards, steps, pricing row, forms, footer columns) with `display: flex`. No CSS grid required; wrap cards in `flex-wrap: wrap` rows.
+- **Default Alignment Rule:** every flex container must default to `align-items: center` unless there is an explicitly justified exception. The only permitted exceptions: text blocks inside cards and form label/input stacks may use `align-items: flex-start` / `stretch` for readability — document this exception in a CSS comment where used.
+- **Mobile-first:** write base styles for small viewports, then enhance at `min-width: 768px` and `min-width: 1024px`. Card rows stack as columns on mobile; the hero stacks copy over visual; the header collapses its nav links behind a menu button at < 768px. Horizontal scrolling is forbidden at any width down to 320px.
+
+### 1.5 Styling Approach — Clean Custom CSS
+
+- The source specification requests raw CSS techniques (Flexbox, Transitions, Transforms, Border Radius) and names no framework, so use **clean, hand-authored custom CSS in `style.css`** — no Tailwind build, no framework CDN.
+- All component styling must map to **generic, reusable class names** (`.btn`, `.card`, `.input-group`, `.section`, `.container`) driven by the CSS variables in §1.2. Do not create one-off classes that duplicate existing component patterns.
+
+### 1.6 Typography & Icons (Google Fonts Mandatory)
+
+- **Fonts:** load via Google Fonts `<link>` tags (with `preconnect`): **Fraunces** (weights 600–700, use for all display headings via `--font-display`) and **Inter** (weights 400–600, body via `--font-base`). No other typefaces.
+- **Icons:** Google **Material Symbols Rounded** via its Google Fonts `<link>`, configured with `FILL 1`. Apply via the `.material-symbols-rounded` class. Raw inline SVGs, local icon files, emoji icons, and any other icon set are forbidden.
+- **Icon vocabulary for this build:** `pest_control` (logo + hero ants), `visibility`, `eco`, `school`, `inventory_2`, `trending_up`, `star`, `check_circle`, `error`, `expand_more`, `arrow_forward`, `menu`, `close`, `light_mode`, `dark_mode`, `progress` (loading spinner), `mail`, `record_voice_over`, and social glyphs (`public`, `alternate_email`, `photo_camera` as generic footer social icons).
+
+---
+
+## 2. COMPONENT DESIGN SPECIFICATIONS
+
+### 2.1 Button Component (` .btn` + variants)
+
+Style every state via CSS classes; all buttons share a base class:
+
+- **Base/Default:** `display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;` minimum touch target 44×44px, pill radius (`--radius-full`), Inter 600, `text-decoration: none`, `transition: transform var(--transition-fast) var(--ease-standard), box-shadow ..., background-color ..., color ..., border-color ...`.
+- **Variants:** `.btn--primary` (`background: var(--primary); color: var(--bg-primary);` — inverts correctly in dark mode), `.btn--secondary` (transparent bg, 2px **dashed** `--secondary` border evoking the ant-trail motif, `color: var(--text-primary)`; on hover the border shifts to `--accent-strong` and bg to `--bg-secondary`), `.btn--danger` (must be visually distinct in both themes, built from `--text-error`/`--border-error` — not used on this page but define the class).
+- **Hover:** `transform: translateY(-1px)`, subtle brightness lift, and `--shadow-sm`. Buttons with a trailing `arrow_forward` icon must translate the icon +3px on hover.
+- **Focus:** `:focus-visible` receives `outline: 2px solid var(--accent-strong); outline-offset: 3px;` plus the `--ring` box-shadow — distinct in both themes.
+- **Active/Pressed:** `transform: scale(0.97)`.
+- **Loading:** `.is-loading` disables pointer events, preserves the button's exact dimensions, and swaps in an animated Material `progress` icon (CSS rotation) so nothing shifts or allows double-clicks.
+- **Success/Error:** `.is-success` (bg `--accent-strong`, cream text, `check_circle` icon) and `.is-error` (border `--border-error`, text `--text-error`, `error` icon) as temporary submit-feedback states.
+- **Disabled:** `opacity: 0.5; filter: grayscale(60%); cursor: not-allowed;` and no hover transforms.
+
+### 2.2 Card Component (`.card` — Features, Testimonials, Pricing)
+
+- **Default:** flex column, `background: var(--bg-secondary); border: 1px solid var(--border-default); border-radius: var(--radius-lg); padding: 2rem; gap: var(--spacing-gap)`. The pages' alternating section surfaces may swap `--bg-primary`/`--bg-secondary` for rhythm.
+- **Icon chip:** 48px circle, flex centered, `background: var(--bg-primary); color: var(--accent-strong);`.
+- **Hover:** `transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: var(--accent-strong);` and the icon chip flips to `background: var(--accent-strong); color: var(--bg-primary)` — visible feedback in both themes.
+- **Focus-within:** when a child button/link is focused, the card border highlights to `--accent-strong` with the `--ring` shadow.
+- **Scope note (skeleton/empty states):** this page is fully static — do not fabricate fake loaders, skeletons, or empty states for cards. The only async-style states are the form submit states in §2.3.
+
+### 2.3 Form & Input (`.input-group` — Final CTA email capture)
+
+- **Structure:** flex column (`align-items: stretch` — justified exception), containing a visible `<label>`, the `<input type="email">`, and a dedicated error-feedback `<p>` container wired with `aria-live="polite"`.
+- **States:** Empty → default `background: #fefefe` in light mode (`var(--bg-primary)` in dark), 1px `--border-default`, pill radius, 48px height. Focused → `--border-success` border + `--ring` shadow. Filled → unchanged until validation. Valid → `--border-success` with a trailing `check_circle` icon. Invalid → `--border-error` border, `aria-invalid="true"`, `aria-describedby` pointing at the error container, error copy in `--text-error` with a small `error` icon. Disabled → per button disabled treatment.
+- **Submit flow:** on submit, validate the email (simple pattern check in `script.js`); show the button's **loading** state, then simulate a short delay and render the **success** state plus an `aria-live` success message ("You're on the list — welcome to the colony."). Invalid input must show the error state without page reload.
+- **Layout:** on desktop, input + button sit in a joined flex row (pill group); on mobile they stack as a column with full-width elements.
+
+### 2.4 FAQ Accordion & Overlay Policy
+
+- **Accordion markup (per item):** `<div class="faq-item">` containing `<h3><button class="faq-item__trigger" aria-expanded="false" aria-controls="..." aria-labelledby pairing">` with the question text and a trailing `expand_more` chevron, plus a `<div class="faq-item__panel" role="region" aria-labelledby="...">` with the answer.
+- **States & animation:** open/close animated via CSS (`grid-template-rows: 0fr → 1fr` transition on the panel wrapper, inner `overflow: hidden`); chevron `rotate(180deg)` when open; trigger hover tints the row background to `var(--bg-secondary)` and text to `--accent-strong`; `:focus-visible` ring per §2.1. Open the first item by default. JS enforces `aria-expanded` truthfully and (optionally) single-open behavior. `Esc` on a focused trigger closes its open item.
+- **Overlay policy:** do NOT invent any modal, popup, exit-intent, or cookie banner — none were requested. If a modal were ever required in the future, it must meet: centered flex overlay, backdrop, focus trap, `Esc` and overlay-click close, animated open/close, and `--z-modal` stacking.
+
+---
+
+## 3. CORE UX & MICRO-INTERACTION RULES
+
+- **Responsive by default:** fluid type via `clamp()`, no fixed widths that overflow, no horizontal scrolling at any viewport ≥ 320px.
+- **Hover-effects inventory (the requested visual effect — implement all):** nav links get a `scaleX` underline grow-in via `::after`; all buttons per §2.1; feature/testimonial/pricing cards per §2.2; pricing feature-list check icons tint to `--accent-strong`; step number badges fill with `--accent-strong` on step hover; FAQ rows per §2.4; footer links shift color to `--accent` with a `text-underline-offset` grow; footer social icons invert their circle background on hover.
+- **Ant-trail motif:** `.ant-trail` decorative divider = a 2px dashed line built from `repeating-linear-gradient` with a slow background-position "marching" animation, optionally centered with a small circled `pest_control` icon. Use at most twice on the page. The animation pauses entirely under `prefers-reduced-motion`.
+- **Smooth motion:** all state changes use `transition: var(--transition-normal) var(--ease-standard)` (hover micro-shifts may use `--transition-fast`). Anchor navigation uses `scroll-behavior: smooth` gated behind `prefers-reduced-motion: no-preference`, with `scroll-margin-top` on sections to clear the sticky header.
+- **Reduced motion:** `@media (prefers-reduced-motion: reduce)` disables transforms, the marching-ants animation, parallax, and smooth scrolling; opacity-only transitions may remain.
+- **Accessibility (a11y):** semantic HTML5 landmarks (`header`, `main`, each `<section>` with `aria-labelledby` to its unique heading id, `footer`); a visually hidden "Skip to content" link; exactly one `h1`; logical DOM/focus order; every interaction keyboard-operable; state is never communicated by color alone (errors pair icons + text; success pairs icon + `aria-live` message); `aria-live` regions for form feedback and any dynamic message; visible focus indicators everywhere.
+- **Mandatory visual feedback:** every click, hover, focus, and submission triggers a perceivable state change.
+- **Destructive actions:** none exist on this page; if any is ever added, it must use `.btn--danger` and remain distinct in both themes.
+
+---
+
+## 4. DELIVERABLE & OUTPUT FORMAT
+
+- **Files:** exactly three — `index.html`, `style.css`, `script.js`. The HTML contains no `<style>` blocks and no inline `<script>` blocks; the only script reference is `<script src="script.js" defer></script>`.
+- **script.js scope (vanilla JS only, no libraries):** theme init/persist/toggle (§1.3), mobile menu toggle, FAQ accordion behavior (§2.4), email form validation with loading/success/error states (§2.3), optional scroll-reveal via `IntersectionObserver` (gated behind a `.js` class added to `<html>` so no-JS users see all content), auto-updating footer year.
+- **Naming convention:** one consistent convention — BEM (`block__element--modifier`) — across the entire deliverable. Never mix conventions.
+- **Meta/SEO basics:** `lang="en"`, `<meta name="viewport">`, descriptive `<title>` ("COLONY — The Observable Ant Habitat"), a one-sentence meta description, and `theme-color` for both schemes.
+- **No unrequested placeholders:** write real, on-theme English copy for every section per §5. Placeholder `href="#"` is acceptable only for footer/secondary link targets, which point nowhere yet.
+
+---
+
+## 5. SECTION-BY-SECTION CONTENT SPEC (suggested copy — refine wording, keep the voice)
+
+1. **Header (sticky):** logo = circled `pest_control` icon + "COLONY" wordmark in Fraunces; nav links: Features, How It Works, Pricing, FAQ; theme toggle (§1.3); compact `.btn--primary` "Get COLONY" → `#pricing`. Mobile: `menu` icon button with `aria-expanded` toggling a `--z-dropdown` panel (Esc and link-click close it). Sticky header uses a translucent token-matched background with `backdrop-filter: blur(8px)`.
+2. **Hero:** two-column flex (copy left, visual right; stacked on mobile). Eyebrow chip: "THE OBSERVABLE ANT HABITAT". H1 (Fraunces): "Watch a world dig itself." with "dig" highlighted by a `--accent` marker-style underline. Subcopy: "COLONY is a see-through ant habitat — part terrarium, part time machine. Set it up in minutes, add your ants, and watch an entire civilization tunnel beneath your desk." CTAs: `.btn--primary` "Start Your Colony" (→ `#pricing`) and `.btn--secondary` "See It Work" (→ `#how-it-works`). Proof row: five `star` icons + "4.9 — loved by 2,300+ colony keepers". **Hero visual (CSS-only formicarium):** a large `--radius-lg` container with asymmetric organic radii; soil strata via layered gradients (`#2a1f14` → `--text-secondary` tones); an inner translucent "acrylic pane"; two or three dashed-border arc elements as tunnels; three absolutely positioned `pest_control` icons as ants that nudge along their tunnels on hover (paused under reduced motion); one `--accent-strong` "queen chamber" circle; floating pill chips ("Live tunnel cam", "6+ months of activity").
+3. **Features (3 `.card`s):** `visibility` — "Crystal-Clear Tunnels" (dual-pane acrylic gives an ant's-eye view of every chamber and grain of sand); `eco` — "A Habitat That Cares for Itself" (self-feeding nutrient gel means no feeding schedule and no guesswork); `school` — "Serious STEM, Disguised as Play" (included field guide and observation log turn curiosity into real science skills).
+4. **How It Works (3 steps):** numbered `01 / 02 / 03` badges connected by a dashed trail line (vertical on mobile): `inventory_2` — "Set the Stage" (snap in the gel cartridge and seal the panes); `pest_control` — "Introduce Your Colony" (redeem the live-ant voucher and release workers through the launch port); `trending_up` — "Watch the Empire Grow" (observe, log, and name your favorites as the network expands).
+5. **Testimonials (3 `.card`s):** five-star rows, quote, CSS monogram avatar (accent circle + initials), name + role. Suggested quotes: "My kids canceled screen time on their own. I didn't know that was possible." — Maya R., parent of two; "The observation log turned our class ant farm into the favorite science unit of the year." — Daniel K., 4th-grade teacher; "Six months in and Tunnel #14 still surprises me every night." — Priya S., colony keeper since 2023.
+6. **Pricing (3 tiers, middle featured):** Starter Colony $39 (1 habitat, gel starter cartridge, live-ant voucher, field guide); **Classic Colony $69 — "MOST POPULAR" badge, `--accent-strong` border, larger shadow, desktop `scale(1.02)`** (larger habitat, 2 cartridges, tunnel toolkit, hardcover observation log); Mega Colony $119 (largest habitat, 4 cartridges, LED under-glow, expedition toolkit, 2 vouchers). Feature lists use `check_circle` icons; featured tier gets `.btn--primary`, others `.btn--secondary`. Footnote: "Every plan includes live-ant vouchers (species varies by region) and a 30-day tunnel-back guarantee."
+7. **FAQ (accordion per §2.4, 5 items):** "Do I have to catch the ants myself?" (No — voucher ships a queen-safe worker colony); "How long do the ants live?" (workers live weeks-to-months; the gel sustains them without feeding); "Is it safe for kids?" (sealed panes, non-toxic gel; ages 6+, 8+ for solo care); "What if a tunnel collapses?" (ants are natural engineers — they rebuild; gel re-sets with a tap kit); "Can I refill it or try other species?" (refill cartridges and species vouchers sold separately).
+8. **Final CTA:** inset full-width band card (`--radius-lg`, generous padding) with a moss→sprout gradient (`#6a8a4a` → `#8aae64`), `--primary` text for both themes: H2 "Your desk is about to get a civilization." + email capture form per §2.3 ("Get launch updates and 10% off your first colony", button "Reserve Mine").
+9. **Footer (inverted band: `background: var(--primary); color: var(--bg-primary);`):** brand block with logo, one-line blurb ("An ant colony toy made for curious humans."), three secondary link columns — **Product** (Features, Pricing, Refill Cartridges, Gift Cards), **Company** (About, Journal, Careers, Contact), **Support** (Care Guide, Ant FAQ, Shipping, Returns) — a social icon row (circled Material icons with hover fill), and a bottom bar: "© <current year> COLONY Toys" + Privacy, Terms, Accessibility links.
+
+---
+
+## 6. DEFINITION OF DONE — QA CHECKLIST
+
+- Zero inline `style` attributes; zero `<style>`/inline `<script>` blocks; only the deferred `script.js` reference.
+- Keyboard-only pass: header menu, theme toggle, nav, all buttons, FAQ triggers, and the form are fully operable; focus order is logical; focus is always visible.
+- No horizontal scroll at 320px; hero visual degrades gracefully on mobile.
+- Both themes pass 4.5:1 body-text contrast; toggle persists across reload; system-preference users get the right theme without flash.
+- `prefers-reduced-motion` disables the marching-ants animation, transforms, and smooth scrolling.
+- ARIA wiring is complete and truthful (`aria-expanded`, `aria-controls`, `aria-labelledby`, `aria-invalid`, `aria-live`, `aria-pressed`).
+- One naming convention (BEM) throughout; all colors/radii/shadows/transitions from CSS variables; icons exclusively Material Symbols; fonts exclusively Google Fonts.
+- Real English copy everywhere; no lorem ipsum; no external images; no console errors.

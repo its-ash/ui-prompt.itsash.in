@@ -1,0 +1,126 @@
+# Coding Prompt — Complete "Base Web" Landing Page
+
+**Role:** You are a Senior Frontend Engineer and Expert UI Designer. Build a complete, production-quality **Landing Page for the Base Web design system** in a **single first attempt**. The theme is **Base Web** (Uber's open-source design system): highly themeable primitives, neutral and functional, mobility-app roots, strong theming tokens, accessible components, flat-platform aesthetic, era 2018–present. Elevation comes from subtle shadows; the theme's ONE signature trait is the **"seam"** — a solid 3px underline in the current theme color (`--seam`) that marks active/focus state (nav active link, input bottom border, primary button bottom accent), never used as decoration.
+
+**Source note (translated):** *"The source spec does not declare color modes; validate in light and dark before publishing."* Dark mode is therefore yours to design and must be validated in both modes before you declare completion.
+
+---
+
+## 0. Product Brief & Required Sections
+
+Write original English marketing copy presenting Base Web to developers (tone: confident, functional, utilitarian). All copy in **English**. No lorem ipsum. Testimonials must use clearly fictional personas (name + role, e.g., "Design Systems Lead") — do not imply real companies.
+
+Build these sections, in order:
+
+- **Sticky header/nav:** Logo ("Base Web"), section links, theme toggle (rule 1.3), primary CTA button. Collapses to an accessible hamburger dropdown panel below ~768px. The link of the section currently in view receives the 3px seam underline (`aria-current="true"` via scroll-spy in `script.js`). Header gains a shadow when scrolled.
+- **Hero:** Eyebrow badge, responsive headline (fluid `clamp()` from `--text-4xl`→`--text-5xl`), muted subcopy, two CTAs (primary + neutral), flat composition with generous `--space-*` rhythm, plus the interactive **theming demo** (rule 2.5).
+- **Features (3 cards):** `.card` grid (row → single column on mobile); each card: Material icon in a `--color-surface-strong` tile, title, description. Apply rule 2.2 states.
+- **How It Works (3 steps):** Numbered markers carrying the seam underline, step titles, connecting hairline borders; flex row → column on mobile.
+- **Testimonials (3 cards):** Quote, avatar (CSS-styled initials circle or Material `person` icon — no external images), fictional name + role. Demonstrate the skeleton loading state (rule 2.2) via a short simulated async load (300–600ms) in `script.js`.
+- **Pricing (3 tiers):** Accessible **monthly/annual segmented toggle** (`aria-pressed`, animated price update, `aria-live` announcement of the change). Middle tier featured (`.badge` "Most popular", primary border + seam). Each tier: name, price, feature list with Material `check` icons, CTA (primary on the featured tier).
+- **FAQ:** Accessible accordion (rule 2.4), 5–6 substantive Q&As.
+- **Final CTA:** Full-bleed `--color-surface-strong` band, headline, and the email-capture form (rule 2.3) with the full loading → success/error → toast flow.
+- **Footer with secondary links:** Grouped secondary link columns (Product / Docs / Company), Material social icons as links, copyright, back-to-top link; columns stack on mobile.
+
+**Design token baseline (authoritative — define verbatim in `:root`, translate comments to English):**
+
+```css
+/* Base Web — design tokens | 2018–present */
+--color-bg: #ffffff; --color-surface: #ffffff; --color-surface-strong: #f6f6f6;
+--color-border: #e2e2e2; --color-text: #000000; --color-text-muted: #5e5e5e;
+--color-primary: #276ef1; --color-accent: #06c167;
+--radius-sm: 4px; --radius-md: 8px; --radius-lg: 12px; --radius-pill: 999px;
+--shadow-sm: 0 1px 2px rgba(0,0,0,.08); --shadow-md: 0 4px 12px rgba(0,0,0,.1);
+--shadow-lg: 0 10px 24px rgba(0,0,0,.12);
+--text-xs: .75rem; --text-sm: .875rem; --text-base: 1rem; --text-lg: 1.125rem;
+--text-xl: 1.375rem; --text-2xl: 1.75rem; --text-3xl: 2.25rem; --text-4xl: 3rem; --text-5xl: 4rem;
+--space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-6: 24px;
+--space-8: 32px; --space-12: 48px; --space-16: 64px; --space-24: 96px;
+--ease-standard: cubic-bezier(.2, 0, 0, 1);
+--seam: var(--color-primary); --seam-underline: 3px solid var(--seam);
+```
+
+**Component baseline to adopt, then extend:** `.nav` (flex, gap, surface bg, border-bottom), `.btn` (600 weight `--text-sm`, `--space-3/--space-6` padding, `--radius-md`, surface-strong bg + border), `.btn--primary` (primary bg, white text, `box-shadow: 0 -3px 0 0 var(--color-accent) inset` — the seam accent), `.card` (surface bg, `--radius-lg`, 1px border, `--shadow-md`, `--space-6` padding), `.input` (full width, 1px border + `--seam-underline` bottom, focus: primary border + soft ring), `.badge` (pill, primary tint bg). **All hardcoded state values in this baseline (hover `#ececec`, active `#e2e2e2`, badge `#e8f0fe`, ring `rgba(39,110,241,.18)`, focus halo `#fff`) must be promoted to named tokens** (hover/pressed surface variants, `--tint-primary`, focus ring tokens) with dark-mode counterparts — no raw hex/rgba outside `:root` and theme blocks.
+
+---
+
+## 1. Strict Architecture Rules
+
+**1.1 CSS-First & Zero Inline CSS**
+* All styling lives in `style.css`. The `style="..."` attribute is **forbidden anywhere in the HTML**.
+* Target all design properties, layout, and states exclusively via class/ID selectors (BEM).
+* `script.js` must never mutate inline styles — every state change is a class toggle or ARIA attribute change. HTML stays semantic, clean, and style-agnostic: re-theming must require CSS edits only.
+
+**1.2 CSS Variables & Theme Tokens**
+* In addition to the baseline tokens above, `:root` **must** define the mandatory system tokens — they may alias theme tokens to avoid duplication: `--primary` (= `#276ef1`), `--secondary` (= `--color-accent`), `--bg-primary`, `--bg-secondary` (= `--color-surface-strong`), `--text-primary`, `--text-secondary` (= `--color-text-muted`), `--text-success`, `--text-error`, `--border-default`, `--border-error`, `--border-success`, `--radius-sm/md/lg`, `--shadow-sm/md`, `--spacing-gap`, `--transition-fast` (150ms), `--transition-normal` (300ms), `--ease-standard`, `--z-dropdown` (1000), `--z-modal` (2000), `--z-toast` (3000). Every component rule consumes variables — never raw values.
+* Success/error colors: pick a green (may derive from the accent) and a distinct red harmonious with the neutral palette, each passing WCAG AA against both surfaces in **both** modes.
+* **Contrast pairing:** every light background token pairs with a dark text token and every dark background token pairs with a light text token — enforced in every theme, including dark mode and the swatch demo variants.
+* Light backgrounds: the default rule requires `#fefefe` instead of pure white — **Exception:** the Base Web spec explicitly declares `#ffffff` for `--color-bg`/`--color-surface`, so those exact values are permitted.
+
+**1.3 Mandatory Dark Mode**
+* Dark mode is **mandatory**. Define dark tokens (e.g., bg `#121212`, surface `#17171a`, surface-strong `#1f1f24`, border `#383838`, text `#ffffff`, muted `#9b9b9b`; lighten primary/accent for contrast, e.g., `#4d84f3` / `#0fd06f` — tune until AA passes).
+* Implement via a `.dark`/`[data-theme="dark"]` class on `<html>` **and** an `@media (prefers-color-scheme: dark)` fallback for first visit, both consuming one shared token block — theme switching must not touch HTML structure.
+* A visible header **toggle button** with a Material `dark_mode`/`light_mode` icon, correct `aria-pressed` and dynamic `aria-label`; choice persists via `localStorage` (e.g., key `baseweb-theme`), falling back to `prefers-color-scheme` on first visit; apply the stored theme synchronously at the top of `script.js` to minimize flash.
+
+**1.4 Flexbox Layout & Mobile-First**
+* Build all layout with Flexbox. **Every flex container defaults to `align-items: center`**; any exception (e.g., stretched pricing cards, top-aligned text blocks) requires a CSS comment justifying it.
+* Mobile-first: rows become columns under ~768px via flex-direction/wrap; **zero horizontal scrolling down to 320px**; minimum touch target 44×44px.
+
+**1.5 Framework & Naming Convention**
+* Primary styling = the theme's custom CSS class system in `style.css` (baseline classes above, extended). Tailwind CSS is permitted for layout utilities only; every utility/design value must map back to a CSS variable or a reusable class (`.btn`, `.card`, `.input-group`). No other libraries.
+* **One convention only: BEM** (`block__element--modifier`, e.g., `.btn--primary`, `.card__title`, `.pricing__tier--featured`, `.faq__item`). Never mix conventions.
+
+**1.6 Typography & Icons (Google Fonts Mandatory)**
+* Load Google Fonts via `<link>`: **Inter** for text (and **Roboto Mono** for code). Bind `--font-sans`/`--font-display` to `'Uber Move', 'Inter', 'Helvetica Neue', Arial, sans-serif` and `--font-mono` to `'Uber Mono', 'Roboto Mono', ui-monospace, monospace`. **Exception:** Uber Move / Uber Mono are not distributed on Google Fonts, so the Google-hosted fonts render where they are absent — load no fonts from any other source.
+* Icons: **Google Material Symbols** (outlined, single `<link>`), e.g., `<span class="material-symbols-outlined">check_circle</span>`. **No inline SVGs, no emoji icons, no local icon files.**
+
+---
+
+## 2. Component Design Specifications
+
+**2.1 Buttons (`.btn`, `.btn--primary`, variants)**
+* **Default:** `display:flex; align-items:center; justify-content:center; gap:.5rem;` min 44×44px, 600-weight `--text-sm`, `--radius-md`; dimensions must never change across states. Primary variant keeps its inset seam accent.
+* **Hover:** brightness/shadow shift, `cursor:pointer`. **Focus:** visible `:focus-visible` ring built from variables (replace the baseline `#fff` halo with `var(--color-surface)` so dark mode works). **Active:** `transform: scale(0.97)` in addition to the pressed background.
+* **Loading:** `.btn--loading` + `aria-busy="true"` — blocks pointer events (no double submits) and swaps the label for a CSS spinner (currentColor) or animated Material `progress` icon without resizing the button.
+* **Disabled:** `opacity:.5`, grayscale, `cursor:not-allowed`. **Success/Error:** `.btn--success` / `.btn--error` temporary feedback states driven by `--text-success` / `--text-error`, announced via `aria-live`. If any destructive action exists, its variant (`.btn--danger`) must be clearly distinct in **both** modes.
+
+**2.2 Cards (features, pricing tiers, testimonials)**
+* **Default:** flex column layout, `--color-surface` bg, `--border-default` border, `--radius-lg`, `--shadow-md`, `--space-6` padding.
+* **Hover:** elevation shift to `--shadow-lg` and/or `transform: translateY(-2px)` on interactive cards only. **Focus-within:** when a child link/button is focused, the card border highlights in `--color-primary` (visible keyboard path through Features/Pricing).
+* **Loading:** `.card--skeleton` shimmer keyframe (gradient sweep using surface tokens) that preserves final dimensions — demonstrated on Testimonials with `aria-busy` on the section. **Empty state:** `.card--empty` (Material `inbox` icon + guidance text) defined in CSS for reuse.
+
+**2.3 Forms & Inputs (Final CTA email capture)**
+* **Structure:** a flex column `.input-group` wrapping a real associated `<label>` (`for`/`id`), the `.input` (seam bottom border per baseline), and a dedicated `.input-group__error` feedback container present in the DOM (empty by default, `aria-live="polite"`, wired via `aria-describedby`).
+* **States:** Empty; Focused (primary border + soft ring + seam, per baseline); Filled; Valid (success border + `check_circle` icon); Invalid (`--border-error`, `--text-error` message, `error` icon, `aria-invalid="true"`); Disabled; Read-only.
+* Validation lives in `script.js` (blur + submit); on valid submit show button loading → success + toast; **never** use `alert()`.
+
+**2.4 FAQ Accordion, Nav Dropdown, Modal & Toasts**
+* **FAQ:** accessible accordion — `<button aria-expanded aria-controls>` + panel (or upgraded native `<details>`); open/close animated in pure CSS; rotating Material `expand_more` chevron; fully keyboard operable.
+* **Nav dropdown:** panel at `--z-dropdown`, `aria-expanded`, closes on Esc / outside click / link selection; smooth anchor scrolling gated by `prefers-reduced-motion`.
+* **Modal (only if you introduce any dialog, e.g., a "Get started" flow):** opening/open/loading/success/error/closing states animated via CSS; centered flex container (`align-items:center`) with backdrop; Material `close` icon button; focus trap, Esc + overlay-click close; `role="dialog"`, `aria-modal="true"`, z-index `--z-modal`.
+* **Toasts:** bottom region at `--z-toast`, `role="status"`, animated in/out via CSS, used for all dynamic feedback (subscribe success, pricing toggle changes).
+
+**2.5 Theming "Seam" Demo (signature interaction)**
+* In the Hero, a compact live demo of Base Web's "highly themeable primitives": a swatch row (Primary Blue `#276ef1`, Accent Green `#06c167`, plus 2–3 harmonized presets). Selecting a swatch re-themes the demo's `--color-primary`/`--seam` by toggling preset classes defined **in CSS** (`.demo--sea`, `.demo--forest`, …) — never inline styles. Swatches act as a radiogroup (`role="radio"`/`aria-checked` or `aria-pressed`); the demo's input seam, primary button, and badge update instantly with visible feedback.
+
+---
+
+## 3. Global UX & Micro-Interaction Rules
+
+* **Responsive by default:** fluid `clamp()` sizing from the `--text-*` scale; no horizontal overflow from 320px to 1440px.
+* **Smooth animations:** every state change transitions via `--transition-fast`/`--transition-normal` with `--ease-standard`; all animation softens/disables under `prefers-reduced-motion: reduce`.
+* **Accessibility:** WCAG AA contrast in **both light and dark** for text, borders, rings, and badges; never communicate state by color alone (pair icons + text); semantic HTML5 landmarks (`header`/`nav`/`main`/`section`/`footer`); logical DOM and focus order; a skip-to-content link; full keyboard operability for menu, accordion, forms, pricing toggle, and swatches; `aria-live` for all dynamic feedback.
+* **Mandatory visual feedback:** every click, hover, focus, and submission produces a visible state change.
+* **Seam discipline:** the 3px underline appears only on active/focus state (nav active link via scroll-spy with `aria-current`, input focus, primary button bottom accent) — never as decoration.
+
+---
+
+## 4. Deliverables & Output Format
+
+* **Exactly three files:** `index.html`, `style.css`, `script.js`. One `<script src="script.js" defer></script>` — no other script blocks, no inline JS.
+* **No `style="..."` attributes, no inline SVGs, no external assets** beyond Google Fonts and Material Symbols links.
+* **BEM naming only**, consistent across all three files.
+* **No unrequested placeholders:** realistic English marketing copy throughout; lorem ipsum is prohibited.
+* **Self-review before finishing:** verify both themes (including tokenized focus rings and hover states in dark mode), a full keyboard pass, 320px viewport, reduced motion, and zero console errors.
+
+Output the three complete files now, with full contents and no truncation — the page must run as-is when opened in a browser.

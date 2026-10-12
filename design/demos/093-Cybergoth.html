@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NIMBUS — Encrypted Streaming for the Industrial Underground</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800&family=Rubik:wght@400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0&display=block" rel="stylesheet">
+<style>
+@layer reset,tokens,base,components,sections,utilities;
+@layer reset{*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{min-height:100vh}ul{list-style:none}button,input{font:inherit;color:inherit}}
+@layer tokens{
+/* Cybergoth design tokens — goth + rave + industrial fusion. Dark-first theme; light overrides follow. */
+:root{--color-bg:#08070a;--color-surface:#131018;--color-surface-strong:#1c1724;--color-border:#3a2f47;--color-text:#f1e9ff;--color-text-muted:#b9a9d6;--color-primary:#b6ff1a;--color-accent:#ff2fd0;--color-uv:#33f0ff;--color-toxic-glow:rgba(182,255,26,.35);--accent-glow:rgba(255,47,208,.16);--fill-primary:#b6ff1a;--fill-accent:#ff2fd0;--radius-sm:2px;--radius-md:4px;--radius-lg:6px;--radius-pill:999px;--shadow-sm:0 0 6px var(--color-toxic-glow);--shadow-md:0 0 16px var(--color-toxic-glow),0 4px 12px rgba(0,0,0,.6);--shadow-lg:0 0 32px var(--color-toxic-glow),0 8px 24px rgba(0,0,0,.7);--font-sans:'Rubik','Eurostile',system-ui,sans-serif;--font-display:'Orbitron','Rubik',sans-serif;--font-mono:'Share Tech Mono',ui-monospace,monospace;--text-xs:.75rem;--text-sm:.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.375rem;--text-2xl:1.75rem;--text-3xl:2.25rem;--text-4xl:3rem;--text-5xl:4rem;--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-6:24px;--space-8:32px;--space-12:48px;--space-16:64px;--space-24:96px;--ease-standard:cubic-bezier(.7,0,.3,1);--neon-edge:1px solid var(--color-primary);--hazard-stripe:repeating-linear-gradient(45deg,var(--color-accent) 0 6px,transparent 6px 12px);
+/* semantic aliases */
+--primary:var(--color-primary);--secondary:var(--color-accent);--bg-primary:var(--color-bg);--bg-secondary:var(--color-surface);--text-primary:var(--color-text);--text-secondary:var(--color-text-muted);--border-default:var(--color-border);--text-success:var(--color-primary);--text-error:#ff3b3b;--border-success:var(--text-success);--border-error:var(--text-error);--transition-fast:150ms;--transition-normal:250ms;--spacing-gap:16px;--z-dropdown:100;--z-modal:200;--z-toast:300;color-scheme:dark}
+/* light override — smoky lavender surfaces, ink neon variants for AA contrast */
+.light{--color-bg:#ece7f4;--color-surface:#f4f0fa;--color-surface-strong:#fefefe;--color-border:#6b5b85;--color-text:#17121f;--color-text-muted:#5c5170;--color-primary:#3d6600;--color-accent:#a10063;--color-uv:#00697a;--color-toxic-glow:rgba(61,102,0,.26);--accent-glow:rgba(161,0,99,.12);--text-error:#b3001b;color-scheme:light}
+@media(prefers-color-scheme:light){html:not(.light):not(.dark){--color-bg:#ece7f4;--color-surface:#f4f0fa;--color-surface-strong:#fefefe;--color-border:#6b5b85;--color-text:#17121f;--color-text-muted:#5c5170;--color-primary:#3d6600;--color-accent:#a10063;--color-uv:#00697a;--color-toxic-glow:rgba(61,102,0,.26);--accent-glow:rgba(161,0,99,.12);--text-error:#b3001b;color-scheme:light}}
+}
+@layer base{html{scroll-behavior:smooth;background:var(--bg-primary)}body{background:var(--bg-primary);color:var(--text-primary);font:400 var(--text-base)/1.65 var(--font-sans);-webkit-font-smoothing:antialiased;overflow-x:clip}h1,h2,h3,h4{font-family:var(--font-display);text-transform:uppercase;line-height:1.15}section{scroll-margin-top:80px}:focus-visible{outline:2px solid var(--color-uv);outline-offset:2px}.material-symbols-rounded{font-size:20px;line-height:1;user-select:none}.wrap{max-width:1080px;margin-inline:auto;padding-inline:var(--space-6)}.skip{position:fixed;left:-200px;top:var(--space-2);z-index:var(--z-modal);padding:var(--space-2) var(--space-4);background:var(--fill-primary);color:#0a0a12;font-weight:700;text-decoration:none;transition:left var(--transition-fast)}.skip:focus{left:var(--space-2)}
+/* reduced motion: kill all animation globally */
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important;transform:none!important;rotate:none!important}}}
+@layer components{
+/* buttons */
+.btn{position:relative;display:flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:0 20px;background:transparent;border:1px solid var(--border-default);border-radius:var(--radius-sm);color:var(--text-primary);font:700 .8125rem var(--font-sans);letter-spacing:.04em;text-transform:uppercase;text-decoration:none;cursor:pointer;transition:border-color var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),transform var(--transition-normal) var(--ease-standard)}
+.btn:hover{border-color:var(--color-primary);box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.5;filter:grayscale(1);cursor:not-allowed;transform:none;box-shadow:none}
+.btn--primary{background:var(--fill-primary);border-color:var(--fill-primary);color:#0a0a12}
+.btn--success{border-color:var(--border-success);color:var(--text-success)}
+.btn--error{border-color:var(--border-error);color:var(--text-error)}
+.btn--loading{pointer-events:none}
+.btn--loading .btn__icon,.btn--loading .btn__label{visibility:hidden}
+.btn--loading::after{content:"";position:absolute;width:18px;height:18px;border:2px solid #0a0a12;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* cards */
+.card{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-4);padding:var(--space-6);background:var(--bg-secondary);border:var(--neon-edge);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard)}
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.card:focus-within{border-color:var(--color-accent);box-shadow:var(--shadow-md)}
+.card__icon{display:flex;align-items:center;justify-content:center;width:48px;height:48px;border:var(--neon-edge);border-radius:var(--radius-md);background:var(--color-surface-strong);color:var(--color-primary)}
+.card__icon .material-symbols-rounded{font-size:26px}
+.card h3{font-size:var(--text-lg);letter-spacing:.06em}
+.card p{color:var(--text-secondary);font-size:var(--text-sm)}
+/* badge */
+.badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;background:var(--fill-accent);border-radius:var(--radius-pill);color:#14000f;font:700 var(--text-xs) var(--font-mono);letter-spacing:.08em;text-transform:uppercase}
+.badge .material-symbols-rounded{font-size:14px}
+/* input group */
+.input-group{flex:1 1 280px;display:flex;flex-direction:column;align-items:stretch;gap:var(--space-2);text-align:left}
+.input-label{color:var(--text-secondary);font:400 var(--text-xs) var(--font-mono);letter-spacing:.12em;text-transform:uppercase}
+.input-row{position:relative;display:flex}
+.input{flex:1;min-height:44px;width:100%;padding:0 44px 0 var(--space-4);background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-sm);color:var(--text-primary);transition:border-color var(--transition-fast),box-shadow var(--transition-fast)}
+.input::placeholder{color:var(--text-secondary);opacity:.7}
+.input:focus{outline:none;border-color:var(--color-primary);box-shadow:var(--shadow-sm)}
+.input:disabled{opacity:.5;cursor:not-allowed}
+.input[readonly]{border-style:dashed;color:var(--text-secondary)}
+.input-status{position:absolute;right:12px;top:50%;translate:0 -50%;display:none}
+.input-group--valid .input{border-color:var(--border-success)}
+.input-group--valid .input-status--valid{display:block;color:var(--text-success)}
+.input-group--error .input{border-color:var(--border-error)}
+.input-group--error .input-status--error{display:block;color:var(--text-error)}
+.input-feedback{min-height:1.3em;color:var(--text-error);font:400 var(--text-xs) var(--font-mono);letter-spacing:.05em}
+.input-feedback--ok{color:var(--text-success)}
+/* nav */
+.nav{position:sticky;top:0;z-index:var(--z-dropdown);display:flex;align-items:center;gap:var(--space-6);min-height:64px;padding:var(--space-3) var(--space-6);background:var(--bg-primary);background:color-mix(in srgb,var(--bg-primary) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--color-primary);box-shadow:0 4px 20px var(--color-toxic-glow)}
+.nav__brand,.footer__logo{color:var(--text-primary);font:700 1.05rem var(--font-display);letter-spacing:.14em;text-transform:uppercase;text-decoration:none}
+.nav__brand span,.footer__logo span{color:var(--color-primary)}
+.nav__menu{display:flex;align-items:center;gap:var(--space-6);margin-left:auto}
+.nav__link{padding:var(--space-2) 0;border-bottom:1px solid transparent;color:var(--text-secondary);font:500 .8125rem var(--font-sans);letter-spacing:.06em;text-transform:uppercase;text-decoration:none;transition:color var(--transition-fast),border-color var(--transition-fast)}
+.nav__link:hover{color:var(--color-primary);border-bottom-color:var(--color-primary)}
+.nav__actions{display:flex;align-items:center;gap:var(--space-3)}
+.nav__theme,.nav__toggle{display:flex;align-items:center;justify-content:center;width:44px;height:44px;background:transparent;border:1px solid var(--border-default);border-radius:var(--radius-sm);color:var(--text-secondary);cursor:pointer;transition:border-color var(--transition-fast),color var(--transition-fast),box-shadow var(--transition-fast)}
+.nav__theme:hover,.nav__toggle:hover{border-color:var(--color-primary);color:var(--color-primary);box-shadow:var(--shadow-sm)}
+.nav__toggle{display:none}
+.nav__cta{padding:0 14px;font-size:.75rem}
+.i-close{display:none}
+.nav__toggle[aria-expanded="true"] .i-close{display:inline-block}
+.nav__toggle[aria-expanded="true"] .i-menu{display:none}
+html.light .i-moon{display:none}
+html:not(.light) .i-sun{display:none}
+/* faq disclosure */
+.faq__question{display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);width:100%;min-height:44px;padding:var(--space-4);background:none;border:0;color:var(--text-primary);font:700 var(--text-base) var(--font-sans);text-align:left;cursor:pointer}
+.faq__question .material-symbols-rounded{flex:0 0 auto;color:var(--color-primary);transition:rotate var(--transition-normal) var(--ease-standard)}
+.faq__item--open .faq__question .material-symbols-rounded{rotate:180deg}
+.faq__item{border:var(--neon-edge);border-radius:var(--radius-md);background:var(--bg-secondary)}
+.faq__panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--transition-normal) var(--ease-standard)}
+.faq__item--open .faq__panel{grid-template-rows:1fr}
+.faq__panel-in{overflow:hidden}
+.faq__answer{padding:0 var(--space-4) var(--space-4);color:var(--text-secondary);font-size:var(--text-sm)}
+}
+@layer sections{
+/* hero — layered neon wash + scanlines over the base */
+.hero{position:relative;overflow:hidden;background:radial-gradient(42rem 22rem at 8% -8%,var(--color-toxic-glow),transparent 60%),radial-gradient(38rem 20rem at 98% 6%,var(--accent-glow),transparent 55%),var(--bg-primary)}
+.hero::before{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(150,110,215,.05) 0 1px,transparent 1px 4px)}
+.hero .hazard-bar{position:absolute;inset:0 0 auto 0}
+.hero .wrap{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-6);padding-block:clamp(56px,10vw,120px)}
+/* flex exception: hero and vertical stacks align to start for editorial flow */
+.hero__title{max-width:16ch;font-size:clamp(var(--text-3xl),7vw,var(--text-5xl));font-weight:800;letter-spacing:.02em}
+.hero__key{color:var(--color-primary);text-shadow:0 0 22px var(--color-toxic-glow)}
+.hero__sub{max-width:56ch;color:var(--text-secondary);font-size:var(--text-lg)}
+.hero__cta{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-4)}
+.stats{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-8)}
+.stat{border-left:var(--neon-edge);padding-left:var(--space-3);color:var(--text-secondary);font:400 var(--text-xs) var(--font-mono);letter-spacing:.1em;text-transform:uppercase}
+.stat b{display:block;font-weight:400;font-size:var(--text-lg);color:var(--color-primary)}
+/* sections */
+.sec{padding-block:clamp(56px,9vw,var(--space-24))}
+.kicker{color:var(--secondary);font:400 var(--text-sm) var(--font-mono);letter-spacing:.16em;text-transform:uppercase}
+.sec__title{margin-block:var(--space-3) var(--space-4);font-size:clamp(var(--text-xl),4vw,var(--text-3xl));font-weight:800;letter-spacing:.03em}
+.sec__sub{max-width:58ch;color:var(--text-secondary)}
+/* tiled card grids — the one permitted grid use */
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-6);margin-top:var(--space-8)}
+/* steps — flex row, connector line threads the numbers */
+.steps{position:relative;display:flex;flex-wrap:wrap;align-items:flex-start;gap:var(--space-8);margin-top:var(--space-8)}
+.steps::before{content:"";position:absolute;top:16px;left:20px;right:20px;height:2px;opacity:.45;background:linear-gradient(90deg,var(--color-primary),var(--color-accent))}
+.step{position:relative;flex:1 1 240px;display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2)}
+.step__num{padding:0 var(--space-3) var(--space-2);background:var(--bg-primary);color:var(--color-primary);font:700 var(--text-xl) var(--font-mono)}
+.step__icon{color:var(--color-uv);font-size:28px}
+.step h3{font-size:var(--text-base);letter-spacing:.08em}
+.step p{color:var(--text-secondary);font-size:var(--text-sm)}
+/* testimonials */
+.t{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-4);padding:var(--space-6);background:var(--bg-secondary);border:var(--neon-edge);border-radius:var(--radius-lg)}
+.t__meta{display:flex;align-items:center;gap:var(--space-3);margin-top:auto}
+.t__avatar{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border:var(--neon-edge);border-radius:50%;background:var(--color-surface-strong);color:var(--secondary);font:700 var(--text-base) var(--font-mono)}
+.t__name{display:block;font-size:var(--text-sm)}
+.t__role{display:block;color:var(--text-secondary);font:400 var(--text-xs) var(--font-mono);letter-spacing:.08em}
+/* pricing */
+.tier{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-4);padding:var(--space-6);background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg)}
+.tier--featured{border:var(--neon-edge);background:var(--color-surface-strong);box-shadow:var(--shadow-lg)}
+.tier--featured::before{content:"";position:absolute;inset:0 0 auto 0;height:6px;border-radius:var(--radius-lg) var(--radius-lg) 0 0;background:var(--hazard-stripe)}
+.tier__badge{position:absolute;top:-13px;left:var(--space-6);box-shadow:var(--shadow-md)}
+.tier__name{color:var(--color-uv);font-size:var(--text-sm);letter-spacing:.16em}
+.tier__price{font:800 var(--text-3xl) var(--font-display)}
+.tier__price span{color:var(--text-secondary);font:400 var(--text-sm) var(--font-mono)}
+.tier__list{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2)}
+.tier__list li{display:flex;align-items:center;gap:var(--space-2);color:var(--text-secondary);font-size:var(--text-sm)}
+.tier__list .material-symbols-rounded{font-size:16px;color:var(--color-primary)}
+.tier__btn{margin-top:auto;width:100%}
+/* faq list + final cta band */
+.faq{display:flex;flex-direction:column;align-items:stretch;gap:var(--space-3);margin-top:var(--space-8)}
+.cta-band{background:var(--color-surface-strong);border-block:var(--neon-edge);box-shadow:inset 0 0 90px var(--color-toxic-glow)}
+.cta-band .wrap{display:flex;flex-direction:column;align-items:center;gap:var(--space-4);padding-block:var(--space-16);text-align:center}
+.cta-form{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:var(--space-4);width:100%;max-width:620px;margin-top:var(--space-2)}
+.cta-form__btn{min-width:180px}
+/* footer */
+.footer{position:relative;padding-block:var(--space-12) var(--space-8);background:var(--bg-secondary)}
+.footer__grid{display:flex;flex-wrap:wrap;align-items:flex-start;gap:var(--space-8)}
+.footer__brand{flex:2 1 260px;display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-3)}
+.footer__blurb{max-width:38ch;color:var(--text-secondary);font-size:var(--text-sm)}
+.footer__social{display:flex;align-items:center;gap:var(--space-3)}
+.footer__soc{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border:1px solid var(--border-default);border-radius:var(--radius-sm);color:var(--text-secondary);text-decoration:none;transition:color var(--transition-fast),border-color var(--transition-fast),box-shadow var(--transition-fast)}
+.footer__soc:hover{color:var(--color-primary);border-color:var(--color-primary);box-shadow:var(--shadow-sm)}
+.footer__col{flex:1 1 150px;display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2)}
+.footer__col h4{margin-bottom:var(--space-2);color:var(--color-uv);font:400 var(--text-xs) var(--font-mono);letter-spacing:.16em;text-transform:uppercase}
+.footer__col a{color:var(--text-secondary);font-size:var(--text-sm);text-decoration:none;transition:color var(--transition-fast)}
+.footer__col a:hover{color:var(--color-primary)}
+.footer__copy{margin-top:var(--space-8);padding-top:var(--space-4);border-top:1px solid var(--border-default);color:var(--text-secondary);font:400 var(--text-xs) var(--font-mono);letter-spacing:.08em;text-transform:uppercase}
+/* collapse points — no horizontal scroll at any width */
+@media(max-width:860px){.grid-3{grid-template-columns:1fr}.steps::before{display:none}}
+@media(max-width:767px){
+.nav{gap:var(--space-3);padding-inline:var(--space-4)}
+.nav__actions{margin-left:auto}
+.nav__toggle{display:flex}
+.nav__menu{position:absolute;top:100%;left:0;right:0;z-index:var(--z-dropdown);display:none;flex-direction:column;align-items:stretch;gap:0;margin:0;padding:var(--space-4) var(--space-4) var(--space-6);background:var(--bg-primary);border-bottom:1px solid var(--color-primary);box-shadow:var(--shadow-md)}
+.nav__menu--open{display:flex}
+.nav__link{padding:var(--space-3) 0;border-bottom:1px solid var(--border-default)}
+}
+}
+@layer utilities{.hazard-bar{height:4px;background:var(--hazard-stripe)}.wrap--narrow{max-width:840px}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="nav">
+  <a class="nav__brand" href="#main">NIMBUS<span>//</span></a>
+  <nav class="nav__menu" id="navMenu" aria-label="Primary">
+    <a class="nav__link" href="#features">Features</a>
+    <a class="nav__link" href="#how">How it works</a>
+    <a class="nav__link" href="#testimonials">Testimonials</a>
+    <a class="nav__link" href="#pricing">Pricing</a>
+    <a class="nav__link" href="#faq">FAQ</a>
+  </nav>
+  <div class="nav__actions">
+    <button class="nav__theme" id="themeToggle" type="button" aria-pressed="false" aria-label="Switch to light mode">
+      <span class="material-symbols-rounded i-sun" aria-hidden="true">light_mode</span>
+      <span class="material-symbols-rounded i-moon" aria-hidden="true">dark_mode</span>
+    </button>
+    <a class="btn btn--primary nav__cta" href="#access">Go live</a>
+    <button class="nav__toggle" id="navToggle" type="button" aria-expanded="false" aria-controls="navMenu" aria-label="Open menu">
+      <span class="material-symbols-rounded i-menu" aria-hidden="true">menu</span>
+      <span class="material-symbols-rounded i-close" aria-hidden="true">close</span>
+    </button>
+  </div>
+</header>
+<main id="main">
+<section class="hero" aria-labelledby="heroTitle">
+  <div class="hazard-bar" aria-hidden="true"></div>
+  <div class="wrap">
+    <p class="badge"><span class="material-symbols-rounded" aria-hidden="true">sensors</span>SYS://ONLINE — TRANSMISSION 001</p>
+    <h1 class="hero__title" id="heroTitle">GO DARK. GO <span class="hero__key">LIVE.</span></h1>
+    <p class="hero__sub">Nimbus beams encrypted, sub-second audio and video out of warehouses, bunkers, and basement venues — no corporate gatekeepers, no dropped signals, no leaked coordinates.</p>
+    <div class="hero__cta">
+      <a class="btn btn--primary" href="#access"><span class="material-symbols-rounded" aria-hidden="true">play_arrow</span>Start broadcasting</a>
+      <a class="btn" href="#features"><span class="material-symbols-rounded" aria-hidden="true">grid_view</span>View the grid</a>
+    </div>
+    <div class="stats">
+      <p class="stat"><b>&lt;180MS</b>Relay latency</p>
+      <p class="stat"><b>AES-256</b>Crypt layer</p>
+      <p class="stat"><b>0</b>Takedowns to date</p>
+    </div>
+  </div>
+</section>
+<section class="sec" id="features" aria-labelledby="featTitle">
+  <div class="wrap">
+    <p class="kicker">// Core systems</p>
+    <h2 class="sec__title" id="featTitle">Built for the night shift</h2>
+    <p class="sec__sub">Three hardened modules keep your signal alive from doors to last call.</p>
+    <div class="grid-3">
+      <article class="card">
+        <span class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">podcasts</span></span>
+        <h3>Ghost uplink</h3>
+        <p>Spin up an encrypted stream from any warehouse, rooftop, or bunker in under 90 seconds. No corporate CDN, no takedown notices.</p>
+      </article>
+      <article class="card">
+        <span class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">lock</span></span>
+        <h3>Crypt-layer security</h3>
+        <p>Every frame is sealed end to end with rotating AES-256 keys. Coordinates stay dark and the guest list stays sealed.</p>
+      </article>
+      <article class="card">
+        <span class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">bolt</span></span>
+        <h3>Zero-lag circuit</h3>
+        <p>Adaptive relay routing holds audio under 180 ms worldwide — even when the mains hum and the grid turns hostile.</p>
+      </article>
+    </div>
+  </div>
+</section>
+<section class="sec" id="how" aria-labelledby="howTitle">
+  <div class="wrap">
+    <p class="kicker">// Protocol</p>
+    <h2 class="sec__title" id="howTitle">Three steps to live</h2>
+    <div class="steps">
+      <div class="step">
+        <p class="step__num">01</p>
+        <span class="material-symbols-rounded step__icon" aria-hidden="true">key</span>
+        <h3>Jack in</h3>
+        <p>Install the broadcast client, plug in your feed, and pull a one-time crypt key from the console.</p>
+      </div>
+      <div class="step">
+        <p class="step__num">02</p>
+        <span class="material-symbols-rounded step__icon" aria-hidden="true">settings_input_antenna</span>
+        <h3>Route the signal</h3>
+        <p>The relay mesh self-tunes to dodge throttling and keep the pipe open on hostile networks.</p>
+      </div>
+      <div class="step">
+        <p class="step__num">03</p>
+        <span class="material-symbols-rounded step__icon" aria-hidden="true">play_circle</span>
+        <h3>Go live</h3>
+        <p>Hit transmit. Your crowd gets a private crypt link, live chat, and a waveform that never stutters.</p>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="sec" id="testimonials" aria-labelledby="tTitle">
+  <div class="wrap">
+    <p class="kicker">// Field reports</p>
+    <h2 class="sec__title" id="tTitle">Word from the floor</h2>
+    <div class="grid-3">
+      <figure class="t">
+        <blockquote class="t__quote">“We pushed a 4 AM set live from a sealed metro tunnel. Twelve hundred viewers, zero buffer, zero unwanted guests at the door.”</blockquote>
+        <figcaption class="t__meta"><span class="t__avatar" aria-hidden="true">N</span><span><b class="t__name">Nyx Ferro</b><span class="t__role">VJ // @nyx.static</span></span></figcaption>
+      </figure>
+      <figure class="t">
+        <blockquote class="t__quote">“Nimbus pays the lineup, hides the coordinates, and never chokes the bass. It is the only rig we trust for unannounced shows.”</blockquote>
+        <figcaption class="t__meta"><span class="t__avatar" aria-hidden="true">K</span><span><b class="t__name">Kael Dravn</b><span class="t__role">Promoter // Blackout Collective</span></span></figcaption>
+      </figure>
+      <figure class="t">
+        <blockquote class="t__quote">“One crypt link, sub-second latency, and a chat that rages as hard as the floor. Our online crowd is a room now.”</blockquote>
+        <figcaption class="t__meta"><span class="t__avatar" aria-hidden="true">S</span><span><b class="t__name">Sable Kline</b><span class="t__role">Resident DJ // Club Requiem</span></span></figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+<section class="sec" id="pricing" aria-labelledby="pTitle">
+  <div class="wrap">
+    <p class="kicker">// Tariffs</p>
+    <h2 class="sec__title" id="pTitle">Pick your rig</h2>
+    <p class="sec__sub">Every tier runs on the same encrypted mesh. Cancel any night — no contracts, no traces.</p>
+    <div class="grid-3">
+      <article class="tier">
+        <h3 class="tier__name">Ghost</h3>
+        <p class="tier__price">$0<span> /mo</span></p>
+        <ul class="tier__list">
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>720p feed, mono audio</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>3 crypt links per night</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>7-day replay window</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Community chat</li>
+        </ul>
+        <a class="btn tier__btn" href="#access">Run free</a>
+      </article>
+      <article class="tier tier--featured">
+        <span class="badge tier__badge"><span class="material-symbols-rounded" aria-hidden="true">local_fire_department</span>Most popular</span>
+        <h3 class="tier__name">Reactor</h3>
+        <p class="tier__price">$19<span> /mo</span></p>
+        <ul class="tier__list">
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>1080p60 stereo uplink</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Unlimited rotating crypt links</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>30-day encrypted vault</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Multi-city relay mesh</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Priority pirate routing</li>
+        </ul>
+        <a class="btn btn--primary tier__btn" href="#access">Go reactor</a>
+      </article>
+      <article class="tier">
+        <h3 class="tier__name">Blackout</h3>
+        <p class="tier__price">$49<span> /mo</span></p>
+        <ul class="tier__list">
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Multi-cam switching desk</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Raw API + stream keys</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Zero-log ingest nodes</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Dedicated relay slice</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>24/7 ops line, human voices</li>
+        </ul>
+        <a class="btn tier__btn" href="#access">Seal the vault</a>
+      </article>
+    </div>
+  </div>
+</section>
+<section class="sec" id="faq" aria-labelledby="fTitle">
+  <div class="wrap wrap--narrow">
+    <p class="kicker">// Intel</p>
+    <h2 class="sec__title" id="fTitle">Questions from the pit</h2>
+    <div class="faq">
+      <div class="faq__item faq__item--open">
+        <h3><button class="faq__question" type="button" id="faq-q1" aria-expanded="true" aria-controls="faq-p1">Is any of this actually legal?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button></h3>
+        <div class="faq__panel" id="faq-p1" role="region" aria-labelledby="faq-q1"><div class="faq__panel-in"><p class="faq__answer">Nimbus is a broadcast tool, not a promoter. We encrypt the transport and strip the metadata — what you transmit is between you, your crowd, and your local laws. Read the acceptable use terms before you jack in.</p></div></div>
+      </div>
+      <div class="faq__item">
+        <h3><button class="faq__question" type="button" id="faq-q2" aria-expanded="false" aria-controls="faq-p2">How low is the latency, really?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button></h3>
+        <div class="faq__panel" id="faq-p2" role="region" aria-labelledby="faq-q2"><div class="faq__panel-in"><p class="faq__answer">Audio lands under 180 ms on a standard uplink and under 400 ms worldwide through the relay mesh. If your connection degrades mid-set, the mesh reroutes without dropping a frame.</p></div></div>
+      </div>
+      <div class="faq__item">
+        <h3><button class="faq__question" type="button" id="faq-q3" aria-expanded="false" aria-controls="faq-p3">Can anyone find our stream coordinates?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button></h3>
+        <div class="faq__panel" id="faq-p3" role="region" aria-labelledby="faq-q3"><div class="faq__panel-in"><p class="faq__answer">No. Stream keys rotate every session, location data is stripped at ingest, and replay links are single-use crypt tokens that expire on a timer you control.</p></div></div>
+      </div>
+      <div class="faq__item">
+        <h3><button class="faq__question" type="button" id="faq-q4" aria-expanded="false" aria-controls="faq-p4">What gear do we need?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button></h3>
+        <div class="faq__panel" id="faq-p4" role="region" aria-labelledby="faq-q4"><div class="faq__panel-in"><p class="faq__answer">Any camera or line-in feeding a laptop, phone, or capture card. The client handles encoding and routing — no hardware rigs, no operator certificates.</p></div></div>
+      </div>
+      <div class="faq__item">
+        <h3><button class="faq__question" type="button" id="faq-q5" aria-expanded="false" aria-controls="faq-p5">Do artists actually get paid?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button></h3>
+        <div class="faq__panel" id="faq-p5" role="region" aria-labelledby="faq-q5"><div class="faq__panel-in"><p class="faq__answer">On Reactor and Blackout, ticketed streams pay out 85% to the lineup, settled weekly in the currency of your choice. Free-tier streams stay free, forever.</p></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="cta-band" id="access" aria-labelledby="cTitle">
+  <div class="wrap">
+    <p class="kicker">// Uplink</p>
+    <h2 class="sec__title" id="cTitle">Jack into the grid</h2>
+    <p class="sec__sub">Drop your signal address and we route you a crypt key. First month of Reactor is on us.</p>
+    <form class="cta-form" id="accessForm" novalidate>
+      <div class="input-group" id="emailGroup">
+        <label class="input-label" for="email">Signal address</label>
+        <span class="input-row">
+          <input class="input" id="email" type="email" name="email" placeholder="runner@bunker.net" autocomplete="email" required>
+          <span class="material-symbols-rounded input-status input-status--valid" aria-hidden="true">check</span>
+          <span class="material-symbols-rounded input-status input-status--error" aria-hidden="true">error</span>
+        </span>
+        <p class="input-feedback" id="emailFeedback" aria-live="polite"></p>
+      </div>
+      <button class="btn btn--primary cta-form__btn" id="submitBtn" type="submit"><span class="material-symbols-rounded btn__icon" aria-hidden="true">bolt</span><span class="btn__label">Request access</span></button>
+    </form>
+  </div>
+</section>
+</main>
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <p class="footer__logo">NIMBUS<span>//</span></p>
+        <p class="footer__blurb">Encrypted low-latency streaming for the industrial underground. Built by rivetheads, routed over dark fiber, answerable to no label.</p>
+        <div class="footer__social">
+          <a class="footer__soc" href="#access" aria-label="Email us"><span class="material-symbols-rounded" aria-hidden="true">alternate_email</span></a>
+          <a class="footer__soc" href="#access" aria-label="Signal feed"><span class="material-symbols-rounded" aria-hidden="true">rss_feed</span></a>
+          <a class="footer__soc" href="#access" aria-label="Community board"><span class="material-symbols-rounded" aria-hidden="true">forum</span></a>
+        </div>
+      </div>
+      <nav class="footer__col" aria-label="Platform">
+        <h4>Platform</h4>
+        <a href="#features">Features</a>
+        <a href="#how">How it works</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+      <nav class="footer__col" aria-label="Support">
+        <h4>Support</h4>
+        <a href="#faq">Field docs</a>
+        <a href="#faq">Relay status</a>
+        <a href="#access">Contact ops</a>
+      </nav>
+      <nav class="footer__col" aria-label="Legal">
+        <h4>Legal</h4>
+        <a href="#faq">Terms of service</a>
+        <a href="#faq">Privacy</a>
+        <a href="#faq">Acceptable use</a>
+      </nav>
+    </div>
+    <p class="footer__copy">© 2026 Nimbus Signal Systems — all frequencies reserved. Stay anonymous.</p>
+  </div>
+</footer>
+<script>
+(function(){
+"use strict";
+var root=document.documentElement,tt=document.getElementById('themeToggle');
+function applyTheme(t){
+  root.classList.toggle('light',t==='light');root.classList.toggle('dark',t==='dark');
+  tt.setAttribute('aria-pressed',String(t==='light'));
+  tt.setAttribute('aria-label',t==='light'?'Switch to dark mode':'Switch to light mode');
+}
+var saved=null;try{saved=localStorage.getItem('cybergoth-theme')}catch(e){}
+applyTheme(saved||(window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'));
+tt.addEventListener('click',function(){
+  var next=root.classList.contains('light')?'dark':'light';
+  try{localStorage.setItem('cybergoth-theme',next)}catch(e){}
+  applyTheme(next);
+});
+/* mobile nav */
+var nt=document.getElementById('navToggle'),menu=document.getElementById('navMenu');
+function closeNav(){menu.classList.remove('nav__menu--open');nt.setAttribute('aria-expanded','false');nt.setAttribute('aria-label','Open menu')}
+nt.addEventListener('click',function(){
+  var open=menu.classList.toggle('nav__menu--open');
+  nt.setAttribute('aria-expanded',String(open));
+  nt.setAttribute('aria-label',open?'Close menu':'Open menu');
+});
+menu.addEventListener('click',function(e){if(e.target.closest('a'))closeNav()});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&menu.classList.contains('nav__menu--open')){closeNav();nt.focus()}});
+/* faq accordion */
+document.querySelectorAll('.faq__question').forEach(function(q){
+  q.addEventListener('click',function(){
+    var open=q.closest('.faq__item').classList.toggle('faq__item--open');
+    q.setAttribute('aria-expanded',String(open));
+  });
+});
+/* cta form: validate → loading → success */
+var form=document.getElementById('accessForm'),group=document.getElementById('emailGroup'),
+    input=document.getElementById('email'),fb=document.getElementById('emailFeedback'),
+    btn=document.getElementById('submitBtn'),icon=btn.querySelector('.btn__icon'),label=btn.querySelector('.btn__label'),
+    RE=/^[^\s@]+@[^\s@]+\.[^\s@]+$/,busy=false;
+input.addEventListener('input',function(){group.classList.remove('input-group--error','input-group--valid');fb.textContent='';fb.classList.remove('input-feedback--ok')});
+form.addEventListener('submit',function(e){
+  e.preventDefault();
+  if(busy)return;
+  group.classList.remove('input-group--error','input-group--valid');
+  if(!RE.test(input.value.trim())){
+    group.classList.add('input-group--error');
+    fb.classList.remove('input-feedback--ok');
+    fb.textContent='[ERR] Invalid signal address — enter a working email.';
+    input.focus();return;
+  }
+  group.classList.add('input-group--valid');
+  busy=true;btn.classList.add('btn--loading');btn.setAttribute('aria-busy','true');
+  fb.classList.remove('input-feedback--ok');fb.textContent='[SYS] Handshaking with the relay...';
+  setTimeout(function(){
+    btn.classList.remove('btn--loading','btn--primary');
+    btn.classList.add('btn--success');btn.removeAttribute('aria-busy');
+    icon.textContent='check_circle';label.textContent='Access granted';
+    fb.classList.add('input-feedback--ok');
+    fb.textContent='[OK] Uplink request received. Check your inbox, runner.';
+  },1400);
+});
+})();
+</script>
+</body>
+</html>

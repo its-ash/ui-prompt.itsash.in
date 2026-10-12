@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nimbus · Lecture 3 — on Pendulums</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;700;800&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0&display=swap" rel="stylesheet">
+<style>
+/* tokens */
+:root{--primary:#20301f;--primary-deep:#26381f;--secondary:#7a5a34;--secondary-deep:#6a4a2a;--bg-primary:#e8ecd8;--bg-secondary:#f0f4e8;--text-primary:#20301f;--text-secondary:#6a4a2a;--near-white:#fefefe;--on-green:#f0f4e8;--text-success:#1c6b3a;--text-error:#9c2a1a;--border-default:rgba(32,48,31,.16);--border-error:#b3402e;--border-success:#2c7a4b;--grad-a:#20301f;--grad-b:#26381f;--chalk-on-green:#d8b183;--font-display:"Fredoka",sans-serif;--font-base:"Nunito",sans-serif;--font-chalk:"Caveat",cursive;--radius-sm:10px;--radius-md:16px;--radius-lg:26px;--shadow-sm:0 2px 10px rgba(32,48,31,.08);--shadow-md:0 14px 34px rgba(32,48,31,.18);--shadow-neu:8px 8px 16px rgba(32,48,31,.18),-8px -8px 16px rgba(254,254,254,.85);--shadow-neu-inset:inset 4px 4px 9px rgba(32,48,31,.18),inset -4px -4px 9px rgba(254,254,254,.85);--spacing-gap:1.4rem;--ease-standard:cubic-bezier(.4,0,.2,1);--transition-fast:.15s var(--ease-standard);--transition-normal:.3s var(--ease-standard);--z-dropdown:100;--z-modal:200;--z-toast:300}
+:root.dark{--primary:#e8ecd8;--secondary:#a8825a;--bg-primary:#141f12;--bg-secondary:#20301f;--text-primary:#e8ecd8;--text-secondary:#cbbf9a;--border-default:rgba(232,236,216,.22);--text-success:#7fd49b;--text-error:#ff9d8a;--border-error:#e06a55;--border-success:#6fcf8f;--grad-a:#3a5233;--grad-b:#2a3f26;--chalk-on-green:#d8b183;--shadow-sm:0 2px 10px rgba(0,0,0,.4);--shadow-md:0 14px 34px rgba(0,0,0,.5);--shadow-neu:8px 8px 16px rgba(0,0,0,.5),-8px -8px 16px rgba(96,128,84,.14);--shadow-neu-inset:inset 4px 4px 9px rgba(0,0,0,.5),inset -4px -4px 9px rgba(96,128,84,.14)}
+@media(prefers-color-scheme:dark){:root:not(.light){--primary:#e8ecd8;--secondary:#a8825a;--bg-primary:#141f12;--bg-secondary:#20301f;--text-primary:#e8ecd8;--text-secondary:#cbbf9a;--border-default:rgba(232,236,216,.22);--text-success:#7fd49b;--text-error:#ff9d8a;--border-error:#e06a55;--border-success:#6fcf8f;--grad-a:#3a5233;--grad-b:#2a3f26;--chalk-on-green:#d8b183;--shadow-sm:0 2px 10px rgba(0,0,0,.4);--shadow-md:0 14px 34px rgba(0,0,0,.5);--shadow-neu:8px 8px 16px rgba(0,0,0,.5),-8px -8px 16px rgba(96,128,84,.14);--shadow-neu-inset:inset 4px 4px 9px rgba(0,0,0,.5),inset -4px -4px 9px rgba(96,128,84,.14)}}
+/* base */
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;transition:background var(--transition-normal),color var(--transition-normal)}
+h1,h2,h3{font-family:var(--font-display);font-weight:600;line-height:1.15}
+h1 em,h2 em{font-style:normal;color:var(--secondary);text-decoration:underline wavy var(--secondary) 2px;text-underline-offset:6px}
+[id]{scroll-margin-top:92px}
+.section{max-width:1100px;margin:0 auto;padding:3.8rem 1.25rem}
+.section-head{display:flex;flex-direction:column;align-items:center;gap:.4rem;text-align:center;margin-bottom:2.2rem}
+.eyebrow{font-family:var(--font-chalk);font-weight:700;font-size:1.35rem;color:var(--secondary)}
+.section-head p{color:var(--text-secondary);max-width:52ch}
+.material-symbols-rounded{font-family:'Material Symbols Rounded';font-weight:normal;font-size:24px;line-height:1;display:inline-block;white-space:nowrap;-webkit-font-smoothing:antialiased;font-variation-settings:'FILL' 1}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+/* buttons */
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;min-width:44px;padding:.6rem 1.35rem;border:0;border-radius:999px;font-family:var(--font-base);font-weight:800;font-size:1rem;cursor:pointer;text-decoration:none;transition:var(--transition-normal)}
+.btn:hover{filter:brightness(1.08);box-shadow:var(--shadow-md)}
+.btn:active{transform:scale(.97)}
+.btn:focus-visible{outline:3px solid var(--secondary);outline-offset:2px}
+.btn--primary{background:linear-gradient(135deg,var(--grad-a),var(--grad-b));color:var(--on-green)}
+.btn--secondary{background:var(--bg-secondary);color:var(--text-primary);box-shadow:var(--shadow-neu)}
+.btn--ghost{background:transparent;color:var(--text-primary);box-shadow:inset 0 0 0 2px var(--border-default)}
+.btn--inverted{background:var(--near-white);color:#26381f}
+.btn--danger{background:#a32c1b;color:#fefefe}
+.btn[disabled],.btn[disabled]:hover{opacity:.5;filter:grayscale(1);cursor:not-allowed;transform:none;box-shadow:none}
+.btn.is-loading{pointer-events:none;color:transparent}
+.btn.is-loading .material-symbols-rounded{opacity:0}
+.btn.is-loading::after{content:"";position:absolute;width:20px;height:20px;border-radius:50%;border:2px solid rgba(254,254,254,.35);border-top-color:var(--near-white);animation:spin .7s linear infinite}
+.btn.is-success{background:#2c7a4b;color:var(--near-white)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border:0;border-radius:50%;background:var(--bg-secondary);color:var(--text-primary);box-shadow:var(--shadow-neu);cursor:pointer;transition:var(--transition-normal)}
+.icon-btn:hover{box-shadow:var(--shadow-md)}
+.icon-btn:active{transform:scale(.95)}
+.icon-btn:focus-visible{outline:3px solid var(--secondary);outline-offset:2px}
+/* cards */
+.card{display:flex;flex-direction:column;align-items:center;gap:.8rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-neu);padding:1.8rem 1.4rem;text-align:center;transition:var(--transition-normal)}
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.card:focus-within{border-color:var(--secondary)}
+.card h3{font-size:1.25rem}
+.card p{color:var(--text-secondary);font-size:.98rem}
+.card__icon{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--bg-primary);color:var(--secondary);box-shadow:var(--shadow-neu-inset)}
+.grid{display:flex;flex-wrap:wrap;gap:var(--spacing-gap)}
+.grid>.card{flex:1 1 250px;min-width:0}
+/* header */
+.site-header{position:sticky;top:0;z-index:90;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.7rem 1.25rem;background:var(--bg-primary);transition:box-shadow var(--transition-normal)}
+.site-header.is-scrolled{box-shadow:var(--shadow-md)}
+.brand{display:flex;align-items:center;gap:.5rem;font-family:var(--font-display);font-weight:700;font-size:1.3rem;color:var(--primary);text-decoration:none}
+.brand .material-symbols-rounded{color:var(--secondary);font-size:30px}
+.brand small{font-family:var(--font-chalk);font-weight:700;color:var(--text-secondary);font-size:1.15rem}
+.nav{display:flex;align-items:center;gap:.7rem}
+.nav__links{list-style:none;position:absolute;top:100%;left:1rem;right:1rem;z-index:var(--z-dropdown);display:flex;flex-direction:column;align-items:center;gap:.2rem;padding:.8rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-md);opacity:0;visibility:hidden;transform:translateY(-8px);transition:var(--transition-normal)}
+.nav__links.is-open{opacity:1;visibility:visible;transform:none}
+.nav__links a{display:flex;align-items:center;min-height:44px;padding:0 1.1rem;border-radius:var(--radius-sm);font-weight:800;color:var(--text-secondary);text-decoration:none;transition:var(--transition-fast)}
+.nav__links a:hover{background:var(--bg-primary);color:var(--text-primary)}
+.nav__links a:focus-visible{outline:3px solid var(--secondary);outline-offset:-3px}
+.nav__toggle{display:inline-flex}
+@media(min-width:880px){.nav__links{position:static;flex-direction:row;align-items:center;gap:.1rem;padding:0;background:none;border:0;box-shadow:none;opacity:1;visibility:visible;transform:none}.nav__toggle{display:none}}
+/* hero */
+.hero{display:flex;flex-wrap:wrap;align-items:center;gap:2.5rem;max-width:1100px;margin:0 auto;padding:3.2rem 1.25rem 4rem}
+.hero__copy{flex:1 1 340px;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:1rem} /* exception: left-aligned text column */
+.badge{font-family:var(--font-chalk);font-weight:700;font-size:1.2rem;color:var(--text-secondary);background:var(--bg-secondary);border:1px dashed var(--secondary);border-radius:999px;padding:.15rem 1rem;box-shadow:var(--shadow-sm)}
+.hero h1{font-size:clamp(2.2rem,5vw,3.3rem);color:var(--primary)}
+.hero__sub{color:var(--text-secondary);font-size:1.1rem;max-width:38ch}
+.hero__ctas{display:flex;flex-wrap:wrap;gap:.9rem}
+.hero__stage{position:relative;flex:1 1 320px;min-width:0;display:flex;flex-direction:column;align-items:center;gap:1.1rem;padding:2.4rem 1.4rem 1.6rem;border-radius:var(--radius-lg);background:radial-gradient(circle at 15% 8%,rgba(254,254,254,.1),transparent 55%),linear-gradient(140deg,var(--grad-a),var(--grad-b));box-shadow:var(--shadow-md)}
+.eq{position:absolute;font-family:var(--font-chalk);font-weight:700;font-size:1.3rem;color:var(--on-green);opacity:.85;animation:drift 7s ease-in-out infinite alternate}
+.eq--1{top:1rem;left:7%}.eq--2{top:38%;right:5%;animation-delay:-2.4s}.eq--3{bottom:5.2rem;left:12%;animation-delay:-4.5s}
+@keyframes drift{from{transform:translateY(0) rotate(-4deg)}to{transform:translateY(-16px) rotate(5deg)}}
+.rig{display:flex;flex-direction:column;align-items:center;gap:1rem;width:100%;max-width:280px}
+.rig__bar{width:100%;height:14px;border-radius:999px;background:linear-gradient(180deg,#a8825a,#7a5a34);box-shadow:0 4px 10px rgba(0,0,0,.35)}
+.pendulum{--swing-angle:13deg;--swing-duration:2.6s;display:flex;flex-direction:column;align-items:center;width:3px;height:190px;margin-top:6px;transform-origin:top center;animation:swing var(--swing-duration) ease-in-out infinite}
+.pendulum.is-brisk{--swing-angle:22deg;--swing-duration:1.5s}
+.pendulum.is-wild{--swing-angle:32deg;--swing-duration:.95s}
+@keyframes swing{0%,100%{transform:rotate(calc(var(--swing-angle) * -1))}50%{transform:rotate(var(--swing-angle))}}
+.pendulum__string{flex:1;width:3px;border-radius:2px;background:var(--on-green)}
+.pendulum__bob{width:52px;height:52px;border:0;border-radius:50%;cursor:pointer;background:radial-gradient(circle at 32% 28%,#d8b183,#7a5a34 72%);box-shadow:0 6px 14px rgba(0,0,0,.4),inset -4px -6px 10px rgba(0,0,0,.35);transition:var(--transition-fast)}
+.pendulum__bob:hover{box-shadow:0 8px 20px rgba(0,0,0,.5)}
+.pendulum__bob:active{transform:scale(.94)}
+.pendulum__bob:focus-visible{outline:3px solid var(--near-white);outline-offset:3px}
+.rig__hint{font-family:var(--font-chalk);font-weight:700;font-size:1.25rem;color:var(--on-green)}
+/* steps */
+.steps{display:flex;align-items:center;gap:1rem}
+.steps__step{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:.6rem;text-align:center}
+.steps__num{font-family:var(--font-chalk);font-weight:700;font-size:2rem;color:var(--secondary)}
+.steps__icon{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--bg-secondary);color:var(--secondary);box-shadow:var(--shadow-neu-inset)}
+.steps__step h3{font-size:1.15rem}
+.steps__step p{color:var(--text-secondary);font-size:.95rem}
+.steps__dash{flex:0 1 64px;border-top:3px dashed var(--secondary);opacity:.65}
+@media(max-width:760px){.steps{flex-direction:column;gap:.6rem}.steps__dash{width:3px;height:40px;flex:none;border-top:0;border-left:3px dashed var(--secondary)}}
+/* testimonials */
+.stars{display:flex;gap:.15rem;color:#d98f2b}
+.stars .material-symbols-rounded{font-size:20px}
+.quote{color:var(--text-secondary);font-style:italic}
+.avatar{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;color:var(--secondary);background:var(--bg-primary);box-shadow:var(--shadow-neu-inset)}
+.t-meta{display:flex;flex-direction:column;align-items:center;gap:.1rem}
+.t-name{font-weight:800}
+.t-role{font-size:.85rem;color:var(--text-secondary)}
+/* pricing */
+.billing{display:flex;align-items:center;gap:.35rem;width:max-content;margin:0 auto 2.2rem;padding:.35rem;border-radius:999px;background:var(--bg-secondary);box-shadow:var(--shadow-neu)}
+.billing__btn{display:flex;align-items:center;min-height:44px;padding:0 1.3rem;border:0;border-radius:999px;background:transparent;color:var(--text-secondary);font-family:var(--font-base);font-weight:800;cursor:pointer;transition:var(--transition-normal)}
+.billing__btn.is-active{box-shadow:var(--shadow-neu-inset);color:var(--text-primary)}
+.billing__btn:focus-visible{outline:3px solid var(--secondary);outline-offset:2px}
+.billing__save{font-family:var(--font-chalk);font-weight:700;color:var(--text-success);margin-left:.35rem}
+.tiers{display:flex;flex-wrap:wrap;gap:var(--spacing-gap);align-items:stretch} /* exception: stretch = equal-height tiers */
+.tier{position:relative;flex:1 1 240px;min-width:0;display:flex;flex-direction:column;align-items:center;gap:.85rem;padding:2.1rem 1.4rem;text-align:center;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-neu);transition:var(--transition-normal)}
+.tier:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.tier:focus-within{border-color:var(--secondary)}
+.tier h3{font-size:1.3rem}
+.tier__price{font-family:var(--font-display);font-weight:700;font-size:2.3rem;transition:var(--transition-fast)}
+.tier__price small{font-family:var(--font-base);font-size:.95rem;opacity:.7}
+.tier__price.is-swap{opacity:0;transform:translateY(6px)}
+.tier ul{list-style:none;display:flex;flex-direction:column;gap:.55rem;font-size:.95rem;color:var(--text-secondary)}
+.tier ul li{display:flex;align-items:center;gap:.5rem;text-align:left}
+.tier ul .material-symbols-rounded{font-size:19px;color:var(--border-success)}
+.tier .btn{margin-top:auto}
+.tier--featured{background:linear-gradient(150deg,var(--grad-a),var(--grad-b));border-color:transparent;transform:scale(1.04);box-shadow:var(--shadow-md)}
+.tier--featured:hover{transform:scale(1.04) translateY(-2px)}
+.tier--featured,.tier--featured ul{color:var(--on-green)}
+.tier--featured ul .material-symbols-rounded{color:var(--on-green)}
+.tier__badge{position:absolute;top:-16px;right:16px;padding:.1rem .9rem;border-radius:999px;background:var(--near-white);color:var(--secondary-deep);font-family:var(--font-chalk);font-weight:700;font-size:1.15rem;box-shadow:var(--shadow-sm);transform:rotate(4deg)}
+/* faq */
+.faq{display:flex;flex-direction:column;gap:.9rem;max-width:740px;margin:0 auto}
+.faq details{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-neu);transition:var(--transition-normal)}
+.faq details[open]{box-shadow:var(--shadow-md);border-color:var(--secondary)}
+.faq summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:56px;padding:.8rem 1.2rem;font-weight:800;cursor:pointer;list-style:none}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary:focus-visible{outline:3px solid var(--secondary);outline-offset:-3px;border-radius:var(--radius-md)}
+.faq summary .material-symbols-rounded{color:var(--secondary);transition:transform var(--transition-normal)}
+.faq details[open] summary .material-symbols-rounded{transform:rotate(180deg)}
+.faq p{padding:0 1.2rem 1.1rem;color:var(--text-secondary)}
+/* cta band */
+.cta-band{background:radial-gradient(circle at 85% 15%,rgba(254,254,254,.09),transparent 50%),linear-gradient(140deg,var(--grad-a),var(--grad-b));color:var(--on-green)}
+.cta-band h2{color:var(--on-green)}
+.cta-band .eyebrow{color:var(--chalk-on-green)}
+.cta-band .section-head p{color:var(--on-green);opacity:.85}
+.input-group{display:flex;flex-direction:column;align-items:center;gap:.5rem;width:100%;max-width:440px;margin:1rem auto 0}
+.input-group label{font-weight:800;color:var(--on-green)}
+.field{position:relative;width:100%}
+.field input{width:100%;min-height:48px;padding:0 2.8rem 0 1.1rem;border-radius:var(--radius-md);border:2px solid transparent;background:#f0f4e8;color:#20301f;font-family:var(--font-base);font-weight:700;font-size:1rem}
+.field input::placeholder{color:#6a4a2a}
+.field input:focus{outline:3px solid var(--chalk-on-green);outline-offset:2px}
+.field input[disabled]{opacity:.6;cursor:not-allowed}
+.input-group.is-valid .field input{border-color:#2c7a4b}
+.input-group.is-invalid .field input{border-color:var(--border-error)}
+.field__icon{position:absolute;right:.85rem;top:50%;transform:translateY(-50%);font-size:22px;visibility:hidden}
+.field__icon--ok{color:#2c7a4b}.field__icon--err{color:#b3402e}
+.input-group.is-valid .field__icon--ok,.input-group.is-invalid .field__icon--err{visibility:visible}
+.input-group__error{min-height:1.35rem;font-size:.9rem;font-weight:700;color:#ffb4a3}
+/* modal */
+.modal{position:fixed;inset:0;z-index:var(--z-modal);display:flex;align-items:center;justify-content:center;padding:1.25rem}
+.modal[hidden]{display:none}
+.modal__backdrop{position:absolute;inset:0;background:rgba(20,31,18,.6);opacity:0;transition:var(--transition-normal)}
+.modal__panel{position:relative;width:min(560px,100%);max-height:86vh;overflow:auto;display:flex;flex-direction:column;align-items:center;gap:.9rem;padding:2rem 1.5rem;text-align:center;background:radial-gradient(circle at 85% 10%,rgba(254,254,254,.08),transparent 45%),linear-gradient(150deg,var(--grad-a),var(--grad-b));color:var(--on-green);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);opacity:0;transform:translateY(18px) scale(.97);transition:var(--transition-normal)}
+.modal.is-open .modal__backdrop{opacity:1}
+.modal.is-open .modal__panel{opacity:1;transform:none}
+.modal__close{position:absolute;top:.8rem;right:.8rem;background:rgba(240,244,232,.14);color:var(--on-green);box-shadow:none}
+.modal__close:hover{background:rgba(240,244,232,.24)}
+.chalk-note{font-family:var(--font-chalk);font-weight:700;font-size:1.3rem;color:var(--chalk-on-green)}
+.modal .rig{max-width:190px;gap:.7rem}
+.modal .pendulum{height:120px}
+.modal .pendulum__bob{width:38px;height:38px}
+.lesson-list{list-style:none;display:flex;flex-direction:column;align-items:flex-start;gap:.55rem;text-align:left;width:100%}
+.lesson-list li{display:flex;align-items:center;gap:.5rem}
+.lesson-list .material-symbols-rounded{font-size:19px;color:var(--chalk-on-green)}
+.skel-wrap{display:none;flex-direction:column;align-items:stretch;gap:.7rem;width:100%} /* exception: full-width skeleton bars */
+#lessonBody.is-loading .lesson-list{display:none}
+#lessonBody.is-loading .skel-wrap{display:flex}
+.skel{height:15px;border-radius:999px;background:linear-gradient(90deg,rgba(254,254,254,.07) 25%,rgba(254,254,254,.22) 50%,rgba(254,254,254,.07) 75%);background-size:200% 100%;animation:shimmer 1s linear infinite}
+.skel--lg{height:22px;width:60%;align-self:center}
+@keyframes shimmer{to{background-position:-200% 0}}
+.empty{display:flex;flex-direction:column;align-items:center;gap:.5rem;padding:1rem;opacity:.85}
+.modal__actions{display:flex;flex-wrap:wrap;justify-content:center;gap:.8rem}
+/* toast */
+.toast{position:fixed;bottom:1.4rem;left:50%;z-index:var(--z-toast);display:flex;align-items:center;gap:.5rem;padding:.8rem 1.4rem;border-radius:999px;background:linear-gradient(135deg,var(--grad-a),var(--grad-b));color:var(--on-green);font-weight:700;box-shadow:var(--shadow-md);opacity:0;visibility:hidden;transform:translate(-50%,16px);transition:var(--transition-normal)}
+.toast.is-visible{opacity:1;visibility:visible;transform:translate(-50%,0)}
+/* footer */
+footer{background:var(--bg-secondary);border-top:1px solid var(--border-default)}
+.footer-inner{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:2rem;max-width:1100px;margin:0 auto;padding:2.8rem 1.25rem} /* exception: columns top-aligned */
+.footer-col{display:flex;flex-direction:column;align-items:flex-start;gap:.15rem} /* exception: left-aligned link stacks */
+.footer-col h3{font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;color:var(--secondary)}
+.footer-col a{display:inline-flex;align-items:center;min-height:44px;color:var(--text-secondary);text-decoration:none;font-weight:700}
+.footer-col a:hover{color:var(--text-primary);text-decoration:underline}
+.footer-bottom{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1rem;max-width:1100px;margin:0 auto;padding:1.2rem 1.25rem;border-top:1px solid var(--border-default);color:var(--text-secondary);font-size:.9rem}
+.socials{display:flex;align-items:center;gap:.4rem}
+.mini-pendulum{position:relative;display:inline-block;width:2px;height:38px;margin:0 1.4rem;background:var(--secondary);transform:rotate(16deg);transform-origin:top center}
+.mini-pendulum::after{content:"";position:absolute;bottom:-11px;left:50%;transform:translateX(-50%);width:15px;height:15px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#d8b183,#7a5a34 75%)}
+/* motion */
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.pendulum,.eq,.skel,.btn.is-loading::after{animation:none!important}.modal__panel,.modal__backdrop,.toast{transition:none}.card:hover,.tier:hover{transform:none}}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="#top"><span class="material-symbols-rounded">pendulum</span>Nimbus <small>· Lecture 3</small></a>
+  <nav class="nav" aria-label="Main">
+    <ul class="nav__links" id="navLinks">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#how">How It Works</a></li>
+      <li><a href="#testimonials">Testimonials</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+    <button class="icon-btn" id="themeToggle" aria-pressed="false" aria-label="Switch to dark theme"><span class="material-symbols-rounded" id="themeIcon">dark_mode</span></button>
+    <button class="icon-btn nav__toggle" id="navToggle" aria-expanded="false" aria-controls="navLinks" aria-label="Open menu"><span class="material-symbols-rounded">menu</span></button>
+  </nav>
+</header>
+<main id="top">
+  <section class="hero" aria-labelledby="heroTitle">
+    <div class="hero__copy">
+      <span class="badge">Lecture 3 — Interactive Physics</span>
+      <h1 id="heroTitle">Physics class just got its <em>swing</em> back.</h1>
+      <p class="hero__sub">Push a real simulated pendulum, tweak every variable, and watch the equations happen live. No naps — just motion.</p>
+      <div class="hero__ctas">
+        <a class="btn btn--primary" href="#pricing"><span class="material-symbols-rounded">pendulum</span>Start Swinging</a>
+        <button class="btn btn--ghost" type="button" data-open-modal><span class="material-symbols-rounded">play_circle</span>Watch a Lesson</button>
+      </div>
+    </div>
+    <div class="hero__stage">
+      <span class="eq eq--1" aria-hidden="true">T = 2π√(L/g)</span>
+      <span class="eq eq--2" aria-hidden="true">f = 1/T</span>
+      <span class="eq eq--3" aria-hidden="true">g ≈ 9.8 m/s²</span>
+      <div class="rig">
+        <div class="rig__bar" aria-hidden="true"></div>
+        <div class="pendulum is-swinging" id="pendulum">
+          <span class="pendulum__string" aria-hidden="true"></span>
+          <button class="pendulum__bob" id="bob" type="button" aria-label="Push the pendulum to swing harder"></button>
+        </div>
+        <p class="rig__hint">Tap the bob to push it — pushes: <span id="pushCount" aria-live="polite">0</span></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="features" aria-labelledby="featuresTitle">
+    <div class="section-head">
+      <span class="eyebrow">Why you'll stay awake</span>
+      <h2 id="featuresTitle">Physics that <em>pushes</em> back</h2>
+      <p>Everything in Lecture 3 is built around one idea: you learn motion by making it.</p>
+    </div>
+    <div class="grid">
+      <article class="card">
+        <span class="card__icon"><span class="material-symbols-rounded">science</span></span>
+        <h3>Real Physics, Zero Naps</h3>
+        <p>Every swing runs on genuine equations of motion. No mystery formulas, no hand-waving — just honest, testable physics.</p>
+      </article>
+      <article class="card">
+        <span class="card__icon"><span class="material-symbols-rounded">tune</span></span>
+        <h3>Tweak Every Variable</h3>
+        <p>Change length, mass, gravity, and damping on the fly, then watch the period respond the instant you let go.</p>
+      </article>
+      <article class="card">
+        <span class="card__icon"><span class="material-symbols-rounded">emoji_events</span></span>
+        <h3>Level Up Your Lectures</h3>
+        <p>Collect experiment badges, beat your own best timing, and turn each oscillation into a small, satisfying victory.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="how" aria-labelledby="howTitle">
+    <div class="section-head">
+      <span class="eyebrow">The lesson plan</span>
+      <h2 id="howTitle">Three steps to <em>master</em> the swing</h2>
+    </div>
+    <div class="steps">
+      <div class="steps__step">
+        <span class="steps__num" aria-hidden="true">01</span>
+        <span class="steps__icon"><span class="material-symbols-rounded">play_circle</span></span>
+        <h3>Pick your pendulum</h3>
+        <p>Choose a bob, a string length, and even the planet whose gravity you want to play on.</p>
+      </div>
+      <span class="steps__dash" aria-hidden="true"></span>
+      <div class="steps__step">
+        <span class="steps__num" aria-hidden="true">02</span>
+        <span class="steps__icon"><span class="material-symbols-rounded">tune</span></span>
+        <h3>Run the experiments</h3>
+        <p>Push, time, and record every swing while the live readout does the math for you in real time.</p>
+      </div>
+      <span class="steps__dash" aria-hidden="true"></span>
+      <div class="steps__step">
+        <span class="steps__num" aria-hidden="true">03</span>
+        <span class="steps__icon"><span class="material-symbols-rounded">school</span></span>
+        <h3>Ace the lecture</h3>
+        <p>Export your data, nail the quiz, and walk out knowing T = 2π√(L/g) by heart.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="testimonials" aria-labelledby="tTitle">
+    <div class="section-head">
+      <span class="eyebrow">Word from the classroom</span>
+      <h2 id="tTitle">Students are <em>leaning</em> in</h2>
+    </div>
+    <div class="grid">
+      <article class="card">
+        <span class="stars" role="img" aria-label="Rated 5 out of 5 stars"><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span></span>
+        <p class="quote">"I pushed the bob once and stayed for forty minutes. My lab report basically wrote itself."</p>
+        <span class="avatar" aria-hidden="true">MR</span>
+        <div class="t-meta"><span class="t-name">Maya R.</span><span class="t-role">Physics student, Grade 11</span></div>
+      </article>
+      <article class="card">
+        <span class="stars" role="img" aria-label="Rated 5 out of 5 stars"><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span></span>
+        <p class="quote">"The only lecture where students argue over who gets to push next. I call that a win."</p>
+        <span class="avatar" aria-hidden="true">DO</span>
+        <div class="t-meta"><span class="t-name">Mr. Okafor</span><span class="t-role">High-school physics teacher</span></div>
+      </article>
+      <article class="card">
+        <span class="stars" role="img" aria-label="Rated 5 out of 5 stars"><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span></span>
+        <p class="quote">"I finally understand why the small-angle approximation is a big deal. It clicked mid-swing."</p>
+        <span class="avatar" aria-hidden="true">DK</span>
+        <div class="t-meta"><span class="t-name">Dan K.</span><span class="t-role">First-year university student</span></div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="pricing" aria-labelledby="pricingTitle">
+    <div class="section-head">
+      <span class="eyebrow">Pick your seat</span>
+      <h2 id="pricingTitle">Pricing with <em>no</em> surprises</h2>
+      <p>Start free forever. Upgrade only when you want every planet and preset.</p>
+    </div>
+    <div class="billing" role="group" aria-label="Billing period">
+      <button class="billing__btn is-active" type="button" data-cycle="m" aria-pressed="true">Monthly</button>
+      <button class="billing__btn" type="button" data-cycle="y" aria-pressed="false">Annual<span class="billing__save">save 20%</span></button>
+    </div>
+    <div class="tiers">
+      <article class="tier">
+        <h3>Student</h3>
+        <p class="tier__price" data-m="$0" data-y="$0"><span class="tier__amount">$0</span><small> /mo</small></p>
+        <ul>
+          <li><span class="material-symbols-rounded">check</span>3 pendulum rigs</li>
+          <li><span class="material-symbols-rounded">check</span>Live period readout</li>
+          <li><span class="material-symbols-rounded">check</span>Community chalk notes</li>
+        </ul>
+        <a class="btn btn--secondary" href="#cta">Start free</a>
+      </article>
+      <article class="tier tier--featured">
+        <span class="tier__badge">Most Popular</span>
+        <h3>Lab Pass</h3>
+        <p class="tier__price" data-m="$4" data-y="$3.25"><span class="tier__amount">$4</span><small> /mo</small></p>
+        <ul>
+          <li><span class="material-symbols-rounded">check</span>All rigs &amp; gravity presets</li>
+          <li><span class="material-symbols-rounded">check</span>Badge challenges</li>
+          <li><span class="material-symbols-rounded">check</span>Lesson data exports</li>
+          <li><span class="material-symbols-rounded">check</span>Priority chalk support</li>
+        </ul>
+        <a class="btn btn--inverted" href="#cta">Start swinging</a>
+      </article>
+      <article class="tier">
+        <h3>Classroom</h3>
+        <p class="tier__price" data-m="$12" data-y="$8.25"><span class="tier__amount">$12</span><small> /mo</small></p>
+        <ul>
+          <li><span class="material-symbols-rounded">check</span>30 student seats</li>
+          <li><span class="material-symbols-rounded">check</span>Teacher dashboard</li>
+          <li><span class="material-symbols-rounded">check</span>Curriculum lesson packs</li>
+        </ul>
+        <a class="btn btn--primary" href="#cta">Book the class</a>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="faq" aria-labelledby="faqTitle">
+    <div class="section-head">
+      <span class="eyebrow">Raise your hand</span>
+      <h2 id="faqTitle">Frequently asked <em>questions</em></h2>
+    </div>
+    <div class="faq">
+      <details>
+        <summary>What exactly is Lecture 3 — on Pendulums?<span class="material-symbols-rounded">expand_more</span></summary>
+        <p>An interactive lesson where you learn pendulum motion by playing with a real simulated pendulum — pushing it, tweaking it, and measuring it yourself instead of just watching slides.</p>
+      </details>
+      <details>
+        <summary>Who is it for?<span class="material-symbols-rounded">expand_more</span></summary>
+        <p>Curious students from grade 9 through first-year university, plus teachers who want a class that leans in. The experiments map to standard units on SHM, period, frequency, and energy conservation.</p>
+      </details>
+      <details>
+        <summary>Does it work on my device?<span class="material-symbols-rounded">expand_more</span></summary>
+        <p>Any modern browser — laptop, tablet, or phone. The pendulum swings on all of them, and nothing needs installing.</p>
+      </details>
+      <details>
+        <summary>Is the free tier really free?<span class="material-symbols-rounded">expand_more</span></summary>
+        <p>Forever. The Student tier is our open classroom — upgrade only when you want every rig, planet, and preset.</p>
+      </details>
+      <details>
+        <summary>Can I cancel anytime?<span class="material-symbols-rounded">expand_more</span></summary>
+        <p>One click, no guilt trip. You keep full access until the end of the billing period you already paid for.</p>
+      </details>
+    </div>
+  </section>
+
+  <section class="cta-band" id="cta" aria-labelledby="ctaTitle">
+    <div class="section">
+      <div class="section-head">
+        <span class="eyebrow">Homework: have fun</span>
+        <h2 id="ctaTitle">Ready to take physics for a <em>swing</em>?</h2>
+        <p>Lecture 3 starts the moment you push the bob. Grab the syllabus and join the class.</p>
+      </div>
+      <form class="input-group" id="signup" novalidate>
+        <label for="email">Your email</label>
+        <div class="field">
+          <input id="email" name="email" type="email" placeholder="einstein@nimbus.school" autocomplete="email">
+          <span class="material-symbols-rounded field__icon field__icon--ok" aria-hidden="true">check</span>
+          <span class="material-symbols-rounded field__icon field__icon--err" aria-hidden="true">close</span>
+        </div>
+        <p class="input-group__error" id="emailErr" aria-live="polite"></p>
+        <button class="btn btn--inverted" id="signupBtn" type="submit"><span class="material-symbols-rounded" id="signupIcon">send</span><span id="signupLabel">Get the syllabus</span></button>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-col">
+      <h3>Product</h3>
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#">Chalk Notes</a>
+    </div>
+    <div class="footer-col">
+      <h3>Company</h3>
+      <a href="#">About</a>
+      <a href="#">Careers</a>
+      <a href="#">Contact</a>
+    </div>
+    <div class="footer-col">
+      <h3>Support</h3>
+      <a href="#">Help Center</a>
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+    </div>
+    <div class="footer-col">
+      <h3>Follow the swing</h3>
+      <div class="socials">
+        <a class="icon-btn" href="#" aria-label="Email us"><span class="material-symbols-rounded">alternate_email</span></a>
+        <a class="icon-btn" href="#" aria-label="Community forum"><span class="material-symbols-rounded">forum</span></a>
+        <a class="icon-btn" href="#" aria-label="Chalk notes feed"><span class="material-symbols-rounded">rss_feed</span></a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Nimbus Physics Lab. All swings reserved.</span>
+    <span class="mini-pendulum" aria-hidden="true"></span>
+    <span>Lecture 3 — on Pendulums</span>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status"><span class="material-symbols-rounded" aria-hidden="true">check_circle</span><span id="toastMsg"></span></div>
+
+<div class="modal" id="lessonModal" role="dialog" aria-modal="true" aria-labelledby="lessonTitle" hidden>
+  <div class="modal__backdrop" data-close></div>
+  <div class="modal__panel">
+    <button class="icon-btn modal__close" type="button" data-close aria-label="Close lesson preview"><span class="material-symbols-rounded">close</span></button>
+    <h3 id="lessonTitle">Lesson preview — The Swing Equation</h3>
+    <p class="chalk-note">psst… click the bob to push it ↓</p>
+    <div class="rig">
+      <div class="rig__bar" aria-hidden="true"></div>
+      <div class="pendulum is-swinging">
+        <span class="pendulum__string" aria-hidden="true"></span>
+        <button class="pendulum__bob" type="button" aria-label="Push the preview pendulum"></button>
+      </div>
+    </div>
+    <div id="lessonBody">
+      <ul class="lesson-list">
+        <li><span class="material-symbols-rounded">check</span>What a period is — and why it ignores mass</li>
+        <li><span class="material-symbols-rounded">check</span>Small angles vs. wild pushes</li>
+        <li><span class="material-symbols-rounded">check</span>How length secretly sets the tempo</li>
+      </ul>
+      <div class="skel-wrap" aria-hidden="true"><span class="skel skel--lg"></span><span class="skel"></span><span class="skel"></span><span class="skel"></span></div>
+    </div>
+    <span class="sr-only" id="loadNote" aria-live="polite"></span>
+    <div class="modal__actions">
+      <button class="btn btn--inverted" id="nextLesson" type="button">Next lesson</button>
+      <a class="btn btn--ghost" style="" href="#pricing" data-close>See pricing<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+    </div>
+  </div>
+</div>
+
+<script>
+const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)],root=document.documentElement;
+/* theme toggle + persistence */
+let saved=null;try{saved=localStorage.getItem('theme')}catch(e){}
+const dark=saved?saved==='dark':matchMedia('(prefers-color-scheme:dark)').matches;
+root.classList.add(dark?'dark':'light');
+const tBtn=$('#themeToggle'),tIcon=$('#themeIcon');
+const syncTheme=()=>{const d=root.classList.contains('dark');tBtn.setAttribute('aria-pressed',d);tBtn.setAttribute('aria-label',d?'Switch to light theme':'Switch to dark theme');tIcon.textContent=d?'light_mode':'dark_mode'};
+tBtn.addEventListener('click',()=>{root.classList.toggle('dark');root.classList.toggle('light');try{localStorage.setItem('theme',root.classList.contains('dark')?'dark':'light')}catch(e){}syncTheme()});
+syncTheme();
+/* header shadow */
+const header=$('.site-header');
+addEventListener('scroll',()=>header.classList.toggle('is-scrolled',scrollY>8),{passive:true});
+/* mobile nav */
+const navBtn=$('#navToggle'),navList=$('#navLinks');
+navBtn.addEventListener('click',()=>{const o=navList.classList.toggle('is-open');navBtn.setAttribute('aria-expanded',o)});
+navList.addEventListener('click',e=>{if(e.target.closest('a')){navList.classList.remove('is-open');navBtn.setAttribute('aria-expanded','false')}});
+/* pendulum push */
+const modes=['is-swinging','is-brisk','is-wild'],pend=$('#pendulum'),count=$('#pushCount');
+let pIdx=0,pTotal=0;
+const push=()=>{pIdx=(pIdx+1)%3;pTotal++;modes.forEach(m=>pend.classList.toggle(m,modes[pIdx]===m));count.textContent=pTotal};
+$('#bob').addEventListener('click',push);
+$$('.modal .pendulum__bob').forEach(b=>b.addEventListener('click',()=>{const p=b.closest('.pendulum');p.classList.add('is-brisk');setTimeout(()=>p.classList.remove('is-brisk'),2400)}));
+/* modal open/close + focus trap */
+const modal=$('#lessonModal'),panel=$('.modal__panel');
+let lastFocus=null;
+const openModal=()=>{lastFocus=document.activeElement;modal.hidden=false;requestAnimationFrame(()=>modal.classList.add('is-open'));$('.modal__close').focus()};
+const closeModal=()=>{modal.classList.remove('is-open');setTimeout(()=>{modal.hidden=true;lastFocus&&lastFocus.focus()},280)};
+$$('[data-open-modal]').forEach(b=>b.addEventListener('click',openModal));
+$$('[data-close]').forEach(b=>b.addEventListener('click',closeModal));
+document.addEventListener('keydown',e=>{
+ if(modal.hidden)return;
+ if(e.key==='Escape')closeModal();
+ else if(e.key==='Tab'){const f=$$('button, a, input',panel).filter(el=>el.offsetParent);if(!f.length)return;const first=f[0],last=f[f.length-1];
+  if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}
+  else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}}});
+/* lesson swap with skeleton loading */
+$('#nextLesson').addEventListener('click',e=>{const b=e.currentTarget,body=$('#lessonBody');
+ b.classList.add('is-loading');b.disabled=true;body.classList.add('is-loading');$('#loadNote').textContent='Loading next lesson…';
+ setTimeout(()=>{body.classList.remove('is-loading');b.disabled=false;b.classList.remove('is-loading');$('#lessonTitle').textContent='Next up — Damped Oscillations';$('#loadNote').textContent='Lesson loaded.'},900)});
+/* billing toggle */
+const priceNodes=$$('.tier__price');
+$$('.billing__btn').forEach(b=>b.addEventListener('click',()=>{
+ $$('.billing__btn').forEach(x=>{const on=x===b;x.classList.toggle('is-active',on);x.setAttribute('aria-pressed',on)});
+ const annual=b.dataset.cycle==='y';
+ priceNodes.forEach(p=>{p.classList.add('is-swap');setTimeout(()=>{$('.tier__amount',p).textContent=annual?p.dataset.y:p.dataset.m;p.classList.remove('is-swap')},160)})}));
+/* form validation + toast */
+const form=$('#signup'),group=$('#signup'),email=$('#email'),errBox=$('#emailErr'),sBtn=$('#signupBtn');
+const validEmail=v=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+const showToast=m=>{const t=$('#toast');$('#toastMsg').textContent=m;t.classList.add('is-visible');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('is-visible'),3800)};
+email.addEventListener('input',()=>{const v=email.value.trim(),ok=validEmail(v);
+ group.classList.toggle('is-valid',ok);group.classList.toggle('is-invalid',v&&!ok);
+ errBox.textContent=v&&!ok?'Hmm, that email looks off — check the “@” and the “.”':''});
+form.addEventListener('submit',e=>{e.preventDefault();
+ if(!validEmail(email.value.trim())){group.classList.remove('is-valid');group.classList.add('is-invalid');errBox.textContent='We need a valid email to send the syllabus.';email.focus();return}
+ sBtn.classList.add('is-loading');sBtn.disabled=true;
+ setTimeout(()=>{sBtn.classList.remove('is-loading');sBtn.classList.add('is-success');sBtn.disabled=false;$('#signupIcon').textContent='check';$('#signupLabel').textContent="You're in!";form.reset();group.classList.remove('is-valid');showToast("You're on the roster — Lecture 3 notes are on their way!")},1000)});
+</script>
+</body>
+</html>

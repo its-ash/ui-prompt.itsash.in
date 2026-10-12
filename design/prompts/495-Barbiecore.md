@@ -1,0 +1,182 @@
+# BUILD PROMPT — "Barbiecore" Landing Page (Complete First-Attempt Build)
+
+**Role:** You are a Senior Frontend Engineer and Expert UI Designer. You will code a complete, production-ready landing page in a single response, on the first attempt, with no TODOs, no truncation, and no placeholder comments.
+
+**Product premise (for coherent copy):** The page markets a fictional SaaS product — invent one playful, on-brand product/brand name (e.g., a bold website-builder for creators) and use it consistently across every section.
+
+**Theme Definition:** **Barbiecore** — saturated hot/bubblegum pink everywhere, glossy plastic, glam, playful, bold sans display type, fun, femme, unapologetic. Era: 2022–present, referencing the 2023 *Barbie* film marketing. Signature visual move: a diagonal glossy shine overlay (`--gloss-shine`) applied to every raised plastic surface (nav, buttons, cards) plus full pill radii everywhere. Source spec note (translated from Portuguese): *the source does not declare light/dark modes — you must design, implement, and validate both before publishing.*
+
+**Required page sections:** Header/Nav, Hero, Features (3 cards), How It Works (3 steps), Testimonials, Pricing (3 tiers), FAQ (accordion), Final CTA (email capture form), Footer with secondary links.
+
+---
+
+## 1. STRICT RULES & ARCHITECTURE
+
+### 1.1 CSS-First Architecture & Zero Inline CSS
+- All styling must live in `style.css`. **Forbidden:** the `style="..."` attribute, inline `<style>` blocks, inline event-handler attributes (`onclick=`, etc.).
+- Style exclusively via **class selectors** (BEM). IDs are reserved for anchor targets and JS hooks only — never for styling.
+- HTML must remain semantic and structure-agnostic: changing the theme must never require markup edits.
+
+### 1.2 CSS Variables & Theme Tokens
+Extend the source token block in `:root` with the mandatory semantic tokens and utilities below. Keep the source naming (`--color-*`) and add the semantic aliases so both sets resolve:
+
+```css
+:root {
+  /* color — Barbiecore palette */
+  --color-bg: #ff2e93;
+  --color-surface: #fefefe;      /* exception: source #ffffff adapted to #fefefe */
+  --color-surface-strong: #ffd6ec;
+  --color-border: #fefefe;       /* exception: source #ffffff adapted to #fefefe */
+  --color-text: #3a0021;
+  --color-text-muted: #7a0a45;
+  --color-primary: #ff0080;
+  --color-accent: #ffe600;
+
+  /* mandatory semantic tokens */
+  --primary: var(--color-primary);
+  --secondary: var(--color-accent);
+  --bg-primary: var(--color-bg);
+  --bg-secondary: var(--color-surface-strong);
+  --text-primary: var(--color-text);
+  --text-secondary: var(--color-text-muted);
+  --text-success: #0a5c2e;
+  --text-error: #b3001b;
+  --border-default: var(--color-border);
+  --border-error: #b3001b;
+  --border-success: #0a5c2e;
+
+  /* radius — glossy plastic pills */
+  --radius-sm: 12px; --radius-md: 20px; --radius-lg: 32px; --radius-pill: 999px;
+  /* shadows */
+  --shadow-sm: 0 4px 10px rgba(122,10,69,0.25);
+  --shadow-md: 0 10px 26px rgba(122,10,69,0.30);
+  --shadow-lg: 0 20px 46px rgba(122,10,69,0.34);
+  /* fonts */
+  --font-base: 'Poppins', system-ui, sans-serif;
+  --font-sans: var(--font-base);
+  --font-display: 'Baloo 2', 'Poppins', system-ui, sans-serif;
+  --font-mono: ui-monospace, monospace;
+  /* text scale */
+  --text-xs: 0.75rem; --text-sm: 0.875rem; --text-base: 1rem; --text-lg: 1.125rem;
+  --text-xl: 1.375rem; --text-2xl: 1.75rem; --text-3xl: 2.25rem; --text-4xl: 3rem; --text-5xl: 4rem;
+  /* spacing */
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-6: 24px;
+  --space-8: 32px; --space-12: 48px; --space-16: 64px; --space-24: 96px;
+  --spacing-gap: var(--space-6);
+  /* motion */
+  --transition-fast: 0.15s;
+  --transition-normal: 0.3s;
+  --ease-standard: cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* elevation */
+  --z-dropdown: 100; --z-modal: 200; --z-toast: 300;
+  /* signature glossy plastic shine */
+  --gloss-shine: linear-gradient(115deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 35%);
+}
+```
+
+- **Contrast pairing (enforced, both themes):** every light fill pairs with `--color-text` (#3a0021); every dark fill pairs with light pink text. Verified minimums: #3a0021 on #ff2e93 ≈ 5.0:1; on #ff0080 ≈ 4.6:1; on #fefefe ≈ 13:1; on #ffd6ec ≈ 10:1; on #ffe600 ≈ 12.6:1 — all AA-passing.
+- **White text restriction:** `#ffffff` labels are permitted **only** at display sizes (≥24px regular / ≥18.66px bold) on pink fills (≈3.5:1, passes large-text AA), or on dark plum fills. **Exception clause:** button labels on hot-pink glossy fills use `--text-primary` (#3a0021) instead of the source's `#ffffff` to satisfy AA at body sizes; the plum-on-pink look is equally on-theme.
+- Muted text (`--text-secondary`) is only for large text when placed directly on `--bg-primary`; body-size muted copy must sit on light surfaces.
+
+### 1.3 Mandatory Dark Mode Support
+Define a Barbiecore dark theme (deep plum + hot pink) with tokens overridden under **both** `.dark` and `@media (prefers-color-scheme: dark) { :root:not(.light) { … } }` (duplicate the block verbatim so the media fallback works even if JS fails):
+
+```css
+.dark {
+  --color-bg: #2b0018;
+  --color-surface: #42062a;
+  --color-surface-strong: #ff2e93;   /* hot pink elevated surface */
+  --color-border: #ff8ac2;
+  --color-text: #ffd6ec;
+  --color-text-muted: #ff8ac2;
+  --text-primary: #ffd6ec; --text-secondary: #ff8ac2;
+  --text-success: #7ee7a8; --text-error: #ff7a8f;
+  --border-default: #ff8ac2; --border-error: #ff7a8f; --border-success: #7ee7a8;
+  --shadow-sm: 0 4px 10px rgba(0,0,0,0.45);
+  --shadow-md: 0 10px 26px rgba(0,0,0,0.50);
+  --shadow-lg: 0 20px 46px rgba(0,0,0,0.55);
+  --gloss-shine: linear-gradient(115deg, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0) 35%);
+  color-scheme: dark;
+}
+```
+
+- Verified dark pairings: #ffd6ec on #2b0018 ≈ 14:1; #ffd6ec on #42062a ≈ 12:1; #3a0021 on the #ff2e93 strong surface ≈ 5.0:1; #ffe600 on #2b0018 ≈ 14:1.
+- **Theme switching:** JS toggles `.dark`/`.light` on `<html>`; persistence via `localStorage` (key `barbiecore-theme`) with `prefers-color-scheme` fallback on first visit; visible pill toggle button in the nav with correct `aria-pressed` state, dynamic `aria-label` ("Activate dark mode" / "Activate light mode"), and Material Symbols `dark_mode`/`light_mode` icon swap. Set `color-scheme` on both themes so native form controls adapt.
+
+### 1.4 Flexbox Layout & Mobile-First Alignment
+- Build every layout with Flexbox (`display: flex`) and grid only for card grids. **Default `align-items: center`** on every flex container unless a documented exception exists (e.g., stacked text columns use `flex-start`).
+- Mobile-first: single-column base; multi-column only at ≥768px/≥1024px breakpoints. **No horizontal scrolling at any width ≥320px** (fluid `clamp()` type, wrapping flex, `minmax()` grids).
+- Shared `.container` utility: `width: min(100% - 2 * var(--space-6), 1200px); margin-inline: auto;`
+
+### 1.5 Styling Approach
+- Use **clean custom CSS** (no framework, no build step): the provided source base classes (`.nav`, `.btn`, `.btn--primary`, `.card`, `.input`, `.badge`) are the mandatory starting point, with the adaptations listed in 1.2 and 2.1. Organize `style.css` with commented section headers; no `!important` outside the reduced-motion guard.
+- **Exception clause:** the pressed state standardizes to `transform: scale(0.97)`, refining the source snippet's `:active { scale(1) }`.
+
+### 1.6 Typography & Icons (Google Fonts Mandatory)
+- Load via `<link>` with preconnect: **Baloo 2** (600/700/800) for display headings, **Poppins** (400/500/600/700) for body — bind to `--font-base`/`--font-display`. Also load **Material Symbols Rounded** (FILL 1) for icons, including the required `.material-symbols-rounded` base CSS with `font-variation-settings: 'FILL' 1`.
+- **Forbidden:** raw inline SVGs, local icon files, emoji-as-icons, icon fonts other than Material Symbols.
+
+---
+
+## 2. COMPONENT DESIGN SPECIFICATIONS
+
+### 2.1 Button Component
+Start from the source `.btn` (glossy pink fill, pill radius, 2px white border, playful hover lift) and implement the full state matrix via classes — every state changes more than color alone:
+- **Default:** flex (`display: flex; align-items: center; justify-content: center; gap: 0.5rem;`), `min-height: 44px` touch target, label in `--text-primary` per the 1.2 exception.
+- **Hover:** `translateY(-2px) scale(1.03)` + `--shadow-md`, `cursor: pointer`.
+- **Focus:** `:focus-visible` ring via `outline: 3px solid var(--color-accent); outline-offset: 2px;`
+- **Active/Pressed:** `transform: scale(0.97)`.
+- **Loading (`.is-loading`):** `aria-busy="true"`, pointer-events disabled, absolutely-positioned CSS spinner (pink/white border animation) centered so **dimensions never change**; label visually dimmed.
+- **Disabled:** `opacity: 0.5`, desaturated, `cursor: not-allowed`, no transforms.
+- **Success/Error (`.is-success` / `.is-error`):** temporary feedback states with a Material Symbol icon (`check_circle`/`error`) and borders/backgrounds driven by `--text-success`/`--text-error` (or their dark equivalents); auto-revert after ~2s via JS.
+- Variants: `.btn--primary` (glossy pink), `.btn--secondary` (glossy `--color-surface` with plum label), `.btn--accent` (yellow `--color-accent` fill, plum label — highest-contrast hero CTA).
+
+### 2.2 Card Component
+Start from the source `.card` (glossy white/pill-lg/3px border/`--shadow-lg`) and provide:
+- **Default:** flexible flexbox layout with `--bg-secondary` surfaces where elevated.
+- **Hover:** `transform: translateY(-2px)` + shadow shift (feature/pricing/testimonial cards).
+- **Focus-within:** highlighted border (`--color-primary`) when a child link/button receives focus.
+- **Loading:** `.card--skeleton` shimmer keyframes (pink-tinted gradient sweep) that preserve layout dimensions — define in CSS even if not rendered initially.
+- **Empty state:** `.card--empty` layout with a Material Symbol (`sentiment_satisfied`) plus guidance text — defined in CSS for reuse.
+
+### 2.3 Form & Input Requirements
+The Final CTA newsletter form must implement, via the source `.input` base:
+- **States:** empty, focused (accent ring `box-shadow: 0 0 0 3px rgba(255,230,0,0.4)` per source), filled, valid (`--border-success` + `check_circle` icon), invalid (`--border-error`, error icon, error text), disabled, read-only.
+- **Structure:** `.input-group` flex-column wrapping a visible `<label for>` bound to `type="email"` (with `autocomplete="email"`, `required`), the `.input`, and a dedicated `.input-group__error` container with reserved min-height (no layout jump) and `aria-live="polite"`.
+- **Behavior:** on submit, JS validates (email regex), shows inline error copy, sets button loading for a simulated ≥800ms, then success state + toast; error messages are never color-alone (icon + text).
+
+### 2.4 Modal / Popup Requirements
+No modals are required for this build — FAQ uses an accordion, not popups. If any dialog is introduced anyway, it must include: opening/open/closing CSS transitions, centered flex overlay (`align-items: center`), backdrop, Material Symbol close button, keyboard focus trap, and close via `Esc`/overlay click, layered at `--z-modal`.
+
+### 2.5 Section-by-SSection Build Requirements
+All copy in **English**, original and on-theme (glam, playful, unapologetic). No lorem ipsum anywhere.
+
+- **Header/Nav:** sticky header containing the source `.nav` pill (logo wordmark in `--font-display`, anchor links to Features / How It Works / Pricing / FAQ, a "Get Started" `.btn`, and the theme toggle). Below 768px: hamburger `<button>` (Material Symbol `menu`) toggling a dropdown panel at `--z-dropdown`, with `aria-expanded`, `Esc` to close, and link-click auto-close. Apply `scroll-margin-top` to anchored sections; smooth scrolling via CSS with a `prefers-reduced-motion` guard.
+- **Hero:** full-bleed `--bg-primary`; `h1` display headline in `--font-display` with `clamp(var(--text-3xl), 6vw, var(--text-5xl))` (plum text or white at display size per 1.2); `.badge` eyebrow (yellow, plum text); supporting subheadline; two CTAs (`.btn--primary` + `.btn--secondary`); a CSS-only glossy "product" mock (stacked pill shapes/cards using `--gloss-shine`, no external images); decorative glossy orbs via `::before/::after` with `pointer-events: none`.
+- **Features:** section header (badge/eyebrow, `h2`, lead) + 3 `.card`s in a responsive grid (`minmax(260px, 1fr)`); each card: icon in a glossy pink circle (`auto_awesome`, `palette`, `rocket_launch`-style Material Symbols), `h3`, copy; hover lift per 2.2.
+- **How It Works:** 3 steps; numbered glossy accent pills ("01/02/03"), `h3` + copy each; horizontal row with a CSS connector line on desktop, vertical stack on mobile; `align-items: center` row default with `flex-start` exception documented for step text blocks.
+- **Testimonials:** 3 quote `.card`s with `format_quote` icon, star row (5 filled `star` Material Symbols + `.visually-hidden` text "Rated 5 out of 5"), quote copy, and avatar as initials inside a glossy hot-pink circle (no external images); name in bold, role in `--text-secondary`.
+- **Pricing:** 3 tiers; middle tier `.pricing-card--featured` with a `.badge` "Most Popular", accent border, elevated shadow/scale on desktop; each card: tier name, large display price, feature list with `check_circle` icons, full-state `.btn` (featured tier uses `.btn--accent`). Stacks to one column on mobile.
+- **FAQ:** 5–6 real Q&A pairs as accessible accordions — native `<details>`/`<summary>` styled as pill rows with a rotating `expand_more` Material Symbol; `:focus-visible` ring on summary; open state changes border and icon rotation (never color alone).
+- **Final CTA:** full-width glossy panel (`--color-surface-strong` in light / `--color-surface-strong` pink in dark), `h2` + copy + the newsletter `.input-group` from 2.3.
+- **Footer:** dark plum band (background `#3a0021` in light mode via a footer-scoped token pair; text `--color-surface-strong` — pairing preserved) with: brand blurb, secondary link columns (About, Careers, Privacy, Terms, Contact), social links rendered as pill text links ("Instagram", "TikTok", "Pinterest") with `aria-label`s (brand glyphs are forbidden — no inline SVGs, and Material Symbols has no brand icons), and a copyright line.
+- **Toast:** `.toast` fixed bottom-center at `--z-toast`, `aria-live="polite"`, Material Symbol icon + text + close button, auto-dismiss after 4s, used for newsletter success.
+
+---
+
+## 3. CORE UX & MICRO-INTERACTION RULES
+
+- **Responsive by default:** fluid type and spacing; verify zero horizontal overflow at 320px, 768px, 1024px, 1440px.
+- **Smooth animations:** every state change transitions with `var(--transition-normal) var(--ease-standard)`; honor `prefers-reduced-motion` globally (zero out transitions/animations, remove hover transforms and any float/idle animations).
+- **Accessibility:** WCAG AA contrast in **both** themes per the 1.2/1.3 pairings; semantic HTML5 landmarks (`header`, `nav`, `main`, `footer`) with sections `aria-labelledby`; exactly one `h1`; logical DOM/focus order; full keyboard operability (nav, accordion, form, toggle, toast dismiss); `aria-live` regions for dynamic feedback (form errors, toast, loading); state never communicated by color alone; `.visually-hidden` utility defined.
+- **Mandatory visual feedback:** every click, hover, and submission produces a visible state change (button transforms, accordion rotation, form validation, toast).
+- **Destructive actions:** any danger/delete action uses a `.btn--danger` variant visually distinct in both themes (plum/deep-red fill with light text in light mode; light red fill with plum text in dark mode).
+
+---
+
+## 4. DELIVERABLE & OUTPUT FORMAT
+
+- **File structure:** three separate files — `index.html`, `style.css`, `script.js`. The HTML contains **one** `<script src="script.js" defer></script>` reference and nothing else script-wise; all JS lives in `script.js` (theme toggle, mobile nav, form validation + loading/success flow, toast, optional IntersectionObserver reveal animations that degrade gracefully without hiding content when JS is off).
+- **Naming convention:** strict BEM only (`block__element--modifier`) — the source base classes are the blocks (`.btn`, `.card`, `.nav`, `.input`, `.badge`); never mix conventions; all names ASCII/English.
+- **No unrequested placeholders:** all user-facing copy is real, original, English, on-theme marketing copy — lorem ipsum is forbidden; no "…" truncation in the delivered code.
+- **First-attempt completeness:** output the full contents of all three files in one response, then run this pre-publication checklist: light-mode and dark-mode both validated side by side; contrast pairings pass AA; keyboard-only walkthrough succeeds; no horizontal scroll; reduced-motion respected; zero inline CSS/JS; both `@media (prefers-color-scheme: dark)` fallback and `.dark` class switching verified with and without stored preference.

@@ -1,0 +1,115 @@
+# SYSTEM PROMPT — Build the "Angelcore" Landing Page (Complete, First Attempt)
+
+**Role:** Act as a Senior Frontend Engineer and Expert UI Designer. Deliver a complete, production-ready landing page in a single first attempt — no partial builds, no placeholders, no TODOs.
+
+**Theme — Angelcore (2019–present):** An ethereal, celestial aesthetic drawn from Renaissance religious painting: cherubs, clouds, soft gold light, halos, a white/cream/pale-gold palette, and a divine, soft, romantic mood.
+
+**Product Concept:** No product was specified. Invent ONE coherent fictional product suited to the Angelcore mood (e.g., a serene journaling, mindfulness, or slow-living digital product) and write all copy around it. Do not mix concepts between sections.
+
+**Mandatory Sections (in this DOM order):** Hero; Features (3 cards); How It Works (3 steps); Testimonials; Pricing (3 tiers); FAQ (4–6 items); Final CTA; Footer with secondary links. A sticky pill navigation must sit above the Hero.
+
+**Copy Language:** All user-facing copy, labels, microcopy, and code comments must be written in **English**.
+
+**Signature Move (mandatory):** A soft gold halo glow — a feathered radial ring built from `--shadow-halo` / `--halo-ring` — surrounding key interactive elements. It MUST repeat on the navigation (`.nav`), every card (`.card`), and the primary button (`.btn--primary`), and it should echo in section ornaments and the Final CTA band.
+
+**Decoration:** Cherub, cloud, and Renaissance references must be expressed through CSS only — layered radial gradients (`--bg-image`, `--halo-ring`), blurred pseudo-element "clouds," halo rings, italic serif flourishes, and Google Material Symbols. No raster or vector image assets, no inline SVGs, no local icon files.
+
+---
+
+## 1. STRICT RULES & ARCHITECTURE
+
+### 1.1 CSS-First Architecture & Zero Inline CSS
+- **No Inline CSS:** The `style="..."` attribute is forbidden anywhere in the HTML.
+- **Class/ID Selectors Only:** All colors, layout rules, states, and effects must be targeted via class or ID selectors in a dedicated `style.css`.
+- **Minimal HTML Modifications:** HTML must stay clean, semantic, and styling-agnostic so the entire look can be re-themed by editing only `style.css`.
+
+### 1.2 CSS Variables & Theme Tokens
+All visual tokens live in `:root`. Adopt the supplied Angelcore token set as the canonical **light** theme:
+
+- **Colors:** `--color-bg: #fdf9f0`; `--color-surface: #fefefe`; `--color-surface-strong: #fbf1dc`; `--color-border: #e8d5a8`; `--color-text: #4a3f2a`; `--color-text-muted: #7a6849`; `--color-primary: #c9a24b`; `--color-accent: #f2c98a`; `--color-halo: #fff4d6`. *Explicit exception: the source spec declared `#ffffff` for surfaces; pure white is prohibited, so substitute `#fefefe`.*
+- **New feedback tokens:** Add `--color-success` (deep olive, ≈ `#4a6b39`) and `--color-error` (deep terracotta, ≈ `#a4453a`), selected to pass WCAG AA on light backgrounds — verify.
+- **Required semantic aliases:** `--primary: var(--color-primary)`, `--secondary: var(--color-accent)`, `--bg-primary: var(--color-bg)`, `--bg-secondary: var(--color-surface)`, `--text-primary: var(--color-text)`, `--text-secondary: var(--color-text-muted)`, `--text-success`, `--text-error`, `--border-default: var(--color-border)`, `--border-success`, `--border-error`.
+- **Radius:** `--radius-sm: 10px`, `--radius-md: 18px`, `--radius-lg: 28px`, `--radius-pill: 999px`.
+- **Shadows:** `--shadow-sm: 0 2px 12px rgba(201,162,75,.15)`, `--shadow-md: 0 10px 30px rgba(201,162,75,.2)`, `--shadow-lg: 0 24px 60px rgba(201,162,75,.25)`, `--shadow-halo: 0 0 0 8px rgba(242,201,138,.22), 0 0 40px rgba(242,201,138,.35)`.
+- **Typography:** `--font-sans: 'Cormorant Garamond', Georgia, serif`, `--font-display: 'Playfair Display', 'Cormorant Garamond', serif`, `--font-base: var(--font-sans)`; keep the supplied text scale (`--text-xs` … `--text-5xl`).
+- **Spacing:** Keep the supplied `--space-1`…`--space-24` scale and add `--spacing-gap: var(--space-6)`.
+- **Motion:** `--ease-standard: cubic-bezier(0.16, 1, 0.3, 1)`, `--transition-fast: 150ms`, `--transition-normal: 300ms`.
+- **Elevation:** `--z-dropdown: 1000`, `--z-modal: 1100`, `--z-toast: 1200` — layered components must use these tokens to prevent overlap conflicts.
+- **Ambience:** `--bg-image: radial-gradient(60% 40% at 50% 0%, #fff4d6 0%, transparent 65%), var(--color-bg)` and `--halo-ring: radial-gradient(circle, rgba(242,201,138,.5) 0%, rgba(242,201,138,0) 70%)`.
+- **Contrast Pairing:** Every light background token must pair with a dark text token and every dark background token with a light text token — enforced in every theme, not just the default.
+- **Gold Usage Rule:** Never use `--color-primary` (#c9a24b) as text color on light backgrounds (it fails 3:1 even at large sizes); it is decorative only (borders, icons, gradients, halos). On gold gradients/buttons, use a dark ink of ≈ `#3b2f16` and verify ≥ 4.5:1 at both gradient stops.
+
+### 1.3 Mandatory Dark Mode Support
+- **Always Defined:** The source spec did not declare modes (translated note: "modes were not declared; validate in light and dark before publishing") — you must author a dark theme regardless. Build it under a `.dark` class on `<html>`: deep espresso backgrounds (≈ `#221a12` bg, `#2b2216` surface, `#352a1b` surface-strong), cream text (≈ `#f3ead6`), muted candlelight text (≈ `#cdbd97`), gold primary retained or slightly brightened for dark, a translucent halo token for dark surfaces, and a dark-mode `--bg-image` with a softened gold glow at the top. Set `color-scheme` correctly per theme.
+- **Theme Switching:** Background and text variables must switch seamlessly via variable overrides only — no HTML restructuring.
+- **Persistence:** Store the user's choice in `localStorage` (e.g., key `angelcore-theme`), falling back to `prefers-color-scheme` on first visit. Provide a visible pill toggle in the navigation with a Material Symbol (`light_mode` / `dark_mode`), correct `aria-pressed`, and a dynamic `aria-label`. All toggle logic lives in `script.js`.
+
+### 1.4 Flexbox Layout & Mobile-First Alignment
+- **Default Alignment Rule:** Every flex container must default to `align-items: center` unless there is an explicitly justified exception (permitted exceptions on this page: feature-list icon rows and the How-It-Works step columns may use `align-items: flex-start`).
+- **Mobile-Friendly First:** All flex rows must collapse to columns below ~768px; layouts must be usable at 320px with zero horizontal scrolling.
+
+### 1.5 Framework Default
+- Use **clean custom CSS driven by native `@layer` cascade layers** (order: tokens → base → layout → components → utilities), since the supplied Angelcore spec is a token-driven custom CSS system. Do not load Tailwind via CDN if it would require inline configuration scripts. Every utility-style class must map back to the CSS variables or to generic reusable component names (`.btn`, `.card`, `.input`, `.input-group`, `.badge`, `.nav`).
+
+### 1.6 Typography & Icons (Google Fonts Mandatory)
+- **Text:** Load **Cormorant Garamond** (400/500/600 + italics) and **Playfair Display** for headings via Google Fonts `<link>` tags; bind them to `--font-base` / `--font-display`. Body copy is Cormorant Garamond; display headings and pull-quotes are Playfair Display.
+- **Icons:** Use **Google Material Symbols (Rounded variant)** loaded from Google Fonts. Raw inline SVGs and local icon files are explicitly forbidden. Decorative icons must carry `aria-hidden="true"`; use valid symbol names (e.g., `auto_awesome`, `cloud`, `flare`, `favorite`, `wb_sunny`, `check_circle`, `error`, `expand_more`, `menu`, `close`, `light_mode`, `dark_mode`, `arrow_forward`).
+
+---
+
+## 2. COMPONENT DESIGN SPECIFICATIONS
+
+Adopt the supplied base classes as your foundation — `.nav` (pill, border, halo shadow), `.btn` / `.btn--primary` (pill, halo on hover), `.card` (radius-lg, halo), `.input` (halo focus ring), `.badge` (italic halo pill) — and extend them as follows:
+
+### 2.1 Button Component
+- **Default:** Flex layout (`display: flex; align-items: center; justify-content: center; gap: 0.5rem;`), pill radius, minimum touch target of 44×44px.
+- **Hover:** Halo shadow bloom + `translateY(-1px)`, `cursor: pointer`.
+- **Focus:** Distinct `:focus-visible` ring using `outline: 2px solid var(--color-primary); outline-offset: 3px`.
+- **Active/Pressed:** `transform: scale(0.97)` — mandatory pressed feedback; the spec's `translateY(0)` reset is retained, but the scale must be added.
+- **Loading:** A loading class (e.g., `.btn--is-loading`) that disables interaction, sets `aria-busy="true"`, guards against double-clicks in JS, and renders an absolutely-centered CSS spinner (`::after` border animation) or animated Material Symbol **without changing button dimensions**.
+- **Disabled:** `opacity: 0.5`, `grayscale(1)`, `cursor: not-allowed`.
+- **Success/Error:** `.btn--success` / `.btn--error` temporary feedback styles driven by `--text-success` / `--text-error`, always paired with an icon, never color alone.
+- **Variants:** `.btn--primary` (gold gradient, dark ink ≈ `#3b2f16`, signature halo), `.btn--ghost` (transparent, gold border). If any destructive action exists, `.btn-danger` must be visually distinct in both themes.
+
+### 2.2 Card Component
+- **Default:** Flexible Flexbox column layout, `--color-surface` background, subtle border, elevation via `--shadow-md` plus the signature halo.
+- **Hover:** Elevation shift + subtle `transform: translateY(-2px)`.
+- **Focus-within:** Card borders highlight (gold) when a child link/button receives focus.
+- **Loading (Skeleton):** Define a `.card--skeleton` shimmer animation (gradient sweep keyframes) that reserves final dimensions to prevent layout jumps.
+- **Empty State:** Define a `.card--empty` fallback pattern featuring a Material Symbol and clear guidance text, even if this static page doesn't render it.
+
+### 2.3 Form & Input Requirements (used in the Final CTA email capture)
+- **Structure:** `.input-group` flex container wrapping a `<label>`, the `.input` field, and a dedicated `.input-group__error` container with `aria-live="polite"`.
+- **States:** Empty; Focused (halo ring per the spec: `border-color` + `--shadow-halo`); Filled; Valid (success border + `check_circle` icon); Invalid (error border, error text, `error` icon, `aria-invalid`); Disabled; Read-only.
+- **Behavior:** Client-side email validation in `script.js`; on submit, the button enters loading state, then success/error feedback is announced via the `aria-live` region using `--text-success` / `--text-error`. No page reload.
+
+### 2.4 Modal / Popup Requirements
+- **Conditional:** This landing page does not require a modal; do not add one by default. If one is added, it must implement: CSS-animated Opening, Open, Loading, Success/Error, and Closing states; a centered flex container (`align-items: center`) over a backdrop overlay; a Material Symbol close button; keyboard focus trapping; closing via `Esc` or overlay click; and `--z-modal` stacking.
+
+### 2.5 Section-by-Section Build Requirements
+- **Navigation:** Sticky pill nav per the `.nav` spec — wordmark, anchor links to each section, small `.btn--primary`, theme toggle. Below 768px, links collapse behind a menu button (`menu`/`close` icons, `aria-expanded`), opening a dropdown panel at `--z-dropdown` that closes on `Esc` and manages focus correctly.
+- **Hero:** `.badge` kicker; a single `<h1>` in `--font-display` (dark ink, never gold) with a decorative `--halo-ring` glow behind it (`aria-hidden`); subcopy in muted text; two CTAs (`.btn--primary` + `.btn--ghost`); CSS-only cloud/halo gradient decoration.
+- **Features:** Exactly 3 `.card`s, each with `.card__icon` (Material Symbol inside a halo-ringed circle), `.card__title`, `.card__text`; hover and focus-within per 2.2.
+- **How It Works:** 3 `.step`s with halo-ringed numerals 1–3, a title and description each; a soft gold connector line on desktop; column stack on mobile.
+- **Testimonials:** 3 quote cards using italic Cormorant pull-quotes, halo-ringed initials avatars, and authored names/roles.
+- **Pricing:** 3 `.tier` cards with themed tier names; the middle tier is `.tier--featured` with a `.badge` and the signature halo; each tier shows name, price + period, a feature list with `check` icons, and a CTA (`.btn--primary` on the featured tier, `.btn` on the others). Pricing CTAs smooth-scroll to `#cta`, respecting `prefers-reduced-motion`.
+- **FAQ:** 4–6 authored questions in an accessible accordion — native `<details>`/`<summary>` styled to match, or a button pattern with `aria-expanded` + `aria-controls`; rotating `expand_more` chevron; smooth CSS transitions; fully keyboard operable.
+- **Final CTA:** A full-width band with an intensified `--bg-image` halo glow, an `<h2>`, and the email capture `.input-group` per 2.3; the submit button must demonstrate loading → success states.
+- **Footer:** Uses `--color-surface-strong`; 3–4 secondary link groups (e.g., Product, Company, Support, Legal) with real anchor hrefs; hover/focus states show a gold halo underline; small print and copyright; state never communicated by color alone.
+
+---
+
+## 3. CORE UX & MICRO-INTERACTION RULES
+- **Responsive by Default:** Fluid type via `clamp()` where sensible; breakpoints ≈ 640/768/1024px; zero horizontal overflow from 320px up.
+- **Smooth Animations:** Every state change transitions with `var(--transition-normal) var(--ease-standard)`; globally respect `prefers-reduced-motion` by disabling transforms, shimmer, and scroll animations.
+- **Accessibility (a11y):** WCAG AA contrast in both light and dark modes; never rely on color alone to communicate state; semantic HTML5 (`header`, `nav`, `main`, `section`, `footer`) with `aria-labelledby` per section, a single `<h1>`, logical DOM/focus order, full keyboard operability, visible focus everywhere, a skip-to-content link, and `aria-live` regions for all dynamic feedback.
+- **Mandatory Visual Feedback:** Every click, hover, and submission must trigger a visible state change.
+- **Destructive Actions:** Any destructive control must be visually distinct in both themes.
+
+---
+
+## 4. DELIVERABLE & OUTPUT FORMAT
+- **File Structure:** Three separate files — `index.html`, `style.css`, `script.js`. The HTML contains exactly one script tag: `<script src="script.js" defer></script>` before `</body>`. No inline JavaScript, no inline styles, no additional script blocks.
+- **Naming Convention:** BEM (`block__element--modifier`) consistently across the entire deliverable, matching the supplied `.btn--primary` pattern — never mix conventions.
+- **No Unrequested Placeholders:** Write original, final English copy in the Angelcore voice (divine, soft, romantic) for every section. Lorem ipsum is forbidden.
+- **Pre-Publication Validation (translated source requirement: validate in light AND dark before publishing):** Before delivering, verify in both themes — AA contrast, every button/input/card state, the nav collapse, theme toggle persistence, and the form feedback flow — plus a keyboard-only pass, all viewport widths from 320px, `prefers-reduced-motion`, and a clean console.

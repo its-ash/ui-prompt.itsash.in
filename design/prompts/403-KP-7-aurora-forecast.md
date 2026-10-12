@@ -1,0 +1,164 @@
+# BUILD SPECIFICATION — CODING AI PROMPT
+
+**Role:** You are a Senior Frontend Engineer and Expert UI Designer. Build a complete, production-quality glassmorphism landing page in a single attempt. Do not ask clarifying questions — make expert decisions wherever this spec leaves room. Every rule below is mandatory unless explicitly marked optional.
+
+---
+
+## 1. PROJECT BRIEF — "KP 7 — AURORA FORECAST" LANDING PAGE
+
+**1.1 Product Concept & Art Direction**
+- **Theme:** "KP 7 — aurora forecast". **Style:** Glassmorphism. **Era:** 2020s Digital. **Keywords:** aurora, borealis, report, glassmorphism, animated, glass, translucent, gradient, blur.
+- The page markets a fictional aurora-borealis forecasting service ("KP 7") that monitors the geomagnetic KP index (0–9) and alerts users before the northern lights appear. "KP 7" denotes a strong geomagnetic storm — the product's signature moment. The aesthetic: frosted translucent glass panels floating over a slowly drifting aurora of soft gradients, with layered blur, generous border radii, and subtle glow.
+
+**1.2 Required Sections (mandatory, in this DOM order)**
+1. **Sticky glass navbar** — translucent blurred bar: logo ("KP 7" + Material Symbol `flare`), anchor links (Features, How It Works, Pricing, FAQ), visible theme toggle, compact "Start free" CTA. On viewports < 768px, links collapse into a `menu`-button-controlled glass dropdown panel.
+2. **Hero (`#hero`)** — full animated aurora background; a live-status glass badge ("Live KP index: 7 — Strong storm" with pulsing dot), one `h1`, supporting subcopy, two CTAs (primary gradient button + ghost glass button), and a stats strip ("27-day solar outlook · 40,000+ locations · 4.9/5 from chasers"). Optionally include a decorative pure-CSS mini bar chart of tonight's KP values inside a glass panel (marked `aria-hidden` with an `sr-only` text summary).
+3. **Features (`#features`)** — exactly 3 glass cards: *Live KP index tracking* (`monitoring`), *Hyperlocal visibility windows* (`travel_explore`), *Storm alerts that beat the rush* (`notifications_active`). Each: glass icon circle, title, one specific sentence of copy.
+4. **How It Works (`#how-it-works`)** — exactly 3 numbered step cards (01 `pin_drop` "Set your location", 02 `satellite_alt` "We watch the solar wind", 03 `bolt` "Your phone lights up first") with a horizontal connector line on desktop only, hidden on mobile.
+5. **Testimonials (`#testimonials`)** — 3 glass quote cards: 5-star rating, realistic quote, initials avatar in a gradient glass circle, name + location (e.g., Tromsø, Fairbanks, Reykjavík).
+6. **Pricing (`#pricing`)** — exactly 3 tiers: *Stargazer* $0, *Aurora Chaser* $9/mo (featured: "Most popular" ribbon, elevated glass, gradient border, primary CTA), *Expedition* $29/mo (ghost CTA). Each tier: price, 4–5 feature rows with `check` icons, CTA button. An optional monthly/yearly billing toggle may be added; if built, it must use a `role="group"` segmented control with `aria-pressed` buttons and update price text accessibly.
+7. **FAQ (`#faq`)** — accordion with 6 items (What does "KP" mean? How accurate is the forecast? Do I need total darkness? When is aurora season? Can I cancel anytime? Which countries are covered?). Full accordion spec in §3.4.
+8. **Final CTA (`#cta`)** — centered glass panel over an aurora glow: `h2` "Never miss a storm again.", email signup form (spec in §3.3), microcopy "Free to start. No spam. Unsubscribe anytime."
+9. **Footer** — brand blurb, 3 columns of secondary links (Product: Features / Pricing / FAQ; Company: About / Blog / Contact; Legal: Privacy / Terms / Cookies), social links rendered as **text pills** (Material Symbols has no brand logos — do not fake them with icons), and an auto-updating copyright year.
+
+**1.3 Color Palette & Visual Direction (authoritative)**
+- Base palette: `#060a18`, `#dce6f2`, `#03050e`, `#071026`, `#0a1a33`, `#0b1220`. A restrained aurora green (`#3fe0ac` family) is the sole accent, reserved for gradients, glows, focus rings, and success states — never for body text.
+- **Light mode is the default theme** (per source spec) and must receive equal polish: frosted pale-blue surfaces with dark navy text, aurora glows rendered via `mix-blend-mode: soft-light` at reduced opacity. **Exception clause:** although the source spec designates Light as default, a fully tokenized Dark mode remains mandatory per §2.3; on first visit, default to Light unless `prefers-color-scheme` reports dark.
+
+**1.4 Required CSS Techniques (all must appear)**
+- `backdrop-filter` (+ `-webkit-backdrop-filter`) for every glass surface, with an `@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)))` fallback that raises glass background alpha to ≥ 0.85 and keeps layout identical.
+- `mix-blend-mode` on aurora blob layers (`screen` in dark mode, `soft-light` in light mode).
+- CSS filters on aurora blobs: `blur()` + slow `hue-rotate()` inside keyframes.
+- Keyframe animations (aurora drift, status-dot pulse, skeleton shimmer, spinner), transitions, transforms, multi-stop gradients, box shadows, border radius — all driven by tokens.
+
+**1.5 Typography & Icons (Google only)**
+- Fonts: **Space Grotesk** (500/600/700) for `--font-display` headings; **Inter** (400/500/600) for `--font-base`. Load via Google Fonts `<link>` with `preconnect` and `display=swap`.
+- Icons: **Material Symbols Rounded** via Google Fonts stylesheet with `display=block`, base `font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24`, and an `.icon--filled` modifier (`'FILL' 1`) for rating stars. **Inline SVGs, local icon fonts, and emoji icons are forbidden.**
+
+**1.6 Copy Rules**
+- Author all user-facing copy in **English**, specific to the aurora-forecast product (you may adapt the copy brief in §1.2, but keep it concrete). **Lorem ipsum is forbidden.** Every interactive element needs visible, meaningful text.
+
+---
+
+## 2. ARCHITECTURE RULES (MANDATORY)
+
+**2.1 CSS-First Architecture & Zero Inline CSS**
+- All styling lives in `style.css`. The `style="..."` attribute and `<style>` blocks in HTML are **forbidden**.
+- Target everything through class/ID selectors; keep HTML semantic and style-agnostic so the theme could be reskinned by editing CSS alone.
+- Organize `style.css` with native cascade `@layer` in this order: `reset`, `tokens`, `base`, `layout`, `components`, `utilities`.
+
+**2.2 CSS Variables & Theme Tokens**
+- Define all visual tokens exactly as follows; extend only with theme-specific tokens (`--glass-bg`, `--glass-border`, `--glass-blur`, `--aurora-1/2/3`, `--focus-ring`, `--z-nav`).
+
+```css
+/* LIGHT — default */
+:root {
+  --font-base: 'Inter', system-ui, sans-serif;
+  --font-display: 'Space Grotesk', var(--font-base);
+  --primary: #0a1a33;          --secondary: #071026;
+  --bg-primary: #dce6f2;       --bg-secondary: #eef3fa;   /* #fefefe only where near-white is required */
+  --text-primary: #060a18;     --text-secondary: rgba(6,10,24,0.68);
+  --text-success: #0d7a55;     --text-error: #b3261e;
+  --border-default: rgba(6,10,24,0.14);
+  --border-error: #b3261e;     --border-success: #0d7a55;
+  --accent-aurora: #2fd6a4;    --focus-ring: #0a1a33;
+  --aurora-1: #35e0b0; --aurora-2: #57d0e0; --aurora-3: #dce6f2;
+  --glass-bg: rgba(254,254,254,0.45); --glass-border: rgba(6,10,24,0.10); --glass-blur: 16px;
+  --radius-sm: 8px; --radius-md: 16px; --radius-lg: 28px;
+  --shadow-sm: 0 2px 8px rgba(3,5,14,0.08); --shadow-md: 0 12px 32px rgba(3,5,14,0.16);
+  --spacing-gap: 1.5rem;
+  --transition-fast: 150ms; --transition-normal: 300ms; --ease-standard: cubic-bezier(0.4,0,0.2,1);
+  --z-nav: 900; --z-dropdown: 1000; --z-modal: 1100; --z-toast: 1200;
+  color-scheme: light;
+}
+/* DARK — define BOTH mechanisms, in this source order:
+   1) @media (prefers-color-scheme: dark) { :root { …dark tokens… } }
+   2) .dark { …dark tokens… }   3) .light { …light tokens… } (explicit user choice overrides the media query) */
+.dark {
+  --primary: #dce6f2;          --secondary: #0a1a33;
+  --bg-primary: #03050e;       --bg-secondary: #0b1220;
+  --text-primary: #dce6f2;     --text-secondary: rgba(220,230,242,0.72);
+  --text-success: #3fe0ac;     --text-error: #ff7d74;
+  --border-default: rgba(220,230,242,0.16);
+  --border-error: #ff7d74;     --border-success: #3fe0ac;
+  --accent-aurora: #3fe0ac;    --focus-ring: #3fe0ac;
+  --glass-bg: rgba(10,26,51,0.45); --glass-border: rgba(220,230,242,0.14);
+  --shadow-sm: 0 2px 10px rgba(0,0,0,0.45); --shadow-md: 0 14px 40px rgba(0,0,0,0.55);
+  color-scheme: dark;
+}
+```
+- **Contrast pairing is mandatory in both themes:** every light background token pairs with `#060a18`-family dark text; every dark background token pairs with `#dce6f2`-family light text. Text placed on translucent glass must sit on enough alpha to pass §4.3 contrast.
+- Never use pure `#ffffff`; use `#fefefe` where a near-white surface is required.
+
+**2.3 Mandatory Dark Mode & Theme Switching**
+- Dark mode must be fully implemented and equally polished (aurora glows via `mix-blend-mode: screen`, optional pure-CSS starfield dot pattern hidden in light mode).
+- JS theme manager: read `localStorage` key `kp7-theme`; apply `.dark` or `.light` class to `<html>`; with no stored value, do nothing (CSS media query honors `prefers-color-scheme`; base tokens default to light).
+- The navbar toggle must be a visible icon-only button (`dark_mode` / `light_mode` symbols swapped by state) with `aria-label="Toggle dark mode"` and `aria-pressed` reflecting dark state. No theme switching may alter HTML structure.
+
+**2.4 Flexbox Layout & Mobile-First**
+- Build all layout structures with Flexbox; every flex container **defaults to `align-items: center`** unless an exception is documented with a CSS comment. Sanctioned exceptions: card-grid containers use `stretch` for equal heights; step/feature card bodies and footer columns use `flex-start` (top-aligned reading content).
+- Mobile-first: card rows collapse to a single column below 768px via `flex-direction: column`; nav collapses per §1.2. No horizontal scrolling at any width down to 320px — use `overflow-x: clip` on `body` and the aurora container, fluid `clamp()` typography, and wrapped flex rows.
+
+**2.5 Framework Decision**
+- Write **clean custom CSS driven by Tailwind-style layering**: native `@layer` architecture in `style.css` (§2.1). Do **not** load the Tailwind Play CDN (its inline config script would violate §6.1). Every utility/component class must map back to the tokens above; generic reusable classes (`.btn`, `.card`, `.input-group`, `.glass`) are required.
+
+**2.6 Icons & Fonts Enforcement**
+- Google Fonts and Google Material Symbols only, per §1.5. Decorative icons get `aria-hidden="true"`; icon-only controls require `aria-label`. No exceptions.
+
+---
+
+## 3. COMPONENT DESIGN SPECIFICATIONS
+
+**3.1 Buttons (`.btn` + modifiers `.btn--primary`, `.btn--ghost`, `.btn--danger`)**
+- **Default:** `display: flex; align-items: center; justify-content: center; gap: 0.5rem;` minimum 44×44px touch target; primary = aurora gradient fill with `--bg-primary`-family dark text for guaranteed contrast; ghost = glass surface + `--border-default`.
+- **Hover:** brightness/shadow shift, `cursor: pointer`. **Focus:** distinct 2px ring built from `--focus-ring` (outline + offset), never removed. **Active:** `transform: scale(0.97)`.
+- **Loading (`.is-loading`):** disable interaction and double-clicks; swap label for a CSS spinner (or rotating `progress_activity` symbol) that occupies reserved space — button dimensions must not change.
+- **Disabled:** `opacity: 0.5`, greyscale, `cursor: not-allowed`. **Success/Error (`.is-success`, `.is-error`):** temporary states driven by `--text-success`/`--text-error`, always paired with an icon + text (never color alone).
+- Define `.btn--danger` with distinct styling in both themes even if unused on this page.
+
+**3.2 Cards (`.card`, `.card--featured`)**
+- **Default:** flex layout, `--glass-bg` + `backdrop-filter: blur(var(--glass-blur))`, 1px `--glass-border`, `--radius-lg`, `--shadow-sm`. Featured pricing card: gradient border, stronger elevation, "Most popular" ribbon.
+- **Hover (interactive cards only):** `transform: translateY(-2px)` + shadow shift. **Focus-within:** border highlights when a child link/button gains focus.
+- **Skeleton:** define a shimmer keyframe and `.skeleton` utility for any asynchronously rendered content; skeleton dimensions must match final content to prevent layout shift. **Empty state:** define a reusable pattern — Material Symbol in a glass circle plus one guidance sentence.
+
+**3.3 Forms & Inputs (`.input-group`)**
+- Structure: flex `.input-group` wrapping a `<label for>`-linked input, the field itself, and a dedicated error container (`aria-live="polite"`).
+- **States via CSS classes:** empty, focused (ring from `--focus-ring`), filled, valid (`.is-valid`: success border + `check_circle` icon), invalid (`.is-error`: error border, error icon, red text message), disabled, read-only.
+- **Final CTA form behavior:** validate email on submit; on failure show `.is-error` + specific message; on success simulate a 1200ms async submit (loading button), then flip to success state, fire a toast (§3.4), and reset after 4s. Wire error text via `aria-describedby`.
+
+**3.4 Accordion, Toast, and Modal**
+- **FAQ accordion:** each item = `<h3><button class="faq__trigger" aria-expanded="false" aria-controls="faq-panel-N" id="faq-trigger-N">Question <span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button></h3>` + `<div class="faq__panel" id="faq-panel-N" role="region" aria-labelledby="faq-trigger-N">`. Animate with `grid-template-rows: 0fr → 1fr`; icon rotates 180°; JS enforces single-open; triggers are native buttons (fully keyboard operable); first item open by default.
+- **Toast (`.toast`, `role="status"`, `aria-live="polite"`):** fixed glass panel at `--z-toast`, slide+fade entrance, auto-dismiss 4s, close button (`close` icon + `aria-label="Dismiss notification"`).
+- **Modal (optional enhancement — you may open a "What is KP?" glass explainer from the hero badge; if ANY modal is implemented, all of the following is mandatory):** `role="dialog"` `aria-modal="true"` `aria-labelledby`, blurred backdrop overlay at `--z-modal`, centered flex container (`align-items: center`), CSS-animated opening/closing (scale + fade), keyboard **focus trap**, close via `Esc` and overlay click, Google-Icon close button, focus returned to the triggering element, and loading/success/error states for any action it performs.
+
+---
+
+## 4. CORE UX & MICRO-INTERACTION RULES
+
+**4.1 Responsive by Default** — fluid `clamp()` sizing, no overflow, `section[id] { scroll-margin-top: 96px; }` for the sticky-nav offset; `html { scroll-behavior: smooth; }` gated inside `@media (prefers-reduced-motion: no-preference)`.
+
+**4.2 Smooth, Respectful Motion** — every state change transitions with `var(--transition-normal)` and `var(--ease-standard)`. Provide a `prefers-reduced-motion: reduce` block that disables aurora drift, pulses, spins, reveals, and transforms **without hiding content** (keep static gradients visible; replace the loading spinner with an opacity pulse).
+
+**4.3 Accessibility (hard requirements)** — 4.5:1 text contrast (3:1 large text/UI) verified in **both** themes; semantic HTML5 landmarks (`header`, `nav[aria-label]`, `main`, `section`, `footer`) plus a skip link to `#main`; exactly one `h1` with logical heading order; `:focus-visible` ring on every interactive element; state is never communicated by color alone (pair with icon + text); `aria-live` regions for form errors, loading, and toasts; full keyboard operability — no mouse-only interactions.
+
+**4.4 Mandatory Visual Feedback** — every click, hover, toggle, accordion open/close, and form submission triggers a visible state change within `--transition-fast`.
+
+**4.5 Destructive/Danger Styling** — any `.btn--danger`-classed action must be visually distinct in both light and dark themes.
+
+---
+
+## 5. JAVASCRIPT REQUIREMENTS (vanilla ES6+, single file, defensive null-guards)
+
+Implement: **5.1** theme manager (§2.3); **5.2** mobile nav toggle (`aria-expanded`, `aria-controls`, `Esc` closes, focus returns to trigger, closes on link click); **5.3** FAQ accordion (§3.4); **5.4** CTA form validation + simulated submit + success/toast (§3.3); **5.5** toast utility; **5.6** scroll-reveal via `IntersectionObserver` adding `.is-visible`, with reveal initial states gated behind a `.js-enabled` class on `<html>` so the page is fully visible without JS; **5.7** auto-updating footer year; **5.8** modal manager if built (§3.4). No libraries, no frameworks, no polyfills beyond what is written.
+
+---
+
+## 6. DELIVERABLES & OUTPUT FORMAT
+
+**6.1 File Structure** — three files, output in full in one response, each in its own labeled code block: `index.html`, `style.css`, `script.js`. The only script reference permitted is a single `<script src="script.js" defer></script>`; no inline script blocks, no inline CSS, no `<style>` tags.
+
+**6.2 Naming Convention** — BEM only (`block__element--modifier`), applied consistently to every custom class; never mix conventions. Use `id`s exclusively for anchors, form labels, and ARIA relationships.
+
+**6.3 Completeness** — no TODOs, no placeholders, no lorem ipsum; all copy authored per §1.6. The saved files must render a fully functional page with no console errors.
+
+**6.4 Build now** — produce the complete `index.html`, `style.css`, and `script.js` in this single response.
