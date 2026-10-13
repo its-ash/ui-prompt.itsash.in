@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nimbus — On-chain analytics for teams that ship</title>
+<meta name="description" content="Nimbus turns raw on-chain data into live dashboards, alerts and reports for Web3 teams.">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet">
+<style>
+:root{--primary:#FFE3C3;--secondary:#73001C;--bg-primary:#73001C;--bg-secondary:#8A0023;--bg-inset:#5C0016;--text-primary:#FFE3C3;--text-secondary:#E3C3A4;--text-success:#7BE3A2;--text-error:#FF8A8A;--border-default:rgba(255,227,195,.25);--border-strong:rgba(255,227,195,.55);--border-success:rgba(123,227,162,.55);--border-error:rgba(255,138,138,.65);--radius-sm:2px;--radius-md:4px;--radius-lg:8px;--shadow-sm:0 2px 8px rgba(0,0,0,.3);--shadow-md:0 12px 32px rgba(0,0,0,.45);--spacing-gap:1.5rem;--transition-fast:150ms;--transition-normal:300ms;--ease-standard:cubic-bezier(.22,1,.36,1);--z-header:50;--z-dropdown:100;--z-modal:200;--z-toast:300;--font-base:'Space Grotesk',sans-serif}
+html.theme-light{--primary:#73001C;--secondary:#FFE3C3;--bg-primary:#FFE3C3;--bg-secondary:#F6DCC2;--bg-inset:#ECCDAC;--text-primary:#73001C;--text-secondary:#5C0016;--text-success:#085C36;--text-error:#B3171B;--border-default:rgba(115,0,28,.28);--border-strong:rgba(115,0,28,.55);--border-success:rgba(8,92,54,.5);--border-error:rgba(179,23,27,.55);--shadow-sm:0 2px 8px rgba(115,0,28,.14);--shadow-md:0 12px 32px rgba(115,0,28,.2)}
+@media(prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font:400 1rem/1.6 var(--font-base);letter-spacing:0;background:var(--bg-primary);color:var(--text-primary);text-align:left;overflow-x:clip}
+section{scroll-margin-top:4.5rem;padding-block:clamp(4rem,9vw,7rem)}
+h1,h2,h3,.price,.step__num{font-weight:700;letter-spacing:-.03em;line-height:.9;padding-block:.07em}
+h1{font-size:clamp(2.9rem,9vw,8rem);max-width:11ch}
+h2{font-size:clamp(2.1rem,5vw,3.6rem)}
+h3{font-size:clamp(1.15rem,2vw,1.45rem)}
+p,li,figcaption{color:var(--text-secondary)}
+a{color:inherit}
+.eyebrow{font-size:.78rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--text-secondary)}
+.eyebrow--hot{color:var(--primary)}
+.ms{font-family:'Material Symbols Outlined';font-weight:400;font-size:1.15rem;line-height:1;display:inline-block}
+.wrap{max-width:72rem;margin-inline:auto;padding-inline:clamp(1rem,4vw,2.5rem)}
+.band{background:var(--bg-inset)}
+.sec-head{display:flex;flex-direction:column;align-items:flex-start;gap:.9rem;max-width:34rem;margin-bottom:clamp(2rem,5vw,3.5rem)}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:var(--spacing-gap)}
+.grid{align-items:stretch}
+.grid>*{flex:1 1 260px;min-width:0}
+.skip{position:absolute;left:-999px}
+.skip:focus{left:1rem;top:1rem;z-index:var(--z-modal);background:var(--secondary);color:var(--primary);padding:.75rem 1.1rem;border-radius:var(--radius-md);text-decoration:none}
+:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;min-width:44px;padding:.7rem 1.4rem;font:500 1rem var(--font-base);border-radius:var(--radius-md);border:1.5px solid transparent;cursor:pointer;text-decoration:none;position:relative;transition:filter var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast),transform var(--transition-fast),background-color var(--transition-fast),color var(--transition-fast),border-color var(--transition-fast)}
+.btn--primary{background:var(--primary);color:var(--secondary)}
+.btn--secondary{background:transparent;color:var(--text-primary);border-color:var(--text-primary)}
+.btn--invert{background:var(--secondary);color:var(--primary)}
+.btn--danger{background:var(--text-error);color:var(--bg-inset)}
+.btn:hover{filter:brightness(1.1);box-shadow:var(--shadow-sm)}
+.btn--secondary:hover{background:var(--text-primary);color:var(--bg-primary);filter:none}
+.btn:active{transform:scale(.97)}
+.btn:disabled,.btn[aria-disabled="true"]{opacity:.5;filter:grayscale(1);cursor:not-allowed}
+.btn.is-loading{pointer-events:none}
+.btn.is-loading>*{visibility:hidden}
+.btn.is-loading::after{content:"progress_activity";font-family:'Material Symbols Outlined';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;animation:spin 1s linear infinite}
+.btn.is-success{background:transparent;color:var(--text-success);border-color:var(--border-success)}
+.btn.is-error{background:transparent;color:var(--text-error);border-color:var(--border-error)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.btn--sm{padding:.45rem 1rem;font-size:.9rem}
+.card{display:flex;flex-direction:column;align-items:flex-start;gap:.9rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:1.75rem;box-shadow:var(--shadow-sm);color:var(--text-primary);transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal),border-color var(--transition-normal)}
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);border-color:var(--border-strong)}
+.card:focus-within{border-color:var(--primary)}
+.card__icon{font-size:2rem;color:var(--primary);background:var(--bg-inset);padding:.5rem;border-radius:var(--radius-md)}
+.card--featured{position:relative;background:var(--primary);color:var(--secondary);border-color:var(--primary)}
+.card--featured :is(p,li,.eyebrow,.tier__per){color:inherit}
+.card--featured .tick{color:var(--secondary)}
+.card--skeleton{pointer-events:none;color:transparent;position:relative;overflow:hidden}
+.card--skeleton::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,var(--border-default) 50%,transparent 70%);animation:shimmer 1.6s infinite}
+@keyframes shimmer{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+.card--empty{border-style:dashed;color:var(--text-secondary)}
+.badge{position:absolute;top:-.85rem;left:1.75rem;background:var(--secondary);color:var(--primary);padding:.25rem .6rem;border-radius:var(--radius-sm);font-size:.72rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase}
+.tier .btn{margin-top:auto}
+.tier__price{display:flex;align-items:baseline;gap:.4rem}
+.price{font-size:clamp(2.6rem,4vw,3.4rem)}
+.tier__per{font-size:.9rem;color:var(--text-secondary)}
+.tier__list{list-style:none;display:flex;flex-direction:column;align-items:flex-start;gap:.55rem}
+.tier__list li{display:flex;align-items:center;gap:.5rem;font-size:.95rem}
+.tick{color:var(--text-success);flex-shrink:0}
+.steps{list-style:none}
+.step{display:flex;flex-direction:column;align-items:flex-start;gap:1rem;flex:1 1 240px;min-width:0}
+.step__num{font-size:clamp(4rem,9vw,6.5rem);color:var(--primary)}
+.quote{gap:1rem}
+.quote__glyph{font-size:2.4rem;color:var(--primary)}
+.quote blockquote{font-size:1.05rem;color:var(--text-primary)}
+.quote figcaption{font-size:.9rem;font-weight:500}
+.faq{display:flex;flex-direction:column;align-items:flex-start;gap:.75rem}
+.faq__item{width:100%;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg)}
+.faq__item[open]{border-color:var(--primary)}
+.faq__q{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:44px;padding:1rem 1.25rem;cursor:pointer;font-weight:700;letter-spacing:-.01em;list-style:none;color:var(--text-primary)}
+.faq__q::-webkit-details-marker{display:none}
+.faq__chev{color:var(--primary);flex-shrink:0;transition:transform var(--transition-normal) var(--ease-standard)}
+.faq__item[open] .faq__chev{transform:rotate(180deg)}
+.faq__a{padding:0 1.25rem 1.25rem;max-width:65ch}
+.site-header{position:sticky;top:0;z-index:var(--z-header);background:var(--bg-primary);border-bottom:1px solid var(--border-default)}
+.header-row{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1.5rem;padding-block:.85rem}
+.brand{font-weight:700;letter-spacing:-.03em;line-height:.9;padding-block:.07em;font-size:1.35rem;text-decoration:none;color:var(--text-primary)}
+.nav{display:flex;flex-wrap:wrap;align-items:center;gap:.25rem;margin-inline:auto}
+.nav a{display:inline-flex;align-items:center;min-height:44px;padding-inline:.35rem;color:var(--text-secondary);text-decoration:none;font-size:.95rem;transition:color var(--transition-fast)}
+.nav a:hover{color:var(--text-primary)}
+.header-actions{display:flex;align-items:center;gap:.6rem}
+.hero{display:flex;align-items:center;min-height:min(72vh,42rem)}
+.hero .wrap{display:flex;flex-direction:column;align-items:flex-start;gap:1.5rem}
+.hero__sub{max-width:44ch;font-size:clamp(1.05rem,1.6vw,1.3rem)}
+.cta{background:var(--primary);color:var(--secondary)}
+.cta .wrap{display:flex;flex-direction:column;align-items:flex-start;gap:1.25rem}
+.cta :is(p,.eyebrow){color:inherit}
+.cta .eyebrow{opacity:.75}
+.cta h2{max-width:20ch}
+.cta :focus-visible{outline-color:var(--secondary)}
+.site-footer{background:var(--bg-inset);border-top:1px solid var(--border-default)}
+.footer-grid{display:flex;flex-wrap:wrap;align-items:flex-start;gap:2.5rem 3rem;padding-block:3.5rem}
+.footer__brand{flex:1 1 240px;min-width:0;max-width:32ch;display:flex;flex-direction:column;align-items:flex-start;gap:1rem}
+.footer__col{display:flex;flex-direction:column;align-items:flex-start;gap:.35rem;flex:1 1 150px;min-width:0}
+.site-footer h3{font-size:1rem;margin-bottom:.5rem}
+.footer__col a{display:inline-flex;align-items:center;min-height:44px;color:var(--text-secondary);text-decoration:none;font-size:.95rem;transition:color var(--transition-fast)}
+.footer__col a:hover{color:var(--text-primary)}
+.footer-bottom{display:flex;align-items:center;padding-block:1.5rem;border-top:1px solid var(--border-default);font-size:.9rem}
+.newsletter{display:flex;flex-direction:column;align-items:flex-start;gap:1rem;width:100%;max-width:24rem}
+.form-group{display:flex;flex-direction:column;align-items:flex-start;gap:.5rem;width:100%}
+input{width:100%;min-height:44px;background:var(--bg-primary);border:1.5px solid var(--border-default);border-radius:var(--radius-md);padding:.55rem .9rem;color:var(--text-primary);font:inherit;transition:border-color var(--transition-fast)}
+input::placeholder{color:var(--text-secondary);opacity:.7}
+input:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-color:var(--primary)}
+input.is-valid{border-color:var(--text-success)}
+input.is-invalid{border-color:var(--text-error)}
+input:disabled{opacity:.5;cursor:not-allowed}
+.field__msg{min-height:1.4rem;font-size:.9rem;display:flex;align-items:center;gap:.35rem;color:var(--text-secondary)}
+.field__msg.is-error{color:var(--text-error)}
+.field__msg.is-success{color:var(--text-success)}
+.social{display:flex;align-items:center;gap:.75rem;list-style:none;margin-top:.75rem}
+.social a{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;border:1px solid var(--border-default);border-radius:var(--radius-md);color:var(--text-secondary);text-decoration:none;transition:color var(--transition-fast),border-color var(--transition-fast)}
+.social a:hover{color:var(--text-primary);border-color:var(--primary)}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="wrap header-row">
+    <a class="brand" href="#main">Nimbus</a>
+    <nav class="nav" aria-label="Primary">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="header-actions">
+      <button class="btn btn--secondary btn--sm" id="themeToggle" aria-pressed="false" aria-label="Toggle color theme"><span class="ms" aria-hidden="true">light_mode</span><span>Theme</span></button>
+      <a class="btn btn--primary btn--sm" href="#cta">Get access</a>
+    </div>
+  </div>
+</header>
+<main id="main">
+  <section class="hero" aria-labelledby="hero-t">
+    <div class="wrap">
+      <p class="eyebrow eyebrow--hot">On-chain analytics · v2.0</p>
+      <h1 id="hero-t">Decode the whole chain.</h1>
+      <p class="hero__sub">Nimbus turns raw blocks into live dashboards, alerts and reports — so your team ships on data, not vibes.</p>
+      <div class="row">
+        <a class="btn btn--primary" href="#pricing">Start analyzing<span class="ms" aria-hidden="true">arrow_forward</span></a>
+        <a class="btn btn--secondary" href="#how">See how it works</a>
+      </div>
+    </div>
+  </section>
+  <section class="band" id="features" aria-labelledby="features-t">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Features</p>
+        <h2 id="features-t">Built for the teams reading the chain.</h2>
+      </div>
+      <div class="row grid">
+        <article class="card">
+          <span class="ms card__icon" aria-hidden="true">monitoring</span>
+          <h3>Real-time pipelines</h3>
+          <p>Stream decoded events from Ethereum, L2s and Solana the moment blocks land — normalized, deduped and ready to query.</p>
+        </article>
+        <article class="card">
+          <span class="ms card__icon" aria-hidden="true">notifications_active</span>
+          <h3>Alerts that fire first</h3>
+          <p>Set thresholds on any metric or wallet and get pinged on Slack or Telegram before the market finishes reacting.</p>
+        </article>
+        <article class="card">
+          <span class="ms card__icon" aria-hidden="true">key</span>
+          <h3>Read-only by design</h3>
+          <p>Connect a public endpoint or a burner key. Nimbus never custodies assets, signs transactions or touches your treasury.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+  <section id="how" aria-labelledby="how-t">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">How it works</p>
+        <h2 id="how-t">From block to boardroom in three moves.</h2>
+      </div>
+      <ol class="row grid steps">
+        <li class="step">
+          <span class="step__num" aria-hidden="true">01</span>
+          <h3>Connect</h3>
+          <p>Point Nimbus at any supported network. Historical sync finishes in minutes, not days.</p>
+        </li>
+        <li class="step">
+          <span class="step__num" aria-hidden="true">02</span>
+          <h3>Query</h3>
+          <p>Drag and drop metrics, or write plain SQL against fully decoded tables — no subgraph wrangling.</p>
+        </li>
+        <li class="step">
+          <span class="step__num" aria-hidden="true">03</span>
+          <h3>Ship</h3>
+          <p>Share a live report with your team, holders or the public. One link, always current, no screenshots.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+  <section class="band" id="stories" aria-labelledby="stories-t">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Testimonials</p>
+        <h2 id="stories-t">Teams that stopped guessing.</h2>
+      </div>
+      <div class="row grid">
+        <figure class="card quote">
+          <span class="ms quote__glyph" aria-hidden="true">format_quote</span>
+          <blockquote>Nimbus replaced three dashboards and a very tired spreadsheet. Our community asks fewer questions because the data is simply there.</blockquote>
+          <figcaption>Mara Chen — Head of Ops, Ledgerline DAO</figcaption>
+        </figure>
+        <figure class="card quote">
+          <span class="ms quote__glyph" aria-hidden="true">format_quote</span>
+          <blockquote>We caught an unusual treasury movement in under a minute and froze the multisig before anything moved. The alerts alone pay for the plan.</blockquote>
+          <figcaption>Dev Okoye — Core Contributor, Vault12 Labs</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+  <section id="pricing" aria-labelledby="pricing-t">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Pricing</p>
+        <h2 id="pricing-t">Pay for signal, not infrastructure.</h2>
+      </div>
+      <div class="row grid">
+        <article class="card tier">
+          <p class="eyebrow">Explorer</p>
+          <p class="tier__price"><span class="price">$0</span><span class="tier__per">/mo</span></p>
+          <ul class="tier__list">
+            <li><span class="ms tick" aria-hidden="true">check</span>3 live dashboards</li>
+            <li><span class="ms tick" aria-hidden="true">check</span>7-day query history</li>
+            <li><span class="ms tick" aria-hidden="true">check</span>Community support</li>
+          </ul>
+          <a class="btn btn--secondary" href="#cta">Start free</a>
+        </article>
+        <article class="card card--featured tier">
+          <p class="badge">Most popular</p>
+          <p class="eyebrow">Analyst</p>
+          <p class="tier__price"><span class="price">$49</span><span class="tier__per">/mo</span></p>
+          <ul class="tier__list">
+            <li><span class="ms tick" aria-hidden="true">check</span>Unlimited dashboards</li>
+            <li><span class="ms tick" aria-hidden="true">check</span>Full history + SQL access</li>
+            <li><span class="ms tick" aria-hidden="true">check</span>Real-time smart alerts</li>
+            <li><span class="ms tick" aria-hidden="true">check</span>Slack &amp; Telegram delivery</li>
+          </ul>
+          <a class="btn btn--invert" href="#cta">Go Analyst</a>
+        </article>
+        <article class="card tier">
+          <p class="eyebrow">Team</p>
+          <p class="tier__price"><span class="price">$199</span><span class="tier__per">/mo</span></p>
+          <ul class="tier__list">
+            <li><span class="ms tick" aria-hidden="true">check</span>Everything in Analyst</li>
+            <li><span class="ms tick" aria-hidden="true">check</span>10 seats + shared workspaces</li>
+            <li><span class="ms tick" aria-hidden="true">check</span>SSO &amp; audit log</li>
+          </ul>
+          <a class="btn btn--secondary" href="#cta">Contact sales</a>
+        </article>
+      </div>
+    </div>
+  </section>
+  <section class="band" id="faq" aria-labelledby="faq-t">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">FAQ</p>
+        <h2 id="faq-t">Questions we get a lot.</h2>
+      </div>
+      <div class="faq">
+        <details class="faq__item">
+          <summary class="faq__q">Which networks does Nimbus support?<span class="ms faq__chev" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__a">Ethereum, Base, Arbitrum, Optimism, Polygon and Solana at launch, with new chains added monthly. Historical depth goes back to genesis on supported networks.</p>
+        </details>
+        <details class="faq__item">
+          <summary class="faq__q">Do you ever hold my keys or assets?<span class="ms faq__chev" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__a">Never. Nimbus is read-only by default — we query public data and never custody funds, sign transactions or request spending approvals.</p>
+        </details>
+        <details class="faq__item">
+          <summary class="faq__q">Can I change or cancel my plan?<span class="ms faq__chev" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__a">Yes. Plans are month-to-month, upgrades apply instantly with prorated billing, and you can cancel in settings anytime — dashboards stay exportable for 90 days.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+  <section class="cta" id="cta" aria-labelledby="cta-t">
+    <div class="wrap">
+      <p class="eyebrow">Early access</p>
+      <h2 id="cta-t">Stop guessing. Start decoding.</h2>
+      <p>Join 4,000+ analysts and builders getting launch pricing, weekly chain digests and first access to Nimbus 2.0.</p>
+      <a class="btn btn--invert" href="#pricing">Claim early access<span class="ms" aria-hidden="true">arrow_forward</span></a>
+    </div>
+  </section>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer__brand">
+      <p class="brand">Nimbus</p>
+      <p>On-chain analytics for teams that ship. Read the chain like a ledger.</p>
+      <ul class="social">
+        <li><a href="mailto:hello@nimbus.xyz" aria-label="Email us"><span class="ms" aria-hidden="true">alternate_email</span></a></li>
+        <li><a href="#cta" aria-label="RSS feed"><span class="ms" aria-hidden="true">rss_feed</span></a></li>
+        <li><a href="#cta" aria-label="Community forum"><span class="ms" aria-hidden="true">forum</span></a></li>
+      </ul>
+    </div>
+    <nav class="footer__col" aria-label="Product">
+      <h3>Product</h3>
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#how">Pipeline</a>
+    </nav>
+    <nav class="footer__col" aria-label="Company">
+      <h3>Company</h3>
+      <a href="#cta">About</a>
+      <a href="#cta">Careers</a>
+      <a href="#cta">Contact</a>
+    </nav>
+    <div class="footer__col">
+      <h3>Stay in the loop</h3>
+      <form class="newsletter" id="nlForm" novalidate>
+        <div class="form-group">
+          <label class="eyebrow" for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="you@protocol.xyz" autocomplete="email" aria-describedby="emailMsg">
+          <p class="field__msg" id="emailMsg" aria-live="polite"></p>
+        </div>
+        <button class="btn btn--primary" type="submit" id="nlBtn"><span>Subscribe</span></button>
+      </form>
+    </div>
+  </div>
+  <div class="wrap footer-bottom"><p>© 2026 Nimbus Labs, Inc. All rights reserved.</p></div>
+</footer>
+<script>
+(function(){
+var root=document.documentElement,tgl=document.getElementById('themeToggle');
+tgl.addEventListener('click',function(){var on=root.classList.toggle('theme-light');tgl.setAttribute('aria-pressed',on);tgl.firstElementChild.textContent=on?'dark_mode':'light_mode';});
+var f=document.getElementById('nlForm'),em=document.getElementById('email'),btn=document.getElementById('nlBtn'),msg=document.getElementById('emailMsg'),rx=/^\S+@\S+\.\S+$/;
+function say(text,icon,cls){msg.className='field__msg'+(cls?' '+cls:'');msg.innerHTML=text?'<span class="ms" aria-hidden="true">'+icon+'</span>'+text:'';em.classList.toggle('is-invalid',cls==='is-error');em.classList.toggle('is-valid',cls==='is-success');}
+em.addEventListener('blur',function(){if(!em.value)return;var ok=rx.test(em.value);say(ok?'Looks good — we will keep this to ourselves.':'Please enter a valid email address.',ok?'check_circle':'error',ok?'is-success':'is-error');});
+f.addEventListener('submit',function(ev){ev.preventDefault();if(!rx.test(em.value)){say('Please enter a valid email address to subscribe.','error','is-error');em.focus();return;}btn.classList.add('is-loading');btn.setAttribute('aria-busy','true');setTimeout(function(){btn.classList.remove('is-loading');btn.classList.add('is-success');btn.removeAttribute('aria-busy');btn.innerHTML='<span class="ms" aria-hidden="true">check_circle</span><span>Subscribed</span>';say('You are on the list — see you at launch.','check_circle','is-success');},900);});
+})();
+</script>
+</body>
+</html>

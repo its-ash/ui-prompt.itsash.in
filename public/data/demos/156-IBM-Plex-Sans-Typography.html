@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nimbus — Workload Control Plane</title>
+<meta name="description" content="Nimbus unifies deployment, observability, and governance into one engineered control plane.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0,0&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--primary:#ffffff;--secondary:#09524f;--accent:#09524f;--bg-primary:#fefefe;--bg-secondary:#f1f4f3;--text-primary:#0c1f1e;--text-secondary:#4a6360;--text-success:#0e7a43;--text-error:#c0392b;--border-default:#d9e2e0;--border-success:#0e7a43;--border-error:#c0392b;--ink:#0c1f1e;--paper:#fefefe;--radius-sm:4px;--radius-md:8px;--radius-lg:16px;--shadow-sm:0 1px 2px rgba(12,31,30,.08);--shadow-md:0 10px 28px rgba(12,31,30,.14);--spacing-gap:1.5rem;--transition-fast:150ms;--transition-normal:300ms;--ease-standard:cubic-bezier(.2,0,.2,1);--z-dropdown:100;--z-modal:200;--z-toast:300;--font-base:'IBM Plex Sans',sans-serif;--font-mono:'IBM Plex Mono',monospace}
+@media(prefers-color-scheme:dark){:root:not(.light){--accent:#45b8b2;--bg-primary:#061514;--bg-secondary:#0c2b28;--text-primary:#fefefe;--text-secondary:#9db5b2;--text-success:#57c98a;--text-error:#ff8a7d;--border-default:#1e3d3a;--border-success:#57c98a;--border-error:#ff8a7d;--shadow-sm:0 1px 2px rgba(0,0,0,.5);--shadow-md:0 10px 28px rgba(0,0,0,.6)}}
+:root.dark{--accent:#45b8b2;--bg-primary:#061514;--bg-secondary:#0c2b28;--text-primary:#fefefe;--text-secondary:#9db5b2;--text-success:#57c98a;--text-error:#ff8a7d;--border-default:#1e3d3a;--border-success:#57c98a;--border-error:#ff8a7d;--shadow-sm:0 1px 2px rgba(0,0,0,.5);--shadow-md:0 10px 28px rgba(0,0,0,.6)}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;letter-spacing:-.01em;transition:background-color var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard)}
+section[id]{scroll-margin-top:4.75rem}
+.material-symbols-outlined{line-height:1}
+.skip-link{position:absolute;left:-999px;top:.5rem;z-index:var(--z-toast);background:var(--secondary);color:var(--primary);padding:.75rem 1rem;border-radius:var(--radius-sm)}
+.skip-link:focus{left:.5rem;color:var(--primary)}
+a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.band--teal a:focus-visible,.band--teal button:focus-visible{outline-color:var(--primary)}
+/* Header — sticky chrome, sits below --z-dropdown */
+.site-header{position:sticky;top:0;z-index:90;background:var(--bg-primary);border-bottom:1px solid var(--border-default)}
+.header__inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;max-width:72rem;margin-inline:auto;padding:.6rem clamp(1.25rem,5vw,2.5rem)}
+.wordmark{font-weight:700;font-size:1.4rem;letter-spacing:-.03em;line-height:.9;color:var(--text-primary);text-decoration:none}
+.wordmark--light{color:var(--primary)}
+.site-nav{display:none}
+@media(min-width:768px){.site-nav{display:flex;align-items:center;gap:.25rem}}
+.site-nav a{display:flex;align-items:center;min-height:44px;padding:0 .75rem;color:var(--text-secondary);font-weight:500;text-decoration:none;transition:color var(--transition-fast) var(--ease-standard)}
+.site-nav a:hover{color:var(--text-primary);text-decoration:underline}
+.header__actions{display:flex;align-items:center;gap:.5rem}
+.icon-btn{display:flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding:0;border:1px solid var(--border-default);border-radius:var(--radius-md);background:transparent;color:var(--text-primary);cursor:pointer;transition:all var(--transition-fast) var(--ease-standard)}
+.icon-btn:hover{background:var(--bg-secondary);border-color:var(--accent)}
+/* Buttons */
+.btn{position:relative;display:flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;min-width:44px;padding:.75rem 1.5rem;font:600 1rem var(--font-base);border:1px solid transparent;border-radius:var(--radius-md);cursor:pointer;text-decoration:none;transition:all var(--transition-fast) var(--ease-standard)}
+.btn--sm{padding:.45rem 1rem;font-size:.95rem}
+.btn--primary{background:var(--secondary);color:var(--primary)}
+.btn--invert{background:var(--primary);color:var(--secondary)}
+.btn--secondary{background:transparent;color:var(--text-primary);border-color:var(--text-secondary)}
+.btn--ghost{background:transparent;color:var(--primary);border-color:color-mix(in srgb,var(--primary) 55%,transparent)}
+.btn--danger{background:transparent;color:var(--text-error);border-color:var(--border-error)}
+.btn:hover{filter:brightness(1.08);box-shadow:var(--shadow-sm)}
+.btn--secondary:hover,.btn--danger:hover{filter:none;background:var(--bg-secondary)}
+.btn--ghost:hover{filter:none;background:color-mix(in srgb,var(--primary) 12%,transparent)}
+.btn:active{transform:scale(.97)}
+.btn[disabled],.btn.is-loading{opacity:.55;pointer-events:none;cursor:not-allowed}
+.btn.is-error{border-color:var(--border-error);color:var(--text-error)}
+.btn.is-success{border-color:var(--border-success)}
+.btn__state{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:inherit;border-radius:inherit;pointer-events:none}
+.btn__state .material-symbols-outlined{font-size:1.25rem}
+.btn.is-loading .btn__state--load{display:flex;animation:spin 1s linear infinite}
+.btn.is-success .btn__state--done{display:flex}
+/* Bands, rhythm, grid */
+.band{padding:clamp(3.5rem,8vw,6rem) clamp(1.25rem,5vw,2.5rem)}
+.band--teal{background:var(--secondary);color:var(--primary)}
+.wrap{max-width:72rem;margin-inline:auto}
+.wrap--narrow{max-width:48rem}
+.grid{display:flex;flex-direction:column;gap:var(--spacing-gap);margin-top:calc(var(--spacing-gap)*1.5)}
+@media(min-width:768px){.grid--3{flex-direction:row;align-items:stretch}}/* exception: equal-height cards */
+@media(min-width:992px){.grid--2,.grid--pricing{flex-direction:row;align-items:stretch}}/* exception: equal-height cards */
+.grid>*{flex:1 1 0;min-width:0}
+/* Typography system */
+.display{font-weight:700;letter-spacing:-.03em;line-height:.9}
+.section-title{font-size:clamp(2rem,4.5vw,3.4rem);margin-top:1rem;max-width:22ch}
+.lede{margin-top:1rem;max-width:52ch;color:var(--text-secondary)}
+.band--teal .lede{color:var(--primary);opacity:.78}
+.eyebrow{font-family:var(--font-mono);font-size:.72rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.band--teal .eyebrow{color:var(--primary);opacity:.8}
+/* Hero */
+.hero{display:flex;align-items:center;min-height:90vh}
+.hero__inner{width:100%;border-top:1px solid color-mix(in srgb,var(--primary) 35%,transparent);padding-top:1.5rem}
+@media(min-width:768px){.hero__inner{max-width:min(58vw,54rem)}}
+.hero__title{font-size:clamp(2.75rem,9vw,7.5rem);color:var(--primary)}
+.hero__sub{margin-top:1.5rem;max-width:46ch;color:var(--primary);opacity:.78}
+.hero__cta{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:2rem}
+.hero__meta{margin-top:3rem;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--primary);opacity:.55}
+/* Cards */
+.card{display:flex;flex-direction:column;gap:var(--spacing-gap);background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);padding:1.75rem}
+.card__icon{display:flex;align-items:center;justify-content:center;width:3rem;height:3rem;border-radius:var(--radius-md);background:var(--secondary);color:var(--primary);font-size:1.5rem}
+.card__title{font-size:1.25rem;font-weight:600;letter-spacing:-.02em;line-height:1.1}
+.card__copy,.tier__desc{color:var(--text-secondary)}
+.card--interactive{transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard),border-color var(--transition-fast) var(--ease-standard)}
+.card--interactive:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);border-color:var(--accent)}
+.card--interactive:focus-within{border-color:var(--accent);box-shadow:var(--shadow-md)}
+.card--featured{border:2px solid var(--accent);box-shadow:var(--shadow-md)}
+.card--empty{align-items:center;text-align:center;color:var(--text-secondary)}
+.skeleton__line{min-height:.9rem;margin:.5rem 0;border-radius:var(--radius-sm);background:linear-gradient(90deg,var(--bg-secondary) 25%,var(--bg-primary) 50%,var(--bg-secondary) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite}
+.skeleton__box{min-height:6rem}
+/* Steps */
+.steps{display:flex;flex-direction:column;gap:calc(var(--spacing-gap)*1.25);list-style:none;margin-top:calc(var(--spacing-gap)*1.5)}
+@media(min-width:768px){.steps{flex-direction:row;align-items:stretch}}/* exception: equal-height steps */
+.step{position:relative;flex:1 1 0;min-width:0}
+.step__num{display:block;font-family:var(--font-mono);font-weight:500;font-size:clamp(2.5rem,5vw,3.6rem);letter-spacing:-.03em;line-height:.9;color:var(--accent)}
+@media(min-width:768px){.step:not(:last-child)::after{content:"";position:absolute;top:1.5rem;right:calc(var(--spacing-gap)/-2);width:var(--spacing-gap);height:1px;background:var(--border-default)}}
+.step__title{margin-top:1rem;font-size:1.25rem;font-weight:600;letter-spacing:-.02em;line-height:1.1}
+.step p{margin-top:.5rem;color:var(--text-secondary)}
+/* Testimonials */
+.card--quote{background:var(--paper);color:var(--ink)}
+.card--quote blockquote{font-size:1.02rem}
+.card--quote blockquote::before{content:"\201C";display:block;height:.65em;font-size:3.2rem;line-height:.9;letter-spacing:-.03em;color:var(--secondary)}
+.quote__attr{display:flex;align-items:center;gap:.75rem}
+.monogram{display:flex;align-items:center;justify-content:center;flex:none;width:2.75rem;height:2.75rem;border-radius:50%;background:var(--secondary);color:var(--primary);font-size:.85rem;font-weight:600}
+.quote__name{display:block;font-weight:600;letter-spacing:-.01em;line-height:1.3}
+.quote__role{display:block;font-size:.85rem;color:color-mix(in srgb,var(--ink) 60%,var(--paper))}
+/* Pricing */
+.tier__name{font-size:1.1rem;font-weight:600;letter-spacing:-.01em}
+.price{font-family:var(--font-mono);font-weight:500;font-size:clamp(2.25rem,4vw,3rem);letter-spacing:-.03em;line-height:.9;margin-top:.75rem}
+.price__unit{font-size:.85rem;font-family:var(--font-base);font-weight:400;letter-spacing:0;color:var(--text-secondary)}
+.tier__desc{margin-top:.5rem;font-size:.9rem}
+.feat{list-style:none;display:flex;flex-direction:column;gap:.6rem}
+.feat li{display:flex;align-items:center;gap:.6rem}
+.feat .material-symbols-outlined{font-size:1.15rem;color:var(--accent)}
+.tier .btn{margin-top:auto}
+.badge{align-self:flex-start;display:inline-flex;align-items:center;min-height:1.5rem;padding:.2rem .6rem;border-radius:var(--radius-sm);background:var(--accent);color:var(--bg-primary);font-family:var(--font-mono);font-size:.68rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase}
+/* FAQ accordion */
+.accordion{margin-top:calc(var(--spacing-gap)*1.5);border-top:1px solid var(--border-default)}
+.accordion__item{border-bottom:1px solid var(--border-default)}
+.accordion__summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:44px;padding:1.1rem .25rem;font-weight:600;letter-spacing:-.01em;cursor:pointer;list-style:none}
+.accordion__summary::-webkit-details-marker{display:none}
+.accordion__summary:hover{color:var(--accent)}
+.accordion__chevron{flex:none;color:var(--accent);transition:transform var(--transition-normal) var(--ease-standard)}
+.accordion__item[open] .accordion__chevron{transform:rotate(180deg)}
+.accordion__item[open] .accordion__panel{animation:reveal var(--transition-normal) var(--ease-standard)}
+.accordion__panel{padding:0 .25rem 1.25rem;max-width:60ch;color:var(--text-secondary)}
+/* Form */
+.input-group{display:flex;flex-direction:column;gap:.75rem;margin-top:2rem}
+.input-group__row{display:flex;flex-direction:column;gap:.75rem}
+@media(min-width:640px){.input-group__row{flex-direction:row;align-items:center}}
+.input-group__label{font-family:var(--font-mono);font-size:.72rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--primary);opacity:.8}
+.input{flex:1 1 12rem;width:100%;min-width:0;min-height:44px;padding:.75rem 1rem;background:var(--primary);color:var(--secondary);border:1px solid color-mix(in srgb,var(--secondary) 25%,var(--primary));border-radius:var(--radius-md);font:inherit;letter-spacing:0}
+.input::placeholder{color:color-mix(in srgb,var(--secondary) 55%,var(--primary))}
+.input:focus{outline:2px solid var(--primary);outline-offset:2px;border-color:var(--accent)}
+.input.is-valid{border-color:var(--border-success)}
+.input.is-invalid,.input[aria-invalid="true"]{border-color:var(--border-error);background:color-mix(in srgb,var(--text-error) 8%,var(--primary))}
+.input:disabled,.input[readonly]{opacity:.7;cursor:not-allowed}
+.input-group__feedback{min-height:1.5rem;font-size:.9rem;color:var(--primary)}
+.microcopy{margin-top:.75rem;font-size:.8rem;color:var(--primary);opacity:.65}
+/* Footer */
+.footer__grid{display:flex;flex-direction:column;gap:2rem}
+@media(min-width:768px){.footer__grid{flex-direction:row;align-items:flex-start}}/* exception: columns top-aligned */
+.footer__brand{flex:1.4 1 0;min-width:0}
+.footer__blurb{margin-top:.75rem;max-width:30ch;font-size:.9rem;color:var(--primary);opacity:.75}
+.footer__nav{display:flex;flex-direction:column;gap:.25rem;flex:1 1 0;min-width:0}
+.footer__nav h3{font-family:var(--font-mono);font-size:.7rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--primary);opacity:.6;margin-bottom:.5rem}
+.footer__nav a{display:flex;align-items:center;min-height:44px;color:var(--primary);opacity:.85;text-decoration:none;transition:opacity var(--transition-fast) var(--ease-standard)}
+.footer__nav a:hover,.footer__nav a:focus-visible,.footer__bar a:hover,.footer__bar a:focus-visible{text-decoration:underline;opacity:1}
+.site-footer{padding-bottom:0}
+.footer__bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.75rem;margin-top:3rem;padding:1.25rem 0;border-top:1px solid color-mix(in srgb,var(--primary) 25%,transparent);font-size:.85rem}
+.footer__bar a{color:var(--primary)}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes shimmer{to{background-position:-200% 0}}
+@keyframes reveal{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+<script>(function(){var s=null;try{s=localStorage.getItem("theme")}catch(e){}var d=s?s==="dark":window.matchMedia("(prefers-color-scheme: dark)").matches;document.documentElement.className=d?"dark":"light"}())</script>
+</head>
+<body id="top">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+<div class="header__inner">
+<a class="wordmark" href="#top">Nimbus</a>
+<nav class="site-nav" aria-label="Primary">
+<a href="#features">Features</a>
+<a href="#how">How It Works</a>
+<a href="#pricing">Pricing</a>
+<a href="#faq">FAQ</a>
+</nav>
+<div class="header__actions">
+<button id="theme-toggle" class="icon-btn" type="button" aria-pressed="false" aria-label="Switch to dark theme"><span class="material-symbols-outlined" aria-hidden="true">dark_mode</span></button>
+<a class="btn btn--primary btn--sm" href="#final-cta">Get started</a>
+</div>
+</div>
+</header>
+<main id="main">
+<section id="hero" class="band band--teal hero" aria-labelledby="hero-title">
+<div class="wrap hero__inner">
+<p class="eyebrow">Workload Control Plane</p>
+<h1 id="hero-title" class="display hero__title">Precision engineered for production.</h1>
+<p class="hero__sub">Nimbus unifies deployment, observability, and governance into one auditable control plane — from first commit to planet-scale.</p>
+<div class="hero__cta">
+<a class="btn btn--primary btn--invert" href="#pricing">Start free trial</a>
+<a class="btn btn--secondary btn--ghost" href="#how">See how it works</a>
+</div>
+<p class="hero__meta">01 Deploy &middot; 02 Observe &middot; 03 Govern</p>
+</div>
+</section>
+<section id="features" class="band" aria-labelledby="features-title">
+<div class="wrap">
+<p class="eyebrow">Capabilities</p>
+<h2 id="features-title" class="display section-title">Built for operational rigor.</h2>
+<p class="lede">Three disciplines, one control plane. Every primitive is versioned, observable, and reversible by default.</p>
+<div class="grid grid--3">
+<article class="card">
+<span class="material-symbols-outlined card__icon" aria-hidden="true">deployed_code</span>
+<h3 class="card__title">Deterministic deploys</h3>
+<p class="card__copy">Every release is a locked, reproducible artifact. Roll forward or back in seconds, with a complete audit trail.</p>
+</article>
+<article class="card">
+<span class="material-symbols-outlined card__icon" aria-hidden="true">monitoring</span>
+<h3 class="card__title">Observability built in</h3>
+<p class="card__copy">Traces, metrics, and logs correlated per workload. Median query latency under 80 ms at petabyte scale.</p>
+</article>
+<article class="card">
+<span class="material-symbols-outlined card__icon" aria-hidden="true">verified_user</span>
+<h3 class="card__title">Governance by default</h3>
+<p class="card__copy">Policy-as-code guardrails evaluated on every change. Compliance evidence is generated automatically.</p>
+</article>
+</div>
+</div>
+</section>
+<section id="how" class="band" aria-labelledby="how-title">
+<div class="wrap">
+<p class="eyebrow">Method</p>
+<h2 id="how-title" class="display section-title">Three steps to production.</h2>
+<p class="lede">A defined path from repository to running workload — no bespoke pipelines required.</p>
+<ol class="steps">
+<li class="step"><span class="step__num" aria-hidden="true">01</span><h3 class="step__title">Connect</h3><p>Point Nimbus at your repositories and clusters. Baseline inventory completes in under ten minutes.</p></li>
+<li class="step"><span class="step__num" aria-hidden="true">02</span><h3 class="step__title">Define</h3><p>Declare environments, policies, and budgets as code. Every change is reviewed, versioned, and reversible.</p></li>
+<li class="step"><span class="step__num" aria-hidden="true">03</span><h3 class="step__title">Ship</h3><p>Deploy with one command or full CI automation. Nimbus records evidence for every artifact in flight.</p></li>
+</ol>
+</div>
+</section>
+<section id="testimonials" class="band band--teal" aria-labelledby="testimonials-title">
+<div class="wrap">
+<p class="eyebrow">Field Notes</p>
+<h2 id="testimonials-title" class="display section-title">Trusted in production.</h2>
+<div class="grid grid--2">
+<figure class="card card--quote">
+<blockquote>Nimbus replaced four internal tools in a single quarter. Our deploy failure rate dropped 71%, and audits that took weeks now take an afternoon.</blockquote>
+<figcaption class="quote__attr"><span class="monogram" aria-hidden="true">MK</span><span><span class="quote__name">Mara Kov&aacute;cs</span><span class="quote__role">VP Platform Engineering, Helix Systems</span></span></figcaption>
+</figure>
+<figure class="card card--quote">
+<blockquote>It is the first platform our security team and our developers both trust outright. That alone justified the migration.</blockquote>
+<figcaption class="quote__attr"><span class="monogram" aria-hidden="true">DO</span><span><span class="quote__name">Daniel Osei</span><span class="quote__role">Director of Engineering, Corvus Labs</span></span></figcaption>
+</figure>
+</div>
+</div>
+</section>
+<section id="pricing" class="band" aria-labelledby="pricing-title">
+<div class="wrap">
+<p class="eyebrow">Pricing</p>
+<h2 id="pricing-title" class="display section-title">Simple, auditable tiers.</h2>
+<p class="lede">Usage-based billing with a published rate card. No seat audits, no surprise invoices.</p>
+<div class="grid grid--pricing">
+<article class="card card--interactive tier">
+<h3 class="tier__name">Starter</h3>
+<p class="price">$0</p>
+<p class="tier__desc">For individuals and evaluation projects.</p>
+<ul class="feat">
+<li><span class="material-symbols-outlined" aria-hidden="true">check</span>1 environment</li>
+<li><span class="material-symbols-outlined" aria-hidden="true">check</span>3 concurrent deploys</li>
+<li><span class="material-symbols-outlined" aria-hidden="true">check</span>Community support</li>
+</ul>
+<a class="btn btn--secondary" href="#final-cta">Start free</a>
+</article>
+<article class="card card--interactive card--featured tier">
+<span class="badge">Most popular</span>
+<h3 class="tier__name">Scale</h3>
+<p class="price">$49<small class="price__unit"> /user/mo</small></p>
+<p class="tier__desc">For product teams shipping daily.</p>
+<ul class="feat">
+<li><span class="material-symbols-outlined" aria-hidden="true">check</span>Unlimited environments</li>
+<li><span class="material-symbols-outlined" aria-hidden="true">check</span>Policy-as-code guardrails</li>
+<li><span class="material-symbols-outlined" aria-hidden="true">check</span>Audit log export</li>
+<li><span class="material-symbols-outlined" aria-hidden="true">check</span>Priority support</li>
+</ul>
+<a class="btn btn--primary" href="#final-cta">Start 14-day trial</a>
+</article>
+<article class="card card--interactive tier">
+<h3 class="tier__name">Enterprise</h3>
+<p class="price">Custom</p>
+<p class="tier__desc">For regulated organizations at scale.</p>
+<ul class="feat">
+<li><span class="material-symbols-outlined" aria-hidden="true">check</span>SSO &amp; SCIM provisioning</li>
+<li><span class="material-symbols-outlined" aria-hidden="true">check</span>Dedicated infrastructure</li>
+<li><span class="material-symbols-outlined" aria-hidden="true">check</span>99.99% uptime SLA</li>
+</ul>
+<a class="btn btn--secondary" href="#final-cta">Talk to us</a>
+</article>
+</div>
+</div>
+</section>
+<section id="faq" class="band" aria-labelledby="faq-title">
+<div class="wrap wrap--narrow">
+<p class="eyebrow">FAQ</p>
+<h2 id="faq-title" class="display section-title">Questions, answered.</h2>
+<div class="accordion">
+<details class="accordion__item">
+<summary class="accordion__summary">Is Nimbus SOC 2 Type II compliant?<span class="material-symbols-outlined accordion__chevron" aria-hidden="true">expand_more</span></summary>
+<div class="accordion__panel"><p>Yes. Nimbus is SOC 2 Type II and ISO 27001 certified. Penetration-test summaries are available under NDA on request.</p></div>
+</details>
+<details class="accordion__item">
+<summary class="accordion__summary">Can we run Nimbus inside our own cloud accounts?<span class="material-symbols-outlined accordion__chevron" aria-hidden="true">expand_more</span></summary>
+<div class="accordion__panel"><p>Yes. Nimbus deploys into your VPC on AWS, GCP, and Azure. Your data never leaves accounts you control.</p></div>
+</details>
+<details class="accordion__item">
+<summary class="accordion__summary">What happens to our workloads if we cancel?<span class="material-symbols-outlined accordion__chevron" aria-hidden="true">expand_more</span></summary>
+<div class="accordion__panel"><p>Everything keeps running. Nimbus is non-intrusive by design — export your full configuration and audit history at any time.</p></div>
+</details>
+</div>
+</div>
+</section>
+<section id="final-cta" class="band band--teal" aria-labelledby="cta-title">
+<div class="wrap wrap--narrow">
+<p class="eyebrow">Get Started</p>
+<h2 id="cta-title" class="display section-title">Put Nimbus to work.</h2>
+<p class="lede">Start a 14-day trial on your own infrastructure. No sales calls, no credit card.</p>
+<form class="input-group" id="cta-form" novalidate>
+<label class="input-group__label" for="email">Work email</label>
+<div class="input-group__row">
+<input class="input" type="email" id="email" name="email" placeholder="you@company.com" autocomplete="email" required>
+<button class="btn btn--primary btn--invert" id="cta-submit" type="submit">Request access<span class="btn__state btn__state--load" aria-hidden="true"><span class="material-symbols-outlined">progress_activity</span></span><span class="btn__state btn__state--done" aria-hidden="true"><span class="material-symbols-outlined">check_circle</span></span></button>
+</div>
+<p class="input-group__feedback" id="form-feedback" aria-live="polite"></p>
+</form>
+<p class="microcopy">No credit card required. We use your address only to send setup instructions — unsubscribe in one click.</p>
+</div>
+</section>
+</main>
+<footer class="band band--teal site-footer">
+<div class="wrap footer__grid">
+<div class="footer__brand">
+<p class="wordmark wordmark--light">Nimbus</p>
+<p class="footer__blurb">The control plane for engineered software delivery.</p>
+</div>
+<nav class="footer__nav" aria-label="Product"><h3>Product</h3><a href="#features">Features</a><a href="#how">How it works</a><a href="#pricing">Pricing</a><a href="#">Roadmap</a></nav>
+<nav class="footer__nav" aria-label="Company"><h3>Company</h3><a href="#">About</a><a href="#">Careers</a><a href="#">Contact</a></nav>
+<nav class="footer__nav" aria-label="Resources"><h3>Resources</h3><a href="#faq">FAQ</a><a href="#">Docs</a><a href="#">Support</a></nav>
+</div>
+<div class="wrap footer__bar">
+<p>&copy; 2026 Nimbus Systems, Inc. All rights reserved.</p>
+<a href="#top">Back to top</a>
+</div>
+</footer>
+<script>
+(function(){
+var doc=document.documentElement,btn=document.getElementById("theme-toggle"),sym=btn.querySelector(".material-symbols-outlined");
+function setTheme(t,save){doc.className=t;var d=t==="dark";btn.setAttribute("aria-pressed",d?"true":"false");btn.setAttribute("aria-label","Switch to "+(d?"light":"dark")+" theme");sym.textContent=d?"light_mode":"dark_mode";if(save){try{localStorage.setItem("theme",t)}catch(e){}}}
+setTheme(doc.className==="dark"?"dark":"light",false);
+btn.addEventListener("click",function(){setTheme(doc.classList.contains("dark")?"light":"dark",true)});
+var items=[].slice.call(document.querySelectorAll(".accordion__item"));
+items.forEach(function(d){d.addEventListener("toggle",function(){if(d.open)items.forEach(function(o){if(o!==d)o.removeAttribute("open")})})});
+var form=document.getElementById("cta-form"),email=document.getElementById("email"),fb=document.getElementById("form-feedback"),submit=document.getElementById("cta-submit"),RX=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+function check(){var v=email.value.trim();email.classList.remove("is-valid","is-invalid");email.setAttribute("aria-invalid","false");
+if(!RX.test(v)){email.classList.add("is-invalid");email.setAttribute("aria-invalid","true");fb.textContent=v?"That address looks incomplete — please check the format.":"Please enter your work email address.";return false}
+email.classList.add("is-valid");fb.textContent="";return true}
+email.addEventListener("blur",function(){if(email.value)check()});
+form.addEventListener("submit",function(e){e.preventDefault();
+if(submit.disabled)return;
+if(!check()){submit.classList.add("is-error");setTimeout(function(){submit.classList.remove("is-error")},900);return}
+submit.disabled=true;submit.setAttribute("aria-busy","true");submit.classList.add("is-loading");fb.textContent="";email.readOnly=true;
+setTimeout(function(){submit.classList.remove("is-loading");submit.classList.add("is-success");fb.textContent="Request received. Setup instructions are on the way to "+email.value+"."},1400)});
+})();
+</script>
+</body>
+</html>

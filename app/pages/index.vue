@@ -1,22 +1,13 @@
 <script setup lang="ts">
 const library = await useLibrary();
 
-const search = ref('');
-const activeCategory = ref('All');
-const isMobileNav = ref(false);
+const search = useState('search', () => '');
+const activeCategory = useState('category', () => 'All');
 
 const items = computed(() => library.value.index);
 const categories = computed(() => library.value.categories);
 const readyCount = computed(() => items.value.filter((i) => i.ready).length);
 const loading = computed(() => !items.value.length);
-
-const counts = computed(() => {
-  const map: Record<string, number> = { All: items.value.length };
-  for (const c of categories.value) {
-    map[c] = items.value.filter((i) => i.category === c).length;
-  }
-  return map;
-});
 
 const filtered = computed(() => {
   const q = search.value.trim().toLowerCase();
@@ -45,13 +36,6 @@ const grouped = computed(() => {
   return groups;
 });
 
-onMounted(() => {
-  const mq = window.matchMedia('(max-width: 740px)');
-  isMobileNav.value = mq.matches;
-  mq.addEventListener('change', (e) => (isMobileNav.value = e.matches));
-  return () => mq.removeEventListener('change', (e) => (isMobileNav.value = e.matches));
-});
-
 useHead({ title: 'PromptDeck - UI Theme Prompt Library' });
 </script>
 
@@ -76,32 +60,6 @@ useHead({ title: 'PromptDeck - UI Theme Prompt Library' });
         </div>
       </section>
 
-      <section class="pg__filterbar" aria-label="Filter themes">
-        <div class="pg__searchroll">
-          <span class="material-symbols-rounded pg__sicon" aria-hidden="true">search</span>
-          <input
-            v-model="search"
-            type="search"
-            class="pg__input"
-            placeholder="Search themes or keywords"
-            aria-label="Search themes"
-          />
-        </div>
-        <div class="pg__cats" :class="{ 'pg__cats--collapsed': isMobileNav }" role="tablist" aria-label="Categories">
-          <button
-            v-for="(count, cat) in counts"
-            v-show="!isMobileNav || cat === 'All' || cat === activeCategory"
-            :key="cat"
-            type="button"
-            class="pg__cat mono"
-            :class="{ 'pg__cat--on': activeCategory === cat }"
-            :aria-pressed="activeCategory === cat"
-            @click="activeCategory = cat"
-          >
-            {{ cat }} <span class="pg__catn">{{ count }}</span>
-          </button>
-        </div>
-      </section>
 
       <div v-if="loading" class="pg__loading" aria-busy="true">
         <span class="pg__sk pg__sk--wide"></span>
@@ -142,9 +100,7 @@ useHead({ title: 'PromptDeck - UI Theme Prompt Library' });
 .pg__main {
   flex: 1;
   width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1.25rem 5rem;
+  padding: 0 0 5rem;
 }
 
 /* hero */
@@ -181,114 +137,6 @@ useHead({ title: 'PromptDeck - UI Theme Prompt Library' });
 
 .pg__statsep {
   color: var(--border-strong);
-}
-
-/* filter bar */
-
-.pg__filterbar {
-  position: sticky;
-  top: 60px;
-  z-index: 5;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  padding: 1rem 0 1.25rem;
-  margin-bottom: 0.5rem;
-  background: color-mix(in srgb, var(--bg) 92%, transparent);
-  border-bottom: 1px solid var(--border);
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  .pg__filterbar {
-    background: var(--bg);
-  }
-}
-
-.pg__searchroll {
-  display: flex;
-  align-items: center;
-  gap: 0.625rem;
-  max-width: 26rem;
-  width: 100%;
-  height: 40px;
-  padding: 0 0.875rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--bg-raised);
-  color: var(--text-faint);
-  transition: border-color var(--transition-fast);
-}
-
-.pg__searchroll:focus-within {
-  border-color: var(--border-strong);
-  color: var(--text);
-}
-
-.pg__sicon {
-  font-size: 18px;
-}
-
-.pg__input {
-  flex: 1;
-  height: 100%;
-  border: none;
-  background: none;
-  color: var(--text);
-  font-family: inherit;
-  font-size: 0.875rem;
-}
-
-.pg__input:focus {
-  outline: none;
-}
-
-.pg__input::placeholder {
-  color: var(--text-faint);
-}
-
-.pg__cats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.375rem;
-}
-
-.pg__cat {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  height: 30px;
-  padding: 0 0.75rem;
-  font-size: 0.71875rem;
-  color: var(--text-dim);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--bg-raised);
-  transition:
-    color var(--transition-fast),
-    border-color var(--transition-fast),
-    background var(--transition-fast);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .pg__cat:hover {
-    color: var(--text);
-    border-color: var(--border-strong);
-  }
-}
-
-.pg__cat--on {
-  color: var(--accent);
-  background: var(--accent-soft);
-  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
-}
-
-.pg__catn {
-  color: var(--text-faint);
-  font-size: 0.65625rem;
-}
-
-.pg__cat--on .pg__catn {
-  color: inherit;
 }
 
 /* groups + grid */
@@ -362,12 +210,10 @@ useHead({ title: 'PromptDeck - UI Theme Prompt Library' });
 
 .pg__foot {
   border-top: 1px solid var(--border);
-  padding: 1.5rem 1.25rem 2rem;
+  padding: 1.5rem 0 2rem;
 }
 
 .pg__footnote {
-  max-width: 1200px;
-  margin: 0 auto;
   font-size: 0.6875rem;
   color: var(--text-faint);
 }
@@ -378,21 +224,6 @@ useHead({ title: 'PromptDeck - UI Theme Prompt Library' });
   }
 
   .pg__title br {
-    display: none;
-  }
-
-  .pg__filterbar {
-    top: 59px;
-  }
-
-  .pg__cats--collapsed {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-
-  .pg__cats--collapsed::-webkit-scrollbar {
     display: none;
   }
 

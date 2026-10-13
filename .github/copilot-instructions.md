@@ -14,13 +14,17 @@ Prompt library site. Users filter by category, open a design full view, copy the
 - `make deploy` - build docs, commit to main, push
 - `make process` - regenerate prompts from `design/raw` via `design/agent.md` (needs `OPENROUTER_API_KEY`)
 - `make categorize` - regenerate `design/categories.json`
+- `make demos` - build missing demo pages in `design/demos` via NVIDIA (needs `NVIDIA_API_KEY` in `.env`); skips done demos
+- `make thumbs` - screenshot new/changed demos to `design/thumbs/*.jpg` (Playwright); also runs in `npm run generate`
 
 ## Structure
 
 - `design/raw/*.md` - source theme specs (833 files), input only
 - `design/prompts/*.md` - processed English prompts matching `design/raw` filenames
 - `design/categories.json` - theme name, category, keywords, era
-- `app/` - Nuxt 4 source. Index page lists themes grouped by category, `/design/[id]` full view + copy
+- `design/demos/*.html` - generated single-file demo page per prompt
+- `design/thumbs/*.jpg` - demo screenshots shown on library cards
+- `app/` - Nuxt 4 source. Index page lists themes grouped by category with demo thumbnails, `/design/[id]` demo iframe left + prompt right + copy
 - `server/api/` - API reads `design/` at runtime; generation step bakes data at build time
 - `docs/` - GitHub Pages artifact, committed to the repo
 

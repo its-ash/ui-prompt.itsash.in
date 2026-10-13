@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nimbus — Workflows that move as fast as you do</title>
+<!--
+  EXCEPTION NOTE: spec requested separate index.html / style.css / script.js.
+  Delivery constraint mandates a single self-contained file, so the <style> block
+  below acts as style.css (zero inline style attributes in markup) and the single
+  deferred <script> at end of body acts as script.js. All other mandatory rules preserved.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20,400,0,0" rel="stylesheet">
+<style>
+:root{--primary:#7c3aed;--secondary:#0ea5e9;--bg-primary:#f3f0ea;--bg-secondary:#fefefe;--text-primary:#1c1917;--text-secondary:#5b554e;--text-success:#22c55e;--text-error:#ef4444;--border-default:#e4ded2;--border-error:#ef4444;--border-success:#22c55e;--radius-sm:10px;--radius-md:16px;--radius-lg:28px;--shadow-sm:0 1px 3px rgba(28,25,23,.09);--shadow-md:0 14px 34px rgba(28,25,23,.16);--spacing-gap:1.5rem;--transition-fast:150ms;--transition-normal:350ms;--ease-standard:cubic-bezier(.4,0,.2,1);--z-dropdown:100;--z-modal:200;--z-toast:300;--font-base:'Inter',system-ui,sans-serif;--grad:linear-gradient(120deg,#7c3aed,#0ea5e9,#f59e0b,#ec4899,#7c3aed)}
+.dark{--bg-primary:#0b0d14;--bg-secondary:#161b28;--text-primary:#f5f6fa;--text-secondary:#a7b0c2;--border-default:#28304a;--shadow-sm:0 1px 3px rgba(0,0,0,.5);--shadow-md:0 18px 44px rgba(0,0,0,.6)}
+@media (prefers-color-scheme:dark){:root:not(.light){--bg-primary:#0b0d14;--bg-secondary:#161b28;--text-primary:#f5f6fa;--text-secondary:#a7b0c2;--border-default:#28304a;--shadow-sm:0 1px 3px rgba(0,0,0,.5);--shadow-md:0 18px 44px rgba(0,0,0,.6)}}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;overflow-x:hidden;transition:background var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard)}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.material-symbols-rounded{line-height:1}
+h1,h2,h3{line-height:1.15;letter-spacing:-.02em}
+a{color:var(--primary)}
+/* Buttons */
+.btn{position:relative;display:flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;min-width:44px;padding:0 1.4rem;border:1px solid transparent;border-radius:var(--radius-sm);font:600 1rem var(--font-base);text-decoration:none;cursor:pointer;transition:transform var(--transition-fast) var(--ease-standard),filter var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),background var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard)}
+.btn:hover{filter:brightness(1.08);box-shadow:var(--shadow-md)}
+.btn:focus-visible{outline:3px solid var(--secondary);outline-offset:2px}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.5;filter:grayscale(1);cursor:not-allowed;box-shadow:none}
+.btn--primary{background:var(--grad);background-size:300%;color:#fff;animation:grad-shift 7s linear infinite}
+.btn--ghost{background:var(--bg-secondary);color:var(--text-primary);border-color:var(--border-default)}
+.btn--danger{background:var(--text-error);color:#fff}/* distinct in both themes */
+.btn.is-success{background:var(--text-success);color:#fff}
+.btn--loading{pointer-events:none;color:transparent}
+.btn--loading::after{content:"";position:absolute;width:20px;height:20px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(1turn)}}
+@keyframes grad-shift{to{background-position:300% 50%}}
+@keyframes fade-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes shimmer{to{background-position:-200% 0}}
+/* Scroll reveal */
+[data-reveal]{opacity:0;transform:translateY(26px);transition:opacity .6s var(--ease-standard),transform .6s var(--ease-standard)}
+[data-reveal].is-visible{opacity:1;transform:none}
+.steps li:nth-child(2) [data-reveal],.steps li:nth-child(2)[data-reveal]{transition-delay:.12s}
+.steps li:nth-child(3) [data-reveal],.steps li:nth-child(3)[data-reveal]{transition-delay:.24s}
+/* Nav */
+.nav{position:sticky;top:0;z-index:var(--z-dropdown);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;padding:.7rem 1.25rem;background:var(--bg-primary);background:color-mix(in srgb,var(--bg-primary) 84%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--border-default)}
+.nav__brand{font-weight:800;font-size:1.3rem;color:var(--text-primary);text-decoration:none}
+.nav__links{display:flex;align-items:center;flex-wrap:wrap;gap:1.2rem}
+.nav__links a{color:var(--text-secondary);text-decoration:none;font-weight:600;font-size:.92rem;transition:color var(--transition-fast) var(--ease-standard)}
+.nav__links a:hover,.nav__links a:focus-visible{color:var(--primary);text-decoration:underline;text-underline-offset:4px}
+.nav__toggle{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-sm);border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);cursor:pointer;transition:border-color var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard)}
+.nav__toggle:hover{border-color:var(--primary);box-shadow:var(--shadow-sm)}
+.nav__toggle:focus-visible{outline:3px solid var(--secondary);outline-offset:2px}
+/* Hero */
+.hero{position:relative;display:flex;align-items:center;justify-content:center;min-height:92vh;overflow:hidden;padding:4.5rem 1.25rem}
+.hero__bg{position:absolute;inset:0;pointer-events:none}
+.hero__orb{position:absolute;border-radius:50%;filter:blur(70px);opacity:.5;will-change:transform}
+.hero__orb--1{width:46vmin;height:46vmin;top:-10%;left:-8%;background:#7c3aed}
+.hero__orb--2{width:38vmin;height:38vmin;top:30%;right:-10%;background:#0ea5e9}
+.hero__orb--3{width:30vmin;height:30vmin;bottom:-14%;left:34%;background:#ec4899}
+.hero__grid{position:absolute;inset:-20% 0;background-image:radial-gradient(var(--border-default) 1px,transparent 1px);background-size:26px 26px;will-change:transform;mask-image:linear-gradient(#000,transparent)}
+.hero__inner{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;max-width:840px;gap:1.15rem}
+.hero__eyebrow{display:inline-flex;align-items:center;gap:.4rem;padding:.35rem .9rem;border:1px solid var(--border-default);border-radius:999px;background:var(--bg-secondary);color:var(--text-secondary);font-size:.85rem;font-weight:600}
+.hero__title{font-size:clamp(2.3rem,6.5vw,4.1rem);background:var(--grad);background-size:300%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:grad-shift 9s linear infinite}
+.hero__sub{color:var(--text-secondary);font-size:clamp(1rem,2vw,1.18rem);max-width:58ch}
+.hero__actions{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:.75rem}
+/* Sections */
+.section{display:flex;flex-direction:column;align-items:center;gap:1.4rem;max-width:1120px;margin:0 auto;padding:4.25rem 1.25rem}
+.section__title{font-size:clamp(1.6rem,3.5vw,2.3rem);text-align:center}
+.section__sub{color:var(--text-secondary);text-align:center;max-width:62ch;margin-top:-.6rem}
+.grid{display:flex;align-items:stretch;flex-wrap:wrap;justify-content:center;gap:var(--spacing-gap)}/* stretch exception: equal-height cards */
+.grid>*{flex:1 1 300px;max-width:400px}
+.card{display:flex;flex-direction:column;align-items:flex-start;gap:.6rem;padding:1.6rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),border-color var(--transition-normal) var(--ease-standard)}/* flex-start exception: reading top-alignment */
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.card:focus-within{border-color:var(--primary);box-shadow:var(--shadow-md)}
+.card h3{font-size:1.15rem}
+.card p{color:var(--text-secondary)}
+.card__ico{display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:var(--radius-sm);background:var(--grad);color:#fff;font-size:26px}
+.card--skeleton{pointer-events:none}.card--skeleton>*{visibility:hidden}.card--skeleton::after{content:"";display:block;width:100%;height:110px;border-radius:var(--radius-sm);background:linear-gradient(100deg,var(--border-default) 40%,var(--bg-secondary) 50%,var(--border-default) 60%) 0 0/200% 100%;animation:shimmer 1.2s infinite}
+.card--empty{align-items:center;text-align:center;color:var(--text-secondary)}
+/* Steps */
+.steps{display:flex;align-items:stretch;flex-wrap:wrap;justify-content:center;gap:var(--spacing-gap);list-style:none;width:100%}
+.steps li{display:flex;align-items:flex-start;gap:.9rem;flex:1 1 290px;padding:1.4rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm)}
+.step__num{display:flex;align-items:center;justify-content:center;flex:0 0 44px;height:44px;border-radius:50%;background:var(--grad);color:#fff;font-weight:800}
+.steps h3{font-size:1.1rem;margin-bottom:.2rem}
+.steps p{color:var(--text-secondary);font-size:.96rem}
+/* Testimonials */
+.quotes{display:flex;align-items:stretch;flex-wrap:wrap;justify-content:center;gap:var(--spacing-gap)}
+.quote{display:flex;flex-direction:column;align-items:flex-start;gap:.9rem;flex:1 1 320px;max-width:480px;padding:1.7rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard)}
+.quote:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.quote blockquote{font-weight:600}
+.quote figcaption{display:flex;align-items:center;gap:.7rem;color:var(--text-secondary);font-size:.9rem}
+.quote__avatar{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;background:var(--grad);color:#fff}
+/* Pricing */
+.pricing{display:flex;align-items:stretch;flex-wrap:wrap;justify-content:center;gap:var(--spacing-gap)}
+.price-card{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:.85rem;flex:1 1 280px;max-width:340px;padding:1.8rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),border-color var(--transition-normal) var(--ease-standard)}
+.price-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.price-card--featured{border:2px solid var(--primary);box-shadow:var(--shadow-md)}
+.price-card--featured.is-visible{transform:scale(1.03)}
+.price-card__tag{position:absolute;top:-.85rem;left:50%;transform:translateX(-50%);background:var(--grad);color:#fff;font-size:.78rem;font-weight:700;padding:.25rem .85rem;border-radius:999px;white-space:nowrap}
+.price-card__amount{font-size:2.1rem;font-weight:800}
+.price-card__amount span{font-size:.95rem;font-weight:400;color:var(--text-secondary)}
+.price-card ul{list-style:none;display:flex;flex-direction:column;gap:.45rem;color:var(--text-secondary);font-size:.94rem}
+.price-card li{display:flex;align-items:center;gap:.5rem}
+.price-card li .material-symbols-rounded{color:var(--text-success);font-size:20px}
+.price-card .btn{margin-top:auto;width:100%}
+/* FAQ */
+.faq{display:flex;flex-direction:column;gap:.9rem;width:100%;max-width:740px}
+.faq details{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:.9rem 1.25rem;transition:border-color var(--transition-normal) var(--ease-standard)}
+.faq details[open]{border-color:var(--primary)}
+.faq summary{display:flex;align-items:center;justify-content:space-between;gap:.75rem;min-height:44px;font-weight:600;cursor:pointer;list-style:none}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary:focus-visible{outline:3px solid var(--secondary);outline-offset:2px;border-radius:var(--radius-sm)}
+.faq .chev{color:var(--text-secondary);transition:transform var(--transition-normal) var(--ease-standard)}
+.faq details[open] .chev{transform:rotate(180deg)}
+.faq details p{color:var(--text-secondary);padding-top:.35rem;animation:fade-up .35s var(--ease-standard)}
+/* CTA band */
+.cta{display:flex;flex-direction:column;align-items:center;gap:1.1rem;text-align:center;margin:0 1.25rem 4.25rem;padding:3.2rem 1.5rem;border-radius:var(--radius-lg);background:var(--grad);background-size:300%;animation:grad-shift 12s linear infinite;color:#fff;box-shadow:var(--shadow-md)}
+.cta h2{font-size:clamp(1.6rem,3.5vw,2.3rem)}
+.cta p{max-width:52ch;opacity:.92}
+.field{display:flex;flex-direction:column;align-items:stretch;gap:.45rem;width:min(460px,100%)}
+.field__label{display:flex;align-items:center;justify-content:space-between;font-size:.9rem;font-weight:600;text-align:left}
+.field__row{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.field__input{flex:1 1 200px;min-height:44px;padding:.55rem .9rem;border:1px solid var(--border-default);border-radius:var(--radius-sm);background:var(--bg-secondary);color:var(--text-primary);font:inherit;transition:border-color var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard)}
+.field__input::placeholder{color:var(--text-secondary)}
+.field__input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 30%,transparent)}
+.field__input:disabled{opacity:.5;cursor:not-allowed}
+.field--error .field__input{border-color:var(--border-error)}
+.field__msg{display:flex;align-items:center;gap:.35rem;min-height:1.3rem;font-size:.85rem;text-align:left;color:var(--text-error)}
+.field--valid .field__msg{color:var(--text-success)}
+.field__msg .material-symbols-rounded{font-size:18px}
+/* Footer */
+.footer{display:flex;flex-direction:column;align-items:center;gap:1rem;padding:2.5rem 1.25rem;border-top:1px solid var(--border-default);color:var(--text-secondary);text-align:center}
+.footer__links{display:flex;align-items:center;flex-wrap:wrap;justify-content:center;gap:1.25rem}
+.footer__links a{color:var(--text-secondary);text-decoration:none;font-size:.92rem}
+.footer__links a:hover{color:var(--text-primary);text-decoration:underline}
+.footer__social{display:flex;align-items:center;gap:.5rem}
+.footer__social a{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-sm);color:var(--text-secondary);transition:color var(--transition-fast) var(--ease-standard),background var(--transition-normal) var(--ease-standard)}
+.footer__social a:hover{color:var(--text-primary);background:var(--bg-secondary)}
+.footer__copy{font-size:.88rem}
+@media (max-width:640px){.steps li{flex-direction:column}/* stack number above text on mobile */}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}html{scroll-behavior:auto}[data-reveal]{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<p class="sr-only" role="status" aria-live="polite" id="live"></p>
+<header class="nav">
+  <a class="nav__brand" href="#top">Nimbus</a>
+  <nav class="nav__links" aria-label="Primary">
+    <a href="#features">Features</a>
+    <a href="#how">How it works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#faq">FAQ</a>
+  </nav>
+  <button class="nav__toggle" id="themeToggle" type="button" aria-pressed="false" aria-label="Switch to dark theme">
+    <span class="material-symbols-rounded" aria-hidden="true">dark_mode</span>
+  </button>
+</header>
+
+<main>
+<section class="hero" id="top" aria-labelledby="heroTitle">
+  <div class="hero__bg" aria-hidden="true">
+    <span class="hero__grid" data-speed="0.12"></span>
+    <span class="hero__orb hero__orb--1" data-speed="0.28"></span>
+    <span class="hero__orb hero__orb--2" data-speed="-0.4"></span>
+    <span class="hero__orb hero__orb--3" data-speed="0.55"></span>
+  </div>
+  <div class="hero__inner" data-reveal>
+    <p class="hero__eyebrow"><span class="material-symbols-rounded" aria-hidden="true">bolt</span> New — Nimbus Flow 2.0 is live</p>
+    <h1 class="hero__title" id="heroTitle">Workflows that move as fast as you do</h1>
+    <p class="hero__sub">Nimbus keeps every handoff, approval, and launch in motion — so your team spends less time waiting and more time shipping.</p>
+    <div class="hero__actions">
+      <button class="btn btn--primary" type="button" data-demo>Start free trial <span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></button>
+      <a class="btn btn--ghost" href="#how">Watch 2-min demo</a>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="features" aria-labelledby="featTitle">
+  <h2 class="section__title" id="featTitle" data-reveal>Everything your team needs to keep moving</h2>
+  <p class="section__sub" data-reveal>Purpose-built momentum tools — not another dashboard your team forgets to open.</p>
+  <div class="grid">
+    <article class="card" data-reveal>
+      <span class="card__ico material-symbols-rounded" aria-hidden="true">bolt</span>
+      <h3>Automated handoffs</h3>
+      <p>Pass work between teams with zero friction. Nimbus triggers the next step the moment a task is done — no status meetings required.</p>
+    </article>
+    <article class="card" data-reveal>
+      <span class="card__ico material-symbols-rounded" aria-hidden="true">insights</span>
+      <h3>Live momentum metrics</h3>
+      <p>Track velocity, bottlenecks, and cycle time on dashboards that update in real time as work moves through your pipeline.</p>
+    </article>
+    <article class="card" data-reveal>
+      <span class="card__ico material-symbols-rounded" aria-hidden="true">rocket_launch</span>
+      <h3>Launch checklists</h3>
+      <p>Ship with confidence using repeatable, enforced checklists that keep quality high even when speed is the priority.</p>
+    </article>
+  </div>
+</section>
+
+<section class="section" id="how" aria-labelledby="howTitle">
+  <h2 class="section__title" id="howTitle" data-reveal>How Nimbus works</h2>
+  <p class="section__sub" data-reveal>From stalled to shipping in three steps — most teams are running live on day one.</p>
+  <ol class="steps">
+    <li data-reveal><span class="step__num" aria-hidden="true">1</span><div><h3>Connect your stack</h3><p>Link the 60+ tools your team already uses in minutes — no engineers required.</p></div></li>
+    <li data-reveal><span class="step__num" aria-hidden="true">2</span><div><h3>Design the flow</h3><p>Drag triggers, approvals, and handoffs into a visual pipeline that mirrors how you actually work.</p></div></li>
+    <li data-reveal><span class="step__num" aria-hidden="true">3</span><div><h3>Watch momentum build</h3><p>Nimbus runs the playbook, nudges blockers, and reports progress automatically.</p></div></li>
+  </ol>
+</section>
+
+<section class="section" id="testimonials" aria-labelledby="quoteTitle">
+  <h2 class="section__title" id="quoteTitle" data-reveal>Teams already in motion</h2>
+  <div class="quotes">
+    <figure class="quote" data-reveal>
+      <span class="quote__avatar material-symbols-rounded" aria-hidden="true">person</span>
+      <blockquote>“Nimbus cut our release cycle from three weeks to four days. The whole company can finally see what’s moving.”</blockquote>
+      <figcaption><span class="quote__avatar material-symbols-rounded" aria-hidden="true">badge</span> Maya Chen — VP of Engineering, Arcline</figcaption>
+    </figure>
+    <figure class="quote" data-reveal>
+      <span class="quote__avatar material-symbols-rounded" aria-hidden="true">person</span>
+      <blockquote>“Handoffs used to be where projects went to die. Now they’re the fastest part of our entire process.”</blockquote>
+      <figcaption><span class="quote__avatar material-symbols-rounded" aria-hidden="true">badge</span> Daniel Okafor — Head of Product, Fleetwise</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="section" id="pricing" aria-labelledby="priceTitle">
+  <h2 class="section__title" id="priceTitle" data-reveal>Simple pricing that scales with you</h2>
+  <p class="section__sub" data-reveal>Start free, upgrade when momentum pays for itself.</p>
+  <div class="pricing">
+    <article class="price-card" data-reveal>
+      <h3>Starter</h3>
+      <p class="price-card__amount">$0 <span>/ user / month</span></p>
+      <ul>
+        <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span> Up to 5 teammates</li>
+        <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span> Core automations</li>
+        <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span> Community support</li>
+      </ul>
+      <button class="btn btn--ghost" type="button" data-demo>Get started</button>
+    </article>
+    <article class="price-card price-card--featured" data-reveal>
+      <p class="price-card__tag">Most popular</p>
+      <h3>Pro</h3>
+      <p class="price-card__amount">$18 <span>/ user / month</span></p>
+      <ul>
+        <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span> Unlimited flows</li>
+        <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span> Advanced analytics</li>
+        <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span> Priority support &amp; 99.9% SLA</li>
+      </ul>
+      <button class="btn btn--primary" type="button" data-demo>Start 14-day trial</button>
+    </article>
+    <article class="price-card" data-reveal>
+      <h3>Enterprise</h3>
+      <p class="price-card__amount">Custom <span>pricing</span></p>
+      <ul>
+        <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span> SSO &amp; audit logs</li>
+        <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span> Dedicated success manager</li>
+        <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span> Custom integrations</li>
+      </ul>
+      <button class="btn btn--ghost" type="button" data-demo>Contact sales</button>
+    </article>
+  </div>
+</section>
+
+<section class="section" id="faq" aria-labelledby="faqTitle">
+  <h2 class="section__title" id="faqTitle" data-reveal>Frequently asked questions</h2>
+  <div class="faq">
+    <details data-reveal>
+      <summary>How is Nimbus different from a standard project tracker? <span class="material-symbols-rounded chev" aria-hidden="true">expand_more</span></summary>
+      <p>Trackers record work; Nimbus moves it. Every task carries its own automations, owners, and next steps, so progress never stalls waiting for someone to update a board.</p>
+    </details>
+    <details data-reveal>
+      <summary>Can I migrate data from my current tools? <span class="material-symbols-rounded chev" aria-hidden="true">expand_more</span></summary>
+      <p>Yes — one-click importers cover Jira, Asana, Linear, Trello, and CSV. Most teams complete a full migration in under an hour with field mapping done for you.</p>
+    </details>
+    <details data-reveal>
+      <summary>What happens when my free trial ends? <span class="material-symbols-rounded chev" aria-hidden="true">expand_more</span></summary>
+      <p>Your workspace switches to the free Starter plan automatically. No credit card is required up front, nothing is deleted, and you can upgrade whenever you’re ready.</p>
+    </details>
+  </div>
+</section>
+
+<section class="cta" id="cta" aria-labelledby="ctaTitle" data-reveal>
+  <h2 id="ctaTitle">Ready to put your work in motion?</h2>
+  <p>Join 12,000+ teams shipping faster with Nimbus. Free to start, no credit card required.</p>
+  <form class="field" id="waitlist" novalidate>
+    <label class="field__label" for="email">Work email</label>
+    <div class="field__row">
+      <input class="field__input" id="email" name="email" type="email" placeholder="you@company.com" autocomplete="email" required>
+      <button class="btn btn--ghost" type="submit" id="ctaBtn">Get started</button>
+    </div>
+    <p class="field__msg" aria-live="polite"></p>
+  </form>
+</section>
+</main>
+
+<footer class="footer">
+  <nav class="footer__links" aria-label="Footer">
+    <a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a><a href="#cta">Get started</a>
+  </nav>
+  <div class="footer__social">
+    <a href="#top" aria-label="Nimbus newsletter"><span class="material-symbols-rounded" aria-hidden="true">mail</span></a>
+    <a href="#top" aria-label="Nimbus community chat"><span class="material-symbols-rounded" aria-hidden="true">chat</span></a>
+    <a href="#top" aria-label="Nimbus blog feed"><span class="material-symbols-rounded" aria-hidden="true">rss_feed</span></a>
+  </div>
+  <p class="footer__copy">© 2026 Nimbus Labs, Inc. All rights reserved.</p>
+</footer>
+
+<script>
+(function(){
+"use strict";
+var root=document.documentElement,tog=document.getElementById('themeToggle'),live=document.getElementById('live'),
+    reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function setTheme(d){
+  root.classList.toggle('dark',d);root.classList.toggle('light',!d);
+  tog.setAttribute('aria-pressed',String(d));
+  tog.setAttribute('aria-label',d?'Switch to light theme':'Switch to dark theme');
+  tog.querySelector('.material-symbols-rounded').textContent=d?'light_mode':'dark_mode';
+}
+var saved=null;try{saved=localStorage.getItem('nimbus-theme')}catch(e){}
+setTheme(saved?saved==='dark':matchMedia('(prefers-color-scheme: dark)').matches);
+tog.addEventListener('click',function(){
+  var d=!root.classList.contains('dark');setTheme(d);
+  try{localStorage.setItem('nimbus-theme',d?'dark':'light')}catch(e){}
+  live.textContent=(d?'Dark':'Light')+' theme enabled';
+});
+/* Scroll reveals */
+var rev=document.querySelectorAll('[data-reveal]');
+if(reduced||!('IntersectionObserver' in window)){rev.forEach(function(el){el.classList.add('is-visible')});}
+else{var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('is-visible');io.unobserve(e.target)}})},{threshold:.15});
+  rev.forEach(function(el){io.observe(el)});}
+/* GPU parallax — transform only, disabled for reduced motion */
+if(!reduced){var layers=document.querySelectorAll('[data-speed]'),tick=false;
+  addEventListener('scroll',function(){if(!tick){tick=true;requestAnimationFrame(function(){
+    var y=scrollY;layers.forEach(function(el){el.style.transform='translate3d(0,'+(y*parseFloat(el.dataset.speed)).toFixed(1)+'px,0)'});tick=false;})}},{passive:true});}
+/* Button loading + success feedback demo */
+document.querySelectorAll('[data-demo]').forEach(function(b){
+  b.addEventListener('click',function(){
+    if(b.classList.contains('btn--loading')||b.classList.contains('is-success'))return;
+    var orig=b.innerHTML;b.classList.add('btn--loading');
+    setTimeout(function(){b.classList.remove('btn--loading');b.classList.add('is-success');
+      b.innerHTML='<span class="material-symbols-rounded" aria-hidden="true">check_circle</span> Done';
+      live.textContent='Request received — check your inbox.';
+      setTimeout(function(){b.classList.remove('is-success');b.innerHTML=orig;live.textContent=''},2600);},900);
+  });});
+/* Email validation with visible feedback */
+var f=document.getElementById('waitlist'),em=document.getElementById('email'),msg=f.querySelector('.field__msg'),btn=document.getElementById('ctaBtn');
+em.addEventListener('input',function(){f.classList.remove('field--error','field--valid');msg.textContent=''});
+f.addEventListener('submit',function(e){
+  e.preventDefault();
+  var ok=/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(em.value);
+  f.classList.toggle('field--error',!ok);f.classList.toggle('field--valid',ok);
+  if(ok){btn.classList.add('btn--loading');
+    setTimeout(function(){btn.classList.remove('btn--loading');
+      msg.innerHTML='<span class="material-symbols-rounded" aria-hidden="true">check_circle</span> You\u2019re on the list — invite sent to '+em.value+'.';
+      live.textContent='Signup successful.';em.value='';f.classList.remove('field--valid');},900);}
+  else{msg.innerHTML='<span class="material-symbols-rounded" aria-hidden="true">error</span> Please enter a valid work email address.';
+    live.textContent='Error: invalid email address.';em.focus();}
+});
+})();
+</script>
+</body>
+</html>

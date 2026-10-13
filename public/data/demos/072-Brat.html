@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>brat. — the app that does one thing</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0,0&display=swap">
+<style>
+:root{--bg-primary:#8ace00;--bg-secondary:#97d611;--bg-tertiary:#a4e022;--text-primary:#0e0e0e;--text-secondary:#2c2c2c;--primary:#0e0e0e;--accent:#fefefe;--border-default:#111111;--text-success:#0d5c00;--border-success:#0d5c00;--text-error:#b00000;--border-error:#b00000;--danger:#b00000;--on-danger:#fefefe;--on-success:#fefefe;--radius-sm:0;--radius-md:0;--radius-lg:0;--shadow-sm:none;--shadow-md:none;--spacing-gap:1.25rem;--space-6:1.5rem;--transition-fast:.1s;--transition-normal:.18s;--ease-standard:linear;--z-dropdown:20;--z-modal:100;--z-toast:1000;--text-stretch:scaleX(1.12);--text-blur:blur(.4px);--font-base:'Archivo',Arial,sans-serif;--font-display:Arial,'Helvetica Neue',sans-serif}
+@media(prefers-color-scheme:dark){:root:not(.light){--bg-primary:#0e0e0e;--bg-secondary:#191b0e;--bg-tertiary:#23260f;--text-primary:#8ace00;--text-secondary:#b9e56b;--primary:#8ace00;--accent:#fefefe;--border-default:#8ace00;--text-success:#a4e022;--border-success:#a4e022;--text-error:#ff5252;--border-error:#ff5252;--danger:#ff5252;--on-danger:#0e0e0e;--on-success:#0e0e0e}}
+.dark{--bg-primary:#0e0e0e;--bg-secondary:#191b0e;--bg-tertiary:#23260f;--text-primary:#8ace00;--text-secondary:#b9e56b;--primary:#8ace00;--accent:#fefefe;--border-default:#8ace00;--text-success:#a4e022;--border-success:#a4e022;--text-error:#ff5252;--border-error:#ff5252;--danger:#ff5252;--on-danger:#0e0e0e;--on-success:#0e0e0e}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.55;overflow-x:hidden}
+ul{list-style:none}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.material-symbols-outlined{font-size:1.35rem;line-height:1;flex:none}
+.wrap{max-width:1060px;margin-inline:auto;padding-inline:1.25rem}
+.section{padding-block:3.25rem}
+h1,h2,h3{line-height:1.1;font-weight:700}
+h2{font-size:clamp(1.7rem,4vw,2.4rem);margin-bottom:.5rem}
+.lede{color:var(--text-secondary);max-width:52ch}
+.stretch{font-family:var(--font-display);font-weight:700;transform:var(--text-stretch);filter:var(--text-blur);letter-spacing:-.02em}
+.nav{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--bg-primary);border-bottom:1px solid var(--border-default)}
+.nav__row{display:flex;align-items:center;flex-wrap:wrap;gap:.6rem 1.25rem;padding-block:.55rem}
+.brand{font-size:1.5rem;text-decoration:none}
+.nav__links{display:flex;align-items:center;flex-wrap:wrap;gap:.25rem 1.1rem}
+.nav__links a{text-decoration:none;padding:.4rem .25rem}
+.nav__links a:hover{background:var(--bg-tertiary)}
+.nav__actions{margin-left:auto;display:flex;align-items:center;gap:.6rem}
+.icon-btn{width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid var(--border-default);color:var(--text-primary);cursor:pointer;transition:background var(--transition-fast) var(--ease-standard)}
+.icon-btn:hover{background:var(--bg-tertiary)}
+.btn{display:flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;min-width:44px;padding:.6rem 1.3rem;background:var(--primary);color:var(--bg-primary);border:1px solid var(--border-default);font:inherit;font-weight:500;cursor:pointer;text-decoration:none;transition:opacity var(--transition-fast) var(--ease-standard),transform var(--transition-fast) var(--ease-standard)}
+.btn:hover{opacity:.8}
+.btn:active{transform:scale(.97)}
+.btn--secondary{background:transparent;color:var(--text-primary)}
+.btn--danger{background:var(--danger);color:var(--on-danger);border-color:var(--border-error)}
+.btn--success{background:var(--text-success);color:var(--on-success);border-color:var(--border-success)}
+.btn:disabled,.btn[aria-disabled="true"]{opacity:.35;filter:grayscale(1);cursor:not-allowed}
+.btn.is-loading{pointer-events:none}
+.btn.is-loading::before{content:"";width:1em;height:1em;flex:none;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.card{display:flex;flex-direction:column;align-items:flex-start;gap:.8rem;background:var(--bg-secondary);border:1px solid var(--border-default);padding:var(--space-6);transition:background var(--transition-normal) var(--ease-standard),transform var(--transition-normal) var(--ease-standard)}
+.card:hover{background:var(--bg-tertiary);transform:translateY(-2px)}
+.card:focus-within{border-color:var(--primary);box-shadow:0 0 0 2px var(--primary)}
+.card h3{font-size:1.15rem}
+.card p{color:var(--text-secondary)}
+.card .btn{margin-top:auto}
+.card--skeleton{pointer-events:none;animation:pulse 1.2s linear infinite}
+.card--empty{align-items:center;text-align:center}
+@keyframes pulse{50%{opacity:.45}}
+.icon-tile{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border-default);background:var(--bg-primary)}
+.grid{display:grid;gap:var(--spacing-gap);margin-top:1.75rem}
+.hero{padding-block:4rem 3rem}
+.hero h1{font-size:clamp(3rem,14vw,10rem);line-height:.95}
+.hero__sub{font-size:clamp(1.05rem,2.5vw,1.35rem);color:var(--text-secondary);margin:1rem 0 1.75rem;max-width:26ch}
+.hero__cta{display:flex;align-items:center;flex-wrap:wrap;gap:1rem}
+.link{text-decoration:underline;text-underline-offset:3px;padding:.4rem 0}
+.marquee{border-block:1px solid var(--border-default);background:var(--bg-secondary);overflow:hidden;white-space:nowrap;padding:.55rem 0}
+.marquee__track{display:inline-flex;gap:2.5rem;font-family:var(--font-display);font-weight:700;animation:slide 16s linear infinite}
+@keyframes slide{to{transform:translateX(calc(-50% - 1.25rem))}}
+.steps{display:flex;flex-direction:column;margin-top:1.75rem}
+.step{display:flex;flex-direction:column;gap:.5rem;padding:1.3rem 0}
+.step+.step{border-top:1px solid var(--border-default)}
+.step__num{font-family:var(--font-display);font-weight:700;font-size:clamp(2.6rem,7vw,4.2rem);line-height:1}
+.step h3{display:flex;align-items:center;gap:.5rem}
+.step p{color:var(--text-secondary)}
+.t-quote{font-size:1.12rem}
+.t-meta{display:flex;align-items:center;gap:.75rem;margin-top:auto}
+.avatar{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border-default);background:var(--accent);color:#0e0e0e;font-family:var(--font-display);font-weight:700}
+.price{font-family:var(--font-display);font-weight:700;font-size:2.4rem;line-height:1}
+.feat{display:flex;flex-direction:column;gap:.5rem}
+.feat li{display:flex;align-items:center;gap:.5rem}
+.feat .material-symbols-outlined{color:var(--text-success)}
+.badge{border:1px solid currentColor;padding:.1rem .5rem;font-size:.72rem;font-weight:500}
+.card--invert{background:var(--primary);color:var(--bg-primary)}
+.card--invert:hover{background:var(--primary)}
+.card--invert p{color:inherit;opacity:.85}
+.card--invert .feat .material-symbols-outlined{color:currentColor}
+.card--invert .btn{background:var(--bg-primary);color:var(--text-primary)}
+.faq{border:1px solid var(--border-default);background:var(--bg-secondary);margin-top:1.75rem}
+.faq details+details{border-top:1px solid var(--border-default)}
+.faq summary{display:flex;align-items:center;gap:.9rem;padding:1.05rem 1.2rem;cursor:pointer;list-style:none;font-weight:700;transition:background var(--transition-fast) var(--ease-standard)}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary:hover{background:var(--bg-tertiary)}
+.faq__icon{margin-left:auto;transition:transform var(--transition-normal) var(--ease-standard)}
+details[open] .faq__icon{transform:rotate(45deg)}
+.faq__body{padding:0 1.2rem 1.15rem;color:var(--text-secondary)}
+.cta{border-block:1px solid var(--border-default);padding-block:4rem}
+.cta h2{font-size:clamp(1.9rem,6vw,3.2rem)}
+.cta__form{display:flex;flex-direction:column;align-items:flex-start;gap:1.1rem;margin-top:1.75rem;max-width:32rem}
+.input-group{display:flex;flex-direction:column;gap:.4rem;width:100%}
+.input-group label{font-weight:700;font-size:.85rem}
+.input-group__row{display:flex;align-items:center;gap:.6rem}
+.input-group input{flex:1;min-width:0;min-height:44px;padding:.55rem .8rem;background:var(--bg-secondary);border:1px solid var(--border-default);font:inherit;color:var(--text-primary)}
+.input-group input::placeholder{color:var(--text-secondary)}
+.input-group input:focus{outline:2px solid var(--primary);outline-offset:0}
+.input-group input:disabled,.input-group input[readonly]{opacity:.5;background:var(--bg-tertiary);cursor:not-allowed}
+.input-group input[aria-invalid="true"]{border-color:var(--border-error)}
+.input-group--valid input{border-color:var(--border-success)}
+.input-group__icon{display:none}
+.input-group--invalid .ic-err{display:block;color:var(--text-error)}
+.input-group--valid .ic-ok{display:block;color:var(--text-success)}
+.input-group__error{color:var(--text-error);font-size:.85rem;min-height:1.3em}
+.toast{position:fixed;left:50%;bottom:1.25rem;transform:translateX(-50%);z-index:var(--z-toast);display:flex;align-items:center;gap:.75rem;max-width:min(92vw,30rem);background:var(--primary);color:var(--bg-primary);border:1px solid var(--border-default);padding:.55rem .55rem .55rem 1.1rem;opacity:0;transition:opacity var(--transition-normal) var(--ease-standard)}
+.toast--show{opacity:1}
+.toast[hidden]{display:none}
+.toast__close{width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid currentColor;color:inherit;cursor:pointer}
+footer{border-top:1px solid var(--border-default);padding-block:2.25rem}
+.footer{display:flex;align-items:center;flex-wrap:wrap;gap:1rem 2.25rem}
+.footer a{text-decoration:none;padding:.25rem 0}
+.footer a:hover{text-decoration:underline;text-underline-offset:3px}
+.footer__links{display:flex;align-items:center;flex-wrap:wrap;gap:.25rem 1.25rem;margin-left:auto}
+.footer__legal{width:100%;display:flex;align-items:center;flex-wrap:wrap;gap:1rem;color:var(--text-secondary)}
+@media(min-width:768px){.grid{grid-template-columns:repeat(3,1fr)}.grid--half{grid-template-columns:repeat(2,1fr)}.steps{flex-direction:row}.step{flex:1;border:0;border-left:1px solid var(--border-default);padding:0 1.5rem}.step:first-child{border-left:0;padding-left:0}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="nav">
+<nav class="nav__row wrap" aria-label="primary">
+<a class="brand stretch" href="#">brat.</a>
+<ul class="nav__links">
+<li><a href="#features">what</a></li>
+<li><a href="#how">how</a></li>
+<li><a href="#pricing">pricing</a></li>
+<li><a href="#faq">faq</a></li>
+</ul>
+<div class="nav__actions">
+<button class="icon-btn" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark theme"><span class="material-symbols-outlined" aria-hidden="true">dark_mode</span></button>
+<a class="btn" href="#pricing">get it</a>
+</div>
+</nav>
+</header>
+<main>
+<section class="wrap hero">
+<h1 class="stretch">brat.</h1>
+<p class="hero__sub">the app that does one thing and refuses to do more.</p>
+<div class="hero__cta">
+<a class="btn" href="#pricing"><span class="material-symbols-outlined" aria-hidden="true">download</span>download brat.</a>
+<a class="link" href="#features">wait, what is it</a>
+</div>
+</section>
+<div class="marquee">
+<div class="marquee__track">
+<span>brat. it's lime. it's one thing. it's done. brat. it's lime. it's one thing. it's done. brat. it's lime. it's one thing. it's done. brat. it's lime. it's one thing. it's done.</span>
+<span aria-hidden="true">brat. it's lime. it's one thing. it's done. brat. it's lime. it's one thing. it's done. brat. it's lime. it's one thing. it's done. brat. it's lime. it's one thing. it's done.</span>
+</div>
+</div>
+<section class="wrap section" id="features">
+<h2>what it does</h2>
+<p class="lede">three features. we counted generously.</p>
+<div class="grid">
+<article class="card">
+<span class="icon-tile"><span class="material-symbols-outlined" aria-hidden="true">bolt</span></span>
+<h3>fast. probably.</h3>
+<p>opens before your hand leaves the mouse.</p>
+</article>
+<article class="card">
+<span class="icon-tile"><span class="material-symbols-outlined" aria-hidden="true">block</span></span>
+<h3>zero settings.</h3>
+<p>there is nothing to configure. stop looking.</p>
+</article>
+<article class="card">
+<span class="icon-tile"><span class="material-symbols-outlined" aria-hidden="true">cloud_off</span></span>
+<h3>works offline.</h3>
+<p>no account. no cloud. your data is nowhere. perfect.</p>
+</article>
+</div>
+</section>
+<section class="wrap section" id="how">
+<h2>how it works</h2>
+<p class="lede">three steps. barely.</p>
+<div class="steps">
+<div class="step">
+<span class="step__num">01</span>
+<h3><span class="material-symbols-outlined" aria-hidden="true">download</span>get it</h3>
+<p>it's 4mb. your camera roll is heavier.</p>
+</div>
+<div class="step">
+<span class="step__num">02</span>
+<h3><span class="material-symbols-outlined" aria-hidden="true">open_in_new</span>open it</h3>
+<p>no signup. no tour. no confetti.</p>
+</div>
+<div class="step">
+<span class="step__num">03</span>
+<h3><span class="material-symbols-outlined" aria-hidden="true">task_alt</span>done</h3>
+<p>there is no step three. we refuse.</p>
+</div>
+</div>
+</section>
+<section class="wrap section" id="reviews">
+<h2>reviews</h2>
+<p class="lede">unedited. we tried to edit them. they refused.</p>
+<div class="grid grid--half">
+<figure class="card">
+<blockquote class="t-quote">"i installed it, it did the thing, i closed it. five stars."</blockquote>
+<figcaption class="t-meta"><span class="avatar" aria-hidden="true">dk</span><span>dana k. — verified skeptic</span></figcaption>
+</figure>
+<figure class="card">
+<blockquote class="t-quote">"my phone feels exactly the same. somehow that's the point."</blockquote>
+<figcaption class="t-meta"><span class="avatar" aria-hidden="true">so</span><span>sam o. — paid actual money</span></figcaption>
+</figure>
+</div>
+</section>
+<section class="wrap section" id="pricing">
+<h2>pricing</h2>
+<p class="lede">pick one. or don't. we're not your mom.</p>
+<div class="grid">
+<article class="card">
+<h3>free</h3>
+<p class="price">$0</p>
+<p>for the curious.</p>
+<ul class="feat">
+<li><span class="material-symbols-outlined" aria-hidden="true">check</span>the one thing</li>
+<li><span class="material-symbols-outlined" aria-hidden="true">check</span>the lime color</li>
+<li><span class="material-symbols-outlined" aria-hidden="true">check</span>no card needed</li>
+</ul>
+<button class="btn btn--secondary" type="button" data-toast="cool. it was free anyway.">start free</button>
+</article>
+<article class="card card--invert">
+<span class="badge">the obvious pick</span>
+<h3>the one you want</h3>
+<p class="price">$8/mo</p>
+<p>for people with a spine.</p>
+<ul class="feat">
+<li><span class="material-symbols-outlined" aria-hidden="true">check</span>everything in free, minus the guilt</li>
+<li><span class="material-symbols-outlined" aria-hidden="true">check</span>updates forever, whether you like it or not</li>
+<li><span class="material-symbols-outlined" aria-hidden="true">check</span>cancel whenever. we won't email you.</li>
+</ul>
+<button class="btn" type="button" data-toast="good choice. probably.">get brat.</button>
+</article>
+<article class="card">
+<h3>too much</h3>
+<p class="price">$99/mo</p>
+<p>for the committed.</p>
+<ul class="feat">
+<li><span class="material-symbols-outlined" aria-hidden="true">check</span>everything above</li>
+<li><span class="material-symbols-outlined" aria-hidden="true">check</span>a sticker. maybe.</li>
+<li><span class="material-symbols-outlined" aria-hidden="true">check</span>our phone number. we won't answer.</li>
+</ul>
+<button class="btn btn--secondary" type="button" data-toast="bold. we respect it.">buy too much</button>
+</article>
+</div>
+</section>
+<section class="wrap section" id="faq">
+<h2>faq</h2>
+<p class="lede">questions nobody asked, answered anyway.</p>
+<div class="faq">
+<details>
+<summary>what does it do<span class="material-symbols-outlined faq__icon" aria-hidden="true">add</span></summary>
+<p class="faq__body">one thing. we won't spoil which. open it and find out like everyone else.</p>
+</details>
+<details>
+<summary>is this a joke<span class="material-symbols-outlined faq__icon" aria-hidden="true">add</span></summary>
+<p class="faq__body">no. the lime is a joke. the app is real. those are different things.</p>
+</details>
+<details>
+<summary>can i get a refund<span class="material-symbols-outlined faq__icon" aria-hidden="true">add</span></summary>
+<p class="faq__body">yes. we don't ask questions. we barely answer them.</p>
+</details>
+</div>
+</section>
+<section class="cta" id="join">
+<div class="wrap">
+<h2 class="stretch">fine. join the list.</h2>
+<p class="lede">one email when it ships. then we forget you exist.</p>
+<form class="cta__form" id="join-form" novalidate>
+<div class="input-group" id="email-group">
+<label for="email">your email</label>
+<div class="input-group__row">
+<input type="email" id="email" name="email" placeholder="you@somewhere.com" autocomplete="email">
+<span class="material-symbols-outlined input-group__icon ic-err" aria-hidden="true">error</span>
+<span class="material-symbols-outlined input-group__icon ic-ok" aria-hidden="true">check</span>
+</div>
+<p class="input-group__error" id="email-error" aria-live="polite"></p>
+</div>
+<button class="btn" type="submit" id="join-btn"><span class="material-symbols-outlined" aria-hidden="true">mail</span>put me on the list</button>
+</form>
+</div>
+</section>
+</main>
+<footer>
+<div class="wrap footer">
+<a class="brand stretch" href="#">brat.</a>
+<ul class="footer__links">
+<li><a href="#features">about</a></li>
+<li><a href="#">privacy</a></li>
+<li><a href="#">terms</a></li>
+<li><a href="#">contact</a></li>
+<li><a href="#">instagram</a></li>
+</ul>
+<div class="footer__legal">
+<small>© 2026 brat. all rights reserved, unfortunately.</small>
+<button class="btn btn--danger" type="button" data-toast="no.">delete everything</button>
+</div>
+</div>
+</footer>
+<div class="toast" id="toast" role="status" hidden>
+<span id="toast-msg"></span>
+<button class="toast__close" id="toast-close" type="button" aria-label="dismiss notification"><span class="material-symbols-outlined" aria-hidden="true">close</span></button>
+</div>
+<script>
+(function(){
+var d=document,root=d.documentElement,KEY='brat-theme',mq=matchMedia('(prefers-color-scheme:dark)');
+var tBtn=d.getElementById('theme-toggle'),tIcon=tBtn.firstElementChild,toast=d.getElementById('toast'),tMsg=d.getElementById('toast-msg'),tTimer;
+function isDark(){return root.classList.contains('dark')||(mq.matches&&!root.classList.contains('light'))}
+function sync(){var k=isDark();tBtn.setAttribute('aria-pressed',String(k));tBtn.setAttribute('aria-label',k?'Switch to light theme':'Switch to dark theme');tIcon.textContent=k?'light_mode':'dark_mode'}
+try{var s=localStorage.getItem(KEY);if(s==='dark')root.classList.add('dark');else if(s==='light')root.classList.add('light')}catch(e){}
+sync();
+tBtn.addEventListener('click',function(){var n=isDark()?'light':'dark';root.classList.toggle('dark',n==='dark');root.classList.toggle('light',n==='light');try{localStorage.setItem(KEY,n)}catch(e){}sync()});
+function hide(){toast.classList.remove('toast--show');setTimeout(function(){toast.hidden=true},200)}
+function show(m){tMsg.textContent=m;toast.hidden=false;requestAnimationFrame(function(){toast.classList.add('toast--show')});clearTimeout(tTimer);tTimer=setTimeout(hide,4000)}
+d.getElementById('toast-close').addEventListener('click',function(){clearTimeout(tTimer);hide()});
+d.addEventListener('click',function(e){var b=e.target.closest('[data-toast]');if(!b||b.classList.contains('is-loading'))return;b.classList.add('is-loading');b.setAttribute('aria-busy','true');setTimeout(function(){b.classList.remove('is-loading');b.removeAttribute('aria-busy');show(b.getAttribute('data-toast'))},700)});
+var f=d.getElementById('join-form'),em=d.getElementById('email'),g=d.getElementById('email-group'),er=d.getElementById('email-error'),jb=d.getElementById('join-btn'),RX=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+em.addEventListener('input',function(){g.classList.remove('input-group--invalid');em.setAttribute('aria-invalid','false');er.textContent=''});
+f.addEventListener('submit',function(e){e.preventDefault();
+var ok=RX.test(em.value.trim());
+g.classList.toggle('input-group--invalid',!ok);g.classList.toggle('input-group--valid',ok);
+em.setAttribute('aria-invalid',String(!ok));er.textContent=ok?'':"that's not an email. we checked twice.";
+if(!ok){em.focus();return}
+jb.classList.add('is-loading');jb.setAttribute('aria-busy','true');
+setTimeout(function(){jb.classList.remove('is-loading');jb.removeAttribute('aria-busy');jb.classList.add('btn--success');jb.innerHTML='<span class="material-symbols-outlined" aria-hidden="true">check</span>you&#8217;re in.';show("you're in.");
+setTimeout(function(){jb.classList.remove('btn--success');jb.innerHTML='<span class="material-symbols-outlined" aria-hidden="true">mail</span>put me on the list'},2000)},900)});
+})();
+</script>
+</body>
+</html>

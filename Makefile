@@ -21,4 +21,10 @@ process:
 categorize:
 	node scripts/categorize.mjs
 
-.PHONY: run build docs deploy process categorize
+demos:
+	node --env-file-if-exists=.env scripts/build-demos.mjs
+
+thumbs:
+	node scripts/build-thumbs.mjs
+
+.PHONY: run build docs deploy process categorize demos thumbs

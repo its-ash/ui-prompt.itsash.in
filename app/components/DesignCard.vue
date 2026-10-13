@@ -16,7 +16,15 @@ const swatch = computed(() => {
 </script>
 
 <template>
-  <NuxtLink :to="`/design/${item.id}`" class="tk" :aria-label="`View ${item.name} theme and prompt`">
+  <NuxtLink
+    :to="`/design/${item.id}`"
+    class="tk"
+    :aria-label="`View ${item.name} theme and prompt`"
+  >
+    <span class="tk__shot" :style="item.hasThumb ? undefined : { background: swatch.bg }" aria-hidden="true">
+      <img v-if="item.hasThumb" :src="`/data/thumbs/${item.id}.jpg`" alt="" width="480" height="300" loading="lazy" decoding="async" />
+      <span v-else class="tk__noshot mono">{{ item.ready ? 'demo pending' : 'prompt pending' }}</span>
+    </span>
     <span class="tk__swatch" :style="{ background: swatch.bg }" aria-hidden="true">
       <span class="tk__dot" :style="{ background: swatch.fg }"></span>
     </span>
@@ -24,17 +32,50 @@ const swatch = computed(() => {
       <span class="tk__name">{{ item.name }}</span>
       <span class="tk__meta mono">{{ item.category }}</span>
     </span>
-    <span v-if="item.hasDemo" class="tk__demo mono">demo</span>
-    <span v-else-if="!item.ready" class="tk__pending mono" title="Prompt generating">·</span>
+    <span v-if="!item.ready" class="tk__pending mono" title="Prompt generating">·</span>
   </NuxtLink>
 </template>
 
 <style scoped>
+.tk__shot {
+  grid-column: 1 / -1;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 10;
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.tk__shot img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  transition: transform 400ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tk:hover .tk__shot img {
+    transform: scale(1.03);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tk__shot img {
+    transition: none;
+  }
+}
+
 .tk {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.625rem 0.75rem;
+  column-gap: 0.75rem;
+  row-gap: 0.625rem;
+  padding: 0 0 0.625rem;
+  overflow: hidden;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--bg-raised);
@@ -59,7 +100,13 @@ const swatch = computed(() => {
   transform: scale(0.99);
 }
 
+.tk__noshot {
+  font-size: 0.625rem;
+  color: var(--text-dim);
+}
+
 .tk__swatch {
+  margin-left: 0.75rem;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -100,31 +147,26 @@ const swatch = computed(() => {
 }
 
 .tk__pending {
-  margin-left: auto;
+  margin-right: 0.75rem;
   color: var(--text-faint);
   flex-shrink: 0;
 }
 
-.tk__demo {
-  margin-left: auto;
-  flex-shrink: 0;
-  font-size: 0.625rem;
-  color: var(--text-dim);
-  border: 1px solid var(--border-strong);
-  border-radius: 999px;
-  padding: 0.125rem 0.5rem;
-}
 
 @media (max-width: 640px) {
   .tk {
-    gap: 0.625rem;
-    padding: 0.5rem 0.625rem;
+    column-gap: 0.625rem;
     min-height: 56px;
   }
 
   .tk__swatch {
+    margin-left: 0.625rem;
     width: 32px;
     height: 32px;
+  }
+
+  .tk {
+    padding: 0 0 0.5rem;
   }
 }
 </style>

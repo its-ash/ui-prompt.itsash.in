@@ -4,11 +4,16 @@ import path from 'node:path';
 
 const DEMO_DIR = path.resolve('design/demos');
 const STATE_FILE = path.resolve('.demo-state.json');
-const CONCURRENCY = Number(process.env.DEMO_CONCURRENCY ?? 3);
-const OLLAMA_URL = process.env.OLLAMA_URL ?? 'http://localhost:11434';
-const MODEL = process.env.OLLAMA_MODEL ?? 'glm-5.3:cloud';
+const CONCURRENCY = Number(process.env.DEMO_CONCURRENCY ?? 4);
+const NVIDIA_URL = 'https://integrate.api.nvidia.com/v1/chat/completions';
 const NVIDIA_KEY = process.env.NVIDIA_API_KEY ?? '';
-const FALLBACK_ENABLED = Boolean(NVIDIA_KEY);
+const MODELS = (process.env.NVIDIA_MODELS ?? 'z-ai/glm-5.3-flash,z-ai/glm-5.3,deepseek-ai/deepseek-v4.1-flash').split(',').map((m) => m.trim()).filter(Boolean);
+const TIMEOUT_MS = Number(process.env.DEMO_TIMEOUT_MS ?? 600000);
+
+if (!NVIDIA_KEY) {
+  console.error('[build-demos] NVIDIA_API_KEY is not set (add it to .env)');
+  process.exit(1);
+}
 
 fs.mkdirSync(DEMO_DIR, { recursive: true });
 
@@ -31,15 +36,12 @@ Output rules:
 - All copy in English, realistic, product-agnostic ("Nimbus" as brand unless the spec names one).
 - Respect prefers-reduced-motion. No horizontal scroll. Buttons min 44px height.`;
 
-async function callNvidia(userPrompt) {
-  const res = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+async function callNvidia(model, userPrompt) {
+  const res = await fetch(NVIDIA_URL, {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${NVIDIA_KEY}`,
-      'Content-Type': 'application/json',
-    },
+    headers: { Authorization: `Bearer ${NVIDIA_KEY}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: 'z-ai/glm-5.3-flash',
+      model,
       messages: [
         { role: 'system', content: SYSTEM },
         { role: 'user', content: userPrompt },
@@ -47,56 +49,30 @@ async function callNvidia(userPrompt) {
       max_tokens: 16000,
       temperature: 0.5,
     }),
+    signal: AbortSignal.timeout(TIMEOUT_MS),
   });
   if (!res.ok) throw new Error(`NVHTTP ${res.status} ${(await res.text()).slice(0, 160)}`);
   const data = await res.json();
-  const msg = data.choices?.[0]?.message;
-  const content = msg?.content || msg?.reasoning_content;
-  if (!content?.trim()) throw new Error('nv empty');
+  const content = data.choices?.[0]?.message?.content;
+  if (!content?.trim()) throw new Error(`nv empty (${data.choices?.[0]?.finish_reason ?? 'unknown'})`);
   return content.trim();
 }
 
 async function callModel(userPrompt) {
   let lastErr;
-  for (let attempt = 1; attempt <= 8; attempt++) {
+  for (let attempt = 1; attempt <= 6; attempt++) {
+    const model = MODELS[(attempt - 1) % MODELS.length];
     try {
-      if (FALLBACK_ENABLED) {
-        const nv = await callNvidia(userPrompt);
-        if (looksCandidate(nv)) return nv;
-        throw new Error('nv weak output');
-      }
-      throw new Error('no primary');
+      const out = cleanHtml(await callNvidia(model, userPrompt));
+      if (looksLikeHtml(out)) return out;
+      throw new Error(`${model} weak output (len ${out.length})`);
     } catch (err) {
       lastErr = err;
-      const rateLimited = /429|NVHTTP 4\d\d/.test(String(err));
-      try {
-        const res = await fetch(`${OLLAMA_URL}/api/chat`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model: MODEL,
-            messages: [
-              { role: 'system', content: SYSTEM },
-              { role: 'user', content: userPrompt },
-            ],
-            stream: false,
-          }),
-        });
-        if (res.ok) {
-          const data = await res.json();
-          const content = data.message?.content;
-          if (content?.trim() && looksCandidate(content.trim())) return content.trim();
-        }
-        if (res.status === 429) await new Promise((r) => setTimeout(r, 30000));
-      } catch {}
-      if (attempt < 8) await new Promise((r) => setTimeout(r, rateLimited ? attempt * 20000 : attempt * 8000));
+      const wait = /NVHTTP 429/.test(String(err)) ? attempt * 30000 : attempt * 5000;
+      if (attempt < 6) await new Promise((r) => setTimeout(r, wait));
     }
   }
   throw lastErr;
-}
-
-function looksCandidate(out) {
-  return /<!DOCTYPE html/i.test(out) && out.length > 3000;
 }
 
 function cleanHtml(text) {
@@ -123,7 +99,7 @@ async function buildDemo(file) {
   if (!fs.existsSync(promptPath)) throw new Error('prompt missing');
   const spec = fs.readFileSync(promptPath, 'utf8');
 
-  const out = cleanHtml(await callModel(spec));
+  const out = await callModel(spec);
   if (!looksLikeHtml(out)) throw new Error(`not html (len ${out.length})`);
   fs.writeFileSync(outPath, out + '\n');
   state.done[id] = { at: new Date().toISOString(), bytes: out.length };
@@ -131,8 +107,15 @@ async function buildDemo(file) {
   console.log(`ok    ${id} (${Math.round(out.length / 1024)} KB)`);
 }
 
-const prompts = fs.readdirSync(path.resolve('design/prompts')).filter((f) => f.endsWith('.md'));
-console.log(`[build-demos] ${prompts.length} themes, model=${MODEL}+nvidia, concurrency=${CONCURRENCY}`);
+const prompts = fs
+  .readdirSync(path.resolve('design/prompts'))
+  .filter((f) => f.endsWith('.md'))
+  .filter((f) => {
+    const id = path.basename(f, '.md');
+    const out = path.join(DEMO_DIR, `${id}.html`);
+    return !(fs.existsSync(out) && looksLikeHtml(fs.readFileSync(out, 'utf8')));
+  });
+console.log(`[build-demos] ${prompts.length} pending, models=${MODELS.join('|')}, concurrency=${CONCURRENCY}`);
 let idx = 0;
 
 async function worker() {

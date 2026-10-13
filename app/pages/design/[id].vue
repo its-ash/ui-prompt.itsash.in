@@ -79,9 +79,9 @@ useHead(() => ({
     </div>
 
     <template v-else-if="meta">
-      <div class="vv__wrap">
+      <div class="vv__wrap" :class="{ 'vv__wrap--nodemo': !hasDemo }">
         <!-- mobile pane switch -->
-        <div class="vv__panetoggle" role="tablist" aria-label="View mode">
+        <div v-if="hasDemo" class="vv__panetoggle" role="tablist" aria-label="View mode">
           <button
             type="button"
             role="tab"
@@ -159,3 +159,315 @@ useHead(() => ({
     </template>
   </div>
 </template>
+
+<style scoped>
+.vv {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.vv__wrap {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+  padding: 1rem 1.25rem 1.25rem;
+}
+
+.vv__panetoggle {
+  display: none;
+}
+
+/* left: demo */
+
+.vv__demo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-raised);
+  overflow: hidden;
+}
+
+.vv__demobar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  height: 40px;
+  padding: 0 0.375rem 0 0.875rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.vv__demourl {
+  font-size: 0.6875rem;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vv__open {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  color: var(--text-faint);
+  transition:
+    color var(--transition-fast),
+    background var(--transition-fast);
+}
+
+.vv__open .material-symbols-rounded {
+  font-size: 18px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .vv__open:hover {
+    color: var(--text);
+    background: var(--bg-hover);
+  }
+}
+
+.vv__frame {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  border: 0;
+  background: #fff;
+}
+
+.vv__frame--empty {
+  display: grid;
+  place-items: center;
+  background: var(--bg);
+  color: var(--text-faint);
+  font-size: 0.75rem;
+}
+
+/* right: prompt */
+
+.vv__side {
+  width: 440px;
+  flex-shrink: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.vv__wrap--nodemo .vv__side {
+  width: 100%;
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+.vv__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  width: fit-content;
+  font-size: 0.8125rem;
+  color: var(--text-faint);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.vv__back .material-symbols-rounded {
+  font-size: 18px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .vv__back:hover {
+    color: var(--text);
+  }
+}
+
+.vv__back:active {
+  transform: scale(0.98);
+}
+
+.vv__name {
+  font-size: 1.375rem;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.12;
+  text-wrap: balance;
+}
+
+.vv__desc {
+  font-size: 0.8438rem;
+  color: var(--text-dim);
+  line-height: 1.55;
+}
+
+.vv__meta {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--border);
+}
+
+.vv__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.vv__row:last-child {
+  border-bottom: none;
+}
+
+.vv__row dt {
+  font-size: 0.75rem;
+  color: var(--text-faint);
+}
+
+.vv__row dd {
+  font-size: 0.7813rem;
+  text-align: right;
+}
+
+.vv__prompt {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 1rem 1.125rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-raised);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-family: var(--font-mono);
+  font-size: 0.7188rem;
+  line-height: 1.7;
+  color: var(--text-dim);
+}
+
+.vv__actions {
+  display: flex;
+}
+
+.vv__copy {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 44px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    filter var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.vv__copy:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .vv__copy:not(:disabled):hover {
+    filter: brightness(1.06);
+  }
+}
+
+.vv__copy:not(:disabled):active {
+  transform: scale(0.98);
+}
+
+/* states */
+
+.vv__missing {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  padding: 6rem 1.5rem;
+  color: var(--text-dim);
+}
+
+.vv__missing .material-symbols-rounded {
+  font-size: 32px;
+  color: var(--text-faint);
+}
+
+.vv__backhome {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 1100px) {
+  .vv__side {
+    width: 360px;
+  }
+}
+
+@media (max-width: 860px) {
+  .vv__wrap {
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem 1rem;
+  }
+
+  .vv__panetoggle {
+    display: flex;
+    gap: 0.25rem;
+    padding: 0.25rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg-raised);
+    align-self: flex-start;
+  }
+
+  .vv__ptab {
+    min-height: 36px;
+    padding: 0 1rem;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text-faint);
+    font-size: 0.75rem;
+    cursor: pointer;
+  }
+
+  .vv__ptab--on {
+    background: var(--bg-hover);
+    color: var(--text);
+  }
+
+  .vv__ptab:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .vv__side,
+  .vv__wrap--nodemo .vv__side {
+    width: 100%;
+    flex: 1;
+  }
+
+  .vv__name {
+    font-size: 1.125rem;
+  }
+}
+</style>

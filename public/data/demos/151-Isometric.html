@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Diorama — the isometric planning canvas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&family=Poppins:wght@400;600;700&display=block" rel="stylesheet">
+<script>try{document.documentElement.classList.add(localStorage.getItem('theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'))}catch(e){}</script>
+<style>
+@layer tokens,base,components,utilities;
+@layer tokens{
+:root{--color-bg:#eef1fb;--color-surface:#fefefe;--color-surface-strong:#e2e7f9;--color-border:#c7d0f0;--color-text:#1c2340;--color-text-muted:#5b6486;--color-primary:#6d5ef5;--color-accent:#14b8a6;--color-iso-shadow-a:#4c46c9;--color-iso-shadow-b:#8f89ff;--color-text-success:#166534;--color-text-error:#b91c1c;--color-border-success:#166534;--color-border-error:#b91c1c;--radius-sm:6px;--radius-md:10px;--radius-lg:16px;--radius-pill:999px;--shadow-sm:0 3px 0 var(--color-iso-shadow-a);--shadow-md:6px 6px 0 var(--color-iso-shadow-a);--shadow-lg:10px 10px 0 var(--color-iso-shadow-a);--text-xs:.75rem;--text-sm:.875rem;--text-md:1rem;--text-lg:1.125rem;--text-xl:1.375rem;--text-2xl:1.75rem;--text-3xl:clamp(1.9rem,4.5vw,2.6rem);--text-4xl:clamp(2.2rem,5.5vw,3.4rem);--text-5xl:clamp(3rem,8vw,4rem);--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-6:24px;--space-8:32px;--space-12:48px;--space-16:64px;--space-24:96px;--spacing-gap:24px;--ease-standard:cubic-bezier(.2,0,0,1);--transition-fast:150ms;--transition-normal:300ms;--z-dropdown:1000;--z-modal:1100;--z-toast:1200;--iso-grid:repeating-linear-gradient(30deg,rgba(109,94,245,.07) 0 2px,transparent 2px 26px),repeating-linear-gradient(150deg,rgba(20,184,166,.07) 0 2px,transparent 2px 26px);--iso-facet:linear-gradient(155deg,var(--color-surface) 0%,var(--color-surface-strong) 100%);--font-base:'Poppins','Inter',system-ui,sans-serif;--font-display:'Poppins','Inter',sans-serif}
+.dark{--color-bg:#141a33;--color-surface:#1c2340;--color-surface-strong:#26305a;--color-border:#3a4680;--color-text:#eef1fb;--color-text-muted:#9aa3c7;--color-accent:#2dd4bf;--color-iso-shadow-a:#2c3670;--color-iso-shadow-b:#8f89ff;--color-text-success:#4ade80;--color-text-error:#f87171;--color-border-success:#4ade80;--color-border-error:#f87171;--iso-grid:repeating-linear-gradient(30deg,rgba(143,137,255,.10) 0 2px,transparent 2px 26px),repeating-linear-gradient(150deg,rgba(45,212,191,.08) 0 2px,transparent 2px 26px);--iso-facet:linear-gradient(155deg,#1c2340,#26305a)}
+}
+@layer base{
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font:400 var(--text-md)/1.6 var(--font-base);color:var(--color-text);background-color:var(--color-bg);background-image:var(--iso-grid);overflow-x:clip}
+h1,h2,h3{font-family:var(--font-display);line-height:1.15;margin:0 0 var(--space-3)}
+h2{font-size:var(--text-3xl)}
+p{margin:0 0 var(--space-3)}
+a{color:inherit}
+.material-symbols-rounded{font-size:22px;line-height:1}
+:focus-visible{outline:2px solid var(--color-primary);outline-offset:2px;border-radius:2px}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}}
+}
+@layer components{
+.skip{position:fixed;left:var(--space-2);top:-60px;z-index:var(--z-toast);padding:var(--space-2) var(--space-4);background:var(--color-primary);color:#fff;font-weight:600;text-decoration:none;border-radius:var(--radius-sm);transition:top var(--transition-fast) var(--ease-standard)}
+.skip:focus{top:var(--space-2)}
+.nav{position:sticky;top:0;z-index:var(--z-dropdown);background:color-mix(in srgb,var(--color-surface) 85%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--color-border)}
+.nav__inner{max-width:1100px;margin:auto;display:flex;align-items:center;gap:var(--space-3);padding:10px var(--space-4)}
+.nav__logo{display:flex;align-items:center;gap:.6rem;margin-right:auto;font:700 var(--text-lg) var(--font-display);text-decoration:none}
+.nav__menu{display:flex;align-items:center;gap:var(--space-6)}
+.nav__menu a{display:flex;align-items:center;min-height:44px;padding:0 2px;font-size:var(--text-sm);font-weight:500;color:var(--color-text-muted);text-decoration:none;transition:color var(--transition-fast)}
+.nav__menu a:hover{color:var(--color-text)}
+.nav__toggle{display:none}
+@media(max-width:760px){
+.nav__toggle{display:inline-flex}
+.nav__menu{position:absolute;top:100%;left:0;right:0;flex-direction:column;align-items:stretch;gap:0;background:var(--color-surface);border-bottom:1px solid var(--color-border);box-shadow:var(--shadow-md);display:none}
+.nav__menu.open{display:flex}
+.nav__menu a{padding:var(--space-3) var(--space-4)}
+.nav__cta{display:none}
+}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;min-width:44px;padding:.55rem 1.25rem;font:600 var(--text-md) var(--font-base);text-decoration:none;color:var(--color-text);background:var(--iso-facet);border:1px solid var(--color-border);border-radius:var(--radius-sm);box-shadow:var(--shadow-md);cursor:pointer;transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard),color var(--transition-fast),border-color var(--transition-fast)}
+.btn:hover{transform:translate(-2px,-2px);box-shadow:var(--shadow-lg)}
+.btn:active{transform:none;box-shadow:var(--shadow-sm)}
+.btn:focus-visible{outline-offset:3px}
+.btn[disabled],.btn[aria-disabled="true"]{opacity:.5;filter:grayscale(1);cursor:not-allowed;transform:none;box-shadow:var(--shadow-sm)}
+.btn--primary{background:var(--color-primary);border-color:var(--color-primary);color:#fff}
+.btn--danger{background:var(--color-text-error);border-color:var(--color-text-error);color:#fff}
+.btn--icon{width:44px;padding:0}
+.btn--loading{pointer-events:none}
+.btn--success{pointer-events:none;border-color:var(--color-border-success);color:var(--color-text-success);box-shadow:var(--shadow-sm)}
+.btn--error{border-color:var(--color-border-error);color:var(--color-text-error)}
+.spin{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(1turn)}}
+.badge{display:inline-flex;align-items:center;gap:.4rem;padding:6px 14px;font-size:var(--text-xs);font-weight:600;color:var(--color-primary);background:color-mix(in srgb,var(--color-primary) 10%,var(--color-surface));border:1px solid color-mix(in srgb,var(--color-primary) 35%,var(--color-border));border-radius:var(--radius-pill)}
+.badge .material-symbols-rounded{font-size:16px}
+.dark .badge{color:var(--color-iso-shadow-b)}
+.card{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-3);background:var(--iso-facet);border:1px solid var(--color-border);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);padding:var(--space-6);transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),border-color var(--transition-fast)}
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.card:focus-within{border-color:var(--color-primary)}
+.card h3{font-size:var(--text-xl);margin:0}
+.card p:last-child{margin:0}
+.card--skeleton{position:relative;overflow:hidden;pointer-events:none;color:transparent}
+.card--skeleton::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,color-mix(in srgb,var(--color-surface-strong) 80%,#fff) 50%,transparent 70%);background-size:200% 100%;animation:shim 1.2s infinite}
+@keyframes shim{from{background-position:120% 0}to{background-position:-120% 0}}
+.empty{display:flex;flex-direction:column;align-items:center;gap:var(--space-2);padding:var(--space-12);color:var(--color-text-muted);text-align:center}
+.empty .material-symbols-rounded{font-size:40px}
+.tile{--tc:var(--color-primary);display:flex;align-items:center;justify-content:center;width:52px;height:52px;margin:8px 4px 2px;background:color-mix(in srgb,var(--tc) 15%,var(--color-surface));border:1px solid color-mix(in srgb,var(--tc) 45%,var(--color-border));border-radius:8px;transform:scaleY(.5) rotate(45deg)}
+.tile .material-symbols-rounded{color:var(--tc);transform:rotate(-45deg) scaleY(2)}
+.card--feature:nth-child(2) .tile{--tc:var(--color-accent)}
+.card--feature:nth-child(3) .tile{--tc:var(--color-iso-shadow-b)}
+.dark .tile{--tc:var(--color-iso-shadow-b)}
+.card--feature:nth-child(2) .tile{--tc:var(--color-accent)}
+.section{max-width:1100px;margin:auto;padding:var(--space-16) var(--space-4);scroll-margin-top:90px}
+.sec-head{max-width:620px;margin:0 auto var(--space-8);display:flex;flex-direction:column;align-items:center;gap:var(--space-2);text-align:center}
+.kick{display:flex;align-items:center;gap:.5rem;margin:0;font-size:var(--text-sm);font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-primary)}
+.dark .kick{color:var(--color-iso-shadow-b)}
+.kick::before,.kick::after{content:"";width:10px;height:10px;background:var(--color-accent);transform:scaleY(.5) rotate(45deg)}
+.sub{margin:0;color:var(--color-text-muted)}
+.grid3{display:flex;flex-wrap:wrap;gap:var(--spacing-gap)}
+.grid3>*{flex:1 1 280px}
+.hero{max-width:1100px;margin:auto;padding:var(--space-12) var(--space-4) var(--space-16);display:flex;align-items:center;flex-wrap:wrap;gap:var(--spacing-gap)}
+.hero__copy{flex:1 1 340px}
+.hero__copy h1{font-size:var(--text-4xl);margin-bottom:var(--space-4)}
+.hero__copy>p{max-width:46ch;color:var(--color-text-muted);margin-bottom:var(--space-6)}
+.hero__actions{display:flex;flex-wrap:wrap;gap:var(--space-3)}
+.hero__scene{position:relative;flex:0 0 auto;width:320px;height:280px;margin:auto;animation:bob 7s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-10px)}}
+@media(max-width:400px){.hero__scene{transform:scale(.78);transform-origin:top center}}
+/* isometric cubes: 2D skew/rotate only, parallel projection */
+.cube{position:absolute;width:calc(var(--s)*.7071);height:var(--h);transform:skewY(-26.565deg);transform-origin:0 0;background:color-mix(in srgb,var(--c) 78%,#000);border-radius:3px}
+.cube::before{content:"";position:absolute;left:calc(var(--s)*-.5);top:calc(var(--s)*-.8536);width:var(--s);height:var(--s);transform:scaleY(.5) rotate(45deg);background:color-mix(in srgb,var(--c) 70%,#fff);border-radius:4px}
+.cube::after{content:"";position:absolute;left:calc(var(--s)*-.7071);top:calc(var(--s)*-.3536);width:calc(var(--s)*.7071);height:var(--h);transform:skewY(26.565deg);transform-origin:0 0;background:color-mix(in srgb,var(--c) 92%,#fff);border-radius:3px}
+.win{background-image:repeating-linear-gradient(0deg,rgba(0,0,0,.12) 0 2px,transparent 2px 13px),repeating-linear-gradient(90deg,transparent 0 5px,rgba(255,255,255,.85) 5px 11px,transparent 11px 15px)}
+.win::after{background-image:repeating-linear-gradient(0deg,rgba(0,0,0,.12) 0 2px,transparent 2px 13px),repeating-linear-gradient(90deg,transparent 0 4px,rgba(255,255,255,.4) 4px 10px,transparent 10px 14px)}
+.door::after{background-image:linear-gradient(rgba(0,0,0,.45) 0 16px,transparent 16px),repeating-linear-gradient(0deg,rgba(0,0,0,.12) 0 2px,transparent 2px 13px)}
+.plate{position:absolute;left:65px;top:95px;width:190px;height:190px;transform:scaleY(.5) rotate(45deg);border-radius:12px;border:1px solid color-mix(in srgb,var(--color-accent) 45%,var(--color-border));background:linear-gradient(155deg,color-mix(in srgb,var(--color-accent) 22%,var(--color-surface)),color-mix(in srgb,var(--color-accent) 42%,var(--color-surface-strong)));box-shadow:10px 10px 0 color-mix(in srgb,var(--color-iso-shadow-a) 18%,transparent)}
+.pad{position:absolute;left:100px;top:220px;width:40px;height:40px;transform:scaleY(.5) rotate(45deg);border:2px dashed color-mix(in srgb,var(--color-accent) 60%,transparent);border-radius:6px}
+.k1{--s:70px;--h:80px;--c:var(--color-primary);left:160px;top:150px}
+.k1b{--s:20px;--h:14px;--c:var(--color-surface-strong);left:190px;top:121px}
+.k2{--s:54px;--h:44px;--c:var(--color-accent);left:95px;top:205px}
+.k3{--s:40px;--h:30px;--c:var(--color-iso-shadow-b);left:222px;top:210px}
+.k5{--s:20px;--h:26px;--c:var(--color-accent);left:272px;top:196px}
+.mast{position:absolute;left:148px;top:81px;width:3px;height:34px;border-radius:2px;background:var(--color-text-muted)}
+.mast::before{content:"";position:absolute;left:-4.5px;top:-8px;width:12px;height:12px;background:var(--color-accent);transform:scaleY(.5) rotate(45deg);border-radius:2px}
+.logo-cube{position:relative;display:inline-block;width:24px;height:24px}
+.kl{--s:13px;--h:12px;--c:var(--color-primary);left:12px;top:11px}
+.step{position:relative}
+.step__num{display:flex;align-items:center;justify-content:center;width:54px;height:54px;margin:8px 6px 4px;background:var(--color-primary);color:#fff;border-radius:8px;transform:scaleY(.5) rotate(45deg)}
+.step__num span{transform:rotate(-45deg) scaleY(2);font:700 var(--text-md) var(--font-display)}
+.step:not(:last-child)::after{content:"";position:absolute;top:64px;right:-27px;width:30px;border-top:3px dashed color-mix(in srgb,var(--color-primary) 40%,transparent);transform:rotate(30deg)}
+@media(max-width:760px){.step:not(:last-child)::after{display:none}}
+.stars{font-family:'Material Symbols Rounded';font-size:20px;color:#f59e0b;word-spacing:6px}
+.stars::before{content:"star star star star star"}
+.card--t .quote{font-size:var(--text-lg);margin:0}
+.who{display:flex;align-items:center;gap:var(--space-3);margin-top:auto}
+.who p{margin:0;font-size:var(--text-sm);color:var(--color-text-muted)}
+.who strong{display:block;color:var(--color-text);font-size:var(--text-md)}
+.avatar{display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:50%;background:var(--color-primary);color:#fff;font:700 var(--text-sm) var(--font-base);box-shadow:var(--shadow-sm)}
+.avatar--b{background:var(--color-accent)}
+.avatar--c{background:var(--color-iso-shadow-a)}
+.seg{display:inline-flex;margin-top:var(--space-3);border:1px solid var(--color-border);border-radius:var(--radius-pill);background:var(--color-surface);box-shadow:var(--shadow-sm);overflow:hidden}
+.seg button{min-height:44px;padding:8px 18px;border:0;background:none;font:600 var(--text-sm) var(--font-base);color:var(--color-text-muted);cursor:pointer;transition:background var(--transition-fast),color var(--transition-fast)}
+.seg button[aria-pressed="true"]{background:var(--color-primary);color:#fff}
+.seg b{font-weight:700}
+.tier{position:relative}
+.price{margin:0;font:700 var(--text-3xl) var(--font-display)}
+.price span{font:500 var(--text-sm) var(--font-base);color:var(--color-text-muted)}
+.tier__for{margin:0 0 var(--space-4);font-size:var(--text-sm);color:var(--color-text-muted)}
+.tier ul{list-style:none;margin:0 0 var(--space-6);padding:0;display:flex;flex-direction:column;gap:var(--space-2);font-size:var(--text-sm);color:var(--color-text-muted)}
+.tier li::before{content:"check";font-family:'Material Symbols Rounded';font-size:18px;color:var(--color-text-success);margin-right:.45rem;vertical-align:-4px}
+.tier .btn{margin-top:auto;width:100%}
+.tier--hot{transform:translateY(-8px);border-color:var(--color-primary)}
+.tier--hot:hover{transform:translateY(-10px)}
+.tier--hot .badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);white-space:nowrap}
+.faq{max-width:760px;margin:auto;display:flex;flex-direction:column;gap:var(--space-3)}
+.faq details{background:var(--iso-facet);border:1px solid var(--color-border);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);transition:box-shadow var(--transition-fast)}
+.faq details[open]{box-shadow:var(--shadow-md)}
+.faq summary{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);min-height:44px;padding:var(--space-3) var(--space-4);font-weight:600;cursor:pointer;list-style:none}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary .material-symbols-rounded{color:var(--color-text-muted);transition:transform var(--transition-normal) var(--ease-standard)}
+.faq details[open] summary .material-symbols-rounded{transform:rotate(180deg)}
+.faq__panel{display:grid;grid-template-rows:1fr}
+.faq details[open] .faq__panel{animation:unfold var(--transition-normal) var(--ease-standard)}
+@keyframes unfold{from{grid-template-rows:0fr;opacity:0}to{grid-template-rows:1fr;opacity:1}}
+.faq__panel>div{overflow:hidden}
+.faq__panel p{margin:0;padding:0 var(--space-4) var(--space-4);color:var(--color-text-muted)}
+.cta{padding:var(--space-8) var(--space-4) var(--space-16);scroll-margin-top:90px}
+.cta__panel{max-width:780px;margin:auto;padding:var(--space-12) var(--space-6);text-align:center;display:flex;flex-direction:column;align-items:center;gap:var(--space-3);background-color:var(--color-surface);background-image:var(--iso-grid);border:1px solid var(--color-border);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg)}
+.cta form{display:flex;flex-wrap:wrap;justify-content:center;gap:var(--space-3);width:100%;margin-top:var(--space-4);align-items:flex-start}
+.cta form .btn{margin-top:26px}
+.ig{position:relative;display:flex;flex-direction:column;align-items:stretch;gap:var(--space-1);flex:1 1 240px;max-width:440px;text-align:left}
+.ig label{font-size:var(--text-sm);font-weight:600}
+.input{min-height:44px;padding:10px 14px;font:inherit;color:var(--color-text);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);transition:border-color var(--transition-fast)}
+.input:hover{border-color:color-mix(in srgb,var(--color-primary) 55%,var(--color-border))}
+.input:focus{outline:2px solid color-mix(in srgb,var(--color-primary) 50%,transparent);border-color:var(--color-primary)}
+.input[disabled]{opacity:.5;background:var(--color-surface-strong);cursor:not-allowed}
+.input[readonly]{background:var(--color-surface-strong)}
+.ig--valid .input{border-color:var(--color-border-success)}
+.ig--valid::after{content:"check_circle";font-family:'Material Symbols Rounded';position:absolute;right:12px;top:40px;font-size:22px;color:var(--color-text-success);pointer-events:none}
+.ig--invalid .input{border-color:var(--color-border-error)}
+.err{display:none;align-items:center;gap:.3rem;margin:0;font-size:var(--text-sm);color:var(--color-text-error)}
+.ig--invalid .err,.ig--valid .err{display:flex}
+.err::before{content:"error";font-family:'Material Symbols Rounded';font-size:18px}
+.ig--valid .err{color:var(--color-text-success)}
+.ig--valid .err::before{content:"check_circle"}
+.foot{border-top:1px solid var(--color-border);background:color-mix(in srgb,var(--color-surface-strong) 50%,transparent);padding:var(--space-12) var(--space-4) var(--space-6)}
+.foot__grid{max-width:1100px;margin:auto;display:flex;flex-wrap:wrap;gap:var(--spacing-gap)}
+.foot__grid>div{flex:1 1 180px}
+.foot h3{font-size:var(--text-sm);margin:0 0 var(--space-3);text-transform:uppercase;letter-spacing:.06em}
+.foot ul{list-style:none;margin:0 0 var(--space-6);padding:0;display:flex;flex-direction:column;gap:var(--space-2)}
+.foot a{font-size:var(--text-sm);color:var(--color-text-muted);text-decoration:none}
+.foot a:hover{color:var(--color-primary)}
+.dark .foot a:hover{color:var(--color-iso-shadow-b)}
+.foot__tag{font-size:var(--text-sm);color:var(--color-text-muted)}
+.socials{display:flex;gap:var(--space-2)}
+.socials a{display:flex;align-items:center;justify-content:center;width:44px;height:44px;background:var(--iso-facet);border:1px solid var(--color-border);border-radius:var(--radius-sm);box-shadow:var(--shadow-sm);transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast)}
+.socials a:hover{transform:translate(-2px,-2px);box-shadow:var(--shadow-md)}
+.copy{max-width:1100px;margin:var(--space-8) auto 0;padding-top:var(--space-4);border-top:1px solid var(--color-border);text-align:center;font-size:var(--text-sm);color:var(--color-text-muted)}
+}
+@layer utilities{
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="nav">
+ <div class="nav__inner">
+  <a class="nav__logo" href="#main"><span class="logo-cube" aria-hidden="true"><i class="cube kl"></i></span>Diorama</a>
+  <button class="btn btn--icon nav__toggle" id="navTgl" aria-expanded="false" aria-controls="navmenu" aria-label="Open menu"><span class="material-symbols-rounded" aria-hidden="true">menu</span></button>
+  <nav class="nav__menu" id="navmenu" aria-label="Primary">
+   <a href="#features">Features</a><a href="#how">How it works</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a>
+  </nav>
+  <button class="btn btn--icon" id="themeBtn" aria-pressed="false" aria-label="Switch to dark mode"><span class="material-symbols-rounded" aria-hidden="true">dark_mode</span></button>
+  <a class="btn btn--primary nav__cta" href="#cta">Get started</a>
+ </div>
+</header>
+<main id="main">
+<section class="hero">
+ <div class="hero__copy">
+  <p class="badge"><span class="material-symbols-rounded" aria-hidden="true">auto_awesome</span>Diorama 3.0 — live world editing is here</p>
+  <h1>Turn messy projects into tiny worlds you read at a glance.</h1>
+  <p>Diorama is a planning canvas where every task, team, and dependency is an isometric block. Stack, connect, and explore your work as one scene — no Gantt chart required.</p>
+  <div class="hero__actions">
+   <a class="btn btn--primary" href="#cta">Get started free</a>
+   <a class="btn" href="#how">See how it works</a>
+  </div>
+ </div>
+ <div class="hero__scene" role="img" aria-label="Isometric diorama: three colorful buildings with glowing windows on a teal plaza, one crowned with an antenna and a rooftop unit.">
+  <i class="plate"></i><i class="pad"></i><i class="cube k5"></i>
+  <i class="cube k1 win door"></i><i class="cube k1b"></i><i class="mast"></i>
+  <i class="cube k2 win"></i><i class="cube k3 win"></i>
+ </div>
+</section>
+<section id="features" class="section">
+ <div class="sec-head"><p class="kick">Features</p><h2>Built like a diorama, read like a map</h2></div>
+ <div class="grid3">
+  <article class="card card--feature"><span class="tile"><span class="material-symbols-rounded" aria-hidden="true">deployed_code</span></span><h3>Blocks, not lists</h3><p>Every task is an extruded block. Facets carry owner, status, and due date, so shape and color do the talking.</p></article>
+  <article class="card card--feature"><span class="tile"><span class="material-symbols-rounded" aria-hidden="true">brush</span></span><h3>Cutaway views</h3><p>Peel any project open to inspect budgets, checklists, and blockers inside — without ever leaving the canvas.</p></article>
+  <article class="card card--feature"><span class="tile"><span class="material-symbols-rounded" aria-hidden="true">bolt</span></span><h3>Silky at any scale</h3><p>A parallel-projection renderer keeps panning and editing at 120&nbsp;fps, even with 10,000 blocks on the board.</p></article>
+ </div>
+</section>
+<section id="how" class="section">
+ <div class="sec-head"><p class="kick">How it works</p><h2>From chaos to a city in three steps</h2></div>
+ <div class="grid3">
+  <article class="card step"><span class="step__num" aria-hidden="true"><span>01</span></span><h3>Drop in your plan</h3><p>Import a CSV, Jira, or Linear backlog and Diorama auto-extrudes every item onto the grid, owners and due dates intact.</p></article>
+  <article class="card step"><span class="step__num" aria-hidden="true"><span>02</span></span><h3>Build the scene</h3><p>Stack, group, and connect blocks into districts. Dependencies draw themselves as draggable 30° connector lines.</p></article>
+  <article class="card step"><span class="step__num" aria-hidden="true"><span>03</span></span><h3>Ship from the map</h3><p>Run standups directly on the diorama. Move a block and every view, report, and teammate syncs instantly.</p></article>
+ </div>
+</section>
+<section class="section">
+ <div class="sec-head"><p class="kick">Testimonials</p><h2>Teams gather around the map</h2></div>
+ <div class="grid3">
+  <article class="card card--t"><span class="stars" aria-hidden="true"></span><span class="sr-only">Rated 5 of 5</span><p class="quote">“Our roadmap went from a spreadsheet nobody opened to a tiny city the whole team huddles around every Monday.”</p><div class="who"><span class="avatar" aria-hidden="true">MO</span><p><strong>Mara Okafor</strong>Head of Product, Fernway</p></div></article>
+  <article class="card card--t"><span class="stars" aria-hidden="true"></span><span class="sr-only">Rated 5 of 5</span><p class="quote">“I mapped our microservices as blocks and stakeholders finally understood the migration. Approved in a single meeting.”</p><div class="who"><span class="avatar avatar--b" aria-hidden="true">DP</span><p><strong>Dev Patel</strong>Staff Engineer, Loopward</p></div></article>
+  <article class="card card--t"><span class="stars" aria-hidden="true"></span><span class="sr-only">Rated 5 of 5</span><p class="quote">“The cutaway view alone saves us a week of status meetings a quarter. The first planning tool that feels like play.”</p><div class="who"><span class="avatar avatar--c" aria-hidden="true">JA</span><p><strong>June Alvarez</strong>Delivery Lead, Studio North</p></div></article>
+ </div>
+</section>
+<section id="pricing" class="section">
+ <div class="sec-head"><p class="kick">Pricing</p><h2>Plans that scale with your skyline</h2><p class="sub">Unlimited free viewers on every plan — you only pay for editors.</p>
+  <div class="seg" role="group" aria-label="Billing period"><button type="button" data-c="m" aria-pressed="true">Monthly</button><button type="button" data-c="y" aria-pressed="false">Yearly <b>−20%</b></button></div>
+  <p class="sr-only" id="priceLive" aria-live="polite"></p>
+ </div>
+ <div class="grid3">
+  <article class="card tier"><h3>Village</h3><p class="price">$<b data-m="0" data-y="0">0</b> <span>/ editor / mo</span></p><p class="tier__for">For first sketches and side quests.</p><ul><li>3 scenes, 100 blocks</li><li>Core canvas and grid</li><li>Community support</li></ul><a class="btn" href="#cta">Start free</a></article>
+  <article class="card tier tier--hot"><span class="badge">Most popular</span><h3>City</h3><p class="price">$<b data-m="12" data-y="10">12</b> <span>/ editor / mo</span></p><p class="tier__for">For teams shipping weekly.</p><ul><li>Unlimited scenes, 5k blocks</li><li>Cutaway and layered views</li><li>Priority sync and guests</li></ul><a class="btn btn--primary" href="#cta">Choose City</a></article>
+  <article class="card tier"><h3>Metropolis</h3><p class="price">$<b data-m="29" data-y="23">29</b> <span>/ editor / mo</span></p><p class="tier__for">For organizations with real skylines.</p><ul><li>Unlimited blocks and SSO</li><li>REST API and webhooks</li><li>Dedicated success engineer</li></ul><a class="btn" href="#cta">Talk to sales</a></article>
+ </div>
+</section>
+<section id="faq" class="section">
+ <div class="sec-head"><p class="kick">FAQ</p><h2>Questions, answered plainly</h2></div>
+ <div class="faq">
+  <details><summary>Is Diorama only for software teams?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary><div class="faq__panel"><div><p>Not at all. Anything with parts and dependencies maps well — customers plan games, marketing campaigns, facility moves, even film productions. If you can draw a block for it, Diorama can track it.</p></div></div></details>
+  <details><summary>Can I import my existing tasks?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary><div class="faq__panel"><div><p>Yes. CSV, Jira, Linear, and Trello imports take minutes, and every item lands on the grid already extruded, with owners and due dates preserved.</p></div></div></details>
+  <details><summary>Does it work offline?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary><div class="faq__panel"><div><p>Scenes cache locally, so you can keep editing on a plane. When you reconnect, changes merge block by block — conflicts glow red and are never silently overwritten.</p></div></div></details>
+  <details><summary>What counts as an editor?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary><div class="faq__panel"><div><p>Anyone who creates, moves, or edits blocks. Viewers — stakeholders, clients, execs — are free and unlimited on every plan, and you can swap editors any time mid-cycle.</p></div></div></details>
+ </div>
+</section>
+<section id="cta" class="cta">
+ <div class="cta__panel">
+  <p class="badge"><span class="material-symbols-rounded" aria-hidden="true">mail</span>Free for your first three scenes</p>
+  <h2>Ready to build your first world?</h2>
+  <p class="sub">Join 12,000 teams planning in parallel projection. No credit card, no setup call — just a grid and your imagination.</p>
+  <form id="waitForm" novalidate>
+   <div class="ig" id="ig">
+    <label for="email">Work email</label>
+    <input class="input" id="email" type="email" name="email" autocomplete="email" placeholder="alex@studio.com" required>
+    <p class="err" id="emailErr" aria-live="polite"></p>
+   </div>
+   <button class="btn btn--primary" id="ctaBtn" type="submit"><span class="material-symbols-rounded" id="ctaIco" aria-hidden="true">arrow_forward</span><span id="ctaTxt">Get started</span></button>
+  </form>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="foot__grid">
+  <div>
+   <a class="nav__logo" href="#main"><span class="logo-cube" aria-hidden="true"><i class="cube kl"></i></span>Diorama</a>
+   <p class="foot__tag">The isometric workspace where plans become tiny worlds.</p>
+   <div class="socials">
+    <a href="#" aria-label="Email us"><span class="material-symbols-rounded" aria-hidden="true">alternate_email</span></a>
+    <a href="#" aria-label="Community chat"><span class="material-symbols-rounded" aria-hidden="true">forum</span></a>
+    <a href="#" aria-label="Blog feed"><span class="material-symbols-rounded" aria-hidden="true">rss_feed</span></a>
+   </div>
+  </div>
+  <div><h3>Product</h3><ul><li><a href="#features">Features</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#">Changelog</a></li><li><a href="#">Roadmap</a></li></ul></div>
+  <div><h3>Company</h3><ul><li><a href="#">About</a></li><li><a href="#">Careers</a></li><li><a href="#">Press kit</a></li><li><a href="#">Contact</a></li></ul></div>
+  <div><h3>Resources</h3><ul><li><a href="#">Docs</a></li><li><a href="#">Community</a></li><li><a href="#">Templates</a></li><li><a href="#faq">FAQ</a></li></ul></div>
+ </div>
+ <p class="copy">© 2026 Diorama Inc. All rights reserved. Built with parallel projection.</p>
+</footer>
+<script>
+const $=s=>document.querySelector(s),root=document.documentElement,tb=$('#themeBtn');
+const applyTheme=(t,save)=>{root.classList.toggle('dark',t==='dark');tb.setAttribute('aria-pressed',t==='dark');tb.setAttribute('aria-label',t==='dark'?'Switch to light mode':'Switch to dark mode');tb.querySelector('span').textContent=t==='dark'?'light_mode':'dark_mode';if(save){try{localStorage.setItem('theme',t)}catch(e){}}};
+applyTheme(root.classList.contains('dark')?'dark':'light');
+tb.addEventListener('click',()=>applyTheme(root.classList.contains('dark')?'light':'dark',1));
+const nt=$('#navTgl'),nm=$('#navmenu');
+const closeNav=()=>{nm.classList.remove('open');nt.setAttribute('aria-expanded','false');nt.querySelector('span').textContent='menu';nt.setAttribute('aria-label','Open menu')};
+nt.addEventListener('click',()=>{const o=nm.classList.toggle('open');nt.setAttribute('aria-expanded',o);nt.querySelector('span').textContent=o?'close':'menu';nt.setAttribute('aria-label',o?'Close menu':'Open menu')});
+nm.addEventListener('click',e=>{if(e.target.closest('a'))closeNav()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&nm.classList.contains('open')){closeNav();nt.focus()}});
+document.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{
+ document.querySelectorAll('.seg button').forEach(x=>x.setAttribute('aria-pressed',x===b?'true':'false'));
+ const y=b.dataset.c==='y';
+ document.querySelectorAll('.price b').forEach(p=>p.textContent=y?p.dataset.y:p.dataset.m);
+ $('#priceLive').textContent=y?'Yearly billing selected: 20% off, charged once per year.':'Monthly billing selected: cancel any time.';
+}));
+const fm=$('#waitForm'),ig=$('#ig'),er=$('#emailErr'),em=$('#email'),cb=$('#ctaBtn'),ci=$('#ctaIco'),ct=$('#ctaTxt');
+fm.addEventListener('submit',e=>{e.preventDefault();
+ if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em.value.trim())){
+  ig.classList.add('ig--invalid');ig.classList.remove('ig--valid');
+  er.textContent='Enter a valid work email, e.g. alex@studio.com';
+  cb.classList.add('btn--error');setTimeout(()=>cb.classList.remove('btn--error'),900);
+  em.focus();return}
+ ig.classList.remove('ig--invalid');ig.classList.add('ig--valid');
+ cb.classList.add('btn--loading');cb.setAttribute('aria-busy','true');
+ ci.textContent='progress';ci.classList.add('spin');
+ setTimeout(()=>{cb.classList.remove('btn--loading');cb.classList.add('btn--success');
+  ci.classList.remove('spin');ci.textContent='check_circle';ct.textContent="You're on the map!";
+  cb.setAttribute('aria-disabled','true');
+  er.textContent='Invite sent to '+em.value.trim()+' — see you inside.'},1100)});
+em.addEventListener('input',()=>{ig.classList.remove('ig--invalid');er.textContent=''});
+</script>
+</body>
+</html>

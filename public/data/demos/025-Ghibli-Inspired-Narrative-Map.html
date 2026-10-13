@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>StoryTrail — Turn Journeys into Hand-Painted Story Maps</title>
+<meta name="description" content="StoryTrail sketches your journeys, ideas and daydreams as whimsical watercolor narrative maps.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Quicksand:wght@400..700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet">
+<style>
+:root{--primary:#212635;--secondary:#7CB342;--accent-sky:#4FC3F7;--accent-pink:#F48FB1;--bg-primary:#FAF8F2;--bg-secondary:#F4EFE4;--bg-footer:#ECE4D0;--text-primary:#2B2B2B;--text-secondary:#6E675C;--text-success:#558B2F;--text-error:#C62828;--border-default:rgba(43,43,43,.14);--border-success:rgba(85,139,47,.5);--border-error:rgba(198,40,40,.5);--radius-sm:8px;--radius-md:15px;--radius-lg:26px;--blob:58% 42% 55% 45%/48% 52% 48% 52%;--shadow-sm:0 2px 8px rgba(43,43,43,.08);--shadow-md:0 4px 15px rgba(0,0,0,.1);--spacing-gap:1.5rem;--transition-fast:150ms;--transition-normal:300ms;--ease-standard:cubic-bezier(.4,0,.2,1);--z-dropdown:50;--z-modal:100;--z-toast:200;--font-base:'Quicksand',sans-serif;--font-hand:'Caveat',cursive}
+html.dark{--bg-primary:#1B2130;--bg-secondary:#252C3F;--bg-footer:#161B28;--text-primary:#F5F0E4;--text-secondary:#BDB7A9;--border-default:rgba(245,240,228,.14);--shadow-sm:0 2px 8px rgba(0,0,0,.35);--shadow-md:0 4px 15px rgba(0,0,0,.45)}
+@media(prefers-color-scheme:dark){:root:not(.light){--bg-primary:#1B2130;--bg-secondary:#252C3F;--bg-footer:#161B28;--text-primary:#F5F0E4;--text-secondary:#BDB7A9;--border-default:rgba(245,240,228,.14);--shadow-sm:0 2px 8px rgba(0,0,0,.35);--shadow-md:0 4px 15px rgba(0,0,0,.45)}}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background-color:var(--bg-primary);color:var(--text-primary);font-family:var(--font-base);font-weight:500;line-height:1.65;overflow-x:hidden;background-image:radial-gradient(50rem 25rem at 90% -8%,rgba(79,195,247,.16),transparent 60%),radial-gradient(45rem 22rem at -12% 38%,rgba(124,179,66,.12),transparent 60%),radial-gradient(38rem 20rem at 108% 82%,rgba(244,143,177,.1),transparent 60%);background-attachment:fixed;transition:background-color var(--transition-normal),color var(--transition-normal)}
+.material-symbols-rounded{font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
+a{color:inherit}
+.sr-only{position:absolute;width:1px;height:1px;clip-path:inset(50%);overflow:hidden;white-space:nowrap}
+.skip-link{position:fixed;left:-100vw;top:8px;z-index:var(--z-toast);background:var(--primary);color:#FAF8F2;padding:.7rem 1.2rem;border-radius:var(--radius-sm);text-decoration:none}
+.skip-link:focus{left:8px}
+/* buttons */
+.btn{display:flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;min-width:44px;padding:.55rem 1.4rem;border:1.5px solid transparent;border-radius:var(--radius-md);background:var(--bg-secondary);color:var(--text-primary);font:600 1rem var(--font-base);text-decoration:none;cursor:pointer;transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-normal),filter var(--transition-normal),background-color var(--transition-normal)}
+.btn:hover{filter:brightness(1.07);box-shadow:0 6px 22px rgba(255,205,140,.5),var(--shadow-sm)}
+.btn:active{transform:scale(.97)}
+.btn:focus-visible{outline:2px solid var(--secondary);outline-offset:3px;box-shadow:0 0 0 5px rgba(79,195,247,.3)}
+.btn[disabled]{opacity:.5;filter:grayscale(1);cursor:not-allowed;transform:none}
+.btn--primary{background:var(--primary);color:#FAF8F2}
+.btn--secondary{background:transparent;border-color:var(--border-default);box-shadow:var(--shadow-sm)}
+.btn--secondary:hover{border-color:var(--secondary)}
+.btn--danger{background:var(--text-error);color:#fff}
+.btn--success{background:var(--text-success);color:#fff}
+.is-loading{position:relative;color:transparent!important;pointer-events:none}
+.is-loading::after{content:"";position:absolute;width:1.1rem;height:1.1rem;border:2.5px solid rgba(250,248,242,.9);border-right-color:transparent;border-radius:50%;animation:spin .8s linear infinite}
+.btn--secondary.is-loading::after,.btn--success.is-loading::after{border-color:var(--text-success);border-right-color:transparent}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* header */
+.site-header{position:sticky;top:0;z-index:var(--z-dropdown);display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.55rem clamp(1rem,4vw,2.5rem);border-bottom:1px solid var(--border-default);background:var(--bg-primary);background:color-mix(in srgb,var(--bg-primary) 82%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.brand{display:flex;align-items:center;gap:.45rem;font-weight:700;font-size:1.25rem;color:var(--primary);text-decoration:none}
+.brand .material-symbols-rounded{color:var(--secondary)}
+.site-nav{display:flex;align-items:center;gap:clamp(.75rem,2vw,1.6rem)}
+.nav-link{position:relative;padding:.45rem .2rem;font-weight:600;font-size:.95rem;color:var(--text-secondary);text-decoration:none;transition:color var(--transition-fast)}
+.nav-link::after{content:"";position:absolute;left:.2rem;right:.2rem;bottom:.15rem;height:2px;border-radius:2px;background:var(--secondary);transform:scaleX(0);transform-origin:left;transition:transform var(--transition-normal) var(--ease-standard)}
+.nav-link:hover,.nav-link:focus-visible{color:var(--text-primary)}
+.nav-link:hover::after,.nav-link:focus-visible::after{transform:scaleX(1)}
+.site-header__actions{display:flex;align-items:center;gap:.5rem}
+.icon-btn{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border:1px solid var(--border-default);border-radius:50%;background:var(--bg-secondary);color:var(--text-primary);cursor:pointer;transition:border-color var(--transition-normal),box-shadow var(--transition-normal),transform var(--transition-fast)}
+.icon-btn:hover{border-color:var(--secondary);box-shadow:var(--shadow-sm)}
+.icon-btn:active{transform:scale(.94)}
+.icon-btn:focus-visible{outline:2px solid var(--secondary);outline-offset:3px}
+.icon-sun{display:none}
+html.dark .icon-sun{display:inline-block}
+html.dark .icon-moon{display:none}
+.menu-btn{display:none}
+@keyframes drop{from{opacity:0;transform:translateY(-6px)}}
+@media(max-width:860px){
+.menu-btn{display:flex}
+.site-nav{position:absolute;top:100%;left:0;right:0;flex-direction:column;align-items:stretch;gap:.2rem;padding:1rem clamp(1rem,4vw,2.5rem);background:var(--bg-primary);border-bottom:1px solid var(--border-default);box-shadow:var(--shadow-md);display:none}
+.site-header.is-open .site-nav{display:flex;animation:drop var(--transition-normal) var(--ease-standard)}
+.nav-link{padding:.75rem .4rem;font-size:1.05rem}
+}
+/* hero */
+.hero{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:1.1rem;padding:clamp(4rem,9vw,6.5rem) 1.25rem 2.5rem}
+.hero::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(75rem 34rem at 50% -14%,rgba(255,224,178,.6),transparent 62%),radial-gradient(120% 60% at 50% 112%,rgba(124,179,66,.32),transparent 60%),radial-gradient(46rem 24rem at 82% 22%,rgba(79,195,247,.22),transparent 65%)}
+.hero::after{content:"";position:absolute;top:12%;left:-10rem;width:26rem;height:17rem;border-radius:var(--blob);background:rgba(244,143,177,.35);filter:blur(58px);transform:rotate(-12deg);pointer-events:none}
+html.dark .hero::before{opacity:.5}
+.hero__blob{position:absolute;top:22%;right:-9rem;width:22rem;height:15rem;border-radius:var(--blob);background:rgba(255,196,140,.45);filter:blur(60px);transform:rotate(10deg)}
+.hero>*{position:relative}
+.hero__label{font-family:var(--font-hand);font-size:1.5rem;font-weight:600;color:var(--text-success);transform:rotate(-3deg)}
+.hero__title{max-width:21ch;font-size:clamp(2.1rem,6vw,3.7rem);line-height:1.12;font-weight:700;color:var(--primary)}
+.hero__sub{max-width:56ch;font-size:clamp(1rem,2.4vw,1.15rem);color:var(--text-secondary)}
+.hero__actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:1rem;margin-top:.4rem}
+.hero__trail{height:3.2rem;border-left:3px dashed rgba(124,179,66,.55);margin-top:1.4rem}
+.scroll-cue{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;color:var(--text-secondary);text-decoration:none;animation:bob 2.6s var(--ease-standard) infinite}
+.scroll-cue:hover{color:var(--text-success)}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(8px)}}
+/* sections */
+.section{display:flex;flex-direction:column;align-items:center;gap:1.1rem;padding:clamp(3.5rem,8vw,5.5rem) 1.25rem;scroll-margin-top:4.5rem;position:relative}
+.section__kicker{font-family:var(--font-hand);font-size:1.45rem;font-weight:600;color:var(--text-success);transform:rotate(-2deg)}
+.section__title{font-size:clamp(1.7rem,4vw,2.4rem);font-weight:700;color:var(--primary);text-align:center;max-width:26ch}
+.cards{display:flex;flex-wrap:wrap;align-items:stretch;justify-content:center;gap:var(--spacing-gap);width:100%;max-width:1100px;margin-top:1rem} /* stretch: equal-height cards */
+.card{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;text-align:center;gap:.8rem;flex:1 1 270px;max-width:340px;padding:2.1rem 1.5rem 1.7rem;background:var(--bg-secondary);border:1.5px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal),border-color var(--transition-normal)}
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.card:focus-within{border-color:var(--border-success);box-shadow:var(--shadow-md),0 0 0 3px rgba(124,179,66,.18)}
+.card::before{content:"";position:absolute;inset:0;pointer-events:none}
+.card--green::before{background:radial-gradient(90% 65% at 50% 0%,rgba(124,179,66,.24),transparent 70%)}
+.card--blue::before{background:radial-gradient(90% 65% at 50% 0%,rgba(79,195,247,.22),transparent 70%)}
+.card--pink::before{background:radial-gradient(90% 65% at 50% 0%,rgba(244,143,177,.24),transparent 70%)}
+.card__icon{position:relative;display:flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:44% 56% 52% 48%/48% 52% 46% 54%;color:#fff;box-shadow:var(--shadow-sm)}
+.card--green .card__icon{background:linear-gradient(140deg,#8BC34A,#558B2F)}
+.card--blue .card__icon{background:linear-gradient(140deg,#4FC3F7,#0277BD)}
+.card--pink .card__icon{background:linear-gradient(140deg,#F48FB1,#D81B60)}
+.card__title{position:relative;font-size:1.2rem;font-weight:700;color:var(--primary)}
+.card__copy{position:relative;color:var(--text-secondary);font-size:.98rem}
+.card__link{position:relative;display:inline-flex;align-items:center;gap:.25rem;margin-top:auto;font-weight:700;font-size:.95rem;color:var(--text-success);text-decoration:none}
+.card__link .material-symbols-rounded{font-size:1.1rem;transition:transform var(--transition-fast)}
+.card__link:hover,.card__link:focus-visible{text-decoration:underline}
+.card__link:hover .material-symbols-rounded{transform:translateX(3px)}
+/* steps */
+.steps{position:relative;list-style:none;display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:center;gap:2rem;width:100%;max-width:1000px;margin-top:1.5rem} /* flex-start: staggered waypoints */
+.steps::before{content:"";position:absolute;top:26px;left:8%;right:8%;border-top:3px dashed rgba(124,179,66,.55);transform:rotate(-1.5deg)}
+.step{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:.8rem;flex:1 1 250px;max-width:310px;transform:rotate(-1.2deg)}
+.step:nth-child(2){transform:rotate(1.1deg) translateY(16px)}
+.step:nth-child(3){transform:rotate(-.9deg)}
+.step__badge{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;background:var(--primary);color:#FAF8F2;box-shadow:0 0 0 6px var(--bg-primary),var(--shadow-sm)}
+.step__badge::after{content:attr(data-num);position:absolute;top:-12px;right:-16px;font-family:var(--font-hand);font-weight:700;font-size:1.1rem;color:var(--text-success)}
+.step__body{display:flex;flex-direction:column;align-items:center;gap:.4rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);padding:1.1rem 1.2rem}
+.step__title{font-size:1.1rem;font-weight:700;color:var(--primary)}
+.step__copy{font-size:.93rem;color:var(--text-secondary)}
+@media(max-width:720px){
+.steps{flex-direction:column;align-items:stretch;gap:1.6rem}
+.steps::before{left:26px;right:auto;top:30px;bottom:30px;border-top:0;border-left:3px dashed rgba(124,179,66,.55);transform:none}
+.step{flex-direction:row;align-items:flex-start;text-align:left;gap:1rem;max-width:430px}
+.step:nth-child(2){transform:rotate(1.1deg)}
+.step__body{align-items:flex-start}
+}
+/* testimonials */
+.note{--r:-1.4deg;position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:.75rem;flex:1 1 280px;max-width:380px;padding:1.9rem 1.6rem;background:var(--bg-secondary);border:1.5px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);transform:rotate(var(--r));transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal)}
+.note:nth-child(2){--r:1.2deg}
+.note:nth-child(3){--r:-.7deg}
+.note:hover{transform:rotate(0) translateY(-3px);box-shadow:var(--shadow-md)}
+.note__avatar{display:flex;align-items:center;justify-content:center;width:58px;height:58px;border-radius:50%;padding:3px;background:linear-gradient(135deg,var(--secondary),var(--accent-sky) 50%,var(--accent-pink))}
+.note__avatar span{display:flex;align-items:center;justify-content:center;width:100%;height:100%;border-radius:50%;background:var(--bg-primary);font-weight:700;color:var(--primary)}
+.note__quote{font-style:italic;font-size:1rem}
+.note__name{font-family:var(--font-hand);font-size:1.4rem;font-weight:700;color:var(--primary);line-height:1.1}
+.note__role{font-size:.85rem;color:var(--text-secondary)}
+/* pricing */
+.tier{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:.9rem;flex:1 1 270px;max-width:340px;padding:2.2rem 1.6rem;background:var(--bg-secondary);border:1.5px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal)}
+.tier:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.tier--featured{background:var(--bg-primary);border-color:rgba(244,143,177,.6);box-shadow:var(--shadow-md),0 0 44px rgba(244,143,177,.22);transform:scale(1.045)}
+.tier--featured:hover{transform:scale(1.045) translateY(-2px)}
+@media(max-width:500px){.tier--featured{transform:none}.tier--featured:hover{transform:translateY(-2px)}}
+.tier__badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);padding:.28rem .95rem;border-radius:999px;background:linear-gradient(135deg,#F48FB1,#F8BBD0);color:#212635;font-weight:700;font-size:.8rem;white-space:nowrap;box-shadow:var(--shadow-sm)}
+.tier__name{font-size:1.15rem;font-weight:700;color:var(--text-secondary);letter-spacing:.04em;text-transform:uppercase}
+.tier__price{font-size:2.5rem;font-weight:700;color:var(--primary);line-height:1}
+.tier__period{font-size:.95rem;font-weight:600;color:var(--text-secondary)}
+.tier__list{list-style:none;display:flex;flex-direction:column;align-items:flex-start;gap:.55rem;text-align:left}
+.tier__list li{display:flex;align-items:center;gap:.55rem;font-size:.95rem;color:var(--text-secondary)}
+.tier__list .material-symbols-rounded{color:var(--text-success);font-size:1.25rem}
+.tier .btn{margin-top:auto}
+/* faq */
+.faq{display:flex;flex-direction:column;gap:.8rem;width:100%;max-width:760px;margin-top:1rem}
+.faq__item{background:var(--bg-secondary);border:1.5px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);transition:border-color var(--transition-normal),box-shadow var(--transition-normal)}
+.faq__item[open]{border-color:var(--border-success);box-shadow:var(--shadow-md)}
+.faq__summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:52px;padding:.8rem 1.25rem;font-weight:700;cursor:pointer;list-style:none;border-radius:var(--radius-md)}
+.faq__summary::-webkit-details-marker{display:none}
+.faq__summary:hover{color:var(--text-success)}
+.faq__summary:focus-visible{outline:2px solid var(--secondary);outline-offset:-3px}
+.faq__summary .material-symbols-rounded{flex:none;color:var(--text-success);transition:transform var(--transition-normal) var(--ease-standard)}
+.faq__item[open] .faq__summary .material-symbols-rounded{transform:rotate(180deg)}
+.faq__panel{padding:0 1.25rem 1rem;color:var(--text-secondary);font-size:.97rem;animation:drop var(--transition-normal) var(--ease-standard)}
+/* cta band */
+.cta-band{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;text-align:center;gap:1.1rem;padding:clamp(4.5rem,10vw,7rem) 1.25rem;scroll-margin-top:4.5rem}
+.cta-band::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(60rem 30rem at 50% 118%,rgba(255,183,77,.5),transparent 62%),radial-gradient(45rem 22rem at 16% -20%,rgba(244,143,177,.35),transparent 65%),radial-gradient(45rem 22rem at 84% -18%,rgba(255,224,178,.42),transparent 65%)}
+.cta-band::after{content:"";position:absolute;bottom:-6rem;left:50%;transform:translateX(-50%);width:34rem;height:16rem;border-radius:var(--blob);background:rgba(255,171,110,.3);filter:blur(60px)}
+html.dark .cta-band::before{opacity:.5}
+.cta-band>*{position:relative}
+.cta-band__title{font-size:clamp(1.9rem,5vw,2.8rem);font-weight:700;color:var(--primary);max-width:20ch}
+.cta-band__sub{max-width:48ch;color:var(--text-secondary)}
+.signup{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:center;gap:.8rem;width:min(100%,34rem)} /* flex-start: label above input */
+.input-group{display:flex;flex-direction:column;gap:.3rem;flex:1 1 250px}
+.input-group input{width:100%;min-height:44px;padding:.55rem 1.1rem;font:500 1rem var(--font-base);color:var(--text-primary);background:var(--bg-primary);border:1.5px solid var(--border-default);border-radius:var(--radius-md);transition:border-color var(--transition-normal),box-shadow var(--transition-normal)}
+.input-group input::placeholder{color:var(--text-secondary);opacity:.7}
+.input-group input:focus{outline:none;border-color:var(--secondary);box-shadow:0 0 0 4px rgba(124,179,66,.2)}
+.input-group--invalid input{border-color:var(--text-error);box-shadow:0 0 0 4px rgba(198,40,40,.15)}
+.input-group__error{min-height:1.3em;font-size:.85rem;font-weight:600;color:var(--text-error);text-align:left}
+/* toast */
+.toast{position:fixed;left:50%;bottom:1.4rem;transform:translate(-50%,16px);z-index:var(--z-toast);display:flex;align-items:center;gap:.5rem;padding:.75rem 1.35rem;border-radius:999px;background:var(--primary);color:#FAF8F2;font-weight:600;box-shadow:var(--shadow-md);opacity:0;visibility:hidden;transition:opacity var(--transition-normal),transform var(--transition-normal),visibility var(--transition-normal)}
+.toast.is-visible{opacity:1;visibility:visible;transform:translate(-50%,0)}
+.toast .material-symbols-rounded{color:var(--accent-pink)}
+/* footer */
+.site-footer{display:flex;flex-direction:column;align-items:center;gap:2rem;padding:clamp(2.5rem,6vw,4rem) clamp(1.25rem,5vw,3rem) 1.5rem;background:var(--bg-footer);border-top:1px solid var(--border-default)}
+.site-footer__top{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:center;gap:2.5rem;width:100%;max-width:1100px} /* flex-start: column stacks */
+.site-footer__brand{display:flex;flex-direction:column;align-items:flex-start;gap:.6rem;max-width:280px}
+.site-footer__tag{font-size:.95rem;color:var(--text-secondary)}
+.social{display:flex;align-items:center;gap:.5rem}
+.social-btn{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;color:var(--text-secondary);background:var(--bg-primary);border:1px solid var(--border-default);text-decoration:none;transition:color var(--transition-fast),border-color var(--transition-normal),transform var(--transition-fast)}
+.social-btn:hover{color:var(--text-success);border-color:var(--secondary);transform:translateY(-2px)}
+.social-btn:focus-visible{outline:2px solid var(--secondary);outline-offset:3px}
+.footer-nav{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:center;gap:2.2rem}
+.footer-nav__group{display:flex;flex-direction:column;align-items:flex-start;gap:.45rem}
+.footer-nav__title{font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-secondary);margin-bottom:.15rem}
+.footer-nav a{color:var(--text-primary);text-decoration:none;font-weight:600;font-size:.95rem;transition:color var(--transition-fast)}
+.footer-nav a:hover,.footer-nav a:focus-visible{color:var(--text-success);text-decoration:underline}
+.site-footer__copy{font-size:.85rem;color:var(--text-secondary);border-top:1px solid var(--border-default);padding-top:1.2rem;width:100%;max-width:1100px;text-align:center}
+a:focus-visible,summary:focus-visible,button:focus-visible{outline:2px solid var(--secondary);outline-offset:2px;border-radius:var(--radius-sm)}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header" id="top">
+  <a class="brand" href="#top"><span class="material-symbols-rounded" aria-hidden="true">map</span>StoryTrail</a>
+  <nav class="site-nav" id="siteNav" aria-label="Primary">
+    <a class="nav-link" href="#features">Features</a>
+    <a class="nav-link" href="#how">How It Works</a>
+    <a class="nav-link" href="#stories">Testimonials</a>
+    <a class="nav-link" href="#pricing">Pricing</a>
+    <a class="nav-link" href="#faq">FAQ</a>
+  </nav>
+  <div class="site-header__actions">
+    <button class="icon-btn" id="themeToggle" type="button" aria-pressed="false" aria-label="Switch to dark theme">
+      <span class="material-symbols-rounded icon-moon" aria-hidden="true">dark_mode</span>
+      <span class="material-symbols-rounded icon-sun" aria-hidden="true">light_mode</span>
+    </button>
+    <button class="icon-btn menu-btn" id="menuBtn" type="button" aria-expanded="false" aria-controls="siteNav" aria-label="Open menu">
+      <span class="material-symbols-rounded" aria-hidden="true">menu</span>
+    </button>
+  </div>
+</header>
+<main id="main">
+  <section class="hero" aria-labelledby="heroTitle">
+    <span class="hero__blob" aria-hidden="true"></span>
+    <p class="hero__label">~ you are here ~</p>
+    <h1 class="hero__title" id="heroTitle">Turn your journeys into hand-painted story maps</h1>
+    <p class="hero__sub">StoryTrail sketches your travels, ideas, and daydreams as soft watercolor maps — every path a chapter, every place a memory.</p>
+    <div class="hero__actions">
+      <a class="btn btn--primary" href="#pricing">Begin Your Story<span class="material-symbols-rounded" aria-hidden="true">chevron_right</span></a>
+      <a class="btn btn--secondary" href="#how">See How It Works</a>
+    </div>
+    <div class="hero__trail" aria-hidden="true"></div>
+    <a class="scroll-cue" href="#features" aria-label="Scroll to features"><span class="material-symbols-rounded" aria-hidden="true">south</span></a>
+  </section>
+  <section class="section" id="features" aria-labelledby="featTitle">
+    <p class="section__kicker">field notes</p>
+    <h2 class="section__title" id="featTitle">A studio that fits in your satchel</h2>
+    <div class="cards">
+      <article class="card card--green">
+        <span class="card__icon" aria-hidden="true"><span class="material-symbols-rounded">edit_note</span></span>
+        <h3 class="card__title">Sketch Your World</h3>
+        <p class="card__copy">Jot memories, detours, and tiny observations along the way. StoryTrail turns them into hand-lettered waypoints.</p>
+        <a class="card__link" href="#how">Start sketching<span class="material-symbols-rounded" aria-hidden="true">chevron_right</span></a>
+      </article>
+      <article class="card card--blue">
+        <span class="card__icon" aria-hidden="true"><span class="material-symbols-rounded">map</span></span>
+        <h3 class="card__title">Paint Your Path</h3>
+        <p class="card__copy">Choose a watercolor mood — meadow, coastline, starlit forest — and watch soft washes bloom along every road.</p>
+        <a class="card__link" href="#pricing">Explore palettes<span class="material-symbols-rounded" aria-hidden="true">chevron_right</span></a>
+      </article>
+      <article class="card card--pink">
+        <span class="card__icon" aria-hidden="true"><span class="material-symbols-rounded">auto_awesome</span></span>
+        <h3 class="card__title">Bring It to Life</h3>
+        <p class="card__copy">Add warm ambient light, drifting clouds, and gentle motion until your map feels like a living page.</p>
+        <a class="card__link" href="#stories">See it shimmer<span class="material-symbols-rounded" aria-hidden="true">chevron_right</span></a>
+      </article>
+    </div>
+  </section>
+  <section class="section" id="how" aria-labelledby="howTitle">
+    <p class="section__kicker">the trail</p>
+    <h2 class="section__title" id="howTitle">Three steps to your first map</h2>
+    <ol class="steps">
+      <li class="step">
+        <span class="step__badge" data-num="01" aria-hidden="true"><span class="material-symbols-rounded">explore</span></span>
+        <div class="step__body">
+          <h3 class="step__title">Chart Your World</h3>
+          <p class="step__copy">Drop pins on places you've been — or places only you can imagine.</p>
+        </div>
+      </li>
+      <li class="step">
+        <span class="step__badge" data-num="02" aria-hidden="true"><span class="material-symbols-rounded">brush</span></span>
+        <div class="step__body">
+          <h3 class="step__title">Paint Your Path</h3>
+          <p class="step__copy">Pick a palette and let watercolor washes color your journey.</p>
+        </div>
+      </li>
+      <li class="step">
+        <span class="step__badge" data-num="03" aria-hidden="true"><span class="material-symbols-rounded">favorite</span></span>
+        <div class="step__body">
+          <h3 class="step__title">Share Your Story</h3>
+          <p class="step__copy">Fold your map into a keepsake and send it to fellow travelers.</p>
+        </div>
+      </li>
+    </ol>
+  </section>
+  <section class="section" id="stories" aria-labelledby="storiesTitle">
+    <p class="section__kicker">traveler's notes</p>
+    <h2 class="section__title" id="storiesTitle">Notes from the trail</h2>
+    <div class="cards">
+      <figure class="note">
+        <span class="note__avatar" aria-hidden="true"><span>MT</span></span>
+        <blockquote class="note__quote">"My year in Kyoto became a map I actually wanted framed on the wall."</blockquote>
+        <figcaption><span class="note__name">Mika Tanaka</span><br><span class="note__role">Illustrator</span></figcaption>
+      </figure>
+      <figure class="note">
+        <span class="note__avatar" aria-hidden="true"><span>DR</span></span>
+        <blockquote class="note__quote">"I planned our family road trip as a storybook. The kids fought over who keeps it."</blockquote>
+        <figcaption><span class="note__name">Daniel Reyes</span><br><span class="note__role">Weekend Wanderer</span></figcaption>
+      </figure>
+      <figure class="note">
+        <span class="note__avatar" aria-hidden="true"><span>JP</span></span>
+        <blockquote class="note__quote">"It feels like drawing in a sunlit attic — warm, quiet, and a little magical."</blockquote>
+        <figcaption><span class="note__name">June Park</span><br><span class="note__role">Travel Journalist</span></figcaption>
+      </figure>
+    </div>
+  </section>
+  <section class="section" id="pricing" aria-labelledby="priceTitle">
+    <p class="section__kicker">pack your bags</p>
+    <h2 class="section__title" id="priceTitle">Choose your trail</h2>
+    <div class="cards">
+      <article class="tier">
+        <h3 class="tier__name">Wanderer</h3>
+        <p class="tier__price">$0<span class="tier__period"> / forever</span></p>
+        <ul class="tier__list">
+          <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>3 hand-painted maps</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>2 watercolor palettes</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Shareable trail links</li>
+        </ul>
+        <a class="btn btn--secondary" href="#cta">Start wandering</a>
+      </article>
+      <article class="tier tier--featured">
+        <span class="tier__badge">Most Loved</span>
+        <h3 class="tier__name">Explorer</h3>
+        <p class="tier__price">$6<span class="tier__period"> / month</span></p>
+        <ul class="tier__list">
+          <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Unlimited maps</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>All watercolor palettes</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Warm ambient light</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Print-ready keepsakes</li>
+        </ul>
+        <a class="btn btn--primary" href="#cta">Become an Explorer</a>
+      </article>
+      <article class="tier">
+        <h3 class="tier__name">Storyteller</h3>
+        <p class="tier__price">$12<span class="tier__period"> / month</span></p>
+        <ul class="tier__list">
+          <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Everything in Explorer</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Custom brush sets</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Co-authored maps</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Offline atlas export</li>
+        </ul>
+        <a class="btn btn--secondary" href="#cta">Tell it all</a>
+      </article>
+    </div>
+  </section>
+  <section class="section" id="faq" aria-labelledby="faqTitle">
+    <p class="section__kicker">ask the cartographer</p>
+    <h2 class="section__title" id="faqTitle">Frequently asked questions</h2>
+    <div class="faq">
+      <details class="faq__item">
+        <summary class="faq__summary">Do I need to know how to draw?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+        <p class="faq__panel">Not at all. Sketch a few words and memories — StoryTrail's brushes paint the washes, borders, and lettering for you.</p>
+      </details>
+      <details class="faq__item">
+        <summary class="faq__summary">Can I print my maps?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+        <p class="faq__panel">Yes. Explorer and Storyteller plans include print-ready exports sized for postcards, posters, and textured paper stock.</p>
+      </details>
+      <details class="faq__item">
+        <summary class="faq__summary">Can friends add to my map?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+        <p class="faq__panel">Storyteller maps are co-authorable — invite companions to drop their own pins, notes, and photos along the trail.</p>
+      </details>
+      <details class="faq__item">
+        <summary class="faq__summary">Does StoryTrail work offline?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+        <p class="faq__panel">Your atlas syncs when you're back online, and Storyteller plans can export full maps for offline wandering.</p>
+      </details>
+      <details class="faq__item">
+        <summary class="faq__summary">What happens to my maps if I cancel?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+        <p class="faq__panel">Your maps stay yours forever. Download everything at any time — we'd never fold away your memories.</p>
+      </details>
+    </div>
+  </section>
+  <section class="cta-band" id="cta" aria-labelledby="ctaTitle">
+    <h2 class="cta-band__title" id="ctaTitle">Every journey deserves a map</h2>
+    <p class="cta-band__sub">Join the caravan and we'll send your first watercolor palette — plus a postcard from the trail.</p>
+    <form class="signup" id="signupForm" novalidate>
+      <div class="input-group" id="emailGroup">
+        <label class="sr-only" for="email">Email address</label>
+        <input id="email" name="email" type="email" autocomplete="email" placeholder="you@somewhere.com" aria-describedby="emailError" required>
+        <p class="input-group__error" id="emailError" aria-live="polite"></p>
+      </div>
+      <button class="btn btn--primary" id="signupBtn" type="submit"><span>Join the caravan</span></button>
+    </form>
+  </section>
+</main>
+<footer class="site-footer">
+  <div class="site-footer__top">
+    <div class="site-footer__brand">
+      <a class="brand" href="#top"><span class="material-symbols-rounded" aria-hidden="true">map</span>StoryTrail</a>
+      <p class="site-footer__tag">Hand-painted maps for wandering hearts.</p>
+      <div class="social">
+        <a class="social-btn" href="#" aria-label="Email us"><span class="material-symbols-rounded" aria-hidden="true">mail</span></a>
+        <a class="social-btn" href="#" aria-label="Community forum"><span class="material-symbols-rounded" aria-hidden="true">forum</span></a>
+        <a class="social-btn" href="#" aria-label="Map gallery"><span class="material-symbols-rounded" aria-hidden="true">photo_library</span></a>
+      </div>
+    </div>
+    <nav class="footer-nav" aria-label="Footer">
+      <div class="footer-nav__group">
+        <p class="footer-nav__title">Product</p>
+        <a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a>
+      </div>
+      <div class="footer-nav__group">
+        <p class="footer-nav__title">Company</p>
+        <a href="#">About</a><a href="#">Journal</a><a href="#">Contact</a>
+      </div>
+      <div class="footer-nav__group">
+        <p class="footer-nav__title">Support</p>
+        <a href="#">Help Center</a><a href="#">Privacy</a><a href="#">Terms</a>
+      </div>
+    </nav>
+  </div>
+  <p class="site-footer__copy">© 2026 StoryTrail. Painted with patience.</p>
+</footer>
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span class="material-symbols-rounded" aria-hidden="true">favorite</span><span>Your map awaits!</span>
+</div>
+<script>
+(function(){
+"use strict";
+var root=document.documentElement,toggle=document.getElementById("themeToggle"),menuBtn=document.getElementById("menuBtn"),header=document.querySelector(".site-header"),nav=document.getElementById("siteNav");
+var stored=null;try{stored=localStorage.getItem("storytrail-theme")}catch(e){}
+var dark=stored?stored==="dark":window.matchMedia("(prefers-color-scheme: dark)").matches;
+root.classList.remove("light");root.classList.add(dark?"dark":"light");
+function syncToggle(){var d=root.classList.contains("dark");toggle.setAttribute("aria-pressed",String(d));toggle.setAttribute("aria-label",d?"Switch to light theme":"Switch to dark theme")}
+syncToggle();
+toggle.addEventListener("click",function(){var d=root.classList.toggle("dark");root.classList.toggle("light",!d);try{localStorage.setItem("storytrail-theme",d?"dark":"light")}catch(e){}syncToggle()});
+function closeMenu(){header.classList.remove("is-open");menuBtn.setAttribute("aria-expanded","false")}
+menuBtn.addEventListener("click",function(){var open=header.classList.toggle("is-open");menuBtn.setAttribute("aria-expanded",String(open))});
+nav.addEventListener("click",function(e){if(e.target.closest(".nav-link"))closeMenu()});
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&header.classList.contains("is-open")){closeMenu();menuBtn.focus()}});
+var form=document.getElementById("signupForm"),input=document.getElementById("email"),group=document.getElementById("emailGroup"),error=document.getElementById("emailError"),btn=document.getElementById("signupBtn"),label=btn.querySelector("span"),toast=document.getElementById("toast"),t;
+form.addEventListener("submit",function(e){
+  e.preventDefault();
+  var v=input.value.trim();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)){group.classList.add("input-group--invalid");input.setAttribute("aria-invalid","true");error.textContent="That address got lost on the trail — please check it and try again.";input.focus();return}
+  group.classList.remove("input-group--invalid");input.removeAttribute("aria-invalid");error.textContent="";
+  btn.classList.add("is-loading");btn.disabled=true;
+  setTimeout(function(){btn.classList.remove("is-loading");btn.classList.add("btn--success");btn.disabled=false;label.textContent="You're on the trail!";input.value="";
+    toast.classList.add("is-visible");clearTimeout(t);t=setTimeout(function(){toast.classList.remove("is-visible")},3500)},1100);
+});
+input.addEventListener("input",function(){group.classList.remove("input-group--invalid");input.removeAttribute("aria-invalid");error.textContent=""});
+})();
+</script>
+</body>
+</html>

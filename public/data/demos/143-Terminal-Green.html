@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Nimbus — Zero-config deploys from your terminal</title>
+<meta name="description" content="Nimbus is the zero-config CLI that builds any repo in isolated sandboxes and deploys it to the edge in one command.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..700,0..1,-50..200&display=swap" rel="stylesheet">
+<style>
+:root{--primary:#39d353;--secondary:#238636;--bg-primary:#0d1117;--bg-secondary:#161b22;--text-primary:#e6edf3;--text-secondary:#8b949e;--text-success:#39d353;--text-error:#f85149;--border-default:#30363d;--border-error:#f85149;--border-success:#238636;--syntax-keyword:#ff7b72;--syntax-string:#a5d6ff;--syntax-function:#d2a8ff;--syntax-comment:#8b949e;--syntax-variable:#79c0ff;--dot-warn:#d29922;--primary-soft:rgba(57,211,83,.12);--radius-sm:4px;--radius-md:6px;--radius-lg:12px;--shadow-sm:0 1px 2px rgba(1,4,9,.5);--shadow-md:0 8px 24px rgba(1,4,9,.7);--spacing-gap:1rem;--transition-fast:150ms;--transition-normal:250ms;--ease-standard:cubic-bezier(.4,0,.2,1);--z-header:100;--z-dropdown:200;--z-modal:300;--z-toast:400;--z-scanlines:500;--font-base:'JetBrains Mono',ui-monospace,monospace}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.65;font-size:clamp(.84rem,.8rem + .2vw,.95rem);overflow-x:hidden}
+button,input{font:inherit;color:inherit}
+a{color:inherit}
+h1,h2,h3{line-height:1.25;letter-spacing:-.01em}
+ul{list-style:none}
+.material-symbols-rounded{font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
+.container{max-width:68rem;margin-inline:auto;padding-inline:clamp(1rem,4vw,2rem)}
+section[id]{scroll-margin-top:4.5rem}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.skip-link{position:fixed;top:-200%;left:1rem;z-index:var(--z-toast);background:var(--primary);color:var(--bg-primary);font-weight:700;padding:.6rem 1rem;border-radius:var(--radius-md);text-decoration:none;transition:top var(--transition-fast) var(--ease-standard)}
+.skip-link:focus{top:.75rem}
+.green-accent{color:var(--primary)}
+.scan-lines{position:fixed;inset:0;z-index:var(--z-scanlines);pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.1) 2px,rgba(0,0,0,.1) 4px)}
+.cursor-blink{display:inline-block;width:.55ch;height:1.05em;vertical-align:-.15em;margin-left:.1ch;background:var(--primary);animation:blink 1s step-end infinite}
+@keyframes blink{50%{opacity:0}}
+.header{position:sticky;top:0;z-index:var(--z-header);background:var(--bg-primary);border-bottom:1px solid var(--border-default)}
+.header__inner{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:3.5rem;position:relative}
+.header__logo{font-weight:700;font-size:1.1rem;text-decoration:none;letter-spacing:-.02em}
+.header__nav{display:none}
+.header.is-open .header__nav{display:flex;flex-direction:column;align-items:center;gap:.9rem;position:absolute;top:100%;left:0;right:0;padding:1.25rem;background:var(--bg-secondary);border-bottom:1px solid var(--border-default);box-shadow:var(--shadow-md);z-index:var(--z-dropdown)}
+.nav__list{display:flex;flex-direction:column;align-items:center;gap:.4rem}
+.nav__link{display:flex;align-items:center;min-height:44px;padding:.4rem .8rem;text-decoration:none;color:var(--text-secondary);border-radius:var(--radius-sm);transition:color var(--transition-fast) var(--ease-standard)}
+.nav__link:hover{color:var(--primary)}
+.header__burger{display:flex;align-items:center;justify-content:center;width:44px;height:44px;background:none;border:1px solid var(--border-default);border-radius:var(--radius-md);cursor:pointer;transition:color var(--transition-fast) var(--ease-standard),border-color var(--transition-fast) var(--ease-standard)}
+.header__burger:hover{color:var(--primary);border-color:var(--primary)}
+@media(min-width:48rem){.header__burger{display:none}.header__nav{display:flex;flex-direction:row;align-items:center;gap:1.25rem}.header.is-open .header__nav{position:static;flex-direction:row;padding:0;background:none;border:0;box-shadow:none}.nav__list{flex-direction:row;gap:.25rem}}
+.btn{display:flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;min-width:44px;padding:.55rem 1.1rem;font-weight:700;font-size:inherit;border:1px solid transparent;border-radius:var(--radius-md);cursor:pointer;text-decoration:none;white-space:nowrap;transition:filter var(--transition-fast) var(--ease-standard),transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard),border-color var(--transition-fast) var(--ease-standard),color var(--transition-fast) var(--ease-standard)}
+.btn:hover{filter:brightness(1.15);box-shadow:var(--shadow-sm)}
+.btn:active{transform:scale(.97)}
+.btn--primary{background:var(--primary);color:var(--bg-primary)}
+.btn--secondary{background:transparent;border-color:var(--border-default);color:var(--text-primary)}
+.btn--secondary:hover{color:var(--primary);border-color:var(--primary);filter:none}
+.btn:disabled{opacity:.5;filter:grayscale(1);cursor:not-allowed;box-shadow:none;transform:none}
+.btn.is-loading{pointer-events:none}
+.btn.is-success{background:transparent;border-color:var(--border-success);color:var(--text-success);filter:none}
+.btn__spinner{display:none;animation:spin 1s linear infinite}
+.btn.is-loading .btn__spinner{display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+[data-icon="done"]{display:none}
+.is-success [data-icon="copy"]{display:none}
+.is-success [data-icon="done"]{display:inline-block}
+.section{padding-block:clamp(3rem,7vw,5rem)}
+.section__head{display:flex;flex-direction:column;align-items:center;gap:.5rem;max-width:44rem;margin:0 auto clamp(1.5rem,4vw,3rem);text-align:center}
+.section__kicker{color:var(--primary);font-size:.8rem;font-weight:500}
+.section__sub{color:var(--text-secondary)}
+.card{display:flex;flex-direction:column;align-items:flex-start;gap:.75rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);padding:1.4rem;transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard),border-color var(--transition-fast) var(--ease-standard)}
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);border-color:var(--primary)}
+.card:focus-within{border-color:var(--primary)}
+.card__icon{display:flex;align-items:center;justify-content:center;width:2.75rem;height:2.75rem;border-radius:var(--radius-md);background:var(--primary-soft);color:var(--primary)}
+.card__icon .material-symbols-rounded{font-size:1.5rem}
+.card__title{font-size:1rem}
+.card__text{color:var(--text-secondary);font-size:.85rem}
+p code{background:var(--bg-primary);border:1px solid var(--border-default);border-radius:var(--radius-sm);padding:.05em .3em;font-size:.85em;color:var(--syntax-string);white-space:nowrap}
+.hero{display:flex;flex-direction:column;align-items:center;gap:clamp(2rem,5vw,3rem);padding-block:clamp(2.5rem,6vw,4.5rem);border-bottom:1px solid var(--border-default)}
+.hero__copy{display:flex;flex-direction:column;align-items:flex-start;gap:1rem;flex:1 1 20rem}/* exc: left-aligned text block */
+.hero__tag{color:var(--syntax-comment);font-size:.8rem}
+.hero__title{font-size:clamp(1.55rem,1.1rem + 2.6vw,2.5rem)}
+.hero__sub{color:var(--text-secondary);max-width:36rem}
+.hero__actions{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem}
+.hero__panel{display:flex;flex-direction:column;align-items:center;gap:1rem;flex:1.1 1 20rem;width:100%}
+.terminal-border{border:1px solid var(--border-default);border-radius:var(--radius-lg)}
+.terminal{background:var(--bg-secondary);box-shadow:var(--shadow-md);overflow:hidden;width:100%}
+.terminal__bar{display:flex;align-items:center;gap:.5rem;padding:.65rem .9rem;border-bottom:1px solid var(--border-default)}
+.terminal__dot{width:.65rem;height:.65rem;border-radius:50%}
+.terminal__dot--r{background:var(--text-error)}.terminal__dot--y{background:var(--dot-warn)}.terminal__dot--g{background:var(--primary)}
+.terminal__title{margin-left:auto;color:var(--text-secondary);font-size:.72rem}
+pre code{display:block;background:var(--bg-secondary);padding:16px;border-radius:var(--radius-md);overflow-x:auto;font-size:clamp(.7rem,.62rem + .4vw,.85rem);line-height:1.75}
+.tk-p{color:var(--primary)}.tk-c{color:var(--syntax-comment)}.tk-s{color:var(--syntax-string)}.tk-f{color:var(--syntax-function)}.tk-v{color:var(--syntax-variable)}
+.hero__install{display:flex;align-items:center;justify-content:space-between;gap:.75rem;width:100%;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:.35rem .35rem .35rem .9rem}
+.hero__cmd{font-size:clamp(.68rem,.6rem + .4vw,.8rem);white-space:nowrap;overflow-x:auto}
+.cards,.steps,.tst,.prices{display:flex;flex-wrap:wrap;gap:calc(var(--spacing-gap)*1.25);align-items:stretch}/* exc: equal-height rows */
+.cards>.card,.step{flex:1 1 15rem;min-width:0}
+.tst__card{flex:1 1 17rem}
+.step__num{color:var(--primary);font-weight:700;font-size:.8rem}
+.step__icon{color:var(--primary)}
+@media(min-width:60rem){.step:not(:last-child)::after{content:"";position:absolute;top:2.1rem;right:calc(var(--spacing-gap)*-1.25);width:calc(var(--spacing-gap)*1.25);height:2px;background:var(--secondary)}}
+.tst__quote{font-size:.88rem}
+.tst__cm{color:var(--syntax-comment)}
+.tst__who{display:flex;align-items:center;gap:.7rem;margin-top:auto}
+.avatar{display:flex;align-items:center;justify-content:center;flex:none;width:2.75rem;height:2.75rem;border-radius:50%;background:var(--primary-soft);border:1px solid var(--border-success);color:var(--primary);font-weight:700;font-size:.8rem}
+.tst__meta{display:flex;flex-direction:column}/* exc: stacked name/role */
+.tst__name{font-weight:700;font-size:.85rem;line-height:1.3}
+.tst__role{color:var(--text-secondary);font-size:.72rem}
+.price{align-items:center;text-align:center;flex:1 1 16rem;position:relative;padding-top:1.8rem}
+.price--featured{border-color:var(--primary);box-shadow:var(--shadow-md)}
+.price__badge{position:absolute;top:-.85rem;left:50%;transform:translateX(-50%);background:var(--primary);color:var(--bg-primary);font-size:.68rem;font-weight:700;padding:.2rem .55rem;border-radius:var(--radius-sm);letter-spacing:.06em;white-space:nowrap}
+.price__name{color:var(--text-secondary);font-size:.8rem;text-transform:uppercase;letter-spacing:.08em}
+.price__amount{font-size:2rem;font-weight:700}
+.price__per{font-size:.85rem;font-weight:400;color:var(--text-secondary)}
+.price__feat{display:flex;flex-direction:column;align-items:flex-start;gap:.5rem;width:100%;font-size:.82rem}/* exc: checklist rows align left */
+.price__feat li{display:flex;align-items:center;gap:.5rem}
+.price__ic{color:var(--text-success);font-size:1.05rem}
+.price__ic--off{color:var(--text-secondary)}
+.price .btn{margin-top:auto;align-self:stretch}
+@media(min-width:60rem){.price--featured{transform:translateY(-.5rem)}.price--featured:hover{transform:translateY(-.7rem)}}
+.faq{display:flex;flex-direction:column;align-items:stretch;gap:.75rem;max-width:44rem;margin-inline:auto}/* exc: full-width items */
+.faq__item{border:1px solid var(--border-default);border-radius:var(--radius-md);background:var(--bg-secondary)}
+.faq__q{display:flex;align-items:center;justify-content:space-between;gap:1rem;width:100%;min-height:44px;padding:.85rem 1.1rem;background:none;border:0;cursor:pointer;text-align:left;font-weight:700;font-size:.92rem;transition:color var(--transition-fast) var(--ease-standard)}
+.faq__q:hover{color:var(--primary)}
+.faq__chev{color:var(--primary);flex:none;transition:transform var(--transition-fast) var(--ease-standard)}
+.faq__item.is-open .faq__chev{transform:rotate(180deg)}
+.faq__p{max-height:0;overflow:hidden;transition:max-height var(--transition-normal) var(--ease-standard)}
+.faq__item.is-open .faq__p{max-height:30rem}
+.faq__p p{padding:0 1.1rem 1rem;color:var(--text-secondary);font-size:.85rem}
+.cta-band{background:var(--bg-secondary);border-block:1px solid var(--border-default);padding-block:clamp(3rem,7vw,5rem)}
+.cta-band__inner{display:flex;flex-direction:column;align-items:center;gap:1rem;max-width:40rem;margin-inline:auto;text-align:center}
+.cta-band__title{font-size:clamp(1.4rem,1.1rem + 2vw,2.2rem)}
+.cta-band__sub{color:var(--text-secondary);max-width:34rem}
+.input-group{display:flex;flex-direction:column;align-items:flex-start;gap:.4rem;width:100%;max-width:30rem}/* exc: label/error align left */
+.cta__label{font-size:.78rem;color:var(--text-secondary)}
+.input-row{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;width:100%}
+.input-group__wrap{position:relative;flex:1 1 13rem}
+.input-group__input{width:100%;min-height:44px;padding:.65rem 2.5rem .65rem .9rem;background:var(--bg-primary);border:1px solid var(--border-default);border-radius:var(--radius-md);transition:border-color var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard)}
+.input-group__input:focus{border-color:var(--primary);box-shadow:0 0 0 1px var(--primary);outline:none}
+.input-group__input[readonly]{opacity:.6;cursor:not-allowed}
+.input-group__ic{position:absolute;right:.7rem;top:50%;transform:translateY(-50%);display:none;pointer-events:none}
+.input-group.is-valid .input-group__input{border-color:var(--border-success)}
+.input-group.is-valid .input-group__ic--ok{display:block;color:var(--text-success)}
+.input-group.is-invalid .input-group__input{border-color:var(--border-error)}
+.input-group.is-invalid .input-group__ic--bad{display:block;color:var(--text-error)}
+.input-group__err{display:flex;align-items:center;gap:.3rem;min-height:1.3rem;color:var(--text-error);font-size:.74rem}
+.cta__msg{min-height:1.5rem;font-size:.8rem;color:var(--text-success)}
+.footer{background:var(--bg-secondary);border-top:1px solid var(--border-default);padding-block:2.75rem 1.5rem}
+.footer__grid{display:flex;flex-wrap:wrap;align-items:stretch;gap:2rem}/* exc: columns */
+.footer__brand,.footer__col{display:flex;flex-direction:column;align-items:flex-start;gap:.5rem;flex:1 1 9rem}/* exc: left */
+.footer__brand{flex:2 1 15rem}
+.footer__about{color:var(--text-secondary);font-size:.8rem;max-width:18rem}
+.footer__h{color:var(--text-secondary);font-size:.72rem;text-transform:uppercase;letter-spacing:.1em}
+.footer__link{color:var(--text-secondary);text-decoration:none;font-size:.82rem;padding:.2rem 0;transition:color var(--transition-fast) var(--ease-standard)}
+.footer__link:hover{color:var(--primary)}
+.footer__social{display:flex;align-items:center;gap:.5rem;margin-top:.5rem}
+.footer__icon{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border:1px solid var(--border-default);border-radius:var(--radius-md);color:var(--text-secondary);text-decoration:none;transition:color var(--transition-fast) var(--ease-standard),border-color var(--transition-fast) var(--ease-standard)}
+.footer__icon:hover{color:var(--primary);border-color:var(--primary)}
+.footer__bottom{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.75rem;margin-top:2rem;padding-top:1.25rem;border-top:1px solid var(--border-default);color:var(--text-secondary);font-size:.74rem}
+.footer__signoff{color:var(--syntax-comment)}
+@media(min-width:60rem){.hero{flex-direction:row;align-items:center;gap:3rem}.hero__copy{flex:1 1 0}.hero__panel{flex:1.15 1 0}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:1ms!important;animation-iteration-count:1!important;transition-duration:1ms!important}.cursor-blink{animation:none;opacity:1}}
+</style>
+</head>
+<body>
+<div class="scan-lines" aria-hidden="true"></div>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="header">
+<div class="header__inner container">
+<a class="header__logo" href="#top">nimbus<span class="green-accent">_</span></a>
+<nav class="header__nav" id="site-nav" aria-label="Primary">
+<ul class="nav__list">
+<li><a class="nav__link" href="#features">Features</a></li>
+<li><a class="nav__link" href="#how">How it works</a></li>
+<li><a class="nav__link" href="#pricing">Pricing</a></li>
+<li><a class="nav__link" href="#faq">FAQ</a></li>
+</ul>
+<a class="btn btn--primary nav__cta" href="#cta">Get started</a>
+</nav>
+<button class="header__burger" id="burger" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu"><span class="material-symbols-rounded" aria-hidden="true">menu</span></button>
+</div>
+</header>
+<main id="main">
+<section class="hero container" id="top">
+<div class="hero__copy">
+<p class="hero__tag"><span class="green-accent">//</span> v2.4 — edge deploys are live</p>
+<h1 class="hero__title">Ship to prod in one line<span class="cursor-blink" aria-hidden="true"></span></h1>
+<p class="hero__sub">Nimbus is the zero-config CLI that detects your stack, builds in isolated sandboxes, and deploys to the edge. No YAML. No dashboards. No babysitting.</p>
+<div class="hero__actions">
+<a class="btn btn--primary" href="#cta">Get early access<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+<a class="btn btn--secondary" href="#how">See how it works</a>
+</div>
+</div>
+<div class="hero__panel">
+<div class="terminal terminal-border">
+<div class="terminal__bar"><span class="terminal__dot terminal__dot--r"></span><span class="terminal__dot terminal__dot--y"></span><span class="terminal__dot terminal__dot--g"></span><p class="terminal__title">~/acme/api — zsh</p></div>
+<pre><code><span class="tk-p">$</span> nimbus init
+<span class="tk-c">// node 20 · pnpm · 12 edge regions</span>
+<span class="tk-p">$</span> <span class="terminal__typed">nimbus deploy prod</span>
+<span class="tk-c">▲ building…</span> <span class="tk-v">done in 42s</span>
+<span class="tk-f">live</span> → <span class="tk-s">https://api.acme.dev</span>
+<span class="tk-p">$</span> <span class="cursor-blink" aria-hidden="true"></span></code></pre>
+</div>
+<div class="hero__install">
+<code class="hero__cmd"><span class="tk-p">$</span> curl -fsSL nimbus.dev | sh</code>
+<button class="btn btn--secondary hero__copy-btn" data-copy="curl -fsSL nimbus.dev | sh" aria-label="Copy install command">
+<span class="material-symbols-rounded" data-icon="copy" aria-hidden="true">content_copy</span>
+<span class="material-symbols-rounded" data-icon="done" aria-hidden="true">check</span>
+<span data-label>Copy</span>
+</button>
+</div>
+<p class="sr-only" id="copy-live" aria-live="polite"></p>
+</div>
+</section>
+<section class="section" id="features">
+<div class="container">
+<div class="section__head">
+<p class="section__kicker">$ ls features/</p>
+<h2>Everything a deploy needs, nothing it doesn't</h2>
+<p class="section__sub">Three primitives replace your entire pipeline.</p>
+</div>
+<div class="cards">
+<article class="card">
+<div class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">bolt</span></div>
+<h3 class="card__title">Zero-config builds</h3>
+<p class="card__text">Point Nimbus at a repo and it detects the stack, picks sane defaults, and builds. No CI archaeology, no pipeline YAML.</p>
+</article>
+<article class="card">
+<div class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">lock</span></div>
+<h3 class="card__title">Secrets stay secret</h3>
+<p class="card__text">Env vars are encrypted at rest and injected only into per-deploy sandboxes — never into logs, never onto disk.</p>
+</article>
+<article class="card">
+<div class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">history</span></div>
+<h3 class="card__title">One-line rollbacks</h3>
+<p class="card__text">Every release is immutable and pinned. <code>nimbus rollback v1.4.1</code> puts yesterday's build back live in seconds.</p>
+</article>
+</div>
+</div>
+</section>
+<section class="section" id="how">
+<div class="container">
+<div class="section__head">
+<p class="section__kicker">$ man nimbus</p>
+<h2>How it works</h2>
+<p class="section__sub">From clone to live URL in three commands.</p>
+</div>
+<div class="steps">
+<article class="card step">
+<p class="step__num">$ step 01</p>
+<h3 class="card__title"><span class="material-symbols-rounded step__icon" aria-hidden="true">link</span> Connect</h3>
+<p class="card__text">Run <code>nimbus auth</code> and pick your repo. One OAuth handshake and the CLI reads your stack in a single pass.</p>
+</article>
+<article class="card step">
+<p class="step__num">$ step 02</p>
+<h3 class="card__title"><span class="material-symbols-rounded step__icon" aria-hidden="true">build</span> Build</h3>
+<p class="card__text">Push to main. Nimbus builds in a fresh sandbox with cached layers — median cold build: 38 seconds.</p>
+</article>
+<article class="card step">
+<p class="step__num">$ step 03</p>
+<h3 class="card__title"><span class="material-symbols-rounded step__icon" aria-hidden="true">rocket_launch</span> Ship</h3>
+<p class="card__text">Every branch gets a live URL. Promote with <code>nimbus release</code> — or roll back a bad push instantly.</p>
+</article>
+</div>
+</div>
+</section>
+<section class="section" id="testimonials">
+<div class="container">
+<div class="section__head">
+<p class="section__kicker">$ tail feedback.log</p>
+<h2>Engineers type it, love it, ship it</h2>
+</div>
+<div class="tst">
+<figure class="card tst__card">
+<blockquote><p class="tst__quote"><span class="tst__cm">//</span> "Nimbus deleted 400 lines of pipeline YAML. I got my Fridays back."</p></blockquote>
+<figcaption class="tst__who"><span class="avatar" aria-hidden="true">MC</span><span class="tst__meta"><span class="tst__name">Mara Chen</span><span class="tst__role">Platform lead, Loopwire</span></span></figcaption>
+</figure>
+<figure class="card tst__card">
+<blockquote><p class="tst__quote"><span class="tst__cm">//</span> "Cold deploy in 41 seconds. Our old pipeline needed eleven minutes and a sacrifice."</p></blockquote>
+<figcaption class="tst__who"><span class="avatar" aria-hidden="true">DO</span><span class="tst__meta"><span class="tst__name">Dev Okafor</span><span class="tst__role">Staff engineer, Hexalto</span></span></figcaption>
+</figure>
+<figure class="card tst__card">
+<blockquote><p class="tst__quote"><span class="tst__cm">//</span> "The first infra tool my whole team agrees on. The rollback command alone sold it."</p></blockquote>
+<figcaption class="tst__who"><span class="avatar" aria-hidden="true">IN</span><span class="tst__meta"><span class="tst__name">Iris Novak</span><span class="tst__role">CTO, Fernpath</span></span></figcaption>
+</figure>
+</div>
+</div>
+</section>
+<section class="section" id="pricing">
+<div class="container">
+<div class="section__head">
+<p class="section__kicker">$ nimbus plans</p>
+<h2>Pick a tier, keep your terminal</h2>
+<p class="section__sub">Every plan includes the full CLI. No feature is behind a dashboard.</p>
+</div>
+<div class="prices">
+<article class="card price">
+<p class="price__name">hobby</p>
+<p class="price__amount">$0<span class="price__per"> /forever</span></p>
+<ul class="price__feat">
+<li><span class="material-symbols-rounded price__ic" aria-hidden="true">check</span>1 project</li>
+<li><span class="material-symbols-rounded price__ic" aria-hidden="true">check</span>20 deploys / day</li>
+<li><span class="material-symbols-rounded price__ic" aria-hidden="true">check</span>Community support</li>
+<li><span class="material-symbols-rounded price__ic price__ic--off" aria-hidden="true">close</span>Custom domains</li>
+<li><span class="material-symbols-rounded price__ic price__ic--off" aria-hidden="true">close</span>Priority builds</li>
+</ul>
+<a class="btn btn--secondary" href="#cta">Start free</a>
+</article>
+<article class="card price price--featured">
+<p class="price__badge">[RECOMMENDED]</p>
+<p class="price__name">pro</p>
+<p class="price__amount">$19<span class="price__per"> /mo</span></p>
+<ul class="price__feat">
+<li><span class="material-symbols-rounded price__ic" aria-hidden="true">check</span>Unlimited projects</li>
+<li><span class="material-symbols-rounded price__ic" aria-hidden="true">check</span>300 deploys / day</li>
+<li><span class="material-symbols-rounded price__ic" aria-hidden="true">check</span>Custom domains</li>
+<li><span class="material-symbols-rounded price__ic" aria-hidden="true">check</span>Priority builds</li>
+<li><span class="material-symbols-rounded price__ic price__ic--off" aria-hidden="true">close</span>SSO &amp; audit logs</li>
+</ul>
+<a class="btn btn--primary" href="#cta">Start 14-day trial</a>
+</article>
+<article class="card price">
+<p class="price__name">fleet</p>
+<p class="price__amount">$99<span class="price__per"> /mo</span></p>
+<ul class="price__feat">
+<li><span class="material-symbols-rounded price__ic" aria-hidden="true">check</span>Everything in Pro</li>
+<li><span class="material-symbols-rounded price__ic" aria-hidden="true">check</span>Unlimited deploys</li>
+<li><span class="material-symbols-rounded price__ic" aria-hidden="true">check</span>SSO &amp; audit logs</li>
+<li><span class="material-symbols-rounded price__ic" aria-hidden="true">check</span>Private clusters</li>
+<li><span class="material-symbols-rounded price__ic" aria-hidden="true">check</span>99.99% SLA</li>
+</ul>
+<a class="btn btn--secondary" href="#cta">Contact sales</a>
+</article>
+</div>
+</div>
+</section>
+<section class="section" id="faq">
+<div class="container">
+<div class="section__head">
+<p class="section__kicker">$ nimbus --help</p>
+<h2>Frequently asked questions</h2>
+</div>
+<div class="faq">
+<div class="faq__item">
+<h3><button class="faq__q" id="q1" aria-expanded="false" aria-controls="p1">Do I need a config file?<span class="material-symbols-rounded faq__chev" aria-hidden="true">expand_more</span></button></h3>
+<div class="faq__p" id="p1" role="region" aria-labelledby="q1"><p>No. Nimbus infers your stack straight from the repo. A <code>nimbus.toml</code> is optional and only needed for overrides.</p></div>
+</div>
+<div class="faq__item">
+<h3><button class="faq__q" id="q2" aria-expanded="false" aria-controls="p2">Which runtimes are supported?<span class="material-symbols-rounded faq__chev" aria-hidden="true">expand_more</span></button></h3>
+<div class="faq__p" id="p2" role="region" aria-labelledby="q2"><p>Node, Go, Rust, Python, and static sites work out of the box. Anything with a Dockerfile deploys too.</p></div>
+</div>
+<div class="faq__item">
+<h3><button class="faq__q" id="q3" aria-expanded="false" aria-controls="p3">Where do my builds run?<span class="material-symbols-rounded faq__chev" aria-hidden="true">expand_more</span></button></h3>
+<div class="faq__p" id="p3" role="region" aria-labelledby="q3"><p>In isolated, per-deploy sandboxes. Build secrets are injected at runtime and never written to disk or logs.</p></div>
+</div>
+<div class="faq__item">
+<h3><button class="faq__q" id="q4" aria-expanded="false" aria-controls="p4">Can I self-host Nimbus?<span class="material-symbols-rounded faq__chev" aria-hidden="true">expand_more</span></button></h3>
+<div class="faq__p" id="p4" role="region" aria-labelledby="q4"><p>The CLI is MIT-licensed. On the Fleet plan the control plane ships as a single binary for private clusters.</p></div>
+</div>
+<div class="faq__item">
+<h3><button class="faq__q" id="q5" aria-expanded="false" aria-controls="p5">What happens when a deploy fails?<span class="material-symbols-rounded faq__chev" aria-hidden="true">expand_more</span></button></h3>
+<div class="faq__p" id="p5" role="region" aria-labelledby="q5"><p>The previous release stays live. The CLI prints the error and a one-line fix, then you retry with <code>nimbus deploy --retry</code>.</p></div>
+</div>
+</div>
+</div>
+</section>
+<section class="cta-band" id="cta">
+<div class="container">
+<div class="cta-band__inner">
+<p class="section__kicker">$ nimbus early-access</p>
+<h2 class="cta-band__title">Stop babysitting your deploys.</h2>
+<p class="cta-band__sub">Join 4,200 engineers on the early-access list. We provision a CLI key the minute your email lands.</p>
+<form class="cta-band__inner" id="cta-form" novalidate>
+<div class="input-group">
+<label class="cta__label" for="email">Work email</label>
+<div class="input-row">
+<div class="input-group__wrap">
+<input class="input-group__input" id="email" name="email" type="email" placeholder="you@company.dev" autocomplete="email" aria-describedby="email-err" required>
+<span class="material-symbols-rounded input-group__ic input-group__ic--ok" aria-hidden="true">check_circle</span>
+<span class="material-symbols-rounded input-group__ic input-group__ic--bad" aria-hidden="true">error</span>
+</div>
+<button class="btn btn--primary" id="submit-btn" type="submit"><span class="material-symbols-rounded btn__spinner" aria-hidden="true">progress</span><span data-label>Request access</span></button>
+</div>
+<p class="input-group__err" id="email-err" aria-live="polite"></p>
+</div>
+</form>
+<p class="cta__msg" id="cta__msg" aria-live="polite"></p>
+</div>
+</div>
+</section>
+</main>
+<footer class="footer">
+<div class="container">
+<div class="footer__grid">
+<div class="footer__brand">
+<a class="header__logo" href="#top">nimbus<span class="green-accent">_</span></a>
+<p class="footer__about">The zero-config CLI for building and shipping from the terminal you already live in.</p>
+<div class="footer__social">
+<a class="footer__icon" href="#top" aria-label="Nimbus on GitHub"><span class="material-symbols-rounded" aria-hidden="true">code</span></a>
+<a class="footer__icon" href="#top" aria-label="Email the team"><span class="material-symbols-rounded" aria-hidden="true">alternate_email</span></a>
+<a class="footer__icon" href="#top" aria-label="Release feed"><span class="material-symbols-rounded" aria-hidden="true">rss_feed</span></a>
+<a class="footer__icon" href="#top" aria-label="Community chat"><span class="material-symbols-rounded" aria-hidden="true">forum</span></a>
+</div>
+</div>
+<nav class="footer__col" aria-label="Product">
+<p class="footer__h">Product</p>
+<a class="footer__link" href="#features">Features</a>
+<a class="footer__link" href="#how">How it works</a>
+<a class="footer__link" href="#pricing">Pricing</a>
+<a class="footer__link" href="#faq">FAQ</a>
+</nav>
+<nav class="footer__col" aria-label="Docs">
+<p class="footer__h">Docs</p>
+<a class="footer__link" href="#faq">CLI reference</a>
+<a class="footer__link" href="#how">Guides</a>
+<a class="footer__link" href="#top">API</a>
+<a class="footer__link" href="#top">Status</a>
+</nav>
+<nav class="footer__col" aria-label="Company">
+<p class="footer__h">Company</p>
+<a class="footer__link" href="#top">About</a>
+<a class="footer__link" href="#top">Blog</a>
+<a class="footer__link" href="#top">Careers</a>
+<a class="footer__link" href="#cta">Contact</a>
+</nav>
+</div>
+<div class="footer__bottom">
+<p>© 2026 Nimbus Labs, Inc. All rights reserved.</p>
+<p class="footer__signoff">$ connection closed — exit 0</p>
+</div>
+</div>
+</footer>
+<script>
+(function(){
+const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
+const prm=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const header=$('.header'),burger=$('#burger'),bIc=burger.querySelector('.material-symbols-rounded');
+const setMenu=o=>{header.classList.toggle('is-open',o);burger.setAttribute('aria-expanded',String(o));burger.setAttribute('aria-label',o?'Close menu':'Open menu');bIc.textContent=o?'close':'menu'};
+burger.addEventListener('click',()=>setMenu(!header.classList.contains('is-open')));
+$$('.header__nav a').forEach(a=>a.addEventListener('click',()=>setMenu(false)));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&header.classList.contains('is-open')){setMenu(false);burger.focus()}});
+const cbtn=$('[data-copy]'),clive=$('#copy-live');
+cbtn.addEventListener('click',()=>{const cmd=cbtn.dataset.copy,done=()=>{cbtn.classList.add('is-success');cbtn.querySelector('[data-label]').textContent='Copied';clive.textContent='Install command copied to clipboard.';setTimeout(()=>{cbtn.classList.remove('is-success');cbtn.querySelector('[data-label]').textContent='Copy';clive.textContent=''},2000)};
+if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(cmd).then(done,done)}else{const t=document.createElement('textarea');t.value=cmd;document.body.appendChild(t);t.select();try{document.execCommand('copy')}catch(e){}t.remove();done()}});
+const typed=$('.terminal__typed');
+if(typed&&!prm){const txt=typed.textContent;typed.setAttribute('aria-label',txt);typed.textContent='';let i=0;setTimeout(function tick(){typed.textContent=txt.slice(0,++i);if(i<txt.length)setTimeout(tick,50)},600)}
+$$('.faq__q').forEach(q=>q.addEventListener('click',()=>{const item=q.closest('.faq__item'),open=item.classList.toggle('is-open');q.setAttribute('aria-expanded',String(open))}));
+const form=$('#cta-form'),input=$('#email'),ig=$('.input-group'),err=$('#email-err'),msg=$('#cta__msg'),sub=$('#submit-btn');
+const ok=v=>/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+const fail=()=>{ig.classList.add('is-invalid');ig.classList.remove('is-valid');err.textContent='Enter a valid email — e.g. dev@acme.io'};
+const clearErr=()=>{ig.classList.remove('is-invalid');err.textContent=''};
+input.addEventListener('input',()=>{clearErr();ig.classList.toggle('is-valid',!!input.value&&ok(input.value))});
+input.addEventListener('blur',()=>{if(input.value&&!ok(input.value)){ig.classList.remove('is-valid');fail()}});
+form.addEventListener('submit',e=>{e.preventDefault();
+if(!ok(input.value)){ig.classList.remove('is-valid');fail();input.focus();return}
+clearErr();ig.classList.add('is-valid');
+sub.classList.add('is-loading');sub.setAttribute('aria-busy','true');msg.textContent='Provisioning your access key…';
+setTimeout(()=>{sub.classList.remove('is-loading');sub.removeAttribute('aria-busy');sub.disabled=true;sub.classList.add('is-success');sub.querySelector('[data-label]').textContent='Access requested';input.readOnly=true;msg.textContent='Success: your CLI key is on its way to '+input.value+'. Check your inbox for setup steps.'},1300)});
+})();
+</script>
+</body>
+</html>

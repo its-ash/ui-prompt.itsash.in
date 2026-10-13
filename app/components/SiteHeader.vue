@@ -1,6 +1,27 @@
 <script setup lang="ts">
+import type { LibraryIndex } from '~/types';
+
 const { theme, toggle } = useTheme();
 defineProps<{ count?: number }>();
+
+const search = useState('search', () => '');
+const category = useState('category', () => 'All');
+const library = useState<LibraryIndex | null>('library');
+const route = useRoute();
+
+const options = computed(() => {
+  const index = library.value?.index ?? [];
+  const counts = new Map<string, number>();
+  for (const i of index) counts.set(i.category, (counts.get(i.category) ?? 0) + 1);
+  return [
+    { value: 'All', label: `All categories (${index.length})` },
+    ...(library.value?.categories ?? []).map((c) => ({ value: c, label: `${c} (${counts.get(c) ?? 0})` })),
+  ];
+});
+
+function onSearch() {
+  if (route.path !== '/') navigateTo('/');
+}
 </script>
 
 <template>
@@ -11,6 +32,26 @@ defineProps<{ count?: number }>();
         <span class="hd__name">PromptDeck</span>
         <span v-if="count" class="hd__count mono">{{ count }}</span>
       </NuxtLink>
+      <form class="hd__search" role="search" @submit.prevent="onSearch">
+        <span class="material-symbols-rounded hd__sicon" aria-hidden="true">search</span>
+        <input
+          v-model="search"
+          type="search"
+          class="hd__input"
+          placeholder="Search themes or keywords"
+          aria-label="Search themes"
+          maxlength="80"
+          @input="onSearch"
+        />
+        <span class="hd__sep" aria-hidden="true"></span>
+        <label class="hd__cat">
+          <span class="sr-only">Category</span>
+          <select v-model="category" class="hd__select mono" aria-label="Filter by category" @change="onSearch">
+            <option v-for="o in options" :key="o.value" :value="o.value">{{ o.label }}</option>
+          </select>
+          <span class="material-symbols-rounded hd__caret" aria-hidden="true">expand_more</span>
+        </label>
+      </form>
       <div class="hd__right">
         <NuxtLink to="/demo" class="hd__demo">Demo site</NuxtLink>
         <button
@@ -47,13 +88,114 @@ defineProps<{ count?: number }>();
 }
 
 .hd__bar {
-  max-width: 1200px;
-  margin: 0 auto;
   padding: 0 1.25rem;
   height: 60px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 1rem;
+}
+
+.hd__search {
+  flex: 1;
+  min-width: 0;
+  max-width: 40rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 38px;
+  padding: 0 0.875rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-raised);
+  color: var(--text-faint);
+  transition: border-color var(--transition-fast);
+}
+
+.hd__search:focus-within {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.hd__sicon {
+  font-size: 18px;
+}
+
+.hd__input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  background: none;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.8438rem;
+}
+
+.hd__input:focus {
+  outline: none;
+}
+
+.hd__input::placeholder {
+  color: var(--text-faint);
+}
+
+.hd__sep {
+  width: 1px;
+  height: 18px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+.hd__cat {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  min-width: 0;
+  max-width: 45%;
+  height: 100%;
+}
+
+.hd__select {
+  appearance: none;
+  width: 100%;
+  height: 100%;
+  padding: 0 1.375rem 0 0.25rem;
+  border: none;
+  background: none;
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.hd__select:focus-visible {
+  outline: 2px solid var(--border-strong);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.hd__select option {
+  background: var(--bg-raised);
+  color: var(--text);
+}
+
+.hd__caret {
+  position: absolute;
+  right: 0;
+  font-size: 18px;
+  pointer-events: none;
+  color: var(--text-faint);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 .hd__brand {
@@ -146,9 +288,20 @@ defineProps<{ count?: number }>();
 @media (max-width: 640px) {
   .hd__bar {
     padding: 0 1rem;
+    gap: 0.5rem;
   }
 
-  .hd__demo {
+  .hd__search {
+    padding: 0 0.625rem;
+  }
+
+  .hd__cat {
+    max-width: 38%;
+  }
+
+  .hd__demo,
+  .hd__count,
+  .hd__name {
     display: none;
   }
 }

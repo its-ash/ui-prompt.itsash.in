@@ -8,6 +8,7 @@ export interface DesignItem {
   ready: boolean;
   promptLength: number;
   hasDemo: boolean;
+  hasThumb?: boolean;
 }
 
 export interface LibraryIndex {

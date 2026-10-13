@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nimbus — Print Loud. Print Off-Register.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,500,0,0">
+<style>
+:root{--primary:#EF476F;--secondary:#FFD166;--accent-blue:#118AB2;--success:#06A77D;--error:#EF476F;--bg-primary:#FDF5E6;--bg-secondary:#F5EAD0;--text-primary:#2B2D42;--text-secondary:#073B4C;--border-default:#2B2D42;--radius-sm:2px;--radius-md:4px;--radius-lg:8px;--shadow-sm:3px 3px 0 var(--text-primary);--shadow-md:6px 6px 0 var(--text-primary);--gap:1.5rem;--fast:120ms steps(3,end);--normal:200ms steps(4,end);--font-display:'Archivo Black',sans-serif;--font-base:'Space Grotesk',sans-serif;--dot:rgba(239,71,111,.15);--grain:rgba(43,45,66,.07);--z-dropdown:100;--z-modal:200;--z-toast:300}
+.dark{--bg-primary:#073B4C;--bg-secondary:#0D2B33;--text-primary:#FDF5E6;--text-secondary:#F5EAD0;--border-default:#FDF5E6;--dot:rgba(239,71,111,.26);--grain:rgba(253,245,230,.05)}
+@media(prefers-color-scheme:dark){:root:not(.light){--bg-primary:#073B4C;--bg-secondary:#0D2B33;--text-primary:#FDF5E6;--text-secondary:#F5EAD0;--border-default:#FDF5E6;--dot:rgba(239,71,111,.26);--grain:rgba(253,245,230,.05)}}
+*,*::before,*::after{box-sizing:border-box;margin:0}
+html{scroll-padding-top:84px}
+body{font:400 1.05rem/1.6 var(--font-base);background:var(--bg-primary);color:var(--text-primary);overflow-x:hidden}
+body::after{content:"";position:fixed;inset:0;z-index:2000;pointer-events:none;background-image:radial-gradient(var(--grain) .5px,transparent .6px);background-size:3px 3px}
+::selection{background:var(--secondary);color:#2B2D42}
+:focus-visible{outline:2px dashed var(--text-primary);outline-offset:3px}
+h1,h2,h3{font-family:var(--font-display);font-weight:400;line-height:1.08;text-transform:uppercase}
+h1,h2{text-wrap:balance}
+h2{font-size:clamp(1.9rem,4.5vw,2.7rem);margin:.5rem 0 1.3rem}
+h3{font-size:1.12rem;margin-bottom:.4rem}
+p{color:var(--text-secondary)}
+.wrap{max-width:1080px;margin-inline:auto;padding-inline:1.25rem}
+.wrap--narrow{max-width:760px}
+section{padding-block:3.4rem}
+.alt{background:var(--bg-secondary)}
+.grid-3{display:grid;gap:var(--gap);grid-template-columns:1fr}
+@media(min-width:800px){.grid-3{grid-template-columns:repeat(3,1fr)}}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.skip{position:absolute;left:-999px}
+.skip:focus{left:1rem;top:1rem;z-index:var(--z-toast);background:var(--secondary);color:#2B2D42;padding:.6rem 1rem;border:2px solid #2B2D42;font-weight:700}
+.ms{font-family:'Material Symbols Rounded';font-weight:500;font-style:normal;line-height:1;display:inline-block;white-space:nowrap;font-size:22px;user-select:none}
+.halftone{background-image:radial-gradient(var(--primary) 15%,transparent 16%);background-size:8px 8px}
+.halftone-lg{background-image:radial-gradient(var(--primary) 18%,transparent 19%);background-size:14px 14px}
+.ink-coral{background:var(--primary);color:#FDF5E6}
+.ink-gold{background:var(--secondary);color:#2B2D42}
+.ink-blue{background:var(--accent-blue);color:#FDF5E6}
+.nav{position:sticky;top:0;z-index:var(--z-dropdown);display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.7rem 1.2rem;background:var(--bg-primary);border-bottom:2px solid var(--border-default)}
+.brand{font-family:var(--font-display);font-size:1.25rem;color:var(--text-primary);text-decoration:none}
+.brand__dot{color:var(--primary)}
+.nav__links{display:flex;gap:1.4rem;list-style:none;padding:0;margin:0}
+.nav__links a{font-weight:700;font-size:.9rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-primary);text-decoration:none;padding:.4rem 0}
+.nav__links a:hover{color:var(--primary);text-decoration:underline 2px;text-underline-offset:5px}
+@media(max-width:740px){.nav__links{display:none}}
+.btn{--bs:var(--text-primary);display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;min-width:44px;padding:.65rem 1.4rem;font:700 .95rem/1 var(--font-base);text-transform:uppercase;letter-spacing:.06em;text-decoration:none;background:var(--bg-secondary);color:var(--text-primary);border:2px solid var(--border-default);border-radius:var(--radius-sm);box-shadow:3px 3px 0 var(--bs);cursor:pointer;transition:transform var(--fast),box-shadow var(--fast)}
+.btn:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--bs)}
+.btn:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--bs)}
+.btn:disabled{opacity:.5;filter:grayscale(1);cursor:not-allowed;transform:none;box-shadow:3px 3px 0 var(--bs)}
+.btn--primary{background:var(--secondary);color:#2B2D42}
+.btn--ink{background:var(--text-primary);color:var(--bg-primary)}
+.btn--danger{background:var(--primary);color:#FDF5E6;border-color:#2B2D42;--bs:#2B2D42}
+.btn--icon{padding-inline:.7rem}
+.loading{pointer-events:none}
+.spin{animation:spin .9s steps(8,end) infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hero{position:relative;padding:4.2rem 0 0;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background-image:radial-gradient(var(--dot) 18%,transparent 19%);background-size:12px 12px;pointer-events:none}
+.hero .wrap{position:relative}
+.kicker{display:inline-block;font:700 .72rem/1.4 var(--font-base);letter-spacing:.14em;text-transform:uppercase;padding:.45rem .7rem;border:2px solid var(--border-default);border-radius:var(--radius-sm);transform:rotate(-1.5deg);box-shadow:2px 2px 0 var(--text-primary)}
+h1{font-size:clamp(2.6rem,7vw,4.4rem);margin:1rem 0 .8rem;text-shadow:4px 4px 0 var(--secondary),8px 8px 0 var(--primary)}
+.reg-word{color:var(--primary);text-shadow:4px 4px 0 var(--accent-blue)}
+.reg{text-shadow:3px 3px 0 var(--secondary)}
+.lede{font-size:1.2rem;max-width:46ch}
+.hero__cta{display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap;margin:1.9rem 0 3rem}
+.link-plain{display:inline-flex;align-items:center;gap:.4rem;min-height:44px;font-weight:700;color:var(--text-primary);text-decoration:underline;text-underline-offset:4px}
+.link-plain:hover{color:var(--accent-blue)}
+.ink-stack{position:absolute;top:1.5rem;right:4%;width:180px;height:180px;pointer-events:none;display:none}
+.ink-stack i{position:absolute;width:120px;height:120px;border-radius:50%;mix-blend-mode:multiply;border:2px solid var(--text-primary)}
+.ink-a{background:var(--primary);top:0;left:0}
+.ink-b{background:var(--accent-blue);bottom:0;right:0}
+@media(min-width:900px){.ink-stack{display:block}}
+.ink-strip{display:flex;height:16px;border-top:2px solid var(--border-default)}
+.ink-strip i{flex:1}
+.card{display:flex;flex-direction:column;align-items:flex-start;gap:.9rem;background:var(--bg-secondary);border:2px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);padding:1.5rem;transition:transform var(--fast),box-shadow var(--fast)}
+.card:hover{transform:translate(-2px,-2px);box-shadow:var(--shadow-md)}
+.card:focus-within{border-color:var(--accent-blue)}
+.alt .card{background:var(--bg-primary)}
+.badge{width:54px;height:54px;display:grid;place-items:center;border:2px solid var(--border-default);border-radius:var(--radius-md)}
+.badge .ms{font-size:28px}
+.card--dot::before{content:"";width:100%;height:10px;background-image:radial-gradient(var(--primary) 15%,transparent 16%);background-size:8px 8px}
+.steps{list-style:none;padding:0}
+.step__num{width:58px;height:58px;display:grid;place-items:center;font-family:var(--font-display);font-size:1.5rem;border:2px solid var(--border-default);border-radius:var(--radius-md);box-shadow:4px 4px 0 var(--accent-blue);transform:rotate(-3deg);margin-bottom:1rem}
+.steps li:nth-child(2) .step__num{transform:rotate(2deg)}
+.quote .ms{font-size:34px}
+.quotes .card:nth-child(1)>.ms{color:var(--primary)}
+.quotes .card:nth-child(2)>.ms{color:var(--accent-blue)}
+.quotes .card:nth-child(3)>.ms{color:var(--success)}
+.quote blockquote{color:var(--text-primary)}
+figcaption{font-size:.9rem}
+figcaption strong{color:var(--text-primary)}
+.price{position:relative;align-items:stretch}
+.price .btn{margin-top:auto}
+.price__tag{font-size:.9rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+.price__amt{font-family:var(--font-display);font-size:2.2rem;color:var(--text-primary);margin:.3rem 0}
+.price__amt span{font:700 .85rem var(--font-base)}
+.ticks{list-style:none;padding:0;margin:0 0 1.2rem;display:grid;gap:.5rem}
+.ticks li{display:flex;gap:.5rem;align-items:center}
+.ticks .ms{color:var(--success);font-size:20px}
+.price--pop{--text-secondary:#2B2D42;background:var(--secondary);color:#2B2D42;border-color:#2B2D42;box-shadow:6px 6px 0 #2B2D42;transform:translate(-4px,-6px)}
+.price--pop:hover{transform:translate(-6px,-8px)}
+.price--pop .price__amt,.price--pop .ticks .ms{color:#073B4C}
+.stamp{position:absolute;top:-16px;right:16px;background:var(--primary);color:#FDF5E6;font:700 .68rem/1 var(--font-base);letter-spacing:.14em;text-transform:uppercase;padding:.5rem .65rem;border:2px solid #2B2D42;box-shadow:2px 2px 0 #2B2D42;transform:rotate(-4deg)}
+#faq details{background:var(--bg-secondary);border:2px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);margin-bottom:.8rem}
+#faq details[open]{border-color:var(--accent-blue)}
+summary{display:flex;justify-content:space-between;align-items:center;gap:1rem;min-height:44px;padding:.9rem 1.1rem;cursor:pointer;list-style:none;font-weight:700}
+summary::-webkit-details-marker{display:none}
+summary:hover .faq-ico{transform:rotate(90deg);color:var(--primary)}
+.faq-ico{transition:transform var(--fast)}
+details[open] .faq-ico{transform:rotate(45deg)}
+details>p{padding:0 1.1rem 1.1rem}
+.band{background:#2B2D42;color:#FDF5E6;padding-block:4rem;position:relative;overflow:hidden;border-block:2px solid #EF476F}
+.band::before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(239,71,111,.28) 18%,transparent 19%);background-size:12px 12px;pointer-events:none}
+.band .wrap{position:relative;text-align:center}
+.band h2{color:#FFD166;text-shadow:3px 3px 0 #EF476F}
+.band p{color:#F5EAD0}
+.band__form{display:flex;gap:.9rem;flex-wrap:wrap;justify-content:center;margin-top:1.6rem;max-width:640px;margin-inline:auto}
+.band input{flex:1 1 240px;min-height:48px;padding:.7rem 1rem;font:500 1rem var(--font-base);background:#FDF5E6;color:#2B2D42;border:2px solid #FDF5E6;border-radius:var(--radius-sm);box-shadow:3px 3px 0 #118AB2}
+.band input.valid{border-color:#06A77D;box-shadow:3px 3px 0 #06A77D}
+.band input.invalid{border-color:#EF476F;box-shadow:3px 3px 0 #EF476F}
+.band .btn{min-width:200px;background:#FDF5E6;color:#2B2D42;border-color:#FDF5E6;--bs:#FFD166}
+.band .btn:hover{box-shadow:4px 4px 0 #FFD166}
+.band .btn:active{box-shadow:0 0 0 #FFD166}
+.form-msg{min-height:1.7em;margin-top:.9rem;font-weight:700;display:flex;gap:.4rem;justify-content:center;align-items:center}
+.form-msg.ok{color:#57D9B1}
+.form-msg.err{color:#FF9EB5}
+.footer{background:var(--bg-secondary);border-top:2px solid var(--border-default);padding:2.5rem 0 1.5rem}
+.footer__grid{display:flex;flex-wrap:wrap;gap:1.6rem;justify-content:space-between;align-items:center}
+.footer__brand{font-family:var(--font-display);font-size:1.3rem;color:var(--text-primary)}
+.small{font-size:.9rem}
+.footer__links{display:flex;gap:1.2rem;list-style:none;padding:0;flex-wrap:wrap}
+.footer__links a{font-weight:700;font-size:.9rem;color:var(--text-secondary);text-decoration:none;border-bottom:2px solid transparent;padding:.2rem 0}
+.footer__links a:hover{color:var(--primary);border-bottom-color:var(--primary)}
+.footer__social{display:flex;gap:.7rem;list-style:none;padding:0}
+.social{display:grid;place-items:center;width:44px;height:44px;background:var(--bg-primary);border:2px solid var(--border-default);border-radius:var(--radius-sm);box-shadow:3px 3px 0 var(--text-primary);color:var(--text-primary);transition:transform var(--fast),box-shadow var(--fast)}
+.social:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--text-primary)}
+.copy{text-align:center;margin-top:1.8rem}
+@keyframes pop{from{clip-path:inset(0 0 100% 0);transform:translateY(14px)}to{clip-path:inset(0 0 -10% 0);transform:none}}
+.hero .wrap>*{animation:pop .32s steps(4,end) both}
+.hero .wrap>*:nth-child(2){animation-delay:.07s}
+.hero .wrap>*:nth-child(3){animation-delay:.14s}
+.hero .wrap>*:nth-child(4){animation-delay:.21s}
+.skeleton{background-image:radial-gradient(var(--dot) 15%,transparent 16%);background-size:8px 8px;color:transparent;animation:shift .8s steps(2,end) infinite;pointer-events:none}
+@keyframes shift{to{background-position:16px 16px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="nav">
+  <a class="brand" href="#top">NIMBUS<span class="brand__dot">*</span></a>
+  <nav aria-label="Primary">
+    <ul class="nav__links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+  </nav>
+  <button id="themeToggle" class="btn btn--icon" type="button" aria-pressed="false" aria-label="Toggle dark theme">
+    <span class="ms" aria-hidden="true">dark_mode</span>
+  </button>
+</header>
+<main id="main">
+<section class="hero" id="top" aria-labelledby="heroTitle">
+  <div class="ink-stack" aria-hidden="true"><i class="ink-a"></i><i class="ink-b"></i></div>
+  <div class="wrap">
+    <p class="kicker ink-coral">Est. 2026 · Riso-pop toolkit</p>
+    <h1 id="heroTitle">Off-register <span class="reg-word">&amp; proud.</span></h1>
+    <p class="lede">Nimbus turns rough ideas into loud, ink-heavy pages. Halftones included. Smooth gradients banned at the door.</p>
+    <div class="hero__cta">
+      <a class="btn btn--primary" href="#pricing">Start printing <span class="ms" aria-hidden="true">arrow_forward</span></a>
+      <a class="link-plain" href="#how">See how the press runs <span class="ms" aria-hidden="true">south</span></a>
+    </div>
+  </div>
+  <div class="ink-strip" aria-hidden="true"><i class="ink-coral"></i><i class="ink-gold"></i><i class="ink-blue"></i></div>
+</section>
+
+<section id="features">
+  <div class="wrap">
+    <p class="kicker ink-gold">The ink room</p>
+    <h2 class="reg">Built for loud pages</h2>
+    <div class="grid-3">
+      <article class="card card--dot">
+        <span class="badge ink-coral"><span class="ms" aria-hidden="true">palette</span></span>
+        <h3>Two-ink discipline</h3>
+        <p>Pick your inks; Nimbus locks the palette. Every page stays loud, limited, and unmistakably yours.</p>
+      </article>
+      <article class="card card--dot">
+        <span class="badge ink-gold"><span class="ms" aria-hidden="true">blur_on</span></span>
+        <h3>Halftone engine</h3>
+        <p>Dots from chunky to micro. Dither type, shapes, and photos like a well-worn drum scanner.</p>
+      </article>
+      <article class="card card--dot">
+        <span class="badge ink-blue"><span class="ms" aria-hidden="true">flip</span></span>
+        <h3>Registration chaos</h3>
+        <p>Nudge any layer a few pixels off-register. Perfect imperfection, every pull of the squeegee.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="how" class="alt">
+  <div class="wrap">
+    <p class="kicker ink-blue">The press run</p>
+    <h2 class="reg">Three pulls to print</h2>
+    <ol class="grid-3 steps">
+      <li class="step">
+        <span class="step__num ink-coral" aria-hidden="true">1</span>
+        <h3>Stock your palette</h3>
+        <p>Choose up to three inks and a paper stock. Nimbus runs the ink room for you.</p>
+      </li>
+      <li class="step">
+        <span class="step__num ink-gold" aria-hidden="true">2</span>
+        <h3>Lay your layers</h3>
+        <p>Stack type, shapes, and halftones. Multiply blending keeps the ink honest where it overlaps.</p>
+      </li>
+      <li class="step">
+        <span class="step__num ink-blue" aria-hidden="true">3</span>
+        <h3>Pull the squeegee</h3>
+        <p>Export print-ready pages or publish straight to the web press. One click, no smudges.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section id="proof" aria-labelledby="proofTitle">
+  <div class="wrap">
+    <p class="kicker ink-coral">Fresh off the press</p>
+    <h2 class="reg" id="proofTitle">Zinesters talking</h2>
+    <div class="grid-3 quotes">
+      <figure class="card quote">
+        <span class="ms" aria-hidden="true">format_quote</span>
+        <blockquote>&ldquo;Nimbus made our zine look like it survived 1974 &mdash; in the best possible way.&rdquo;</blockquote>
+        <figcaption><strong>Marge Okafor</strong> &mdash; Fold &amp; Staple Distro</figcaption>
+      </figure>
+      <figure class="card quote">
+        <span class="ms" aria-hidden="true">format_quote</span>
+        <blockquote>&ldquo;I banned gradients studio-wide. Nobody misses them. Thanks, Nimbus.&rdquo;</blockquote>
+        <figcaption><strong>Theo Lindqvist</strong> &mdash; Pinch Press</figcaption>
+      </figure>
+      <figure class="card quote">
+        <span class="ms" aria-hidden="true">format_quote</span>
+        <blockquote>&ldquo;The misregistration slider alone is worth the subscription.&rdquo;</blockquote>
+        <figcaption><strong>Ren Alvarez</strong> &mdash; Copy Room Collective</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section id="pricing" class="alt" aria-labelledby="priceTitle">
+  <div class="wrap">
+    <p class="kicker ink-gold">Rate card</p>
+    <h2 class="reg" id="priceTitle">Pick your press pass</h2>
+    <div class="grid-3">
+      <article class="card price">
+        <h3>Riso Rookie</h3>
+        <p class="price__tag">For first-run zines</p>
+        <p class="price__amt">$0<span> /forever</span></p>
+        <ul class="ticks">
+          <li><span class="ms" aria-hidden="true">check</span> 2 inks, 5 pages</li>
+          <li><span class="ms" aria-hidden="true">check</span> Community templates</li>
+          <li><span class="ms" aria-hidden="true">check</span> Web press hosting</li>
+        </ul>
+        <a class="btn" href="#cta">Start free</a>
+      </article>
+      <article class="card price price--pop">
+        <span class="stamp">Most popular</span>
+        <h3>Print Pro</h3>
+        <p class="price__tag">For studios on press</p>
+        <p class="price__amt">$18<span> /mo</span></p>
+        <ul class="ticks">
+          <li><span class="ms" aria-hidden="true">check</span> 3 inks, unlimited pages</li>
+          <li><span class="ms" aria-hidden="true">check</span> Halftone engine</li>
+          <li><span class="ms" aria-hidden="true">check</span> Off-register controls</li>
+          <li><span class="ms" aria-hidden="true">check</span> Print-ready exports</li>
+        </ul>
+        <a class="btn btn--ink" href="#cta">Go Pro</a>
+      </article>
+      <article class="card price">
+        <h3>Ink Baron</h3>
+        <p class="price__tag">For full print shops</p>
+        <p class="price__amt">$49<span> /mo</span></p>
+        <ul class="ticks">
+          <li><span class="ms" aria-hidden="true">check</span> Everything in Pro</li>
+          <li><span class="ms" aria-hidden="true">check</span> 10 team seats</li>
+          <li><span class="ms" aria-hidden="true">check</span> Priority press queue</li>
+        </ul>
+        <a class="btn" href="#cta">Talk to us</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="faq" aria-labelledby="faqTitle">
+  <div class="wrap wrap--narrow">
+    <p class="kicker ink-blue">Ask the ink room</p>
+    <h2 class="reg" id="faqTitle">Frequently pressed questions</h2>
+    <details>
+      <summary>Why only two or three inks? <span class="ms faq-ico" aria-hidden="true">add</span></summary>
+      <p>Because riso drums are physical. Fewer layers print cleaner, dry faster, and force bolder design. We build the same discipline into Nimbus.</p>
+    </details>
+    <details>
+      <summary>Can I export print-ready files? <span class="ms faq-ico" aria-hidden="true">add</span></summary>
+      <p>Yes &mdash; CMYK pass-through with registration marks, bleed, and ink separations for every layer, at up to 1200 dpi.</p>
+    </details>
+    <details>
+      <summary>Does Nimbus support smooth gradients? <span class="ms faq-ico" aria-hidden="true">add</span></summary>
+      <p>No. Next question. (If you need a fade, we offer honest halftones instead.)</p>
+    </details>
+    <details>
+      <summary>Will my pages look right in dark mode? <span class="ms faq-ico" aria-hidden="true">add</span></summary>
+      <p>Yes. Inks stay saturated on dark stock, and every color pair is checked for WCAG contrast in both themes.</p>
+    </details>
+    <details>
+      <summary>What happens to my pages if I cancel? <span class="ms faq-ico" aria-hidden="true">add</span></summary>
+      <p>You keep every file. Exports stay yours forever; we just stop the presses on anything new.</p>
+    </details>
+  </div>
+</section>
+
+<section id="cta" class="band" aria-labelledby="ctaTitle">
+  <div class="wrap">
+    <h2 id="ctaTitle">Get on the press list</h2>
+    <p>One zine a month. Ink swatches, halftone tricks, zero spam &mdash; we can&rsquo;t afford the paper.</p>
+    <form id="pressForm" class="band__form" novalidate>
+      <label class="vh" for="email">Email address</label>
+      <input id="email" name="email" type="email" placeholder="you@studio.press" autocomplete="email" required aria-describedby="emailMsg">
+      <button id="pressBtn" class="btn" type="submit">Ink me in <span class="ms" aria-hidden="true">local_printshop</span></button>
+    </form>
+    <p id="emailMsg" class="form-msg" aria-live="polite"></p>
+  </div>
+</section>
+</main>
+<footer class="footer">
+  <div class="wrap footer__grid">
+    <div>
+      <p class="footer__brand">NIMBUS<span class="brand__dot">*</span></p>
+      <p class="small">Printed with three inks. Zero gradients harmed.</p>
+    </div>
+    <nav aria-label="Secondary">
+      <ul class="footer__links">
+        <li><a href="#features">Ink room</a></li>
+        <li><a href="#pricing">Rate card</a></li>
+        <li><a href="#faq">FAQ</a></li>
+        <li><a href="#top">Back to top</a></li>
+      </ul>
+    </nav>
+    <ul class="footer__social" aria-label="Social links">
+      <li><a class="social" href="#top" aria-label="Newsletter signup"><span class="ms" aria-hidden="true">alternate_email</span></a></li>
+      <li><a class="social" href="#top" aria-label="Photo feed"><span class="ms" aria-hidden="true">photo_camera</span></a></li>
+      <li><a class="social" href="#top" aria-label="Blog feed"><span class="ms" aria-hidden="true">rss_feed</span></a></li>
+    </ul>
+  </div>
+  <p class="small copy">&copy; 2026 Nimbus Print Co. &mdash; All layers off-register.</p>
+</footer>
+<script>
+(function(){
+var root=document.documentElement,btn=document.getElementById('themeToggle'),ico=btn.querySelector('.ms');
+function setTheme(d){
+  root.classList.toggle('dark',d);root.classList.toggle('light',!d);
+  btn.setAttribute('aria-pressed',d);
+  btn.setAttribute('aria-label',d?'Switch to light theme':'Switch to dark theme');
+  ico.textContent=d?'light_mode':'dark_mode';
+  try{localStorage.setItem('nimbus-theme',d?'dark':'light')}catch(e){}
+}
+var stored=null;try{stored=localStorage.getItem('nimbus-theme')}catch(e){}
+setTheme(stored?stored==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches);
+btn.addEventListener('click',function(){setTheme(!root.classList.contains('dark'))});
+
+var form=document.getElementById('pressForm'),email=document.getElementById('email'),
+    msg=document.getElementById('emailMsg'),sub=document.getElementById('pressBtn'),
+    orig=sub.innerHTML;
+form.addEventListener('submit',function(e){
+  e.preventDefault();
+  var v=email.value.trim(),ok=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+  email.classList.toggle('valid',ok);email.classList.toggle('invalid',!ok);
+  email.setAttribute('aria-invalid',ok?'false':'true');
+  if(!ok){
+    msg.className='form-msg err';
+    msg.innerHTML='<span class="ms" aria-hidden="true">error</span> That address won\u2019t print \u2014 check the format.';
+    email.focus();return;
+  }
+  msg.className='form-msg';msg.textContent='';
+  sub.classList.add('loading');sub.setAttribute('aria-disabled','true');
+  sub.innerHTML='<span class="ms spin" aria-hidden="true">progress_activity</span>';
+  setTimeout(function(){
+    sub.classList.remove('loading');sub.removeAttribute('aria-disabled');sub.innerHTML=orig;
+    msg.className='form-msg ok';
+    msg.innerHTML='<span class="ms" aria-hidden="true">check_circle</span> You\u2019re on the press list! First zine lands soon.';
+    form.reset();email.classList.remove('valid');email.removeAttribute('aria-invalid');
+  },900);
+});
+})();
+</script>
+</body>
+</html>
