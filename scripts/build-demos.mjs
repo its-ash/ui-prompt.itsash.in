@@ -7,6 +7,8 @@ const STATE_FILE = path.resolve('.demo-state.json');
 const CONCURRENCY = Number(process.env.DEMO_CONCURRENCY ?? 3);
 const OLLAMA_URL = process.env.OLLAMA_URL ?? 'http://localhost:11434';
 const MODEL = process.env.OLLAMA_MODEL ?? 'glm-5.3:cloud';
+const NVIDIA_KEY = process.env.NVIDIA_API_KEY ?? '';
+const FALLBACK_ENABLED = Boolean(NVIDIA_KEY);
 
 fs.mkdirSync(DEMO_DIR, { recursive: true });
 
@@ -29,34 +31,72 @@ Output rules:
 - All copy in English, realistic, product-agnostic ("Nimbus" as brand unless the spec names one).
 - Respect prefers-reduced-motion. No horizontal scroll. Buttons min 44px height.`;
 
+async function callNvidia(userPrompt) {
+  const res = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${NVIDIA_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'z-ai/glm-5.3-flash',
+      messages: [
+        { role: 'system', content: SYSTEM },
+        { role: 'user', content: userPrompt },
+      ],
+      max_tokens: 16000,
+      temperature: 0.5,
+    }),
+  });
+  if (!res.ok) throw new Error(`NVHTTP ${res.status} ${(await res.text()).slice(0, 160)}`);
+  const data = await res.json();
+  const msg = data.choices?.[0]?.message;
+  const content = msg?.content || msg?.reasoning_content;
+  if (!content?.trim()) throw new Error('nv empty');
+  return content.trim();
+}
+
 async function callModel(userPrompt) {
   let lastErr;
   for (let attempt = 1; attempt <= 8; attempt++) {
     try {
-      const res = await fetch(`${OLLAMA_URL}/api/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: MODEL,
-          messages: [
-            { role: 'system', content: SYSTEM },
-            { role: 'user', content: userPrompt },
-          ],
-          stream: false,
-        }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status} ${(await res.text()).slice(0, 160)}`);
-      const data = await res.json();
-      const content = data.message?.content;
-      if (!content?.trim()) throw new Error('empty completion');
-      return content.trim();
+      if (FALLBACK_ENABLED) {
+        const nv = await callNvidia(userPrompt);
+        if (looksCandidate(nv)) return nv;
+        throw new Error('nv weak output');
+      }
+      throw new Error('no primary');
     } catch (err) {
       lastErr = err;
-      const rateLimited = /429/.test(String(err));
-      await new Promise((r) => setTimeout(r, rateLimited ? attempt * 60000 : attempt * 15000));
+      const rateLimited = /429|NVHTTP 4\d\d/.test(String(err));
+      try {
+        const res = await fetch(`${OLLAMA_URL}/api/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: MODEL,
+            messages: [
+              { role: 'system', content: SYSTEM },
+              { role: 'user', content: userPrompt },
+            ],
+            stream: false,
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const content = data.message?.content;
+          if (content?.trim() && looksCandidate(content.trim())) return content.trim();
+        }
+        if (res.status === 429) await new Promise((r) => setTimeout(r, 30000));
+      } catch {}
+      if (attempt < 8) await new Promise((r) => setTimeout(r, rateLimited ? attempt * 20000 : attempt * 8000));
     }
   }
   throw lastErr;
+}
+
+function looksCandidate(out) {
+  return /<!DOCTYPE html/i.test(out) && out.length > 3000;
 }
 
 function cleanHtml(text) {
@@ -92,7 +132,7 @@ async function buildDemo(file) {
 }
 
 const prompts = fs.readdirSync(path.resolve('design/prompts')).filter((f) => f.endsWith('.md'));
-console.log(`[build-demos] ${prompts.length} themes, model=${MODEL}, concurrency=${CONCURRENCY}`);
+console.log(`[build-demos] ${prompts.length} themes, model=${MODEL}+nvidia, concurrency=${CONCURRENCY}`);
 let idx = 0;
 
 async function worker() {

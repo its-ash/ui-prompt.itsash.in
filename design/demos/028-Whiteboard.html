@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nimbus — Sketch ideas together</title>
+<meta name="description" content="Nimbus is the shared whiteboard where messy marker sketches become real, assigned, finished work.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Patrick+Hand&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet">
+<style>
+/* Tokens */
+:root{--primary:#1565C0;--secondary:#2C2C2C;--bg-primary:#FEFEFE;--bg-secondary:#FFF9C4;--highlight:#FFF9C4;--text-primary:#2C2C2C;--text-secondary:#5C5C5C;--text-success:#388E3C;--text-error:#D32F2F;--border-default:#2C2C2C;--marker-red:#D32F2F;--marker-green:#388E3C;--marker-orange:#F57C00;--marker-blue:#1565C0;--radius-sm:2px;--radius-md:4px;--radius-lg:8px;--shadow-sm:2px 2px 5px rgba(0,0,0,.1);--shadow-md:4px 6px 12px rgba(0,0,0,.15);--spacing-gap:1.5rem;--transition-fast:150ms;--transition-normal:300ms;--ease-standard:cubic-bezier(.4,0,.2,1);--z-dropdown:1000;--z-modal:2000;--z-toast:3000;--font-base:'Patrick Hand',cursive;--font-heading:'Architects Daughter',cursive;--frame:#DCDCDC;--dot:#D0D0D0}
+/* Chalkboard-at-night variant */
+html.dark{--bg-primary:#1E1E1E;--bg-secondary:#2C2C2C;--highlight:#4E4A2E;--text-primary:#FEFEFE;--text-secondary:#B0B0B0;--border-default:#FEFEFE;--marker-blue:#64B5F6;--marker-red:#EF9A9A;--marker-green:#A5D6A7;--marker-orange:#FFB74D;--text-success:#A5D6A7;--text-error:#EF9A9A;--primary:#64B5F6;--shadow-sm:2px 2px 5px rgba(0,0,0,.55);--shadow-md:4px 6px 14px rgba(0,0,0,.65);--frame:#141414;--dot:rgba(255,255,255,.09)}
+@media(prefers-color-scheme:dark){:root:not(.light){--bg-primary:#1E1E1E;--bg-secondary:#2C2C2C;--highlight:#4E4A2E;--text-primary:#FEFEFE;--text-secondary:#B0B0B0;--border-default:#FEFEFE;--marker-blue:#64B5F6;--marker-red:#EF9A9A;--marker-green:#A5D6A7;--marker-orange:#FFB74D;--text-success:#A5D6A7;--text-error:#EF9A9A;--primary:#64B5F6;--shadow-sm:2px 2px 5px rgba(0,0,0,.55);--shadow-md:4px 6px 14px rgba(0,0,0,.65);--frame:#141414;--dot:rgba(255,255,255,.09)}}
+*{box-sizing:border-box;margin:0}
+[hidden]{display:none!important}
+html{overflow-x:clip}
+@media(prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+body{font-family:var(--font-base);font-size:1.05rem;line-height:1.55;color:var(--text-primary);background:var(--frame);overflow-x:clip}
+h1,h2,h3{font-family:var(--font-heading);font-weight:400;line-height:1.2}
+h1{font-size:clamp(2rem,5vw,3.1rem)}h2{font-size:clamp(1.6rem,3.5vw,2.2rem)}h3{font-size:1.3rem}
+main{max-width:1180px;margin-inline:auto;min-height:100vh;background-color:var(--bg-primary);background-image:radial-gradient(circle,var(--dot) 1px,transparent 1px);background-size:24px 24px;box-shadow:var(--shadow-md)}
+.wrap{max-width:1060px;margin-inline:auto;padding-inline:1rem}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.defs{position:absolute;width:0;height:0;overflow:hidden}
+.skip{position:absolute;left:8px;top:-60px;z-index:var(--z-toast);padding:.6rem 1rem;background:var(--highlight);border:2px solid var(--border-default);color:var(--text-primary);text-decoration:none;transition:top var(--transition-fast)}
+.skip:focus{top:8px}
+.material-symbols-rounded{font-family:'Material Symbols Rounded';font-weight:normal;font-style:normal;font-size:24px;line-height:1;display:inline-flex;white-space:nowrap;direction:ltr;font-variation-settings:'FILL' 1;user-select:none}
+.icon--lg{font-size:36px}
+/* Every flex container below centers by default; exceptions are commented */
+.nav{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--bg-primary);border-bottom:3px solid var(--border-default)}
+.nav__bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.6rem;padding-block:.5rem}
+.brand{display:flex;align-items:center;gap:.4rem;font-family:var(--font-heading);font-size:1.4rem;color:var(--marker-blue);text-decoration:none}
+.nav__links{display:flex;align-items:center;flex-wrap:wrap;gap:.25rem;list-style:none;padding:0}
+.nav__link{display:flex;align-items:center;min-height:44px;padding:.35rem .7rem;color:var(--text-primary);text-decoration:none;border-radius:var(--radius-sm);transition:background var(--transition-fast) var(--ease-standard)}
+.nav__link:hover{background:var(--highlight)}
+.nav__link:focus-visible{outline:3px solid var(--marker-blue);outline-offset:1px}
+.theme-toggle{display:flex;align-items:center;justify-content:center;width:44px;height:44px;background:var(--highlight);border:2px solid var(--border-default);border-radius:var(--radius-md);color:var(--text-primary);cursor:pointer;transition:transform var(--transition-fast)}
+.theme-toggle:hover{transform:rotate(-8deg)}
+.theme-toggle:focus-visible{outline:3px solid var(--marker-blue);outline-offset:2px}
+.t-light{display:none}html.dark .t-light{display:inline-flex}html.dark .t-dark{display:none}
+.btn{position:relative;display:flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;min-width:44px;padding:.5rem 1.25rem;font-family:var(--font-base);font-size:1.05rem;color:var(--text-primary);text-decoration:none;background:var(--bg-primary);border:2px solid var(--border-default);border-radius:var(--radius-sm);box-shadow:2px 2px 0 var(--border-default);cursor:pointer;filter:url(#sketch-border);transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard)}
+.btn:hover{transform:translate(-1px,-2px);box-shadow:3px 4px 0 var(--border-default)}
+.btn:active{transform:scale(.97)}
+.btn:focus-visible{outline:3px solid var(--marker-blue);outline-offset:2px}
+.btn--primary{background:var(--marker-blue);color:#FEFEFE}
+html.dark .btn--primary{color:#1E1E1E}
+.btn--secondary{background:var(--bg-secondary)}
+.btn--danger{border-color:var(--marker-red);color:var(--text-error);background:color-mix(in srgb,var(--marker-red) 8%,var(--bg-primary))}
+.btn--success{border-color:var(--text-success);color:var(--text-success);background:color-mix(in srgb,var(--text-success) 10%,var(--bg-primary))}
+.btn:disabled{opacity:.5;filter:grayscale(1);cursor:not-allowed;transform:none}
+.btn--loading{pointer-events:none;color:transparent}
+.btn--loading .material-symbols-rounded{visibility:hidden}
+.btn--loading::after{content:"";position:absolute;width:20px;height:20px;border:3px solid rgba(128,128,128,.3);border-top-color:var(--marker-blue);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(1turn)}}
+.card{display:flex;flex-direction:column;align-items:center;text-align:center;gap:.6rem;padding:1.4rem 1.2rem;background:var(--bg-primary);border:3px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);filter:url(#sketch-border);transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal),border-color var(--transition-normal)}
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.card:focus-within{border-color:var(--marker-blue)}
+.card p{color:var(--text-secondary)}
+.card--blue{border-color:var(--marker-blue)}.card--red{border-color:var(--marker-red)}.card--green{border-color:var(--marker-green)}
+.card--empty{justify-content:center;color:var(--text-secondary);font-style:italic}
+.card--loading{position:relative;pointer-events:none}
+.card--loading>*{visibility:hidden}
+.card--loading::after{content:"";position:absolute;inset:14px;background:linear-gradient(90deg,rgba(128,128,128,.15) 25%,rgba(128,128,128,.3) 40%,rgba(128,128,128,.15) 55%);background-size:300% 100%;animation:shimmer 1.4s infinite}
+@keyframes shimmer{to{background-position:-200% 0}}
+.sticky-note{--tilt:1deg;position:relative;display:flex;flex-direction:column;gap:.5rem;padding:1.15rem 1rem 1rem;background:var(--highlight);color:var(--text-primary);border:2px solid var(--border-default);border-radius:var(--radius-sm);box-shadow:var(--shadow-sm);transform:rotate(var(--tilt));transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal)}
+.sticky-note::before{content:"";position:absolute;top:-9px;left:50%;width:64px;height:18px;margin-left:-32px;background:rgba(200,200,200,.45);border:1px solid rgba(0,0,0,.1);transform:rotate(-3deg)}/* tape strip */
+html.dark .sticky-note::before{background:rgba(255,255,255,.18)}
+.sticky-note:hover{transform:rotate(var(--tilt)) translateY(-3px);box-shadow:var(--shadow-md)}
+.sticky-note--tilt-1{--tilt:-2deg}.sticky-note--tilt-2{--tilt:3deg}.sticky-note--tilt-3{--tilt:-1deg}
+.sticky-note cite{font-style:normal;font-size:.95rem;color:var(--text-secondary)}
+.section{padding-block:3.2rem}
+.section__head{text-align:center;margin-bottom:var(--spacing-gap)}
+.section__head p{color:var(--text-secondary);max-width:52ch;margin:.4rem auto 0}
+.m-blue{color:var(--marker-blue)}.m-red{color:var(--marker-red)}.m-green{color:var(--marker-green)}.m-orange{color:var(--marker-orange)}.m-black{color:var(--text-primary)}
+.u-wavy{text-decoration:underline wavy 2px;text-underline-offset:.18em}
+.hero{display:flex;flex-wrap:wrap;align-items:center;gap:2rem;padding-block:3rem 3.5rem}
+.hero__copy{flex:1 1 420px}
+.hero__sub{color:var(--text-secondary);max-width:54ch;margin:.9rem 0 1.4rem}
+.hero__actions{display:flex;flex-wrap:wrap;align-items:center;gap:.8rem}
+.hero__meta{margin-top:1rem;color:var(--text-secondary);font-size:.95rem}
+.hero__notes{flex:1 1 250px;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:1.4rem}
+.hero__notes .sticky-note{flex:1 1 160px;max-width:230px}
+.hero__notes .btn{margin-inline:auto;font-size:.95rem}
+.grid{display:flex;flex-wrap:wrap;gap:var(--spacing-gap);align-items:stretch}
+.grid>.card{flex:1 1 280px}
+.steps{display:flex;flex-wrap:wrap;justify-content:center;gap:var(--spacing-gap);align-items:center}
+.step{flex:1 1 240px;display:flex;flex-direction:column;align-items:center;gap:.6rem;text-align:center}
+.step p{color:var(--text-secondary)}
+.step__num{display:flex;align-items:center;justify-content:center;width:52px;height:52px;font-family:var(--font-heading);font-size:1.6rem;color:var(--text-primary);background:var(--bg-primary);border:3px solid var(--marker-blue);border-radius:50%;filter:url(#sketch-border)}
+.step--1 .step__num{border-color:var(--marker-blue)}.step--2 .step__num{border-color:var(--marker-orange)}.step--3 .step__num{border-color:var(--marker-green)}
+.connector{flex:0 0 60px;border-top:3px dashed var(--marker-orange);filter:url(#sketch-border)}
+.quotes{display:flex;flex-wrap:wrap;gap:var(--spacing-gap)}
+.quotes blockquote{flex:1 1 320px}
+.tiers{display:flex;flex-wrap:wrap;justify-content:center;gap:var(--spacing-gap);align-items:center}
+.tier{position:relative;flex:1 1 270px;display:flex;flex-direction:column;align-items:center;gap:.8rem;padding:1.6rem 1.3rem;text-align:center;background:var(--bg-primary);border:2px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);filter:url(#sketch-border);transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal)}
+.tier:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.tier:focus-within{border-color:var(--marker-blue)}
+.tier__price{font-family:var(--font-heading);font-size:2rem}
+.tier__per{font-size:1rem;color:var(--text-secondary)}
+.tier__list{list-style:none;padding:0;display:flex;flex-direction:column;align-items:flex-start;gap:.4rem}/* left-aligned feature list */
+.tier__list li{display:flex;align-items:flex-start;gap:.45rem;text-align:left;color:var(--text-secondary);font-size:1rem}
+.tier__list .material-symbols-rounded{font-size:20px;color:var(--text-success);margin-top:2px}
+.tier--mid{background:var(--highlight);border-width:4px;transform:rotate(-1deg) scale(1.03)}
+.tier--mid:hover{transform:rotate(-1deg) scale(1.03) translateY(-2px)}
+.tier__badge{position:absolute;top:-14px;left:50%;padding:.1rem .6rem;background:var(--bg-primary);border:2px solid var(--marker-orange);border-radius:var(--radius-sm);font-size:.95rem;transform:translateX(-50%)}
+.faq{max-width:760px;margin-inline:auto}
+.faq details{background:var(--bg-primary);border:2px solid var(--border-default);border-radius:var(--radius-sm);box-shadow:var(--shadow-sm);margin-bottom:1rem;filter:url(#sketch-border)}
+.faq summary{display:flex;align-items:center;justify-content:space-between;gap:.75rem;min-height:44px;padding:.8rem 1rem;cursor:pointer;font-family:var(--font-heading);font-size:1.15rem;list-style:none}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary:focus-visible{outline:3px solid var(--marker-blue);outline-offset:-3px}
+.faq__icon{color:var(--marker-blue);transition:transform var(--transition-normal) var(--ease-standard)}
+details[open] .faq__icon{transform:rotate(180deg)}
+details[open] .faq__a{animation:fade .3s var(--ease-standard)}
+@keyframes fade{from{opacity:0}}
+.faq__a{padding:0 1rem 1rem;color:var(--text-secondary)}
+.cta{background:var(--highlight);border-block:3px solid var(--border-default);text-align:center}
+.cta .wrap{padding-block:3rem}
+.cta p{max-width:56ch;margin:.6rem auto 0}
+.newsletter{display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-end;gap:.8rem;margin-top:1.5rem}/* bottom-aligned so button lines up with input */
+.input-group{display:flex;flex-direction:column;gap:.35rem;text-align:left;flex:1 1 260px;max-width:360px}/* column stack for label+input+feedback */
+.input-group input{min-height:44px;padding:.4rem .8rem;font:inherit;font-size:1rem;color:var(--text-primary);background:var(--bg-primary);border:2px solid var(--border-default);border-radius:var(--radius-sm)}
+.input-group input:focus{outline:3px solid var(--marker-blue);outline-offset:2px}
+.input-group--valid input{border-color:var(--text-success)}
+.input-group--error input{border-color:var(--marker-red)}
+.form__msg{display:flex;align-items:center;gap:.35rem;min-height:1.3rem;font-size:.95rem;margin:0}
+.form__msg .material-symbols-rounded{font-size:19px}
+.form__msg--error{color:var(--text-error)}
+.form__msg--success{color:var(--text-success)}
+footer{border-top:3px solid var(--border-default);padding-block:2rem;text-align:center}
+.footer__links{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:1.2rem;margin-bottom:1rem}
+.footer__links a{display:inline-flex;align-items:center;min-height:44px;color:var(--text-secondary);text-decoration:none}
+.footer__links a:hover{color:var(--marker-blue);text-decoration:underline wavy}
+.social{display:flex;justify-content:center;align-items:center;gap:.6rem;margin-bottom:1rem}
+.social a{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;color:var(--text-secondary);border:2px solid transparent;border-radius:50%;transition:color var(--transition-fast),border-color var(--transition-fast)}
+.social a:hover{color:var(--marker-blue);border-color:var(--marker-blue)}
+.social a:focus-visible{outline:3px solid var(--marker-blue);outline-offset:2px}
+footer small{color:var(--text-secondary)}
+@media(max-width:900px){.steps{flex-direction:column}.connector{flex:none;width:3px;height:40px;border-top:none;border-left:3px dashed var(--marker-orange)}}
+@media(prefers-reduced-motion:reduce){*,:before,:after{animation:none!important;transition:none!important}.sticky-note,.sticky-note:hover,.tier--mid,.tier--mid:hover,.btn:hover,.btn:active,.card:hover,.theme-toggle:hover{transform:none!important}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<svg class="defs" aria-hidden="true" focusable="false"><filter id="sketch-border"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="4" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2"/></filter></svg>
+<a class="skip" href="#main">Skip to content</a>
+<header class="nav">
+  <div class="wrap nav__bar">
+    <a class="brand" href="#main"><span class="material-symbols-rounded" aria-hidden="true">gesture</span>Nimbus</a>
+    <nav aria-label="Primary">
+      <ul class="nav__links">
+        <li><a class="nav__link" href="#features">Features</a></li>
+        <li><a class="nav__link" href="#how">How it works</a></li>
+        <li><a class="nav__link" href="#pricing">Pricing</a></li>
+        <li><a class="nav__link" href="#faq">FAQ</a></li>
+      </ul>
+    </nav>
+    <button id="themeBtn" class="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark theme"><span class="material-symbols-rounded t-dark" aria-hidden="true">dark_mode</span><span class="material-symbols-rounded t-light" aria-hidden="true">light_mode</span></button>
+  </div>
+</header>
+<main id="main">
+  <section class="hero wrap">
+    <div class="hero__copy">
+      <h1>Sketch ideas <span class="m-orange u-wavy">together</span> — from sticky note to <span class="m-blue u-wavy">shipped plan</span>.</h1>
+      <p class="hero__sub">Nimbus is the shared whiteboard where messy marker scribbles turn into real, assigned, finished work — with the whole team drawing at once.</p>
+      <div class="hero__actions">
+        <a class="btn btn--primary" href="#pricing"><span class="material-symbols-rounded" aria-hidden="true">draw</span>Start sketching — free</a>
+        <a class="btn btn--secondary" href="#how"><span class="material-symbols-rounded" aria-hidden="true">visibility</span>See how it works</a>
+      </div>
+      <p class="hero__meta">No downloads. No credit card. Just markers.</p>
+    </div>
+    <div class="hero__notes">
+      <div class="sticky-note sticky-note--tilt-2"><span class="material-symbols-rounded icon--lg m-blue" aria-hidden="true">draw</span><strong>Sketch like paper</strong><p>Freehand pens, shapes and sticky notes that feel analog.</p></div>
+      <div class="sticky-note sticky-note--tilt-1"><span class="material-symbols-rounded icon--lg m-green" aria-hidden="true">groups</span><strong>Live cursors</strong><p>See every teammate drawing, pointing and voting in real time.</p></div>
+      <div class="sticky-note sticky-note--tilt-3"><span class="material-symbols-rounded icon--lg m-red" aria-hidden="true">delete_sweep</span><strong>Made a mess?</strong><p>Wipe and start fresh — no risk, no judgment.</p><button id="wipeBtn" class="btn btn--danger" type="button"><span class="material-symbols-rounded" aria-hidden="true">delete_sweep</span><span class="btn__label">Wipe board</span></button></div>
+    </div>
+  </section>
+  <p id="live" class="sr" role="status" aria-live="polite"></p>
+  <section id="features" class="section">
+    <div class="wrap">
+      <header class="section__head"><h2>Why teams keep <span class="m-blue u-wavy">coming back</span> to the board</h2><p>Everything a brainstorm needs, nothing it doesn't.</p></header>
+      <div class="grid">
+        <article class="card card--blue"><span class="material-symbols-rounded icon--lg m-blue" aria-hidden="true">gesture</span><h3>Draw like it's paper</h3><p>Markers, sticky notes and freehand shapes with zero learning curve — if you can scribble, you're a pro.</p></article>
+        <article class="card card--red"><span class="material-symbols-rounded icon--lg m-red" aria-hidden="true">bolt</span><h3>Ideas that stick</h3><p>Every note links to tasks, owners and due dates, so yesterday's sketch is tomorrow's sprint.</p></article>
+        <article class="card card--green"><span class="material-symbols-rounded icon--lg m-green" aria-hidden="true">groups</span><h3>Everyone in the room</h3><p>Live cursors, comments and reactions for 2 or 200 people — remote teammates included.</p></article>
+      </div>
+    </div>
+  </section>
+  <section id="how" class="section">
+    <div class="wrap">
+      <header class="section__head"><h2>From <span class="m-green u-wavy">messy to done</span> in three moves</h2><p>The same flow that powers thousands of Monday standups.</p></header>
+      <div class="steps">
+        <article class="step step--1"><span class="step__num" aria-hidden="true">1</span><h3>Dump every idea</h3><p>Open a board and scatter sticky notes — messy is the point.</p></article>
+        <div class="connector" aria-hidden="true"></div>
+        <article class="step step--2"><span class="step__num" aria-hidden="true">2</span><h3>Cluster &amp; vote</h3><p>Drag notes into themes and let the team dot-vote on winners.</p></article>
+        <div class="connector" aria-hidden="true"></div>
+        <article class="step step--3"><span class="step__num" aria-hidden="true">3</span><h3>Assign &amp; ship</h3><p>Turn winning clusters into tasks with owners, dates and links.</p></article>
+      </div>
+    </div>
+  </section>
+  <section class="section">
+    <div class="wrap">
+      <header class="section__head"><h2>Teams say it <span class="m-red u-wavy">better than we can</span></h2><p>Real boards, real sprints, real markers.</p></header>
+      <div class="quotes">
+        <blockquote class="sticky-note sticky-note--tilt-1"><span class="material-symbols-rounded icon--lg m-red" aria-hidden="true">format_quote</span><p>"We replaced three tools with one board. Sprint planning went from a two-hour slog to a 20-minute sketch."</p><cite>— Priya R., Product Lead, Fieldnote</cite></blockquote>
+        <blockquote class="sticky-note sticky-note--tilt-2"><span class="material-symbols-rounded icon--lg m-blue" aria-hidden="true">format_quote</span><p>"Clients leave our workshops saying 'that was fun' — and we all leave with a plan everyone owns."</p><cite>— Marco T., Studio Director, Draft &amp; Co</cite></blockquote>
+      </div>
+    </div>
+  </section>
+  <section id="pricing" class="section">
+    <div class="wrap">
+      <header class="section__head"><h2>Pricing that fits <span class="m-orange u-wavy">any team size</span></h2><p>Start free. Upgrade when your wall runs out of space.</p></header>
+      <div class="tiers">
+        <article class="tier"><h3>Marker</h3><p class="tier__price">$0 <span class="tier__per">forever</span></p><ul class="tier__list"><li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>3 boards</li><li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Up to 5 teammates</li><li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Sticky notes &amp; freehand drawing</li><li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Community support</li></ul><a class="btn btn--secondary" href="#cta">Start free</a></article>
+        <article class="tier tier--mid"><span class="tier__badge">Most popular</span><h3 class="m-orange">Highlighter</h3><p class="tier__price">$8 <span class="tier__per">/user/mo</span></p><ul class="tier__list"><li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Unlimited boards</li><li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Unlimited teammates</li><li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Voting, timers &amp; templates</li><li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Export clusters to tasks</li><li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Priority support</li></ul><a class="btn btn--primary" href="#cta">Go Pro</a></article>
+        <article class="tier"><h3>Sharpie</h3><p class="tier__price">$15 <span class="tier__per">/user/mo</span></p><ul class="tier__list"><li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>SSO &amp; audit logs</li><li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Shared team templates</li><li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Dedicated onboarding</li><li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>SLA-backed support</li></ul><a class="btn btn--secondary" href="#cta">Contact sales</a></article>
+      </div>
+    </div>
+  </section>
+  <section id="faq" class="section">
+    <div class="wrap">
+      <header class="section__head"><h2 class="m-black">Quick answers, <span class="m-blue u-wavy">marker-style</span></h2><p>Still stuck? The board's always open.</p></header>
+      <div class="faq">
+        <details><summary>Do I need an account to scribble?<span class="material-symbols-rounded faq__icon" aria-hidden="true">expand_more</span></summary><p class="faq__a">Nope — open a board and start drawing immediately. Create an account only when you want to save, share or return later.</p></details>
+        <details><summary>Can I export boards into real tasks?<span class="material-symbols-rounded faq__icon" aria-hidden="true">expand_more</span></summary><p class="faq__a">Yes — highlight any cluster and push it to your tracker as tickets, complete with owners, due dates and source links.</p></details>
+        <details><summary>Is my whiteboard data private?<span class="material-symbols-rounded faq__icon" aria-hidden="true">expand_more</span></summary><p class="faq__a">Boards are private by default and encrypted in transit and at rest. Sharing is invite-only, and guests always need an explicit link.</p></details>
+      </div>
+    </div>
+  </section>
+  <section id="cta" class="cta">
+    <div class="wrap">
+      <h2>Ready to <span class="m-blue u-wavy">sketch</span> your next big thing?</h2>
+      <p>Get board templates and product updates in your inbox — no spam, just markers.</p>
+      <form id="nlForm" class="newsletter" novalidate>
+        <div id="nlGroup" class="input-group">
+          <label for="nlEmail">Email address</label>
+          <input id="nlEmail" name="email" type="email" placeholder="you@team.com" autocomplete="email" aria-describedby="nlErr nlOk" required>
+          <p id="nlErr" class="form__msg form__msg--error" aria-live="polite" hidden><span class="material-symbols-rounded" aria-hidden="true">error</span>That doesn't look like an email — mind checking it?</p>
+          <p id="nlOk" class="form__msg form__msg--success" aria-live="polite" hidden><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>You're on the list — welcome aboard!</p>
+        </div>
+        <button id="nlBtn" class="btn btn--primary" type="submit"><span class="material-symbols-rounded" aria-hidden="true">send</span><span class="btn__label" id="nlTxt">Save my spot</span></button>
+      </form>
+    </div>
+  </section>
+  <footer>
+    <div class="wrap">
+      <div class="footer__links"><a href="#features">Features</a><a href="#how">How it works</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a><a href="mailto:hello@nimbus.example">Contact</a></div>
+      <div class="social"><a href="#" aria-label="Email us"><span class="material-symbols-rounded" aria-hidden="true">mail</span></a><a href="#" aria-label="Website"><span class="material-symbols-rounded" aria-hidden="true">public</span></a><a href="#" aria-label="Blog feed"><span class="material-symbols-rounded" aria-hidden="true">rss_feed</span></a></div>
+      <small>© 2026 Nimbus — all ideas reserved. Sketch responsibly.</small>
+    </div>
+  </footer>
+</main>
+<script>
+(function(){
+var root=document.documentElement,btn=document.getElementById('themeBtn'),mq=matchMedia('(prefers-color-scheme:dark)'),KEY='nimbus-theme';
+function set(t){root.classList.toggle('dark',t==='dark');root.classList.toggle('light',t!=='dark');btn.setAttribute('aria-pressed',String(t==='dark'));btn.setAttribute('aria-label',t==='dark'?'Switch to light theme':'Switch to dark theme');}
+set(localStorage.getItem(KEY)||(mq.matches?'dark':'light'));
+mq.addEventListener('change',function(e){if(!localStorage.getItem(KEY))set(e.matches?'dark':'light');});
+btn.addEventListener('click',function(){var d=!root.classList.contains('dark');set(d?'dark':'light');localStorage.setItem(KEY,d?'dark':'light');});
+var form=document.getElementById('nlForm'),email=document.getElementById('nlEmail'),grp=document.getElementById('nlGroup'),eMsg=document.getElementById('nlErr'),sMsg=document.getElementById('nlOk'),sb=document.getElementById('nlBtn'),txt=document.getElementById('nlTxt');
+form.addEventListener('submit',function(ev){ev.preventDefault();sb.classList.remove('btn--success');txt.textContent='Save my spot';
+var ok=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.value.trim());
+grp.classList.toggle('input-group--error',!ok);grp.classList.toggle('input-group--valid',ok);eMsg.hidden=!ok===false?false:true;
+eMsg.hidden=ok;sMsg.hidden=!ok;
+if(!ok){email.focus();return;}
+sb.disabled=true;sb.classList.add('btn--loading');
+setTimeout(function(){sb.classList.remove('btn--loading');sb.classList.add('btn--success');txt.textContent="You're in!";sb.disabled=false;},900);});
+email.addEventListener('input',function(){grp.classList.remove('input-group--error');eMsg.hidden=true;});
+var wipe=document.getElementById('wipeBtn'),live=document.getElementById('live'),wl=wipe.querySelector('.btn__label');
+wipe.addEventListener('click',function(){wipe.disabled=true;wl.textContent='Wiped!';wipe.classList.remove('btn--danger');wipe.classList.add('btn--success');live.textContent='Board wiped clean. Fresh start!';
+setTimeout(function(){wipe.disabled=false;wl.textContent='Wipe board';wipe.classList.remove('btn--success');wipe.classList.add('btn--danger');live.textContent='';},2200);});
+})();
+</script>
+</body>
+</html>
