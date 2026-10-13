@@ -105,7 +105,7 @@ function looksLikeHtml(out) {
 async function buildDemo(file) {
   const id = path.basename(file, '.md');
   const outPath = path.join(DEMO_DIR, `${id}.html`);
-  if (state.done[id] && fs.existsSync(outPath) && looksLikeHtml(fs.readFileSync(outPath, 'utf8'))) {
+  if (fs.existsSync(outPath) && looksLikeHtml(fs.readFileSync(outPath, 'utf8'))) {
     console.log(`skip  ${id}`);
     return;
   }
@@ -129,6 +129,7 @@ const prompts = fs
     const out = path.join(DEMO_DIR, `${id}.html`);
     return !(fs.existsSync(out) && looksLikeHtml(fs.readFileSync(out, 'utf8')));
   });
+if (process.env.DEMO_REVERSE === '1') prompts.reverse();
 console.log(`[build-demos] ${prompts.length} pending, models=${MODELS.join('|')}, concurrency=${CONCURRENCY}`);
 let idx = 0;
 
