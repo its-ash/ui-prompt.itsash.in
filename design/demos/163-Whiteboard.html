@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nimbus — The collaborative whiteboard for playful teams</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Patrick+Hand&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,1,0,0" rel="stylesheet">
+<style>
+:root{--primary:#2C2C2C;--secondary:#1565C0;--bg-primary:#FEFEFE;--bg-secondary:#FFF9C4;--text-primary:#2C2C2C;--text-secondary:#1565C0;--text-success:#388E3C;--text-error:#D32F2F;--border-default:#2C2C2C;--border-error:#D32F2F;--border-success:#388E3C;--marker-red:#D32F2F;--marker-green:#388E3C;--marker-orange:#F57C00;--radius-sm:2px;--radius-md:4px;--radius-lg:8px;--shadow-sm:2px 2px 5px rgba(0,0,0,.1);--shadow-md:4px 6px 12px rgba(0,0,0,.12);--spacing-gap:1.5rem;--transition-fast:150ms;--transition-normal:300ms;--ease-standard:cubic-bezier(.4,0,.2,1);--z-dropdown:10;--z-modal:100;--z-toast:200;--font-base:'Patrick Hand',cursive;--font-heading:'Architects Daughter',cursive;--dot:rgba(44,44,44,.09)}
+.dark{--bg-primary:#1E1E1E;--bg-secondary:#3f3a1f;--text-primary:#FEFEFE;--text-secondary:#90CAF9;--secondary:#64B5F6;--border-default:#EDEDED;--dot:rgba(255,255,255,.09);--shadow-sm:2px 2px 5px rgba(0,0,0,.5);--shadow-md:4px 6px 12px rgba(0,0,0,.6)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;overflow-x:clip}
+body{font-family:var(--font-base);font-size:18px;line-height:1.55;color:var(--text-primary);background:var(--bg-primary);background-image:radial-gradient(var(--dot) 1px,transparent 1px);background-size:24px 24px}
+h1,h2,h3{font-family:var(--font-heading);line-height:1.2}
+a{color:var(--text-secondary)}
+:focus-visible{outline:3px dashed var(--secondary);outline-offset:3px}
+section{scroll-margin-top:92px}
+[hidden]{display:none!important}
+.sr{position:absolute;width:1px;height:1px;clip-path:inset(50%);overflow:hidden}
+.svgdefs{position:absolute;width:0;height:0;overflow:hidden}
+.ms,.price li::before{font-family:'Material Symbols Outlined';font-weight:normal;font-style:normal;line-height:1;letter-spacing:normal;display:inline-block;-webkit-font-smoothing:antialiased}
+.ms{font-size:22px}
+.board{max-width:1180px;margin:14px auto;border:4px solid var(--border-default);border-radius:var(--radius-sm);box-shadow:var(--shadow-md);overflow:clip}
+.topbar{position:sticky;top:0;z-index:var(--z-dropdown);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 16px;padding:10px 18px;background:var(--bg-primary);border-bottom:2px solid var(--border-default)}
+.topbar__brand{display:flex;align-items:center;gap:6px;font-family:var(--font-heading);font-size:1.35rem;color:var(--text-primary);text-decoration:none}
+.topbar__links{display:flex;flex-direction:column;align-items:center;width:100%;gap:2px}
+.topbar__link{padding:10px;font-family:var(--font-heading);color:var(--text-primary);text-decoration:none}
+.topbar__link:hover,.topbar__link:focus-visible{color:var(--text-secondary);text-decoration:underline wavy var(--secondary) 2px}
+.btn{display:flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;min-width:44px;padding:10px 20px;font:inherit;font-family:var(--font-heading);font-size:1rem;color:var(--text-primary);background:var(--bg-primary);border:2px solid var(--border-default);border-radius:var(--radius-sm);filter:url(#sketchy);cursor:pointer;text-decoration:none;transition:box-shadow var(--transition-normal) var(--ease-standard),transform var(--transition-normal) var(--ease-standard)}
+.btn:hover{box-shadow:var(--shadow-sm);transform:translateY(-2px)}
+.btn:active{transform:scale(.97)}
+.btn--primary{background:var(--secondary);border-color:var(--secondary);color:#fff}
+.dark .btn--primary{color:#1E1E1E}
+.btn--danger{background:var(--marker-red);border-color:var(--marker-red);color:#fff}
+.btn--icon{padding:8px}
+.btn[disabled],.btn.is-loading{opacity:.5;cursor:not-allowed;filter:url(#sketchy) grayscale(1)}
+.btn.is-loading .ms{display:none}
+.btn.is-loading::after{content:"";width:18px;height:18px;border:3px dashed var(--marker-orange);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hl{background:linear-gradient(180deg,transparent 18%,var(--bg-secondary) 18%,var(--bg-secondary) 92%,transparent 92%);padding:0 .12em;border-radius:var(--radius-sm)}
+.w{text-decoration:underline wavy var(--marker-orange) 3px;text-underline-offset:5px}
+.w--blue{text-decoration-color:var(--secondary)}
+.w--red{text-decoration-color:var(--marker-red)}
+.w--green{text-decoration-color:var(--marker-green)}
+.hero{display:flex;flex-direction:column;align-items:center;text-align:center;gap:1rem;padding:56px 20px 62px}
+.hero__kicker{display:flex;align-items:center;gap:6px;color:var(--text-secondary);font-size:1.1rem}
+.hero__title{font-size:clamp(2.1rem,6vw,3.4rem);max-width:18ch}
+.hero__sub{max-width:46ch;font-size:1.15rem}
+.hero__actions{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin-top:8px}
+.sec{max-width:1080px;margin:auto;padding:50px 20px}
+.sec__head{text-align:center;margin-bottom:var(--spacing-gap)}
+.sec__head p{color:var(--text-secondary)}
+.sec__title{font-size:clamp(1.6rem,4vw,2.2rem);margin-bottom:4px}
+.grid,.steps,.quotes,.pricing{display:flex;flex-direction:column;gap:var(--spacing-gap)}
+.card{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:22px;border:2px solid var(--border-default);border-radius:var(--radius-sm);background:var(--bg-secondary);box-shadow:var(--shadow-sm);filter:url(#sketchy);transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),border-color var(--transition-normal)}
+.card::before{content:"";position:absolute;top:-9px;left:50%;margin-left:-7px;width:14px;height:14px;border-radius:50%;border:1px solid var(--border-default);background:var(--marker-red);box-shadow:inset -2px -2px 0 rgba(0,0,0,.25)}
+.card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.card:focus-within{border-color:var(--secondary)}
+.card h3{display:flex;align-items:center;gap:8px;font-size:1.25rem}
+.card__icon{font-size:28px;color:var(--text-secondary)}
+.card--r1{transform:rotate(1deg)}
+.card--r2{transform:rotate(-2deg)}
+.card--r3{transform:rotate(3deg)}
+.note--green{background:rgba(56,142,60,.16)}
+.note--green::before{background:var(--marker-green)}
+.note--orange{background:rgba(245,124,0,.16)}
+.note--orange::before{background:var(--marker-orange)}
+.note--red{background:rgba(211,47,47,.13)}
+.note--red::before{background:var(--marker-red)}
+.skeleton{position:relative;overflow:hidden;background:rgba(128,128,128,.12)}
+.skeleton::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent);animation:shimmer 1.2s infinite}
+@keyframes shimmer{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+.step{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:8px 6px}
+.step__num{display:inline-flex;align-items:center;justify-content:center;width:50px;height:50px;font-family:var(--font-heading);font-size:1.4rem;border:2px solid var(--border-default);border-radius:50%;background:var(--bg-secondary);box-shadow:var(--shadow-sm);transform:rotate(-4deg)}
+.step h3{display:flex;align-items:center;gap:6px;font-size:1.2rem}
+.quote blockquote{font-size:1.15rem}
+.quote__by{display:flex;align-items:center;gap:12px;width:100%;flex-wrap:wrap}
+.quote__ava{display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;border:2px solid var(--border-default);border-radius:50%;background:rgba(21,101,192,.15);color:var(--text-secondary)}
+.quote small{color:var(--text-secondary)}
+.quote__stars{margin-left:auto;color:var(--marker-orange);letter-spacing:2px}
+.price h3{font-size:1.4rem}
+.price__amount{font-family:var(--font-heading);font-size:2rem}
+.price__amount small{font-family:var(--font-base);font-size:1rem;color:var(--text-secondary)}
+.price ul{list-style:none;display:flex;flex-direction:column;gap:6px;width:100%}
+.price li{display:flex;align-items:center;gap:8px}
+.price li::before{content:"check";font-size:20px;color:var(--text-success)}
+.price .btn{margin-top:auto}
+.price--hot{border-width:3px}
+.price--hot::after{content:"Most popular!";position:absolute;top:-14px;right:14px;padding:2px 10px;font-family:var(--font-heading);font-size:.9rem;background:var(--marker-orange);color:#1E1E1E;border:2px solid var(--border-default);border-radius:var(--radius-sm);transform:rotate(3deg)}
+.faq{display:flex;flex-direction:column;gap:12px;max-width:720px;margin:auto}
+.faq__search{display:flex;margin:0 auto var(--spacing-gap);max-width:460px;width:100%}
+.faq__item{border:2px solid var(--border-default);border-radius:var(--radius-sm);background:var(--bg-primary);box-shadow:var(--shadow-sm);filter:url(#sketchy)}
+.faq__item summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;padding:12px 16px;font-family:var(--font-heading);cursor:pointer;list-style:none}
+.faq__item summary::-webkit-details-marker{display:none}
+.faq__item summary:hover{color:var(--text-secondary)}
+.faq__x{font-family:var(--font-base);font-size:1.7rem;line-height:1;transition:transform var(--transition-normal) var(--ease-standard)}
+.faq__item[open] .faq__x{transform:rotate(45deg)}
+.faq__a{padding:0 16px 14px;animation:unfold var(--transition-normal) var(--ease-standard)}
+@keyframes unfold{from{opacity:0;transform:translateY(-6px)}}
+.empty{display:flex;align-items:center;justify-content:center;gap:8px;margin:14px auto 0;padding:18px;border:2px dashed var(--border-default);border-radius:var(--radius-sm);color:var(--text-secondary);max-width:720px}
+.input{flex:1;min-width:0;min-height:44px;padding:8px 12px;font:inherit;color:var(--text-primary);background:var(--bg-primary);border:2px solid var(--border-default);border-radius:var(--radius-sm)}
+.input::placeholder{color:var(--text-secondary);opacity:.7}
+.input:disabled{opacity:.5;cursor:not-allowed}
+.input:focus{outline:3px dashed var(--secondary);outline-offset:2px}
+.input-group{display:flex;align-items:center;gap:10px;width:100%}
+.input-group[data-state="ok"] .input{border-color:var(--border-success)}
+.input-group[data-state="err"] .input{border-color:var(--border-error)}
+.field__state{display:inline-flex;justify-content:center;width:26px}
+.field__state .ms{visibility:hidden}
+.input-group[data-state="ok"] .field__state .ms{visibility:visible;color:var(--text-success)}
+.input-group[data-state="err"] .field__state .ms{visibility:visible;color:var(--text-error)}
+.field__msg{width:100%;text-align:center;min-height:1.4em}
+.field__msg--ok{color:var(--text-success)}
+.field__msg--err{color:var(--text-error)}
+.cta{display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;max-width:880px;margin:54px auto;padding:42px 24px;background:var(--bg-secondary);border:3px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);filter:url(#sketchy)}
+.cta h2{font-size:clamp(1.6rem,4vw,2.3rem)}
+.cta__form{display:flex;flex-direction:column;align-items:center;gap:10px;width:min(520px,100%)}
+.footer{display:flex;flex-direction:column;align-items:center;gap:14px;padding:34px 20px 42px;border-top:2px solid var(--border-default);text-align:center}
+.footer__links{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 22px}
+.footer__links a{font-family:var(--font-heading);color:var(--text-primary);text-decoration:none;padding:6px 2px}
+.footer__links a:hover{color:var(--text-secondary);text-decoration:underline wavy var(--secondary) 2px}
+.footer__copy{color:var(--text-secondary)}
+@media(min-width:768px){
+.topbar__links{flex-direction:row;width:auto;gap:6px}
+.grid,.steps,.quotes,.pricing{flex-direction:row;align-items:stretch}
+.grid>*,.steps>*,.quotes>*,.pricing>*{flex:1}
+.step:not(:last-child)::after{content:"";position:absolute;top:25px;left:calc(100% - 2px);width:26px;border-top:3px dashed var(--secondary);transform:rotate(-8deg)}
+.cta__form{flex-direction:row;flex-wrap:wrap;justify-content:center}
+.cta__form .input-group{flex:1;min-width:240px}
+}
+@media(prefers-reduced-motion:reduce){
+html{scroll-behavior:auto}
+*,*::before,*::after{animation:none!important;transition:none!important}
+.card--r1,.card--r2,.card--r3,.step__num,.price--hot::after{transform:none}
+.card:hover,.btn:hover{transform:none}
+}
+</style>
+</head>
+<body>
+<svg class="svgdefs" width="0" height="0" aria-hidden="true"><defs><filter id="sketchy"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.5"/></filter></defs></svg>
+<div class="board">
+<header class="topbar">
+<a class="topbar__brand" href="#top"><span class="ms" aria-hidden="true">gesture</span>Nimbus</a>
+<nav class="topbar__links" aria-label="Main"><a class="topbar__link" href="#features">Features</a><a class="topbar__link" href="#how">How it works</a><a class="topbar__link" href="#pricing">Pricing</a><a class="topbar__link" href="#faq">FAQ</a></nav>
+<button class="btn btn--icon" id="theme" type="button" aria-pressed="false" aria-label="Toggle dark mode"><span class="ms" aria-hidden="true">dark_mode</span></button>
+</header>
+<main>
+<section class="hero" id="top">
+<p class="hero__kicker"><span class="ms" aria-hidden="true">edit</span>The brainstorm board for playful teams</p>
+<h1 class="hero__title">Scribble. Share. <span class="hl">Ship ideas</span> together.</h1>
+<p class="hero__sub">Nimbus is the collaborative whiteboard where teams sketch, stack sticky notes and vote — so rough scribbles turn into real plans.</p>
+<div class="hero__actions"><a class="btn btn--primary" href="#pricing">Start sketching<span class="ms" aria-hidden="true">arrow_forward</span></a><a class="btn" href="#how">See how it works</a></div>
+</section>
+<section class="sec" id="features">
+<header class="sec__head"><h2 class="sec__title">What&rsquo;s in the <span class="hl">marker box</span>?</h2><p>Everything a brainstorm needs — and nothing it doesn&rsquo;t.</p></header>
+<div class="grid">
+<article class="card card--r1"><span class="ms card__icon" aria-hidden="true">draw</span><h3>Live markers</h3><p>Up to 32 cursors scribbling at once, each with a name — so you always know who drew that.</p></article>
+<article class="card note--green card--r2"><span class="ms card__icon" aria-hidden="true">sticky_note_2</span><h3>Sticky notes &amp; voting</h3><p>Jot, stack and dot-vote in seconds. The best idea floats up before the coffee goes cold.</p></article>
+<article class="card note--orange card--r3"><span class="ms card__icon" aria-hidden="true">zoom_out_map</span><h3>Endless canvas</h3><p>Zoom out for the big picture, in for tiny details. Your board grows as fast as your ideas.</p></article>
+</div>
+</section>
+<section class="sec" id="how">
+<header class="sec__head"><h2 class="sec__title">From <span class="w w--blue">mess</span> to shipped in three moves</h2><p>No manuals. No onboarding video. Just pick up a marker.</p></header>
+<div class="steps">
+<article class="step"><span class="step__num">1</span><h3><span class="ms" aria-hidden="true">gesture</span>Sketch</h3><p>Drop everyone on a blank board and let the sticky notes fly. No wrong answers — only half-drawn ones.</p></article>
+<article class="step"><span class="step__num">2</span><h3><span class="ms" aria-hidden="true">share</span>Share</h3><p>One link, zero downloads. Guests scribble right in their browser and every idea lands live.</p></article>
+<article class="step"><span class="step__num">3</span><h3><span class="ms" aria-hidden="true">rocket_launch</span>Ship</h3><p>Group notes, assign owners and export the board as a tidy PDF. Chaos, meet plan.</p></article>
+</div>
+</section>
+<section class="sec" id="stories">
+<header class="sec__head"><h2 class="sec__title">Scribblers <span class="hl">love it</span></h2><p>Real teams, real boards, real doodles.</p></header>
+<div class="quotes">
+<figure class="card note--green card--r2 quote"><blockquote>&ldquo;We swapped three tools for one board. Sprint retro went from a chore to the highlight of our week.&rdquo;</blockquote><figcaption class="quote__by"><span class="quote__ava"><span class="ms" aria-hidden="true">face</span></span><span><strong>Maya Chen</strong><br><small>Design lead · Paperclip Studio</small></span><span class="quote__stars" aria-label="Rated 5 out of 5">★★★★★</span></figcaption></figure>
+<figure class="card note--red card--r1 quote"><blockquote>&ldquo;My students actually fight over who presents first. Brainstorming is now their favorite part of class.&rdquo;</blockquote><figcaption class="quote__by"><span class="quote__ava"><span class="ms" aria-hidden="true">face</span></span><span><strong>Sam Okafor</strong><br><small>Teacher · Riverside High</small></span><span class="quote__stars" aria-label="Rated 5 out of 5">★★★★★</span></figcaption></figure>
+</div>
+</section>
+<section class="sec" id="pricing">
+<header class="sec__head"><h2 class="sec__title">Pick your <span class="w w--orange">marker</span></h2><p>Start free. Upgrade when your ideas outgrow the fridge door.</p></header>
+<div class="pricing">
+<article class="card note--red card--r1 price"><h3>Doodle</h3><p class="price__amount">$0 <small>forever</small></p><ul><li>3 boards</li><li>2 editors per board</li><li>Sticky notes &amp; markers</li></ul><a class="btn" href="#top">Grab a marker</a></article>
+<article class="card price price--hot"><h3>Studio</h3><p class="price__amount">$8 <small>/ seat / month</small></p><ul><li>Unlimited boards</li><li>12 editors per board</li><li>Voting, frames &amp; timer</li><li>Export PNG &amp; PDF</li></ul><a class="btn btn--primary" href="#top">Go Studio</a></article>
+<article class="card note--green card--r3 price"><h3>Crew</h3><p class="price__amount">$15 <small>/ seat / month</small></p><ul><li>Everything in Studio</li><li>Unlimited editors</li><li>Private spaces &amp; SSO</li><li>Priority human support</li></ul><a class="btn" href="#top">Round up the crew</a></article>
+</div>
+</section>
+<section class="sec" id="faq">
+<header class="sec__head"><h2 class="sec__title">Squiggly questions, <span class="w w--green">straight answers</span></h2><p>Everything people ask before they pick up a marker.</p></header>
+<div class="faq__search"><label class="sr" for="faqSearch">Search the FAQ</label><input class="input" id="faqSearch" type="search" placeholder="Search the FAQ…"></div>
+<div class="faq">
+<details class="faq__item"><summary>Do I need an account to scribble?<span class="faq__x" aria-hidden="true">+</span></summary><div class="faq__a"><p>Nope. Board owners share a link and guests can draw right away — you only sign up when you want to save or own a board.</p></div></details>
+<details class="faq__item"><summary>Can I bring my existing boards over?<span class="faq__x" aria-hidden="true">+</span></summary><div class="faq__a"><p>Yes. Paste images, import sticky notes from a CSV, or drag in old exports. Full project migration lands this spring.</p></div></details>
+<details class="faq__item"><summary>Is Nimbus free for classrooms?<span class="faq__x" aria-hidden="true">+</span></summary><div class="faq__a"><p>It is. Verify with a school email and your whole class gets Studio features free, forever — markers included.</p></div></details>
+</div>
+<p class="empty" id="faqEmpty" hidden><span class="ms" aria-hidden="true">search_off</span>No doodles found — try another word!</p>
+</section>
+<section class="cta" aria-labelledby="ctaTitle">
+<h2 id="ctaTitle">Ready to cover a <span class="hl">whole board</span> in ideas?</h2>
+<p>Drop your email and we&rsquo;ll send a magic link — your first board is ten seconds away.</p>
+<form class="cta__form" id="ctaForm" novalidate>
+<label class="sr" for="email">Email address</label>
+<span class="input-group"><input class="input" id="email" name="email" type="email" placeholder="you@team.com" autocomplete="email" required><span class="field__state"><span class="ms" aria-hidden="true"></span></span></span>
+<button class="btn btn--primary" type="submit"><span class="ms" aria-hidden="true">send</span>Send my magic link</button>
+<p class="field__msg" id="ctaMsg" aria-live="polite" role="status"></p>
+</form>
+</section>
+</main>
+<footer class="footer">
+<nav class="footer__links" aria-label="Secondary"><a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a><a href="#top">Privacy</a><a href="#top">Terms</a><a href="#top">Contact</a></nav>
+<p class="footer__copy">&copy; 2026 Nimbus · Drawn with care, shipped with ideas.</p>
+</footer>
+</div>
+<script>
+(function(){var d=document,root=d.documentElement,tb=d.getElementById('theme');
+tb.addEventListener('click',function(){var dark=root.classList.toggle('dark');tb.setAttribute('aria-pressed',dark);tb.setAttribute('aria-label',dark?'Switch to light mode':'Switch to dark mode');tb.querySelector('.ms').textContent=dark?'light_mode':'dark_mode';});
+d.querySelectorAll('.faq__item').forEach(function(item){item.addEventListener('toggle',function(){if(item.open)d.querySelectorAll('.faq__item[open]').forEach(function(o){if(o!==item)o.removeAttribute('open');});});});
+var s=d.getElementById('faqSearch'),empty=d.getElementById('faqEmpty');
+if(s)s.addEventListener('input',function(){var q=s.value.trim().toLowerCase(),n=0;d.querySelectorAll('.faq__item').forEach(function(it){var hit=!q||it.textContent.toLowerCase().indexOf(q)>-1;it.hidden=!hit;if(hit)n++;});empty.hidden=n>0;});
+var f=d.getElementById('ctaForm');
+if(f)f.addEventListener('submit',function(e){e.preventDefault();
+var g=f.querySelector('.input-group'),ok=/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(f.email.value.trim()),msg=d.getElementById('ctaMsg'),b=f.querySelector('button');
+g.setAttribute('data-state',ok?'ok':'err');
+g.querySelector('.field__state .ms').textContent=ok?'check_circle':'error';
+msg.textContent=ok?'Hooray! Your magic link is on its way.':'That email looks a bit scribbly — mind checking it?';
+msg.className='field__msg '+(ok?'field__msg--ok':'field__msg--err');
+if(ok){b.classList.add('is-loading');setTimeout(function(){b.classList.remove('is-loading');b.innerHTML='<span class="ms" aria-hidden="true">celebration</span>On the board!';},900);}});
+})();
+</script>
+</body>
+</html>
