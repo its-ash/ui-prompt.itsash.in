@@ -4,11 +4,11 @@ import path from 'node:path';
 
 const DEMO_DIR = path.resolve('design/demos');
 const STATE_FILE = path.resolve('.demo-state.json');
-const CONCURRENCY = Number(process.env.DEMO_CONCURRENCY ?? 4);
+const CONCURRENCY = Number(process.env.DEMO_CONCURRENCY ?? 6);
 const NVIDIA_URL = 'https://integrate.api.nvidia.com/v1/chat/completions';
 const NVIDIA_KEY = process.env.NVIDIA_API_KEY ?? '';
-const MODELS = (process.env.NVIDIA_MODELS ?? 'z-ai/glm-5.3-flash,z-ai/glm-5.3,deepseek-ai/deepseek-v4.1-flash').split(',').map((m) => m.trim()).filter(Boolean);
-const TIMEOUT_MS = Number(process.env.DEMO_TIMEOUT_MS ?? 600000);
+const MODELS = (process.env.NVIDIA_MODELS ?? 'nvidia/nemotron-3-super-120b-a12b,nvidia/nemotron-3.5-lightning-30b-a3b,openai/gpt-oss-20b').split(',').map((m) => m.trim()).filter(Boolean);
+const TIMEOUT_MS = Number(process.env.DEMO_TIMEOUT_MS ?? 480000);
 
 if (!NVIDIA_KEY) {
   console.error('[build-demos] NVIDIA_API_KEY is not set (add it to .env)');
@@ -48,14 +48,27 @@ async function callNvidia(model, userPrompt) {
       ],
       max_tokens: 16000,
       temperature: 0.5,
+      stream: true,
     }),
     signal: AbortSignal.timeout(TIMEOUT_MS),
   });
   if (!res.ok) throw new Error(`NVHTTP ${res.status} ${(await res.text()).slice(0, 160)}`);
-  const data = await res.json();
-  const content = data.choices?.[0]?.message?.content;
-  if (!content?.trim()) throw new Error(`nv empty (${data.choices?.[0]?.finish_reason ?? 'unknown'})`);
-  return content.trim();
+  const dec = new TextDecoder();
+  let buf = '';
+  let out = '';
+  for await (const chunk of res.body) {
+    buf += dec.decode(chunk, { stream: true });
+    const lines = buf.split('\n');
+    buf = lines.pop();
+    for (const line of lines) {
+      if (!line.startsWith('data: {')) continue;
+      try {
+        out += JSON.parse(line.slice(6)).choices?.[0]?.delta?.content ?? '';
+      } catch {}
+    }
+  }
+  if (!out.trim()) throw new Error(`${model} empty`);
+  return out.trim();
 }
 
 async function callModel(userPrompt) {
@@ -68,6 +81,7 @@ async function callModel(userPrompt) {
       throw new Error(`${model} weak output (len ${out.length})`);
     } catch (err) {
       lastErr = err;
+      console.error(`retry ${model} attempt ${attempt}: ${String(err?.message ?? err).slice(0, 120)}`);
       const wait = /NVHTTP 429/.test(String(err)) ? attempt * 30000 : attempt * 5000;
       if (attempt < 6) await new Promise((r) => setTimeout(r, wait));
     }
