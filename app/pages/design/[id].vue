@@ -63,8 +63,80 @@ const promptSize = computed(() => {
 
 const words = computed(() => (prompt.value ? prompt.value.trim().split(/\s+/).length : 0));
 
+const { siteUrl, siteName } = useRuntimeConfig().public;
+const pageUrl = computed(() => `${siteUrl}/design/${id.value}/`);
+const baseName = (n: string) => n.replace(/\s+UI$/i, '').trim().toLowerCase();
+const isDupName = computed(() =>
+  meta.value ? library.value.index.filter((i) => baseName(i.name) === baseName(meta.value!.name)).length > 1 : false
+);
+const themeLabel = computed(() => {
+  if (!meta.value) return '';
+  const name = /\bUI$/i.test(meta.value.name) ? meta.value.name : `${meta.value.name} UI`;
+  return isDupName.value ? `${name} No. ${id.value.split('-')[0]}` : name;
+});
+const seoTitle = computed(() => (meta.value ? `${themeLabel.value} Theme Prompt | ${siteName}` : `Theme not found | ${siteName}`));
+const seoDesc = computed(() => {
+  if (!meta.value) return 'This theme is not in the library.';
+  const base =
+    meta.value.description.trim() ||
+    `${meta.value.name} is a ${meta.value.category} UI theme${meta.value.era ? ` (${meta.value.era})` : ''}${meta.value.keywords.length ? ` with ${meta.value.keywords.slice(0, 4).join(', ')}` : ''}.`;
+  const full = `${base} Copy the ${meta.value.name} build prompt and view a live demo.`;
+  if (full.length <= 160) return full;
+  if (base.length <= 160) return base;
+  return `${base.slice(0, 159).replace(/[\s,;:.]+\S*$/, '')}…`;
+});
+const ogImage = computed(() => (meta.value?.hasThumb ? `${siteUrl}/data/thumbs/${id.value}.jpg` : `${siteUrl}/og.png`));
+
+useSeoMeta({
+  title: seoTitle,
+  description: seoDesc,
+  robots: () => (notFound.value ? 'noindex, follow' : 'index, follow, max-image-preview:large'),
+  keywords: () => meta.value?.keywords.join(', '),
+  ogTitle: seoTitle,
+  ogDescription: seoDesc,
+  ogType: 'article',
+  ogUrl: pageUrl,
+  ogImage,
+  ogImageAlt: () => (meta.value ? `${meta.value.name} demo landing page` : siteName),
+  twitterTitle: seoTitle,
+  twitterDescription: seoDesc,
+  twitterImage: ogImage,
+});
+
 useHead(() => ({
-  title: meta.value ? `${meta.value.name} - PromptDeck` : 'PromptDeck',
+  link: [{ rel: 'canonical', href: pageUrl.value }],
+  script: meta.value
+    ? [
+        {
+          type: 'application/ld+json',
+          innerHTML: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@graph': [
+              {
+                '@type': 'CreativeWork',
+                '@id': `${pageUrl.value}#theme`,
+                url: pageUrl.value,
+                name: `${themeLabel.value} Theme Prompt`,
+                description: seoDesc.value,
+                keywords: meta.value.keywords.join(', '),
+                genre: meta.value.category,
+                image: ogImage.value,
+                inLanguage: 'en',
+                isAccessibleForFree: true,
+                isPartOf: { '@id': `${siteUrl}/#website` },
+              },
+              {
+                '@type': 'BreadcrumbList',
+                itemListElement: [
+                  { '@type': 'ListItem', position: 1, name: siteName, item: `${siteUrl}/` },
+                  { '@type': 'ListItem', position: 2, name: meta.value.name, item: pageUrl.value },
+                ],
+              },
+            ],
+          }),
+        },
+      ]
+    : [],
 }));
 </script>
 

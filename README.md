@@ -1,4 +1,4 @@
-# PromptDeck
+# UI-Prompt
 
 UI theme prompt library. Browse 833 design themes by category, open a theme in full view, copy the build prompt and paste it into an AI coding agent.
 

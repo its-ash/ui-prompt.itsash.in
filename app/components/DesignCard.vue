@@ -15,7 +15,7 @@ const meta = computed(() => props.item.era || props.item.category);
 </script>
 
 <template>
-  <NuxtLink :to="`/design/${item.id}`" class="tk" :aria-label="`View ${item.name} theme and prompt`">
+  <NuxtLink :to="`/design/${item.id}/`" class="tk" :aria-label="`View ${item.name} theme and prompt`">
     <span class="tk__frame" aria-hidden="true">
       <span class="tk__shot" :style="item.hasThumb ? undefined : { background: swatch }">
         <img

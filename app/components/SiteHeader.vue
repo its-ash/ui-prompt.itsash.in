@@ -27,9 +27,9 @@ function onSearch() {
 <template>
   <header class="hd">
     <div class="hd__bar">
-      <NuxtLink to="/" class="hd__brand" aria-label="PromptDeck home">
-        <span class="hd__mark" aria-hidden="true"></span>
-        <span class="hd__name">PromptDeck</span>
+      <NuxtLink to="/" class="hd__brand" aria-label="UI-Prompt home">
+        <img class="hd__mark" src="/favicon.svg" width="18" height="18" alt="" />
+        <span class="hd__name">UI-Prompt</span>
         <span v-if="count" class="hd__count mono">{{ count }}</span>
       </NuxtLink>
       <form class="hd__search" role="search" @submit.prevent="onSearch">
@@ -208,9 +208,8 @@ function onSearch() {
 .hd__mark {
   width: 18px;
   height: 18px;
-  border-radius: 5px;
-  background: var(--text);
-  display: inline-block;
+  display: block;
+  image-rendering: pixelated;
 }
 
 .hd__name {

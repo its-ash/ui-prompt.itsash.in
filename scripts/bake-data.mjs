@@ -7,6 +7,7 @@ const PROMPTS_DIR = path.join(ROOT, 'design/prompts');
 const DEMOS_DIR = path.join(ROOT, 'design/demos');
 const THUMBS_DIR = path.join(ROOT, 'design/thumbs');
 const OUT_DIR = path.join(ROOT, 'public/data');
+const SITE_URL = 'https://ui-prompt.itsash.in';
 
 fs.rmSync(path.join(OUT_DIR, 'prompts'), { recursive: true, force: true });
 fs.rmSync(path.join(OUT_DIR, 'demos'), { recursive: true, force: true });
@@ -53,6 +54,16 @@ fs.writeFileSync(
   path.join(OUT_DIR, 'library-index.json'),
   JSON.stringify({ generatedAt: new Date().toISOString(), categories, index })
 );
+
+const today = new Date().toISOString().slice(0, 10);
+const urls = [`${SITE_URL}/`, ...index.map((i) => `${SITE_URL}/design/${encodeURIComponent(i.id)}/`)];
+fs.writeFileSync(
+  path.join(ROOT, 'public/sitemap.xml'),
+  `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls
+    .map((u, n) => `  <url><loc>${u}</loc><lastmod>${today}</lastmod><priority>${n ? '0.8' : '1.0'}</priority></url>`)
+    .join('\n')}\n</urlset>\n`
+);
+fs.writeFileSync(path.join(ROOT, 'public/robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${SITE_URL}/sitemap.xml\n`);
 
 console.log(
   `[bake-data] ${index.length} themes, ${index.filter((i) => i.ready).length} ready, ${index.filter((i) => i.hasDemo).length} demos, ${index.filter((i) => i.hasThumb).length} thumbs, ${categories.length} categories; per-theme prompts in public/data/prompts`

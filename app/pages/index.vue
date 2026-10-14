@@ -36,7 +36,49 @@ const grouped = computed(() => {
   return groups;
 });
 
-useHead({ title: 'PromptDeck - UI Theme Prompt Library' });
+const { siteUrl, siteName, siteDescription } = useRuntimeConfig().public;
+const pageTitle = `${siteName} - ${items.value.length || 833} UI Theme Prompts with Live Demos`;
+
+useSeoMeta({
+  title: pageTitle,
+  description: siteDescription,
+  ogTitle: pageTitle,
+  ogDescription: siteDescription,
+  ogType: 'website',
+  ogUrl: `${siteUrl}/`,
+  ogImage: `${siteUrl}/og.png`,
+  ogImageWidth: 1200,
+  ogImageHeight: 630,
+  ogImageAlt: `${siteName} library of UI theme previews`,
+  twitterTitle: pageTitle,
+  twitterDescription: siteDescription,
+  twitterImage: `${siteUrl}/og.png`,
+});
+
+useHead({
+  link: [{ rel: 'canonical', href: `${siteUrl}/` }],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@graph': [
+          { '@type': 'WebSite', '@id': `${siteUrl}/#website`, url: `${siteUrl}/`, name: siteName, description: siteDescription, inLanguage: 'en' },
+          {
+            '@type': 'CollectionPage',
+            '@id': `${siteUrl}/#collection`,
+            url: `${siteUrl}/`,
+            name: pageTitle,
+            description: siteDescription,
+            isPartOf: { '@id': `${siteUrl}/#website` },
+            about: categories.value.map((c) => ({ '@type': 'Thing', name: c })),
+            mainEntity: { '@type': 'ItemList', numberOfItems: items.value.length },
+          },
+        ],
+      }),
+    },
+  ],
+});
 </script>
 
 <template>

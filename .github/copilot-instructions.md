@@ -1,9 +1,9 @@
 ---
-name: PromptDeck
+name: UI-Prompt
 description: Static Nuxt site - UI theme prompt library rendered to docs/ for GitHub Pages
 ---
 
-# PromptDeck
+# UI-Prompt
 
 Prompt library site. Users filter by category, open a design full view, copy the build prompt.
 
@@ -16,6 +16,7 @@ Prompt library site. Users filter by category, open a design full view, copy the
 - `make categorize` - regenerate `design/categories.json`
 - `make demos` - build missing demo pages in `design/demos` via NVIDIA (needs `NVIDIA_API_KEY` in `.env`); skips done demos
 - `make thumbs` - screenshot new/changed demos to `design/thumbs/*.jpg` (Playwright); also runs in `npm run generate`
+- `make brand` - render `public/og.png` (1200x630 share image), `apple-touch-icon.png` and `favicon.ico` from `public/favicon.svg`
 
 ## Structure
 
@@ -28,9 +29,16 @@ Prompt library site. Users filter by category, open a design full view, copy the
 - `server/api/` - API reads `design/` at runtime; generation step bakes data at build time
 - `docs/` - GitHub Pages artifact, committed to the repo
 
+## SEO
+
+- Site constants (`SITE_URL`, name, description, GA id) live at the top of `nuxt.config.ts`; pages read them via `useRuntimeConfig().public`.
+- Theme URLs always end with `/` (GitHub Pages serves `design/<id>/index.html`); links, canonicals and sitemap must match.
+- `bake-data.mjs` writes `public/sitemap.xml` and `public/robots.txt`.
+- Theme pages: unique title (name + `No. <nnn>` when names collide), description <= 160 chars, CreativeWork + BreadcrumbList JSON-LD, thumbnail as og:image.
+
 ## Deploy
 
-GitHub Pages via `docs/` folder. Repo settings: Pages -> deploy from branch -> main -> /docs.
+GitHub Pages via `docs/` folder. Repo settings: Pages -> deploy from branch -> main -> /docs. Custom domain `ui-prompt.itsash.in` via `public/CNAME` (copied into `docs/` on every build).
 
 ## Prompt pipeline
 

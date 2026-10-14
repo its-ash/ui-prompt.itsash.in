@@ -27,4 +27,7 @@ demos:
 thumbs:
 	node scripts/build-thumbs.mjs
 
-.PHONY: run build docs deploy process categorize demos thumbs
+brand:
+	node scripts/build-brand.mjs
+
+.PHONY: run build docs deploy process categorize demos thumbs brand
