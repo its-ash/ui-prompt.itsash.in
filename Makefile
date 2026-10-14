@@ -30,4 +30,11 @@ thumbs:
 brand:
 	node scripts/build-brand.mjs
 
-.PHONY: run build docs deploy process categorize demos thumbs brand
+check-dark:
+	node scripts/check-dark.mjs
+
+fix-dark: check-dark
+	node --env-file-if-exists=.env scripts/fix-dark.mjs
+	node scripts/check-dark.mjs
+
+.PHONY: run build docs deploy process categorize demos thumbs brand check-dark fix-dark

@@ -1,19 +1,14 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
+import { MODELS, callModel, looksLikeHtml, requireKey } from './lib/nvidia.mjs';
 
 const DEMO_DIR = path.resolve('design/demos');
 const STATE_FILE = path.resolve('.demo-state.json');
+const ONLY = process.env.DEMO_ONLY ? process.env.DEMO_ONLY.split(',').map((s) => s.trim()) : null;
 const CONCURRENCY = Number(process.env.DEMO_CONCURRENCY ?? 6);
-const NVIDIA_URL = 'https://integrate.api.nvidia.com/v1/chat/completions';
-const NVIDIA_KEY = process.env.NVIDIA_API_KEY ?? '';
-const MODELS = (process.env.NVIDIA_MODELS ?? 'nvidia/nemotron-3-super-120b-a12b,nvidia/nemotron-3.5-lightning-30b-a3b,openai/gpt-oss-20b').split(',').map((m) => m.trim()).filter(Boolean);
-const TIMEOUT_MS = Number(process.env.DEMO_TIMEOUT_MS ?? 480000);
 
-if (!NVIDIA_KEY) {
-  console.error('[build-demos] NVIDIA_API_KEY is not set (add it to .env)');
-  process.exit(1);
-}
+requireKey('build-demos');
 
 fs.mkdirSync(DEMO_DIR, { recursive: true });
 
@@ -36,83 +31,10 @@ Output rules:
 - All copy in English, realistic, product-agnostic ("Nimbus" as brand unless the spec names one).
 - Respect prefers-reduced-motion. No horizontal scroll. Buttons min 44px height.`;
 
-async function callNvidia(model, userPrompt) {
-  const res = await fetch(NVIDIA_URL, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${NVIDIA_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: 'system', content: SYSTEM },
-        { role: 'user', content: userPrompt },
-      ],
-      max_tokens: 16000,
-      temperature: 0.5,
-      stream: true,
-    }),
-    signal: AbortSignal.timeout(TIMEOUT_MS),
-  });
-  if (!res.ok) throw new Error(`NVHTTP ${res.status} ${(await res.text()).slice(0, 160)}`);
-  const dec = new TextDecoder();
-  let buf = '';
-  let out = '';
-  for await (const chunk of res.body) {
-    buf += dec.decode(chunk, { stream: true });
-    const lines = buf.split('\n');
-    buf = lines.pop();
-    for (const line of lines) {
-      if (!line.startsWith('data: {')) continue;
-      try {
-        out += JSON.parse(line.slice(6)).choices?.[0]?.delta?.content ?? '';
-      } catch {}
-    }
-  }
-  if (!out.trim()) throw new Error(`${model} empty`);
-  return out.trim();
-}
-
-async function callModel(userPrompt) {
-  let lastErr;
-  for (let attempt = 1; attempt <= 6; attempt++) {
-    const model = MODELS[(attempt - 1) % MODELS.length];
-    try {
-      const out = cleanHtml(await callNvidia(model, userPrompt));
-      if (looksLikeHtml(out)) return out;
-      throw new Error(`${model} weak output (len ${out.length})`);
-    } catch (err) {
-      lastErr = err;
-      console.error(`retry ${model} attempt ${attempt}: ${String(err?.message ?? err).slice(0, 120)}`);
-      const wait = /NVHTTP 429/.test(String(err)) ? attempt * 30000 : attempt * 5000;
-      if (attempt < 6) await new Promise((r) => setTimeout(r, wait));
-    }
-  }
-  throw lastErr;
-}
-
-function cleanHtml(text) {
-  let out = text.trim();
-  const fence = out.match(/^```(?:html)?\n?([\s\S]*?)\n?```$/);
-  if (fence) out = fence[1].trim();
-  const doc = out.search(/<!DOCTYPE html|<html/i);
-  if (doc > 0) out = out.slice(doc);
-  return out;
-}
-
-function looksLikeHtml(out) {
-  return (
-    /<!DOCTYPE html/i.test(out) &&
-    /<\/html>/i.test(out) &&
-    /<title>[^<]*<\/title>/i.test(out) &&
-    /<style[\s>]/i.test(out) &&
-    !/<link[^>]+href=["'](?!https?:)[^"']+\.css/i.test(out) &&
-    out.length > 3000
-  );
-}
-
 async function buildDemo(file) {
   const id = path.basename(file, '.md');
   const outPath = path.join(DEMO_DIR, `${id}.html`);
-  if (fs.existsSync(outPath) && looksLikeHtml(fs.readFileSync(outPath, 'utf8'))) {
+  if (!ONLY && fs.existsSync(outPath) && looksLikeHtml(fs.readFileSync(outPath, 'utf8'))) {
     console.log(`skip  ${id}`);
     return;
   }
@@ -121,7 +43,8 @@ async function buildDemo(file) {
   const spec = fs.readFileSync(promptPath, 'utf8');
 
   const out = await callModel(
-    `${spec}\n\n---\nDELIVERY OVERRIDE: Output one self-contained HTML file. Put every CSS rule the spec assigns to style.css inside a single <style> tag in <head>, and every script inside an inline <script>. No local <link rel="stylesheet">, no <script src> to local files. Close the <title> tag.`
+    SYSTEM,
+    `${spec}\n\n---\nDELIVERY OVERRIDE: Output one self-contained HTML file. Put every CSS rule the spec assigns to style.css inside a single <style> tag in <head>, and every script inside an inline <script>. No local <link rel="stylesheet">, no <script src> to local files. Close the <title> tag.\nQUALITY: Define colors as CSS variables on :root and a full dark palette under :root[data-theme="dark"]; a visible theme toggle button sits in the nav (id="theme-toggle", aria-pressed, sun/moon icon, contrast in both modes). Every section has generous, consistent vertical padding; the hero fills its width (two-column with a real visual, or centered) with no empty half.`
   );
   if (!looksLikeHtml(out)) throw new Error(`not html (len ${out.length})`);
   fs.writeFileSync(outPath, out + '\n');
@@ -135,6 +58,7 @@ const prompts = fs
   .filter((f) => f.endsWith('.md'))
   .filter((f) => {
     const id = path.basename(f, '.md');
+    if (ONLY) return ONLY.includes(id);
     const out = path.join(DEMO_DIR, `${id}.html`);
     return !(fs.existsSync(out) && looksLikeHtml(fs.readFileSync(out, 'utf8')));
   });

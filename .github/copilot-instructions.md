@@ -16,6 +16,8 @@ Prompt library site. Users filter by category, open a design full view, copy the
 - `make categorize` - regenerate `design/categories.json`
 - `make demos` - build missing demo pages in `design/demos` via NVIDIA (needs `NVIDIA_API_KEY` in `.env`); skips done demos
 - `make thumbs` - screenshot new/changed demos to `design/thumbs/*.jpg` (Playwright); also runs in `npm run generate`
+- `make check-dark` - Playwright check that each demo has a working dark mode (toggle click or prefers-color-scheme); results in `design/dark-check.json`
+- `make fix-dark` - send demos with no dark mode to NVIDIA to add a `[data-theme="dark"]` palette + toggle, then re-check
 - `make brand` - render `public/og.png` (1200x630 share image), `apple-touch-icon.png` and `favicon.ico` from `public/favicon.svg`
 
 ## Structure
