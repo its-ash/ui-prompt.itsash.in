@@ -1,1149 +1,657 @@
 <!DOCTYPE html>
-<html lang="en" class="light">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nimbus - Collaborative 3D Design</title>
+<title>Clayform - Collaborative 3D Prototyping in Your Browser</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/icon2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet">
 <style>
+/* ============ TOKENS ============ */
 :root{
---primary:#6d5ae6;
---secondary:#ff9e7d;
---bg-primary:#eef1fb;
---bg-secondary:#fefefe;
---text-primary:#2d2a45;
---text-secondary:#6b6690;
---text-success:#0e7a5f;
---text-error:#e5484d;
---border-default:#dcd9f2;
---border-error:#e5484d;
---border-success:#7be0c4;
---radius-sm:16px;
---radius-md:24px;
---radius-lg:32px;
---radius-pill:999px;
---shadow-sm:6px 6px 14px rgba(151,143,199,.28), -4px -4px 12px rgba(255,255,255,.85);
---shadow-md:10px 10px 24px rgba(151,143,199,.32), -6px -6px 18px rgba(255,255,255,.9);
---shadow-lg:16px 16px 40px rgba(151,143,199,.36), -10px -10px 26px rgba(255,255,255,.95);
---shadow-inset-hi:inset 2px 2px 4px rgba(255,255,255,.9), inset -2px -2px 6px rgba(151,143,199,.25);
---spacing-gap:24px;
---transition-fast:150ms;
---transition-normal:250ms;
---ease-standard:cubic-bezier(0.2,0,0,1);
---ease-entrance:cubic-bezier(0,0,0,1);
---ease-exit:cubic-bezier(0.3,0,1,1);
---z-dropdown:100;
---z-modal:200;
---z-toast:300;
---surface-strong:#f6f4ff;
---accent:#ff9e7d;
---mint:#7be0c4;
---clay-gradient:linear-gradient(160deg, #fefefe 0%, #f3f1ff 60%, #e9e5ff 100%);
---relief-highlight:rgba(255,255,255,.9);
---relief-shadow:rgba(151,143,199,.32);
---text-xs:.75rem;
---text-sm:.875rem;
---text-base:1rem;
---text-lg:1.125rem;
---text-xl:1.25rem;
---text-2xl:1.5rem;
---text-3xl:1.875rem;
---text-4xl:2.25rem;
---text-5xl:3rem;
---space-1:4px;
---space-2:8px;
---space-3:12px;
---space-4:16px;
---space-5:20px;
---space-6:24px;
---space-8:32px;
---space-12:48px;
---space-16:64px;
---space-24:96px;
---font-sans:Inter,system-ui,sans-serif;
---font-display:Quicksand,sans-serif;
-}
-.dark{
---primary:#9d8dff;
---secondary:#ffb397;
---bg-primary:#211e33;
---bg-secondary:#2b2847;
---surface-strong:#322e52;
---text-primary:#f1efff;
---text-secondary:#a8a2cf;
---text-success:#7be0c4;
---text-error:#ff8a8f;
---border-default:rgba(255,255,255,.12);
---border-error:#ff8a8f;
---border-success:#7be0c4;
---clay-gradient:linear-gradient(160deg, #37335c 0%, #2c2949 60%, #25223d 100%);
---relief-highlight:rgba(255,255,255,.07);
---relief-shadow:rgba(0,0,0,.4);
-}
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-}
-body{
-font-family:var(--font-sans);
-background-color:var(--bg-primary);
-color:var(--text-primary);
-line-height:1.6;
-}
-.skip-link{
-position:absolute;
-left:-999px;
-top:auto;
-width:1px;
-height:1px;
-overflow:hidden;
-}
-.skip-link:focus{
-left:0;
-top:0;
-width:auto;
-height:auto;
-overflow:visible;
-background:var(--bg-secondary);
-padding:8px 16px;
-border-radius:var(--radius-sm);
-box-shadow:var(--shadow-md);
-z-index:1000;
-}
-header{
-position:sticky;
-top:0;
-background:var(--clay-gradient);
-box-shadow:var(--shadow-md);
-padding:var(--space-4) var(--space-6);
-display:flex;
-align-items:center;
-justify-content:space-between;
-gap:var(--space-4);
-z-index:var(--z-dropdown);
-}
-.nav-brand{
-display:flex;
-align-items:center;
-gap:var(--space-2);
-font-family:var(--font-display);
-font-weight:600;
-color:var(--text-primary);
-text-decoration:none;
-}
-.nav-brand .material-symbols-rounded{
-font-variation-settings:
-'FILL' 0,
-'wght' 400,
-'GRAD' 0,
-'oper' 20;
-}
-.nav-links{
-display:flex;
-gap:var(--space-6);
-align-items:center;
-}
-.nav-link{
-color:var(--text-secondary);
-text-decoration:none;
-font-weight:500;
-padding:var(--space-2) 0;
-position:relative;
-}
-.nav-link:hover,
-.nav-link:focus{
-color:var(--text-primary);
-}
-.nav-link::after{
-content:'';
-position:absolute;
-bottom:-4px;
-left:0;
-width:0;
-height:2px;
-background:var(--primary);
-transition:width var(--transition-normal) var(--ease-standard);
-}
-.nav-link:hover::after,
-.nav-link:focus::after{
-width:100%;
-}
-.theme-toggle{
-background:none;
-border:none;
-color:var(--text-primary);
-font-size:1.25rem;
-cursor:pointer;
-padding:var(--space-2);
-border-radius:var(--radius-sm);
-display:flex;
-align-items:center;
-justify-content:center;
-transition:background-color var(--transition-normal);
-}
-.theme-toggle:hover{
-background-color:rgba(0,0,0,.05);
-}
-.theme-toggle[aria-pressed="true"] .material-symbols-rounded{content:"dark_mode";}
-.theme-toggle[aria-pressed="false"] .material-symbols-rounded{content:"light_mode";}
-.nav-cta{
-margin-left:auto;
-}
-.mobile-nav-toggle{
-display:none;
-background:none;
-border:none;
-color:var(--text-primary);
-font-size:1.5rem;
-cursor:pointer;
-padding:var(--space-2);
-}
-@media(max-width:768px){
-.nav-links{
-position:fixed;
-top:0;
-right:-100%;
-height:100vh;
-width:250px;
-background:var(--clay-gradient);
-flex-direction:column;
-align-items:flex-start;
-padding:var(--space-24) var(--space-6);
-gap:var(--space-8);
-transition:right var(--transition-normal) var(--ease-standard);
-z-index:var(--z-dropdown);
-}
-.nav-links.active{
-right:0;
-}
-.mobile-nav-toggle{
-display:block;
-}
-}
-section{
-padding:var(--space-24) 0;
-}
-.section-header{
-text-align:center;
-margin-bottom:var(--space-24);
-}
-.section-header .badge{
-display:inline-block;
-margin-bottom:var(--space-4);
-}
-.section-header h2{
-font-family:var(--font-display);
-font-size:clamp(1.5rem, 5vw, 2.5rem);
-margin-bottom:var(--space-4);
-color:var(--text-primary);
-}
-.section-header p{
-color:var(--text-secondary);
-max-width:600px;
-margin-left:auto;
-margin-right:auto;
-font-size:var(--text-lg);
-}
-.features-grid,
-.steps-grid,
-.testimonials-grid,
-.pricing-grid,
-.faq-grid,
-.footer-links{
-display:flex;
-gap:var(--spacing-gap);
-}
-@media(max-width:768px){
-.features-grid,
-.steps-grid,
-.testimonials-grid,
-.pricing-grid,
-.faq-grid,
-.footer-links{
-flex-direction:column;
-}
-}
-.btn{
-display:flex;
-align-items:center;
-justify-content:center;
-gap:var(--space-2);
-min-height:44px;
-padding:0 var(--space-6);
-font-weight:600;
-border:none;
-border-radius:var(--radius-pill);
-background:var(--clay-gradient);
-box-shadow:var(--shadow-sm);
-color:var(--text-primary);
-cursor:pointer;
-transition:transform var(--transition-fast) var(--ease-standard), box-shadow var(--transition-fast) var(--ease-standard);
-font-family:var(--font-sans);
-}
-.btn:hover{
-transform:translateY(-2px);
-box-shadow:var(--shadow-md);
-}
-.btn:focus-visible{
-outline:2px solid var(--primary);
-outline-offset:3px;
-}
-.btn:active{
-transform:scale(0.97);
-box-shadow:var(--shadow-inset-hi);
-}
-.btn--primary{
-background:linear-gradient(160deg, var(--primary) 0%, #5a46d1 100%);
-color:#fff;
-}
-.btn--ghost{
-background:transparent;
-color:var(--primary);
-box-shadow:none;
-}
-.btn--ghost:hover{
-background-color:rgba(109,90,230,.1);
-}
-.btn--danger{
-background:linear-gradient(160deg, var(--text-error) 0%, #c03a40 100%);
-color:#fff;
-}
-.btn.is-loading{
-pointer-events:none;
-opacity:.7;
-}
-.btn.is-loading::after{
-content:"";
-display:inline-block;
-width:1rem;
-height:1rem;
-border:2px solid currentColor;
-border-top-color:transparent;
-border-radius:50%;
-animation:spin .8s linear infinite;
-margin-left:var(--space-2);
-}
-@keyframes spin{
-to{transform:rotate(360deg);}
-}
-.card{
-background:var(--clay-gradient);
-border-radius:var(--radius-lg);
-box-shadow:var(--shadow-lg);
-padding:var(--space-6);
-display:flex;
-flex-direction:column;
-align-items:flex-start;
-gap:var(--space-4);
-transition:transform var(--transition-normal) var(--ease-standard), box-shadow var(--transition-normal) var(--ease-standard);
-}
-.card:hover{
-transform:translateY(-2px);
-box-shadow:var(--shadow-md);
-}
-.card:focus-within{
-outline:2px solid var(--primary);
-outline-offset:4px;
-}
-.icon-tile{
-width:48px;
-height:48px;
-background:var(--clay-gradient);
-border-radius:var(--radius-md);
-box-shadow:var(--shadow-sm);
-display:flex;
-align-items:center;
-justify-content:center;
-}
-.icon-tile .material-symbols-rounded{
-font-size:1.5rem;
-color:var(--primary);
-font-variation-settings:
-'FILL' 0,
-'wght' 400,
-'GRAD' 0,
-'oper' 20;
-}
-.card h3{
-font-family:var(--font-display);
-font-size:var(--text-xl);
-margin:0;
-color:var(--text-primary);
-}
-.card p{
-color:var(--text-secondary);
-font-size:var(--text-base);
-margin:0;
-flex-grow:1;
-}
-.steps-grid .step{
-display:flex;
-align-items:center;
-gap:var(--space-4);
-}
-.step-number{
-background:var(--clay-gradient);
-color:var(--text-primary);
-font-weight:600;
-width:2.5rem;
-height:2.5rem;
-border-radius:50%;
-display:flex;
-align-items:center;
-justify-content:center;
-font-family:var(--font-display);
-flex-shrink:0;
-}
-.step-content{
-flex-grow:1;
-}
-.step-content h3{
-font-size:var(--text-lg);
-margin-bottom:var(--space-2);
-}
-.step-content p{
-color:var(--text-secondary);
-font-size:var(--text-base);
-}
-.step-connector{
-flex-grow:1;
-height:2px;
-background:var(--border-default);
-margin:0 var(--space-4);
-}
-@media(max-width:768px){
-.step-connector{
-display:none;
-}
-.steps-grid .step{
-flex-direction:column;
-align-items:flex-start;
-}
-}
-.testimonials-grid .card{
-text-align:center;
-align-items:center;
-padding:var(--space-8);
-}
-.testimonials-grid .card p{
-font-style:italic;
-margin-bottom:var(--space-4);
-}
-.rating{
-display:flex;
-justify-content:center;
-gap:var(--space-2);
-margin-bottom:var(--space-4);
-}
-.rating .material-symbols-rounded{
-color:var(--secondary);
-font-size:1.25rem;
-font-variation-settings:
-'FILL' 0,
-'wght' 400,
-'GRAD' 0,
-'oper' 20;
-}
-.avatar{
-width:48px;
-height:48px;
-background:var(--clay-gradient);
-border-radius:50%;
-display:flex;
-align-items:center;
-justify-content:center;
-margin:0 auto var(--space-4);
-font-weight:600;
-color:var(--text-primary);
-font-size:1.125rem;
-}
-.testimonials-grid .card h3{
-margin:0;
-font-size:var(--text-lg);
-}
-.testimonials-grid .card p.text-secondary{
-margin-top:var(--space-2);
-font-size:var(--text-base);
-}
-.pricing-grid .card{
-height:100%;
-display:flex;
-flex-direction:column;
-}
-.pricing-grid .card:hover{
-transform:none;
-}
-.pricing-grid .card.featured{
-box-shadow:var(--shadow-lg);
-transform:scale(1.03);
-z-index:2;
-}
-.pricing-header{
-text-align:center;
-padding-bottom:var(--space-4);
-border-bottom:1px solid var(--border-default);
-margin-bottom:var(--space-6);
-}
-.pricing-header h3{
-font-family:var(--font-display);
-font-size:var(--text-xl);
-margin-bottom:var(--space-2);
-}
-.pricing-header .price{
-font-size:var(--text-3xl);
-font-weight:600;
-color:var(--text-primary);
-}
-.pricing-header .price span{
-font-size:var(--text-lg);
-opacity:0.7;
-}
-.pricing-features{
-flex-grow:1;
-display:flex;
-flex-direction:column;
-gap:var(--space-3);
-margin-bottom:var(--space-6);
-}
-.pricing-features li{
-display:flex;
-align-items:center;
-gap:var(--space-2);
-font-size:var(--text-base);
-color:var(--text-secondary);
-}
-.pricing-features .material-symbols-rounded{
-color:var(--mint);
-font-variation-settings:
-'FILL' 0,
-'wght' 400,
-'GRAD' 0,
-'oper' 20;
-}
-.pricing-footer{
-margin-top:auto;
-}
-.faq-item{
-border-bottom:1px solid var(--border-default);
-padding:var(--space-4) 0;
-}
-.faq-question{
-display:flex;
-align-items:center;
-justify-content:space-between;
-width:100%;
-background:none;
-border:none;
-text-align:left;
-padding:var(--space-3) 0;
-font-family:var(--font-display);
-font-size:var(--text-lg);
-font-weight:600;
-color:var(--text-primary);
-cursor:pointer;
-}
-.faq-question:hover,
-.faq-question:focus{
-color:var(--primary);
-}
-.faq-question .material-symbols-rounded{
-transition:transform var(--transition-normal) var(--ease-standard);
-}
-.faq-question[aria-expanded="true"] .material-symbols-rounded{
-transform:rotate(180deg);
-}
-.faq-answer{
-max-height:0;
-overflow:hidden;
-transition:max-height var(--transition-normal) var(--ease-standard);
-background-color:var(--bg-secondary);
-border-radius:var(--radius-md);
-padding:0 var(--space-6);
-}
-.faq-answer p{
-color:var(--text-secondary);
-font-size:var(--text-base);
-padding:var(--space-3) 0;
-}
-.faq-item[aria-expanded="true"] .faq-answer{
-max-height:200px;
-padding:var(--space-3) var(--space-6);
-}
-.final-cta{
-background:var(--clay-gradient);
-border-radius:var(--radius-lg);
-box-shadow:var(--shadow-lg);
-padding:var(--space-24);
-text-align:center;
-}
-.final-cta h2{
-font-family:var(--font-display);
-font-size:clamp(1.75rem, 5vw, 2.5rem);
-margin-bottom:var(--space-4);
-color:var(--text-primary);
-}
-.final-cta p{
-color:var(--text-secondary);
-max-width:500px;
-margin-left:auto;
-margin-right:auto;
-margin-bottom:var(--space-12);
-font-size:var(--text-lg);
-}
-.input-group{
-display:flex;
-gap:var(--space-4);
-max-width:500px;
-margin-left:auto;
-margin-right:auto;
-}
-.input{
-flex-grow:1;
-padding:var(--space-4) var(--space-6);
-border:none;
-border-radius:var(--radius-md);
-background:var(--surface-strong);
-box-shadow:var(--shadow-inset-hi);
-font-family:var(--font-sans);
-font-size:var(--text-base);
-color:var(--text-primary);
-}
-.input:focus{
-outline:none;
-box-shadow:var(--shadow-inset-hi), 0 0 0 3px color-mix(in srgb, var(--primary) 30%, transparent);
-}
-.input::placeholder{
-color:var(--text-secondary);
-opacity:0.7;
-}
-.feedback-message{
-margin-top:var(--space-2);
-min-height:1.5rem;
-font-size:var(--text-sm);
-}
-.feedback-message.success{
-color:var(--text-success);
-}
-.feedback-message.error{
-color:var(--text-error);
-}
-footer{
-background:var(--clay-gradient);
-padding:var(--space-24) 0;
-}
-.footer-brand{
-display:flex;
-flex-direction:column;
-align-items:center;
-gap:var(--space-4);
-margin-bottom:var(--space-16);
-}
-.footer-brand .nav-brand{
-justify-content:center;
-}
-.footer-one-liner{
-color:var(--text-secondary);
-font-size:var(--text-base);
-text-align:center;
-max-width:400px;
-}
-.footer-social{
-display:flex;
-gap:var(--space-4);
-margin-top:var(--space-4);
-}
-.footer-social .material-symbols-rounded{
-font-size:1.5rem;
-color:var(--text-primary);
-width:44px;
-height:44px;
-display:flex;
-align-items:center;
-justify-content:center;
-border-radius:var(--radius-pill);
-background:var(--surface-strong);
-box-shadow:var(--shadow-sm);
-transition:background-color var(--transition-normal);
-}
-.footer-social .material-symbols-rounded:hover{
-background-color:var(--border-default);
-}
-.footer-links{
-justify-content:center;
-gap:var(--space-12);
-}
-.footer-links h4{
-font-family:var(--font-display);
-font-size:var(--text-lg);
-margin-bottom:var(--space-4);
-color:var(--text-primary);
-}
-.footer-links ul{
-list-style:none;
-display:flex;
-flex-direction:column;
-gap:var(--space-2);
-}
-.footer-links a{
-color:var(--text-secondary);
-text-decoration:none;
-font-size:var(--text-base);
-}
-.footer-links a:hover{
-color:var(--text-primary);
-}
-.footer-bottom{
-display:flex;
-justify-content:center;
-align-items:center;
-gap:var(--space-6);
-margin-top:var(--space-16);
-padding-top:var(--space-8);
-border-top:1px solid var(--border-default);
-font-size:var(--text-sm);
-color:var(--text-secondary);
-}
-.footer-bottom a{
-color:var(--text-primary);
-text-decoration:none;
-}
-.footer-bottom a:hover{
-text-decoration:underline;
-}
-@media(prefers-reduced-motion:reduce){
-*{
-animation-duration:0s !important;
-transition-duration:0s !important;
-}
+  --primary:#6d5ae6; --secondary:#ff9e7d; --accent:#ff9e7d; --mint:#7be0c4;
+  --bg-primary:#eef1fb; --bg-secondary:#fefefe; --surface-strong:#f6f4ff;
+  --text-primary:#2d2a45; --text-secondary:#6b6690;
+  --text-success:#0e7a5f; --text-error:#c93a3f;
+  --border-default:#dcd9f2; --border-error:#e5484d; --border-success:#7be0c4;
+  --on-primary:#ffffff; --on-badge:#14332a;
+  --radius-sm:16px; --radius-md:24px; --radius-lg:32px; --radius-pill:999px;
+  --shadow-sm:6px 6px 14px rgba(151,143,199,.28), -4px -4px 12px rgba(255,255,255,.85);
+  --shadow-md:10px 10px 24px rgba(151,143,199,.32), -6px -6px 18px rgba(255,255,255,.9);
+  --shadow-lg:16px 16px 40px rgba(151,143,199,.36), -10px -10px 26px rgba(255,255,255,.95);
+  --shadow-inset-hi:inset 2px 2px 4px rgba(255,255,255,.9), inset -2px -2px 6px rgba(151,143,199,.25);
+  --clay-gradient:linear-gradient(160deg,#fefefe 0%,#f3f1ff 60%,#e9e5ff 100%);
+  --relief-highlight:rgba(255,255,255,.9); --relief-shadow:rgba(151,143,199,.32);
+  --glow-primary:rgba(109,90,230,.16); --glow-accent:rgba(255,158,125,.18);
+  --spacing-gap:24px;
+  --transition-fast:150ms; --transition-normal:250ms;
+  --ease-standard:cubic-bezier(0.2,0,0,1); --ease-entrance:cubic-bezier(0,0,0,1); --ease-exit:cubic-bezier(0.3,0,1,1);
+  --z-dropdown:100; --z-modal:200; --z-toast:300;
+  --text-xs:.75rem; --text-sm:.875rem; --text-base:1rem; --text-lg:1.125rem; --text-xl:1.25rem; --text-2xl:1.5rem; --text-3xl:2rem; --text-4xl:clamp(2.25rem,5vw,3rem); --text-5xl:4rem;
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:20px; --space-6:24px; --space-8:32px; --space-10:40px; --space-12:48px; --space-16:64px; --space-20:80px; --space-24:96px;
+  --font-sans:'Inter',system-ui,-apple-system,sans-serif;
+  --font-display:'Quicksand','Inter',system-ui,sans-serif;
+}
+:root[data-theme="dark"]{
+  --primary:#9d8dff; --secondary:#ffb397; --accent:#ffb397; --mint:#8bead0;
+  --bg-primary:#211e33; --bg-secondary:#2b2847; --surface-strong:#322e52;
+  --text-primary:#f1efff; --text-secondary:#a8a2cf;
+  --text-success:#7be0c4; --text-error:#ff8a8f;
+  --border-default:rgba(255,255,255,.12); --border-error:#ff8a8f; --border-success:#8bead0;
+  --on-primary:#1c1930; --on-badge:#14332a;
+  --shadow-sm:6px 6px 14px rgba(8,6,20,.5), -4px -4px 12px rgba(255,255,255,.05);
+  --shadow-md:10px 10px 24px rgba(8,6,20,.55), -6px -6px 18px rgba(255,255,255,.06);
+  --shadow-lg:16px 16px 40px rgba(8,6,20,.6), -10px -10px 26px rgba(255,255,255,.07);
+  --shadow-inset-hi:inset 2px 2px 4px rgba(255,255,255,.08), inset -2px -2px 6px rgba(8,6,20,.4);
+  --clay-gradient:linear-gradient(160deg,#37335c 0%,#2c2949 60%,#25223d 100%);
+  --relief-highlight:rgba(255,255,255,.07); --relief-shadow:rgba(8,6,20,.5);
+  --glow-primary:rgba(157,141,255,.14); --glow-accent:rgba(255,179,151,.12);
+}
+/* ============ BASE ============ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-sans);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;font-size:var(--text-base);overflow-x:hidden;transition:background var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard)}
+h1,h2,h3{font-family:var(--font-display);line-height:1.12;letter-spacing:-.02em;color:var(--text-primary)}
+h1{font-size:var(--text-4xl);font-weight:700}
+h2{font-size:clamp(1.75rem,3.5vw,2.5rem);font-weight:700}
+h3{font-size:var(--text-xl);font-weight:600}
+img{max-width:100%}
+a{color:var(--primary);text-decoration:none}
+section{scroll-margin-top:110px}
+.container{max-width:1200px;margin:0 auto;padding-left:var(--space-5);padding-right:var(--space-5)}
+.section{padding:var(--space-24) 0}
+.section__head{text-align:center;max-width:640px;margin:0 auto var(--space-12)}
+.section__lede{color:var(--text-secondary);font-size:var(--text-lg);margin-top:var(--space-3)}
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.skip-link{position:absolute;left:var(--space-4);top:-60px;z-index:var(--z-toast);background:var(--primary);color:var(--on-primary);padding:var(--space-3) var(--space-5);border-radius:var(--radius-pill);font-weight:600;transition:top var(--transition-fast)}
+.skip-link:focus{top:var(--space-4)}
+.material-symbols-rounded{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;font-size:24px;line-height:1}
+/* ============ REVEAL ============ */
+.reveal{opacity:0;transform:translateY(18px) scale(.97);transition:opacity .5s var(--ease-entrance),transform .5s var(--ease-entrance)}
+.reveal.is-visible{opacity:1;transform:none}
+/* ============ BUTTONS ============ */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;min-width:44px;padding:.7rem 1.6rem;border:none;border-radius:var(--radius-pill);background:var(--clay-gradient);box-shadow:var(--shadow-sm);color:var(--text-primary);font-family:var(--font-sans);font-weight:600;font-size:var(--text-base);cursor:pointer;transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard),opacity var(--transition-fast)}
+.btn--primary{background:linear-gradient(160deg,var(--primary) 0%,#5a46d1 100%);color:var(--on-primary)}
+:root[data-theme="dark"] .btn--primary{background:linear-gradient(160deg,var(--primary) 0%,#7f6cf0 100%);color:var(--on-primary)}
+.btn--ghost{background:transparent;box-shadow:none;color:var(--primary)}
+.btn--danger{background:linear-gradient(160deg,#e5484d 0%,#c93a3f 100%);color:#fff}
+@media (hover:hover) and (pointer:fine){
+  .btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:var(--shadow-md)}
+  .btn--ghost:hover:not(:disabled){box-shadow:var(--shadow-sm)}
+}
+.btn:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+.btn:active:not(:disabled){transform:scale(.97);box-shadow:var(--shadow-inset-hi)}
+.btn:disabled{opacity:.5;filter:grayscale(.6);cursor:not-allowed;transform:none}
+.btn.is-loading{pointer-events:none;position:relative}
+.btn.is-loading .btn__label{visibility:hidden}
+.btn.is-loading::after{content:"";position:absolute;width:20px;height:20px;border:3px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.btn.is-success{background:linear-gradient(160deg,var(--mint),#5ccdaa);color:var(--on-badge)}
+.btn.is-error{background:linear-gradient(160deg,#e5484d,#c93a3f);color:#fff}
+/* ============ BADGE / ICON TILE ============ */
+.badge{display:inline-flex;align-items:center;gap:.4em;font-size:var(--text-xs);font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:.45em 1.1em;border-radius:var(--radius-pill);background:var(--mint);color:var(--on-badge);box-shadow:var(--shadow-sm)}
+.icon-tile{width:56px;height:56px;border-radius:var(--radius-md);background:var(--clay-gradient);box-shadow:var(--shadow-sm);display:flex;align-items:center;justify-content:center;color:var(--primary);flex-shrink:0}
+.icon-tile .material-symbols-rounded{font-size:28px}
+/* ============ NAV ============ */
+.header{position:sticky;top:var(--space-4);z-index:var(--z-dropdown);padding:0 var(--space-5)}
+.nav{max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:var(--space-4);background:var(--clay-gradient);box-shadow:var(--shadow-md);border-radius:var(--radius-pill);padding:var(--space-2) var(--space-3) var(--space-2) var(--space-5);min-height:64px}
+.nav__logo{display:flex;align-items:center;gap:var(--space-2);font-family:var(--font-display);font-weight:700;font-size:var(--text-xl);color:var(--text-primary)}
+.nav__logo .material-symbols-rounded{color:var(--primary);font-size:28px}
+.nav__links{display:flex;align-items:center;gap:var(--space-2);margin-left:auto;list-style:none}
+.nav__link{display:inline-flex;align-items:center;min-height:44px;padding:0 var(--space-3);border-radius:var(--radius-pill);color:var(--text-secondary);font-weight:500;font-size:var(--text-sm);transition:color var(--transition-fast),background var(--transition-fast)}
+@media (hover:hover){.nav__link:hover{color:var(--primary);background:var(--surface-strong)}}
+.nav__link:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.nav__actions{display:flex;align-items:center;gap:var(--space-2)}
+.nav__toggle,.nav__menu-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border:none;border-radius:var(--radius-pill);background:var(--clay-gradient);box-shadow:var(--shadow-sm);color:var(--text-primary);cursor:pointer;transition:transform var(--transition-fast),box-shadow var(--transition-fast)}
+@media (hover:hover){.nav__toggle:hover,.nav__menu-btn:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}}
+.nav__toggle:focus-visible,.nav__menu-btn:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+.nav__toggle:active,.nav__menu-btn:active{transform:scale(.97);box-shadow:var(--shadow-inset-hi)}
+.nav__toggle .icon-sun,:root[data-theme="dark"] .nav__toggle .icon-moon{display:none}
+:root[data-theme="dark"] .nav__toggle .icon-sun{display:block}
+.nav__menu-btn{display:none}
+.nav__cta{padding:.6rem 1.3rem;font-size:var(--text-sm)}
+/* ============ HERO ============ */
+.hero{padding:var(--space-16) 0 var(--space-20)}
+.hero__grid{display:flex;align-items:center;gap:var(--space-12)}
+.hero__copy{flex:1 1 52%;display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-5)}
+.hero__sub{color:var(--text-secondary);font-size:var(--text-lg);max-width:46ch}
+.hero__ctas{display:flex;align-items:center;gap:var(--space-4);flex-wrap:wrap}
+.hero__scene{flex:1 1 44%;position:relative;min-height:420px;display:flex;align-items:center;justify-content:center}
+.hero__glow{position:absolute;inset:0;background:radial-gradient(circle at 60% 40%,var(--glow-primary),transparent 60%),radial-gradient(circle at 30% 70%,var(--glow-accent),transparent 55%);pointer-events:none}
+.clay{position:absolute;background:var(--clay-gradient);box-shadow:var(--shadow-lg)}
+.clay--orb{width:130px;height:130px;border-radius:50%;top:8%;left:12%;animation:float 7s ease-in-out infinite}
+.clay--orb::after{content:"";position:absolute;top:16%;left:18%;width:34%;height:24%;border-radius:50%;background:var(--relief-highlight);filter:blur(6px)}
+.clay--donut{width:96px;height:96px;border-radius:50%;bottom:12%;right:8%;animation:float 8s ease-in-out 1.2s infinite}
+.clay--donut::after{content:"";position:absolute;inset:26%;border-radius:50%;background:var(--bg-primary);box-shadow:var(--shadow-inset-hi)}
+.clay--pill{width:150px;height:64px;border-radius:var(--radius-pill);top:4%;right:16%;background:linear-gradient(160deg,var(--secondary),#f2855f);animation:float 6.5s ease-in-out .6s infinite}
+.clay--cube{width:84px;height:84px;border-radius:var(--radius-md);bottom:6%;left:20%;background:linear-gradient(160deg,var(--mint),#57c9a8);animation:float 7.5s ease-in-out 2s infinite}
+.clay--card{width:220px;height:170px;border-radius:var(--radius-lg);top:32%;left:32%;display:flex;flex-direction:column;gap:var(--space-3);padding:var(--space-5);animation:float 8s ease-in-out .3s infinite}
+.clay--card .bar{height:14px;border-radius:var(--radius-pill);background:var(--surface-strong);box-shadow:var(--shadow-inset-hi)}
+.clay--card .bar--short{width:60%}
+.clay--card .row{display:flex;gap:var(--space-2);margin-top:auto}
+.clay--card .dot{width:34px;height:34px;border-radius:50%;box-shadow:var(--shadow-sm)}
+.clay--card .dot--a{background:var(--primary)}
+.clay--card .dot--b{background:var(--secondary)}
+.clay--card .dot--c{background:var(--mint)}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+/* ============ FEATURES ============ */
+.features__grid{display:flex;align-items:stretch;gap:var(--spacing-gap)} /* stretch: equal-height cards (documented exception) */
+.card{background:var(--clay-gradient);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-4);transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard)}
+.card--hover:focus-within{outline:2px solid var(--primary);outline-offset:3px}
+@media (hover:hover){.card--hover:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg),0 22px 44px var(--relief-shadow)}}
+.card__title{font-size:var(--text-xl)}
+.card__text{color:var(--text-secondary)}
+.features__grid .card{flex:1}
+.card--skeleton{gap:var(--space-3)}
+.card--skeleton .sk{border-radius:var(--radius-sm);background:linear-gradient(100deg,var(--surface-strong) 40%,var(--bg-secondary) 50%,var(--surface-strong) 60%);background-size:200% 100%;animation:shimmer 1.4s linear infinite}
+@keyframes shimmer{to{background-position:-200% 0}}
+.card--empty{align-items:center;text-align:center;color:var(--text-secondary);gap:var(--space-3)}
+.card--empty .material-symbols-rounded{font-size:40px;color:var(--primary)}
+/* ============ STEPS ============ */
+.steps{display:flex;align-items:stretch;gap:var(--spacing-gap);position:relative}
+.step{flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-3);position:relative}
+.step__num{display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;background:var(--clay-gradient);box-shadow:var(--shadow-md);font-family:var(--font-display);font-weight:700;font-size:var(--text-xl);color:var(--primary)}
+.step__text{color:var(--text-secondary)}
+.step:not(:last-child)::after{content:"";position:absolute;top:28px;left:64px;right:calc(-1 * var(--spacing-gap) + 8px);border-top:2px dashed var(--border-default)}
+/* ============ TESTIMONIALS ============ */
+.testimonials__grid{display:flex;align-items:stretch;gap:var(--spacing-gap)}
+.testimonial{flex:1}
+.testimonial__stars{display:flex;gap:2px;color:var(--secondary)}
+.testimonial__stars .material-symbols-rounded{font-size:20px;font-variation-settings:'FILL' 1}
+.testimonial__quote{font-size:var(--text-base)}
+.testimonial__person{display:flex;align-items:center;gap:var(--space-3);margin-top:auto}
+.avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:var(--text-sm);box-shadow:var(--shadow-sm);flex-shrink:0}
+.avatar--a{background:linear-gradient(160deg,var(--primary),#5a46d1);color:#fff}
+.avatar--b{background:linear-gradient(160deg,var(--secondary),#f2855f);color:#4a2417}
+.avatar--c{background:linear-gradient(160deg,var(--mint),#57c9a8);color:var(--on-badge)}
+.testimonial__role{color:var(--text-secondary);font-size:var(--text-sm)}
+/* ============ PRICING ============ */
+.pricing__grid{display:flex;align-items:stretch;gap:var(--spacing-gap)} /* stretch: equal-height tiers (documented exception) */
+.tier{flex:1;position:relative}
+.tier--featured{box-shadow:var(--shadow-lg),0 0 0 2px var(--primary);transform:scale(1.03)}
+:root[data-theme="dark"] .tier--featured{box-shadow:var(--shadow-lg),0 0 0 2px var(--primary)}
+.tier__badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%)}
+.tier__price{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:700}
+.tier__price span{font-size:var(--text-base);font-weight:500;color:var(--text-secondary);font-family:var(--font-sans)}
+.tier__list{list-style:none;display:flex;flex-direction:column;gap:var(--space-3);margin:var(--space-2) 0 var(--space-4)}
+.tier__list li{display:flex;align-items:center;gap:var(--space-2);color:var(--text-secondary);font-size:var(--text-sm)}
+.tier__list .material-symbols-rounded{color:var(--text-success);font-size:20px;font-variation-settings:'FILL' 1}
+.tier .btn{margin-top:auto;width:100%}
+/* ============ FAQ ============ */
+.faq__list{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:var(--space-4)}
+.faq__item{background:var(--clay-gradient);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);overflow:hidden}
+.faq__item summary{display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);min-height:44px;padding:var(--space-5) var(--space-6);cursor:pointer;font-family:var(--font-display);font-weight:600;font-size:var(--text-lg);list-style:none;transition:color var(--transition-fast)}
+.faq__item summary::-webkit-details-marker{display:none}
+@media (hover:hover){.faq__item summary:hover{color:var(--primary)}}
+.faq__item summary:focus-visible{outline:2px solid var(--primary);outline-offset:-2px;border-radius:var(--radius-md)}
+.faq__item summary .material-symbols-rounded{color:var(--primary);transition:transform var(--transition-normal) var(--ease-standard);flex-shrink:0}
+.faq__item[open] summary .material-symbols-rounded{transform:rotate(180deg)}
+.faq__answer{padding:0 var(--space-6) var(--space-5);color:var(--text-secondary)}
+/* ============ FINAL CTA ============ */
+.cta-panel{position:relative;background:var(--clay-gradient);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);padding:var(--space-16) var(--space-8);display:flex;flex-direction:column;align-items:center;text-align:center;gap:var(--space-5);overflow:hidden}
+.cta-panel__accent{position:absolute;border-radius:50%;background:var(--clay-gradient);box-shadow:var(--shadow-md);pointer-events:none}
+.cta-panel__accent--a{width:90px;height:90px;top:-24px;left:6%;animation:float 7s ease-in-out infinite}
+.cta-panel__accent--b{width:64px;height:64px;bottom:-14px;right:8%;background:linear-gradient(160deg,var(--secondary),#f2855f);animation:float 6s ease-in-out 1s infinite}
+.cta-panel p{color:var(--text-secondary);max-width:52ch}
+.cta-form{display:flex;flex-direction:column;gap:var(--space-2);width:100%;max-width:460px}
+.input-group{display:flex;flex-direction:column;gap:var(--space-2);text-align:left}
+.input-group label{font-weight:600;font-size:var(--text-sm)}
+.input-group__row{display:flex;gap:var(--space-3);align-items:stretch}
+.input{flex:1;min-height:48px;padding:0 var(--space-5);border:none;border-radius:var(--radius-md);background:var(--surface-strong);box-shadow:var(--shadow-inset-hi);color:var(--text-primary);font-family:var(--font-sans);font-size:var(--text-base);transition:box-shadow var(--transition-fast)}
+.input::placeholder{color:var(--text-secondary)}
+.input:focus{outline:none;box-shadow:var(--shadow-inset-hi),0 0 0 3px color-mix(in srgb,var(--primary) 30%,transparent)}
+.input.is-valid{box-shadow:var(--shadow-inset-hi),0 0 0 2px var(--border-success)}
+.input.is-invalid{box-shadow:var(--shadow-inset-hi),0 0 0 2px var(--border-error)}
+.input:disabled{opacity:.5;cursor:not-allowed}
+.input-group__feedback{display:flex;align-items:center;gap:var(--space-2);min-height:22px;font-size:var(--text-sm);color:var(--text-secondary)}
+.input-group__feedback.is-error{color:var(--text-error)}
+.input-group__feedback.is-success{color:var(--text-success)}
+.input-group__feedback .material-symbols-rounded{font-size:18px}
+/* ============ FOOTER ============ */
+.footer{padding:var(--space-16) 0 var(--space-8);border-top:1px solid var(--border-default)}
+.footer__grid{display:flex;align-items:flex-start;gap:var(--space-12);flex-wrap:wrap}
+.footer__brand{flex:2 1 260px;display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-4)}
+.footer__brand p{color:var(--text-secondary);font-size:var(--text-sm);max-width:34ch}
+.footer__social{display:flex;gap:var(--space-3)}
+.footer__social a{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;background:var(--clay-gradient);box-shadow:var(--shadow-sm);color:var(--text-primary);transition:transform var(--transition-fast),box-shadow var(--transition-fast)}
+@media (hover:hover){.footer__social a:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);color:var(--primary)}}
+.footer__social a:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+.footer__col{flex:1 1 140px;display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-3)}
+.footer__col h3{font-size:var(--text-sm);text-transform:uppercase;letter-spacing:.08em;color:var(--text-secondary)}
+.footer__col a{color:var(--text-secondary);font-size:var(--text-sm);padding:var(--space-1) 0;transition:color var(--transition-fast)}
+@media (hover:hover){.footer__col a:hover{color:var(--primary)}}
+.footer__col a:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:var(--radius-sm)}
+.footer__bar{display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);flex-wrap:wrap;margin-top:var(--space-12);padding-top:var(--space-6);border-top:1px solid var(--border-default);color:var(--text-secondary);font-size:var(--text-sm)}
+.footer__bar a{font-weight:600}
+/* ============ RESPONSIVE ============ */
+@media (max-width:900px){
+  .hero__grid{flex-direction:column}
+  .hero__scene{width:100%;min-height:340px}
+  .features__grid,.testimonials__grid,.pricing__grid{flex-direction:column}
+  .tier--featured{transform:none}
+  .steps{flex-direction:column;gap:var(--space-8)}
+  .step:not(:last-child)::after{display:none}
+}
+@media (max-width:767px){
+  .section{padding:var(--space-12) 0}
+  .nav__links{position:absolute;top:calc(100% + var(--space-2));left:var(--space-5);right:var(--space-5);flex-direction:column;align-items:stretch;background:var(--clay-gradient);box-shadow:var(--shadow-lg);border-radius:var(--radius-md);padding:var(--space-4);display:none}
+  .nav__links.is-open{display:flex}
+  .nav__link{justify-content:center}
+  .nav__menu-btn{display:inline-flex}
+  .nav__cta{display:none}
+  .input-group__row{flex-direction:column}
+  .input-group__row .btn{width:100%}
+}
+@media (max-width:640px){
+  .clay--card{width:180px;height:140px;left:26%}
+  .clay--orb{width:100px;height:100px}
+  .cta-panel__accent{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition-duration:.01ms!important}
+  html{scroll-behavior:auto}
+  .reveal{opacity:1;transform:none}
+}
+@media (prefers-reduced-transparency:reduce){
+  .nav,.card,.clay{background:var(--bg-secondary)}
 }
 </style>
 </head>
 <body>
-<a href="#main-content" class="skip-link">Skip to content</a>
-<header>
-<div class="nav-brand">
-<span class="material-symbols-rounded">brush</span>
-Nimbus
-</div>
-<nav class="nav-links">
-<a href="#features" class="nav-link">Features</a>
-<a href="#how-it-works" class="nav-link">How It Works</a>
-<a href="#pricing" class="nav-link">Pricing</a>
-<a href="#faq" class="nav-link">FAQ</a>
-</nav>
-<button class="mobile-nav-toggle" aria-label="Open menu" aria-controls="mobile-menu" aria-expanded="false">
-<span class="material-symbols-rounded">menu</span>
-</button>
-<div class="nav-links" id="mobile-menu">
-<a href="#features" class="nav-link">Features</a>
-<a href="#how-it-works" class="nav-link">How It Works</a>
-<a href="#pricing" class="nav-link">Pricing</a>
-<a href="#faq" class="nav-link">FAQ</a>
-</div>
-<button class="theme-toggle" aria-pressed="false" aria-label="Switch to dark theme">
-<span class="material-symbols-rounded">light_mode</span>
-</button>
-<button class="nav-cta btn btn--primary">Get Started</button>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="header">
+  <nav class="nav" aria-label="Main navigation">
+    <a class="nav__logo" href="#top"><span class="material-symbols-rounded" aria-hidden="true">deployed_code</span>Clayform</a>
+    <ul class="nav__links" id="nav-links">
+      <li><a class="nav__link" href="#features">Features</a></li>
+      <li><a class="nav__link" href="#how">How It Works</a></li>
+      <li><a class="nav__link" href="#pricing">Pricing</a></li>
+      <li><a class="nav__link" href="#faq">FAQ</a></li>
+    </ul>
+    <div class="nav__actions">
+      <button class="nav__toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-rounded icon-moon" aria-hidden="true">dark_mode</span>
+        <span class="material-symbols-rounded icon-sun" aria-hidden="true">light_mode</span>
+      </button>
+      <a class="btn btn--primary nav__cta" href="#cta"><span class="btn__label">Start free</span></a>
+      <button class="nav__menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">
+        <span class="material-symbols-rounded" aria-hidden="true">menu</span>
+      </button>
+    </div>
+  </nav>
 </header>
-<main id="main-content">
-<section class="hero">
-<div class="section-header">
-<span class="badge" style="background:var(--mint);color:#14332a;">New</span>
-<h2>Design in 3D, Collaborate in Real Time</h2>
-<p>Turn ideas into interactive prototypes with your team, all in one intuitive workspace.</p>
-<div class="btn-group">
-<button class="btn btn--primary">Start Free Trial</button>
-<button class="btn btn--ghost">Watch Demo</button>
-</div>
-</div>
-<div class="hero-clay-scene">
-<div class="clay-object" style="--size:120px;--delay:0s;"></div>
-<div class="clay-object" style="--size:80px;--delay:2s;"></div>
-<div class="clay-object" style="--size:60px;--delay:4s;"></div>
-<div class="clay-object" style="--size:100px;--delay:6s;"></div>
-<div class="clay-object" style="--size:70px;--delay:8s;"></div>
-</div>
-</section>
-<section id="features" class="features">
-<div class="section-header">
-<span class="badge" style="background:var(--mint);color:#14332a;">Why Choose Us</span>
-<h2>Powerful Features for Modern Teams</h2>
-<p>Everything you need to bring your 3D designs to life, together.</p>
-</div>
-<div class="features-grid">
-<div class="card">
-<div class="icon-tile">
-<span class="material-symbols-rounded">palette</span>
-</div>
-<h3>Intuitive 3D Modeling</h3>
-<p>Create complex shapes with simple drag-and-drop tools. No prior experience needed.</p>
-</div>
-<div class="card">
-<div class="icon-tile">
-<span class="material-symbols-rounded">people</span>
-</div>
-<h3>Real-Time Collaboration</h3>
-<p>Work simultaneously with teammates. See changes instantly, leave comments, and resolve feedback.</p>
-</div>
-<div class="card">
-<div class="icon-tile">
-<span class="material-symbols-rounded">rocket_launch</span>
-</div>
-<h3>One-Click Publishing</h3>
-<p>Export to WebGL, AR/VR, or generate interactive shareable links in seconds.</p>
-</div>
-</div>
-</section>
-<section id="how-it-works" class="how-it-works">
-<div class="section-header">
-<span class="badge" style="background:var(--mint);color:#14332a;">Simple Process</span>
-<h2>How It Works</h2>
-<p>From concept to prototype in just three steps.</p>
-</div>
-<div class="steps-grid">
-<div class="step">
-<div class="step-number">1</div>
-<div class="step-content">
-<h3>Sketch Your Idea</h3>
-<p>Start with basic shapes or import sketches. Our AI-assisted tools help refine your vision.</p>
-</div>
-</div>
-<div class="step-connector"></div>
-<div class="step">
-<div class="step-number">2</div>
-<div class="step-content">
-<h3>Collaborate & Refine</h3>
-<p>Invite teammates to edit, comment, and suggest improvements in real time.</p>
-</div>
-</div>
-<div class="step-connector"></div>
-<div class="step">
-<div class="step-number">3</div>
-<div class="step-content">
-<h3>Publish & Share</h3>
-<p>Export your prototype or share a live link for stakeholder review and testing.</p>
-</div>
-</div>
-</div>
-</section>
-<section id="testimonials" class="testimonials">
-<div class="section-header">
-<span class="badge" style="background:var(--mint);color:#14332a;">Trusted By</span>
-<h2>What Teams Are Saying</h2>
-<p>Hear how Nimbus transformed design workflows for companies like yours.</p>
-</div>
-<div class="testimonials-grid">
-<div class="card">
-<p>"Nimbus cut our prototyping time by 70%. The real-time collaboration is a game-changer for our distributed team."</p>
-<div class="rating">
-<span class="material-symbols-rounded">star</span>
-<span class="material-symbols-rounded">star</span>
-<span class="material-symbols-rounded">star</span>
-<span class="material-symbols-rounded">star</span>
-<span class="material-symbols-rounded">star</span>
-</div>
-<div class="avatar">JS</div>
-<h3>Jordan Smith</h3>
-<p class="text-secondary">Lead Designer, PixelForge</p>
-</div>
-<div class="card">
-<p>"The intuitive interface meant our team was productive on day one. Client approvals are now faster than ever."</p>
-<div class="rating">
-<span class="material-symbols-rounded">star</span>
-<span class="material-symbols-rounded">star</span>
-<span class="material-symbols-rounded">star</span>
-<span class="material-symbols-rounded">star</span>
-<span class="material-symbols-rounded">star</span>
-</div>
-<div class="avatar">MA</div>
-<h3>Maria Alvarez</h3>
-<p class="text-secondary">Product Manager, NovaTech</p>
-</div>
-<div class="card">
-<p>"We've reduced revision cycles by half. The ability to view and interact with 3D models in-browser is invaluable."</p>
-<div class="rating">
-<span class="material-symbols-rounded">star</span>
-<span class="material-symbols-rounded">star</span>
-<span class="material-symbols-rounded">star</span>
-<span class="material-symbols-rounded">star</span>
-<span class="material-symbols-rounded">star</span>
-</div>
-<div class="avatar">TC</div>
-<h3>Taylor Chen</h3>
-<p class="text-secondary">UX Director, Studio8</p>
-</div>
-</div>
-</section>
-<section id="pricing" class="pricing">
-<div class="section-header">
-<span class="badge" style="background:var(--mint);color:#14332a;">Plans for Every Team</span>
-<h2>Flexible Pricing</h2>
-<p>Choose the plan that fits your team's size and needs.</p>
-</div>
-<div class="pricing-grid">
-<div class="card">
-<div class="pricing-header">
-<h3>Starter</h3>
-<div class="price">$0<span>/month</span></div>
-</div>
-<div class="pricing-features">
-<li><span class="material-symbols-rounded">check_circle</span>Unlimited personal projects</li>
-<li><span class="material-symbols-rounded">check_circle</span>Basic modeling tools</li>
-<li><span class="material-symbols-rounded">check_circle</span>Community support</li>
-<li><span class="material-symbols-rounded">cancel</span>Team collaboration</li>
-<li><span class="material-symbols-rounded">cancel</span>Advanced export options</li>
-</div>
-<div class="pricing-footer">
-<button class="btn btn--ghost">Get Started</button>
-</div>
-</div>
-<div class="card featured">
-<div class="pricing-header">
-<h3>Professional</h3>
-<div class="price">$25<span>/month</span></div>
-<span class="badge" style="background:var(--accent);color:#14332a;">Most popular</span>
-</div>
-<div class="pricing-features">
-<li><span class="material-symbols-rounded">check_circle</span>Unlimited team projects</li>
-<li><span class="material-symbols-rounded">check_circle</span>Full modeling suite</li>
-<li><span class="material-symbols-rounded">check_circle</span>Real-time collaboration</li>
-<li><span class="material-symbols-rounded">check_circle</span>Priority support</li>
-<li><span class="material-symbols-rounded">check_circle</span>Advanced export (GLTF, USDZ)</li>
-</div>
-<div class="pricing-footer">
-<button class="btn btn--primary">Start Free Trial</button>
-</div>
-</div>
-<div class="card">
-<div class="pricing-header">
-<h3>Enterprise</h3>
-<div class="price">Custom<span>/month</span></div>
-</div>
-<div class="pricing-features">
-<li><span class="material-symbols-rounded">check_circle</span>Everything in Professional</li>
-<li><span class="material-symbols-rounded">check_circle</span>SSO & SCIM provisioning</li>
-<li><span class="material-symbols-rounded">check_circle</span>Dedicated account manager</li>
-<li><span class="material-symbols-rounded">check_circle</span>Custom SLAs</li>
-<li><span class="material-symbols-rounded">check_circle</span>On-premise deployment</li>
-</div>
-<div class="pricing-footer">
-<button class="btn btn--ghost">Contact Sales</button>
-</div>
-</div>
-</div>
-</section>
-<section id="faq" class="faq">
-<div class="section-header">
-<span class="badge" style="background:var(--mint);color:#14332a;">Common Questions</span>
-<h2>Frequently Asked Questions</h2>
-<p>Find answers to common questions about Nimbus.</p>
-</div>
-<div class="faq-grid">
-<div class="faq-item">
-<button class="faq-question" aria-expanded="false" aria-controls="faq-1">
-Is there a free trial available?
-<span class="material-symbols-rounded">expand_more</span>
-</button>
-<div class="faq-answer" id="faq-1">
-<p>Yes! All paid plans include a 14-day free trial. No credit card required to start.</p>
-</div>
-</div>
-<div class="faq-item">
-<button class="faq-question" aria-expanded="false" aria-controls="faq-2">
-What file formats can I export to?
-<span class="material-symbols-rounded">expand_more</span>
-</button>
-<div class="faq-answer" id="faq-2">
-<p>Export to GLTF, USDZ, OBJ, STL, and interactive WebGL. Premium plans include high-resolution texture exports.</p>
-</div>
-</div>
-<div class="faq-item">
-<button class="faq-question" aria-expanded="false" aria-controls="faq-3">
-How does real-time collaboration work?
-<span class="material-symbols-rounded">expand_more</span>
-</button>
-<div class="faq-answer" id="faq-3">
-<p>Multiple users can edit the same project simultaneously. Changes appear instantly with cursor presence indicators and comment threading.</p>
-</div>
-</div>
-<div class="faq-item">
-<button class="faq-question" aria-expanded="false" aria-controls="faq-4">
-Is my data secure and private?
-<span class="material-symbols-rounded">expand_more</span>
-</button>
-<div class="faq-answer" id="faq-4">
-<p>We use AES-256 encryption for data at rest and TLS 1.3 for data in transit. GDPR and SOC 2 compliant.</p>
-</div>
-</div>
-</div>
-</section>
-<section id="final-cta" class="final-cta">
-<h2>Ready to Bring Your Ideas to Life?</h2>
-<p>Join thousands of designers already using Nimbus to create stunning 3D experiences.</p>
-<form class="input-group" id="cta-form">
-<label for="email-input" class="visually-hidden">Email address</label>
-<input type="email" id="email-input" class="input" placeholder="Enter your email" required>
-<button type="submit" class="btn btn--primary">Get Started Free</button>
-</form>
-<div class="feedback-message" aria-live="polite" id="cta-feedback"></div>
-</section>
+
+<main id="main">
+  <!-- HERO -->
+  <section class="hero" id="top">
+    <div class="container hero__grid">
+      <div class="hero__copy">
+        <span class="badge"><span class="material-symbols-rounded" aria-hidden="true" style="font-size:16px">auto_awesome</span>Now in open beta</span>
+        <h1>Shape 3D ideas as easily as clay</h1>
+        <p class="hero__sub">Clayform is a collaborative 3D prototyping canvas where product teams sketch, mold, and share interactive scenes right in the browser.</p>
+        <div class="hero__ctas">
+          <a class="btn btn--primary" href="#cta"><span class="btn__label">Start free</span></a>
+          <a class="btn btn--ghost" href="#how"><span class="btn__label">See how it works</span></a>
+        </div>
+      </div>
+      <div class="hero__scene" aria-hidden="true">
+        <div class="hero__glow"></div>
+        <div class="clay clay--orb"></div>
+        <div class="clay clay--pill"></div>
+        <div class="clay clay--card">
+          <div class="bar"></div>
+          <div class="bar bar--short"></div>
+          <div class="row"><span class="dot dot--a"></span><span class="dot dot--b"></span><span class="dot dot--c"></span></div>
+        </div>
+        <div class="clay clay--cube"></div>
+        <div class="clay clay--donut"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section" id="features">
+    <div class="container">
+      <div class="section__head reveal">
+        <span class="badge">Features</span>
+        <h2>Everything soft, nothing complicated</h2>
+        <p class="section__lede">A focused toolkit for teams who want dimensional mockups without learning a 3D suite.</p>
+      </div>
+      <div class="features__grid">
+        <article class="card card--hover reveal">
+          <div class="icon-tile"><span class="material-symbols-rounded" aria-hidden="true">gesture</span></div>
+          <h3 class="card__title">Sculpt with strokes</h3>
+          <p class="card__text">Draw a curve and Clayform inflates it into a smooth, matte 3D form with studio lighting applied automatically.</p>
+        </article>
+        <article class="card card--hover reveal">
+          <div class="icon-tile"><span class="material-symbols-rounded" aria-hidden="true">groups</span></div>
+          <h3 class="card__title">Mold together live</h3>
+          <p class="card__text">Invite teammates into the same scene. Cursors, comments, and edits sync in real time across every device.</p>
+        </article>
+        <article class="card card--hover reveal">
+          <div class="icon-tile"><span class="material-symbols-rounded" aria-hidden="true">ios_share</span></div>
+          <h3 class="card__title">Export anywhere</h3>
+          <p class="card__text">Ship scenes as embeddable viewers, GLB files, or crisp renders ready for decks, docs, and marketing pages.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="section" id="how">
+    <div class="container">
+      <div class="section__head reveal">
+        <span class="badge">How It Works</span>
+        <h2>From sketch to scene in minutes</h2>
+        <p class="section__lede">Three steps, no installs, no render farm required.</p>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <span class="step__num">1</span>
+          <h3>Sketch a shape</h3>
+          <p class="step__text">Start from a stroke, a primitive, or one of forty soft-lit templates in the library.</p>
+        </div>
+        <div class="step reveal">
+          <span class="step__num">2</span>
+          <h3>Style the material</h3>
+          <p class="step__text">Pick matte clay, frosted glass, or pastel plastic, then tune the light with one slider.</p>
+        </div>
+        <div class="step reveal">
+          <span class="step__num">3</span>
+          <h3>Share the scene</h3>
+          <p class="step__text">Send a link. Viewers orbit, zoom, and comment without creating an account.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="section" id="testimonials">
+    <div class="container">
+      <div class="section__head reveal">
+        <span class="badge">Testimonials</span>
+        <h2>Teams that ship in 3D</h2>
+        <p class="section__lede">Designers and PMs on what changed after switching to Clayform.</p>
+      </div>
+      <div class="testimonials__grid">
+        <article class="card card--hover testimonial reveal">
+          <div class="testimonial__stars" aria-hidden="true"><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span></div>
+          <span class="visually-hidden">Rated 5 out of 5</span>
+          <p class="testimonial__quote">&ldquo;We replaced a week of render back-and-forth with one shared scene. Stakeholders finally get the product before it exists.&rdquo;</p>
+          <div class="testimonial__person">
+            <span class="avatar avatar--a" aria-hidden="true">MR</span>
+            <div><strong>Maya Reyes</strong><div class="testimonial__role">Product Designer, Loomfield</div></div>
+          </div>
+        </article>
+        <article class="card card--hover testimonial reveal">
+          <div class="testimonial__stars" aria-hidden="true"><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span></div>
+          <span class="visually-hidden">Rated 5 out of 5</span>
+          <p class="testimonial__quote">&ldquo;Our landing page hero went from static mockup to interactive scene in an afternoon. Conversion on the demo page jumped noticeably.&rdquo;</p>
+          <div class="testimonial__person">
+            <span class="avatar avatar--b" aria-hidden="true">DK</span>
+            <div><strong>Daniel Kwon</strong><div class="testimonial__role">Growth Lead, Papertrail Labs</div></div>
+          </div>
+        </article>
+        <article class="card card--hover testimonial reveal">
+          <div class="testimonial__stars" aria-hidden="true"><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span></div>
+          <span class="visually-hidden">Rated 5 out of 5</span>
+          <p class="testimonial__quote">&ldquo;I am not a 3D artist and never will be. Clayform lets me prototype hardware concepts that engineers actually understand.&rdquo;</p>
+          <div class="testimonial__person">
+            <span class="avatar avatar--c" aria-hidden="true">AS</span>
+            <div><strong>Amara Sy</strong><div class="testimonial__role">Founder, Tandem Devices</div></div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="section" id="pricing">
+    <div class="container">
+      <div class="section__head reveal">
+        <span class="badge">Pricing</span>
+        <h2>Simple plans, soft edges</h2>
+        <p class="section__lede">Start free and upgrade when your scenes need room to grow.</p>
+      </div>
+      <div class="pricing__grid">
+        <article class="card card--hover tier reveal">
+          <h3 class="card__title">Studio</h3>
+          <p class="tier__price">$0 <span>/month</span></p>
+          <ul class="tier__list">
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>3 active scenes</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Core material library</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Public share links</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Community support</li>
+          </ul>
+          <a class="btn" href="#cta"><span class="btn__label">Start free</span></a>
+        </article>
+        <article class="card card--hover tier tier--featured reveal">
+          <span class="badge tier__badge">Most popular</span>
+          <h3 class="card__title">Team</h3>
+          <p class="tier__price">$18 <span>/month per seat</span></p>
+          <ul class="tier__list">
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Unlimited scenes</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Real-time collaboration</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>GLB and embed export</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Version history, 90 days</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Priority support</li>
+          </ul>
+          <a class="btn btn--primary" href="#cta"><span class="btn__label">Start trial</span></a>
+        </article>
+        <article class="card card--hover tier reveal">
+          <h3 class="card__title">Enterprise</h3>
+          <p class="tier__price">$49 <span>/month per seat</span></p>
+          <ul class="tier__list">
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Everything in Team</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>SSO and SCIM provisioning</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Private asset libraries</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Dedicated success manager</li>
+          </ul>
+          <a class="btn" href="#cta"><span class="btn__label">Contact sales</span></a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq">
+    <div class="container">
+      <div class="section__head reveal">
+        <span class="badge">FAQ</span>
+        <h2>Questions, answered</h2>
+        <p class="section__lede">The things teams ask before their first scene.</p>
+      </div>
+      <div class="faq__list">
+        <details class="faq__item reveal">
+          <summary>Do I need 3D experience to use Clayform?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__answer">No. Clayform is built for designers and PMs, not 3D artists. Strokes inflate into forms, lighting is automatic, and every template starts from a sensible default.</p>
+        </details>
+        <details class="faq__item reveal">
+          <summary>Which file formats can I export?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__answer">Paid plans export GLB for game engines and AR, PNG renders for decks, and an embeddable web viewer you can drop into any page with one script tag.</p>
+        </details>
+        <details class="faq__item reveal">
+          <summary>Can viewers comment without an account?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__answer">Yes. Anyone with a share link can orbit the scene and leave pinned comments. Only editors need a Clayform seat.</p>
+        </details>
+        <details class="faq__item reveal">
+          <summary>What happens to my scenes if I cancel?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__answer">Your scenes stay readable forever. Export everything to GLB before you go, or keep the free Studio plan and retain your three most recent scenes.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="section" id="cta">
+    <div class="container">
+      <div class="cta-panel reveal">
+        <span class="cta-panel__accent cta-panel__accent--a" aria-hidden="true"></span>
+        <span class="cta-panel__accent cta-panel__accent--b" aria-hidden="true"></span>
+        <h2>Ready to mold your first scene?</h2>
+        <p>Join the open beta and get three scenes free, forever. No credit card, no install.</p>
+        <form class="cta-form" id="cta-form" novalidate>
+          <div class="input-group">
+            <label for="cta-email">Work email</label>
+            <div class="input-group__row">
+              <input class="input" id="cta-email" name="email" type="email" placeholder="you@company.com" autocomplete="email" required>
+              <button class="btn btn--primary" id="cta-submit" type="submit"><span class="btn__label">Get access</span></button>
+            </div>
+            <p class="input-group__feedback" id="cta-feedback" aria-live="polite"></p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
 </main>
-<footer>
-<div class="footer-brand">
-<div class="nav-brand">
-<span class="material-symbols-rounded">brush</span>
-Nimbus
-</div>
-<p class="footer-one-liner">The collaborative 3D design platform for modern teams.</p>
-<div class="footer-social">
-<a href="#" aria-label="Twitter"><span class="material-symbols-rounded">twitter</span></a>
-<a href="#" aria-label="LinkedIn"><span class="material-symbols-rounded">linkedin</span></a>
-<a href="#" aria-label="Instagram"><span class="material-symbols-rounded">instagram</span></a>
-<a href="#" aria-label="YouTube"><span class="material-symbols-rounded">youtube</span></a>
-</div>
-</div>
-<div class="footer-links">
-<div>
-<h4>Product</h4>
-<ul>
-<li><a href="#features">Features</a></li>
-<li><a href="#how-it-works">How It Works</a></li>
-<li><a href="#pricing">Pricing</a></li>
-</ul>
-</div>
-<div>
-<h4>Company</h4>
-<ul>
-<li><a href="#">About Us</a></li>
-<li><a href="#">Careers</a></li>
-<li><a href="#">Blog</a></li>
-</ul>
-</div>
-<div>
-<h4>Resources</h4>
-<ul>
-<li><a href="#">Documentation</a></li>
-<li><a href="#">Templates</a></li>
-<li><a href="#">Community Forum</a></li>
-</ul>
-</div>
-</div>
-<div class="footer-bottom">
-<p>&copy; 2026 Nimbus. All rights reserved.</p>
-<a href="#" class="back-to-top">Back to top</a>
-</div>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <a class="nav__logo" href="#top"><span class="material-symbols-rounded" aria-hidden="true">deployed_code</span>Clayform</a>
+        <p>The collaborative 3D prototyping canvas for product teams who think in shapes.</p>
+        <div class="footer__social">
+          <a href="#" aria-label="Clayform on X"><span class="material-symbols-rounded" aria-hidden="true">tag</span></a>
+          <a href="#" aria-label="Clayform on Dribbble"><span class="material-symbols-rounded" aria-hidden="true">sports_basketball</span></a>
+          <a href="#" aria-label="Clayform on YouTube"><span class="material-symbols-rounded" aria-hidden="true">play_circle</span></a>
+        </div>
+      </div>
+      <div class="footer__col">
+        <h3>Product</h3>
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#how">How It Works</a>
+        <a href="#">Changelog</a>
+      </div>
+      <div class="footer__col">
+        <h3>Company</h3>
+        <a href="#">About us</a>
+        <a href="#">Careers</a>
+        <a href="#">Press kit</a>
+        <a href="#">Contact</a>
+      </div>
+      <div class="footer__col">
+        <h3>Resources</h3>
+        <a href="#">Template gallery</a>
+        <a href="#">Help center</a>
+        <a href="#">Community forum</a>
+        <a href="#">Privacy policy</a>
+      </div>
+    </div>
+    <div class="footer__bar">
+      <span>&copy; 2026 Clayform, Inc. All rights reserved.</span>
+      <a href="#top">Back to top</a>
+    </div>
+  </div>
 </footer>
+
 <script>
-document.documentElement.classList.toggle('dark', localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches));
-const themeToggle = document.querySelector('.theme-toggle');
-const htmlEl = document.documentElement;
-const updateTheme = (isDark) => {
-localStorage.setItem('theme', isDark ? 'dark' : 'light');
-htmlEl.classList.toggle('dark', isDark);
-themeToggle.setAttribute('aria-pressed', isDark);
-themeToggle.setAttribute('aria-label', isDark ? 'Switch to light theme' : 'Switch to dark theme');
-};
-themeToggle.addEventListener('click', () => {
-const isDark = !htmlEl.classList.contains('dark');
-updateTheme(isDark);
-});
-const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
-const mobileNav = document.querySelector('.nav-links');
-mobileNavToggle.addEventListener('click', () => {
-const isOpen = mobileNavToggle.getAttribute('aria-expanded') === 'true';
-mobileNavToggle.setAttribute('aria-expanded', String(!isOpen));
-mobileNav.classList.toggle('active');
-});
-document.querySelectorAll('.nav-link').forEach(link => {
-link.addEventListener('click', (e) => {
-if (link.getAttribute('href').startsWith('#')) {
-e.preventDefault();
-const targetId = link.getAttribute('href').substring(1);
-const targetEl = document.getElementById(targetId);
-if (targetEl) {
-targetEl.scrollIntoView({ behavior: 'smooth' });
-}
-}
-});
-});
-const faqQuestions = document.querySelectorAll('.faq-question');
-faqQuestions.forEach(btn => {
-btn.addEventListener('click', () => {
-const isExpanded = btn.getAttribute('aria-expanded') === 'true';
-btn.setAttribute('aria-expanded', String(!isExpanded));
-const answerEl = document.getElementById(btn.getAttribute('aria-controls'));
-if (answerEl) {
-if (!isExpanded) {
-answerEl.style.maxHeight = answerEl.scrollHeight + 'px';
-} else {
-answerEl.style.maxHeight = null;
-}
-}
-});
-});
-const ctaForm = document.getElementById('cta-form');
-const ctaFeedback = document.getElementById('cta-feedback');
-ctaForm.addEventListener('submit', (e) => {
-e.preventDefault();
-const emailInput = document.getElementById('email-input');
-const email = emailInput.value.trim();
-if (!email) {
-showFeedback('Please enter your email address', 'error');
-return;
-}
-if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-showFeedback('Please enter a valid email address', 'error');
-return;
-}
-const submitBtn = ctaForm.querySelector('button[type="submit"]');
-submitBtn.classList.add('is-loading');
-setTimeout(() => {
-submitBtn.classList.remove('is-loading');
-showFeedback('Thanks for subscribing! We\'ll be in touch shortly.', 'success');
-emailInput.value = '';
-}, 1500);
-});
-function showFeedback(message, type) {
-ctaFeedback.textContent = message;
-ctaFeedback.className = `feedback-message ${type}`;
-}
-const observerOptions = {
-root: null,
-threshold: 0.1
-};
-const observer = new IntersectionObserver((entries) => {
-entries.forEach(entry => {
-if (entry.isIntersecting) {
-entry.target.classList.add('visible');
-}
-});
-}, observerOptions);
-document.querySelectorAll('.card, .step, .testimonials-grid .card, .pricing-grid .card, .faq-item, .final-cta').forEach(el => {
-el.classList.add('fade-in');
-observer.observe(el);
-});
-const style = document.createElement('style');
-style.textContent = `
-.fade-in {
-opacity: 0;
-transform: translateY(20px);
-transition: opacity 0.6s ease, transform 0.6s ease;
-}
-.fade-in.visible {
-opacity: 1;
-transform: translateY(0);
-}
-@media(prefers-reduced-motion: reduce) {
-.fade-in {
-transition: none;
-}
-}
-`;
-document.head.appendChild(style);
+(function(){
+  "use strict";
+  var root=document.documentElement;
+
+  /* Theme toggle */
+  var toggle=document.getElementById("theme-toggle");
+  function syncToggle(){
+    var dark=root.dataset.theme==="dark";
+    toggle.setAttribute("aria-pressed",String(dark));
+    toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+  }
+  syncToggle();
+  toggle.addEventListener("click",function(){
+    root.dataset.theme=root.dataset.theme==="dark"?"light":"dark";
+    localStorage.setItem("theme",root.dataset.theme);
+    syncToggle();
+  });
+
+  /* Mobile nav */
+  var menuBtn=document.getElementById("menu-btn");
+  var navLinks=document.getElementById("nav-links");
+  function closeMenu(){navLinks.classList.remove("is-open");menuBtn.setAttribute("aria-expanded","false");menuBtn.setAttribute("aria-label","Open menu");}
+  menuBtn.addEventListener("click",function(){
+    var open=navLinks.classList.toggle("is-open");
+    menuBtn.setAttribute("aria-expanded",String(open));
+    menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");
+  });
+  navLinks.addEventListener("click",function(e){if(e.target.closest("a"))closeMenu();});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape")closeMenu();});
+
+  /* FAQ: close others when one opens */
+  var faqItems=document.querySelectorAll(".faq__item");
+  faqItems.forEach(function(item){
+    item.addEventListener("toggle",function(){
+      if(item.open){faqItems.forEach(function(o){if(o!==item)o.open=false;});}
+    });
+  });
+
+  /* Reveal on scroll */
+  var reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var revealEls=document.querySelectorAll(".reveal");
+  if(reduced||!("IntersectionObserver" in window)){
+    revealEls.forEach(function(el){el.classList.add("is-visible");});
+  }else{
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(entry,i){
+        if(entry.isIntersecting){
+          entry.target.style.transitionDelay=(i%3)*70+"ms";
+          entry.target.classList.add("is-visible");
+          io.unobserve(entry.target);
+        }
+      });
+    },{threshold:.12});
+    revealEls.forEach(function(el){io.observe(el);});
+  }
+
+  /* CTA form */
+  var form=document.getElementById("cta-form");
+  var email=document.getElementById("cta-email");
+  var submit=document.getElementById("cta-submit");
+  var feedback=document.getElementById("cta-feedback");
+  var emailRe=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  function setFeedback(state,msg,icon){
+    feedback.className="input-group__feedback"+(state?" is-"+state:"");
+    feedback.innerHTML=icon?'<span class="material-symbols-rounded" aria-hidden="true">'+icon+"</span>"+msg:msg;
+  }
+  email.addEventListener("input",function(){
+    email.classList.remove("is-valid","is-invalid");
+    setFeedback("","","");
+  });
+  form.addEventListener("submit",function(e){
+    e.preventDefault();
+    if(submit.classList.contains("is-loading"))return;
+    var val=email.value.trim();
+    if(!emailRe.test(val)){
+      email.classList.add("is-invalid");
+      email.classList.remove("is-valid");
+      submit.classList.add("is-error");
+      setFeedback("error","Please enter a valid work email address.","error");
+      email.focus();
+      setTimeout(function(){submit.classList.remove("is-error");},1200);
+      return;
+    }
+    email.classList.remove("is-invalid");
+    submit.classList.add("is-loading");
+    submit.setAttribute("aria-busy","true");
+    setFeedback("","","");
+    setTimeout(function(){
+      submit.classList.remove("is-loading");
+      submit.removeAttribute("aria-busy");
+      submit.classList.add("is-success");
+      email.classList.add("is-valid");
+      setFeedback("success","You are on the list. Check your inbox for an invite.","check_circle");
+      form.reset();
+      setTimeout(function(){submit.classList.remove("is-success");},2500);
+    },1400);
+  });
+})();
 </script>
 </body>
 </html>

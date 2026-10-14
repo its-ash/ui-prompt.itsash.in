@@ -1,428 +1,614 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Nimbus — Drill-Down Analytics</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drillpoint - Drill-Down Analytics for Every Team</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL@20,400,1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet">
 <style>
-:root{--primary:#2563eb;--secondary:#0891b2;--bg-primary:#f4f6fa;--bg-secondary:#fefefe;--text-primary:#17233c;--text-secondary:#51607a;--text-success:#166534;--text-error:#be1f1f;--border-default:#d8dfec;--border-error:#e4a5a2;--border-success:#86cb9b;--drill-level-1:#4d90ee;--drill-level-2:#3b82f6;--drill-level-3:#1e40af;--breadcrumb-active:#1d4ed8;--path-indicator:#9aa8c0;--level-highlight:#e3ecfb;--radius-sm:8px;--radius-md:14px;--radius-lg:20px;--shadow-sm:0 1px 3px #17233c1f;--shadow-md:0 12px 30px #17233c24;--spacing-gap:1.4rem;--transition-fast:.15s;--transition-normal:.35s;--ease-standard:cubic-bezier(.4,0,.2,1);--z-dropdown:100;--z-modal:400;--z-toast:500;--font-base:'Inter',system-ui,sans-serif;--font-mono:'IBM Plex Mono',monospace;--on-fill:#fefefe}
-@media(prefers-color-scheme:dark){:root:not(.light){--primary:#60a5fa;--secondary:#22d3ee;--bg-primary:#0c1220;--bg-secondary:#151d31;--text-primary:#e8eefb;--text-secondary:#9db0cd;--text-success:#4ade80;--text-error:#f87171;--border-default:#2c3a58;--drill-level-1:#3e6db8;--drill-level-2:#3b82f6;--drill-level-3:#93c5fd;--breadcrumb-active:#7ab3ff;--path-indicator:#41527a;--level-highlight:#1d2a47;--shadow-sm:0 1px 3px #0007;--shadow-md:0 14px 34px #000b;--on-fill:#0c1220}}
-.dark{--primary:#60a5fa;--secondary:#22d3ee;--bg-primary:#0c1220;--bg-secondary:#151d31;--text-primary:#e8eefb;--text-secondary:#9db0cd;--text-success:#4ade80;--text-error:#f87171;--border-default:#2c3a58;--drill-level-1:#3e6db8;--drill-level-2:#3b82f6;--drill-level-3:#93c5fd;--breadcrumb-active:#7ab3ff;--path-indicator:#41527a;--level-highlight:#1d2a47;--shadow-sm:0 1px 3px #0007;--shadow-md:0 14px 34px #000b;--on-fill:#0c1220}
-/* row flex containers center-align; column stacks intentionally keep default stretch */
+:root{
+--primary:#1d4ed8;--primary-strong:#1e40af;--on-primary:#ffffff;
+--secondary:#0e7490;
+--bg-primary:#f4f6fa;--bg-secondary:#fefefe;--bg-tertiary:#e9edf5;
+--text-primary:#1a2233;--text-secondary:#4a5568;
+--text-success:#0f7a3d;--text-error:#b42318;
+--border-default:#d4dbe7;--border-error:#e5a19b;--border-success:#8fd0a9;
+--drill-level-1:#93c5fd;--drill-level-2:#3b82f6;--drill-level-3:#1e3a8a;
+--breadcrumb-active:#1d4ed8;--path-indicator:#3b82f6;--level-highlight:#dbe7ff;
+--radius-sm:8px;--radius-md:12px;--radius-lg:18px;
+--shadow-sm:0 1px 3px rgba(26,34,51,.08);--shadow-md:0 8px 24px rgba(26,34,51,.12);
+--spacing-gap:1.5rem;--transition-fast:140ms;--transition-normal:260ms;--ease-standard:cubic-bezier(.2,.7,.3,1);
+--z-dropdown:100;--z-modal:200;--z-toast:300;
+--font-base:"Inter",system-ui,sans-serif;--font-mono:"IBM Plex Mono",monospace;
+--bar-h:64px;
+}
+:root[data-theme="dark"]{
+--primary:#6d9bff;--primary-strong:#8fb3ff;--on-primary:#0b1530;
+--secondary:#4cc3dd;
+--bg-primary:#0e1420;--bg-secondary:#151d2e;--bg-tertiary:#1d2740;
+--text-primary:#e8edf7;--text-secondary:#a3afc6;
+--text-success:#5fd695;--text-error:#ff8a80;
+--border-default:#2a3550;--border-error:#7a3a34;--border-success:#2f6b47;
+--drill-level-1:#3b5ba0;--drill-level-2:#5b8def;--drill-level-3:#a8c6ff;
+--breadcrumb-active:#a8c6ff;--path-indicator:#5b8def;--level-highlight:#1c2c52;
+--shadow-sm:0 1px 3px rgba(0,0,0,.4);--shadow-md:0 8px 24px rgba(0,0,0,.5);
+}
 *{margin:0;padding:0;box-sizing:border-box}
-ul,ol{list-style:none}
-summary{list-style:none}
-summary::-webkit-details-marker{display:none}
+[hidden]{display:none!important}
 html{scroll-behavior:smooth}
-body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.55;overflow-x:clip}
-h1,h2,h3{line-height:1.2}
-.ms{font-family:'Material Symbols Rounded';font-size:1.25rem;line-height:1;user-select:none;font-variation-settings:'FILL' 1;display:inline-flex}
-.wrap{max-width:1080px;margin:0 auto;padding:0 1.25rem}
-.sec{padding:3.4rem 0;scroll-margin-top:84px}
-.sec h2{font-size:clamp(1.35rem,3vw,1.85rem)}
-.sub{color:var(--text-secondary);max-width:58ch;margin:.45rem 0 2rem}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
-section:focus{outline:none}
-section:focus-visible{outline:2px solid var(--secondary);outline-offset:4px}
-.btn{display:flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:.4rem 1.1rem;border:1px solid transparent;border-radius:var(--radius-sm);background:var(--primary);color:var(--on-fill);font:inherit;font-weight:600;text-decoration:none;cursor:pointer;transition:filter var(--transition-fast),box-shadow var(--transition-fast),transform var(--transition-fast),background var(--transition-fast),color var(--transition-fast),border-color var(--transition-fast)}
-.btn:hover{filter:brightness(1.08);box-shadow:var(--shadow-sm)}
-.btn:active,.chip:active,.kpi:active{transform:scale(.97)}
-.btn:focus-visible,.crumbs a:focus-visible,summary:focus-visible,.chip:focus-visible,.kpi:focus-visible,.foot a:focus-visible,.input:focus-visible{outline:2px solid var(--secondary);outline-offset:2px}
-.btn--secondary{background:transparent;border-color:var(--primary);color:var(--primary)}
-.btn--secondary:hover{background:var(--level-highlight);filter:none}
-.btn--ghost{background:transparent;color:var(--text-primary)}
-.btn--ghost:hover{background:var(--level-highlight);filter:none;box-shadow:none}
-.btn--danger{background:transparent;border-color:var(--text-error);color:var(--text-error)}
-.btn--danger:hover{background:var(--text-error);color:var(--on-fill);filter:none}
-.btn--icon{width:44px;padding:0;flex:none}
-.btn--back{background:var(--bg-secondary);border-color:var(--border-default);color:var(--text-primary);font-size:.85rem;padding:.35rem .8rem;flex:none}
-.btn--back:hover{filter:none;background:var(--level-highlight)}
-.btn.is-loading{pointer-events:none;opacity:.7}
-.btn.is-loading .ms{animation:spin .9s linear infinite}
-@keyframes spin{to{transform:rotate(1turn)}}
-.btn.is-success{background:var(--text-success);color:var(--on-fill);filter:none}
-.btn.is-error{background:var(--text-error);color:var(--on-fill);filter:none}
-.bar{position:sticky;top:0;z-index:var(--z-dropdown);display:flex;align-items:center;gap:.6rem;background:var(--bg-primary);border-bottom:1px solid var(--border-default);padding:.5rem 1.25rem}
-.logo{display:flex;align-items:center;gap:.4rem;font-weight:700;font-size:1.05rem;color:var(--text-primary);text-decoration:none;flex:none}
-.logo .ms{color:var(--primary)}
-.crumbs{display:flex;align-items:center;gap:.1rem;flex:1;min-width:0;overflow:hidden}
-.crumbs li{display:flex;align-items:center}
-.crumbs a{display:flex;align-items:center;min-height:44px;padding:0 .55rem;border-radius:var(--radius-sm);color:var(--text-secondary);text-decoration:none;font-size:.88rem;white-space:nowrap;transition:background var(--transition-fast),color var(--transition-fast)}
-.crumbs a:hover,.crumbs a:active{background:var(--level-highlight);color:var(--text-primary)}
-.crumbs a[aria-current]{color:var(--breadcrumb-active);font-weight:600}
-.crumbs .sep{color:var(--path-indicator);font-size:1.05rem}
-.hero{display:flex;flex-wrap:wrap;align-items:center;gap:2.2rem;padding:3.2rem 0 2.6rem}
-.hero__copy{flex:1 1 330px;display:flex;flex-direction:column;gap:1rem}
-.hero h1{font-size:clamp(1.85rem,4.4vw,2.7rem);line-height:1.12;letter-spacing:-.02em}
-.hero p{color:var(--text-secondary)}
-.hero__cta{display:flex;flex-wrap:wrap;align-items:center;gap:.8rem}
-.mock{flex:1 1 370px;min-width:0;display:flex;flex-direction:column;gap:.8rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);padding:1rem}
-.mock__crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:.25rem;font-family:var(--font-mono);font-size:.76rem;color:var(--text-secondary)}
-.mock__crumbs .cur{color:var(--breadcrumb-active);font-weight:700}
-.mock__crumbs .ms{font-size:.95rem;color:var(--path-indicator)}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:.6rem}
-.kpi{display:flex;flex-direction:column;align-items:flex-start;gap:.1rem;background:var(--bg-primary);border:1px solid var(--border-default);border-radius:var(--radius-sm);padding:.55rem .7rem;font:inherit;color:var(--text-primary);cursor:pointer;text-align:left;transition:border-color var(--transition-fast),transform var(--transition-fast)}
-.kpi:hover{border-color:var(--primary)}
-.kpi__label{font-size:.68rem;letter-spacing:.05em;text-transform:uppercase;color:var(--text-secondary)}
-.kpi__val{font-family:var(--font-mono);font-weight:700}
-.kpi__delta{display:flex;align-items:center;gap:.2rem;font-size:.72rem}
-.kpi__delta .ms{font-size:.95rem}
-.kpi__delta--up{color:var(--text-success)}
-.kpi__delta--down{color:var(--text-error)}
-.chart{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;align-items:end;height:108px;border-bottom:2px solid var(--border-default);padding:0 .2rem}
-.chart span{display:block;border-radius:4px 4px 0 0;background:var(--lc,var(--drill-level-2));min-height:4px;transition:height var(--transition-normal) var(--ease-standard)}
-.chart span:nth-child(1){height:var(--h1)}.chart span:nth-child(2){height:var(--h2)}.chart span:nth-child(3){height:var(--h3)}.chart span:nth-child(4){height:var(--h4)}.chart span:nth-child(5){height:var(--h5)}.chart span:nth-child(6){height:var(--h6)}.chart span:nth-child(7){height:var(--h7)}
-.mock[data-lv="1"]{--lc:var(--drill-level-1);--h1:96%;--h2:72%;--h3:88%;--h4:62%;--h5:92%;--h6:76%;--h7:66%}
-.mock[data-lv="2"]{--lc:var(--drill-level-2);--h1:50%;--h2:84%;--h3:38%;--h4:96%;--h5:64%;--h6:88%;--h7:46%}
-.mock[data-lv="3"]{--lc:var(--drill-level-3);--h1:32%;--h2:58%;--h3:20%;--h4:74%;--h5:12%;--h6:92%;--h7:42%}
-.mock.is-reloading .chart span,.mock.is-reloading .kpi__val{animation:pulse .55s var(--ease-standard)}
-@keyframes pulse{50%{opacity:.25}}
-.chips{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem}
-.chip{display:flex;align-items:center;gap:.45rem;min-height:44px;padding:.2rem .85rem;border:1px solid var(--border-default);border-radius:999px;background:var(--bg-primary);color:var(--text-secondary);font:inherit;font-size:.8rem;cursor:pointer;transition:border-color var(--transition-fast),background var(--transition-fast),color var(--transition-fast),transform var(--transition-fast)}
-.chip:hover{border-color:var(--primary)}
-.chip[aria-pressed="true"]{border-color:var(--primary);background:var(--level-highlight);color:var(--text-primary)}
-.dot{width:10px;height:10px;border-radius:50%;flex:none}
-.chip--1 .dot{background:var(--drill-level-1)}.chip--2 .dot{background:var(--drill-level-2)}.chip--3 .dot{background:var(--drill-level-3)}
-.mock__foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.6rem}
-.mock__note{font-size:.75rem;color:var(--text-secondary)}
-.row{display:flex;flex-wrap:wrap;align-items:center;gap:var(--spacing-gap)}
-.card{display:flex;flex-direction:column;gap:.75rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:1.35rem;box-shadow:var(--shadow-sm);transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),border-color var(--transition-fast)}
-.row>.card{flex:1 1 290px}
-.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;font-size:1rem;overflow-x:hidden}
+section{scroll-margin-top:calc(var(--bar-h) + 16px)}
+.wrap{max-width:1200px;margin:0 auto;padding:0 1.25rem}
+@media(min-width:768px){.wrap{padding:0 2rem}}
+.section{padding:clamp(4rem,8vw,7rem) 0}
+h1,h2,h3{line-height:1.12;letter-spacing:-.025em;font-weight:800}
+h1{font-size:clamp(2.25rem,5vw,3.6rem)}
+h2{font-size:clamp(1.75rem,3.5vw,2.5rem)}
+h3{font-size:1.15rem}
+.lead{color:var(--text-secondary);max-width:60ch;margin-top:1rem}
+.mono{font-family:var(--font-mono)}
+.material-symbols-rounded{font-size:1.25rem;line-height:1;user-select:none}
+:focus-visible{outline:3px solid var(--primary);outline-offset:2px;border-radius:4px}
+/* Buttons */
+.btn{display:flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:.7rem 1.4rem;border-radius:var(--radius-sm);border:1px solid transparent;font:600 .95rem var(--font-base);cursor:pointer;text-decoration:none;transition:all var(--transition-fast) var(--ease-standard)}
+.btn:active{transform:scale(.97)}
+.btn--primary{background:var(--primary);color:var(--on-primary)}
+.btn--secondary{background:var(--bg-secondary);color:var(--text-primary);border-color:var(--border-default)}
+.btn--ghost{background:transparent;color:var(--primary)}
+.btn--danger{background:var(--text-error);color:#fff}
+.btn:disabled{opacity:.5;filter:grayscale(.6);cursor:not-allowed}
+@media(hover:hover) and (pointer:fine){
+.btn--primary:hover{background:var(--primary-strong);box-shadow:var(--shadow-md)}
+.btn--secondary:hover{border-color:var(--primary);transform:translateY(-2px)}
+.btn--ghost:hover{background:var(--level-highlight)}
+}
+.btn .spinner{width:18px;height:18px;border:2.5px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* Sticky breadcrumb bar */
+.topbar{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--bg-primary);border-bottom:1px solid var(--border-default)}
+.topbar__inner{display:flex;align-items:center;gap:1rem;height:var(--bar-h);max-width:1200px;margin:0 auto;padding:0 1.25rem}
+@media(min-width:768px){.topbar__inner{padding:0 2rem}}
+.logo{display:flex;align-items:center;gap:.5rem;font-weight:800;font-size:1.05rem;color:var(--text-primary);text-decoration:none;flex-shrink:0}
+.logo .material-symbols-rounded{color:var(--primary);font-size:1.5rem}
+.crumbs{display:none;align-items:center;gap:.15rem;list-style:none}
+@media(min-width:900px){.crumbs{display:flex}}
+.crumbs a{display:flex;align-items:center;min-height:36px;padding:.25rem .5rem;border-radius:6px;color:var(--text-secondary);text-decoration:none;font-size:.85rem;font-weight:500;transition:all var(--transition-fast) var(--ease-standard)}
+.crumbs a:hover{color:var(--primary);background:var(--level-highlight)}
+.crumbs a:active{transform:scale(.96)}
+.crumbs [aria-current]{color:var(--breadcrumb-active);font-weight:700}
+.crumbs .sep{color:var(--text-secondary);font-size:1rem}
+.topbar__right{margin-left:auto;display:flex;align-items:center;gap:.5rem}
+.btn--back{display:none;align-items:center;gap:.35rem;min-height:44px;padding:.5rem .9rem;border-radius:var(--radius-sm);border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);font:600 .85rem var(--font-base);cursor:pointer;transition:all var(--transition-fast) var(--ease-standard)}
+.btn--back:active{transform:scale(.97)}
+@media(min-width:768px){.btn--back{display:flex}}
+@media(hover:hover){.btn--back:hover{border-color:var(--primary);color:var(--primary)}}
+.icon-btn{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-sm);border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);cursor:pointer;transition:all var(--transition-fast) var(--ease-standard)}
+.icon-btn:active{transform:scale(.95)}
+@media(hover:hover){.icon-btn:hover{border-color:var(--primary);color:var(--primary)}}
+#theme-toggle .moon{display:none}
+:root[data-theme="dark"] #theme-toggle .sun{display:none}
+:root[data-theme="dark"] #theme-toggle .moon{display:block}
+/* Mobile menu */
+.menu-btn{display:flex}
+@media(min-width:900px){.menu-btn{display:none}}
+.mobile-nav{display:none;flex-direction:column;gap:.25rem;padding:.75rem 1.25rem 1rem;border-top:1px solid var(--border-default);background:var(--bg-primary)}
+.mobile-nav.open{display:flex}
+.mobile-nav a{display:flex;align-items:center;min-height:44px;padding:.5rem .75rem;border-radius:var(--radius-sm);color:var(--text-primary);text-decoration:none;font-weight:600}
+.mobile-nav a:hover{background:var(--level-highlight)}
+/* Hero */
+.hero{padding:clamp(3rem,6vw,5.5rem) 0 clamp(4rem,7vw,6rem)}
+.hero__grid{display:flex;flex-direction:column;gap:3rem;align-items:center}
+@media(min-width:960px){.hero__grid{flex-direction:row;align-items:center}}
+.hero__copy{flex:1;min-width:0}
+.eyebrow{display:inline-flex;align-items:center;gap:.4rem;font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--primary);margin-bottom:1rem}
+.hero__cta{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:1.75rem}
+.hero__visual{flex:1.1;min-width:0;width:100%}
+/* Dashboard mock */
+.dash{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);padding:1.25rem;display:flex;flex-direction:column;gap:1rem}
+.dash__crumbs{display:flex;align-items:center;gap:.2rem;font-size:.8rem;color:var(--text-secondary);flex-wrap:wrap}
+.dash__crumbs b{color:var(--breadcrumb-active)}
+.dash__crumbs .material-symbols-rounded{font-size:.95rem}
+.dash__kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem}
+.kpi{background:var(--bg-tertiary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:.8rem;cursor:pointer;text-align:left;font:inherit;color:inherit;transition:all var(--transition-fast) var(--ease-standard)}
+.kpi:active{transform:scale(.97)}
+@media(hover:hover){.kpi:hover{transform:translateY(-2px);border-color:var(--primary)}}
+.kpi__label{font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-secondary)}
+.kpi__value{font-family:var(--font-mono);font-weight:600;font-size:clamp(.95rem,2vw,1.25rem);margin-top:.2rem}
+.chart{display:grid;grid-template-columns:repeat(8,1fr);align-items:end;gap:.5rem;height:130px;padding:.5rem;background:var(--bg-tertiary);border-radius:var(--radius-md);border:1px solid var(--border-default)}
+.chart div{border-radius:4px 4px 0 0;background:var(--path-indicator);transition:height var(--transition-normal) var(--ease-standard)}
+.chips{display:flex;flex-wrap:wrap;gap:.5rem}
+.chip{display:flex;align-items:center;gap:.45rem;min-height:44px;padding:.5rem .9rem;border-radius:999px;border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-secondary);font:600 .8rem var(--font-base);cursor:pointer;transition:all var(--transition-fast) var(--ease-standard)}
+.chip::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--dot)}
+.chip--l1{--dot:var(--drill-level-1)}.chip--l2{--dot:var(--drill-level-2)}.chip--l3{--dot:var(--drill-level-3)}
+.chip[aria-pressed="true"]{background:var(--level-highlight);border-color:var(--primary);color:var(--text-primary)}
+.chip:active{transform:scale(.96)}
+.is-reloading .kpi__value,.is-reloading .chart div{animation:pulse .6s var(--ease-standard)}
+@keyframes pulse{0%{opacity:.25}100%{opacity:1}}
+/* Cards */
+.grid3{display:flex;flex-direction:column;gap:var(--spacing-gap)}
+@media(min-width:860px){.grid3{display:grid;grid-template-columns:repeat(3,1fr)}}
+.card{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:1.75rem;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;gap:.9rem;transition:all var(--transition-normal) var(--ease-standard)}
+@media(hover:hover){.card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}}
 .card:focus-within{border-color:var(--primary)}
-.card.is-flash{border-color:var(--secondary);box-shadow:0 0 0 3px var(--level-highlight),var(--shadow-md)}
-.card h3{font-size:1.02rem}
-.card p{color:var(--text-secondary);font-size:.94rem}
-.f__icon{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-sm);background:var(--level-highlight);color:var(--primary);flex:none}
-.drill{margin-top:auto}
-.drill summary{display:flex;align-items:center;gap:.4rem;min-height:44px;cursor:pointer;font-weight:600;color:var(--primary);border-radius:var(--radius-sm)}
-.drill summary .ms{transition:transform var(--transition-normal) var(--ease-standard)}
-.drill[open] summary .ms{transform:rotate(180deg)}
-.dbody{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--transition-normal) var(--ease-standard)}
-details[open] .dbody{grid-template-rows:1fr}
-.dinner{overflow:hidden;min-height:0}
-.tree{display:flex;flex-direction:column;gap:.45rem;padding-top:.6rem}
-.tree li{display:flex;align-items:center;gap:.5rem;font-size:.86rem;color:var(--text-secondary)}
-.tree li::before{content:"";width:9px;height:9px;border-radius:3px;flex:none}
-.tree li:nth-child(3n+1)::before{background:var(--drill-level-1)}
-.tree li:nth-child(3n+2)::before{background:var(--drill-level-2);margin-left:.95rem}
-.tree li:nth-child(3n+3)::before{background:var(--drill-level-3);margin-left:1.9rem}
-.steps{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:var(--spacing-gap);position:relative}
-.steps::before{content:"";position:absolute;top:21px;left:10%;width:80%;height:3px;border-radius:2px;background:var(--path-indicator)}
-.step{flex:1 1 250px;max-width:290px;display:flex;flex-direction:column;align-items:center;gap:.65rem;text-align:center}
-.step__num{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:700;background:var(--bg-secondary);box-shadow:var(--shadow-sm);position:relative;z-index:1}
-.step--1 .step__num{border:3px solid var(--drill-level-1)}
-.step--2 .step__num{border:3px solid var(--drill-level-2)}
-.step--3 .step__num{border:3px solid var(--drill-level-3)}
-.step p{color:var(--text-secondary);font-size:.9rem}
-.lvtag{display:inline-flex;align-items:center;gap:.4rem;font-family:var(--font-mono);font-size:.72rem;padding:.2rem .6rem;border:1px solid var(--drill-level-2);border-radius:999px}
-.lvtag .dot{width:9px;height:9px}
-.lvtag--1{border-color:var(--drill-level-1)}.lvtag--1 .dot{background:var(--drill-level-1)}
-.lvtag--2 .dot{background:var(--drill-level-2)}
-.lvtag--3{border-color:var(--drill-level-3)}.lvtag--3 .dot{background:var(--drill-level-3)}
-.t__quote{font-size:.95rem}
-.t__who{display:flex;align-items:center;gap:.75rem;margin-top:auto}
-.avatar{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;background:var(--level-highlight);color:var(--breadcrumb-active);font-weight:700;font-size:.82rem;letter-spacing:.03em;flex:none}
-.t__name{display:block;font-size:.9rem;font-weight:600}
-.t__role{display:block;font-size:.78rem;color:var(--text-secondary)}
-.tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--spacing-gap);align-items:center}
-.tier{display:flex;flex-direction:column;gap:.8rem;position:relative}
-.tier--pop{border-width:2px;padding:calc(1.35rem - 1px);border-color:var(--primary);box-shadow:var(--shadow-md)}
-.badge{position:absolute;top:-13px;left:50%;translate:-50%;background:var(--primary);color:var(--on-fill);font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:.22rem .7rem;border-radius:999px;white-space:nowrap}
-.tier__lv{font-family:var(--font-mono);font-size:.72rem;color:var(--text-secondary)}
-.tier h3{font-size:1.15rem}
-.tier .price{font-family:var(--font-mono);font-weight:700;font-size:2rem;line-height:1;color:var(--text-primary)}
-.price small{font-family:var(--font-base);font-size:.78rem;font-weight:400;color:var(--text-secondary)}
-.tier ul{display:flex;flex-direction:column;gap:.5rem;font-size:.88rem}
-.tier li{display:flex;align-items:center;gap:.5rem}
-.tier li .ms{font-size:1.05rem;color:var(--text-success)}
-.tier .btn{margin-top:.4rem}
-.faq{display:flex;flex-direction:column;gap:.7rem;max-width:760px;margin:0 auto}
-.faq details{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);transition:border-color var(--transition-fast)}
-.faq details[open]{border-color:var(--primary)}
-.faq summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:44px;padding:.65rem 1.1rem;cursor:pointer;font-weight:600;border-radius:var(--radius-md)}
-.faq summary .ms{color:var(--text-secondary);transition:transform var(--transition-normal) var(--ease-standard)}
-.faq details[open] summary .ms{transform:rotate(180deg)}
-.faq .dinner p{padding:0 1.1rem .85rem;color:var(--text-secondary);font-size:.9rem}
-.cta{display:flex;flex-direction:column;align-items:center;gap:.9rem;text-align:center;background:linear-gradient(135deg,var(--primary),var(--secondary));border-radius:var(--radius-lg);padding:2.6rem 1.4rem;color:var(--on-fill);box-shadow:var(--shadow-md)}
-.cta h2{color:inherit}
-.cta p{opacity:.92;max-width:52ch}
-.cta__card{width:min(480px,100%);background:var(--bg-secondary);color:var(--text-primary);border-radius:var(--radius-md);padding:1.2rem;display:flex;flex-direction:column;gap:.6rem;box-shadow:var(--shadow-md)}
-.form__label{font-size:.85rem;font-weight:600;text-align:left}
-.input-group{position:relative;display:flex;align-items:center}
-.input{width:100%;min-height:44px;padding:.5rem 2.5rem .5rem .9rem;border:1px solid var(--border-default);border-radius:var(--radius-sm);background:var(--bg-primary);color:var(--text-primary);font:inherit;transition:border-color var(--transition-fast)}
-.input::placeholder{color:var(--text-secondary)}
-.input:focus-visible{outline:2px solid var(--secondary);outline-offset:1px}
-.input.is-invalid{border-color:var(--text-error)}
-.input.is-valid{border-color:var(--text-success)}
-.input:disabled{opacity:.55;cursor:not-allowed;filter:grayscale(1)}
-.input__icon{position:absolute;right:.7rem;top:50%;translate:0 -50%;font-size:1.05rem;color:var(--text-secondary);pointer-events:none;display:none}
-.input.is-invalid~.input__icon{display:inline-flex;color:var(--text-error)}
-.input.is-valid~.input__icon{display:inline-flex;color:var(--text-success)}
-.form__msg{display:flex;align-items:center;gap:.35rem;font-size:.84rem;min-height:1.25rem;text-align:left}
-.form__msg .ms{font-size:1rem}
-.form__msg--error{color:var(--text-error)}
-.form__msg--ok{color:var(--text-success)}
-.cta .btn{width:100%}
-.foot{border-top:1px solid var(--border-default);margin-top:3.5rem;padding:2.5rem 0 1.6rem}
-.foot__grid{display:flex;flex-wrap:wrap;gap:2rem 3rem}
-.foot__col{display:flex;flex-direction:column;gap:.3rem;flex:1 1 160px}
-.foot h4{font-size:.8rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-secondary);margin-bottom:.35rem}
-.foot a{display:flex;align-items:center;min-height:40px;color:var(--text-secondary);text-decoration:none;font-size:.9rem;transition:color var(--transition-fast)}
-.foot a:hover{color:var(--breadcrumb-active)}
-.foot__base{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1rem;margin-top:2.2rem;padding-top:1.3rem;border-top:1px solid var(--border-default);font-size:.84rem;color:var(--text-secondary)}
-.here{display:flex;align-items:center;gap:.25rem;font-family:var(--font-mono);font-size:.78rem}
-.here .ms{font-size:.95rem;color:var(--path-indicator)}
-.here b{color:var(--breadcrumb-active)}
-.social{display:flex;gap:.4rem}
-.social a{min-width:44px;min-height:44px;justify-content:center}
-.social .ms{color:var(--text-secondary)}
-@media(max-width:840px){.tiers{grid-template-columns:minmax(0,420px);justify-content:center}}
-@media(max-width:760px){.steps::before{display:none}}
-@media(max-width:740px){.crumbs li:not(:has([aria-current])){display:none}.crumbs .sep{display:none}.btn--back .btn__label{display:none}.bar{gap:.4rem;padding:.5rem .8rem}}
-@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+.card__icon{display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:var(--radius-md);background:var(--level-highlight);color:var(--primary)}
+.card__icon .material-symbols-rounded{font-size:1.6rem}
+.card p{color:var(--text-secondary);font-size:.95rem}
+/* details */
+details{border-top:1px solid var(--border-default);padding-top:.5rem}
+summary{display:flex;align-items:center;gap:.5rem;min-height:44px;cursor:pointer;font-weight:600;font-size:.9rem;color:var(--primary);list-style:none;border-radius:6px}
+summary::-webkit-details-marker{display:none}
+summary .material-symbols-rounded{transition:transform var(--transition-normal) var(--ease-standard)}
+details[open] summary .material-symbols-rounded{transform:rotate(180deg)}
+.detail-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--transition-normal) var(--ease-standard)}
+details[open] .detail-body{grid-template-rows:1fr}
+.detail-body>div{overflow:hidden}
+.lvl-list{list-style:none;display:flex;flex-direction:column;gap:.45rem;padding:.5rem 0 .75rem}
+.lvl-list li{display:flex;align-items:center;gap:.6rem;font-size:.87rem;color:var(--text-secondary)}
+.lvl-list li::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--dot);flex-shrink:0}
+.lvl-list .l1{--dot:var(--drill-level-1)}.lvl-list .l2{--dot:var(--drill-level-2)}.lvl-list .l3{--dot:var(--drill-level-3)}
+/* Steps */
+.steps{display:flex;flex-direction:column;gap:0;margin-top:2.5rem}
+@media(min-width:860px){.steps{flex-direction:row;gap:1.5rem}}
+.step{flex:1;display:flex;gap:1rem;position:relative;padding-bottom:2rem}
+@media(min-width:860px){.step{flex-direction:column;padding-bottom:0}}
+.step__num{display:flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:50%;background:var(--c);color:#fff;font:700 1.1rem var(--font-mono);flex-shrink:0;box-shadow:var(--shadow-sm)}
+.step--1{--c:var(--drill-level-1)}.step--2{--c:var(--drill-level-2)}.step--3{--c:var(--drill-level-3)}
+:root[data-theme="dark"] .step__num{color:#0b1530}
+.step:not(:last-child)::after{content:"";position:absolute;left:25px;top:56px;bottom:4px;width:3px;background:linear-gradient(var(--c),var(--border-default));border-radius:2px}
+@media(min-width:860px){.step:not(:last-child)::after{left:56px;right:-8px;top:25px;bottom:auto;width:auto;height:3px;background:linear-gradient(90deg,var(--c),var(--border-default))}}
+.step h3{margin-bottom:.35rem}
+.step p{color:var(--text-secondary);font-size:.92rem}
+.step__tag{display:inline-flex;align-items:center;gap:.3rem;margin-top:.6rem;font-size:.75rem;font-weight:700;color:var(--c);text-transform:uppercase;letter-spacing:.05em}
+/* Testimonials */
+.quote{font-size:1rem;color:var(--text-primary)}
+.quote::before{content:"\201C"}.quote::after{content:"\201D"}
+.person{display:flex;align-items:center;gap:.8rem;margin-top:auto}
+.avatar{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;background:var(--primary);color:var(--on-primary);font-weight:700;font-size:.85rem;flex-shrink:0}
+.person small{display:block;color:var(--text-secondary);font-size:.8rem}
+/* Pricing */
+.price{font-family:var(--font-mono);font-size:2rem;font-weight:600}
+.price span{font-size:.85rem;color:var(--text-secondary);font-family:var(--font-base)}
+.feat{list-style:none;display:flex;flex-direction:column;gap:.5rem;font-size:.9rem;color:var(--text-secondary)}
+.feat li{display:flex;align-items:center;gap:.55rem}
+.feat .material-symbols-rounded{color:var(--text-success);font-size:1.1rem}
+.card--featured{border:2px solid var(--primary);box-shadow:var(--shadow-md);position:relative}
+:root[data-theme="dark"] .card--featured{border-color:var(--primary)}
+.badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--primary);color:var(--on-primary);font-size:.72rem;font-weight:700;padding:.3rem .9rem;border-radius:999px;white-space:nowrap}
+/* FAQ */
+.faq{max-width:760px;margin:2.5rem auto 0;display:flex;flex-direction:column;gap:.75rem}
+.faq details{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:0 1.25rem}
+.faq summary{color:var(--text-primary);font-size:.98rem;padding:.4rem 0}
+.faq .detail-body p{color:var(--text-secondary);font-size:.92rem;padding-bottom:1rem}
+/* CTA band */
+.band{background:var(--bg-tertiary);border-top:1px solid var(--border-default);border-bottom:1px solid var(--border-default)}
+.band__panel{max-width:620px;margin:0 auto;text-align:center;display:flex;flex-direction:column;align-items:center;gap:1rem}
+.input-group{display:flex;flex-direction:column;gap:.4rem;width:100%;max-width:440px;text-align:left}
+.input-group label{font-weight:600;font-size:.88rem}
+.input-row{display:flex;gap:.5rem;flex-wrap:wrap}
+.input-row input{flex:1;min-width:200px;min-height:48px;padding:.7rem 1rem;border-radius:var(--radius-sm);border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);font:1rem var(--font-base);transition:border-color var(--transition-fast)}
+.input-row input:focus{outline:3px solid var(--primary);outline-offset:1px;border-color:var(--primary)}
+.input-group.error input{border-color:var(--border-error)}
+.input-group.success input{border-color:var(--border-success)}
+.feedback{display:flex;align-items:center;gap:.4rem;font-size:.85rem;min-height:1.4rem}
+.feedback.err{color:var(--text-error)}.feedback.ok{color:var(--text-success)}
+/* Footer */
+footer{padding:3.5rem 0 2rem}
+.foot-grid{display:flex;flex-direction:column;gap:2rem}
+@media(min-width:768px){.foot-grid{flex-direction:row;justify-content:space-between}}
+.foot-col h4{font-size:.8rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-secondary);margin-bottom:.8rem}
+.foot-col ul{list-style:none;display:flex;flex-direction:column;gap:.5rem}
+.foot-col a{color:var(--text-secondary);text-decoration:none;font-size:.9rem;min-height:32px;display:inline-flex;align-items:center}
+.foot-col a:hover{color:var(--primary)}
+.foot-bottom{display:flex;flex-wrap:wrap;align-items:center;gap:1rem;margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid var(--border-default);font-size:.82rem;color:var(--text-secondary)}
+.social{display:flex;gap:.5rem}
+.social a{display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:var(--radius-sm);border:1px solid var(--border-default);color:var(--text-secondary);text-decoration:none}
+.social a:hover{color:var(--primary);border-color:var(--primary)}
+.youhere{display:flex;align-items:center;gap:.3rem}
+.youhere b{color:var(--breadcrumb-active)}
+.center{text-align:center}
+.center .lead{margin-left:auto;margin-right:auto}
+@media(prefers-reduced-motion:reduce){
+html{scroll-behavior:auto}
+*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+.is-reloading .kpi__value,.is-reloading .chart div{animation:none}
+}
 </style>
-<script>try{var t=localStorage.getItem('nimbus');if(t==='dark')document.documentElement.classList.add('dark');else if(t==='light')document.documentElement.classList.add('light')}catch(e){}</script>
 </head>
-<body id="top">
-<header class="bar">
-<a class="logo" href="#top"><span class="ms" aria-hidden="true">insights</span>Nimbus</a>
-<button class="btn btn--back" id="backBtn" aria-label="Back to previous level"><span class="ms" aria-hidden="true">arrow_back</span><span class="btn__label">Back</span></button>
-<nav aria-label="Breadcrumb"><ol class="crumbs">
-<li><a href="#features" aria-current="page">Features</a><span class="ms sep" aria-hidden="true">chevron_right</span></li>
-<li><a href="#how">Drill path</a><span class="ms sep" aria-hidden="true">chevron_right</span></li>
-<li><a href="#pricing">Pricing</a><span class="ms sep" aria-hidden="true">chevron_right</span></li>
-<li><a href="#faq">FAQ</a></li>
-</ol></nav>
-<button class="btn btn--ghost btn--icon" id="themeToggle" aria-label="Toggle dark mode" aria-pressed="false"><span class="ms" aria-hidden="true">dark_mode</span></button>
+<body>
+<header class="topbar">
+<div class="topbar__inner">
+<a class="logo" href="#top"><span class="material-symbols-rounded" aria-hidden="true">insights</span>Drillpoint</a>
+<nav aria-label="Breadcrumb">
+<ol class="crumbs">
+<li><a href="#features" data-crumb="features">Features</a></li>
+<li><span class="material-symbols-rounded sep" aria-hidden="true">chevron_right</span></li>
+<li><a href="#how" data-crumb="how">How it works</a></li>
+<li><span class="material-symbols-rounded sep" aria-hidden="true">chevron_right</span></li>
+<li><a href="#pricing" data-crumb="pricing">Pricing</a></li>
+<li><span class="material-symbols-rounded sep" aria-hidden="true">chevron_right</span></li>
+<li><a href="#faq" data-crumb="faq">FAQ</a></li>
+</ol>
+</nav>
+<div class="topbar__right">
+<button class="btn--back" id="back-btn" type="button"><span class="material-symbols-rounded" aria-hidden="true">arrow_back</span>Back</button>
+<button class="icon-btn" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+<span class="material-symbols-rounded sun" aria-hidden="true">dark_mode</span>
+<span class="material-symbols-rounded moon" aria-hidden="true">light_mode</span>
+</button>
+<button class="icon-btn menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="mobile-nav" aria-label="Open menu">
+<span class="material-symbols-rounded" aria-hidden="true">menu</span>
+</button>
+</div>
+</div>
+<nav class="mobile-nav" id="mobile-nav" aria-label="Mobile">
+<a href="#features">Features</a>
+<a href="#how">How it works</a>
+<a href="#pricing">Pricing</a>
+<a href="#faq">FAQ</a>
+</nav>
 </header>
-<main>
-<section class="hero" aria-label="Intro"><div class="wrap">
+
+<main id="top">
+<!-- HERO -->
+<section class="hero">
+<div class="wrap hero__grid">
 <div class="hero__copy">
-<h1>Every answer, one level deeper.</h1>
-<p>Nimbus is the BI workspace where you click any number and drill from company-wide summaries down to the row that caused it — without ever losing your path.</p>
+<span class="eyebrow"><span class="material-symbols-rounded" aria-hidden="true">layers</span>Drill-down analytics</span>
+<h1>Every number opens into its story.</h1>
+<p class="lead">Drillpoint turns static dashboards into explorable hierarchies. Start at the summary, drill to the detail, and never lose your place.</p>
 <div class="hero__cta">
-<a class="btn btn--primary" href="#pricing"><span class="ms" aria-hidden="true">arrow_downward</span>Start drilling free</a>
-<a class="btn btn--secondary" href="#how"><span class="ms" aria-hidden="true">play_circle</span>See the drill path</a>
+<a class="btn btn--primary" href="#cta">Start free trial</a>
+<a class="btn btn--secondary" href="#how">See how it works</a>
 </div>
 </div>
-<div class="mock" id="demo" data-lv="1">
-<nav class="mock__crumbs" aria-label="Demo breadcrumb"><span>Overview</span><span class="ms" aria-hidden="true">chevron_right</span><span>Revenue</span><span class="ms" aria-hidden="true">chevron_right</span><span class="cur" id="demoCrumb">Q4 · All regions</span></nav>
-<div class="kpis">
-<button class="kpi" data-drill="features"><span class="kpi__label">Revenue</span><span class="kpi__val">$4.2M</span><span class="kpi__delta kpi__delta--up"><span class="ms" aria-hidden="true">trending_up</span>+12.4%</span></button>
-<button class="kpi" data-drill="features"><span class="kpi__label">Accounts</span><span class="kpi__val">18,430</span><span class="kpi__delta kpi__delta--up"><span class="ms" aria-hidden="true">trending_up</span>+3.1%</span></button>
-<button class="kpi" data-drill="features"><span class="kpi__label">Churn</span><span class="kpi__val">2.1%</span><span class="kpi__delta kpi__delta--down"><span class="ms" aria-hidden="true">trending_down</span>-0.4 pts</span></button>
+<div class="hero__visual">
+<div class="dash" id="dash">
+<div class="dash__crumbs" aria-hidden="true">
+<span>Overview</span><span class="material-symbols-rounded">chevron_right</span>
+<span>Revenue</span><span class="material-symbols-rounded">chevron_right</span>
+<b id="dash-crumb">Q4</b>
 </div>
-<div class="chart" role="img" aria-label="Revenue bar chart for the selected drill level"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+<div class="dash__kpis">
+<button class="kpi" type="button" data-scroll="#features"><span class="kpi__label">Revenue</span><span class="kpi__value" id="kpi-1">$4.2M</span></button>
+<button class="kpi" type="button" data-scroll="#how"><span class="kpi__label">Deals</span><span class="kpi__value" id="kpi-2">1,284</span></button>
+<button class="kpi" type="button" data-scroll="#pricing"><span class="kpi__label">Win rate</span><span class="kpi__value" id="kpi-3">38%</span></button>
+</div>
+<div class="chart" id="chart" aria-hidden="true">
+<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+</div>
 <div class="chips" role="group" aria-label="Drill level">
-<button class="chip chip--1" data-lv="1" data-crumb="Q4 · All regions" aria-pressed="true"><span class="dot" aria-hidden="true"></span>Level 1 · Summary</button>
-<button class="chip chip--2" data-lv="2" data-crumb="Q4 · EMEA" aria-pressed="false"><span class="dot" aria-hidden="true"></span>Level 2 · Category</button>
-<button class="chip chip--3" data-lv="3" data-crumb="Order #48112" aria-pressed="false"><span class="dot" aria-hidden="true"></span>Level 3 · Detail</button>
+<button class="chip chip--l1" type="button" data-level="0" aria-pressed="true">Level 1 · Summary</button>
+<button class="chip chip--l2" type="button" data-level="1" aria-pressed="false">Level 2 · Category</button>
+<button class="chip chip--l3" type="button" data-level="2" aria-pressed="false">Level 3 · Detail</button>
 </div>
-<div class="mock__foot"><span class="mock__note">Live demo — pick a level, or click a KPI to drill into the detail below.</span><button class="btn btn--danger" id="resetDemo"><span class="ms" aria-hidden="true">restart_alt</span>Reset view</button></div>
-<p class="sr" id="drillLive" aria-live="polite"></p>
 </div>
-</div></section>
-<section class="sec" id="features"><div class="wrap">
-<h2>Built for depth</h2>
-<p class="sub">Summary-to-detail is a first-class interaction in Nimbus, not an afterthought. Every control on this page works — try the drills.</p>
-<div class="row">
+</div>
+</div>
+</section>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+<div class="wrap">
+<h2>Built for hierarchical exploration</h2>
+<p class="lead">Three capabilities that make summary-to-detail analysis feel instant.</p>
+<div class="grid3" style="margin-top:2.5rem">
 <article class="card">
-<span class="f__icon"><span class="ms" aria-hidden="true">insights</span></span>
-<h3>Click any metric</h3>
-<p>Every KPI is a doorway. One click descends from dashboard totals to the exact records behind them.</p>
-<details class="drill"><summary>Drill deeper<span class="ms" aria-hidden="true">expand_more</span></summary>
-<div class="dbody"><div class="dinner"><ul class="tree">
-<li>Level 1 · Total revenue rollup, all regions</li>
-<li>Level 2 · Category: EMEA is 18.2% of the total</li>
-<li>Level 3 · Detail: order #48112 — $1,240, Berlin</li>
-</ul></div></div></details>
+<div class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">account_tree</span></div>
+<h3>Live drill paths</h3>
+<p>Click any metric to expand its breakdown in place. The path stays visible so context is never lost.</p>
+<details>
+<summary>Drill deeper<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+<div class="detail-body"><div><ul class="lvl-list">
+<li class="l1">Summary: company-wide totals refresh in real time</li>
+<li class="l2">Category: segment by region, product, or channel</li>
+<li class="l3">Detail: row-level records with full lineage</li>
+</ul></div></div>
+</details>
 </article>
 <article class="card">
-<span class="f__icon"><span class="ms" aria-hidden="true">account_tree</span></span>
-<h3>Never lose your path</h3>
-<p>Breadcrumbs record every hop of a drill, and the back button retraces it exactly — no re-querying.</p>
-<details class="drill"><summary>Drill deeper<span class="ms" aria-hidden="true">expand_more</span></summary>
-<div class="dbody"><div class="dinner"><ul class="tree">
-<li>Level 1 · Path: Overview / Revenue / Q4</li>
-<li>Level 2 · Context: filters and date range preserved</li>
-<li>Level 3 · Return: one click, full history intact</li>
-</ul></div></div></details>
+<div class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">history</span></div>
+<h3>Context preservation</h3>
+<p>Breadcrumbs, back navigation, and level indicators mirror every step of your analysis.</p>
+<details>
+<summary>Drill deeper<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+<div class="detail-body"><div><ul class="lvl-list">
+<li class="l1">Sticky breadcrumb mirrors the current view</li>
+<li class="l2">One-click back returns to the parent level</li>
+<li class="l3">Filters persist across every drill step</li>
+</ul></div></div>
+</details>
 </article>
 <article class="card">
-<span class="f__icon"><span class="ms" aria-hidden="true">layers</span></span>
-<h3>Levels you can see</h3>
-<p>Color-coded level indicators keep summary, category, and detail visually distinct in every chart and theme.</p>
-<details class="drill"><summary>Drill deeper<span class="ms" aria-hidden="true">expand_more</span></summary>
-<div class="dbody"><div class="dinner"><ul class="tree">
-<li>Level 1 · An ordered light-to-deep color ramp</li>
-<li>Level 2 · Always paired with a text label</li>
-<li>Level 3 · Retuned for light and dark modes</li>
-</ul></div></div></details>
+<div class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">speed</span></div>
+<h3>Instant reloads</h3>
+<p>Level changes re-render in milliseconds with clear loading feedback on every value.</p>
+<details>
+<summary>Drill deeper<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+<div class="detail-body"><div><ul class="lvl-list">
+<li class="l1">Pre-aggregated summary tiers for speed</li>
+<li class="l2">Cached category slices for repeat visits</li>
+<li class="l3">Streaming detail queries under 200 ms</li>
+</ul></div></div>
+</details>
 </article>
 </div>
-</div></section>
-<section class="sec" id="how"><div class="wrap">
-<h2>The drill path</h2>
-<p class="sub">Three levels, one uninterrupted train of thought. The sticky breadcrumb and back button above mirror it in real time.</p>
+</div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how" style="background:var(--bg-tertiary)">
+<div class="wrap">
+<h2>From summary to detail in three levels</h2>
+<p class="lead">The drill path is color-coded, so you always know how deep you are.</p>
 <div class="steps">
 <div class="step step--1">
-<span class="step__num">1</span>
-<span class="lvtag lvtag--1"><span class="dot" aria-hidden="true"></span>Level 1 · Summary</span>
-<h3>Start wide</h3>
-<p>Open a dashboard of rolled-up KPIs. Every total is query-backed and trustworthy.</p>
+<span class="step__num" aria-hidden="true">1</span>
+<div><h3>Start at the summary</h3><p>Land on headline KPIs. Every tile is a door, not a dead end.</p>
+<span class="step__tag"><span class="material-symbols-rounded" aria-hidden="true">layers</span>Level 1 · Summary</span></div>
 </div>
 <div class="step step--2">
-<span class="step__num">2</span>
-<span class="lvtag lvtag--2"><span class="dot" aria-hidden="true"></span>Level 2 · Category</span>
-<h3>Drill in</h3>
-<p>Click a segment. The breadcrumb records the hop and your filters come along for the ride.</p>
+<span class="step__num" aria-hidden="true">2</span>
+<div><h3>Drill into categories</h3><p>Click a number to split it by segment. The breadcrumb records each step.</p>
+<span class="step__tag"><span class="material-symbols-rounded" aria-hidden="true">chevron_right</span>Level 2 · Category</span></div>
 </div>
 <div class="step step--3">
-<span class="step__num">3</span>
-<span class="lvtag lvtag--3"><span class="dot" aria-hidden="true"></span>Level 3 · Detail</span>
-<h3>Reach the row</h3>
-<p>Land on the exact record. The back button walks the whole path home.</p>
+<span class="step__num" aria-hidden="true">3</span>
+<div><h3>Inspect the detail</h3><p>Reach row-level records, then use the back button to climb out with filters intact.</p>
+<span class="step__tag"><span class="material-symbols-rounded" aria-hidden="true">arrow_back</span>Level 3 · Detail</span></div>
 </div>
 </div>
-</div></section>
-<section class="sec" id="stories"><div class="wrap">
-<h2>What analysts say</h2>
-<p class="sub">Teams that moved to summary-to-detail workflows tell it best.</p>
-<div class="row">
+</div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="section" id="testimonials">
+<div class="wrap">
+<h2>Teams that stopped exporting to spreadsheets</h2>
+<div class="grid3" style="margin-top:2.5rem">
 <article class="card">
-<p class="t__quote">“I stopped exporting CSVs to answer follow-up questions. The answer is always two clicks deeper.”</p>
-<div class="t__who"><span class="avatar" aria-hidden="true">MO</span><span><span class="t__name">Maya Osei</span><span class="t__role">Head of Analytics · Fernwood Retail</span></span></div>
+<p class="quote">Our weekly review went from forty slides to one dashboard. Everyone drills into their own questions live.</p>
+<div class="person"><span class="avatar" aria-hidden="true">MK</span><div><strong>Marta Kowalski</strong><small>VP Revenue, Fieldstone Logistics</small></div></div>
 </article>
 <article class="card">
-<p class="t__quote">“The breadcrumb changed how our whole team reads dashboards. You always know exactly where you are.”</p>
-<div class="t__who"><span class="avatar" aria-hidden="true">DR</span><span><span class="t__name">Daniel Reyes</span><span class="t__role">BI Lead · Corvata</span></span></div>
+<p class="quote">The breadcrumb trail sounds small, but it ended the constant "which filter am I on" confusion in our standups.</p>
+<div class="person"><span class="avatar" aria-hidden="true">DA</span><div><strong>Daniel Adeyemi</strong><small>Analytics Lead, Corvus Health</small></div></div>
 </article>
 <article class="card">
-<p class="t__quote">“Our monthly review went from a full day of slide-making to ten live minutes of drilling, together.”</p>
-<div class="t__who"><span class="avatar" aria-hidden="true">PN</span><span><span class="t__name">Priya Nair</span><span class="t__role">VP Data · Halden Group</span></span></div>
+<p class="quote">I answer board questions in the meeting now. Three clicks from the summary to the exact invoice.</p>
+<div class="person"><span class="avatar" aria-hidden="true">SR</span><div><strong>Sofia Reyes</strong><small>Head of Finance, Northwind Retail</small></div></div>
 </article>
 </div>
-</div></section>
-<section class="sec" id="pricing"><div class="wrap">
-<h2>Pick your level</h2>
-<p class="sub">Start at the summary. Go as deep as your data does. Every plan includes unlimited drilling.</p>
-<div class="tiers">
-<article class="card tier">
-<span class="tier__lv">Level 1 · Summary</span>
-<h3>Explorer</h3>
-<p class="price">$0<small> / forever</small></p>
-<p>For solo analysts reading the rollups.</p>
-<ul>
-<li><span class="ms" aria-hidden="true">check</span>3 dashboards</li>
-<li><span class="ms" aria-hidden="true">check</span>1M rows per source</li>
-<li><span class="ms" aria-hidden="true">check</span>7-day query history</li>
+</div>
+</section>
+
+<!-- PRICING -->
+<section class="section" id="pricing" style="background:var(--bg-tertiary)">
+<div class="wrap">
+<h2 class="center">Pick your depth</h2>
+<p class="lead center">Every plan includes unlimited dashboards and the full drill path.</p>
+<div class="grid3" style="margin-top:3rem">
+<article class="card">
+<h3>Scout</h3>
+<p class="price">$29<span> /user/mo</span></p>
+<ul class="feat">
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span>Two drill levels</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span>5 data sources</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span>Email support</li>
 </ul>
-<a class="btn btn--secondary" href="#cta">Start free</a>
+<a class="btn btn--secondary" href="#cta" style="margin-top:auto">Choose Scout</a>
 </article>
-<article class="card tier tier--pop">
+<article class="card card--featured">
 <span class="badge">Most popular</span>
-<span class="tier__lv">Level 2 · Category</span>
 <h3>Analyst</h3>
-<p class="price">$29<small> / user / month</small></p>
-<p>For teams that live in the drill path.</p>
-<ul>
-<li><span class="ms" aria-hidden="true">check</span>Unlimited dashboards</li>
-<li><span class="ms" aria-hidden="true">check</span>50M rows per source</li>
-<li><span class="ms" aria-hidden="true">check</span>Full drill-down history</li>
-<li><span class="ms" aria-hidden="true">check</span>Scheduled reports</li>
+<p class="price">$59<span> /user/mo</span></p>
+<ul class="feat">
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span>Unlimited drill depth</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span>50 data sources</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span>Context-preserving sharing</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span>Priority support</li>
 </ul>
-<a class="btn btn--primary" href="#cta">Start 14-day trial</a>
+<a class="btn btn--primary" href="#cta" style="margin-top:auto">Choose Analyst</a>
 </article>
-<article class="card tier">
-<span class="tier__lv">Level 3 · Detail</span>
-<h3>Team</h3>
-<p class="price">$79<small> / user / month</small></p>
-<p>For orgs that need row-level truth.</p>
-<ul>
-<li><span class="ms" aria-hidden="true">check</span>Everything in Analyst</li>
-<li><span class="ms" aria-hidden="true">check</span>Row-level security</li>
-<li><span class="ms" aria-hidden="true">check</span>1B+ rows, audit logs</li>
+<article class="card">
+<h3>Enterprise</h3>
+<p class="price">Custom<span> pricing</span></p>
+<ul class="feat">
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span>Row-level security</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span>SSO and audit logs</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span>Dedicated success manager</li>
 </ul>
-<a class="btn btn--secondary" href="#cta">Contact sales</a>
+<a class="btn btn--secondary" href="#cta" style="margin-top:auto">Contact sales</a>
 </article>
 </div>
-</div></section>
-<section class="sec" id="faq"><div class="wrap">
-<h2>Frequently drilled questions</h2>
-<p class="sub">The basics, answered. Anything deeper lives in the docs.</p>
+</div>
+</section>
+
+<!-- FAQ -->
+<section class="section" id="faq">
+<div class="wrap">
+<h2 class="center">Frequently asked questions</h2>
 <div class="faq">
-<details><summary>How deep can I drill?<span class="ms" aria-hidden="true">expand_more</span></summary><div class="dbody"><div class="dinner"><p>All the way. Every chart is query-backed, so a drill is just a narrower query — from company totals to a single row, with no exports.</p></div></div></details>
-<details><summary>Does drilling change my filters?<span class="ms" aria-hidden="true">expand_more</span></summary><div class="dbody"><div class="dinner"><p>Never. Your date range and filters carry through every level and stay visible in the breadcrumb, so any drill is one Back click away.</p></div></div></details>
-<details><summary>Does Nimbus work with my warehouse?<span class="ms" aria-hidden="true">expand_more</span></summary><div class="dbody"><div class="dinner"><p>Nimbus connects read-only to Snowflake, BigQuery, Postgres, and Redshift. Your data never leaves your warehouse.</p></div></div></details>
-<details><summary>Is there a free plan?<span class="ms" aria-hidden="true">expand_more</span></summary><div class="dbody"><div class="dinner"><p>Yes — Explorer is free forever and includes unlimited drilling across three dashboards.</p></div></div></details>
-<details><summary>Can I change plans later?<span class="ms" aria-hidden="true">expand_more</span></summary><div class="dbody"><div class="dinner"><p>Any time. Upgrades apply instantly; downgrades take effect at the end of your billing cycle. No sales calls required.</p></div></div></details>
+<details><summary>How deep can a drill path go?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+<div class="detail-body"><div><p>Scout supports two levels. Analyst and Enterprise have no depth limit, and the breadcrumb trail grows with each step so you always know where you are.</p></div></div></details>
+<details><summary>Do filters survive when I drill down?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+<div class="detail-body"><div><p>Yes. Date ranges, segments, and custom filters persist at every level and are restored when you navigate back.</p></div></div></details>
+<details><summary>Which data sources are supported?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+<div class="detail-body"><div><p>Postgres, Snowflake, BigQuery, Redshift, MySQL, and any REST API. CSV upload is available on every plan.</p></div></div></details>
+<details><summary>Can I share a drilled-down view?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+<div class="detail-body"><div><p>Every view has a shareable link that encodes the full drill path, so recipients land on exactly the level you were viewing.</p></div></div></details>
+<details><summary>Is there a free trial?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+<div class="detail-body"><div><p>Yes, 14 days on the Analyst plan with no credit card required. You can downgrade to Scout at any time.</p></div></div></details>
 </div>
-</div></section>
-<section class="sec" id="cta"><div class="wrap">
-<div class="cta">
-<h2>Go one level deeper.</h2>
-<p>Join the waitlist for the Nimbus beta and get an invite as seats open.</p>
-<form class="cta__card" id="ctaForm" novalidate>
-<label class="form__label" for="email">Work email</label>
-<div class="input-group">
-<input class="input" id="email" name="email" type="email" placeholder="you@company.com" autocomplete="email" required>
-<span class="ms input__icon" id="inputIcon" aria-hidden="true"></span>
 </div>
-<p class="form__msg" id="formMsg" aria-live="polite"><span class="ms" id="msgIcon" aria-hidden="true"></span><span id="msgText"></span></p>
-<button class="btn btn--primary" type="submit" id="ctaBtn"><span class="btn__label" id="btnLabel">Request invite</span><span class="ms" id="btnIcon" aria-hidden="true">arrow_forward</span></button>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section band" id="cta">
+<div class="wrap">
+<div class="band__panel">
+<h2>Start drilling in minutes</h2>
+<p class="lead" style="margin-top:0">Connect a source and explore your first hierarchy today.</p>
+<form class="input-group" id="cta-form" novalidate>
+<label for="email">Work email</label>
+<div class="input-row">
+<input type="email" id="email" name="email" autocomplete="email" required aria-describedby="form-status">
+<button class="btn btn--primary" id="cta-btn" type="submit">Get started</button>
+</div>
+<p class="feedback" id="form-status" aria-live="polite"></p>
 </form>
 </div>
-</div></section>
+</div>
+</section>
 </main>
-<footer class="foot"><div class="wrap">
-<div class="foot__grid">
-<div class="foot__col"><h4>Product</h4><a href="#features">Features</a><a href="#how">Drill path</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a></div>
-<div class="foot__col"><h4>Resources</h4><a href="#">Documentation</a><a href="#">API reference</a><a href="#">Changelog</a><a href="#">Status</a></div>
-<div class="foot__col"><h4>Company</h4><a href="#">About</a><a href="#">Careers</a><a href="#">Contact</a><a href="#">Press kit</a></div>
+
+<footer>
+<div class="wrap">
+<div class="foot-grid">
+<div class="foot-col">
+<a class="logo" href="#top"><span class="material-symbols-rounded" aria-hidden="true">insights</span>Drillpoint</a>
+<p style="color:var(--text-secondary);font-size:.88rem;margin-top:.75rem;max-width:30ch">Hierarchical analytics for teams that ask follow-up questions.</p>
 </div>
-<div class="foot__base">
-<span>© 2026 Nimbus Analytics, Inc. All rights reserved.</span>
-<p class="here">You are here <span class="ms" aria-hidden="true">chevron_right</span> <b aria-current="page">Home</b></p>
-<div class="social">
-<a href="#" aria-label="Email newsletter"><span class="ms" aria-hidden="true">mail</span></a>
-<a href="#" aria-label="Blog feed"><span class="ms" aria-hidden="true">rss_feed</span></a>
-<a href="#" aria-label="Community forum"><span class="ms" aria-hidden="true">forum</span></a>
+<div class="foot-col"><h4>Product</h4><ul>
+<li><a href="#features">Features</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#how">How it works</a></li>
+</ul></div>
+<div class="foot-col"><h4>Resources</h4><ul>
+<li><a href="#faq">FAQ</a></li><li><a href="#cta">Get started</a></li><li><a href="#testimonials">Customers</a></li>
+</ul></div>
+<div class="foot-col"><h4>Company</h4><ul>
+<li><a href="#top">About</a></li><li><a href="#top">Careers</a></li><li><a href="#top">Contact</a></li>
+</ul></div>
+</div>
+<div class="foot-bottom">
+<span>© 2026 Drillpoint Analytics, Inc.</span>
+<span class="youhere"><span class="material-symbols-rounded" aria-hidden="true" style="font-size:1rem">chevron_right</span>You are here: <b>Home</b></span>
+<span class="social" style="margin-left:auto">
+<a href="#top" aria-label="Community"><span class="material-symbols-rounded" aria-hidden="true">groups</span></a>
+<a href="#top" aria-label="Blog"><span class="material-symbols-rounded" aria-hidden="true">article</span></a>
+<a href="#top" aria-label="Code repository"><span class="material-symbols-rounded" aria-hidden="true">code</span></a>
+</span>
 </div>
 </div>
-</div></footer>
+</footer>
+<div id="level-live" aria-live="polite" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)"></div>
+
 <script>
-(function(){var d=document,r=d.documentElement,rm=matchMedia('(prefers-reduced-motion:reduce)').matches;
-var tog=d.getElementById('themeToggle'),ti=tog.firstElementChild;
-var dark=function(){return r.classList.contains('dark')||(!r.classList.contains('light')&&matchMedia('(prefers-color-scheme:dark)').matches)};
-var sync=function(){var k=dark();tog.setAttribute('aria-pressed',k);ti.textContent=k?'light_mode':'dark_mode'};
-tog.addEventListener('click',function(){var k=!dark();r.classList.toggle('dark',k);r.classList.toggle('light',!k);try{localStorage.setItem('nimbus',k?'dark':'light')}catch(e){}sync()});
-sync();
-var crumbs=[].slice.call(d.querySelectorAll('.crumbs a'));
-var sec=function(c){return d.getElementById(c.getAttribute('href').slice(1))};
-var io=new IntersectionObserver(function(es){es.forEach(function(en){if(!en.isIntersecting)return;crumbs.forEach(function(c){if(sec(c)===en.target)c.setAttribute('aria-current','page');else c.removeAttribute('aria-current')})})},{rootMargin:'-40% 0px -55% 0px'});
-crumbs.forEach(function(c){var s=sec(c);if(s)io.observe(s)});
-[].forEach.call(d.querySelectorAll('a[href^="#"]'),function(a){a.addEventListener('click',function(){var s=d.getElementById(a.getAttribute('href').slice(1));if(s){s.tabIndex=-1;setTimeout(function(){s.focus({preventScroll:true})},rm?0:450)}})});
-d.getElementById('backBtn').addEventListener('click',function(){var i=crumbs.map(function(c){return c.getAttribute('aria-current')}).indexOf('page');var t=i>0?sec(crumbs[i-1]):d.body;(t||d.body).scrollIntoView({behavior:rm?'auto':'smooth',block:'start'})});
-var demo=d.getElementById('demo'),live=d.getElementById('drillLive'),dc=d.getElementById('demoCrumb'),names=['','Summary','Category','Detail'];
-var chips=[].slice.call(d.querySelectorAll('.chip'));
-chips.forEach(function(c){c.addEventListener('click',function(){chips.forEach(function(x){x.setAttribute('aria-pressed',x===c?'true':'false')});demo.setAttribute('data-lv',c.dataset.lv);dc.textContent=c.dataset.crumb;live.textContent='Now viewing: '+names[c.dataset.lv]+' level';if(rm)return;demo.classList.remove('is-reloading');void demo.offsetWidth;demo.classList.add('is-reloading');clearTimeout(demo._t);demo._t=setTimeout(function(){demo.classList.remove('is-reloading')},600)})});
-d.getElementById('resetDemo').addEventListener('click',function(){d.querySelector('.chip[data-lv="1"]').click()});
-[].forEach.call(d.querySelectorAll('.kpi'),function(k){k.addEventListener('click',function(){var t=d.getElementById(k.dataset.drill);t.scrollIntoView({behavior:rm?'auto':'smooth'});live.textContent='Drilling from summary to the detail breakdown';var cs=t.querySelectorAll('.card');[].forEach.call(cs,function(c){c.classList.add('is-flash')});setTimeout(function(){[].forEach.call(cs,function(c){c.classList.remove('is-flash')})},rm?0:900)})});
-var f=d.getElementById('ctaForm'),inp=d.getElementById('email'),b=d.getElementById('ctaBtn'),bl=d.getElementById('btnLabel'),bi=d.getElementById('btnIcon'),mi=d.getElementById('msgIcon'),mt=d.getElementById('msgText'),mg=d.getElementById('formMsg'),ic=d.getElementById('inputIcon');
-var say=function(c,i,t){mg.className='form__msg '+c;mi.textContent=i;mt.textContent=t};
-inp.addEventListener('input',function(){inp.classList.remove('is-invalid','is-valid');ic.textContent='';say('','','')});
-f.addEventListener('submit',function(e){e.preventDefault();
-if(b.classList.contains('is-loading'))return;
-var v=inp.value.trim();
-if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)){inp.classList.add('is-invalid');ic.textContent='error';say('form__msg--error','error','That does not look like a valid work email.');inp.focus();return}
-inp.classList.remove('is-invalid');inp.classList.add('is-valid');ic.textContent='check';
-b.classList.add('is-loading');bl.textContent='Checking';bi.textContent='progress';
-setTimeout(function(){b.classList.remove('is-loading');b.classList.add('is-success');bl.textContent='Invited';bi.textContent='check';inp.disabled=true;say('form__msg--ok','check','You are on the list — an invite will reach '+v+'.')},1000);
+(function(){
+"use strict";
+/* Theme toggle */
+var toggle=document.getElementById("theme-toggle");
+function syncToggle(){
+var dark=document.documentElement.dataset.theme==="dark";
+toggle.setAttribute("aria-pressed",String(dark));
+toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+}
+syncToggle();
+toggle.addEventListener("click",function(){
+var next=document.documentElement.dataset.theme==="dark"?"light":"dark";
+document.documentElement.dataset.theme=next;
+localStorage.setItem("theme",next);
+syncToggle();
+});
+/* Mobile menu */
+var menuBtn=document.getElementById("menu-btn"),mobileNav=document.getElementById("mobile-nav");
+function closeMenu(){mobileNav.classList.remove("open");menuBtn.setAttribute("aria-expanded","false");menuBtn.setAttribute("aria-label","Open menu");}
+menuBtn.addEventListener("click",function(){
+var open=mobileNav.classList.toggle("open");
+menuBtn.setAttribute("aria-expanded",String(open));
+menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");
+});
+mobileNav.querySelectorAll("a").forEach(function(a){a.addEventListener("click",closeMenu);});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")closeMenu();});
+/* Back button */
+var backBtn=document.getElementById("back-btn");
+var sections=["features","how","pricing","faq"];
+var currentIdx=-1;
+backBtn.addEventListener("click",function(){
+var target=currentIdx>0?sections[currentIdx-1]:"top";
+document.getElementById(target).scrollIntoView({behavior:"smooth"});
+});
+/* Breadcrumb scroll sync */
+var crumbLinks=document.querySelectorAll("[data-crumb]");
+var io=new IntersectionObserver(function(entries){
+entries.forEach(function(en){
+if(en.isIntersecting){
+var id=en.target.id;
+currentIdx=sections.indexOf(id);
+crumbLinks.forEach(function(c){
+if(c.dataset.crumb===id){c.setAttribute("aria-current","page");}
+else{c.removeAttribute("aria-current");}
+});
+}
+});
+},{rootMargin:"-40% 0px -55% 0px"});
+sections.forEach(function(id){var el=document.getElementById(id);if(el)io.observe(el);});
+/* Hero drill demo */
+var dash=document.getElementById("dash"),chart=document.getElementById("chart");
+var bars=chart.querySelectorAll("div");
+var crumb=document.getElementById("dash-crumb");
+var live=document.getElementById("level-live");
+var data=[
+{crumb:"Q4",k:["$4.2M","1,284","38%"],h:[40,55,35,70,60,85,75,95],label:"Summary"},
+{crumb:"Q4 / West",k:["$1.6M","512","41%"],h:[30,65,50,45,80,60,90,55],label:"Category"},
+{crumb:"Q4 / West / Deals",k:["$312K","97","44%"],h:[20,35,60,40,75,50,65,85],label:"Detail"}
+];
+var kpis=[document.getElementById("kpi-1"),document.getElementById("kpi-2"),document.getElementById("kpi-3")];
+function setBars(h){bars.forEach(function(b,i){b.style.height=h[i]+"%";});}
+setBars(data[0].h);
+document.querySelectorAll(".chip").forEach(function(chip){
+chip.addEventListener("click",function(){
+var lvl=Number(chip.dataset.level);
+document.querySelectorAll(".chip").forEach(function(c){c.setAttribute("aria-pressed","false");});
+chip.setAttribute("aria-pressed","true");
+dash.classList.add("is-reloading");
+setTimeout(function(){
+var d=data[lvl];
+crumb.textContent=d.crumb;
+kpis.forEach(function(k,i){k.textContent=d.k[i];});
+setBars(d.h);
+live.textContent="Now viewing: "+d.label+" level";
+setTimeout(function(){dash.classList.remove("is-reloading");},600);
+},150);
+});
+});
+/* KPI click scrolls */
+document.querySelectorAll(".kpi").forEach(function(k){
+k.addEventListener("click",function(){
+var t=document.querySelector(k.dataset.scroll);
+if(t)t.scrollIntoView({behavior:"smooth"});
+});
+});
+/* CTA form */
+var form=document.getElementById("cta-form"),email=document.getElementById("email");
+var btn=document.getElementById("cta-btn"),status=document.getElementById("form-status");
+form.addEventListener("submit",function(e){
+e.preventDefault();
+form.classList.remove("error","success");
+status.className="feedback";
+var val=email.value.trim();
+if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)){
+form.classList.add("error");
+status.classList.add("err");
+status.innerHTML='<span class="material-symbols-rounded" aria-hidden="true">error</span>Please enter a valid work email.';
+email.focus();
+return;
+}
+btn.disabled=true;
+btn.innerHTML='<span class="spinner" aria-hidden="true"></span>Sending';
+status.textContent="";
+setTimeout(function(){
+btn.disabled=false;
+btn.textContent="Get started";
+form.classList.add("success");
+status.classList.add("ok");
+status.innerHTML='<span class="material-symbols-rounded" aria-hidden="true">check_circle</span>You are on the list. Check your inbox to activate the trial.';
+form.reset();
+},1200);
 });
 })();
 </script>

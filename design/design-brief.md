@@ -1,6 +1,6 @@
 # Design Brief for Demo Pages
 
-Distilled from the `design` skill (~/.copilot/skills/design/SKILL.md) for single-file landing-page demos.
+Distilled from the `design` skill (~/.copilot/skills/design/SKILL.md), which unifies the `website-design` (foundation) and `website-layout` (composition) skills, for single-file landing-page demos.
 Precedence: the THEME SPEC decides aesthetics (palette, fonts, motifs, effects, radius, mood). This brief decides craft and quality. When they conflict on look, follow the theme spec; never break a quality rule.
 
 ## 1. Design read
@@ -17,6 +17,11 @@ Before building, decide silently: page kind, audience, vibe, and what makes THIS
 - Containers: max-width ~1200px, side gutters 1.25rem mobile / 2rem desktop. Every multi-column layout declares its <768px single-column fallback. No horizontal scroll at 360px.
 - Eyebrows (small uppercase labels): max 1 per 3 sections.
 - Use cards only when elevation means something; otherwise group with spacing or dividers. One corner-radius system for the whole page.
+- Mode is Persuade: the visitor decides and acts. Every section earns attention and leads toward the one primary CTA.
+- Prefer a split or asymmetric hero (text left, visual right). Center the hero only when the theme is a manifesto/announcement where the message is the design.
+- Zigzag cap: max 2 consecutive image/text split sections; break the pattern with a full-width band, vertical stack or bento.
+- Bento: exactly as many cells as items (3 items = 1 large + 2 stacked, never a blank cell); at least 2 cells get a tinted, accent or patterned background. Use CSS grid, never width calc() percentages.
+- Mobile (<768px): bento resets to one column with spans cleared; rotated/overlapping cards lose rotation and overlap and stack with normal spacing.
 
 ## 3. Typography
 - Tracking by size: display -0.02em to -0.04em, body 0. Leading: display 1.0-1.15, body 1.5-1.65. Hierarchy from weight + size + leading together.
