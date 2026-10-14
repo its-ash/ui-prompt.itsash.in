@@ -1,913 +1,847 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Sales Intelligence Dashboard SaaS – pipeline analytics, quota tracking, forecast accuracy, and revenue intelligence">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,GRAD@20..48,400..700&icon&icon">
-  <title>Nimbus – Sales Intelligence Dashboard</title>
-  <style>
-    :root{
-      --font-base: 'Inter',system-ui,sans-serif;
-      --font-display: 'Inter',system-ui,sans-serif;
-      --primary:#2563eb; --primary-dark:#60a5fa;
-      --secondary:#64748b;
-      --bg-primary:#f6f8fb; --bg-secondary:#ffffff; --bg-tertiary:#f8fafc;
-      --text-primary:#0f172a; --text-secondary:#64748b;
-      --text-on-primary:#ffffff;
-      --border-default:#e2e8f0;
-      --status-won:#16a34a; --status-lost:#dc2626; --status-progress:#2563eb; --status-blocked:#ea580c;
-      --quota-met:#ca8a04; --quota-missed:#94a3b8;
-      --stage-1:#3b82f6; --stage-2:#8b5cf6; --stage-3:#ec4899; --stage-4:#f97316; --stage-5:#10b981;
-      --perf-high:#10b981; --perf-med:#f59e0b; --perf-low:#ef4444;
-      --forecast-high:#10b981; --forecast-med:#f59e0b; --forecast-low:#ef4444;
-      --radius-sm:4px; --radius-md:8px; --radius-lg:12px;
-      --shadow-sm:0 1px 2px 0 rgba(0,0,0,0.05);
-      --shadow-md:0 4px 6px -1px rgba(0,0,0,0.1),0 2px 4px -1px rgba(0,0,0,0.06);
-      --transition-fast:150ms cubic-bezier(0.4,0,0.2,1);
-      --transition-normal:300ms cubic-bezier(0.4,0,0.2,1);
-      --ease-standard:cubic-bezier(0.4,0,0.2,1);
-      --z-dropdown:100; --z-modal:1000; --z-toast:100;
-      --spacing-gap:1.5rem;
-      --max-width:1200px;
-    }
-    .dark{
-      --primary:#60a5fa; --primary-dark:#93c5fd;
-      --secondary:#94a3b8;
-      --bg-primary:#0f172a; --bg-secondary:#1e293b; --bg-tertiary:#334155;
-      --text-primary:#f1f5f9; --text-secondary:#94a3b8;
-      --text-on-primary:#0f172a;
-      --border-default:#334155;
-      --status-won:#4ade80; --status-lost:#f87171; --status-progress:#60a5fa; --status-blocked:#fb923c;
-      --quota-met:#facc15; --quota-missed:#94a3b8;
-      --stage-1:#60a5fa; --stage-2:#a78bfa; --stage-3:#f472b6; --stage-4:#fbbf24; --stage-5:#84cc16;
-      --perf-high:#60a5fa; --perf-med:#f59e0b; --perf-low:#f87171;
-      --forecast-high:#60a5fa; --forecast-med:#f59e0b; --forecast-low:#f87171;
-    }
-    *{box-sizing:border-box;margin:0;padding:0}
-    html{font-family:var(--font-base);-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
-    body{
-      background:var(--bg-primary);color:var(--text-primary);
-      line-height:1.6;min-height:100vh;overflow-x:hidden;
-    }
-    a{color:inherit;text-decoration:none}
-    ul{list-style:none}
-    img{max-width:100%;display:block}
-    h1,h2,h3,h4{font-weight:600;line-height:1.3}
-    /* skip link */
-    .skip-link{
-      position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;
-      &:focus{left:0;top:0;width:auto;height:auto;padding:0.5rem;background:var(--primary);color:var(--text-on-primary);z-index:999}
-    }
-    /* container */
-    .container{max-width:var(--max-width);margin:0 auto;padding:0 var(--spacing-gap)}
-    /* header */
-    header{
-      position:sticky;top:0;background:var(--bg-secondary);z-index:10;
-      shadow:var(--shadow-sm);border-bottom:1px solid var(--border-default);
-      &::after{content:"";display:block;clear:both}
-    }
-    .brand{
-      float:left;padding:0.75rem 0;font-size:1.25rem;font-weight:700;color:var(--primary);
-      & .material-symbols-outlined{vertical-align:middle;margin-right:0.3rem}
-    }
-    nav{
-      float:right;padding:0.75rem 0;
-      & .nav-link{margin-left:1.5rem;font-weight:500}
-    }
-    .nav-link:hover{color:var(--primary)}
-    .theme-toggle{
-      float:right;padding:0.75rem 0;background:none;border:none;color:var(--text-secondary);
-      font-size:1.2rem;cursor:pointer;position:relative;line-height:1;
-      &[aria-pressed="true"]{color:var(--primary)}
-    }
-    .cta-primary{
-      float:right;margin-left:1rem;padding:0.6rem 1.2rem;background:var(--primary);color:var(--text-on-primary);
-      border-radius:var(--radius-md);font-weight:600;transition:var(--transition-fast)
-      &:hover{background:var(--primary-dark)}
-    }
-    /* mobile menu */
-    .hamburger{
-      display:none;float:right;padding:0.75rem;background:none;border:none;cursor:pointer;
-      & .bar{display:block;width:25px;height:3px;background:var(--text-primary);margin:5px 0;transition:var(--transition-fast)}
-    }
-    /* hero */
-    #hero{
-      padding:6rem 0 4rem;background:var(--bg-tertiary);margin-top:4rem
-    }
-    .hero-grid{
-      display:flex;gap:2rem;align-items:center;flex-wrap:wrap
-    }
-    .hero-left{
-      flex:1 minmax(0,0)
-    }
-    .eyebrow{
-      display:inline-block;padding:0.25rem 0.5rem;background:var(--primary);color:var(--text-on-primary);
-      border-radius:var(--radius-sm);font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:1rem
-    }
-    .hero h1{
-      font-size:clamp(2rem,6vw,3.5rem);margin-bottom:0.5rem;color:var(--text-primary)
-    }
-    .hero p{
-      font-size:1.125rem;color:var(--text-secondary);margin-bottom:1.5rem;max-width:48ch
-    }
-    .hero-ctas{display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap}
-    .cta-secondary{
-      padding:0.6rem 1.2rem;background:var(--bg-secondary);color:var(--text-primary);
-      border:1px solid var(--border-default);border-radius:var(--radius-md);font-weight:500;transition:var(--transition-fast)
-      &:hover{border-color:var(--primary);color:var(--primary)}
-    }
-    .micro-trust{
-      margin-top:1.5rem;font-size:0.875rem;color:var(--text-secondary);align-self:flex-end
-    }
-    .hero-right{
-      flex:0 0 420px;background:var(--bg-primary);border-radius:var(--radius-lg);padding:2rem;
-      shadow:var(--shadow-sm)
-    }
-    /* metric tiles */
-    .metric-tiles{
-      display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1rem;margin-top:1rem
-    }
-    .metric-tile{
-      background:var(--bg-secondary);border-radius:var(--radius-lg);padding:1rem;text-align:center;
-      shadow:var(--shadow-sm);transition:transform var(--transition-fast)
-      &:hover{transform:translateY(-2px)}
-    }
-    .metric-value{
-      font-variant-numeric:tabular-nums;font-size:1.75rem;font-weight:700;color:var(--primary);
-      margin-bottom:0.25rem;display:inline-block
-    }
-    .metric-label{
-      font-size:0.75rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em
-    }
-    /* quota gauge */
-    .gauge-wrapper{
-      width:180px;height:180px;position:relative;margin:0 auto
-    }
-    .gauge-canvas{
-      width:100%;height:100%;transform:rotate(-90deg)
-    }
-    .gauge-track{stroke:var(--border-default);stroke-width:8;fill:none;transition:var(--transition-normal)}
-    .gauge-progress{
-      stroke:var(--quota-met);stroke-width:8;fill:none;stroke-linecap:round;
-      stroke-dasharray:283;stroke-dashoffset:283;transition:stroke-dashoffset var(--transition-normal)
-    }
-    .gauge-needle{
-      position:absolute;top:50%;left:50%;width:4px;height:30px;background:var(--primary);
-      margin-left:-2px;transform-origin:bottom center;transition:transform var(--transition-normal)
-    }
-    /* 3-card grid */
-    #features .card-grid{
-      display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;margin-top:2rem
-    }
-    .card{
-      background:var(--bg-secondary);border:1px solid var(--border-default);
-      border-radius:var(--radius-lg);padding:1.5rem;transition:transform var(--transition-fast),box-shadow var(--transition-fast)
-      &:hover{transform:translateY(-4px);box-shadow:var(--shadow-md)}
-    }
-    .card__icon{
-      width:48px;height:48px;background:var(--bg-tertiary);border-radius:var(--radius-md);
-      display:flex;align-items:center;justify-content:center;margin-bottom:1rem
-    }
-    .card__title{font-size:1.125rem;margin-bottom:0.5rem}
-    .card__desc{color:var(--text-secondary);font-size:0.875rem}
-    /* 3 steps */
-    #how-it-works{
-      padding:4rem 0;background:var(--bg-tertiary)
-    }
-    .timeline{
-      position:relative;padding-left:2rem;margin-top:2rem
-    }
-    .timeline::before{
-      content:"";position:absolute;left:0;top:0;width:2px;height:100%;background:var(--border-default);
-      border-radius:2px;transition:background var(--transition-normal)
-    }
-    .step{
-      position:relative;margin-bottom:2rem;padding:0.5rem 0
-    }
-    .step-number{
-      position:absolute;left:-1.5rem;top:0;width:1.5rem;height:1.5rem;background:var(--primary);
-      border-radius:50%;color:var(--text-on-primary);font-size:0.75rem;font-weight:700;display:flex;
-      align-items:center;justify-content:center
-    }
-    .step-icon{
-      width:24px;height:24px;margin-right:0.5rem;color:var(--primary)
-    }
-    /* testimonials */
-    #testimonials{
-      padding:4rem 0;background:var(--bg-primary)
-    }
-    .testimonial-grid{
-      display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem;margin-top:2rem
-    }
-    .testimonial-card{
-      background:var(--bg-secondary);border:1px solid var(--border-default);
-      border-radius:var(--radius-lg);padding:1.5rem;position:relative
-    }
-    .testimonial-card .stars{
-      color:#f59e0b;margin-bottom:0.75rem
-    }
-    .testimonial-card .initials{
-      width:32px;height:32px;background:var(--primary);color:var(--text-on-primary);
-      border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;
-      float:right;margin-left:0.5rem
-    }
-    /* pricing */
-    #pricing{
-      padding:4rem 0;background:var(--bg-tertiary)
-    }
-    .pricing-billing{
-      margin-bottom:2rem;display:flex;justify-content:center;gap:1rem;flex-wrap:wrap
-    }
-    .billing-btn{
-      padding:0.5rem 1rem;background:none;border:1px solid var(--border-default);
-      border-radius:var(--radius-md);font-size:0.875rem;font-weight:500;cursor:pointer;
-      &[aria-pressed="true"]{background:var(--primary);color:var(--text-on-primary);border-color:var(--primary)}
-    }
-    .tier{
-      background:var(--bg-secondary);border:1px solid var(--border-default);
-      border-radius:var(--radius-lg);overflow:hidden;transition:box-shadow var(--transition-fast)
-      &{&:hover{box-shadow:var(--shadow-md)}}
-    }
-    .tier--featured{box-shadow:0 8px 24px rgba(0,0,0,0.15)}
-    .tier-header{
-      display:flex;align-items:center;padding:1rem 1.5rem;background:var(--bg-primary);
-      border-bottom:1px solid var(--border-default)
-    }
-    .tier-name{font-size:1.25rem;font-weight:600;flex:1}
-    .tier-badge{
-      display:flex;align-items:center;padding:0 0.5rem 0 0;font-size:0.75rem;color:var(--secondary)
-    }
-    .tier-price{
-      font-variant-numeric:tabular-nums;font-size:2rem;font-weight:700;color:var(--primary);
-      margin:0.5rem 0 0
-    }
-    .tier-period{font-size:0.875rem;color:var(--text-secondary);margin-top:0.25rem}
-    .tier-features{padding:1rem 1.5rem;font-size:0.875rem;color:var(--text-secondary)}
-    .tier-features .material-symbols-outlined{margin-right:0.25rem;vertical-align:middle}
-    .tier-cta{
-      display:block;width:100%;padding:0.75rem 1.5rem;background:var(--bg-primary);
-      border-top:1px solid var(--border-default);font-weight:600;transition:background var(--transition-fast)
-      &:hover{background:var(--bg-tertiary)}
-    }
-    .tier--featured .tier-cta{background:var(--primary);color:var(--text-on-primary)}
-    /* FAQ */
-    #faq{
-      padding:4rem 0;background:var(--bg-primary)
-    }
-    .faq-list{margin-top:1rem}
-    .faq__item{
-      margin-bottom:0.75rem;border:1px solid var(--border-default);
-      border-radius:var(--radius-lg);overflow:hidden
-    }
-    .faq__question{
-      width:100%;padding:1rem 1.5rem;background:none;border:none;text-align:left;
-      font-weight:500;color:var(--text-primary);cursor:pointer;display:flex;justify-content:space-between;align-items:center;
-      &[aria-expanded="true"]{color:var(--primary)}
-    }
-    .faq__chevron{
-      width:16px;height:16px;transition:transform var(--transition-fast)
-      &[aria-expanded="true"]{transform:rotate(180deg)}
-    }
-    .faq__answer{
-      padding:0 1.5rem;max-height:0;overflow:hidden;transition:max-height var(--transition-normal) ease-out;
-      font-size:0.875rem;color:var(--text-secondary)
-    }
-    .faq__item[aria-expanded="true"] .faq__answer{max-height:200px}
-    /* final CTA */
-    #final-cta{
-      padding:4rem 0;background:var(--primary);color:var(--text-on-primary);text-align:center
-    }
-    .final-cta-form{
-      max-width:400px;margin:2rem auto auto;display:flex;flex-direction:column;gap:1rem
-    }
-    .final-cta-form .input-group{
-      position:relative;display:flex;flex-direction:column
-    }
-    .final-cta-form .input-group__input{
-      padding:0.75rem 1rem;border:1px solid var(--border-default);border-radius:var(--radius-md);
-      font-family:var(--font-base);font-size:1rem;transition:border-color var(--transition-fast)
-      &:focus{outline:none;border-color:var(--primary)}
-    }
-    .final-cta-form .input-group__error{
-      position:absolute;bottom:-0.75rem;font-size:0.75rem;color:var(--text-error);display:none
-    }
-    .final-cta-form .input-group.valid .input-group__input{border-color:var(--text-success)}
-    .final-cta-form .input-group.valid .input-group__error{display:block}
-    .final-cta-form .input-group.invalid .input-group__input{border-color:var(--text-error)}
-    .final-cta-form .input-group.invalid .input-group__error{display:block}
-    .final-cta-form .btn{
-      padding:0.75rem;background:var(--text-on-primary);color:var(--primary);
-      border:none;border-radius:var(--radius-md);font-weight:600;cursor:pointer;transition:transform var(--transition-fast)
-      &:hover{transform:scale(0.97)}
-    }
-    .final-cta-form .btn.is-loading{
-      pointer-events:none;background:var(--secondary);color:var(--text-primary)
-    }
-    /* footer */
-    footer{
-      padding:2rem 0;background:var(--bg-secondary);border-top:1px solid var(--border-default);
-      margin-top:2rem
-    }
-    .footer-grid{
-      display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;margin-bottom:2rem
-    }
-    .footer-col h4{font-size:0.875rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.75rem}
-    .footer-col ul li a{font-size:0.875rem;color:var(--text-secondary);transition:color var(--transition-fast)}
-    .footer-col ul li a:hover{color:var(--primary)}
-    .footer-bottom{
-      padding-top:1rem;border-top:1px solid var(--border-default);display:flex;justify-content:space-between;align-items:center;
-      font-size:0.75rem;color:var(--text-secondary)
-    }
-    .social-icons a{
-      display:inline-block;width:32px;height:32px;background:var(--bg-tertiary);border-radius:50%;
-      display:flex;align-items:center;justify-content:center;margin-left:0.25rem;
-      color:var(--text-secondary);transition:background var(--transition-fast)
-      &:hover{background:var(--primary);color:var(--text-on-primary)}
-    }
-    /* reduced motion */
-    @media (prefers-reduced-motion:reduce){
-      *,*:before,*::after{animation-duration:0s!important;transition-duration:0s!important}
-    }
-  </style>
-<script id="pd-theme-init">(()=>{try{const s=localStorage.getItem('theme');document.documentElement.dataset.theme=s==='dark'||s==='light'?s:(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}catch{document.documentElement.dataset.theme='light'}})();</script>
-<style id="pd-dark">
-html[data-theme="dark"]{
-  --primary:#60a5fa; --primary-dark:#93c5fd;
-  --secondary:#94a3b8;
-  --bg-primary:#0f172a; --bg-secondary:#1e293b; --bg-tertiary:#16213a;
-  --text-primary:#f1f5f9; --text-secondary:#94a3b8;
-  --text-on-primary:#0f172a;
-  --border-default:#334155;
-  --status-won:#4ade80; --status-lost:#f87171; --status-progress:#60a5fa; --status-blocked:#fb923c;
-  --quota-met:#facc15; --quota-missed:#94a3b8;
-  --stage-1:#60a5fa; --stage-2:#a78bfa; --stage-3:#f472b6; --stage-4:#fbbf24; --stage-5:#84cc16;
-  --perf-high:#60a5fa; --perf-med:#fbbf24; --perf-low:#f87171;
-  --forecast-high:#60a5fa; --forecast-med:#fbbf24; --forecast-low:#f87171;
-  --text-error:#f87171; --text-success:#4ade80;
-  --shadow-sm:0 1px 2px 0 rgba(0,0,0,0.4);
-  --shadow-md:0 4px 6px -1px rgba(0,0,0,0.5),0 2px 4px -1px rgba(0,0,0,0.4);
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="PipelineIQ turns your CRM data into live pipeline, quota, and forecast intelligence for sales teams.">
+<title>PipelineIQ | Sales Intelligence Dashboard</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght@24,400;24,500&display=block" rel="stylesheet">
+<style>
+/* ============ Tokens ============ */
+:root{
+--primary:#2563eb;--primary-strong:#1d4ed8;--text-on-primary:#ffffff;
+--bg-primary:#f6f8fb;--bg-secondary:#fefefe;--bg-tint:#eaf1fe;--bg-band:#1e3a8a;
+--text-primary:#17203a;--text-secondary:#4b5875;--text-on-band:#eef3ff;--text-on-band-dim:#c3d2f5;
+--text-success:#15803d;--text-error:#b91c1c;
+--border-default:#dde4f0;--border-success:#86c99b;--border-error:#e5a3a3;
+--status-won:#16a34a;--status-lost:#dc2626;--status-progress:#2563eb;--status-blocked:#ea580c;
+--quota-met:#a16207;--quota-missed:#64748b;
+--stage-1:#93c5fd;--stage-2:#60a5fa;--stage-3:#3b82f6;--stage-4:#2563eb;--stage-5:#1e40af;
+--perf-high:#16a34a;--perf-med:#ca8a04;--perf-low:#dc2626;
+--overlay:rgba(15,23,42,.55);
+--radius-sm:8px;--radius-md:12px;--radius-lg:18px;
+--shadow-sm:0 1px 3px rgba(23,32,58,.08);--shadow-md:0 10px 28px rgba(23,32,58,.13);
+--spacing-gap:clamp(4rem,8vw,6.5rem);
+--transition-fast:150ms;--transition-normal:300ms;--ease-standard:cubic-bezier(.4,0,.2,1);
+--z-dropdown:60;--z-modal:80;
+--font-base:"Inter",system-ui,sans-serif;--font-display:"Sora","Inter",sans-serif;
 }
-html[data-theme="dark"],
-html[data-theme="dark"] body{background:var(--bg-primary);color:var(--text-primary)}
-html[data-theme="dark"] header{background:var(--bg-secondary);border-bottom-color:var(--border-default);box-shadow:var(--shadow-sm)}
-html[data-theme="dark"] .brand{color:var(--primary)}
-html[data-theme="dark"] .nav-link{color:var(--text-primary)}
-html[data-theme="dark"] .nav-link:hover{color:var(--primary)}
-html[data-theme="dark"] .theme-toggle{color:var(--text-secondary)}
-html[data-theme="dark"] .theme-toggle[aria-pressed="true"]{color:var(--primary)}
-html[data-theme="dark"] .cta-primary{background:var(--primary);color:var(--text-on-primary)}
-html[data-theme="dark"] .cta-primary:hover{background:var(--primary-dark)}
-html[data-theme="dark"] .hamburger .bar{background:var(--text-primary)}
-html[data-theme="dark"] #hero{background:var(--bg-tertiary)}
-html[data-theme="dark"] .hero h1{color:var(--text-primary)}
-html[data-theme="dark"] .hero p{color:var(--text-secondary)}
-html[data-theme="dark"] .eyebrow{background:var(--primary);color:var(--text-on-primary)}
-html[data-theme="dark"] .cta-secondary{background:var(--bg-secondary);color:var(--text-primary);border-color:var(--border-default)}
-html[data-theme="dark"] .cta-secondary:hover{border-color:var(--primary);color:var(--primary)}
-html[data-theme="dark"] .micro-trust{color:var(--text-secondary)}
-html[data-theme="dark"] .hero-right{background:var(--bg-secondary);box-shadow:var(--shadow-sm)}
-html[data-theme="dark"] .metric-tile{background:var(--bg-tertiary);box-shadow:var(--shadow-sm)}
-html[data-theme="dark"] .metric-value{color:var(--primary)}
-html[data-theme="dark"] .metric-label{color:var(--text-secondary)}
-html[data-theme="dark"] .gauge-track{stroke:var(--border-default)}
-html[data-theme="dark"] .gauge-progress{stroke:var(--quota-met)}
-html[data-theme="dark"] .gauge-needle{background:var(--primary)}
-html[data-theme="dark"] .card{background:var(--bg-secondary);border-color:var(--border-default)}
-html[data-theme="dark"] .card:hover{box-shadow:var(--shadow-md)}
-html[data-theme="dark"] .card__icon{background:var(--bg-tertiary);color:var(--primary)}
-html[data-theme="dark"] .card__title{color:var(--text-primary)}
-html[data-theme="dark"] .card__desc{color:var(--text-secondary)}
-html[data-theme="dark"] #how-it-works{background:var(--bg-tertiary)}
-html[data-theme="dark"] .timeline::before{background:var(--border-default)}
-html[data-theme="dark"] .step-number{background:var(--primary);color:var(--text-on-primary)}
-html[data-theme="dark"] .step-icon{color:var(--primary)}
-html[data-theme="dark"] .step h3{color:var(--text-primary)}
-html[data-theme="dark"] .step p{color:var(--text-secondary)}
-html[data-theme="dark"] #testimonials{background:var(--bg-primary)}
-html[data-theme="dark"] .testimonial-card{background:var(--bg-secondary);border-color:var(--border-default)}
-html[data-theme="dark"] .testimonial-card .stars{color:#fbbf24}
-html[data-theme="dark"] .testimonial-card .initials{background:var(--primary);color:var(--text-on-primary)}
-html[data-theme="dark"] .testimonial-card strong{color:var(--text-primary)}
-html[data-theme="dark"] .testimonial-card span{color:var(--text-secondary)}
-html[data-theme="dark"] #pricing{background:var(--bg-tertiary)}
-html[data-theme="dark"] .billing-btn{background:var(--bg-secondary);color:var(--text-primary);border-color:var(--border-default)}
-html[data-theme="dark"] .billing-btn[aria-pressed="true"]{background:var(--primary);color:var(--text-on-primary);border-color:var(--primary)}
-html[data-theme="dark"] .tier{background:var(--bg-secondary);border-color:var(--border-default)}
-html[data-theme="dark"] .tier:hover{box-shadow:var(--shadow-md)}
-html[data-theme="dark"] .tier--featured{box-shadow:0 8px 24px rgba(0,0,0,0.5)}
-html[data-theme="dark"] .tier-header{background:var(--bg-tertiary);border-bottom-color:var(--border-default)}
-html[data-theme="dark"] .tier-name{color:var(--text-primary)}
-html[data-theme="dark"] .tier-badge{color:var(--secondary)}
-html[data-theme="dark"] .tier-price{color:var(--primary)}
-html[data-theme="dark"] .tier-period{color:var(--text-secondary)}
-html[data-theme="dark"] .tier-features{color:var(--text-secondary)}
-html[data-theme="dark"] .tier-cta{background:var(--bg-tertiary);color:var(--text-primary);border-top-color:var(--border-default)}
-html[data-theme="dark"] .tier-cta:hover{background:var(--bg-primary)}
-html[data-theme="dark"] .tier--featured .tier-cta{background:var(--primary);color:var(--text-on-primary)}
-html[data-theme="dark"] #faq{background:var(--bg-primary)}
-html[data-theme="dark"] .faq__item{border-color:var(--border-default);background:var(--bg-secondary)}
-html[data-theme="dark"] .faq__question{color:var(--text-primary)}
-html[data-theme="dark"] .faq__question[aria-expanded="true"]{color:var(--primary)}
-html[data-theme="dark"] .faq__answer{color:var(--text-secondary)}
-html[data-theme="dark"] #final-cta{background:var(--primary);color:var(--text-on-primary)}
-html[data-theme="dark"] .final-cta-form .input-group__input{background:var(--bg-secondary);color:var(--text-primary);border-color:var(--border-default)}
-html[data-theme="dark"] .final-cta-form .input-group__input:focus{border-color:var(--primary-dark)}
-html[data-theme="dark"] .final-cta-form .input-group__error{color:var(--text-error)}
-html[data-theme="dark"] .final-cta-form .input-group.valid .input-group__input{border-color:var(--text-success)}
-html[data-theme="dark"] .final-cta-form .input-group.invalid .input-group__input{border-color:var(--text-error)}
-html[data-theme="dark"] .final-cta-form .btn{background:var(--text-on-primary);color:var(--primary)}
-html[data-theme="dark"] .final-cta-form .btn.is-loading{background:var(--secondary);color:var(--text-primary)}
-html[data-theme="dark"] footer{background:var(--bg-secondary);border-top-color:var(--border-default)}
-html[data-theme="dark"] .footer-col h4{color:var(--text-primary)}
-html[data-theme="dark"] .footer-col p{color:var(--text-secondary)}
-html[data-theme="dark"] .footer-col ul li a{color:var(--text-secondary)}
-html[data-theme="dark"] .footer-col ul li a:hover{color:var(--primary)}
-html[data-theme="dark"] .footer-bottom{border-top-color:var(--border-default);color:var(--text-secondary)}
-html[data-theme="dark"] .social-icons a{background:var(--bg-tertiary);color:var(--text-secondary)}
-html[data-theme="dark"] .social-icons a:hover{background:var(--primary);color:var(--text-on-primary)}
-html[data-theme="dark"] .skip-link:focus{background:var(--primary);color:var(--text-on-primary)}
-html[data-theme="dark"] .section-heading{color:var(--text-primary)}
-html[data-theme="dark"] .leader-row{color:var(--text-primary)}
-html[data-theme="dark"] .leader-row .revenue{color:var(--text-secondary)}
-html[data-theme="dark"] .rank-badge{background:var(--bg-tertiary);color:var(--primary)}
-html[data-theme="dark"] .chip{background:var(--bg-tertiary);color:var(--text-secondary)}
-html[data-theme="dark"] .status-label{color:var(--text-secondary)}
-html[data-theme="dark"] .deal-card .amount{color:var(--text-primary)}
-html[data-theme="dark"] .badge{background:var(--bg-secondary);color:var(--quota-met);border:1px solid var(--border-default)}
-html[data-theme="dark"] .win-loss-bar .win{background:var(--status-won);color:#0f172a}
-html[data-theme="dark"] .win-loss-bar .loss{background:var(--status-lost);color:#0f172a}
-html[data-theme="dark"] .success-msg{color:var(--text-success)}
-.pd-theme-btn{display:inline-grid;place-items:center;width:44px;height:44px;margin-left:.5rem;border-radius:999px;border:1px solid currentColor;background:transparent;color:inherit;cursor:pointer;flex-shrink:0}
-.pd-theme-btn:focus-visible{outline:2px solid currentColor;outline-offset:2px}
-.pd-theme-btn--float{position:fixed;right:16px;bottom:16px;z-index:60;background:#fff;color:#16171b;border-color:#d5d7dc}
-html[data-theme="dark"] .pd-theme-btn--float{background:#1b1c21;color:#ededf0;border-color:#2d2f35}
+:root[data-theme="dark"]{
+--primary:#60a5fa;--primary-strong:#3b82f6;--text-on-primary:#0b1526;
+--bg-primary:#0d1420;--bg-secondary:#141d2e;--bg-tint:#182742;--bg-band:#101c36;
+--text-primary:#e8edf7;--text-secondary:#9aa8c4;--text-on-band:#e8edf7;--text-on-band-dim:#9db4e2;
+--text-success:#4ade80;--text-error:#f87171;
+--border-default:#26334c;--border-success:#2f6b46;--border-error:#7a3535;
+--status-won:#4ade80;--status-lost:#f87171;--status-progress:#60a5fa;--status-blocked:#fb923c;
+--quota-met:#facc15;--quota-missed:#94a3b8;
+--stage-1:#1e3a5f;--stage-2:#1d4ed8;--stage-3:#2563eb;--stage-4:#3b82f6;--stage-5:#60a5fa;
+--perf-high:#4ade80;--perf-med:#facc15;--perf-low:#f87171;
+--overlay:rgba(2,6,17,.7);
+--shadow-sm:0 1px 3px rgba(0,0,0,.4);--shadow-md:0 10px 28px rgba(0,0,0,.5);
+}
+/* ============ Base ============ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;font-size:1rem;overflow-x:hidden;transition:background var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard)}
+h1,h2,h3{font-family:var(--font-display);line-height:1.12;letter-spacing:-.025em;color:var(--text-primary)}
+h1{font-size:clamp(2.25rem,4.6vw,3.6rem)}
+h2{font-size:clamp(1.7rem,3.2vw,2.4rem)}
+h3{font-size:1.15rem}
+p{max-width:62ch;color:var(--text-secondary)}
+a{color:var(--primary);text-decoration:none}
+img,svg{display:block;max-width:100%}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--primary);outline-offset:2px;border-radius:var(--radius-sm)}
+.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 500,'GRAD' 0,'opsz' 24;font-size:1.25rem;line-height:1;user-select:none}
+.skip-link{position:absolute;left:1rem;top:-4rem;z-index:100;background:var(--primary);color:var(--text-on-primary);padding:.7rem 1.2rem;border-radius:var(--radius-md);transition:top var(--transition-fast)}
+.skip-link:focus{top:1rem}
+.container{max-width:1180px;margin-inline:auto;padding-inline:clamp(1.25rem,4vw,2rem)}
+.section{padding-block:var(--spacing-gap)}
+.section__head{max-width:640px;margin:0 auto clamp(2.2rem,5vw,3.4rem);text-align:center}
+.section__head p{margin:.8rem auto 0}
+.eyebrow{display:inline-flex;align-items:center;gap:.4rem;font-size:.78rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--primary);background:var(--bg-tint);border:1px solid var(--border-default);padding:.35rem .85rem;border-radius:999px}
+.num{font-variant-numeric:tabular-nums}
+/* ============ Buttons ============ */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:.65rem 1.4rem;border-radius:var(--radius-md);font-weight:600;font-size:.95rem;border:1px solid transparent;transition:background var(--transition-fast),box-shadow var(--transition-fast),transform var(--transition-fast),border-color var(--transition-fast);white-space:nowrap}
+.btn:active{transform:scale(.97)}
+.btn--primary{background:var(--primary);color:var(--text-on-primary);box-shadow:var(--shadow-sm)}
+.btn--secondary{background:var(--bg-secondary);color:var(--text-primary);border-color:var(--border-default)}
+.btn--ghost{background:transparent;color:var(--primary)}
+.btn:disabled{opacity:.5;filter:grayscale(.4);cursor:not-allowed}
+@media (hover:hover) and (pointer:fine){
+.btn--primary:hover{background:var(--primary-strong);box-shadow:var(--shadow-md)}
+.btn--secondary:hover{border-color:var(--primary);color:var(--primary)}
+.btn--ghost:hover{background:var(--bg-tint)}
+}
+.btn.is-loading{pointer-events:none}
+.btn.is-loading .btn__label{visibility:hidden}
+.btn.is-loading::after{content:"";position:absolute;width:20px;height:20px;border:2.5px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite}
+.btn{position:relative}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* ============ Header ============ */
+.header{position:sticky;top:0;z-index:var(--z-dropdown);background:color-mix(in srgb,var(--bg-primary) 88%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid transparent;transition:border-color var(--transition-normal),box-shadow var(--transition-normal)}
+.header.is-scrolled{border-bottom-color:var(--border-default);box-shadow:var(--shadow-sm)}
+.header__inner{display:flex;align-items:center;gap:1.5rem;height:68px}
+.brand{display:flex;align-items:center;gap:.55rem;font-family:var(--font-display);font-weight:800;font-size:1.15rem;color:var(--text-primary)}
+.brand .material-symbols-outlined{color:var(--primary);font-size:1.6rem}
+.nav{margin-left:auto;display:flex;align-items:center;gap:1.4rem}
+.nav__link{color:var(--text-secondary);font-weight:500;font-size:.93rem;padding:.4rem .2rem;border-radius:var(--radius-sm);transition:color var(--transition-fast)}
+@media (hover:hover){.nav__link:hover{color:var(--primary)}}
+.header__actions{display:flex;align-items:center;gap:.6rem}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);transition:border-color var(--transition-fast),color var(--transition-fast)}
+@media (hover:hover){.icon-btn:hover{border-color:var(--primary);color:var(--primary)}}
+#theme-toggle .icon-sun,:root[data-theme="dark"] #theme-toggle .icon-moon{display:none}
+:root[data-theme="dark"] #theme-toggle .icon-sun{display:inline}
+.menu-btn{display:none}
+@media (max-width:820px){
+.menu-btn{display:inline-flex}
+.nav{position:fixed;inset:68px 0 auto 0;flex-direction:column;align-items:stretch;gap:.25rem;background:var(--bg-secondary);border-bottom:1px solid var(--border-default);padding:1rem 1.25rem 1.4rem;box-shadow:var(--shadow-md);transform:translateY(-8px);opacity:0;pointer-events:none;transition:opacity var(--transition-fast),transform var(--transition-fast)}
+.nav.is-open{transform:none;opacity:1;pointer-events:auto}
+.nav__link{padding:.75rem .5rem;font-size:1rem}
+.header__cta{display:none}
+}
+/* ============ Hero ============ */
+.hero{padding-top:clamp(2.5rem,5vw,4.5rem);padding-bottom:var(--spacing-gap)}
+.hero__grid{display:flex;align-items:center;gap:clamp(2rem,5vw,4rem)}
+.hero__copy{flex:1 1 46%;min-width:0}
+.hero__copy h1{margin:1.1rem 0 .9rem}
+.hero__copy h1 em{font-style:italic;color:var(--primary)}
+.hero__cta{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:1.6rem}
+.hero__trust{display:flex;align-items:center;gap:.45rem;margin-top:1.1rem;font-size:.85rem;color:var(--text-secondary)}
+.hero__trust .material-symbols-outlined{font-size:1.05rem;color:var(--text-success)}
+.hero__visual{flex:1 1 54%;min-width:0}
+/* Dashboard preview window */
+.dash{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);overflow:hidden}
+.dash__chrome{display:flex;align-items:center;gap:.45rem;padding:.65rem 1rem;border-bottom:1px solid var(--border-default);background:var(--bg-tint)}
+.dash__dot{width:10px;height:10px;border-radius:50%;background:var(--border-default)}
+.dash__dot:first-child{background:var(--status-lost)}
+.dash__dot:nth-child(2){background:var(--quota-met)}
+.dash__dot:nth-child(3){background:var(--status-won)}
+.dash__url{margin-left:.6rem;font-size:.72rem;color:var(--text-secondary);background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:999px;padding:.15rem .8rem}
+.dash__body{padding:1.1rem;display:flex;flex-direction:column;gap:1rem}
+.dash__metrics{display:flex;gap:.8rem}
+.metric{flex:1;background:var(--bg-tint);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:.75rem .85rem;min-width:0}
+.metric__label{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-secondary)}
+.metric__value{font-family:var(--font-display);font-weight:700;font-size:clamp(1.15rem,2vw,1.5rem);margin-top:.15rem}
+.metric__delta{display:inline-flex;align-items:center;gap:.15rem;font-size:.72rem;font-weight:700;margin-top:.2rem;color:var(--text-success)}
+.metric__delta .material-symbols-outlined{font-size:.95rem}
+.dash__row{display:flex;gap:1rem;align-items:stretch}
+.dash__col{flex:1;min-width:0;background:var(--bg-primary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:.85rem}
+.dash__col h4{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-secondary);margin-bottom:.6rem}
+/* Gauge */
+.gauge{display:flex;flex-direction:column;align-items:center;gap:.1rem}
+.gauge__pct{font-family:var(--font-display);font-weight:800;font-size:1.35rem;color:var(--quota-met)}
+.gauge__cap{font-size:.72rem;color:var(--text-secondary)}
+.gauge__arc{transition:stroke-dashoffset 1.4s var(--ease-standard)}
+.gauge__needle{transform-origin:60px 62px;transform:rotate(-90deg);transition:transform 1.4s var(--ease-standard)}
+/* Win/loss bar */
+.wl{display:flex;height:22px;border-radius:999px;overflow:hidden;font-size:.68rem;font-weight:700}
+.wl__won{background:var(--status-won);color:#fff;display:flex;align-items:center;justify-content:center;width:64%}
+.wl__lost{background:var(--status-lost);color:#fff;display:flex;align-items:center;justify-content:center;width:36%}
+.wl__legend{display:flex;gap:1rem;margin-top:.5rem;font-size:.72rem;color:var(--text-secondary)}
+.wl__key{display:inline-flex;align-items:center;gap:.3rem}
+.wl__swatch{width:9px;height:9px;border-radius:3px}
+/* Mini leaderboard */
+.lb{list-style:none;display:flex;flex-direction:column;gap:.45rem}
+.lb__row{display:flex;align-items:center;gap:.55rem;font-size:.8rem}
+.lb__rank{width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:800;color:#fff;background:var(--perf-med);flex:none}
+.lb__rank--1{background:var(--perf-high)}
+.lb__rank--3{background:var(--perf-low)}
+.avatar{width:26px;height:26px;border-radius:50%;background:var(--primary);color:var(--text-on-primary);display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:800;flex:none}
+.lb__name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-primary);font-weight:600}
+.lb__rev{font-weight:700}
+/* Deal card */
+.deal-card{border:1px solid var(--border-default);border-left:4px solid var(--status-progress);border-radius:var(--radius-md);background:var(--bg-primary);padding:.7rem .8rem;display:flex;flex-direction:column;gap:.4rem}
+.deal-card__top{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
+.deal-card__name{font-weight:700;font-size:.85rem}
+.deal-card__amt{font-weight:800;font-size:.9rem}
+.chip{display:inline-flex;align-items:center;gap:.3rem;font-size:.68rem;font-weight:700;padding:.2rem .55rem;border-radius:999px;border:1px solid var(--border-default);color:var(--text-secondary)}
+.chip .material-symbols-outlined{font-size:.85rem}
+.chip--progress{color:var(--status-progress);border-color:var(--status-progress)}
+.chip--won{color:var(--status-won);border-color:var(--status-won)}
+.deal-card__meta{display:flex;align-items:center;gap:.5rem;font-size:.72rem;color:var(--text-secondary)}
+.deal-card.is-pulsing{animation:pulse 1.2s var(--ease-standard)}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--status-won) 55%,transparent)}100%{box-shadow:0 0 0 14px transparent}}
+/* Skeleton */
+.skeleton{position:relative;overflow:hidden;color:transparent!important}
+.skeleton *{visibility:hidden}
+.skeleton::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,color-mix(in srgb,var(--text-primary) 8%,transparent) 50%,transparent 70%);animation:shimmer 1.1s infinite}
+@keyframes shimmer{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+/* ============ Cards / Features ============ */
+.grid-3{display:flex;gap:1.4rem;align-items:stretch}
+.card{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:1.6rem;transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),border-color var(--transition-fast)}
+@media (hover:hover){.card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}}
+.card:focus-within{border-color:var(--primary)}
+.card__icon{width:46px;height:46px;border-radius:var(--radius-md);background:var(--bg-tint);color:var(--primary);display:flex;align-items:center;justify-content:center;margin-bottom:1rem}
+.card__icon .material-symbols-outlined{font-size:1.5rem}
+.card h3{margin-bottom:.45rem}
+.card p{font-size:.93rem}
+.card__preview{margin-top:1.2rem;border-top:1px dashed var(--border-default);padding-top:1.1rem}
+/* Funnel */
+.funnel{display:flex;flex-direction:column;gap:.4rem}
+.funnel__bar{display:flex;align-items:center;justify-content:space-between;gap:.5rem;color:#fff;font-size:.7rem;font-weight:700;padding:.35rem .7rem;border-radius:var(--radius-sm);transform-origin:left;transition:filter var(--transition-fast),width 1s var(--ease-standard)}
+@media (hover:hover){.funnel__bar:hover{filter:brightness(1.12)}}
+.funnel__bar:nth-child(1){background:var(--stage-1);width:100%}
+.funnel__bar:nth-child(2){background:var(--stage-2);width:82%}
+.funnel__bar:nth-child(3){background:var(--stage-3);width:64%}
+.funnel__bar:nth-child(4){background:var(--stage-4);width:47%}
+.funnel__bar:nth-child(5){background:var(--stage-5);width:33%}
+/* Accuracy meter */
+.meter{height:10px;border-radius:999px;background:linear-gradient(90deg,var(--perf-low) 0 40%,var(--perf-med) 40% 70%,var(--perf-high) 70% 100%);position:relative;margin-top:.6rem}
+.meter__pin{position:absolute;top:-5px;left:94%;width:4px;height:20px;border-radius:2px;background:var(--text-primary)}
+.meter__labels{display:flex;justify-content:space-between;font-size:.68rem;color:var(--text-secondary);margin-top:.4rem}
+/* Territory heat blocks */
+.territory{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem}
+.territory__cell{border-radius:var(--radius-sm);aspect-ratio:1.6;display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:800;color:#fff;transition:transform var(--transition-fast)}
+@media (hover:hover){.territory__cell:hover{transform:scale(1.06)}}
+.territory__cell--hi{background:var(--perf-high)}
+.territory__cell--med{background:var(--perf-med)}
+.territory__cell--low{background:var(--perf-low)}
+.territory__legend{display:flex;gap:.9rem;margin-top:.55rem;font-size:.68rem;color:var(--text-secondary)}
+/* ============ Steps ============ */
+.steps{max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:0;list-style:none}
+.step{display:flex;gap:1.3rem;position:relative;padding-bottom:2.4rem}
+.step:last-child{padding-bottom:0}
+.step__rail{display:flex;flex-direction:column;align-items:center;flex:none}
+.step__num{width:44px;height:44px;border-radius:50%;background:var(--primary);color:var(--text-on-primary);font-family:var(--font-display);font-weight:800;display:flex;align-items:center;justify-content:center;flex:none}
+.step__line{width:2px;flex:1;background:var(--border-default);margin-top:.5rem}
+.step__body{padding-bottom:.4rem}
+.step__body h3{display:flex;align-items:center;gap:.5rem;margin-bottom:.35rem}
+.step__body h3 .material-symbols-outlined{color:var(--primary)}
+.step__body p{font-size:.93rem}
+/* ============ Testimonials ============ */
+.quote-card{display:flex;flex-direction:column;gap:1rem}
+.quote-card .material-symbols-outlined{color:var(--primary);font-size:1.8rem}
+.quote-card blockquote{font-size:1.02rem;color:var(--text-primary);font-weight:500}
+.quote-card__by{display:flex;align-items:center;gap:.8rem;margin-top:auto}
+.quote-card__by .avatar{width:42px;height:42px;font-size:.8rem}
+.quote-card__name{font-weight:700;font-size:.9rem;color:var(--text-primary)}
+.quote-card__role{font-size:.8rem;color:var(--text-secondary)}
+.quote-card__metric{margin-left:auto;font-size:.72rem;font-weight:800;color:var(--text-success);background:var(--bg-tint);border:1px solid var(--border-default);padding:.3rem .6rem;border-radius:999px;white-space:nowrap}
+/* ============ Pricing ============ */
+.billing{display:flex;align-items:center;justify-content:center;gap:.8rem;margin-bottom:2.4rem}
+.billing__opt{min-height:44px;padding:.55rem 1.2rem;border-radius:999px;border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-secondary);font-weight:600;transition:all var(--transition-fast)}
+.billing__opt[aria-pressed="true"]{background:var(--primary);color:var(--text-on-primary);border-color:var(--primary)}
+.billing__save{font-size:.72rem;font-weight:800;color:var(--text-success)}
+.price{font-family:var(--font-display);font-size:2.4rem;font-weight:800;transition:opacity var(--transition-fast)}
+.price__per{font-size:.85rem;color:var(--text-secondary);font-family:var(--font-base);font-weight:500}
+.card--featured{border:2px solid var(--primary);box-shadow:var(--shadow-md);position:relative}
+:root[data-theme="dark"] .card--featured{border-color:var(--primary)}
+.card__badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--primary);color:var(--text-on-primary);font-size:.7rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:.3rem .9rem;border-radius:999px;white-space:nowrap}
+.tier__name{font-weight:800;font-family:var(--font-display);font-size:1.05rem}
+.tier__desc{font-size:.85rem;margin:.2rem 0 1rem}
+.feat-list{list-style:none;display:flex;flex-direction:column;gap:.6rem;margin:1.2rem 0 1.5rem;font-size:.9rem}
+.feat-list li{display:flex;gap:.55rem;align-items:flex-start;color:var(--text-secondary)}
+.feat-list .material-symbols-outlined{color:var(--text-success);font-size:1.15rem;flex:none;margin-top:.1rem}
+.pricing .card .btn{margin-top:auto;width:100%}
+/* ============ FAQ ============ */
+.faq{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:.8rem}
+.faq__item{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);overflow:hidden}
+.faq__item summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;list-style:none;cursor:pointer;padding:1.05rem 1.3rem;font-weight:600;font-size:.97rem;color:var(--text-primary);min-height:44px}
+.faq__item summary::-webkit-details-marker{display:none}
+.faq__item summary .material-symbols-outlined{color:var(--primary);transition:transform var(--transition-normal) var(--ease-standard);flex:none}
+.faq__item[open] summary .material-symbols-outlined{transform:rotate(180deg)}
+.faq__item summary:focus-visible{outline:3px solid var(--primary);outline-offset:-3px}
+.faq__answer{padding:0 1.3rem 1.15rem;font-size:.92rem}
+/* ============ CTA band ============ */
+.cta-band{background:var(--bg-band);border-radius:var(--radius-lg);padding:clamp(2.5rem,6vw,4rem);text-align:center;display:flex;flex-direction:column;align-items:center;gap:1rem}
+.cta-band h2{color:var(--text-on-band)}
+.cta-band p{color:var(--text-on-band-dim);margin:0 auto}
+.cta-form{display:flex;gap:.7rem;width:100%;max-width:480px;margin-top:.6rem;align-items:flex-start}
+.input-group{flex:1;display:flex;flex-direction:column;gap:.35rem;text-align:left;min-width:0}
+.input-group__label{font-size:.8rem;font-weight:600;color:var(--text-on-band)}
+.input-group__input{min-height:48px;padding:.7rem 1rem;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);font:inherit;width:100%;transition:border-color var(--transition-fast),box-shadow var(--transition-fast)}
+.input-group__input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 30%,transparent)}
+.input-group--error .input-group__input{border-color:var(--text-error)}
+.input-group__msg{font-size:.78rem;min-height:1.1em;color:var(--text-on-band-dim)}
+.input-group--error .input-group__msg{color:#fca5a5}
+.input-group--ok .input-group__msg{color:#86efac}
+:root[data-theme="dark"] .input-group--error .input-group__msg{color:var(--text-error)}
+:root[data-theme="dark"] .input-group--ok .input-group__msg{color:var(--text-success)}
+.cta-band__micro{font-size:.8rem;color:var(--text-on-band-dim)}
+/* ============ Modal ============ */
+.modal{border:none;border-radius:var(--radius-lg);padding:0;max-width:420px;width:calc(100% - 2.5rem);background:var(--bg-secondary);color:var(--text-primary);box-shadow:var(--shadow-md)}
+.modal::backdrop{background:var(--overlay)}
+.modal[open]{animation:modalIn var(--transition-normal) var(--ease-standard)}
+@keyframes modalIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+.modal__inner{padding:1.8rem;display:flex;flex-direction:column;gap:1rem}
+.modal__head{display:flex;align-items:center;justify-content:space-between}
+.modal__form{display:flex;flex-direction:column;gap:.9rem}
+.modal .input-group__label{color:var(--text-primary)}
+.modal .input-group__msg{color:var(--text-secondary)}
+.modal .input-group--error .input-group__msg{color:var(--text-error)}
+.modal .input-group--ok .input-group__msg{color:var(--text-success)}
+.modal__success{display:flex;flex-direction:column;align-items:center;gap:.6rem;text-align:center;padding:1rem 0}
+.modal__success .material-symbols-outlined{font-size:2.6rem;color:var(--text-success)}
+/* ============ Footer ============ */
+.footer{background:var(--bg-secondary);border-top:1px solid var(--border-default);padding:3rem 0 2rem;margin-top:var(--spacing-gap)}
+.footer__grid{display:flex;flex-wrap:wrap;gap:2.5rem;justify-content:space-between}
+.footer__brand{max-width:260px}
+.footer__tag{font-size:.88rem;margin-top:.6rem}
+.footer__col h4{font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--text-primary);margin-bottom:.8rem}
+.footer__col ul{list-style:none;display:flex;flex-direction:column;gap:.5rem}
+.footer__col a{color:var(--text-secondary);font-size:.88rem}
+@media (hover:hover){.footer__col a:hover{color:var(--primary)}}
+.footer__bottom{display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between;margin-top:2.5rem;padding-top:1.4rem;border-top:1px solid var(--border-default);font-size:.8rem;color:var(--text-secondary)}
+.footer__social{display:flex;gap:.5rem}
+/* ============ Reveal / motion ============ */
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .5s var(--ease-standard),transform .5s var(--ease-standard)}
+.reveal.is-visible{opacity:1;transform:none}
+@media (max-width:900px){
+.hero__grid{flex-direction:column;align-items:stretch}
+.grid-3{flex-direction:column}
+.dash__row{flex-direction:column}
+.cta-form{flex-direction:column}
+.cta-form .btn{width:100%}
+}
+@media (max-width:560px){
+.dash__metrics{flex-direction:column}
+.quote-card__metric{margin-left:0}
+}
+@media (prefers-reduced-motion:reduce){
+*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+.reveal{opacity:1;transform:none}
+}
+@media (prefers-reduced-transparency:reduce){
+.header{background:var(--bg-primary);backdrop-filter:none}
+}
 </style>
 </head>
 <body>
-  <a class="skip-link" href="#main">Skip to main content</a>
+<a class="skip-link" href="#main">Skip to content</a>
 
-  <header>
-    <div class="container">
-      <div class="brand">
-        <span class="material-symbols-outlined">dashboard</span>Nimbus
-      </div>
-      <nav>
-        <a class="nav-link" href="#features">Features</a>
-        <a class="nav-link" href="#how-it-works">How It Works</a>
-        <a class="nav-link" href="#testimonials">Testimonials</a>
-        <a class="nav-link" href="#pricing">Pricing</a>
-        <a class="nav-link" href="#faq">FAQ</a>
-      </nav>
-      <button class="theme-toggle" aria-label="Switch to dark theme" aria-pressed="false" id="themeToggle">
-        <span class="material-symbols-outlined" id="themeIcon">sun</span>
+<header class="header" id="header">
+  <div class="container header__inner">
+    <a class="brand" href="#top" aria-label="PipelineIQ home">
+      <span class="material-symbols-outlined" aria-hidden="true">monitoring</span>PipelineIQ
+    </a>
+    <nav class="nav" id="nav" aria-label="Primary">
+      <a class="nav__link" href="#features">Features</a>
+      <a class="nav__link" href="#how">How It Works</a>
+      <a class="nav__link" href="#pricing">Pricing</a>
+      <a class="nav__link" href="#faq">FAQ</a>
+    </nav>
+    <div class="header__actions">
+      <button class="icon-btn" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-outlined icon-moon" aria-hidden="true">dark_mode</span>
+        <span class="material-symbols-outlined icon-sun" aria-hidden="true">light_mode</span>
       </button>
-      <a class="cta-primary" href="#final-cta">Start free trial</a>
+      <a class="btn btn--primary header__cta" href="#cta">Start free trial</a>
+      <button class="icon-btn menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="nav" aria-label="Open menu">
+        <span class="material-symbols-outlined" aria-hidden="true">menu</span>
+      </button>
     </div>
-  </header>
+  </div>
+</header>
 
-  <main id="main">
-    <!-- Hero -->
-    <section id="hero">
-      <div class="container">
-        <div class="hero-grid">
-          <div class="hero-left">
-            <span class="eyebrow">Sales Intelligence Platform</span>
-            <h1>Turn pipeline chaos into closed‑won revenue</h1>
-            <p>Real‑time visibility into every deal stage, quota attainment, and forecast accuracy across your entire organization. Nimbus surfaces the signals that matter most.</p>
-            <div class="hero-ctas">
-              <a class="cta-primary" href="#final-cta">Start free trial</a>
-              <a class="cta-secondary" aria-haspopup="dialog" data-modal="demo">Book a demo</a>
-            </div>
-            <p class="micro-trust">Free 14‑day trial · No credit card required</p>
+<main id="main">
+<!-- Hero -->
+<section class="hero" id="top" aria-labelledby="hero-title">
+  <div class="container hero__grid">
+    <div class="hero__copy">
+      <span class="eyebrow"><span class="material-symbols-outlined" aria-hidden="true">query_stats</span>Sales Intelligence Platform</span>
+      <h1 id="hero-title">Turn pipeline chaos into <em>closed-won</em> revenue</h1>
+      <p>PipelineIQ unifies your deal pipeline, quota tracking, and forecast accuracy in one live dashboard your whole revenue team can trust.</p>
+      <div class="hero__cta">
+        <a class="btn btn--primary" href="#cta">Start free trial</a>
+        <button class="btn btn--secondary" id="demo-open" type="button"><span class="material-symbols-outlined" aria-hidden="true">calendar_month</span>Book a demo</button>
+      </div>
+      <p class="hero__trust"><span class="material-symbols-outlined" aria-hidden="true">verified</span>Free 14-day trial &middot; No credit card required</p>
+    </div>
+    <div class="hero__visual">
+      <div class="dash" aria-label="Preview of the PipelineIQ dashboard">
+        <div class="dash__chrome"><span class="dash__dot"></span><span class="dash__dot"></span><span class="dash__dot"></span><span class="dash__url">app.pipelineiq.com/overview</span></div>
+        <div class="dash__body">
+          <div class="dash__metrics">
+            <div class="metric"><span class="metric__label">Total Pipeline</span><div class="metric__value num" data-target="4.2" data-prefix="$" data-suffix="M" data-decimals="1">$4.2M</div><span class="metric__delta"><span class="material-symbols-outlined" aria-hidden="true">trending_up</span>+12%</span></div>
+            <div class="metric"><span class="metric__label">Win Rate</span><div class="metric__value num" data-target="34" data-suffix="%">34%</div><span class="metric__delta"><span class="material-symbols-outlined" aria-hidden="true">trending_up</span>+6 pts</span></div>
+            <div class="metric"><span class="metric__label">Quota Attainment</span><div class="metric__value num" data-target="112" data-suffix="%">112%</div><span class="metric__delta"><span class="material-symbols-outlined" aria-hidden="true">trending_up</span>Above target</span></div>
           </div>
-          <div class="hero-right">
-            <div class="metric-tiles">
-              <div class="metric-tile">
-                <div class="metric-value" data-target="4200000">0</div>
-                <div class="metric-label">Total Pipeline</div>
+          <div class="dash__row">
+            <div class="dash__col">
+              <h4>Team Quota</h4>
+              <div class="gauge">
+                <svg width="120" height="70" viewBox="0 0 120 70" role="img" aria-label="Quota attainment gauge at 112 percent">
+                  <path d="M10 62 A50 50 0 0 1 110 62" fill="none" stroke="var(--border-default)" stroke-width="10" stroke-linecap="round"/>
+                  <path class="gauge__arc" id="gauge-arc" d="M10 62 A50 50 0 0 1 110 62" fill="none" stroke="var(--quota-met)" stroke-width="10" stroke-linecap="round" stroke-dasharray="157" stroke-dashoffset="157"/>
+                  <line class="gauge__needle" id="gauge-needle" x1="60" y1="62" x2="60" y2="24" stroke="var(--text-primary)" stroke-width="3" stroke-linecap="round"/>
+                  <circle cx="60" cy="62" r="5" fill="var(--text-primary)"/>
+                </svg>
+                <span class="gauge__pct num">112%</span>
+                <span class="gauge__cap">Quota met &middot; gold tier</span>
               </div>
-              <div class="metric-tile">
-                <div class="metric-value" data-target="34">0</div>
-                <div class="metric-label">Win Rate</div>
+            </div>
+            <div class="dash__col">
+              <h4>Win / Loss this quarter</h4>
+              <div class="wl" role="img" aria-label="Win rate 64 percent, loss rate 36 percent">
+                <span class="wl__won">Won 64%</span><span class="wl__lost">Lost 36%</span>
               </div>
-              <div class="metric-tile">
-                <div class="metric-value" data-target="112">0</div>
-                <div class="metric-label">Quota Attainment</div>
+              <div class="wl__legend">
+                <span class="wl__key"><span class="wl__swatch" style="background:var(--status-won)"></span>128 won</span>
+                <span class="wl__key"><span class="wl__swatch" style="background:var(--status-lost)"></span>72 lost</span>
               </div>
             </div>
-            <div class="gauge-wrapper">
-              <canvas class="gauge-canvas" id="gaugeCanvas" width="180" height="180"></canvas>
-              <svg class="gauge-track"><circle cx="90" cy="90" r="80" stroke="var(--border-default)" stroke-width="8" fill="none"/></svg>
-              <svg class="gauge-progress"><circle cx="90" cy="90" r="80" stroke="var(--quota-met)" stroke-width="8" fill="none" stroke-linecap="round"/></svg>
-              <div class="gauge-needle" id="gaugeNeedle"></div>
+          </div>
+          <div class="dash__row">
+            <div class="dash__col">
+              <h4>Top Reps</h4>
+              <ol class="lb">
+                <li class="lb__row"><span class="lb__rank lb__rank--1">1</span><span class="avatar" aria-hidden="true">MK</span><span class="lb__name">Maya Krishnan</span><span class="lb__rev num">$412K</span></li>
+                <li class="lb__row"><span class="lb__rank">2</span><span class="avatar" aria-hidden="true">DR</span><span class="lb__name">Diego Rivas</span><span class="lb__rev num">$368K</span></li>
+                <li class="lb__row"><span class="lb__rank lb__rank--3">3</span><span class="avatar" aria-hidden="true">SO</span><span class="lb__name">Sara Okafor</span><span class="lb__rev num">$341K</span></li>
+              </ol>
             </div>
-            <div class="leaderboard-mini">
-              <div class="leader-row"><span class="rank-badge">1</span>J. Smith <span class="revenue">$45K</span> <span class="chip">▲3</span></div>
-              <div class="leader-row"><span class="rank-badge">2</span>A. Chen <span class="revenue">$38K</span> <span class="chip">▲1</span></div>
-              <div class="leader-row"><span class="rank-badge">3</span>R. Patel <span class="revenue">$32K</span> <span class="chip">▲0</span></div>
-            </div>
-            <div class="win-loss-bar">
-              <div class="win" style="width:34%"><span>34% Won</span></div>
-              <div class="loss" style="width:66%"><span>66% Lost</span></div>
-            </div>
-            <div class="deal-card" data-cycle>
-              <span class="status-dot" style="background:var(--status-progress)"></span>
-              <span class="status-label">Prospecting</span>
-              <span class="amount" data-num="12500">$12,500</span>
+            <div class="dash__col">
+              <h4>Live Deal</h4>
+              <div class="deal-card" id="cycle-deal">
+                <div class="deal-card__top"><span class="deal-card__name">Northwind Renewal</span><span class="deal-card__amt num">$86,000</span></div>
+                <div class="deal-card__meta"><span class="avatar" aria-hidden="true">MK</span><span>Maya Krishnan &middot; Negotiation</span></div>
+                <span class="chip chip--progress" id="cycle-chip"><span class="material-symbols-outlined" aria-hidden="true">hourglass_top</span><span id="cycle-chip-label">In progress</span></span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
-
-    <!-- Features -->
-    <section id="features">
-      <div class="container">
-        <h2 class="section-heading">What Nimbus does</h2>
-        <div class="card-grid">
-          <article class="card">
-            <div class="card__icon"><span class="material-symbols-outlined">kanban</span></div>
-            <h3 class="card__title">Visual pipeline &amp; Kanban</h3>
-            <p class="card__desc">Drag‑and‑drop deal board with status‑colored cards, stage filters, and real‑time count updates.</p>
-          </article>
-          <article class="card">
-            <div class="card__icon"><span class="material-symbols-outlined">trending_up</span></div>
-            <h3 class="card__title">Quota tracking &amp; forecast</h3>
-            <p class="card__desc">Automatic quota attainment gauges, forecast accuracy meters, and variance alerts.</p>
-          </article>
-          <article class="card">
-            <div class="card__icon"><span class="material-symbols-outlined">people</span></div>
-            <h3 class="card__title">Leaderboards &amp; territory</h3>
-            <p class="card__desc">Rep performance rankings, win/loss ratios, and interactive territory heat maps.</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- How It Works -->
-    <section id="how-it-works">
-      <div class="container">
-        <h2 class="section-heading">How It Works</h2>
-        <div class="timeline">
-          <div class="step">
-            <div class="step-number"><span class="material-symbols-outlined">sync</span>1</div>
-            <div>
-              <h3>Connect your CRM</h3>
-              <p>Nimbus integrates with Salesforce, HubSpot, Pipeday and more in minutes.</p>
-            </div>
-          </div>
-          <div class="step">
-            <div class="step-number"><span class="material-symbols-outlined">monitoring</span>2</div>
-            <div>
-              <h3>Track deals &amp; quotas</h3>
-              <p>Real‑time pipeline updates, automatic status changes, and live quota attainment.</p>
-            </div>
-          </div>
-          <div class="step">
-            <div class="step-number"><span class="material-symbols-outlined">insights</span>3</div>
-            <div>
-              <h3>Forecast &amp; coach</h3>
-              <p>Win/loss insights, accuracy meters, and AI‑driven coaching recommendations.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Testimonials -->
-    <section id="testimonials">
-      <div class="container">
-        <h2 class="section-heading">What users say</h2>
-        <div class="testimonial-grid">
-          <article class="testimonial-card">
-            <p>"Nimbus gave us instant visibility into our funnel. Deals that were stuck for weeks now move forward daily."</p>
-            <div class="stars"><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span></div>
-            <div class="initials">AB</div>
-            <div>
-              <strong>Amy Brooks</strong>
-              <span>Director of Revenue Operations</span>
-              <span>TechFlow Inc.</span>
-            </div>
-            <span class="chip">Win rate +38%</span>
-          </article>
-          <article class="testimonial-card">
-            <p>"The quota gauges and forecast accuracy have transformed our board meetings. Data‑driven decisions in minutes."</p>
-            <div class="stars"><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span></div>
-            <div class="initials">MK</div>
-            <div>
-              <strong>Marta K.</strong>
-              <span>VP of Sales</span>
-              <span>ScaleUp Co.</span>
-            </div>
-            <span class="chip">Forecast accuracy 94%</span>
-          </article>
-          <article class="testimonial-card">
-            <p>"The territory map and leaderboard motivate the whole team. Everyone can see where we stand at a glance."</p>
-            <div class="stars"><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span></div>
-            <div class="initials">JD</div>
-            <div>
-              <strong>Jon D.</strong>
-              <span>Head of Sales Enablement</span>
-              <span>GrowthStack</span>
-            </div>
-            <span class="chip">Δ +22% Attainment</span>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- Pricing -->
-    <section id="pricing">
-      <div class="container">
-        <div class="pricing-billing">
-          <button class="billing-btn" aria-pressed="true" id="billMonthly">Monthly</button>
-          <button class="billing-btn" aria-pressed="false" id="billAnnual">Annual</button>
-          <span class="badge">Save 20%</span>
-        </div>
-        <div class="tier-grid">
-          <article class="tier" id="tierStarter">
-            <div class="tier-header">
-              <span class="tier-name">Starter</span>
-              <span class="tier-badge">Limited</span>
-            </div>
-            <div class="tier-price" data-monthly="29" data-annual="290">$29<sub>/month</sub></div>
-            <div class="tier-period" data-monthly="true" data-annual="false">per month</div>
-            <ul class="tier-features">
-              <li><span class="material-symbols-outlined">check_circle</span> Up to 3 users</li>
-              <li><span class="material-symbols-outlined">pie_chart</span> Pipeline view</li>
-              <li><span class="material-symbols-outlined">dashboard</span> Basic metrics</li>
-            </ul>
-            <a class="tier-cta" href="#final-cta">Start trial</a>
-          </article>
-          <article class="tier tier--featured" id="tierGrowth">
-            <div class="tier-header">
-              <span class="tier-name">Growth</span>
-              <span class="tier-badge">Most popular</span>
-            </div>
-            <div class="tier-price" data-monthly="79" data-annual="790">$79<sub>/month</sub></div>
-            <div class="tier-period" data-monthly="true" data-annual="false">per month</div>
-            <ul class="tier-features">
-              <li><span class="material-symbols-outlined">check_circle</span> Unlimited users</li>
-              <li><span class="material-symbols-outlined">kanban</span> Visual pipeline</li>
-              <li><span class="material-symbols-outlined">gavel</span> Advanced forecasting</li>
-              <li><span class="material-symbols-outlined">terrain</span> Territory heat map</li>
-              <li><span class="material-symbols-outlined">leaderboard</span> Rep leaderboard</li>
-            </ul>
-            <a class="tier-cta" href="#final-cta">Start trial</a>
-          </article>
-          <article class="tier" id="tierEnterprise">
-            <div class="tier-header">
-              <span class="tier-name">Enterprise</span>
-              <span class="tier-badge">Custom</span>
-            </div>
-            <div class="tier-price">Custom</div>
-            <div class="tier-period">Contact sales</div>
-            <ul class="tier-features">
-              <li><span class="material-symbols-outlined">check_circle</span> Full feature set</li>
-              <li><span class="material-symbols-outlined">security</span> SOC 2‑compliant</li>
-              <li><span class="material-symbols-outlined">support</span> Dedicated CSM</li>
-              <li><span class="material-symbols-outlined">integration</span> API &amp; webhooks</li>
-            </ul>
-            <a class="tier-cta" href="#final-cta">Contact sales</a>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- FAQ -->
-    <section id="faq">
-      <div class="container">
-        <h2 class="section-heading">Frequently asked questions</h2>
-        <div class="faq-list">
-          <div class="faq__item">
-            <button class="faq__question" aria-controls="q1" aria-expanded="true">
-              Can I integrate Nimbus with my existing CRM?
-              <span class="faq__chevron material-symbols-outlined">chevron_right</span>
-            </button>
-            <div class="faq__answer" id="q1">Yes. Nimbus syncs with Salesforce, HubSpot, Pipedrive, Microsoft Dynamics, and dozens of other platforms via native connectors or REST API.</div>
-          </div>
-          <div class="faq__item">
-            <button class="faq__question" aria-controls="q2" aria-expanded="false">
-              How is data security handled?
-              <span class="faq__chevron material-symbols-outlined">chevron_right</span>
-            </button>
-            <div class="faq__answer" id="q2">All data is encrypted in transit and at rest. Nimbus is SOC 2‑Type II certified and complies with GDPR, CCPA, and ISO 27001.</div>
-          </div>
-          <div class="faq__item">
-            <button class="faq__question" aria-controls="q3" aria-expanded="false">
-              What’s the forecast methodology?
-              <span class="faq__chevron material-symbols-outlined">chevron_right</span>
-            </button>
-            <div class="faq__answer" id="q3">We combine time‑series analysis, probabilistic modeling, and rep‑level activity signals to produce accuracy‑weighted forecasts with confidence intervals.</div>
-          </div>
-          <div class="faq__item">
-            <button class="faq__question" aria-controls="q4" aria-expanded="false">
-              Is there a mobile app?
-              <span class="faq__chevron material-symbols-outlined">chevron_right</span>
-            </button>
-            <div class="faq__answer" id="q4">Nimbus is fully responsive and works on any device. A native iOS/Android app is in beta and will launch Q4.</div>
-          </div>
-          <div class="faq__item">
-            <button class="faq__question" aria-controls="q5" aria-expanded="false">
-              How long does onboarding take?
-              <span class="faq__chevron material-symbols-outlined">chevron_right</span>
-            </button>
-            <div class="faq__answer" id="q5">Most teams are up and running within 48 hours. We provide a guided setup, sample dashboards, and live onboarding sessions.</div>
-          </div>
-          <div class="faq__item">
-            <button class="faq__question" aria-controls="q6" aria-expanded="false">
-              What happens after the free trial?
-              <span class="faq__chevron material-symbols-outlined">chevron_right</span>
-            </button>
-            <div class="faq__answer" id="q6">Your data remains intact. You can choose a paid tier, export your reports, or continue with a limited free view.</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Final CTA -->
-    <section id="final-cta">
-      <div class="container">
-        <h2>Ready to close more deals?</h2>
-        <p>Join thousands of sales leaders who’ve transformed their pipeline with Nimbus. Start your free trial today.</p>
-        <form class="final-cta-form" id="ctaForm" novalidate>
-          <div class="input-group">
-            <label class="input-group__label" for="email">Work email</label>
-            <input class="input-group__input" type="email" id="email" name="email" required autocomplete="email" aria-describedby="emailError">
-            <p class="input-group__error" id="emailError">Please enter a valid work email address.</p>
-          </div>
-          <button class="btn" type="submit">Start free trial</button>
-        </form>
-        <p class="reassurance">No credit card required. Your data is safe with us.</p>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    <div class="container">
-      <div class="footer-grid">
-        <div class="footer-col">
-          <h4>Nimbus</h4>
-          <p>Sales intelligence dashboard built for modern teams.</p>
-        </div>
-        <div class="footer-col">
-          <h4>Product</h4>
-          <ul>
-            <li><a href="#features">Features</a></li>
-            <li><a href="#how-it-works">How It Works</a></li>
-            <li><a href="#integrations">Integrations</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h4>Company</h4>
-          <ul>
-            <li><a href="#about">About</a></li>
-            <li><a href="#careers">Careers</a></li>
-            <li><a href="#press">Press</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h4>Resources</h4>
-          <ul>
-            <li><a href="#blog">Blog</a></li>
-            <li><a href="#docs">Docs</a></li>
-            <li><a href="#webinars">Webinars</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <span>&copy; <span id="year">2025</span> Nimbus. All rights reserved.</span>
-        <nav>
-          <a class="material-symbols-outlined" href="#" aria-label="Twitter">share</a>
-          <a class="material-symbols-outlined" href="#" aria-label="LinkedIn">linked_in</a>
-          <a class="material-symbols-outlined" href="#" aria-label="GitHub">code</a>
-        </nav>
       </div>
     </div>
-  </footer>
+  </div>
+</section>
 
-  <script>
-    // Theme toggle
-    const html = document.documentElement;
-    const themeToggle = document.getElementById('themeToggle');
-    const themeIcon = document.getElementById('themeIcon');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
-    function setTheme(dark){
-      if(dark){ html.classList.add('dark'); themeIcon.textContent = 'moon'; themeToggle.setAttribute('aria-label','Switch to light theme'); themeToggle.setAttribute('aria-pressed','true'); }
-      else{ html.classList.remove('dark'); themeIcon.textContent = 'sun'; themeToggle.setAttribute('aria-label','Switch to dark theme'); themeToggle.setAttribute('aria-pressed','false'); }
-      localStorage.setItem('theme', dark ? 'dark' : 'light');
-    }
-    const stored = localStorage.getItem('theme');
-    if(stored) setTheme(stored === 'dark');
-    else setTheme(prefersDark.matches);
-    themeToggle.addEventListener('click',()=> setTheme(!html.classList.contains('dark')));
+<!-- Features -->
+<section class="section" id="features" aria-labelledby="features-title">
+  <div class="container">
+    <div class="section__head reveal">
+      <h2 id="features-title">Every number your team needs, live</h2>
+      <p>Real widgets, real data. PipelineIQ keeps pipeline, quota, and rep performance in sync with your CRM.</p>
+    </div>
+    <div class="grid-3">
+      <article class="card reveal">
+        <span class="card__icon"><span class="material-symbols-outlined" aria-hidden="true">view_kanban</span></span>
+        <h3>Visual pipeline and kanban</h3>
+        <p>Drag deals across stages, spot stalled opportunities, and see value concentration at a glance.</p>
+        <div class="card__preview">
+          <div class="funnel" aria-label="Pipeline funnel by stage">
+            <div class="funnel__bar"><span>Prospecting</span><span class="num">$2.1M</span></div>
+            <div class="funnel__bar"><span>Discovery</span><span class="num">$1.6M</span></div>
+            <div class="funnel__bar"><span>Proposal</span><span class="num">$1.1M</span></div>
+            <div class="funnel__bar"><span>Negotiation</span><span class="num">$740K</span></div>
+            <div class="funnel__bar"><span>Closed Won</span><span class="num">$512K</span></div>
+          </div>
+        </div>
+      </article>
+      <article class="card reveal">
+        <span class="card__icon"><span class="material-symbols-outlined" aria-hidden="true">speed</span></span>
+        <h3>Quota tracking and forecasts</h3>
+        <p>Attainment gauges and accuracy meters show who is pacing ahead and which commits to trust.</p>
+        <div class="card__preview">
+          <div class="chip chip--won"><span class="material-symbols-outlined" aria-hidden="true">emoji_events</span>Quota met: 112%</div>
+          <div class="meter" role="img" aria-label="Forecast accuracy 94 percent, in the high zone"><span class="meter__pin"></span></div>
+          <div class="meter__labels"><span>Low</span><span>Medium</span><span>High &middot; 94%</span></div>
+        </div>
+      </article>
+      <article class="card reveal">
+        <span class="card__icon"><span class="material-symbols-outlined" aria-hidden="true">leaderboard</span></span>
+        <h3>Leaderboards and territories</h3>
+        <p>Rank reps on revenue and attainment, and compare territory performance side by side.</p>
+        <div class="card__preview">
+          <div class="territory" aria-label="Territory performance heat grid">
+            <span class="territory__cell territory__cell--hi">West</span>
+            <span class="territory__cell territory__cell--med">East</span>
+            <span class="territory__cell territory__cell--hi">North</span>
+            <span class="territory__cell territory__cell--low">South</span>
+          </div>
+          <div class="territory__legend"><span>Green: above quota</span><span>Amber: pacing</span><span>Red: behind</span></div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
 
-    // Count‑up metric tiles
-    const metrics = document.querySelectorAll('[data-target]');
-    const observer = new IntersectionObserver((entries)=>{
-      entries.forEach(entry=>{
-        if(entry.isIntersecting){
-          const el = entry.target;
-          const target = +el.dataset.target;
-          let current = 0;
-          const duration = 1200;
-          const start = performance.now();
-          const prefix = el.dataset.prefix || '';
-          const suffix = el.dataset.suffix || '';
-          const formatter = new Intl.NumberFormat(undefined {style:'decimal'});
-          const animate = (now)=>{
-            const elapsed = now - start;
-            const progress = Math.min(elapsed/duration, 1);
-            const ease = 1 - Math.pow(1 - progress, 3);
-            current = target * ease;
-            el.textContent = prefix + formatter.format(current) + suffix;
-            if(progress < 1){
-              requestAnimationFrame(animate);
-            }
-          };
-          requestAnimationFrame(animate);
-          observer.unobserve(el);
-        }
-      });
-    }, {threshold:0.1});
-    metrics.forEach(m=>observer.observe(m));
+<!-- How it works -->
+<section class="section" id="how" aria-labelledby="how-title" style="background:var(--bg-secondary);border-block:1px solid var(--border-default)">
+  <div class="container">
+    <div class="section__head reveal">
+      <h2 id="how-title">Live in three steps</h2>
+      <p>Connect your CRM and get a working revenue picture before your next pipeline review.</p>
+    </div>
+    <ol class="steps">
+      <li class="step reveal">
+        <div class="step__rail"><span class="step__num">1</span><span class="step__line"></span></div>
+        <div class="step__body"><h3><span class="material-symbols-outlined" aria-hidden="true">sync</span>Connect your CRM</h3><p>Two-way sync with Salesforce, HubSpot, or Pipedrive. Deals, reps, and quotas import in minutes with no mapping spreadsheets.</p></div>
+      </li>
+      <li class="step reveal">
+        <div class="step__rail"><span class="step__num">2</span><span class="step__line"></span></div>
+        <div class="step__body"><h3><span class="material-symbols-outlined" aria-hidden="true">monitoring</span>Track deals and quotas in real time</h3><p>Every stage change updates funnels, gauges, and leaderboards instantly, so the whole team works from the same numbers.</p></div>
+      </li>
+      <li class="step reveal">
+        <div class="step__rail"><span class="step__num">3</span></div>
+        <div class="step__body"><h3><span class="material-symbols-outlined" aria-hidden="true">insights</span>Forecast and coach with win/loss insight</h3><p>Accuracy scoring flags risky commits, and win/loss patterns show managers exactly where coaching pays off.</p></div>
+      </li>
+    </ol>
+  </div>
+</section>
 
-    // Billing toggle
-    const billMonthly = document.getElementById('billMonthly');
-    const billAnnual = document.getElementById('billAnnual');
-    const priceElements = document.querySelectorAll('[data-monthly],[data-annual]');
-    function updatePricing(annual){
-      priceElements.forEach(el=>{
-        const monthly = +el.dataset.monthly || 0;
-        const annualVal = +el.dataset.annual || 0;
-        el.textContent = annual ? (annualVal/10).toLocaleString() + '/year' : (monthly) + '/month';
-        el.dataset.annual = annual ? '1' : '0';
-      });
-      billMonthly.setAttribute('aria-pressed', !annual);
-      billAnnual.setAttribute('aria-pressed', annual);
-    }
-    updatePricing(false);
-    billMonthly.addEventListener('click',()=>updatePricing(false));
-    billAnnual.addEventListener('click',()=>updatePricing(true));
+<!-- Testimonials -->
+<section class="section" id="testimonials" aria-labelledby="testimonials-title">
+  <div class="container">
+    <div class="section__head reveal">
+      <h2 id="testimonials-title">Revenue teams trust the numbers</h2>
+    </div>
+    <div class="grid-3" style="max-width:860px;margin:0 auto">
+      <article class="card quote-card reveal">
+        <span class="material-symbols-outlined" aria-hidden="true">format_quote</span>
+        <blockquote>&ldquo;Our forecast calls went from guesswork to a ten-minute review. PipelineIQ flags the deals that were quietly slipping.&rdquo;</blockquote>
+        <div class="quote-card__by">
+          <span class="avatar" aria-hidden="true">LT</span>
+          <div><div class="quote-card__name">Lena Torres</div><div class="quote-card__role">VP of Sales, Brightstack</div></div>
+          <span class="quote-card__metric num">Win rate +38%</span>
+        </div>
+      </article>
+      <article class="card quote-card reveal">
+        <span class="material-symbols-outlined" aria-hidden="true">format_quote</span>
+        <blockquote>&ldquo;Reps check the leaderboard every morning. Quota attainment is up across all four territories since rollout.&rdquo;</blockquote>
+        <div class="quote-card__by">
+          <span class="avatar" aria-hidden="true">JB</span>
+          <div><div class="quote-card__name">Marcus Bell</div><div class="quote-card__role">Revenue Operations Lead, Covalent</div></div>
+          <span class="quote-card__metric num">Forecast accuracy 94%</span>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
 
-    // Form validation & live region
-    const ctaForm = document.getElementById('ctaForm');
-    const emailInput = ctaForm.querySelector('[name="email"]');
-    const emailError = document.getElementById('emailError');
-    const successMsg = document.createElement('p');
-    successMsg.className = 'success-msg';
-    successMsg.setAttribute('role', 'status');
-    successMsg.setAttribute('aria-live', 'polite');
-    successMsg.style.marginTop = '0.5rem';
-    ctaForm.appendChild(successMsg);
-    ctaForm.addEventListener('submit', e=>{
-      e.preventDefault();
-      const email = emailInput.value.trim();
-      if(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
-        // success state
-        emailInput.classList.add('valid');
-        emailInput.classList.remove('invalid');
-        emailError.style.display = 'none';
-        successMsg.textContent = 'Thank you! A confirmation email has been sent.';
-        successMsg.style.color = 'var(--text-success)';
-        const btn = ctaForm.querySelector('.btn');
-        btn.classList.add('is-loading');
-        setTimeout(()=>{
-          btn.classList.remove('is-loading');
-          successMsg.textContent = 'Trial started – check your inbox.';
-        }, 2000);
-      }else{
-        // error state
-        emailInput.classList.add('invalid');
-        emailInput.classList.remove('valid');
-        emailError.style.display = 'block';
-        successMsg.textContent = '';
+<!-- Pricing -->
+<section class="section pricing" id="pricing" aria-labelledby="pricing-title" style="background:var(--bg-secondary);border-block:1px solid var(--border-default)">
+  <div class="container">
+    <div class="section__head reveal">
+      <h2 id="pricing-title">Pricing that scales with your team</h2>
+      <p>Start free for 14 days. Upgrade when your pipeline does.</p>
+    </div>
+    <div class="billing reveal" role="group" aria-label="Billing period">
+      <button class="billing__opt" id="bill-monthly" type="button" aria-pressed="true">Monthly</button>
+      <button class="billing__opt" id="bill-annual" type="button" aria-pressed="false">Annual</button>
+      <span class="billing__save">Save 20% annually</span>
+    </div>
+    <div class="grid-3">
+      <article class="card reveal">
+        <div class="tier__name">Starter</div>
+        <p class="tier__desc">For small teams getting pipeline visibility.</p>
+        <div><span class="price num" data-monthly="$29" data-annual="$23">$29</span><span class="price__per"> / rep / mo</span></div>
+        <ul class="feat-list">
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Live pipeline funnel and kanban</li>
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Quota gauges for up to 10 reps</li>
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Win/loss reporting</li>
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>HubSpot and Pipedrive sync</li>
+        </ul>
+        <a class="btn btn--secondary" href="#cta">Start free trial</a>
+      </article>
+      <article class="card card--featured reveal">
+        <span class="card__badge">Most popular</span>
+        <div class="tier__name">Growth</div>
+        <p class="tier__desc">For teams that forecast and coach weekly.</p>
+        <div><span class="price num" data-monthly="$59" data-annual="$47">$59</span><span class="price__per"> / rep / mo</span></div>
+        <ul class="feat-list">
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Everything in Starter</li>
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Forecast accuracy scoring</li>
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Leaderboards and territory maps</li>
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Activity timeline and alerts</li>
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Salesforce two-way sync</li>
+        </ul>
+        <a class="btn btn--primary" href="#cta">Start free trial</a>
+      </article>
+      <article class="card reveal">
+        <div class="tier__name">Enterprise</div>
+        <p class="tier__desc">For revenue orgs with custom needs.</p>
+        <div><span class="price num">Custom</span></div>
+        <ul class="feat-list">
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Everything in Growth</li>
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>SOC 2 report and SSO/SAML</li>
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Custom roles and data residency</li>
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Dedicated success manager</li>
+        </ul>
+        <a class="btn btn--secondary" href="#cta">Contact sales</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" id="faq" aria-labelledby="faq-title">
+  <div class="container">
+    <div class="section__head reveal">
+      <h2 id="faq-title">Common questions</h2>
+    </div>
+    <div class="faq reveal">
+      <details class="faq__item">
+        <summary>Which CRMs does PipelineIQ integrate with?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></summary>
+        <p class="faq__answer">Salesforce, HubSpot, and Pipedrive sync two-way out of the box. A REST API and CSV import cover everything else, and most teams finish setup in under an hour.</p>
+      </details>
+      <details class="faq__item">
+        <summary>How is our sales data secured?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></summary>
+        <p class="faq__answer">All data is encrypted in transit and at rest. We maintain SOC 2 Type II compliance, offer SSO/SAML on Enterprise, and never train models on your data.</p>
+      </details>
+      <details class="faq__item">
+        <summary>How does forecast accuracy scoring work?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></summary>
+        <p class="faq__answer">We compare each rep's commit against historical close patterns by stage, deal size, and cycle time. The meter updates nightly so you can see which commits to trust.</p>
+      </details>
+      <details class="faq__item">
+        <summary>What happens after the free trial ends?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></summary>
+        <p class="faq__answer">Your dashboards stay intact and read-only. Pick a plan to keep syncing, or export your data any time. We never require a card to start.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- Final CTA -->
+<section class="section" id="cta" aria-labelledby="cta-title">
+  <div class="container">
+    <div class="cta-band reveal">
+      <h2 id="cta-title">See your real pipeline in minutes</h2>
+      <p>Connect your CRM and get live funnels, quota gauges, and forecasts before your next team meeting.</p>
+      <form class="cta-form" id="cta-form" novalidate>
+        <div class="input-group" id="cta-group">
+          <label class="input-group__label" for="cta-email">Work email</label>
+          <input class="input-group__input" id="cta-email" name="email" type="email" required autocomplete="email" aria-describedby="cta-msg" placeholder="you@company.com">
+          <p class="input-group__msg" id="cta-msg" aria-live="polite"></p>
+        </div>
+        <button class="btn btn--primary" id="cta-submit" type="submit"><span class="btn__label">Start free trial</span></button>
+      </form>
+      <p class="cta-band__micro">Free 14-day trial &middot; No credit card required &middot; Cancel any time</p>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <a class="brand" href="#top"><span class="material-symbols-outlined" aria-hidden="true">monitoring</span>PipelineIQ</a>
+        <p class="footer__tag">Live sales intelligence for teams that forecast with confidence.</p>
+      </div>
+      <div class="footer__col"><h4>Product</h4><ul><li><a href="#features">Features</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#how">Integrations</a></li></ul></div>
+      <div class="footer__col"><h4>Company</h4><ul><li><a href="#testimonials">Customers</a></li><li><a href="#cta">Careers</a></li><li><a href="#cta">Contact</a></li></ul></div>
+      <div class="footer__col"><h4>Legal</h4><ul><li><a href="#faq">Security</a></li><li><a href="#faq">Privacy</a></li><li><a href="#faq">Terms</a></li></ul></div>
+    </div>
+    <div class="footer__bottom">
+      <span>&copy; 2026 PipelineIQ, Inc. All rights reserved.</span>
+      <div class="footer__social">
+        <a class="icon-btn" href="#top" aria-label="PipelineIQ on LinkedIn"><span class="material-symbols-outlined" aria-hidden="true">groups</span></a>
+        <a class="icon-btn" href="#top" aria-label="PipelineIQ blog"><span class="material-symbols-outlined" aria-hidden="true">article</span></a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- Demo modal -->
+<dialog class="modal" id="demo-modal" aria-labelledby="demo-title">
+  <div class="modal__inner">
+    <div class="modal__head">
+      <h3 id="demo-title">Book a live demo</h3>
+      <button class="icon-btn" id="demo-close" type="button" aria-label="Close dialog"><span class="material-symbols-outlined" aria-hidden="true">close</span></button>
+    </div>
+    <form class="modal__form" id="demo-form" novalidate>
+      <div class="input-group" id="demo-name-group">
+        <label class="input-group__label" for="demo-name">Full name</label>
+        <input class="input-group__input" id="demo-name" name="name" type="text" required autocomplete="name" aria-describedby="demo-name-msg">
+        <p class="input-group__msg" id="demo-name-msg" aria-live="polite"></p>
+      </div>
+      <div class="input-group" id="demo-email-group">
+        <label class="input-group__label" for="demo-email">Work email</label>
+        <input class="input-group__input" id="demo-email" name="email" type="email" required autocomplete="email" aria-describedby="demo-email-msg">
+        <p class="input-group__msg" id="demo-email-msg" aria-live="polite"></p>
+      </div>
+      <button class="btn btn--primary" id="demo-submit" type="submit"><span class="btn__label">Request demo</span></button>
+    </form>
+    <div class="modal__success" id="demo-success" hidden>
+      <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+      <h3>Request received</h3>
+      <p>Our team will reach out within one business day to schedule your walkthrough.</p>
+    </div>
+  </div>
+</dialog>
+
+<script>
+(function(){
+"use strict";
+var reduceMotion=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* Theme toggle */
+var root=document.documentElement,toggle=document.getElementById("theme-toggle");
+function syncToggle(){
+  var dark=root.dataset.theme==="dark";
+  toggle.setAttribute("aria-pressed",String(dark));
+  toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+}
+syncToggle();
+toggle.addEventListener("click",function(){
+  root.dataset.theme=root.dataset.theme==="dark"?"light":"dark";
+  localStorage.setItem("theme",root.dataset.theme);
+  syncToggle();
+});
+
+/* Header shadow */
+var header=document.getElementById("header");
+window.addEventListener("scroll",function(){header.classList.toggle("is-scrolled",window.scrollY>8);},{passive:true});
+
+/* Mobile menu */
+var menuBtn=document.getElementById("menu-btn"),nav=document.getElementById("nav");
+function closeMenu(){nav.classList.remove("is-open");menuBtn.setAttribute("aria-expanded","false");menuBtn.setAttribute("aria-label","Open menu");document.body.style.overflow="";}
+menuBtn.addEventListener("click",function(){
+  var open=nav.classList.toggle("is-open");
+  menuBtn.setAttribute("aria-expanded",String(open));
+  menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");
+  document.body.style.overflow=open?"hidden":"";
+});
+nav.addEventListener("click",function(e){if(e.target.closest("a"))closeMenu();});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")closeMenu();});
+
+/* Reveal on scroll */
+var revealEls=document.querySelectorAll(".reveal");
+if("IntersectionObserver" in window&&!reduceMotion){
+  var ro=new IntersectionObserver(function(entries){
+    entries.forEach(function(en,i){
+      if(en.isIntersecting){
+        en.target.style.transitionDelay=(i%3)*70+"ms";
+        en.target.classList.add("is-visible");
+        ro.unobserve(en.target);
       }
     });
-    emailInput.addEventListener('blur',()=>{
-      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value)){
-        emailInput.classList.add('invalid');
-      }else{
-        emailInput.classList.remove('invalid');
-      }
-    });
+  },{threshold:.15});
+  revealEls.forEach(function(el){ro.observe(el);});
+}else{revealEls.forEach(function(el){el.classList.add("is-visible");});}
 
-    // Year
-    document.getElementById('year').textContent = new Date().getFullYear();
-  </script>
-<script id="pd-theme-toggle">(()=>{const r=document.documentElement,I={"sun":"<svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4\"/></svg>","moon":"<svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z\"/></svg>"};
-let s=null;try{s=localStorage.getItem('theme')}catch{}
-r.dataset.theme=s==='dark'||s==='light'?s:(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
-let b=[...document.querySelectorAll("#theme-toggle,#themeToggle,.theme-toggle,[data-theme-toggle],button[aria-label*=\"theme\" i],button[aria-label*=\"dark\" i],button[aria-label*=\"light\" i],button[aria-label*=\"mode\" i]")].find(e=>e.offsetParent!==null);
-const own=!b;
-if(own){b=document.createElement('button');b.type='button';b.className='pd-theme-btn';const h=document.querySelector('nav')||document.querySelector('header');h?h.appendChild(b):(b.classList.add('pd-theme-btn--float'),document.body.appendChild(b));}
-const sync=()=>{const d=r.dataset.theme==='dark';r.classList.toggle('dark',d);r.classList.toggle('light',!d);b.setAttribute('aria-pressed',String(d));b.setAttribute('aria-label',d?'Switch to light mode':'Switch to dark mode');
-if(own){b.innerHTML=d?I.sun:I.moon;return;}const g=b.querySelector('[class*="material-symbols"],[class*="material-icons"]');if(g)g.textContent=d?'light_mode':'dark_mode';else if(!b.querySelector('svg,img'))b.innerHTML=d?I.sun:I.moon;};
-b.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();r.dataset.theme=r.dataset.theme==='dark'?'light':'dark';try{localStorage.setItem('theme',r.dataset.theme)}catch{}sync();},true);
-sync();addEventListener('load',sync);})();</script>
+/* Skeleton shimmer on hero tiles */
+var tiles=document.querySelectorAll(".dash__metrics .metric");
+if(!reduceMotion){
+  tiles.forEach(function(t){t.classList.add("skeleton");});
+  setTimeout(function(){tiles.forEach(function(t){t.classList.remove("skeleton");});},900);
+}
+
+/* Count-up metrics */
+var metrics=document.querySelectorAll(".metric__value[data-target]");
+function countUp(el){
+  var target=parseFloat(el.dataset.target),dec=parseInt(el.dataset.decimals||"0",10),
+      pre=el.dataset.prefix||"",suf=el.dataset.suffix||"",dur=1200,start=null;
+  function frame(ts){
+    if(!start)start=ts;
+    var p=Math.min((ts-start)/dur,1),e=1-Math.pow(1-p,3);
+    el.textContent=pre+(target*e).toFixed(dec)+suf;
+    if(p<1)requestAnimationFrame(frame);else el.textContent=pre+target.toFixed(dec)+suf;
+  }
+  requestAnimationFrame(frame);
+}
+if("IntersectionObserver" in window&&!reduceMotion){
+  var mo=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){if(en.isIntersecting){countUp(en.target);mo.unobserve(en.target);}});
+  },{threshold:.4});
+  metrics.forEach(function(m){mo.observe(m);});
+}
+
+/* Gauge animation */
+var arc=document.getElementById("gauge-arc"),needle=document.getElementById("gauge-needle");
+function runGauge(){
+  var pct=112,frac=Math.min(pct,130)/130;
+  arc.style.strokeDashoffset=String(157*(1-frac));
+  needle.style.transform="rotate("+(-90+180*frac)+"deg)";
+}
+if("IntersectionObserver" in window&&!reduceMotion){
+  var go=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){if(en.isIntersecting){runGauge();go.disconnect();}});
+  },{threshold:.4});
+  go.observe(arc);
+}else{runGauge();}
+
+/* Deal status cycle */
+var chip=document.getElementById("cycle-chip"),chipLabel=document.getElementById("cycle-chip-label"),deal=document.getElementById("cycle-deal");
+if(!reduceMotion){
+  var won=false;
+  setInterval(function(){
+    won=!won;
+    chip.classList.toggle("chip--won",won);
+    chip.classList.toggle("chip--progress",!won);
+    chip.querySelector(".material-symbols-outlined").textContent=won?"check_circle":"hourglass_top";
+    chipLabel.textContent=won?"Closed won":"In progress";
+    deal.style.borderLeftColor=won?"var(--status-won)":"var(--status-progress)";
+    deal.classList.remove("is-pulsing");void deal.offsetWidth;deal.classList.add("is-pulsing");
+  },7000);
+}
+
+/* Billing toggle */
+var bm=document.getElementById("bill-monthly"),ba=document.getElementById("bill-annual"),prices=document.querySelectorAll(".price[data-monthly]");
+function setBilling(annual){
+  bm.setAttribute("aria-pressed",String(!annual));
+  ba.setAttribute("aria-pressed",String(annual));
+  prices.forEach(function(p){
+    p.style.opacity="0";
+    setTimeout(function(){p.textContent=annual?p.dataset.annual:p.dataset.monthly;p.style.opacity="1";},reduceMotion?0:150);
+  });
+}
+bm.addEventListener("click",function(){setBilling(false);});
+ba.addEventListener("click",function(){setBilling(true);});
+
+/* Email validation helper */
+var emailRe=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+function validateEmail(group,input,msg){
+  if(emailRe.test(input.value.trim())){
+    group.classList.remove("input-group--error");group.classList.add("input-group--ok");
+    msg.textContent="Looks good.";return true;
+  }
+  group.classList.add("input-group--error");group.classList.remove("input-group--ok");
+  msg.textContent="Enter a valid work email, like you@company.com.";return false;
+}
+
+/* CTA form */
+var ctaForm=document.getElementById("cta-form"),ctaGroup=document.getElementById("cta-group"),
+    ctaEmail=document.getElementById("cta-email"),ctaMsg=document.getElementById("cta-msg"),
+    ctaBtn=document.getElementById("cta-submit");
+ctaForm.addEventListener("submit",function(e){
+  e.preventDefault();
+  if(!validateEmail(ctaGroup,ctaEmail,ctaMsg)){ctaEmail.focus();return;}
+  ctaBtn.classList.add("is-loading");ctaBtn.setAttribute("aria-busy","true");
+  setTimeout(function(){
+    ctaBtn.classList.remove("is-loading");ctaBtn.removeAttribute("aria-busy");
+    ctaGroup.classList.add("input-group--ok");
+    ctaMsg.textContent="You're in. Check your inbox for a magic sign-in link.";
+    ctaForm.reset();
+  },1100);
+});
+
+/* Demo modal */
+var modal=document.getElementById("demo-modal"),openBtn=document.getElementById("demo-open"),
+    closeBtn=document.getElementById("demo-close"),demoForm=document.getElementById("demo-form"),
+    demoSuccess=document.getElementById("demo-success"),demoSubmit=document.getElementById("demo-submit");
+openBtn.addEventListener("click",function(){
+  demoForm.hidden=false;demoSuccess.hidden=true;
+  modal.showModal();
+  document.getElementById("demo-name").focus();
+});
+closeBtn.addEventListener("click",function(){modal.close();openBtn.focus();});
+modal.addEventListener("click",function(e){if(e.target===modal){modal.close();openBtn.focus();}});
+modal.addEventListener("cancel",function(){openBtn.focus();});
+demoForm.addEventListener("submit",function(e){
+  e.preventDefault();
+  var nameInput=document.getElementById("demo-name"),nameGroup=document.getElementById("demo-name-group"),
+      nameMsg=document.getElementById("demo-name-msg"),
+      emailInput=document.getElementById("demo-email"),emailGroup=document.getElementById("demo-email-group"),
+      emailMsg=document.getElementById("demo-email-msg"),ok=true;
+  if(nameInput.value.trim().length<2){nameGroup.classList.add("input-group--error");nameMsg.textContent="Enter your full name.";ok=false;}
+  else{nameGroup.classList.remove("input-group--error");nameMsg.textContent="";}
+  if(!validateEmail(emailGroup,emailInput,emailMsg))ok=false;
+  if(!ok)return;
+  demoSubmit.classList.add("is-loading");demoSubmit.setAttribute("aria-busy","true");
+  setTimeout(function(){
+    demoSubmit.classList.remove("is-loading");demoSubmit.removeAttribute("aria-busy");
+    demoForm.hidden=true;demoSuccess.hidden=false;
+  },1100);
+});
+})();
+</script>
 </body>
 </html>

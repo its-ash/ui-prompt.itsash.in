@@ -1,662 +1,579 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nimbus - Retro Website Builder</title>
-  <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;700&family=VT323&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,GRAD,opsz@20..48,100..700&display=swap">
-  <style>
-    :root{
-      --primary:#000080;--secondary:#FFFFFF;--bg-primary:#C0C0C0;--text-primary:#000000;--border-default:#808080;
-      --bevel-highlight:#FFFFFF;--bevel-light:#DFDFDF;--bevel-shadow:#808080;--bevel-dark:#0A0A0A;
-      --radius-sm:0;--radius-md:0;--radius-lg:0;--shadow-sm:1px 1px 0 var(--bevel-dark);
-      --shadow-md:2px 2px 0 var(--bevel-dark);--spacing-gap:8px;--transition-fast:60ms;--transition-normal:120ms;
-      --ease-standard:ease-out;--font-base:"Pixelify Sans","MS Sans Serif",Tahoma,system-ui,sans-serif;
-      --font-mono:"VT323","Courier New",monospace;--terminal-green:#00FF00;--dos-cyan:#00FFFF;
-      --retro-magenta:#FF00FF;--alert-yellow:#FFFF00;
-    }
-    html{scroll-behavior:smooth;}
-    body{
-      font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);
-      margin:0;min-height:100vh;letter-spacing:0;-webkit-tap-highlight-color:transparent;
-    }
-    img,audio,video{display:none;}
-    a{color:var(--primary);text-decoration:none;}
-    a:hover{text-decoration:underline;}
-    /* Reduced motion */
-    @media (prefers-reduced-motion:reduce){
-      *,*:before,*:after{animation-duration:0ms!important;transition-duration:0ms!important}
-    }
-    /* Nav */
-    .nav{
-      position:sticky;top:0;background:var(--bg-primary);z-index:1000;border-bottom:2px outset var(--bevel-light);
-      padding:4px var(--spacing-gap);display:flex;align-items:center;gap:12px;
-    }
-    .nav__list{display:flex;gap:12px;list-style:none;margin:0;padding:0;}
-    .nav__link{
-      font-family:var(--font-base);font-weight:700;color:var(--primary);padding:6px 10px;
-      border:2px outset var(--bevel-light);background:var(--bg-primary);min-width:60px;
-    }
-    .nav__link:focus-visible{outline:1px dotted var(--primary);outline-offset:-4px;}
-    /* Window */
-    .window{
-      position:relative;margin:var(--spacing-gap);background:var(--bg-secondary);
-      border:2px outset var(--bevel-light);box-shadow:inset -1px -1px var(--bevel-dark),inset 1px 1px var(--bevel-highlight);
-    }
-    .window:active{border:2px inset var(--border-default);box-shadow:inset -1px -1px var(--bevel-highlight),inset 1px 1px var(--bevel-shadow);}
-    .window__title-bar{
-      background:var(--title-bar-bg);color:var(--title-bar-text);font-weight:bold;
-      display:flex;align-items:center;padding:0 var(--spacing-gap);height:24px;font-size:12px;
-    }
-    .window__title{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .window__controls{display:flex;gap:2px;}
-    .window__controls button{
-      width:16px;height:16px;background:transparent;border:none;color:var(--title-bar-text);
-      font-size:12px;cursor:pointer;-webkit-appearance:none;
-    }
-    .window__content{padding:var(--spacing-gap);}
-    /* Buttons */
-    .btn{
-      display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;
-      font-family:var(--font-base);font-weight:700;letter-spacing:0;
-      min-width:80px;padding:6px 12px;border:2px outset var(--bevel-light);
-      background:var(--bg-primary);color:var(--primary);cursor:pointer;min-height:44px;
-      transition:var(--transition-normal);
-    }
-    .btn:focus-visible{outline:1px dotted var(--primary);outline-offset:-4px;}
-    .btn:active{transform:translate(1px,1px);}
-    .btn--primary{background:var(--primary);color:#FFFFFF;}
-    .btn--primary:active{border-style:inset;}
-    .btn--secondary{
-      background:var(--bg-primary);color:var(--primary);border:2px outset var(--bevel-light);
-    }
-    .btn--danger{color:var(--text-error);border-color:var(--border-error);}
-    .btn--tiny{padding:2px 6px;font-size:10px;}
-    /* Marquee */
-    .marquee{
-      overflow:hidden;white-space:nowrap;background:var(--bg-primary);padding:4px 0;
-    }
-    .marquee span{display:inline-block;animation:marquee var(--transition-fast) linear infinite;}
-    @keyframes marquee{0%{transform:translateX(100%);}100%{transform:translateX(-100%);}}
-    /* Blinking badge */
-    .badge--blink{display:inline-block;animation:blink var(--transition-fast) step-end infinite;}
-    @keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
-    /* Dial-up dialog */
-    .dialup-dialog{
-      position:relative;margin:var(--spacing-gap);padding:var(--spacing-gap);
-      border:2px outset var(--bevel-light);background:var(--bg-secondary);
-      box-shadow:inset -1px -1px var(--bevel-dark),inset 1px 1px var(--bevel-highlight);
-    }
-    .dialup-progress{
-      width:100%;height:8px;background:var(--bevel-shadow);margin-top:var(--spacing-gap);overflow:hidden;
-    }
-    .dialup-progress-fill{
-      height:100%;background:var(--primary);width:0%;animation:progress var(--transition-fast) linear infinite;
-    }
-    @keyframes progress{0%{width:0%;}100%{width:100%;}}
-    /* Under construction barrier */
-    .under-construction{
-      background:var(--alert-yellow);color:var(--primary);padding:var(--spacing-gap);
-      border:2px outset var(--bevel-light);font-family:var(--font-mono);font-size:12px;
-      letter-spacing:2px;text-transform:uppercase;
-    }
-    /* Features cards */
-    .cards{display:flex;flex-wrap:wrap;gap:var(--spacing-gap);justify-content:center;}
-    .card .window{margin:0;}
-    /* Steps */
-    .steps{display:flex;flex-direction:column;gap:var(--spacing-gap);max-width:600px;margin:0 auto;}
-    .step{display:flex;align-items:center;gap:var(--spacing-gap);}
-    .step-number{
-      width:24px;height:24px;background:var(--primary);color:#FFFFFF;font-family:var(--font-mono);
-      font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;
-      border:2px outset var(--bevel-light);min-width:24px;
-    }
-    /* Testimonials */
-    .guestbook .under-construction{margin-bottom:var(--spacing-gap);}
-    .guestbook-entry{
-      background:var(--bg-secondary);border:2px outset var(--bevel-light);
-      box-shadow:inset -1px -1px var(--bevel-dark),inset 1px 1px var(--bevel-highlight);
-      padding:var(--spacing-gap);margin-bottom:var(--spacing-gap);
-    }
-    .guestbook-author{font-weight:700;margin-bottom:2px;}
-    .guestbook-date{color:#808080;font-size:10px;margin-bottom:4px;}
-    .guestbook-rating{display:flex;gap:1px;margin-bottom:4px;}
-    .material-icons.star{color:#FFD700;font-variation-settings:'FILL' 1;}
-    /* Pricing */
-    .pricing .tier{flex:1;margin:0 var(--spacing-gap);}
-    .tier.highlighted .window__title-bar .label--best-value{
-      background:var(--retro-magenta);color:#FFFFFF;padding:2px 6px;font-size:10px;margin-left:10px;
-    }
-    .features-list{list-style:none;padding:0;margin:var(--spacing-gap) 0;}
-    .features-list li{margin:4px 0;display:flex;align-items:center;gap:4px;}
-    .features-list .material-icons{color:var(--terminal-green);}
-    /* FAQ */
-    .faq details{border:2px outset var(--bevel-light);margin:var(--spacing-gap) 0;}
-    .faq details summary{
-      list-style:none;background:var(--title-bar-bg);color:var(--title-bar-text);
-      font-weight:bold;padding:var(--spacing-gap);cursor:default;
-    }
-    .faq details[open] summary{background:var(--bevel-shadow);color:var(--primary);}
-    .faq details summary::after{content:'';width;0;height;0;display:none;}
-    .faq details[open] summary::after{content:'';width:12px;height:12px;background:url("data:...") no-repeat;display:inline-block;margin-left:8px;}
-    .faq details .faq-answer{padding:var(--spacing-gap);background:var(--bg-secondary);border-top:2px inset var(--bevel-shadow);}
-    /* CTA */
-    .cta-window .window__title-bar{background:var(--primary);color:#FFFFFF;}
-    .cta-window .window__content{
-      display:flex;flex-direction:column;align-items:center;gap:var(--spacing-gap);
-      max-width:400px;margin:0 auto;
-    }
-    .email-form{display:flex;flex-direction:column;width:100%;max-width:300px;}
-    .input-group{display:flex;gap:var(--spacing-gap);margin-bottom:var(--spacing-gap);}
-    .input-group__input{
-      flex:1;padding:6px 8px;border:2px inset var(--bevel-shadow);background:#FFFFFF;
-      font-family:var(--font-base);font-size:12px;color:var(--text-primary);
-    }
-    .input-group__error{
-      color:var(--text-error);font-size:10px;margin-top:2px;display:none;
-    }
-    .input-group__input:valid+.input-group__error{display:block;}
-    .input-group__input:invalid:not(:focus){border-color:var(--border-error);}
-    .success-state{text-align:center;padding:var(--spacing-gap);display:none;}
-    .success-state .material-icons{color:var(--terminal-green);}
-    /* Footer */
-    .footer{background:var(--bg-primary);padding:var(--spacing-gap) 0;}
-    .taskbar{
-      display:flex;justify-content:center;gap:6px;flex-wrap:wrap;background:var(--bg-primary);
-      padding:4px var(--spacing-gap);font-family:var(--font-base);font-size:12px;
-    }
-    .taskbar-btn{
-      background:var(--bg-primary);border:2px outset var(--bevel-light);padding:4px 8px;
-      min-width:60px;cursor:pointer;-webkit-appearance:none;
-    }
-    .taskbar-btn:focus-visible{outline:1px dotted var(--primary);outline-offset:-4px;}
-    .clock{color:#808080;margin:0 12px;}
-    .visitor-counter{color:#808080;margin:0 12px;}
-    .badges{display:flex;gap:4px;margin-top:var(--spacing-gap);}
-    .badge{
-      background:var(--retro-magenta);color:#FFFFFF;padding:2px 6px;font-size:10px;
-      border:1px outset var(--bevel-light);text-decoration:none;
-    }
-    .copyright{
-      margin-top:var(--spacing-gap);text-align:center;font-size:10px;color:#808080;
-    }
-    /* Responsive */
-    @media(max-width:768px){
-      .nav__list,.cards,.steps .step,.pricing .tier,.taskbar .taskbar-btns{flex-direction:column;align-items:center;}
-      .nav__link{min-width:auto;padding:6px;}
-      .taskbar-btn{min-width:auto;padding:4px 6px;}
-    }
-  </style>
-<script id="pd-theme-init">(()=>{try{const s=localStorage.getItem('theme');document.documentElement.dataset.theme=s==='dark'||s==='light'?s:(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}catch{document.documentElement.dataset.theme='light'}})();</script>
-<style id="pd-dark">
-html[data-theme="dark"]{
-  --primary:#7DA6FF;
-  --secondary:#1A1B26;
-  --bg-primary:#24252E;
-  --bg-secondary:#2B2D38;
-  --text-primary:#E4E6F0;
-  --text-secondary:#B0B4C8;
-  --text-error:#FF8A80;
-  --border-default:#55586A;
-  --border-error:#FF8A80;
-  --bevel-highlight:#4A4D5E;
-  --bevel-light:#3A3D4C;
-  --bevel-shadow:#14151C;
-  --bevel-dark:#0B0C10;
-  --title-bar-bg:#3B5BC7;
-  --title-bar-text:#FFFFFF;
-  --terminal-green:#5CE87A;
-  --dos-cyan:#4FD8E0;
-  --retro-magenta:#FF6BD6;
-  --alert-yellow:#FFE066;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GeoForge - Build Your Own 90s Homepage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;700&family=VT323&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet">
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<style>
+:root{
+--primary:#000080;--secondary:#FF00FF;--bg-primary:#C0C0C0;--bg-secondary:#FFFFFF;
+--text-primary:#000000;--text-secondary:#404040;--text-success:#008000;--text-error:#CC0000;
+--border-default:#808080;--border-error:#FF0000;--border-success:#008000;
+--bevel-highlight:#FFFFFF;--bevel-light:#DFDFDF;--bevel-shadow:#808080;--bevel-dark:#0A0A0A;
+--title-bar-bg:#000080;--title-bar-text:#FFFFFF;
+--terminal-green:#00FF00;--dos-cyan:#00FFFF;--alert-yellow:#FFFF00;
+--radius-sm:0;--radius-md:0;--radius-lg:0;
+--shadow-sm:1px 1px 0 var(--bevel-dark);--shadow-md:2px 2px 0 var(--bevel-dark);
+--spacing-gap:8px;--transition-fast:60ms;--transition-normal:120ms;--ease-standard:ease-out;
+--z-dropdown:1000;--z-modal:2000;--z-toast:3000;
+--font-base:"Pixelify Sans","MS Sans Serif",Tahoma,system-ui,sans-serif;
+--font-mono:"VT323","Courier New",monospace;
+--on-accent:#FFFFFF;--nav-bg:#C0C0C0;
 }
-html[data-theme="dark"] body{background:#1E1F28;color:#E4E6F0;}
-html[data-theme="dark"] a{color:#7DA6FF;}
-html[data-theme="dark"] .nav{background:#24252E;border-bottom-color:#3A3D4C;}
-html[data-theme="dark"] .nav__link{color:#7DA6FF;background:#24252E;border-color:#3A3D4C;}
-html[data-theme="dark"] .nav__link:focus-visible{outline-color:#7DA6FF;}
-html[data-theme="dark"] .window{background:#2B2D38;border-color:#3A3D4C;box-shadow:inset -1px -1px #0B0C10,inset 1px 1px #4A4D5E;}
-html[data-theme="dark"] .window:active{border-color:#55586A;box-shadow:inset -1px -1px #4A4D5E,inset 1px 1px #14151C;}
-html[data-theme="dark"] .window__title-bar{background:#3B5BC7;color:#FFFFFF;}
-html[data-theme="dark"] .window__controls button{color:#FFFFFF;}
-html[data-theme="dark"] .btn{background:#24252E;color:#7DA6FF;border-color:#3A3D4C;box-shadow:1px 1px 0 #0B0C10;}
-html[data-theme="dark"] .btn:focus-visible{outline-color:#7DA6FF;}
-html[data-theme="dark"] .btn--primary{background:#3B5BC7;color:#FFFFFF;}
-html[data-theme="dark"] .btn--secondary{background:#24252E;color:#7DA6FF;border-color:#3A3D4C;}
-html[data-theme="dark"] .btn--danger{color:#FF8A80;border-color:#FF8A80;}
-html[data-theme="dark"] .marquee{background:#24252E;}
-html[data-theme="dark"] .dialup-dialog{background:#2B2D38;border-color:#3A3D4C;box-shadow:inset -1px -1px #0B0C10,inset 1px 1px #4A4D5E;}
-html[data-theme="dark"] .dialup-progress{background:#14151C;}
-html[data-theme="dark"] .dialup-progress-fill{background:#7DA6FF;}
-html[data-theme="dark"] .under-construction{background:#4A4210;color:#FFE066;border-color:#3A3D4C;}
-html[data-theme="dark"] .step-number{background:#3B5BC7;color:#FFFFFF;border-color:#3A3D4C;}
-html[data-theme="dark"] .guestbook-entry{background:#2B2D38;border-color:#3A3D4C;box-shadow:inset -1px -1px #0B0C10,inset 1px 1px #4A4D5E;}
-html[data-theme="dark"] .guestbook-date{color:#8A8FA3;}
-html[data-theme="dark"] .material-icons.star{color:#FFD75E;}
-html[data-theme="dark"] .tier.highlighted .window__title-bar .label--best-value{background:#C23FA8;color:#FFFFFF;}
-html[data-theme="dark"] .features-list .material-icons{color:#5CE87A;}
-html[data-theme="dark"] .faq details{border-color:#3A3D4C;}
-html[data-theme="dark"] .faq details summary{background:#3B5BC7;color:#FFFFFF;}
-html[data-theme="dark"] .faq details[open] summary{background:#14151C;color:#7DA6FF;}
-html[data-theme="dark"] .faq details .faq-answer{background:#2B2D38;border-top-color:#14151C;}
-html[data-theme="dark"] .cta-window .window__title-bar{background:#3B5BC7;color:#FFFFFF;}
-html[data-theme="dark"] .input-group__input{background:#1A1B26;color:#E4E6F0;border-color:#14151C;}
-html[data-theme="dark"] .input-group__input:invalid:not(:focus){border-color:#FF8A80;}
-html[data-theme="dark"] .input-group__error{color:#FF8A80;}
-html[data-theme="dark"] .success-state .material-icons{color:#5CE87A;}
-html[data-theme="dark"] .footer{background:#24252E;}
-html[data-theme="dark"] .taskbar{background:#24252E;}
-html[data-theme="dark"] .taskbar-btn{background:#24252E;color:#E4E6F0;border-color:#3A3D4C;}
-html[data-theme="dark"] .taskbar-btn:focus-visible{outline-color:#7DA6FF;}
-html[data-theme="dark"] .clock{color:#8A8FA3;}
-html[data-theme="dark"] .visitor-counter{color:#8A8FA3;}
-html[data-theme="dark"] .badge{background:#C23FA8;color:#FFFFFF;border-color:#3A3D4C;}
-html[data-theme="dark"] .copyright{color:#8A8FA3;}
-html[data-theme="dark"] .logo-ascii{color:#7DA6FF!important;}
-html[data-theme="dark"] .highlight{color:#FF6BD6!important;}
-html[data-theme="dark"] .heading--sub{color:#B0B4C8!important;}
-html[data-theme="dark"] .badge--blink{color:#FFE066!important;}
-html[data-theme="dark"] .dialup-dialog>span{color:#7DA6FF!important;}
-html[data-theme="dark"] .card .material-icons,
-html[data-theme="dark"] .step .material-icons{color:#7DA6FF!important;}
-html[data-theme="dark"] .card p,
-html[data-theme="dark"] .step p,
-html[data-theme="dark"] .cta-window p{color:#B0B4C8!important;}
-html[data-theme="dark"] .price{color:#7DA6FF!important;}
-html[data-theme="dark"] .tier .material-icons,
-html[data-theme="dark"] .features-list .material-icons[style]{color:#5CE87A!important;}
-html[data-theme="dark"] .cta-window .material-icons[style]{color:#FFE066!important;}
-html[data-theme="dark"] .success-state .material-icons[style]{color:#5CE87A!important;}
-.pd-theme-btn{display:inline-grid;place-items:center;width:44px;height:44px;margin-left:.5rem;border-radius:999px;border:1px solid currentColor;background:transparent;color:inherit;cursor:pointer;flex-shrink:0}
-.pd-theme-btn:focus-visible{outline:2px solid currentColor;outline-offset:2px}
-.pd-theme-btn--float{position:fixed;right:16px;bottom:16px;z-index:60;background:#fff;color:#16171b;border-color:#d5d7dc}
-html[data-theme="dark"] .pd-theme-btn--float{background:#1b1c21;color:#ededf0;border-color:#2d2f35}
+:root[data-theme="dark"]{
+--bg-primary:#1a1a2e;--bg-secondary:#0d0d1a;--text-primary:#e8e8e8;--text-secondary:#b8b8c8;
+--bevel-highlight:#3a3a55;--bevel-light:#2e2e48;--bevel-shadow:#0a0a14;--bevel-dark:#000000;
+--title-bar-bg:#000080;--title-bar-text:#FFFFFF;--border-default:#3a3a55;
+--shadow-sm:1px 1px 0 #000;--shadow-md:2px 2px 0 #000;--nav-bg:#1a1a2e;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+[hidden]{display:none!important}
+html{scrollbar-color:#C0C0C0 #808080;scroll-behavior:smooth}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);letter-spacing:0;line-height:1.5;overflow-x:hidden;font-size:1rem}
+::-webkit-scrollbar{width:16px;height:16px}
+::-webkit-scrollbar-track{background:var(--bg-primary);background-image:repeating-conic-gradient(var(--bg-primary) 0 25%,var(--bg-secondary) 0 50%);background-size:2px 2px}
+::-webkit-scrollbar-thumb{background:#C0C0C0;border:2px outset #DFDFDF}
+::-webkit-scrollbar-button{background:#C0C0C0;border:2px outset #DFDFDF;display:block;height:16px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.wrap{max-width:1200px;margin:0 auto;padding:0 1.25rem}
+@media(min-width:768px){.wrap{padding:0 2rem}}
+section{padding:clamp(3.5rem,7vw,6rem) 0}
+h1,h2,h3{letter-spacing:0;line-height:1.15}
+h1{font-size:clamp(2rem,5vw,3.5rem);line-height:1.05}
+h2{font-size:clamp(1.5rem,3.5vw,2.25rem)}
+p{max-width:65ch}
+a{color:var(--primary)}
+:root[data-theme="dark"] a{color:var(--dos-cyan)}
+/* ---------- window chrome ---------- */
+.window{border:2px outset var(--bevel-light);box-shadow:inset -1px -1px var(--bevel-dark),inset 1px 1px var(--bevel-highlight),var(--shadow-md);background:var(--bg-secondary);display:flex;flex-direction:column}
+.window__title-bar{background:var(--title-bar-bg);color:var(--title-bar-text);font-weight:700;text-align:center;padding:4px 8px;display:flex;align-items:center;justify-content:center;gap:8px;min-height:28px;position:relative}
+.window__title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.95rem}
+.window__controls{position:absolute;right:4px;top:50%;transform:translateY(-50%);display:flex;gap:2px}
+.window__ctrl{width:20px;height:18px;background:#C0C0C0;border:2px outset #DFDFDF;display:flex;align-items:center;justify-content:center;color:#000;font-size:14px}
+.window__body{padding:16px;display:flex;flex-direction:column;gap:12px;flex:1}
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;background:#C0C0C0;color:#000;border:2px outset #DFDFDF;box-shadow:inset -1px -1px #0A0A0A,inset 1px 1px #FFFFFF;font-family:var(--font-base);font-size:1rem;letter-spacing:0;min-height:44px;min-width:44px;padding:8px 20px;cursor:pointer;text-decoration:none;transition:filter var(--transition-fast) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.btn:hover{filter:brightness(1.08)}}
+.btn:active{border-style:inset;border-color:#808080;box-shadow:inset 1px 1px #0A0A0A,inset -1px -1px #FFFFFF;transform:translate(1px,1px)}
+.btn:focus-visible{outline:1px dotted #000;outline-offset:-4px}
+.btn--primary{font-weight:700}
+.btn--danger{color:var(--text-error);border-color:var(--border-error)}
+.btn[disabled]{opacity:.5;cursor:not-allowed;filter:grayscale(1)}
+/* ---------- nav ---------- */
+.nav{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--nav-bg);border-bottom:2px outset var(--bevel-light)}
+.nav__inner{max-width:1200px;margin:0 auto;padding:0 1.25rem;height:64px;display:flex;align-items:center;gap:12px}
+.nav__brand{display:flex;align-items:center;gap:8px;font-weight:700;text-decoration:none;color:var(--text-primary);font-size:1.05rem;white-space:nowrap}
+.nav__brand .material-symbols-outlined{color:var(--primary)}
+:root[data-theme="dark"] .nav__brand .material-symbols-outlined{color:var(--dos-cyan)}
+.nav__links{display:flex;align-items:center;gap:4px;margin-left:auto}
+.nav__links a{display:inline-flex;align-items:center;min-height:44px;padding:8px 14px;color:var(--text-primary);text-decoration:none;border:2px solid transparent}
+@media(hover:hover) and (pointer:fine){.nav__links a:hover{border:2px outset var(--bevel-light);background:var(--bg-secondary)}}
+.nav__links a:focus-visible{outline:1px dotted currentColor;outline-offset:-4px}
+.nav__toggle,.nav__menu-btn{background:#C0C0C0;color:#000;border:2px outset #DFDFDF;width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;flex-shrink:0}
+.nav__toggle:active,.nav__menu-btn:active{border-style:inset}
+.nav__toggle:focus-visible,.nav__menu-btn:focus-visible{outline:1px dotted #000;outline-offset:-4px}
+.nav__menu-btn{display:none}
+@media(max-width:767px){
+.nav__menu-btn{display:inline-flex;margin-left:auto}
+.nav__links{display:none;position:absolute;top:64px;left:0;right:0;background:var(--nav-bg);border-bottom:2px outset var(--bevel-light);flex-direction:column;align-items:stretch;padding:8px;gap:4px}
+.nav__links--open{display:flex}
+.nav__links a{border:2px outset var(--bevel-light);background:var(--bg-secondary)}
+}
+/* ---------- hero ---------- */
+.hero{padding-top:clamp(2rem,5vw,4rem)}
+.hero__menu{display:flex;gap:2px;background:var(--bg-secondary);border-bottom:1px solid var(--border-default);padding:2px 4px;font-size:.9rem;flex-wrap:wrap}
+.hero__menu a{color:var(--text-primary);text-decoration:none;padding:2px 10px;display:inline-flex;align-items:center;min-height:28px}
+@media(hover:hover) and (pointer:fine){.hero__menu a:hover{background:var(--primary);color:#fff}}
+.hero__grid{display:grid;grid-template-columns:1.1fr .9fr;gap:24px;align-items:center}
+@media(max-width:900px){.hero__grid{grid-template-columns:1fr}}
+.hero__ascii{font-family:var(--font-mono);font-size:clamp(.55rem,1.6vw,.85rem);line-height:1;color:var(--primary);overflow-x:auto;max-width:100%;background:var(--bg-secondary);border:2px inset var(--bevel-shadow);padding:8px}
+:root[data-theme="dark"] .hero__ascii{color:var(--terminal-green)}
+.hero__sub{color:var(--text-secondary);font-size:1.05rem}
+.hero__ctas{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.hero__new{display:inline-block;background:var(--alert-yellow);color:#000;border:2px outset #DFDFDF;padding:2px 8px;font-weight:700;font-size:.85rem;animation:blink 1.2s steps(2,start) infinite}
+@keyframes blink{50%{visibility:hidden}}
+.marquee{overflow:hidden;background:#000;color:var(--terminal-green);font-family:var(--font-mono);font-size:1.15rem;padding:4px 0;border:2px inset var(--bevel-shadow);white-space:nowrap}
+.marquee__track{display:inline-block;padding-left:100%;animation:marquee 18s linear infinite}
+@keyframes marquee{to{transform:translateX(-100%)}}
+.dialup{border:2px outset var(--bevel-light);background:var(--bg-secondary);box-shadow:var(--shadow-md);max-width:420px;width:100%}
+.dialup__body{padding:14px;display:flex;gap:12px;align-items:flex-start}
+.dialup__icon{font-size:36px;color:var(--primary);flex-shrink:0}
+.progress{display:flex;gap:2px;border:2px inset var(--bevel-shadow);background:var(--bg-secondary);padding:2px;height:22px;margin-top:8px}
+.progress__seg{flex:1;background:var(--primary);opacity:0;animation:seg 2.4s steps(1) infinite}
+@keyframes seg{0%{opacity:1}80%{opacity:1}100%{opacity:0}}
+.progress__seg:nth-child(1){animation-delay:0s}.progress__seg:nth-child(2){animation-delay:.15s}.progress__seg:nth-child(3){animation-delay:.3s}.progress__seg:nth-child(4){animation-delay:.45s}.progress__seg:nth-child(5){animation-delay:.6s}.progress__seg:nth-child(6){animation-delay:.75s}.progress__seg:nth-child(7){animation-delay:.9s}.progress__seg:nth-child(8){animation-delay:1.05s}.progress__seg:nth-child(9){animation-delay:1.2s}.progress__seg:nth-child(10){animation-delay:1.35s}
+/* ---------- sections ---------- */
+.section-head{text-align:center;margin-bottom:2.5rem;display:flex;flex-direction:column;align-items:center;gap:8px}
+.section-head p{color:var(--text-secondary);max-width:52ch}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:820px){.grid3{grid-template-columns:1fr}}
+.card{transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.card:hover{transform:translateY(-2px);box-shadow:inset -1px -1px var(--bevel-dark),inset 1px 1px var(--bevel-highlight),4px 4px 0 var(--bevel-dark)}}
+.card:focus-within{outline:2px dashed var(--primary);outline-offset:2px}
+.card .material-symbols-outlined.card__icon{font-size:40px;color:var(--primary)}
+:root[data-theme="dark"] .card .material-symbols-outlined.card__icon{color:var(--dos-cyan)}
+/* steps */
+.steps{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:12px;align-items:stretch}
+@media(max-width:820px){.steps{grid-template-columns:1fr}.steps__arrow{transform:rotate(90deg);justify-self:center}}
+.steps__arrow{display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:2rem;color:var(--primary)}
+:root[data-theme="dark"] .steps__arrow{color:var(--dos-cyan)}
+.step__badge{width:44px;height:44px;background:#C0C0C0;color:#000;border:2px outset #DFDFDF;box-shadow:inset -1px -1px #0A0A0A,inset 1px 1px #FFF;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.2rem}
+/* barrier */
+.barrier{height:24px;background:repeating-linear-gradient(45deg,#FFFF00 0 16px,#000 16px 32px);border:2px outset var(--bevel-light);margin-bottom:16px}
+/* guestbook */
+.guest{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:720px){.guest{grid-template-columns:1fr}}
+.guest__meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.guest__mono{width:44px;height:44px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;border:2px outset var(--bevel-light);flex-shrink:0}
+.guest__date{font-size:.85rem;color:var(--text-secondary)}
+.stars{color:#B8860B;font-size:18px;letter-spacing:2px}
+.stars .material-symbols-outlined{font-variation-settings:'FILL' 1;font-size:18px}
+blockquote{font-size:1rem}
+/* pricing */
+.price__amount{font-family:var(--font-mono);font-size:2.4rem;color:var(--primary)}
+:root[data-theme="dark"] .price__amount{color:var(--dos-cyan)}
+.price__list{list-style:none;display:flex;flex-direction:column;gap:6px}
+.price__list li{display:flex;gap:8px;align-items:center}
+.price__list .material-symbols-outlined{color:var(--text-success);font-size:20px}
+.price--featured{position:relative}
+.price--featured .window__title-bar{background:#5a0000}
+:root[data-theme="dark"] .price--featured .window__title-bar{background:#000080}
+.tooltip-best{align-self:center;background:var(--alert-yellow);color:#000;border:1px solid #000;padding:2px 10px;font-size:.85rem;box-shadow:var(--shadow-sm)}
+/* faq */
+.faq{display:flex;flex-direction:column;gap:10px;max-width:760px;margin:0 auto}
+.faq details{border:2px outset var(--bevel-light);background:var(--bg-secondary);box-shadow:var(--shadow-sm)}
+.faq summary{display:flex;align-items:center;gap:10px;min-height:44px;padding:10px 14px;cursor:pointer;font-weight:700;list-style:none}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary:focus-visible{outline:1px dotted currentColor;outline-offset:-4px}
+.faq summary .material-symbols-outlined{margin-left:auto}
+.faq details[open] summary .faq__plus{display:none}
+.faq details:not([open]) summary .faq__minus{display:none}
+.faq__panel{border:2px inset var(--bevel-shadow);margin:0 10px 10px;padding:12px;color:var(--text-secondary)}
+/* cta */
+.cta__form{display:flex;flex-direction:column;gap:8px;align-items:stretch;max-width:460px;margin:0 auto;width:100%}
+.field{display:flex;flex-direction:column;gap:4px;align-items:stretch}
+.field label{font-weight:700}
+.field input{font-family:var(--font-base);font-size:1rem;padding:10px;border:2px inset var(--bevel-shadow);background:#fff;color:#000;min-height:44px}
+.field input:focus-visible{outline:1px dotted #000;outline-offset:-4px}
+.field--invalid input{border-color:var(--border-error)}
+.field__msg{font-size:.85rem;color:var(--text-error);min-height:1.2em}
+.cta__success{display:flex;gap:12px;align-items:center;justify-content:center;color:var(--text-success);font-weight:700}
+.cta__success .material-symbols-outlined{font-variation-settings:'FILL' 1;font-size:32px}
+.cta__inner{display:flex;gap:14px;align-items:flex-start}
+.cta__inner .material-symbols-outlined.cta__warn{font-size:44px;color:#B8860B;flex-shrink:0}
+/* footer taskbar */
+footer{background:var(--nav-bg);border-top:2px outset var(--bevel-light);padding:12px 0}
+.taskbar{max-width:1200px;margin:0 auto;padding:0 1.25rem;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.taskbar__start{font-weight:700}
+.taskbar__links{display:flex;gap:4px;flex-wrap:wrap}
+.taskbar__links a{display:inline-flex;align-items:center;min-height:36px;padding:4px 12px;background:#C0C0C0;color:#000;border:2px outset #DFDFDF;text-decoration:none;font-size:.9rem}
+.taskbar__links a:active{border-style:inset}
+.taskbar__clock{margin-left:auto;font-family:var(--font-mono);font-size:1.1rem;border:2px inset var(--bevel-shadow);padding:4px 12px;background:var(--bg-secondary);color:var(--text-primary)}
+.footer__meta{max-width:1200px;margin:10px auto 0;padding:0 1.25rem;display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:.85rem;color:var(--text-secondary)}
+.badge88{border:2px outset var(--bevel-light);background:#000;color:var(--dos-cyan);font-family:var(--font-mono);font-size:.8rem;padding:2px 8px;line-height:1.1;text-align:center}
+.counter{font-family:var(--font-mono);background:#000;color:var(--terminal-green);border:2px inset var(--bevel-shadow);padding:2px 10px;letter-spacing:3px}
+/* toast */
+.toast{position:fixed;bottom:16px;right:16px;z-index:var(--z-toast);background:var(--alert-yellow);color:#000;border:2px outset #DFDFDF;box-shadow:var(--shadow-md);padding:10px 16px;max-width:min(320px,90vw);font-size:.9rem}
+/* modal */
+.modal{position:fixed;inset:0;z-index:var(--z-modal);display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.5);padding:16px}
+.modal__box{width:min(440px,100%)}
+.modal__row{display:flex;gap:14px;align-items:flex-start}
+.modal__row .material-symbols-outlined{font-size:40px;color:#B8860B;flex-shrink:0}
+.modal__btns{display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+@media(prefers-reduced-motion:reduce){
+.marquee__track{animation:none;padding-left:0}
+.hero__new{animation:none}
+.progress__seg{animation:none;opacity:1}
+html{scroll-behavior:auto}
+*{transition-duration:.01ms!important}
+}
+@media(prefers-reduced-transparency:reduce){.modal{background:rgba(0,0,0,.75)}}
 </style>
 </head>
 <body>
-  <!-- Sticky Nav -->
-  <nav class="nav" aria-label="Main navigation">
-    <ul class="nav__list">
-      <li><a href="#hero" class="nav__link">Home</a></li>
-      <li><a href="#features" class="nav__link">Features</a></li>
-      <li><a href="#pricing" class="nav__link">Pricing</a></li>
-      <li><a href="#testimonials" class="nav__link">Testimonials</a></li>
-    </ul>
-  </nav>
+<nav class="nav" aria-label="Main navigation">
+<div class="nav__inner">
+<a class="nav__brand" href="#top"><span class="material-symbols-outlined" aria-hidden="true">public</span>GeoForge</a>
+<button class="nav__menu-btn" id="menu-btn" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu"><span class="material-symbols-outlined" aria-hidden="true">menu</span></button>
+<div class="nav__links" id="nav-links">
+<a href="#features">Features</a>
+<a href="#how">How It Works</a>
+<a href="#pricing">Pricing</a>
+<a href="#faq">FAQ</a>
+</div>
+<button class="nav__toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode"><span class="material-symbols-outlined" id="theme-icon" aria-hidden="true">dark_mode</span></button>
+</div>
+</nav>
 
-  <!-- Hero -->
-  <section id="hero" class="window hero-window">
-    <div class="window__title-bar">
-      <span class="window__title">Nimbus</span>
-      <div class="window__controls">
-        <button aria-label="Minimize" class="btn--tiny" hidden>_</button>
-        <button aria-label="Maximize" class="btn--tiny" hidden>□</button>
-        <button aria-label="Close" class="btn--tiny" hidden>×</button>
-      </div>
-    </div>
-    <div class="window__content">
-      <!-- ASCII art logo -->
-      <pre class="logo-ascii" aria-hidden="true" style="font-family:var(--font-mono);font-size:18px;color:var(--primary);margin-bottom:var(--spacing-gap);">
-_      _           _     _
-| |    | |__   ___ | |__ | |__   ___  _ __  ___
-| |    | '_ \ / _ \| '_ \| '_ \ / _ \| '_ \/ __|
-| |____| | | | (_) | | | | | | | (_) | | | \__ \
- \____/|_| |_|\___/|_| |_|_| |_|\___/|_| |_|___/
-      </pre>
-      <h1 class="heading--large" style="font-size:24px;margin:var(--spacing-gap) 0;">Build Your <span class="highlight" style="color:var(--retro-magenta);">80s</span> Homepage</h1>
-      <p class="heading--sub" style="color:var(--text-secondary);font-size:14px;">Welcome to your personal GeoCities revival. Under construction.</p>
-      <!-- CTAs -->
-      <div class="ctas" style="display:flex;gap:8px;margin-top:var(--spacing-gap);">
-        <button class="btn btn--primary">Get Started</button>
-        <a href="#features" class="btn btn--secondary">Learn More</a>
-      </div>
-      <!-- Marquee welcome line -->
-      <div class="marquee" aria-hidden="true"><span>Welcome to Nimbus! Welcome to Nimbus! Welcome to Nimbus!</span></div>
-      <!-- Blinking NEW! badge -->
-      <span class="badge--blink" style="font-size:12px;color:var(--alert-yellow);">NEW!</span>
-      <!-- Dial-up connecting dialog with segmented progress bar -->
-      <div class="dialup-dialog">
-        <span style="color:var(--primary);font-size:12px;display:block;margin-bottom:var(--spacing-gap);">Dial-up connecting…</span>
-        <div class="dialup-progress"><div class="dialup-progress-fill"></div></div>
-      </div>
-    </div>
-  </section>
+<main id="top">
+<!-- HERO -->
+<section class="hero" aria-labelledby="hero-title">
+<div class="wrap">
+<div class="window">
+<div class="window__title-bar">
+<span class="window__title">GeoForge Homepage Builder 98</span>
+<span class="window__controls" aria-hidden="true"><span class="window__ctrl"><span class="material-symbols-outlined">remove</span></span><span class="window__ctrl"><span class="material-symbols-outlined">crop_square</span></span><span class="window__ctrl"><span class="material-symbols-outlined">close</span></span></span>
+</div>
+<div class="hero__menu">
+<a href="#features">File</a>
+<a href="#how">Edit</a>
+<a href="#pricing">View</a>
+<a href="#faq">Help</a>
+</div>
+<div class="window__body">
+<div class="hero__grid">
+<div>
+<pre class="hero__ascii" aria-hidden="true">
+  ____            _____
+ / ___| ___  ___ |  ___|__  _ __ __ _  ___
+| |  _ / _ \/ _ \| |_ / _ \| '__/ _` |/ _ \
+| |_| |  __/ (_) |  _| (_) | | | (_| |  __/
+ \____|\___|\___/|_|  \___/|_|  \__, |\___|
+                              |___/
+</pre>
+<p class="sr-only">GeoForge ASCII logo</p>
+<h1 id="hero-title">Welcome to your new homepage!</h1>
+<p class="hero__sub">Build a gloriously retro personal homepage with guestbooks, hit counters, and MIDI charm. No coding required. Sign my guestbook!</p>
+<p><span class="hero__new">NEW!</span> <strong>Version 3.1 now with 88x31 badge maker.</strong></p>
+<div class="hero__ctas">
+<a class="btn btn--primary" href="#cta">Start Building</a>
+<a class="btn" href="#guestbook">Sign Guestbook</a>
+</div>
+</div>
+<div class="dialup" role="status">
+<div class="window__title-bar"><span class="window__title">Connecting...</span></div>
+<div class="dialup__body">
+<span class="material-symbols-outlined dialup__icon" aria-hidden="true">settings_phone</span>
+<div>
+<p><strong>Dial-up connection in progress.</strong></p>
+<p style="color:var(--text-secondary);font-size:.9rem">Modem handshake at 56k. Please do not pick up the phone.</p>
+<div class="progress" aria-hidden="true"><span class="progress__seg"></span><span class="progress__seg"></span><span class="progress__seg"></span><span class="progress__seg"></span><span class="progress__seg"></span><span class="progress__seg"></span><span class="progress__seg"></span><span class="progress__seg"></span><span class="progress__seg"></span><span class="progress__seg"></span></div>
+</div>
+</div>
+</div>
+</div>
+<div class="marquee" aria-hidden="true"><span class="marquee__track">*** WELCOME TO GEOFORGE *** BEST VIEWED AT 800x600 *** UNDER CONSTRUCTION SINCE 1999 *** SIGN THE GUESTBOOK *** JOIN OUR WEBRING ***</span></div>
+</div>
+</div>
+</div>
+</section>
 
-  <!-- Features (3 cards) -->
-  <section id="features" class="features">
-    <div class="cards">
-      <div class="card">
-        <div class="window">
-          <div class="window__title-bar"><span class="window__title">Design</span>
-            <div class="window__controls" aria-hidden><button>−</button><button>□</button><button>×</button></div>
-          </div>
-          <div class="window__content">
-            <span class="material-icons" style="font-variation-settings:'FILL' 0;color:var(--primary);">flash_on</span>
-            <h3 style="margin:var(--spacing-gap) 0;">Drag-and-drop elements</h3>
-            <p style="margin:0;color:var(--text-secondary);font-size:13px;">Place text, images, and ASCII art anywhere on your page.</p>
-          </div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="window">
-          <div class="window__title-bar"><span class="window__title">Publish</span>
-            <div class="window__controls" aria-hidden><button>−</button><button>□</button><button>×</button></div>
-          </div>
-          <div class="window__content">
-            <span class="material-icons" style="font-variation-settings:'FILL' 0;color:var(--primary);">cloud_upload</span>
-            <h3 style="margin:var(--spacing-gap) 0;">One-click publish</h3>
-            <p style="margin:0;color:var(--text-secondary);font-size:13px;">Publish your retro site with a single click.</p>
-          </div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="window">
-          <div class="window__title-bar"><span class="window__title">Community</span>
-            <div class="window__controls" aria-hidden><button>−</button><button>□</button><button>×</button></div>
-          </div>
-          <div class="window__content">
-            <span class="material-icons" style="font-variation-settings:'FILL' 0;color:var(--primary);">people</span>
-            <h3 style="margin:var(--spacing-gap) 0;">Guestbook & webring</h3>
-            <p style="margin:0;color:var(--text-secondary);font-size:13px;">Connect with other retro enthusiasts.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+<!-- FEATURES -->
+<section id="features" aria-labelledby="feat-title">
+<div class="wrap">
+<div class="section-head">
+<h2 id="feat-title">Everything a 90s homepage needs</h2>
+<p>Authentic retro widgets, drag and drop. Your corner of the web, exactly how you remember it.</p>
+</div>
+<div class="grid3">
+<article class="window card">
+<div class="window__title-bar"><span class="window__title">Widget_Gallery.exe</span></div>
+<div class="window__body">
+<span class="material-symbols-outlined card__icon" aria-hidden="true">widgets</span>
+<h3>Retro Widget Gallery</h3>
+<p>Hit counters, guestbooks, under-construction barriers, scrolling marquees, and 88x31 badges. Over 200 authentic widgets, all beveled to perfection.</p>
+</div>
+</article>
+<article class="window card">
+<div class="window__title-bar"><span class="window__title">Pixel_Editor.exe</span></div>
+<div class="window__body">
+<span class="material-symbols-outlined card__icon" aria-hidden="true">draw</span>
+<h3>Pixel Art Studio</h3>
+<p>Draw your own pixel dividers, favicons, and clip art on a crisp 16-color canvas. Every sprite renders with true image-rendering: pixelated sharpness.</p>
+</div>
+</article>
+<article class="window card">
+<div class="window__title-bar"><span class="window__title">Webring.exe</span></div>
+<div class="window__body">
+<span class="material-symbols-outlined card__icon" aria-hidden="true">link</span>
+<h3>Instant Webring Hosting</h3>
+<p>One click joins your page to a real webring. Free hosting on yourname.geoforge.net with a dial-up-speed simulator for full authenticity.</p>
+</div>
+</article>
+</div>
+</div>
+</section>
 
-  <!-- How It Works (3 steps) -->
-  <section id="how-it-works" class="steps">
-    <div class="step">
-      <span class="step-number">1</span>
-      <div class="window" style="min-width:180px;">
-        <div class="window__title-bar"><span class="window__title">Setup</span>
-          <div class="window__controls" aria-hidden><button>−</button><button>□</button><button>×</button></div>
-        </div>
-        <div class="window__content">
-          <span class="material-icons" style="font-variation-settings:'FILL' 0;color:var(--primary);">settings</span>
-          <h3 style="margin:var(--spacing-gap) 0;">Choose your template</h3>
-          <p style="margin:0;color:var(--text-secondary);font-size:13px;">Pick a pre-built ’90s layout or start from a blank canvas.</p>
-        </div>
-      </div>
-    </div>
-    <div class="step">
-      <span class="step-number">2</span>
-      <div class="window" style="min-width:180px;">
-        <div class="window__title-bar"><span class="window__title">Customize</span>
-          <div class="window__controls" aria-hidden><button>−</button><button>□</button><button>×</button></div>
-        </div>
-        <div class="window__content">
-          <span class="material-icons" style="font-variation-settings:'FILL' 0;color:var(--primary);">palette</span>
-          <h3 style="margin:var(--spacing-gap) 0;">Personalize colors</h3>
-          <p style="margin:0;color:var(--text-secondary);font-size:13px;">Swap title bars, window frames, and accent colors.</p>
-        </div>
-      </div>
-    </div>
-    <div class="step">
-      <span class="step-number">3</span>
-      <div class="window" style="min-width:180px;">
-        <div class="window__title-bar"><span class="window__title">Launch</span>
-          <div class="window__controls" aria-hidden><button>−</button><button>□</button><button>×</button></div>
-        </div>
-        <div class="window__content">
-          <span class="material-icons" style="font-variation-settings:'FILL' 0;color:var(--primary);">launch</span>
-          <h3 style="margin:var(--spacing-gap) 0;">Go live</h3>
-          <p style="margin:0;color:var(--text-secondary);font-size:13px;">Publish and share your ’90s homepage.</p>
-        </div>
-      </div>
-    </div>
-  </section>
+<!-- HOW IT WORKS -->
+<section id="how" aria-labelledby="how-title">
+<div class="wrap">
+<div class="section-head">
+<h2 id="how-title">The Setup Wizard</h2>
+<p>Three steps and your homepage is live on the information superhighway.</p>
+</div>
+<div class="steps">
+<article class="window card">
+<div class="window__title-bar"><span class="window__title">Step 1 of 3</span></div>
+<div class="window__body">
+<span class="step__badge" aria-hidden="true">1</span>
+<h3>Pick Your Template</h3>
+<p>Choose from classic looks: starfield background, tiled marble, rainbow divider pack, or the beloved plain-gray personal page.</p>
+</div>
+</article>
+<div class="steps__arrow" aria-hidden="true">-&gt;</div>
+<article class="window card">
+<div class="window__title-bar"><span class="window__title">Step 2 of 3</span></div>
+<div class="window__body">
+<span class="step__badge" aria-hidden="true">2</span>
+<h3>Drop In Widgets</h3>
+<p>Drag a guestbook here, a hit counter there. Add your favorite links page and an animated "Email Me" button.</p>
+</div>
+</article>
+<div class="steps__arrow" aria-hidden="true">-&gt;</div>
+<article class="window card">
+<div class="window__title-bar"><span class="window__title">Step 3 of 3</span></div>
+<div class="window__body">
+<span class="step__badge" aria-hidden="true">3</span>
+<h3>Publish &amp; Share</h3>
+<p>Hit publish and your page goes live instantly. Add it to the webring and tell everyone on the message board.</p>
+</div>
+</article>
+</div>
+</div>
+</section>
 
-  <!-- Testimonials -->
-  <section id="testimonials" class="guestbook">
-    <div class="under-construction">Under Construction — Sign the Guestbook</div>
-    <div class="guestbook-entries">
-      <div class="guestbook-entry">
-        <div class="guestbook-author">Alex J.</div>
-        <div class="guestbook-date">March 15, 1998</div>
-        <div class="guestbook-rating">
-          <span class="material-icons star" style="font-variation-settings:'FILL' 1;">star</span>
-          <span class="material-icons star" style="font-variation-settings:'FILL' 1;">star</span>
-          <span class="material-icons star" style="font-variation-settings:'FILL' 1;">star</span>
-          <span class="material-icons star" style="font-variation-settings:'FILL' 1;">star</span>
-          <span class="material-icons star" style="font-variation-settings:'FILL' 1;">star</span>
-        </div>
-        <blockquote>"Nimbus brought my childhood homepage back to life!"</blockquote>
-      </div>
-      <div class="guestbook-entry">
-        <div class="guestbook-author">Sam T.</div>
-        <div class="guestbook-date">March 20, 1998</div>
-        <div class="guestbook-rating">
-          <span class="material-icons star" style="font-variation-settings:'FILL' 1;">star</span>
-          <span class="material-icons star" style="font-variation-settings:'FILL' 1;">star</span>
-          <span class="material-icons star" style="font-variation-settings:'FILL' 1;">star</span>
-          <span class="material-icons star" style="font-variation-settings:'FILL' 1;">star</span>
-          <span class="material-icons star" style="font-variation-settings:'FILL' 1;">star</span>
-        </div>
-        <blockquote>"Finally, a builder that gets the aesthetic right."</blockquote>
-      </div>
-      <div class="guestbook-entry">
-        <div class="guestbook-author">Casey R.</div>
-        <div class="guestbook-date">April 2, 1998</div>
-        <div class="guestbook-rating">
-          <span class="material-icons star" style="font-variation-settings:'FILL' 1;">star</span>
-          <span class="material-icons star" style="font-variation-settings:'FILL' 1;">star</span>
-          <span class="material-icons star" style="font-variation-settings:'FILL' 1;">star</span>
-          <span class="material-icons star" style="font-variation-settings:'FILL' 1;">star</span>
-          <span class="material-icons star" style="font-variation-settings:'FILL' 1;">star</span>
-        </div>
-        <blockquote>"Under construction" never looked so good.</blockquote>
-      </div>
-    </div>
-  </section>
+<!-- GUESTBOOK / TESTIMONIALS -->
+<section id="guestbook" aria-labelledby="guest-title">
+<div class="wrap">
+<div class="barrier" role="img" aria-label="Under construction barrier"></div>
+<div class="section-head">
+<h2 id="guest-title">Sign the Guestbook</h2>
+<p>Real entries from real homepagers. Thanks for stopping by!</p>
+</div>
+<div class="guest">
+<article class="window card">
+<div class="window__title-bar"><span class="window__title">Guestbook Entry #0042</span></div>
+<div class="window__body">
+<div class="guest__meta"><span class="guest__mono" aria-hidden="true">MR</span><div><strong>Marta Reyes</strong><br><span class="guest__date">Posted 03/14/1999 · Ringmaster, Pixel Pets Webring</span></div></div>
+<span class="stars" aria-label="Rated 5 out of 5 stars"><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span></span>
+<blockquote>&ldquo;My homepage looks exactly like the one I made in computer class. The guestbook widget even makes the little doorbell sound. 10/10 would bookmark again.&rdquo;</blockquote>
+</div>
+</article>
+<article class="window card">
+<div class="window__title-bar"><span class="window__title">Guestbook Entry #0043</span></div>
+<div class="window__body">
+<div class="guest__meta"><span class="guest__mono" aria-hidden="true">DK</span><div><strong>Devon Kowalski</strong><br><span class="guest__date">Posted 04/02/1999 · Webmaster, Synthwave Shack</span></div></div>
+<span class="stars" aria-label="Rated 5 out of 5 stars"><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span></span>
+<blockquote>&ldquo;I rebuilt my old fan page in one afternoon. The hit counter rolled past 1,000 visitors last week and I felt something.&rdquo;</blockquote>
+</div>
+</article>
+</div>
+</div>
+</section>
 
-  <!-- Pricing (3 tiers) -->
-  <section id="pricing" class="pricing">
-    <div class="tier" data-tier="basic">
-      <div class="window">
-        <div class="window__title-bar"><span class="window__title">Basic</span>
-          <div class="window__controls" aria-hidden><button>−</button><button>□</button><button>×</button></div>
-        </div>
-        <div class="window__content">
-          <span class="material-icons" style="font-variation-settings:'FILL' 0;color:var(--terminal-green);">check</span>
-          <p class="price" style="color:var(--primary);font-size:18px;margin:var(--spacing-gap) 0;">$0/mo</p>
-          <ul class="features-list">
-            <li><span class="material-icons" style="color:var(--terminal-green);">check</span> 5 pages</li>
-            <li><span class="material-icons" style="color:var(--terminal-green);">check</span> 10MB storage</li>
-          </ul>
-          <button class="btn btn--primary">Select Plan</button>
-        </div>
-      </div>
-    </div>
-    <div class="tier highlighted" data-tier="pro">
-      <div class="window">
-        <div class="window__title-bar"><span class="window__title">Pro</span>
-          <span class="label--best-value">Best Value</span>
-        </div>
-        <div class="window__content">
-          <span class="material-icons" style="font-variation-settings:'FILL' 0;color:var(--terminal-green);">check</span>
-          <p class="price" style="color:var(--primary);font-size:18px;margin:var(--spacing-gap) 0;">$9.99/mo</p>
-          <ul class="features-list">
-            <li><span class="material-icons" style="color:var(--terminal-green);">check</span> Unlimited pages</li>
-            <li><span class="material-icons" style="color:var(--terminal-green);">check</span> 100MB storage</li>
-            <li><span class="material-icons" style="color:var(--terminal-green);">check</span> Custom domain</li>
-          </ul>
-          <button class="btn btn--primary">Select Plan</button>
-        </div>
-      </div>
-    </div>
-    <div class="tier" data-tier="premium">
-      <div class="window">
-        <div class="window__title-bar"><span class="window__title">Premium</span>
-          <div class="window__controls" aria-hidden><button>−</button><button>□</button><button>×</button></div>
-        </div>
-        <div class="window__content">
-          <span class="material-icons" style="font-variation-settings:'FILL' 0;color:var(--terminal-green);">check</span>
-          <p class="price" style="color:var(--primary);font-size:18px;margin:var(--spacing-gap) 0;">$19.99/mo</p>
-          <ul class="features-list">
-            <li><span class="material-icons" style="color:var(--terminal-green);">check</span> Everything + priority support</li>
-          </ul>
-          <button class="btn btn--primary">Select Plan</button>
-        </div>
-      </div>
-    </div>
-  </section>
+<!-- PRICING -->
+<section id="pricing" aria-labelledby="price-title">
+<div class="wrap">
+<div class="section-head">
+<h2 id="price-title">Choose Your Plan</h2>
+<p>Every plan includes free hosting, a webring slot, and unlimited marquee text.</p>
+</div>
+<div class="grid3">
+<article class="window card">
+<div class="window__title-bar"><span class="window__title">Plan: Surfer</span></div>
+<div class="window__body">
+<p class="price__amount">$0</p>
+<p style="color:var(--text-secondary)">Forever free, like the web was meant to be.</p>
+<ul class="price__list">
+<li><span class="material-symbols-outlined" aria-hidden="true">check</span>1 homepage with 3 pages</li>
+<li><span class="material-symbols-outlined" aria-hidden="true">check</span>Guestbook and hit counter</li>
+<li><span class="material-symbols-outlined" aria-hidden="true">check</span>Community webring access</li>
+</ul>
+<button class="btn" type="button" data-plan="Surfer">Select Plan</button>
+</div>
+</article>
+<article class="window card price--featured">
+<div class="window__title-bar"><span class="window__title">Plan: Webmaster</span></div>
+<div class="window__body">
+<span class="tooltip-best">Best Value</span>
+<p class="price__amount">$4/mo</p>
+<p style="color:var(--text-secondary)">For serious citizens of the information superhighway.</p>
+<ul class="price__list">
+<li><span class="material-symbols-outlined" aria-hidden="true">check</span>10 homepages, unlimited pages</li>
+<li><span class="material-symbols-outlined" aria-hidden="true">check</span>Pixel Art Studio and badge maker</li>
+<li><span class="material-symbols-outlined" aria-hidden="true">check</span>Custom MIDI autoplay</li>
+<li><span class="material-symbols-outlined" aria-hidden="true">check</span>Priority modem pool</li>
+</ul>
+<button class="btn btn--primary" type="button" data-plan="Webmaster">Select Plan</button>
+</div>
+</article>
+<article class="window card">
+<div class="window__title-bar"><span class="window__title">Plan: Sysop</span></div>
+<div class="window__body">
+<p class="price__amount">$12/mo</p>
+<p style="color:var(--text-secondary)">Run your own neighborhood of the web.</p>
+<ul class="price__list">
+<li><span class="material-symbols-outlined" aria-hidden="true">check</span>Unlimited homepages</li>
+<li><span class="material-symbols-outlined" aria-hidden="true">check</span>Host your own webring</li>
+<li><span class="material-symbols-outlined" aria-hidden="true">check</span>Custom domain support</li>
+<li><span class="material-symbols-outlined" aria-hidden="true">check</span>Fax support hotline</li>
+</ul>
+<button class="btn" type="button" data-plan="Sysop">Select Plan</button>
+</div>
+</article>
+</div>
+</div>
+</section>
 
-  <!-- FAQ -->
-  <section id="faq" class="faq">
-    <details>
-      <summary>How do I customize my page?</summary>
-      <div class="faq-answer">You can change colors, fonts, and layout using the built-in editor. No coding required.</div>
-    </details>
-    <details>
-      <summary>Can I use my own domain?</summary>
-      <div class="faq-answer">Yes! Upgrade to Pro or Premium to connect your own domain name.</div>
-    </details>
-    <details>
-      <summary>Is my homepage really viewable on modern browsers?</summary>
-      <div class="faq-answer">Yes, Nimbus generates standards-compliant HTML that works on all modern browsers while maintaining the retro aesthetic.</div>
-    </details>
-  </section>
+<!-- FAQ -->
+<section id="faq" aria-labelledby="faq-title">
+<div class="wrap">
+<div class="section-head">
+<h2 id="faq-title">Frequently Asked Questions</h2>
+<p>Answers from the help file. Press F1 if lost.</p>
+</div>
+<div class="faq">
+<details>
+<summary>Do I need to know HTML?<span class="material-symbols-outlined faq__plus" aria-hidden="true">add</span><span class="material-symbols-outlined faq__minus" aria-hidden="true">remove</span></summary>
+<div class="faq__panel">Not at all. The Setup Wizard handles everything. If you do know HTML, you can open the source view and hand-tune your table layouts like it's 1997.</div>
+</details>
+<details>
+<summary>Will my page work in Netscape Navigator?<span class="material-symbols-outlined faq__plus" aria-hidden="true">add</span><span class="material-symbols-outlined faq__minus" aria-hidden="true">remove</span></summary>
+<div class="faq__panel">Your page works in every modern browser, but it will look authentically vintage. We even include a "Best viewed at 800x600" badge for historical accuracy.</div>
+</details>
+<details>
+<summary>Can I bring my own MIDI files?<span class="material-symbols-outlined faq__plus" aria-hidden="true">add</span><span class="material-symbols-outlined faq__minus" aria-hidden="true">remove</span></summary>
+<div class="faq__panel">Yes. Upload any MIDI and set it to autoplay on load, with a polite mute button for visitors browsing at 2 AM. We are nostalgic, not cruel.</div>
+</details>
+</div>
+</div>
+</section>
 
-  <!-- Final CTA -->
-  <section id="cta" class="cta-window">
-    <div class="window">
-      <div class="window__title-bar">
-        <span class="window__title">Confirm</span>
-        <div class="window__controls" aria-hidden><button>−</button><button>□</button><button>×</button></div>
-      </div>
-      <div class="window__content">
-        <span class="material-icons" style="font-variation-settings:'FILL' 1;color:var(--alert-yellow);">error</span>
-        <h2 style="margin:var(--spacing-gap) 0;">Ready to build your homepage?</h2>
-        <p style="margin:var(--spacing-gap) 0;color:var(--text-secondary);">Enter your email to get started and receive exclusive ’90s design tips.</p>
-        <form class="email-form" novalidate>
-          <div class="input-group">
-            <label for="email" class="input-group__label" style="font-size:12px;">Email address</label>
-            <input type="email" id="email" name="email" class="input-group__input" required>
-            <span class="input-group__error" role="alert">Please enter a valid email address.</span>
-          </div>
-          <button type="submit" class="btn btn--primary">Sign Me Up</button>
-        </form>
-        <div class="success-state" hidden>
-          <span class="material-icons" style="color:var(--terminal-green);">check_circle</span>
-          <p>Thanks! We've sent a confirmation email to <span id="confirm-email"></span>.</p>
-        </div>
-      </div>
-    </div>
-  </section>
+<!-- FINAL CTA -->
+<section id="cta" aria-labelledby="cta-title">
+<div class="wrap">
+<div class="window" style="max-width:640px;margin:0 auto">
+<div class="window__title-bar"><span class="window__title">Confirm</span></div>
+<div class="window__body">
+<div class="cta__inner">
+<span class="material-symbols-outlined cta__warn" aria-hidden="true">warning</span>
+<div>
+<h2 id="cta-title">Ready to stake your claim on the web?</h2>
+<p style="color:var(--text-secondary)">Join thousands of homepagers. Enter your email and we will mail you a floppy disk with your login details. (It is a download link.)</p>
+</div>
+</div>
+<form class="cta__form" id="signup-form" novalidate>
+<div class="field" id="email-field">
+<label for="email">Email address</label>
+<input type="email" id="email" name="email" autocomplete="email" required aria-describedby="email-msg">
+<p class="field__msg" id="email-msg" aria-live="polite"></p>
+</div>
+<button class="btn btn--primary" type="submit" id="signup-btn">Claim My Homepage</button>
+</form>
+<div class="cta__success" id="signup-success" hidden>
+<span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+<p>You are on the list! Check your inbox for confirmation. Welcome to the neighborhood.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="taskbar">
-      <button class="taskbar-btn" aria-label="Scroll to top">Start</button>
-      <div class="taskbar-btns">
-        <button class="taskbar-btn">Guestbook</button>
-        <button class="taskbar-btn">Webring</button>
-        <button class="taskbar-btn">Awards</button>
-        <button class="taskbar-btn">About</button>
-        <button class="taskbar-btn">Contact</button>
-        <button class="taskbar-btn">Privacy</button>
-      </div>
-      <span class="clock" id="clock"></span>
-      <span class="visitor-counter" id="counter">0 visitors</span>
-      <div class="badges">
-        <a href="#" class="badge">88×31</a>
-        <a href="#" class="badge">88×31</a>
-      </div>
-      <p class="copyright">Best viewed at 800×600. © 1999 Nimbus.</p>
-    </div>
-  </footer>
+<!-- FOOTER -->
+<footer>
+<div class="taskbar">
+<a class="btn taskbar__start" href="#top"><span class="material-symbols-outlined" aria-hidden="true">public</span>Start</a>
+<nav class="taskbar__links" aria-label="Secondary">
+<a href="#guestbook">Guestbook</a>
+<a href="#how">Webring</a>
+<a href="#features">Awards</a>
+<a href="#faq">About</a>
+<a href="#cta">Contact</a>
+<a href="#faq">Privacy</a>
+</nav>
+<span class="taskbar__clock" id="clock" aria-label="Current time">12:00:00 PM</span>
+</div>
+<div class="footer__meta">
+<span class="badge88">GEO<br>FORGE</span>
+<span class="badge88">HTML<br>3.2</span>
+<span class="badge88">800x600<br>READY</span>
+<span>Visitors: <span class="counter" id="counter">000000</span></span>
+<span>Best viewed at 800x600</span>
+<span>© 1999... just kidding. © 2026 GeoForge Industries.</span>
+</div>
+</footer>
 
-  <script>
-    (function(){
-      // Live clock
-      function updateClock(){
-        var now=new Date();var h=now.getHours()<10?'0'+now.getHours():now.getHours();
-        var m=now.getMinutes()<10?'0'+now.getMinutes():now.getMinutes();
-        var s=now.getSeconds()<10?'0'+now.getSeconds():now.getSeconds();
-        document.getElementById('clock').textContent=h+':'+m+':'+s;
-      }
-      setInterval(updateClock,1000);
-      updateClock();
+<!-- MODAL -->
+<div class="modal" id="modal" hidden>
+<div class="window modal__box" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+<div class="window__title-bar">
+<span class="window__title" id="modal-title">Confirm your plan</span>
+<span class="window__controls"><button class="window__ctrl" id="modal-close" type="button" aria-label="Close dialog" style="cursor:pointer;border:2px outset #DFDFDF"><span class="material-symbols-outlined" aria-hidden="true">close</span></button></span>
+</div>
+<div class="window__body">
+<div class="modal__row">
+<span class="material-symbols-outlined" aria-hidden="true">help</span>
+<p id="modal-text">You have selected a plan. Proceed to checkout?</p>
+</div>
+<div class="modal__btns">
+<button class="btn btn--primary" id="modal-ok" type="button">OK</button>
+<button class="btn btn--danger" id="modal-cancel" type="button">Cancel</button>
+</div>
+</div>
+</div>
+</div>
 
-      // Visitor counter animation
-      var counterEl=document.getElementById('counter');
-      var start=0;
-      function animateCounter(){
-        var target=Math.floor(Math.random()*1000)+500;
-        var duration=1500;
-        var startTime=Date.now();
-        function frame(){
-          var now=Date.now()-startTime;
-          var progress=Math.min(now/duration,1);
-          var ease=1-Math.pow(1-progress,3);
-          var current=start+((target-start)*ease);
-          counterEl.textContent=Math.floor(current)+' visitors';
-          if(progress<1){requestAnimationFrame(frame);}
-        }
-        requestAnimationFrame(frame);
-      }
-      animateCounter();
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
-      // CTA form validation
-      var form=document.querySelector('.email-form');
-      var input=form.querySelector('.input-group__input');
-      var error=form.querySelector('.input-group__error');
-      var success=document.querySelector('.success-state');
-      var confirmSpan=document.getElementById('confirm-email');
-
-      form.addEventListener('submit',function(e){
-        e.preventDefault();
-        if(input.validity.valid){
-          var email=input.value;
-          confirmSpan.textContent=email;
-          success.hidden=false;
-          form.hidden=true;
-        }else{
-          error.style.display='block';
-          input.focus();
-        }
-      });
-
-      // Input validation feedback
-      input.addEventListener('input',function(){
-        if(input.validity.valid){error.style.display='none';}
-      });
-
-      // FAQ accordion keyboard support
-      var details=document.querySelectorAll('.faq details');
-      details.forEach(function(d){
-        d.addEventListener('keydown',function(e){
-          if(e.key==='Enter'||e.key===' '){
-            e.preventDefault();
-            d.open=!d.open;
-          }
-        });
-      });
-
-      // Tier button confirm modals
-      var tiers=document.querySelectorAll('.tier .btn');
-      tiers.forEach(function(btn){
-        btn.addEventListener('click',function(){
-          var tier=btn.closest('.tier').dataset.tier;
-          var msg='You are selecting the '+tier+' plan. Are you sure?';
-          if(confirm(msg)){
-            // proceed
-          }
-        });
-      });
-    })();
-  </script>
-<script id="pd-theme-toggle">(()=>{const r=document.documentElement,I={"sun":"<svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4\"/></svg>","moon":"<svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z\"/></svg>"};
-let s=null;try{s=localStorage.getItem('theme')}catch{}
-r.dataset.theme=s==='dark'||s==='light'?s:(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
-let b=[...document.querySelectorAll("#theme-toggle,#themeToggle,.theme-toggle,[data-theme-toggle],button[aria-label*=\"theme\" i],button[aria-label*=\"dark\" i],button[aria-label*=\"light\" i],button[aria-label*=\"mode\" i]")].find(e=>e.offsetParent!==null);
-const own=!b;
-if(own){b=document.createElement('button');b.type='button';b.className='pd-theme-btn';const h=document.querySelector('nav')||document.querySelector('header');h?h.appendChild(b):(b.classList.add('pd-theme-btn--float'),document.body.appendChild(b));}
-const sync=()=>{const d=r.dataset.theme==='dark';r.classList.toggle('dark',d);r.classList.toggle('light',!d);b.setAttribute('aria-pressed',String(d));b.setAttribute('aria-label',d?'Switch to light mode':'Switch to dark mode');
-if(own){b.innerHTML=d?I.sun:I.moon;return;}const g=b.querySelector('[class*="material-symbols"],[class*="material-icons"]');if(g)g.textContent=d?'light_mode':'dark_mode';else if(!b.querySelector('svg,img'))b.innerHTML=d?I.sun:I.moon;};
-b.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();r.dataset.theme=r.dataset.theme==='dark'?'light':'dark';try{localStorage.setItem('theme',r.dataset.theme)}catch{}sync();},true);
-sync();addEventListener('load',sync);})();</script>
+<script>
+(function(){
+"use strict";
+/* theme toggle */
+var tgl=document.getElementById("theme-toggle"),icon=document.getElementById("theme-icon");
+function paint(){var d=document.documentElement.dataset.theme==="dark";tgl.setAttribute("aria-pressed",String(d));tgl.setAttribute("aria-label",d?"Switch to light mode":"Switch to dark mode");icon.textContent=d?"light_mode":"dark_mode";}
+tgl.addEventListener("click",function(){var d=document.documentElement.dataset.theme==="dark";document.documentElement.dataset.theme=d?"light":"dark";localStorage.setItem("theme",d?"light":"dark");paint();});
+paint();
+/* mobile menu */
+var mb=document.getElementById("menu-btn"),nl=document.getElementById("nav-links");
+mb.addEventListener("click",function(){var o=nl.classList.toggle("nav__links--open");mb.setAttribute("aria-expanded",String(o));});
+nl.addEventListener("click",function(e){if(e.target.tagName==="A"){nl.classList.remove("nav__links--open");mb.setAttribute("aria-expanded","false");}});
+document.addEventListener("keydown",function(e){if(e.key==="Escape"){nl.classList.remove("nav__links--open");mb.setAttribute("aria-expanded","false");}});
+/* clock */
+var clock=document.getElementById("clock");
+function tick(){clock.textContent=new Date().toLocaleTimeString("en-US",{hour12:true});}
+tick();setInterval(tick,1000);
+/* counter */
+var counter=document.getElementById("counter"),n=13337;
+setInterval(function(){n+=Math.floor(Math.random()*3);counter.textContent=String(n).padStart(6,"0");},2500);
+counter.textContent=String(n).padStart(6,"0");
+/* toast */
+var toast=document.getElementById("toast"),toastT;
+function showToast(msg){toast.textContent=msg;toast.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){toast.hidden=true;},3500);}
+/* modal */
+var modal=document.getElementById("modal"),modalText=document.getElementById("modal-text"),lastFocus=null;
+function openModal(plan){lastFocus=document.activeElement;modalText.textContent="You have selected the "+plan+" plan. Proceed to checkout and claim your corner of the web?";modal.hidden=false;document.getElementById("modal-ok").focus();}
+function closeModal(){modal.hidden=true;if(lastFocus)lastFocus.focus();}
+document.querySelectorAll("[data-plan]").forEach(function(b){b.addEventListener("click",function(){openModal(b.getAttribute("data-plan"));});});
+document.getElementById("modal-close").addEventListener("click",closeModal);
+document.getElementById("modal-cancel").addEventListener("click",closeModal);
+document.getElementById("modal-ok").addEventListener("click",function(){closeModal();showToast("Plan confirmed! A confirmation email is on its way at 56k.");});
+modal.addEventListener("click",function(e){if(e.target===modal)closeModal();});
+document.addEventListener("keydown",function(e){
+if(modal.hidden)return;
+if(e.key==="Escape")closeModal();
+if(e.key==="Tab"){var f=modal.querySelectorAll("button");var first=f[0],last=f[f.length-1];
+if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}
+});
+/* form */
+var form=document.getElementById("signup-form"),email=document.getElementById("email"),field=document.getElementById("email-field"),msg=document.getElementById("email-msg"),btn=document.getElementById("signup-btn"),success=document.getElementById("signup-success");
+form.addEventListener("submit",function(e){
+e.preventDefault();
+var v=email.value.trim();
+if(!v||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)){field.classList.add("field--invalid");msg.textContent="Error: please enter a valid email address.";email.focus();return;}
+field.classList.remove("field--invalid");msg.textContent="";
+btn.disabled=true;btn.textContent="Connecting...";
+setTimeout(function(){form.hidden=true;success.hidden=false;showToast("Signup complete. Welcome aboard!");},1200);
+});
+})();
+</script>
 </body>
 </html>
