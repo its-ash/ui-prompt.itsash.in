@@ -9,6 +9,10 @@ import { createQuality, stripEmDashes } from './lib/quality.mjs';
 const DEMO_DIR = path.resolve('design/demos');
 const STATE_FILE = path.resolve('.demo-state.json');
 const BRIEF = fs.readFileSync(path.resolve('design/design-brief.md'), 'utf8');
+// Full skill text (copied from ~/.claude/skills/*.backup.20260904145233) sent verbatim with every request.
+const SKILLS = ['website-design', 'website-layout']
+  .map((n) => `\n\n===== SKILL: ${n} =====\n${fs.readFileSync(path.resolve(`design/skills/${n}.md`), 'utf8').trim()}`)
+  .join('');
 const MODELS = process.env.DEMO_MODELS ? process.env.DEMO_MODELS.split(',').map((m) => m.trim()).filter(Boolean) : DEFAULT_MODELS;
 const TIMEOUT_MS = Number(process.env.DEMO_TIMEOUT_MS ?? 1500000);
 const NOTE = process.env.DEMO_NOTE ?? '';
@@ -47,7 +51,17 @@ Output rules:
 - All copy in English, realistic, product-agnostic ("Nimbus" as brand unless the spec names one).
 - Respect prefers-reduced-motion. No horizontal scroll. Buttons min 44px height.
 
+You MUST apply the two design skills below in full. They are written for Tailwind/React; translate every rule into plain HTML + CSS (e.g. text-4xl -> font-size 2.25rem, pt-24 -> padding-top 6rem, grid-cols-1 -> grid-template-columns:1fr). Skip only the parts about image-generation tools, npm packages and React hooks; use inline SVG/CSS compositions or https://picsum.photos/seed/<descriptive-seed>/<w>/<h> for imagery. Before output, run the skills' pre-flight checks mentally and fix every failure.
+${SKILLS}
+
+===== PROJECT BRIEF (single-file demo specifics and known failure modes) =====
 ${BRIEF}`;
+
+if (process.env.DEMO_DRY === '1') {
+  console.log(SYSTEM);
+  console.log(`\n[build-demos] system prompt: ${SYSTEM.length} chars`);
+  process.exit(0);
+}
 
 async function buildDemo(file, checker, quality) {
   const id = path.basename(file, '.md');
@@ -59,6 +73,7 @@ async function buildDemo(file, checker, quality) {
   const promptPath = path.resolve('design/prompts', `${id}.md`);
   if (!fs.existsSync(promptPath)) throw new Error('prompt missing');
   const spec = fs.readFileSync(promptPath, 'utf8');
+  console.log(`start ${id}`);
 
   const prompt =
     `${spec}\n\n---\nDELIVERY OVERRIDE: Output one self-contained HTML file. Put every CSS rule the spec assigns to style.css inside a single <style> tag in <head>, and every script inside an inline <script>. No local <link rel="stylesheet">, no <script src> to local files. Close the <title> tag.\nQUALITY: Define colors as CSS variables on :root and a full dark palette under :root[data-theme="dark"]; a visible theme toggle button sits in the nav (id="theme-toggle", aria-pressed, sun/moon icon, contrast in both modes). Every section has generous, consistent vertical padding; the hero fills its width (two-column with a real visual, or centered) with no empty half.${NOTE ? `\n\nREDESIGN NOTES: ${NOTE}` : ''}`;
@@ -76,12 +91,12 @@ async function buildDemo(file, checker, quality) {
     const hard = issues.filter((i) => HARD.test(i)).length;
     if (!best || hard < best.hard || (hard === best.hard && issues.length < best.issues.length)) best = { html, issues, hard };
     if (!issues.length) break;
-    console.error(`redo  ${id} round ${round}: ${issues.join('; ').slice(0, 220)}`);
+    console.log(`redo  ${id} round ${round}: ${issues.join('; ').slice(0, 220)}`);
     fixes = `\n\nYOUR PREVIOUS ATTEMPT FAILED THESE CHECKS. Fix every one:\n- ${issues.join('\n- ')}`;
   }
   if (best.hard) throw new Error(`kept previous page; best attempt still failed: ${best.issues.filter((i) => HARD.test(i)).join('; ').slice(0, 200)}`);
   const out = best.html;
-  if (best.issues.length) console.error(`warn  ${id}: saved with soft issues: ${best.issues.join('; ').slice(0, 200)}`);
+  if (best.issues.length) console.log(`warn  ${id}: saved with soft issues: ${best.issues.join('; ').slice(0, 200)}`);
   fs.writeFileSync(outPath, out + '\n');
   state.done[id] = { at: new Date().toISOString(), bytes: out.length };
   delete state.failed[id];
@@ -107,7 +122,7 @@ const prompts = fs
     return !(fs.existsSync(out) && looksLikeHtml(fs.readFileSync(out, 'utf8')));
   });
 if (process.env.DEMO_REVERSE === '1') prompts.reverse();
-console.log(`[build-demos] ${prompts.length} pending, models=${MODELS.join('|')}, concurrency=${CONCURRENCY}`);
+console.log(`[build-demos] ${prompts.length} pending (skills: website-design, website-layout + design-brief), models=${MODELS.join('|')}, concurrency=${CONCURRENCY}`);
 let idx = 0;
 
 async function worker() {

@@ -24,6 +24,15 @@ categorize:
 demos:
 	node --env-file-if-exists=.env scripts/build-demos.mjs
 
+FROM ?= 400
+SKIP ?= 478-Vintage-Lithograph-Victorian,655-Bold-Poster,667-Monochrome,684-Vellum,803-CENTO-one-hundred
+
+redesign:
+	DEMO_REDESIGN=1 DEMO_FROM=$(FROM) DEMO_CONCURRENCY=8 DEMO_SKIP=$(SKIP) node --env-file-if-exists=.env scripts/build-demos.mjs
+	node scripts/check-dark.mjs
+	node scripts/build-thumbs.mjs
+	node scripts/bake-data.mjs
+
 thumbs:
 	node scripts/build-thumbs.mjs
 
@@ -41,4 +50,4 @@ redo-dark: check-dark
 	node --env-file-if-exists=.env scripts/fix-dark.mjs --redo
 	node scripts/check-dark.mjs
 
-.PHONY: run build docs deploy process categorize demos thumbs brand check-dark fix-dark redo-dark
+.PHONY: run build docs deploy process categorize demos redesign thumbs brand check-dark fix-dark redo-dark

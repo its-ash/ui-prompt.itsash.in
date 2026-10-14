@@ -36,6 +36,8 @@ Prompt library site. Users filter by category, open a design full view, copy the
 ## Demo generation rules
 
 - ALWAYS generate or redesign demos through `scripts/build-demos.mjs` so the NVIDIA system prompt includes `design/design-brief.md` (distilled from the `design` skill). Never call NVIDIA for page design without it.
+- The NVIDIA system prompt = output rules + full text of `design/skills/website-design.md` + `design/skills/website-layout.md` (copies of the `website-design` / `website-layout` skills) + `design/design-brief.md`. Check with `DEMO_DRY=1 node scripts/build-demos.mjs`.
+- `make redesign FROM=400` regenerates every demo from that number (resumable via `.redesign-state.json`; delete it to start over), then re-checks dark mode, thumbs and site data.
 - Default models: `moonshotai/kimi-k3`, fallback `google/gemma-4-31b-it` (benchmarked best on NVIDIA free tier). Nemotron spends its budget on reasoning.
 - Redesign one page: `DEMO_ONLY=<id> DEMO_NOTE="<audit of current page>" make demos`, then check both modes, mobile, console, and fix leftovers by hand.
 
