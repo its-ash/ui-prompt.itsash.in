@@ -17,7 +17,8 @@ Prompt library site. Users filter by category, open a design full view, copy the
 - `make demos` - build missing demo pages in `design/demos` via NVIDIA (needs `NVIDIA_API_KEY` in `.env`); skips done demos
 - `make thumbs` - screenshot new/changed demos to `design/thumbs/*.jpg` (Playwright); also runs in `npm run generate`
 - `make check-dark` - Playwright check that each demo has a working dark mode (toggle click or prefers-color-scheme); results in `design/dark-check.json`
-- `make fix-dark` - send demos with no dark mode to NVIDIA to add a `[data-theme="dark"]` palette + toggle, then re-check
+- `make fix-dark` - NVIDIA (kimi-k3, gemma-4 fallback) writes `html[data-theme="dark"]` CSS for demos with no dark mode; the script injects it plus a standard toggle (`#pd-dark`, `#pd-theme-init`, `#pd-theme-toggle`) and verifies in Playwright before saving
+- `make redo-dark` - same, but also re-does pages already patched; `node scripts/fix-dark.mjs --reinject` refreshes only the injected toggle script
 - `make brand` - render `public/og.png` (1200x630 share image), `apple-touch-icon.png` and `favicon.ico` from `public/favicon.svg`
 
 ## Structure

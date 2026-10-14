@@ -14,7 +14,7 @@ export function requireKey(tag) {
   process.exit(1);
 }
 
-async function callNvidia(system, model, userPrompt, maxTokens) {
+async function callNvidia(system, model, userPrompt, maxTokens, timeoutMs = TIMEOUT_MS) {
   const res = await fetch(NVIDIA_URL, {
     method: 'POST',
     headers: { Authorization: `Bearer ${NVIDIA_KEY}`, 'Content-Type': 'application/json' },
@@ -28,7 +28,7 @@ async function callNvidia(system, model, userPrompt, maxTokens) {
       temperature: 0.5,
       stream: true,
     }),
-    signal: AbortSignal.timeout(TIMEOUT_MS),
+    signal: AbortSignal.timeout(timeoutMs),
   });
   if (!res.ok) throw new Error(`NVHTTP ${res.status} ${(await res.text()).slice(0, 160)}`);
   const dec = new TextDecoder();
@@ -49,12 +49,12 @@ async function callNvidia(system, model, userPrompt, maxTokens) {
   return out.trim();
 }
 
-export async function callModel(system, userPrompt, accept = looksLikeHtml, maxTokens = 16000) {
+export async function callModel(system, userPrompt, accept = looksLikeHtml, maxTokens = 16000, models = MODELS, timeoutMs = TIMEOUT_MS) {
   let lastErr;
   for (let attempt = 1; attempt <= 6; attempt++) {
-    const model = MODELS[(attempt - 1) % MODELS.length];
+    const model = models[(attempt - 1) % models.length];
     try {
-      const out = cleanHtml(await callNvidia(system, model, userPrompt, maxTokens));
+      const out = cleanHtml(await callNvidia(system, model, userPrompt, maxTokens, timeoutMs));
       if (accept(out)) return out;
       throw new Error(`${model} weak output (len ${out.length})`);
     } catch (err) {

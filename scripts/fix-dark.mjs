@@ -2,13 +2,17 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { MODELS, callModel, requireKey } from './lib/nvidia.mjs';
+import { callModel, requireKey } from './lib/nvidia.mjs';
 import { createChecker, hash, launch } from './lib/darkcheck.mjs';
 
 const DEMO_DIR = path.resolve('design/demos');
 const CHECK_FILE = path.resolve('design/dark-check.json');
 const CONCURRENCY = Number(process.env.DEMO_CONCURRENCY ?? 6);
 const ROUNDS = 3;
+// Benchmarked on this task: kimi-k3 writes the most complete dark CSS; gemma-4 is a fast fallback. Nemotron spends its budget reasoning.
+const MODELS = (process.env.DARK_MODELS ?? 'moonshotai/kimi-k3,google/gemma-4-31b-it').split(',').map((m) => m.trim()).filter(Boolean);
+const TIMEOUT_MS = Number(process.env.DARK_TIMEOUT_MS ?? 600000);
+const REDO = process.argv.includes('--redo');
 const ONLY = process.env.DEMO_ONLY ? process.env.DEMO_ONLY.split(',').map((s) => s.trim()) : null;
 const THEME_SEL = '#theme-toggle,#themeToggle,.theme-toggle,[data-theme-toggle],button[aria-label*="theme" i],button[aria-label*="dark" i],button[aria-label*="light" i],button[aria-label*="mode" i]';
 
@@ -59,13 +63,23 @@ html[data-theme="dark"] .pd-theme-btn--float{background:#1b1c21;color:#ededf0;bo
 
 const INIT_JS = `(()=>{try{const s=localStorage.getItem('theme');document.documentElement.dataset.theme=s==='dark'||s==='light'?s:(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}catch{document.documentElement.dataset.theme='light'}})();`;
 
+// Runs after the page's own scripts: re-applies the stored theme (pages often keep their own key) and owns the toggle.
 const TOGGLE_JS = `(()=>{const r=document.documentElement,I=${JSON.stringify(ICONS)};
+let s=null;try{s=localStorage.getItem('theme')}catch{}
+r.dataset.theme=s==='dark'||s==='light'?s:(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
 let b=[...document.querySelectorAll(${JSON.stringify(THEME_SEL)})].find(e=>e.offsetParent!==null);
 const own=!b;
 if(own){b=document.createElement('button');b.type='button';b.className='pd-theme-btn';const h=document.querySelector('nav')||document.querySelector('header');h?h.appendChild(b):(b.classList.add('pd-theme-btn--float'),document.body.appendChild(b));}
-const sync=()=>{const d=r.dataset.theme==='dark';b.setAttribute('aria-pressed',String(d));b.setAttribute('aria-label',d?'Switch to light mode':'Switch to dark mode');if(own)b.innerHTML=d?I.sun:I.moon;};
+const sync=()=>{const d=r.dataset.theme==='dark';r.classList.toggle('dark',d);r.classList.toggle('light',!d);b.setAttribute('aria-pressed',String(d));b.setAttribute('aria-label',d?'Switch to light mode':'Switch to dark mode');
+if(own){b.innerHTML=d?I.sun:I.moon;return;}const g=b.querySelector('[class*="material-symbols"],[class*="material-icons"]');if(g)g.textContent=d?'light_mode':'dark_mode';else if(!b.querySelector('svg,img'))b.innerHTML=d?I.sun:I.moon;};
 b.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();r.dataset.theme=r.dataset.theme==='dark'?'light':'dark';try{localStorage.setItem('theme',r.dataset.theme)}catch{}sync();},true);
-sync();})();`;
+sync();addEventListener('load',sync);})();`;
+
+const strip = (html) =>
+  html
+    .replace(/<script id="pd-theme-init">[\s\S]*?<\/script>\n?/, '')
+    .replace(/<style id="pd-dark">[\s\S]*?<\/style>\n?/, '')
+    .replace(/<script id="pd-theme-toggle">[\s\S]*?<\/script>\n?/, '');
 
 function inject(html, css) {
   const head = `<script id="pd-theme-init">${INIT_JS}</script>\n<style id="pd-dark">\n${css}\n${KIT_CSS}\n</style>\n`;
@@ -74,10 +88,28 @@ function inject(html, css) {
   return /<\/body>/i.test(withHead) ? withHead.replace(/<\/body>(?![\s\S]*<\/body>)/i, `${body}</body>`) : withHead + body;
 }
 
+// --reinject: refresh the injected toggle script in already-patched pages (no model call).
+if (process.argv.includes('--reinject')) {
+  let n = 0;
+  for (const f of fs.readdirSync(DEMO_DIR).filter((f) => f.endsWith('.html'))) {
+    const file = path.join(DEMO_DIR, f);
+    const html = fs.readFileSync(file, 'utf8');
+    if (!/<script id="pd-theme-toggle">/.test(html)) continue;
+    fs.writeFileSync(file, html.replace(/<script id="pd-theme-toggle">[\s\S]*?<\/script>/, () => `<script id="pd-theme-toggle">${TOGGLE_JS}</script>`));
+    n++;
+  }
+  console.log(`[fix-dark] re-injected toggle script into ${n} pages`);
+  process.exit(0);
+}
+
 const ids = Object.entries(check)
-  .filter(([id, r]) => (ONLY ? ONLY.includes(id) : !r.dark))
-  .map(([id]) => id)
-  .filter((id) => fs.existsSync(path.join(DEMO_DIR, `${id}.html`)));
+  .filter(([id]) => fs.existsSync(path.join(DEMO_DIR, `${id}.html`)))
+  .filter(([id, r]) => {
+    if (ONLY) return ONLY.includes(id);
+    if (REDO && /id="pd-dark"/.test(fs.readFileSync(path.join(DEMO_DIR, `${id}.html`), 'utf8'))) return true;
+    return !r.dark;
+  })
+  .map(([id]) => id);
 if (process.env.DEMO_REVERSE === '1') ids.reverse();
 console.log(`[fix-dark] ${ids.length} pending, models=${MODELS.join('|')}, concurrency=${CONCURRENCY}`);
 if (!ids.length) process.exit(0);
@@ -89,17 +121,20 @@ let fail = 0;
 
 async function fix(id, checker) {
   const file = path.join(DEMO_DIR, `${id}.html`);
-  const html = fs.readFileSync(file, 'utf8');
-  if (/id="pd-dark"/.test(html)) return console.log(`skip  ${id} (already patched)`);
-  if (!ONLY && hash(html) !== check[id].src) return console.log(`skip  ${id} (changed since check)`);
+  const current = fs.readFileSync(file, 'utf8');
+  const patched = /id="pd-dark"/.test(current);
+  if (patched && !REDO && !ONLY) return console.log(`skip  ${id} (already patched)`);
+  if (!patched && !ONLY && hash(current) !== check[id].src) return console.log(`skip  ${id} (changed since check)`);
+  const html = strip(current);
   let hint = '';
   for (let round = 1; round <= ROUNDS; round++) {
-    const css = clean(await callModel(SYSTEM, task(html, hint), acceptCss, 8000));
+    const css = clean(await callModel(SYSTEM, task(html, hint), acceptCss, 12000, MODELS, TIMEOUT_MS));
     const out = inject(html, css);
     const probe = path.join(tmp, `${id}.html`);
     fs.writeFileSync(probe, out);
     const res = await checker.check(probe);
     if (res.dark && res.how === 'toggle') {
+      if (fs.readFileSync(file, 'utf8') !== current) return console.log(`skip  ${id} (changed during run)`);
       fs.writeFileSync(file, out);
       check[id] = { src: hash(out), ...res };
       return console.log(`ok    ${id} (round ${round}, +${Math.round(css.length / 1024)} KB css)`);

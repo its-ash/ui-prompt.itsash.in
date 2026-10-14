@@ -37,4 +37,8 @@ fix-dark: check-dark
 	node --env-file-if-exists=.env scripts/fix-dark.mjs
 	node scripts/check-dark.mjs
 
-.PHONY: run build docs deploy process categorize demos thumbs brand check-dark fix-dark
+redo-dark: check-dark
+	node --env-file-if-exists=.env scripts/fix-dark.mjs --redo
+	node scripts/check-dark.mjs
+
+.PHONY: run build docs deploy process categorize demos thumbs brand check-dark fix-dark redo-dark
