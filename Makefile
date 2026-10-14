@@ -24,13 +24,7 @@ categorize:
 demos:
 	node --env-file-if-exists=.env scripts/build-demos.mjs
 
-modes:
-	node scripts/detect-modes.mjs
-
-dark: modes
-	DEMO_VARIANT=dark node --env-file-if-exists=.env scripts/build-demos.mjs
-
 thumbs:
 	node scripts/build-thumbs.mjs
 
-.PHONY: run build docs deploy process categorize demos modes dark thumbs
+.PHONY: run build docs deploy process categorize demos thumbs

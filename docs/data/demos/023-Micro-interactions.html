@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pulse — Micro-interactions that feel alive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..600,0..1,0" rel="stylesheet">
+<style>
+@layer reset,tokens,base,components,utilities;
+@layer reset{*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}button,input{font:inherit;color:inherit;background:none;border:none}ul,ol{list-style:none}a{color:inherit;text-decoration:none}}
+@layer tokens{
+:root{color-scheme:light;
+--primary:#6366F1;--secondary:#14B8A6;--bg-primary:#f4f6fb;--bg-secondary:#fefefe;
+--text-primary:#1e2333;--text-secondary:#565f76;--text-success:#22C55E;--text-error:#EF4444;--text-warning:#F59E0B;
+--border-default:rgba(30,35,51,.12);--border-error:#EF4444;--border-success:#22C55E;
+--radius-sm:12px;--radius-md:18px;--radius-lg:26px;
+--shadow-sm:0 2px 8px rgba(30,35,51,.08);--shadow-md:0 8px 24px rgba(30,35,51,.10);
+--shadow-soft:0 4px 10px rgba(30,35,51,.06),0 14px 40px rgba(30,35,51,.10);
+--shadow-lifted:0 10px 18px rgba(30,35,51,.08),0 26px 60px rgba(30,35,51,.14);
+--spacing-gap:clamp(1rem,3vw,2rem);--transition-fast:80ms;--transition-normal:160ms;
+--ease-standard:cubic-bezier(.4,0,.2,1);--ease-spring:cubic-bezier(.34,1.56,.64,1);
+--z-header:90;--z-dropdown:100;--z-modal:200;--z-toast:300;
+--glass-bg:rgba(255,255,255,.62);--glass-border:rgba(255,255,255,.55);--glass-blur:18px;--glass-highlight:inset 0 1px 0 rgba(255,255,255,.5);
+--blob-a:rgba(99,102,241,.22);--blob-b:rgba(20,184,166,.18);--blob-c:rgba(244,114,182,.15);
+--font-base:'Inter',system-ui,sans-serif;--font-heading:'Space Grotesk',var(--font-base)}
+html.dark{color-scheme:dark;
+--bg-primary:#0b1020;--bg-secondary:#151b30;--text-primary:#eef1f8;--text-secondary:#a3adc4;--border-default:rgba(238,241,248,.14);
+--shadow-sm:0 2px 8px rgba(0,0,0,.4);--shadow-md:0 8px 24px rgba(0,0,0,.5);
+--shadow-soft:0 4px 10px rgba(0,0,0,.35),0 14px 40px rgba(0,0,0,.45);
+--shadow-lifted:0 10px 18px rgba(0,0,0,.4),0 26px 60px rgba(0,0,0,.55);
+--glass-bg:rgba(15,20,35,.6);--glass-border:rgba(255,255,255,.12);--glass-highlight:inset 0 1px 0 rgba(255,255,255,.07);
+--blob-a:rgba(99,102,241,.14);--blob-b:rgba(20,184,166,.10);--blob-c:rgba(244,114,182,.08)}
+@media(prefers-color-scheme:dark){:root:not(.light){color-scheme:dark;
+--bg-primary:#0b1020;--bg-secondary:#151b30;--text-primary:#eef1f8;--text-secondary:#a3adc4;--border-default:rgba(238,241,248,.14);
+--shadow-sm:0 2px 8px rgba(0,0,0,.4);--shadow-md:0 8px 24px rgba(0,0,0,.5);
+--shadow-soft:0 4px 10px rgba(0,0,0,.35),0 14px 40px rgba(0,0,0,.45);
+--shadow-lifted:0 10px 18px rgba(0,0,0,.4),0 26px 60px rgba(0,0,0,.55);
+--glass-bg:rgba(15,20,35,.6);--glass-border:rgba(255,255,255,.12);--glass-highlight:inset 0 1px 0 rgba(255,255,255,.07);
+--blob-a:rgba(99,102,241,.14);--blob-b:rgba(20,184,166,.10);--blob-c:rgba(244,114,182,.08)}}
+@supports not (backdrop-filter:blur(1px)){:root{--glass-bg:rgba(254,254,254,.92)}html.dark{--glass-bg:rgba(15,20,35,.92)}}
+}
+@layer base{
+html{scroll-behavior:smooth;scroll-padding-top:88px}
+body{font-family:var(--font-base);color:var(--text-primary);background:var(--bg-primary);line-height:1.55;min-height:100svh;overflow-x:hidden}
+h1,h2,h3{font-family:var(--font-heading);line-height:1.15}
+section{padding:clamp(3rem,7vw,5rem) var(--spacing-gap);max-width:1120px;margin-inline:auto}
+h2{font-size:clamp(1.6rem,3.5vw,2.3rem);text-align:center}
+.sec-sub{color:var(--text-secondary);text-align:center;max-width:58ch;margin:.6rem auto 2.4rem}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:4px}
+.ms{font-family:'Material Symbols Rounded';font-weight:400;font-style:normal;font-size:22px;line-height:1;letter-spacing:normal;display:inline-block;white-space:nowrap;-webkit-font-smoothing:antialiased;font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
+.ms--fill{font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24}
+.aurora{position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(45vmax 45vmax at 8% 6%,var(--blob-a),transparent 70%),radial-gradient(40vmax 40vmax at 94% 4%,var(--blob-b),transparent 70%),radial-gradient(48vmax 48vmax at 70% 94%,var(--blob-c),transparent 70%)}
+}
+@layer components{
+.glass{background:var(--glass-bg);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(160%);backdrop-filter:blur(var(--glass-blur)) saturate(160%);border:1px solid var(--glass-border);box-shadow:var(--shadow-soft),var(--glass-highlight)}
+/* header */
+.header{position:sticky;top:0;z-index:var(--z-header);display:flex;align-items:center;justify-content:space-between;gap:.8rem;padding:.65rem var(--spacing-gap);border-width:0 0 1px;transition:box-shadow 150ms var(--ease-standard),backdrop-filter 150ms}
+.header.is-scrolled{box-shadow:var(--shadow-md),var(--glass-highlight);-webkit-backdrop-filter:blur(26px) saturate(180%);backdrop-filter:blur(26px) saturate(180%)}
+.brand{display:flex;align-items:center;gap:.4rem;font-family:var(--font-heading);font-weight:700;font-size:1.15rem}
+.brand .ms{color:var(--primary)}
+.nav{display:none}
+.nav__link{position:relative;display:flex;align-items:center;min-height:44px;padding:.5rem .2rem;color:var(--text-secondary);font-weight:500;transition:color var(--transition-fast)}
+.nav__link::after{content:"";position:absolute;left:0;bottom:6px;height:2px;width:100%;transform:scaleX(0);transform-origin:left;background:var(--primary);transition:transform var(--transition-fast) var(--ease-standard)}
+.header__actions{display:flex;align-items:center;gap:.55rem}
+.theme-toggle{position:relative;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-sm);cursor:pointer}
+.theme-toggle .ms{position:absolute;transition:opacity 150ms var(--ease-standard),transform 150ms var(--ease-standard)}
+html:not(.dark) .tt-sun{opacity:0;transform:rotate(-90deg) scale(.5)}
+html.dark .tt-moon{opacity:0;transform:rotate(90deg) scale(.5)}
+.hamburger{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:44px;height:44px;border-radius:var(--radius-sm);cursor:pointer}
+.hamburger span{width:20px;height:2px;border-radius:2px;background:currentColor;transition:transform 150ms var(--ease-standard),opacity 150ms}
+.hamburger.is-open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.hamburger.is-open span:nth-child(2){opacity:0}
+.hamburger.is-open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.mobile-nav{position:absolute;top:100%;left:12px;right:12px;margin-top:8px;z-index:var(--z-dropdown);display:flex;flex-direction:column;align-items:center;gap:.2rem;padding:.7rem;border-radius:var(--radius-lg);opacity:0;visibility:hidden;transform:translateY(-8px);transition:opacity 150ms,transform 150ms,visibility 150ms}
+.mobile-nav.is-open{opacity:1;visibility:visible;transform:none}
+.mobile-nav a{display:flex;align-items:center;min-height:44px;width:100%;padding:.5rem .9rem;border-radius:var(--radius-sm);color:var(--text-primary);font-weight:500}
+@media(min-width:1024px){.nav{display:flex;align-items:center;gap:.4rem}.hamburger,.mobile-nav{display:none}}
+@media(max-width:520px){.header__cta{display:none}}
+/* buttons */
+.btn{position:relative;display:flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;min-width:44px;padding:.55rem 1.15rem;border-radius:var(--radius-md);border:1px solid transparent;font-weight:500;font-size:.95rem;cursor:pointer;transition:background var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast),border-color var(--transition-fast),transform var(--transition-fast) var(--ease-spring)}
+.btn:active{transform:scale(.97)}
+.btn[disabled]{opacity:.5;filter:grayscale(1);cursor:not-allowed;transform:none}
+.btn--primary{background:var(--primary);color:#fff;box-shadow:var(--shadow-sm)}
+.btn--ghost{background:var(--glass-bg);border-color:var(--glass-border);color:var(--text-primary)}
+.btn--danger{background:var(--text-error);color:#fff;box-shadow:var(--shadow-sm)}
+@media(hover:hover) and (pointer:fine){
+.nav__link:hover{color:var(--text-primary)}.nav__link:hover::after{transform:scaleX(1)}
+.btn--primary:hover{background:color-mix(in srgb,var(--primary),white 14%);box-shadow:var(--shadow-md)}
+.btn--ghost:hover{background:color-mix(in srgb,var(--primary),white 88%);border-color:color-mix(in srgb,var(--primary),white 55%)}
+.btn--danger:hover{background:color-mix(in srgb,var(--text-error),white 14%);box-shadow:var(--shadow-md)}
+.card:hover,.plan:hover{transform:translateY(-2px);box-shadow:var(--shadow-lifted),var(--glass-highlight)}
+.card:hover::after{opacity:1}
+.carousel__btn:hover,.toast__close:hover,.modal__close:hover,.social a:hover{background:color-mix(in srgb,var(--primary),transparent 86%);color:var(--primary)}
+.footer a:hover{color:var(--text-primary)}
+}
+.btn.is-loading{pointer-events:none}
+.btn.is-loading>*{opacity:0}
+.btn.is-loading::after{content:"";position:absolute;width:18px;height:18px;border-radius:50%;border:2px solid #fff;border-right-color:transparent;animation:spin .7s linear infinite}
+.btn--ghost.is-loading::after{border-color:var(--primary);border-right-color:transparent}
+.btn.is-success{pointer-events:none;border-color:var(--border-success)}
+.btn.is-success>*{opacity:0}
+.btn.is-success::after{content:"check_circle";position:absolute;font-family:'Material Symbols Rounded';font-size:22px;line-height:1;color:var(--text-success)}
+.btn.is-error{border-color:var(--border-error);animation:shake .3s var(--ease-standard)}
+@keyframes spin{to{transform:rotate(1turn)}}
+@keyframes shake{20%,60%{transform:translateX(-4px)}40%,80%{transform:translateX(4px)}}
+/* hero */
+.hero{display:flex;flex-direction:column;align-items:center;gap:2.2rem;text-align:center}
+.hero h1{font-size:clamp(2rem,5.4vw,3.3rem);letter-spacing:-.02em}
+.hero__sub{color:var(--text-secondary);font-size:clamp(1rem,2vw,1.15rem);margin-top:1rem;max-width:54ch}
+.hero__cta{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:.8rem;margin-top:1.6rem}
+.trust{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:.6rem;margin-top:1.6rem}
+.chip{display:flex;align-items:center;gap:.4rem;padding:.45rem .85rem;border-radius:999px;font-size:.85rem;font-weight:500;color:var(--text-secondary)}
+.chip .ms{font-size:17px;color:var(--primary)}
+@media(min-width:1024px){.hero{flex-direction:row;text-align:left;gap:3rem}.hero__copy{flex:1}.hero__cta,.trust{justify-content:flex-start}.demo{flex:0 0 370px}}
+/* playground */
+.demo{display:flex;flex-direction:column;align-items:center;gap:.85rem;padding:1.4rem;border-radius:var(--radius-lg)}
+.demo__title{font-family:var(--font-heading);font-weight:600;font-size:.95rem;color:var(--text-secondary)}
+.demo__row{display:flex;align-items:center;justify-content:space-between;gap:.8rem;width:100%;padding:.65rem .9rem;border:1px solid var(--glass-border);border-radius:var(--radius-md);background:color-mix(in srgb,var(--bg-secondary),transparent 40%)}
+.demo__label{font-weight:500;font-size:.92rem}
+.switch{position:relative;display:flex;align-items:center;min-height:44px;cursor:pointer}
+.switch input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;margin:0}
+.switch__track{position:relative;width:48px;height:28px;border-radius:999px;background:color-mix(in srgb,var(--text-primary),transparent 82%);transition:background var(--transition-normal) var(--ease-standard)}
+.switch__knob{position:absolute;top:4px;left:4px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:var(--shadow-sm);transition:transform var(--transition-normal) var(--ease-spring)}
+.switch input:checked+.switch__track{background:var(--primary)}
+.switch input:checked+.switch__track .switch__knob{transform:translateX(20px)}
+.switch input:focus-visible+.switch__track{outline:2px solid var(--primary);outline-offset:2px}
+.heart{display:flex;align-items:center;justify-content:center;gap:.4rem;min-height:44px;padding:.4rem .9rem;border-radius:var(--radius-md);border:1px solid var(--glass-border);background:var(--glass-bg);font-weight:600;cursor:pointer;transition:transform var(--transition-fast) var(--ease-spring),background var(--transition-fast),border-color var(--transition-fast)}
+.heart:active{transform:scale(.94)}
+.heart .ms{color:var(--text-secondary);transition:color var(--transition-fast)}
+.heart.is-liked{background:color-mix(in srgb,var(--text-error),transparent 90%);border-color:color-mix(in srgb,var(--text-error),transparent 55%)}
+.heart.is-liked .ms{color:var(--text-error)}
+.heart.pop .ms{animation:pop .25s var(--ease-spring)}
+@keyframes pop{50%{transform:scale(1.35)}}
+/* grids, cards, steps */
+.grid{display:grid;gap:var(--spacing-gap);grid-template-columns:1fr}
+@media(min-width:640px){.grid{grid-template-columns:repeat(3,1fr)}}
+.card{position:relative;display:flex;flex-direction:column;align-items:center;gap:.55rem;text-align:center;padding:1.7rem 1.3rem;border-radius:var(--radius-lg);overflow:hidden;transition:transform 100ms var(--ease-standard),box-shadow 100ms}
+.card::after{content:"";position:absolute;inset:0;border-radius:inherit;opacity:0;pointer-events:none;transition:opacity var(--transition-normal);background:radial-gradient(180px circle at var(--mx,50%) var(--my,50%),color-mix(in srgb,var(--primary),transparent 86%),transparent 70%)}
+.card:focus-within{border-color:var(--primary)}
+.card__icon{display:flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:var(--radius-sm);background:color-mix(in srgb,var(--primary),transparent 86%);color:var(--primary)}
+.card h3{font-size:1.12rem}
+.card p{color:var(--text-secondary);font-size:.94rem}
+.steps{position:relative;display:grid;gap:1.6rem;grid-template-columns:1fr}
+@media(min-width:1024px){.steps{grid-template-columns:repeat(3,1fr)}.steps::before{content:"";position:absolute;top:27px;left:16%;right:16%;border-top:2px dashed var(--border-default)}}
+.step{display:flex;flex-direction:column;align-items:center;gap:.6rem;text-align:center}
+.step__num{display:flex;align-items:center;justify-content:center;position:relative;width:56px;height:56px;border-radius:50%;background:var(--bg-secondary);border:1px solid var(--glass-border);box-shadow:var(--shadow-soft);font-family:var(--font-heading);font-weight:700;font-size:1.25rem;color:var(--primary)}
+.step h3{font-size:1.05rem}
+.step p{color:var(--text-secondary);font-size:.92rem}
+/* pricing */
+.billing{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:.9rem;margin:1.4rem 0 2.4rem}
+.billing__toggle{position:relative;display:flex;align-items:center;padding:4px;border-radius:999px;background:var(--glass-bg);border:1px solid var(--glass-border)}
+.billing__thumb{position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);border-radius:999px;background:var(--primary);transition:transform 100ms var(--ease-standard)}
+.billing__toggle.is-annual .billing__thumb{transform:translateX(100%)}
+.billing__btn{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;flex:1;gap:.35rem;min-height:40px;padding:.4rem 1.05rem;border-radius:999px;font-weight:600;font-size:.88rem;color:var(--text-secondary);cursor:pointer;white-space:nowrap;transition:color 100ms}
+.billing__btn[aria-pressed="true"]{color:#fff}
+.save-badge{display:inline-flex;align-items:center;gap:.25rem;padding:.14rem .5rem;border-radius:999px;background:color-mix(in srgb,var(--text-warning),transparent 82%);color:color-mix(in srgb,var(--text-warning),black 48%);font-size:.7rem;font-weight:600}
+.save-badge .ms{font-size:13px}
+.plans{display:grid;gap:var(--spacing-gap);grid-template-columns:1fr;align-items:stretch /* exception: equal-height plan columns */}
+@media(min-width:640px){.plans{grid-template-columns:repeat(3,1fr)}}
+.plan{position:relative;display:flex;flex-direction:column;align-items:center;gap:.55rem;text-align:center;padding:1.9rem 1.3rem 1.5rem;border-radius:var(--radius-lg);transition:transform 100ms var(--ease-standard),box-shadow 100ms}
+.plan--featured{border-color:color-mix(in srgb,var(--primary),transparent 45%);box-shadow:var(--shadow-lifted),var(--glass-highlight)}
+.plan__badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:.3rem;padding:.28rem .8rem;border-radius:999px;background:var(--primary);color:#fff;font-size:.75rem;font-weight:600;white-space:nowrap}
+.plan__tag{color:var(--text-secondary);font-size:.85rem;font-weight:500}
+.plan__price{display:flex;align-items:baseline;gap:.25rem;font-family:var(--font-heading);font-weight:700;font-size:2.4rem}
+.plan__price small{font-family:var(--font-base);font-weight:500;font-size:.85rem;color:var(--text-secondary)}
+.price__num.swap{animation:priceIn .22s var(--ease-standard)}
+@keyframes priceIn{from{opacity:0;transform:translateY(6px)}}
+.plan ul{display:flex;flex-direction:column;align-items:center;gap:.45rem;margin:.5rem 0 1rem;color:var(--text-secondary);font-size:.9rem}
+.plan li{display:flex;align-items:center;gap:.4rem}
+.plan li .ms{font-size:18px;color:var(--text-success)}
+.plan .btn{margin-top:auto}
+/* carousel */
+.carousel{max-width:760px;margin-inline:auto}
+.carousel__viewport{overflow:hidden;border-radius:var(--radius-lg);touch-action:pan-y}
+.carousel__track{display:flex;transition:transform var(--transition-normal) var(--ease-standard)}
+.slide{flex:0 0 100%;display:flex;align-items:center;justify-content:center;padding:1.1rem}
+.quote{display:flex;flex-direction:column;align-items:center;gap:.7rem;text-align:center;padding:1.6rem 1.3rem}
+.quote__avatar{display:flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;font-weight:600}
+.quote__avatar--a{background:color-mix(in srgb,var(--primary),transparent 80%);color:var(--primary)}
+.quote__avatar--b{background:color-mix(in srgb,var(--secondary),transparent 78%);color:color-mix(in srgb,var(--secondary),black 35%)}
+.stars{display:flex;align-items:center;gap:2px;color:var(--text-warning)}
+.stars .ms{font-size:18px}
+.quote p{font-size:1rem;max-width:44ch}
+.quote cite{font-style:normal;font-weight:600}
+.quote__role{color:var(--text-secondary);font-size:.85rem}
+.carousel__nav{display:flex;align-items:center;justify-content:center;gap:.9rem;margin-top:1.2rem}
+.carousel__btn{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;background:var(--glass-bg);border:1px solid var(--glass-border);color:var(--text-primary);cursor:pointer;transition:background var(--transition-fast),color var(--transition-fast)}
+.dots{display:flex;align-items:center;gap:.15rem}
+.dot{display:flex;align-items:center;justify-content:center;width:44px;height:44px;cursor:pointer}
+.dot::after{content:"";width:9px;height:9px;border-radius:999px;background:color-mix(in srgb,var(--text-primary),transparent 70%);transition:width 100ms,background 100ms}
+.dot[aria-current="true"]::after{width:22px;background:var(--primary)}
+/* faq */
+.faq{display:flex;flex-direction:column;align-items:stretch /* exception: stretch keeps rows full-width */;gap:.8rem;max-width:720px;margin-inline:auto}
+details{border-radius:var(--radius-md)}
+summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:44px;padding:.85rem 1.2rem;font-weight:600;cursor:pointer;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary .ms{color:var(--text-secondary);transition:transform 100ms var(--ease-standard)}
+details[open] summary .ms{transform:rotate(90deg)}
+details[open]{border-color:color-mix(in srgb,var(--primary),transparent 55%)}
+.faq__body{padding:.1rem 1.2rem 1rem;color:var(--text-secondary);font-size:.94rem}
+/* cta + form */
+.cta-band{display:flex;flex-direction:column;align-items:center;gap:.9rem;text-align:center;padding:clamp(2rem,5vw,3.2rem);border-radius:var(--radius-lg)}
+.input-group{display:flex;flex-direction:column;align-items:stretch /* exception: full-width field and button */;gap:.55rem;width:min(100%,440px)}
+.input-group label{font-weight:600;font-size:.9rem;text-align:left}
+.field{position:relative;display:flex}
+.field input{flex:1;min-height:48px;width:100%;padding:.65rem 2.8rem .65rem 1rem;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);transition:border-color var(--transition-fast),box-shadow var(--transition-fast)}
+.field input:focus-visible{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary),transparent 78%)}
+.field input::placeholder{color:color-mix(in srgb,var(--text-secondary),transparent 30%)}
+.fg-ok,.fg-err{position:absolute;right:.9rem;top:50%;transform:translateY(-50%);font-size:20px;opacity:0;pointer-events:none;transition:opacity var(--transition-fast)}
+.input-group.is-valid .fg-ok{opacity:1;color:var(--text-success)}
+.input-group.is-valid input{border-color:var(--border-success)}
+.input-group.is-invalid .fg-err{opacity:1;color:var(--text-error)}
+.input-group.is-invalid input{border-color:var(--border-error)}
+.input-group.is-shaking .field{animation:shake .3s}
+.input-group__error{min-height:1.2em;font-size:.85rem;font-weight:500;color:var(--text-error);text-align:left}
+.microcopy{display:flex;align-items:center;justify-content:center;gap:.35rem;font-size:.82rem;color:var(--text-secondary)}
+.microcopy .ms{font-size:15px}
+/* toasts */
+.toasts{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.5rem;z-index:var(--z-toast);width:min(92vw,420px);pointer-events:none}
+.toast{pointer-events:auto;display:flex;align-items:center;gap:.55rem;width:100%;padding:.55rem .55rem .55rem 1rem;border-radius:var(--radius-md);opacity:0;transform:translateY(10px);transition:opacity 150ms,transform 150ms var(--ease-standard)}
+.toast.is-in{opacity:1;transform:none}
+.toast>.ms{color:var(--text-success)}
+.toast--error>.ms{color:var(--text-error)}
+.toast--info>.ms{color:var(--primary)}
+.toast p{flex:1;font-size:.9rem;font-weight:500;text-align:left}
+.toast__close{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-sm);color:var(--text-secondary);cursor:pointer;transition:background var(--transition-fast)}
+/* modal */
+.modal{position:fixed;inset:0;z-index:var(--z-modal);display:flex;align-items:center;justify-content:center;padding:1rem;background:rgba(8,10,20,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:0;visibility:hidden;transition:opacity 120ms var(--ease-standard),visibility 120ms}
+.modal.is-open{opacity:1;visibility:visible}
+.modal__panel{display:flex;flex-direction:column;align-items:center;gap:.6rem;position:relative;width:100%;max-width:400px;padding:2.1rem 1.5rem 1.6rem;text-align:center;border-radius:var(--radius-lg);transform:scale(.96);transition:transform 120ms var(--ease-standard)}
+.modal.is-open .modal__panel{transform:scale(1)}
+.modal__close{position:absolute;top:8px;right:8px;display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-sm);color:var(--text-secondary);cursor:pointer;transition:background var(--transition-fast)}
+.modal__icon{font-size:34px;color:var(--primary)}
+.modal__panel p{color:var(--text-secondary);font-size:.94rem}
+.modal__actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:.7rem;margin-top:.8rem}
+body.no-scroll{overflow:hidden}
+/* footer */
+.footer{display:grid;gap:1.6rem;grid-template-columns:1fr;max-width:1120px;margin:0 auto;padding:2.4rem var(--spacing-gap);border-top:1px solid var(--border-default);color:var(--text-secondary);font-size:.9rem}
+@media(min-width:640px){.footer{grid-template-columns:2fr 1fr 1fr 1fr}}
+.footer__brand{display:flex;flex-direction:column;align-items:center;gap:.7rem;text-align:center}
+.footer__brand .brand{justify-content:center}
+.footer__tag{font-size:.85rem;max-width:28ch}
+.social{display:flex;align-items:center;gap:.2rem}
+.social a{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;color:var(--text-secondary);transition:background var(--transition-fast),color var(--transition-fast)}
+.footer h3{font-size:.95rem;margin-bottom:.35rem;color:var(--text-primary)}
+.footer li a,.footer p a{display:flex;align-items:center;min-height:44px;padding:.35rem 0;transition:color var(--transition-fast)}
+.footer small{grid-column:1/-1;text-align:center;padding-top:.6rem;border-top:1px solid var(--border-default)}
+}
+@layer utilities{
+.d1{--i:1}.d2{--i:2}.d3{--i:3}
+.reveal{opacity:0;transform:translateY(12px);transition:opacity 260ms var(--ease-standard),transform 260ms var(--ease-standard);transition-delay:calc(var(--i,0)*50ms)}
+.reveal.is-visible{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){
+html{scroll-behavior:auto}
+*,*::before,*::after{animation:none!important;transition:none!important}
+.reveal{opacity:1;transform:none}
+}
+}
+</style>
+</head>
+<body>
+<div class="aurora" aria-hidden="true"></div>
+<header class="header glass" id="siteHeader">
+  <a class="brand" href="#top"><span class="ms" aria-hidden="true">bolt</span>Pulse</a>
+  <nav class="nav" aria-label="Primary">
+    <a class="nav__link" href="#features">Features</a>
+    <a class="nav__link" href="#how">How it works</a>
+    <a class="nav__link" href="#pricing">Pricing</a>
+    <a class="nav__link" href="#faq">FAQ</a>
+  </nav>
+  <div class="header__actions">
+    <button class="theme-toggle glass" id="themeToggle" type="button" aria-pressed="false" aria-label="Switch to dark mode"><span class="ms tt-moon" aria-hidden="true">dark_mode</span><span class="ms tt-sun" aria-hidden="true">light_mode</span></button>
+    <a class="btn btn--primary header__cta" href="#pricing">Get started</a>
+    <button class="hamburger" id="menuBtn" type="button" aria-expanded="false" aria-controls="mobileNav" aria-label="Open menu"><span></span><span></span><span></span></button>
+  </div>
+  <nav class="mobile-nav glass" id="mobileNav" aria-label="Mobile">
+    <a href="#features">Features</a><a href="#how">How it works</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a>
+  </nav>
+</header>
+<main id="top">
+  <section class="hero">
+    <div class="hero__copy">
+      <h1 class="reveal">Micro-interactions that make your UI feel alive.</h1>
+      <p class="hero__sub reveal d1">Pulse is a tiny toolkit of tactile buttons, toggles, gestures and state transitions — press, swipe and ship in an afternoon.</p>
+      <div class="hero__cta reveal d2">
+        <button class="btn btn--primary" type="button" data-plan="Starter"><span class="ms" aria-hidden="true">rocket_launch</span><span>Get started free</span></button>
+        <a class="btn btn--ghost" href="#features"><span class="ms" aria-hidden="true">play_circle</span>See it in action</a>
+      </div>
+      <ul class="trust reveal d3">
+        <li class="chip glass"><span class="ms" aria-hidden="true">bolt</span>50ms feedback</li>
+        <li class="chip glass"><span class="ms" aria-hidden="true">touch_app</span>Gesture-ready</li>
+        <li class="chip glass"><span class="ms" aria-hidden="true">speed</span>4 KB runtime</li>
+      </ul>
+    </div>
+    <div class="demo glass reveal d2">
+      <p class="demo__title">Live playground — press, toggle, like</p>
+      <button class="btn btn--primary" id="demoBtn" type="button"><span class="ms" aria-hidden="true">bolt</span><span>Send signal</span></button>
+      <div class="demo__row">
+        <span class="demo__label" id="hapticLabel">Haptic feedback</span>
+        <label class="switch"><input type="checkbox" id="hapticSwitch" checked aria-labelledby="hapticLabel"><span class="switch__track"><span class="switch__knob"></span></span></label>
+      </div>
+      <div class="demo__row">
+        <span class="demo__label">Love the demo?</span>
+        <button class="heart" id="heartBtn" type="button" aria-pressed="false" aria-label="Like this demo"><span class="ms" aria-hidden="true">favorite</span><b id="likeCount">128</b></button>
+      </div>
+    </div>
+  </section>
+  <section id="features" aria-labelledby="featuresTitle">
+    <h2 id="featuresTitle">Built for the last 100 milliseconds</h2>
+    <p class="sec-sub">Everything below is live on this very page — every card, chip and button demonstrates the toolkit it sells.</p>
+    <div class="grid">
+      <article class="card glass reveal"><span class="card__icon"><span class="ms" aria-hidden="true">bolt</span></span><h3>50ms Feedback Engine</h3><p>Every press answers in under 100ms with spring-eased motion tuned to feel physical, never decorative.</p></article>
+      <article class="card glass reveal d1"><span class="card__icon"><span class="ms" aria-hidden="true">gesture</span></span><h3>Gesture Support Built In</h3><p>Swipes, long-presses and drag thresholds ship ready — without hijacking native scroll or pinch-zoom.</p></article>
+      <article class="card glass reveal d2"><span class="card__icon"><span class="ms" aria-hidden="true">touch_app</span></span><h3>Tactile State System</h3><p>Loading, success and error states come standard with icons, haptics and motion that respect accessibility.</p></article>
+    </div>
+  </section>
+  <section id="how" aria-labelledby="howTitle">
+    <h2 id="howTitle">How it works</h2>
+    <p class="sec-sub">From install to shipped interaction in three steps — no design degree required.</p>
+    <ol class="steps">
+      <li class="step reveal"><span class="step__num">1</span><h3>Install the runtime</h3><p>Drop in a 4 KB script or import only the components you need. Zero dependencies, zero config.</p></li>
+      <li class="step reveal d1"><span class="step__num">2</span><h3>Compose interactions</h3><p>Chain hover, press, loading and success states declaratively, with timing tokens already tuned.</p></li>
+      <li class="step reveal d2"><span class="step__num">3</span><h3>Ship with confidence</h3><p>Reduced-motion, focus rings and AA contrast are handled for you — in both light and dark themes.</p></li>
+    </ol>
+  </section>
+  <section id="pricing" aria-labelledby="pricingTitle">
+    <h2 id="pricingTitle">Simple pricing, tactile details</h2>
+    <p class="sec-sub">Start free. Upgrade when your interface demands more pop.</p>
+    <div class="billing reveal">
+      <div class="billing__toggle" id="billingToggle">
+        <span class="billing__thumb" aria-hidden="true"></span>
+        <button class="billing__btn" type="button" aria-pressed="true">Monthly</button>
+        <button class="billing__btn" type="button" aria-pressed="false">Annual<span class="save-badge"><span class="ms" aria-hidden="true">sell</span>Save 20%</span></button>
+      </div>
+    </div>
+    <div class="plans">
+      <article class="plan glass reveal"><h3>Starter</h3><p class="plan__tag">For weekend prototypes</p><p class="plan__price">$<span class="price__num" data-m="0" data-a="0">0</span><small>/mo</small></p><ul><li><span class="ms" aria-hidden="true">check_circle</span>3 interaction presets</li><li><span class="ms" aria-hidden="true">check_circle</span>Light &amp; dark themes</li><li><span class="ms" aria-hidden="true">check_circle</span>Community support</li></ul><button class="btn btn--ghost" type="button" data-plan="Starter">Start free</button></article>
+      <article class="plan plan--featured glass reveal d1"><span class="plan__badge"><span class="ms" aria-hidden="true">star</span>Most popular</span><h3>Pro</h3><p class="plan__tag">For shipping solo</p><p class="plan__price">$<span class="price__num" data-m="12" data-a="9.60">12</span><small>/mo</small></p><ul><li><span class="ms" aria-hidden="true">check_circle</span>All presets + gesture kit</li><li><span class="ms" aria-hidden="true">check_circle</span>Haptics &amp; motion tokens</li><li><span class="ms" aria-hidden="true">check_circle</span>Priority email support</li></ul><button class="btn btn--primary" type="button" data-plan="Pro">Choose Pro</button></article>
+      <article class="plan glass reveal d2"><h3>Team</h3><p class="plan__tag">For product squads</p><p class="plan__price">$<span class="price__num" data-m="29" data-a="23.20">29</span><small>/mo</small></p><ul><li><span class="ms" aria-hidden="true">check_circle</span>Shared preset library</li><li><span class="ms" aria-hidden="true">check_circle</span>Roles &amp; audit log</li><li><span class="ms" aria-hidden="true">check_circle</span>SLA-backed support</li></ul><button class="btn btn--ghost" type="button" data-plan="Team">Start with Team</button></article>
+    </div>
+  </section>
+  <section id="testimonials" aria-labelledby="testimonialsTitle">
+    <h2 id="testimonialsTitle">Loved by interface obsessives</h2>
+    <p class="sec-sub">Swipe, tap the arrows, or just wait — the carousel is a Pulse component too.</p>
+    <div class="carousel reveal" aria-roledescription="carousel" aria-label="Testimonials">
+      <div class="carousel__viewport glass" id="carouselVp">
+        <div class="carousel__track" id="track">
+          <div class="slide" role="group" aria-roledescription="slide" aria-label="1 of 2">
+            <blockquote class="quote"><span class="quote__avatar quote__avatar--a" aria-hidden="true">MC</span><span class="stars" role="img" aria-label="Rated 5 out of 5"><span class="ms ms--fill" aria-hidden="true">star</span><span class="ms ms--fill" aria-hidden="true">star</span><span class="ms ms--fill" aria-hidden="true">star</span><span class="ms ms--fill" aria-hidden="true">star</span><span class="ms ms--fill" aria-hidden="true">star</span></span><p>“Our activation rate jumped 18% after moving to Pulse. The press states alone make the product feel expensive.”</p><cite>Maya Chen</cite><span class="quote__role">Head of Product, Loop</span></blockquote>
+          </div>
+          <div class="slide" role="group" aria-roledescription="slide" aria-label="2 of 2">
+            <blockquote class="quote"><span class="quote__avatar quote__avatar--b" aria-hidden="true">RO</span><span class="stars" role="img" aria-label="Rated 5 out of 5"><span class="ms ms--fill" aria-hidden="true">star</span><span class="ms ms--fill" aria-hidden="true">star</span><span class="ms ms--fill" aria-hidden="true">star</span><span class="ms ms--fill" aria-hidden="true">star</span><span class="ms ms--fill" aria-hidden="true">star</span></span><p>“I wired gestures into our checkout in one afternoon. It felt like the framework was reading my mind.”</p><cite>Rafael Ortiz</cite><span class="quote__role">Frontend Engineer, Northwind</span></blockquote>
+          </div>
+        </div>
+      </div>
+      <div class="carousel__nav">
+        <button class="carousel__btn" id="prevBtn" type="button" aria-label="Previous testimonial"><span class="ms" aria-hidden="true">arrow_back</span></button>
+        <div class="dots">
+          <button class="dot" type="button" aria-label="Show testimonial 1" aria-current="true"></button>
+          <button class="dot" type="button" aria-label="Show testimonial 2" aria-current="false"></button>
+        </div>
+        <button class="carousel__btn" id="nextBtn" type="button" aria-label="Next testimonial"><span class="ms" aria-hidden="true">arrow_forward</span></button>
+      </div>
+    </div>
+  </section>
+  <section id="faq" aria-labelledby="faqTitle">
+    <h2 id="faqTitle">Frequently asked questions</h2>
+    <p class="sec-sub">The short answers — our docs cover the long ones.</p>
+    <div class="faq">
+      <details class="glass"><summary>Does Pulse work with my stack?<span class="ms" aria-hidden="true">expand_more</span></summary><div class="faq__body">Yes. Pulse ships as framework-agnostic web components plus optional wrappers for React, Vue and Svelte. If it runs in a browser, it runs Pulse.</div></details>
+      <details class="glass"><summary>Will micro-animations slow my app down?<span class="ms" aria-hidden="true">expand_more</span></summary><div class="faq__body">No. Every interaction runs on GPU-friendly transforms inside a strict 100ms budget, and our CLI audits your bundle for timing violations before you ship.</div></details>
+      <details class="glass"><summary>Can I try Pro before paying?<span class="ms" aria-hidden="true">expand_more</span></summary><div class="faq__body">Every workspace starts with a 14-day Pro trial — no credit card required. When it ends, you keep everything you built on the free Starter plan.</div></details>
+    </div>
+  </section>
+  <section id="cta" aria-labelledby="ctaTitle">
+    <div class="cta-band glass reveal">
+      <h2 id="ctaTitle">Make every click feel intentional.</h2>
+      <p class="sec-sub">Join 4,200 designers and engineers on the early-access list.</p>
+      <form class="input-group" id="waitForm" novalidate>
+        <label for="email">Work email</label>
+        <span class="field" id="waitField">
+          <input type="email" id="email" name="email" placeholder="ada@pulse.dev" autocomplete="email" required>
+          <span class="ms fg-ok" aria-hidden="true">check_circle</span>
+          <span class="ms fg-err" aria-hidden="true">error</span>
+        </span>
+        <button class="btn btn--primary" id="waitBtn" type="submit"><span class="ms" aria-hidden="true">send</span><span>Join waitlist</span></button>
+        <p class="input-group__error" id="emailErr" aria-live="polite"></p>
+      </form>
+      <p class="microcopy"><span class="ms" aria-hidden="true">lock</span>No spam — one launch email, unsubscribe anytime.</p>
+    </div>
+  </section>
+</main>
+<footer class="footer">
+  <div class="footer__brand">
+    <span class="brand"><span class="ms" aria-hidden="true">bolt</span>Pulse</span>
+    <p class="footer__tag">Micro-interactions for teams that sweat the last 100ms.</p>
+    <div class="social">
+      <a href="#" aria-label="Email us"><span class="ms" aria-hidden="true">alternate_email</span></a>
+      <a href="#" aria-label="Community forum"><span class="ms" aria-hidden="true">forum</span></a>
+      <a href="#" aria-label="RSS feed"><span class="ms" aria-hidden="true">rss_feed</span></a>
+    </div>
+  </div>
+  <nav aria-label="Product"><h3>Product</h3><ul><li><a href="#features">Features</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#">Changelog</a></li></ul></nav>
+  <nav aria-label="Company"><h3>Company</h3><ul><li><a href="#">About</a></li><li><a href="#">Careers</a></li><li><a href="#">Contact</a></li></ul></nav>
+  <nav aria-label="Resources"><h3>Resources</h3><ul><li><a href="#">Docs</a></li><li><a href="#">Blog</a></li><li><a href="#">Community</a></li></ul></nav>
+  <small>© 2026 Pulse Labs, Inc. Crafted with care in 50ms intervals.</small>
+</footer>
+<div class="modal" id="planModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal__panel glass">
+    <button class="modal__close" id="modalClose" type="button" aria-label="Close dialog"><span class="ms" aria-hidden="true">close</span></button>
+    <span class="ms modal__icon" aria-hidden="true">rocket_launch</span>
+    <h3 id="modalTitle">Start with Pro</h3>
+    <p id="modalDesc">A 14-day Pro trial starts the moment you confirm.</p>
+    <div class="modal__actions">
+      <button class="btn btn--ghost" type="button" data-dismiss>Cancel</button>
+      <button class="btn btn--primary" id="modalConfirm" type="button"><span class="ms" aria-hidden="true">check_circle</span><span>Confirm</span></button>
+    </div>
+  </div>
+</div>
+<div class="toasts" id="toasts"></div>
+<script>
+(()=>{'use strict';
+const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
+const root=document.documentElement,mq=matchMedia('(prefers-color-scheme:dark)');
+const coarse=()=>matchMedia('(pointer:coarse)').matches;
+const reduced=matchMedia('(prefers-reduced-motion:reduce)').matches;
+const vib=()=>{if(coarse()&&'vibrate'in navigator)navigator.vibrate(8)};
+/* theme: follow OS first, persist choice, no flash */
+const saved=localStorage.getItem('pulse-theme');
+root.classList.add(saved==='light'||saved==='dark'?saved:(mq.matches?'dark':'light'));
+const tBtn=$('#themeToggle');
+const syncTheme=()=>{const d=root.classList.contains('dark');tBtn.setAttribute('aria-pressed',String(d));tBtn.setAttribute('aria-label',d?'Switch to light mode':'Switch to dark mode')};
+tBtn.addEventListener('click',()=>{vib();root.classList.toggle('dark');root.classList.toggle('light');localStorage.setItem('pulse-theme',root.classList.contains('dark')?'dark':'light');syncTheme()});
+syncTheme();
+/* header + mobile menu */
+const header=$('#siteHeader');
+addEventListener('scroll',()=>header.classList.toggle('is-scrolled',scrollY>10),{passive:true});
+const menuBtn=$('#menuBtn'),mNav=$('#mobileNav');
+const setMenu=o=>{menuBtn.setAttribute('aria-expanded',String(o));menuBtn.setAttribute('aria-label',o?'Close menu':'Open menu');menuBtn.classList.toggle('is-open',o);mNav.classList.toggle('is-open',o)};
+menuBtn.addEventListener('click',()=>{vib();setMenu(!mNav.classList.contains('is-open'))});
+$$('#mobileNav a').forEach(a=>a.addEventListener('click',()=>setMenu(false)));
+/* toasts */
+const toasts=$('#toasts');
+function toast(msg,icon='check_circle',tone='success'){
+  const t=document.createElement('div');t.className='toast glass';t.setAttribute('role','status');
+  t.innerHTML=`<span class="ms" aria-hidden="true">${icon}</span><p>${msg}</p><button class="toast__close" type="button" aria-label="Dismiss notification"><span class="ms" aria-hidden="true">close</span></button>`;
+  if(tone==='error')t.classList.add('toast--error');if(tone==='info')t.classList.add('toast--info');
+  toasts.append(t);requestAnimationFrame(()=>t.classList.add('is-in'));
+  let done=false;const kill=()=>{if(done)return;done=true;t.classList.remove('is-in');setTimeout(()=>t.remove(),200)};
+  t.querySelector('.toast__close').addEventListener('click',kill);setTimeout(kill,3000);
+}
+/* playground */
+const demoBtn=$('#demoBtn');
+demoBtn.addEventListener('click',()=>{
+  if(demoBtn.classList.contains('is-loading')||demoBtn.classList.contains('is-success'))return;
+  vib();demoBtn.classList.add('is-loading');demoBtn.setAttribute('aria-busy','true');
+  setTimeout(()=>{demoBtn.classList.remove('is-loading');demoBtn.classList.add('is-success');demoBtn.setAttribute('aria-busy','false');
+    toast('Signal delivered in 46ms','bolt','info');setTimeout(()=>demoBtn.classList.remove('is-success'),1200)},900);
+});
+$('#hapticSwitch').addEventListener('change',e=>{vib();toast(e.target.checked?'Haptics on — try a button':'Haptics off','vibration','info')});
+const hb=$('#heartBtn'),lc=$('#likeCount');let likes=128,liked=false;
+hb.addEventListener('click',()=>{vib();liked=!liked;likes+=liked?1:-1;lc.textContent=likes;
+  hb.classList.toggle('is-liked',liked);hb.setAttribute('aria-pressed',String(liked));
+  hb.classList.remove('pop');void hb.offsetWidth;hb.classList.add('pop')});
+/* pointer-follow highlight (fine pointers, motion allowed) */
+if(matchMedia('(hover:hover) and (pointer:fine)').matches&&!reduced)
+  $$('.card,.plan').forEach(c=>c.addEventListener('pointermove',e=>{
+    const r=c.getBoundingClientRect();c.style.setProperty('--mx',(e.clientX-r.left)+'px');c.style.setProperty('--my',(e.clientY-r.top)+'px')}));
+/* scroll reveal */
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('is-visible');io.unobserve(e.target)}}),{threshold:.15});
+$$('.reveal').forEach(el=>io.observe(el));
+/* billing toggle */
+const billBtns=$$('.billing__btn'),bill=$('#billingToggle');
+function setAnnual(a){bill.classList.toggle('is-annual',a);
+  billBtns.forEach((b,i)=>b.setAttribute('aria-pressed',String((i===1)===a)));
+  $$('.price__num').forEach(p=>{p.textContent=a?p.dataset.a:p.dataset.m;p.classList.remove('swap');void p.offsetWidth;p.classList.add('swap')})}
+billBtns[0].addEventListener('click',()=>setAnnual(false));
+billBtns[1].addEventListener('click',()=>{vib();setAnnual(true)});
+/* modal */
+const modal=$('#planModal'),mTitle=$('#modalTitle'),mDesc=$('#modalDesc'),mConfirm=$('#modalConfirm');
+let lastFocus=null;
+function openModal(plan){lastFocus=document.activeElement;mTitle.textContent=`Start with ${plan}`;
+  mDesc.textContent=plan==='Starter'?'You are one click from a free Pulse workspace. No credit card, no limits for 14 days.':plan==='Team'?'The Team plan adds shared libraries, roles and SLA support. We will email you a tailored quote.':'A 14-day Pro trial starts the moment you confirm. Cancel anytime.';
+  modal.classList.add('is-open');document.body.classList.add('no-scroll');mConfirm.focus()}
+function closeModal(){modal.classList.remove('is-open');document.body.classList.remove('no-scroll');if(lastFocus)lastFocus.focus()}
+$$('[data-plan]').forEach(b=>b.addEventListener('click',()=>{vib();openModal(b.dataset.plan)}));
+$('#modalClose').addEventListener('click',closeModal);
+$$('#planModal [data-dismiss]').forEach(b=>b.addEventListener('click',closeModal));
+modal.addEventListener('click',e=>{if(e.target===modal)closeModal()});
+mConfirm.addEventListener('click',()=>{
+  if(mConfirm.classList.contains('is-loading')||mConfirm.classList.contains('is-success'))return;
+  mConfirm.classList.add('is-loading');mConfirm.setAttribute('aria-busy','true');
+  setTimeout(()=>{mConfirm.classList.remove('is-loading');mConfirm.classList.add('is-success');
+    toast('Workspace created — welcome to Pulse','check_circle');
+    setTimeout(closeModal,1200);setTimeout(()=>{mConfirm.classList.remove('is-success');mConfirm.setAttribute('aria-busy','false')},1300)},900)});
+addEventListener('keydown',e=>{
+  if(!modal.classList.contains('is-open'))return;
+  if(e.key==='Escape'){closeModal();setMenu(false)}
+  if(e.key==='Tab'){const f=$$('#planModal button').filter(b=>b.offsetParent);
+    const first=f[0],last=f[f.length-1];
+    if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}
+    else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}}});
+/* carousel */
+const track=$('#track'),slides=$$('.slide'),dots=$$('.dot'),vp=$('#carouselVp');
+let cur=0,timer=null;
+function go(i,user){cur=(i+slides.length)%slides.length;
+  track.style.transform=`translateX(-${cur*100}%)`;
+  dots.forEach((d,j)=>d.setAttribute('aria-current',String(j===cur)));
+  if(user)vib()}
+$('#prevBtn').addEventListener('click',()=>go(cur-1,true));
+$('#nextBtn').addEventListener('click',()=>go(cur+1,true));
+dots.forEach((d,i)=>d.addEventListener('click',()=>go(i,true)));
+let sx=0,sy=0,swiping=false;
+vp.addEventListener('pointerdown',e=>{sx=e.clientX;sy=e.clientY;swiping=true});
+vp.addEventListener('pointerup',e=>{if(!swiping)return;swiping=false;
+  const dx=e.clientX-sx,dy=e.clientY-sy;
+  if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy))go(cur+(dx<0?1:-1),true)});
+const stopAuto=()=>clearInterval(timer);
+const startAuto=()=>{stopAuto();if(!reduced)timer=setInterval(()=>go(cur+1),6000)};
+vp.addEventListener('mouseenter',stopAuto);vp.addEventListener('mouseleave',startAuto);
+vp.addEventListener('focusin',stopAuto);vp.addEventListener('focusout',startAuto);
+startAuto();
+/* waitlist form */
+const form=$('#waitForm'),email=$('#email'),grp=$('#waitForm'),err=$('#emailErr'),field=$('#waitField'),btn=$('#waitBtn');
+const emOK=v=>/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim());
+function showErr(msg){err.textContent=msg;grp.classList.add('is-invalid');grp.classList.remove('is-valid');
+  field.classList.remove('is-shaking');void field.offsetWidth;field.classList.add('is-shaking')}
+const clearErr=()=>{err.textContent='';grp.classList.remove('is-invalid')};
+email.addEventListener('blur',()=>{const v=email.value.trim();
+  if(!v){clearErr();grp.classList.remove('is-valid');return}
+  if(emOK(v)){grp.classList.add('is-valid');clearErr()}
+  else showErr("That email doesn't look right — try name@company.com")});
+email.addEventListener('input',()=>{if(grp.classList.contains('is-invalid')&&emOK(email.value))clearErr()});
+form.addEventListener('submit',e=>{e.preventDefault();
+  if(btn.classList.contains('is-loading')||btn.classList.contains('is-success'))return;
+  const v=email.value.trim();
+  if(!v){showErr('Email is required to join the waitlist');email.focus();return}
+  if(!emOK(v)){showErr('Enter a valid email address, e.g. ada@pulse.dev');email.focus();return}
+  clearErr();grp.classList.add('is-valid');vib();
+  btn.classList.add('is-loading');btn.setAttribute('aria-busy','true');
+  setTimeout(()=>{btn.classList.remove('is-loading');btn.classList.add('is-success');
+    toast('You are on the list — confirmation sent','mark_email_read');
+    setTimeout(()=>{btn.classList.remove('is-success');btn.setAttribute('aria-busy','false');email.value='';grp.classList.remove('is-valid')},1400)},1000)});
+})();
+</script>
+</body>
+</html>

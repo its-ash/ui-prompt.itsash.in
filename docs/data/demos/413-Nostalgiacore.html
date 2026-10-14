@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Nimbus keeps your faded photos, timestamps and all, in albums that feel like the shoebox under your bed.">
+<title>Nimbus — Remember it like it was yesterday</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cabin:wght@400;600;700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0}
+:root{color-scheme:light;
+--bg-primary:#e8dcc8;--bg-secondary:#f2e9d8;--field:#fefefe;
+--text-primary:#4a3d2c;--text-secondary:#7a6a52;--text-success:#4e6b3f;--text-error:#a03b2a;
+--border-default:#b8a37e;--border-error:#a03b2a;--border-success:#5d7a4a;
+--primary:#c17a4e;--primary-strong:#a95f33;--accent:#8a9a6b;--stamp:#d96f1e;
+--radius-sm:6px;--radius-md:14px;--radius-lg:22px;--radius-pill:999px;
+--shadow-sm:0 1px 3px rgba(58,42,22,.16);--shadow-md:0 8px 22px rgba(58,42,22,.22);--shadow-lg:0 18px 44px rgba(58,42,22,.28);
+--font-sans:'Cabin',system-ui,sans-serif;--font-mono:'Courier Prime',monospace;--timestamp-font:'Courier Prime',monospace;
+--text-xl:clamp(2.1rem,5.5vw,3.3rem);--text-lg:clamp(1.45rem,3vw,2rem);--text-sm:.92rem;--text-xs:.78rem;
+--space-2:.75rem;--space-3:1.5rem;--space-4:2.5rem;--space-5:clamp(3rem,7vw,4.5rem);--spacing-gap:1.4rem;
+--ease:cubic-bezier(.22,.61,.36,1);--transition-fast:150ms var(--ease);--transition-normal:320ms var(--ease);
+--z-dropdown:10;--z-modal:100;--z-toast:120;
+--photo-vignette:radial-gradient(ellipse at 50% 38%,transparent 55%,rgba(74,49,21,.15) 100%);
+--grain-overlay:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.36 0 0 0 0 0.22 0 0 0 0.06 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E")}
+:root.dark{color-scheme:dark;--bg-primary:#2b241a;--bg-secondary:#3a3125;--field:#241d14;--text-primary:#e8dcc8;--text-secondary:#b8a37e;--text-success:#a3b584;--text-error:#f0836a;--border-default:#5c4d35;--border-error:#f0836a;--border-success:#a3b584;--primary-strong:#d18f5f;--stamp:#f0954a;--shadow-sm:0 1px 3px rgba(0,0,0,.5);--shadow-md:0 8px 22px rgba(0,0,0,.55);--shadow-lg:0 18px 44px rgba(0,0,0,.65);--photo-vignette:radial-gradient(ellipse at 50% 38%,transparent 52%,rgba(0,0,0,.42) 100%)}
+@media (prefers-color-scheme:dark){:root:not(.light){color-scheme:dark;--bg-primary:#2b241a;--bg-secondary:#3a3125;--field:#241d14;--text-primary:#e8dcc8;--text-secondary:#b8a37e;--text-success:#a3b584;--text-error:#f0836a;--border-default:#5c4d35;--border-error:#f0836a;--border-success:#a3b584;--primary-strong:#d18f5f;--stamp:#f0954a;--shadow-sm:0 1px 3px rgba(0,0,0,.5);--shadow-md:0 8px 22px rgba(0,0,0,.55);--shadow-lg:0 18px 44px rgba(0,0,0,.65);--photo-vignette:radial-gradient(ellipse at 50% 38%,transparent 52%,rgba(0,0,0,.42) 100%)}}
+html{scroll-behavior:smooth}html,body{overflow-x:clip}
+body{font-family:var(--font-sans);background:var(--bg-primary);color:var(--text-primary);line-height:1.6}
+body::after{content:"";position:fixed;inset:0;background:var(--grain-overlay);pointer-events:none;z-index:2000}
+[hidden]{display:none!important}
+::selection{background:var(--primary);color:#fff8ec}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:2px}
+.container{width:min(1100px,100% - 2.5rem);margin-inline:auto}
+section[id]{scroll-margin-top:4.6rem}
+.skip{position:absolute;left:-999px;top:.5rem;padding:.6rem 1rem;background:var(--primary);color:#fff8ec;border-radius:var(--radius-sm);z-index:3000;font-weight:700;text-decoration:none}
+.skip:focus{left:.5rem}
+.material-symbols-rounded{font-size:24px;line-height:1;flex:none}
+[data-stamp]{position:relative}
+[data-stamp]::after{content:attr(data-stamp);position:absolute;top:.7rem;right:1rem;font-family:var(--timestamp-font);font-weight:700;font-size:var(--text-xs);letter-spacing:.12em;text-transform:uppercase;color:var(--stamp)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;min-width:44px;padding:.55rem 1.4rem;border:1px solid transparent;border-radius:var(--radius-pill);font:600 1rem var(--font-sans);color:var(--text-primary);background:transparent;text-decoration:none;cursor:pointer;transition:var(--transition-fast)}
+.btn--primary{background:var(--primary);color:#fff8ec;font-weight:700}
+.btn--primary:hover{background:var(--primary-strong);box-shadow:var(--shadow-md)}
+.btn--ghost{border-color:var(--border-default);background:var(--bg-secondary)}
+.btn--ghost:hover{border-color:var(--primary);color:var(--primary)}
+.btn--danger{background:var(--text-error);color:#fff8ec;font-weight:700}
+.btn--danger:hover{filter:brightness(1.1);box-shadow:var(--shadow-md)}
+.btn--ok{background:var(--accent);color:#fff8ec;font-weight:700}
+.btn:active{transform:scale(.97)}
+.btn[disabled],.btn[aria-disabled="true"]{opacity:.5;filter:grayscale(.8);cursor:not-allowed;transform:none}
+.btn--loading{pointer-events:none}
+.btn--loading .material-symbols-rounded{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.skeleton{border-radius:var(--radius-sm);background:linear-gradient(100deg,rgba(128,110,80,.12) 30%,rgba(128,110,80,.22) 50%,rgba(128,110,80,.12) 70%);background-size:200% 100%;animation:shimmer 1.2s infinite}
+@keyframes shimmer{to{background-position:-200% 0}}
+.site-header{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--bg-primary) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--border-default)}
+.nav{display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-2);padding-block:.65rem}
+.nav__brand{display:inline-flex;align-items:center;gap:.45rem;font-size:1.15rem;font-weight:700;color:var(--text-primary);text-decoration:none;letter-spacing:.02em}
+.nav__brand .material-symbols-rounded{color:var(--primary)}
+.nav__links{display:flex;align-items:center;flex-wrap:wrap;gap:1.1rem;margin-left:auto}
+.nav__links a{display:inline-flex;align-items:center;min-height:44px;color:var(--text-secondary);font-weight:600;text-decoration:none;transition:color var(--transition-fast)}
+.nav__links a:hover{color:var(--primary)}
+.nav__toggle{padding:.5rem;border-radius:50%}
+.hero{padding-block:var(--space-5)}
+.hero__album{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:var(--spacing-gap);max-width:780px;margin-inline:auto;padding:clamp(2.4rem,6vw,4.2rem) clamp(1.5rem,5vw,3.5rem);background:var(--bg-secondary);background-image:var(--photo-vignette);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);outline:2px dashed var(--border-default);outline-offset:-14px}
+.hero__album::before{content:"";position:absolute;top:-13px;left:50%;width:120px;height:28px;background:rgba(222,206,170,.65);border:1px solid rgba(122,96,60,.25);transform:translateX(-50%) rotate(-2.5deg)}
+.hero__album[data-stamp]::after{top:auto;bottom:1.1rem;right:1.4rem;font-size:.95rem;text-shadow:0 0 10px rgba(217,111,30,.5)}
+.hero__album h1{font-size:var(--text-xl);font-weight:700;line-height:1.15;letter-spacing:-.01em}
+.hero__sub{max-width:52ch;color:var(--text-secondary);font-size:1.1rem}
+.hero__cta{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:.8rem}
+.section{padding-block:var(--space-5)}
+.section__head{position:relative;display:flex;flex-direction:column;align-items:center;gap:.4rem;max-width:640px;margin:0 auto var(--space-4);padding-top:1.4rem;text-align:center}
+.section__head h2{font-size:var(--text-lg);font-weight:700}
+.section__sub{color:var(--text-secondary)}
+.cards{display:flex;align-items:stretch;flex-wrap:wrap;gap:var(--spacing-gap)}
+.card{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:.65rem;flex:1 1 260px;padding:2.3rem 1.4rem 1.5rem;background:var(--bg-secondary);background-image:var(--photo-vignette);border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);transition:var(--transition-normal)}
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.card:focus-within{border-color:var(--primary);box-shadow:var(--shadow-md)}
+.card__icon{display:flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:50%;background:var(--bg-primary);border:1px solid var(--border-default);color:var(--primary)}
+.card h3{font-size:1.2rem;font-weight:700}
+.card p{color:var(--text-secondary);font-size:var(--text-sm)}
+.steps{display:flex;align-items:stretch;flex-wrap:wrap;gap:var(--spacing-gap);list-style:none;padding:0}
+.step{display:flex;flex-direction:column;align-items:flex-start;gap:.5rem;flex:1 1 260px;padding:1.5rem;border:1px dashed var(--border-default);border-radius:var(--radius-md)}
+.step__num{font-family:var(--timestamp-font);font-weight:700;font-size:1.5rem;color:var(--stamp)}
+.step h3{font-size:1.1rem}
+.step p{color:var(--text-secondary);font-size:var(--text-sm)}
+.tiers{display:flex;align-items:stretch;flex-wrap:wrap;gap:var(--spacing-gap)}
+.tier{flex:1 1 250px}
+.tier--featured{border:2px solid var(--accent);box-shadow:var(--shadow-lg);transform:translateY(-4px)}
+.tier--featured:hover{transform:translateY(-6px)}
+.tier__tag{font-family:var(--timestamp-font);font-size:var(--text-xs);letter-spacing:.1em;color:var(--text-secondary)}
+.tier__price{font-family:var(--timestamp-font);font-weight:700;font-size:2rem;color:var(--primary)}
+.tier__price span{font-size:1rem;color:var(--text-secondary)}
+.tier ul{display:flex;flex-direction:column;gap:.45rem;list-style:none;padding:0;margin-bottom:1rem}
+.tier li{display:flex;align-items:center;gap:.6rem;font-size:var(--text-sm)}
+.tier li::before{content:"";width:7px;height:7px;background:var(--accent);border-radius:50%;flex:none}
+.tier .btn{width:100%;margin-top:auto}
+.quotes{display:flex;align-items:stretch;flex-wrap:wrap;gap:var(--spacing-gap)}
+.quote{flex:1 1 300px;font-style:italic}
+.quote blockquote{font-family:var(--timestamp-font);line-height:1.65}
+.quote figcaption{margin-top:.6rem;font-family:var(--timestamp-font);font-size:var(--text-sm);color:var(--text-secondary);font-style:normal}
+.faq{display:flex;flex-direction:column;align-items:center;gap:.8rem;max-width:720px;margin-inline:auto}
+.faq__item{width:100%;background:var(--bg-secondary);background-image:var(--photo-vignette);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:0 1.2rem}
+.faq__q{display:flex;align-items:center;gap:.8rem;min-height:44px;padding-block:.85rem;font-weight:700;cursor:pointer;list-style:none}
+.faq__q::-webkit-details-marker{display:none}
+.faq__q .material-symbols-rounded{margin-left:auto;color:var(--stamp);transition:transform var(--transition-fast)}
+.faq__item[open] .faq__q .material-symbols-rounded{transform:rotate(180deg)}
+.faq__a{padding-bottom:1.2rem;color:var(--text-primary);font-size:var(--text-sm)}
+.cta-band{background:var(--bg-secondary);background-image:var(--photo-vignette);border-block:1px solid var(--border-default);padding-block:var(--space-5)}
+.cta__inner{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:var(--spacing-gap)}
+.cta__inner h2{font-size:var(--text-lg)}
+.cta__inner>p{color:var(--text-secondary);max-width:52ch}
+.nl{display:flex;flex-direction:column;align-items:center;gap:.6rem;width:100%;max-width:500px}
+.nl__label{font-family:var(--timestamp-font);font-size:var(--text-xs);letter-spacing:.14em;text-transform:uppercase;color:var(--text-secondary)}
+.nl__row{display:flex;align-items:center;flex-wrap:wrap;gap:.7rem;width:100%}
+.input{flex:1 1 220px;min-height:44px;padding:.5rem 1rem;font:inherit;color:var(--text-primary);background:var(--field);border:1.5px solid var(--border-default);border-radius:var(--radius-sm);transition:var(--transition-fast)}
+.input::placeholder{color:var(--text-secondary)}
+.input:focus{outline:2px solid var(--primary);outline-offset:1px}
+.input--valid{border-color:var(--border-success)}
+.input--invalid{border-color:var(--border-error)}
+.input[disabled]{opacity:.6}
+.msg{display:flex;align-items:center;gap:.45rem;font-size:var(--text-sm);font-weight:600}
+.msg .material-symbols-rounded{font-size:20px}
+.msg--error{color:var(--text-error)}
+.msg--ok{color:var(--text-success)}
+.site-footer{padding-block:var(--space-4);border-top:1px solid var(--border-default)}
+.footer__inner{display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-2)}
+.footer__brand{font-weight:700}
+.footer__links{display:flex;align-items:center;flex-wrap:wrap;gap:1.2rem;margin-left:auto;list-style:none;padding:0}
+.footer__links a{display:inline-flex;align-items:center;min-height:44px;color:var(--text-secondary);text-decoration:none;font-weight:600}
+.footer__links a:hover{color:var(--primary)}
+.footer__copy{width:100%;margin-top:.4rem;font-family:var(--timestamp-font);font-size:var(--text-xs);letter-spacing:.08em;color:var(--text-secondary)}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.card:hover,.tier--featured,.tier--featured:hover{transform:none}html{scroll-behavior:auto}}
+</style>
+<script>
+(function(){var s=localStorage.getItem('nimbus-theme'),d=s?s==='dark':matchMedia('(prefers-color-scheme: dark)').matches;document.documentElement.classList.add(d?'dark':'light');})();
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <nav class="nav container" aria-label="Primary">
+    <a class="nav__brand" href="#top"><span class="material-symbols-rounded" aria-hidden="true">photo_album</span>Nimbus</a>
+    <div class="nav__links">
+      <a href="#features">Features</a><a href="#how">How it works</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a>
+    </div>
+    <button class="btn btn--ghost nav__toggle" id="themeToggle" type="button" aria-pressed="false" aria-label="Switch to dark mode"><span class="material-symbols-rounded" aria-hidden="true">dark_mode</span></button>
+  </nav>
+</header>
+<main id="main">
+  <section class="hero" id="top">
+    <div class="container">
+      <div class="hero__album" data-stamp="07 24 '03">
+        <h1>Keep your summers somewhere warm.</h1>
+        <p class="hero__sub">Nimbus gathers shoebox prints — orange date stamps and all — into albums that feel like the afternoon you took them.</p>
+        <div class="hero__cta">
+          <a class="btn btn--primary" href="#pricing">Start your album<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+          <a class="btn btn--ghost" href="#how">See how it works</a>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="section" id="features">
+    <div class="container">
+      <div class="section__head" data-stamp="PAGE 01">
+        <h2>Features made for remembering</h2>
+        <p class="section__sub">Small touches that keep old photos feeling like old photos.</p>
+      </div>
+      <div class="cards">
+        <article class="card" data-stamp="'00 SUMMER">
+          <span class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">schedule</span></span>
+          <h3>Timestamps that stay</h3>
+          <p>Nimbus reads the little orange digits your camera printed and keeps them crisp — right where they always were.</p>
+        </article>
+        <article class="card" data-stamp="AUG 2003">
+          <span class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">collections_bookmark</span></span>
+          <h3>Shoebox sorting</h3>
+          <p>Drag prints into albums that hold together like a rainy afternoon and a roll of clear tape.</p>
+        </article>
+        <article class="card" data-stamp="MAY 1999">
+          <span class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">cloud_done</span></span>
+          <h3>Fade-proof keeping</h3>
+          <p>Every scan is archived losslessly, so the colours fade exactly as much as you remember them.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+  <section class="section" id="how">
+    <div class="container">
+      <div class="section__head" data-stamp="PAGE 02">
+        <h2>How it works</h2>
+        <p class="section__sub">Three small steps between the shoebox and the living-room floor.</p>
+      </div>
+      <ol class="steps">
+        <li class="step"><span class="step__num">01</span><h3>Dig out the shoebox</h3><p>Scan your prints with any phone camera, or upload the files you already have.</p></li>
+        <li class="step"><span class="step__num">02</span><h3>Let Nimbus read the dates</h3><p>We detect each timestamp stamp and re-render it clearly — warm orange glow included.</p></li>
+        <li class="step"><span class="step__num">03</span><h3>Share the album</h3><p>Invite family to add captions, names, and the stories only they still remember.</p></li>
+      </ol>
+    </div>
+  </section>
+  <section class="section" id="pricing">
+    <div class="container">
+      <div class="section__head" data-stamp="PAGE 03">
+        <h2>Pricing, priced like a fair print shop</h2>
+        <p class="section__sub">Every plan keeps your originals. Cancel anytime; memories included.</p>
+      </div>
+      <div class="tiers">
+        <article class="card tier" data-stamp="STARTER">
+          <p class="tier__tag">For the first shoebox</p>
+          <h3>Print</h3><p class="tier__price">Free</p>
+          <ul><li>200 photos</li><li>3 albums</li><li>Auto timestamps</li></ul>
+          <a class="btn btn--ghost" href="#cta">Start free</a>
+        </article>
+        <article class="card tier tier--featured" data-stamp="MOST LOVED">
+          <p class="tier__tag">For every summer since</p>
+          <h3>Album</h3><p class="tier__price">$6<span>/mo</span></p>
+          <ul><li>Unlimited photos</li><li>Shared family albums</li><li>Fade-proof backups</li><li>Caption invitations</li></ul>
+          <a class="btn btn--primary" href="#cta">Choose Album</a>
+        </article>
+        <article class="card tier" data-stamp="ARCHIVE">
+          <p class="tier__tag">For the whole attic</p>
+          <h3>Archive</h3><p class="tier__price">$14<span>/mo</span></p>
+          <ul><li>Everything in Album</li><li>4K archival scans</li><li>Restoration touch-ups</li><li>Priority help</li></ul>
+          <a class="btn btn--ghost" href="#cta">Go Archive</a>
+        </article>
+      </div>
+    </div>
+  </section>
+  <section class="section" id="stories">
+    <div class="container">
+      <div class="section__head" data-stamp="PAGE 04">
+        <h2>From other people's shoeboxes</h2>
+        <p class="section__sub">Faded captions, kept exactly as written.</p>
+      </div>
+      <div class="quotes">
+        <figure class="card quote" data-stamp="SUMMER '02">
+          <blockquote>“I found a photo of my grandmother's kitchen I hadn't seen since I was nine. The date stamp was still there, glowing orange, like it had been waiting for me.”</blockquote>
+          <figcaption>— Maren T., family archivist, Portland</figcaption>
+        </figure>
+        <figure class="card quote" data-stamp="SPRING '04">
+          <blockquote>“It doesn't feel like an app. It feels like sitting on the living-room floor with the album everyone fights over.”</blockquote>
+          <figcaption>— Dev P., film photographer, Austin</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+  <section class="section" id="faq">
+    <div class="container">
+      <div class="section__head" data-stamp="PAGE 05">
+        <h2>Questions, answered like a caption on the back</h2>
+      </div>
+      <div class="faq">
+        <details class="faq__item">
+          <summary class="faq__q">Will my original date stamps survive the scan?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__a">Yes. Nimbus detects camera-printed timestamps and re-renders them clearly in the same warm orange — without painting over the grain of the original print.</p>
+        </details>
+        <details class="faq__item">
+          <summary class="faq__q">Can family members help fill in names and places?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__a">Every shared album lets invited people add captions, tag relatives and correct dates, so the memories get sharper together.</p>
+        </details>
+        <details class="faq__item">
+          <summary class="faq__q">What happens to my photos if I cancel?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__a">You can export everything at any time, in full quality — originals included. Your memories are yours; we just keep them warm.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+  <section class="cta-band" id="cta">
+    <div class="container cta__inner" data-stamp="TODAY">
+      <h2>Start an album this evening.</h2>
+      <p>Drop in your email and we'll send the starter kit — scanning tips, caption prompts, and your first shared album.</p>
+      <form class="nl" id="nlForm" novalidate>
+        <label class="nl__label" for="nlEmail">Your email address</label>
+        <div class="nl__row">
+          <input class="input" id="nlEmail" name="email" type="email" placeholder="you@example.com" autocomplete="email" required>
+          <button class="btn btn--primary" type="submit" id="nlBtn">Get the kit<span class="material-symbols-rounded" aria-hidden="true">mail</span></button>
+        </div>
+        <p class="msg msg--error" id="nlErr" aria-live="polite" hidden><span class="material-symbols-rounded" aria-hidden="true">error</span>That address doesn't look right — mind checking it?</p>
+        <p class="msg msg--ok" id="nlOk" aria-live="polite" hidden><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>You're on the list — the starter kit is on its way.</p>
+      </form>
+    </div>
+  </section>
+</main>
+<footer class="site-footer">
+  <div class="container footer__inner">
+    <p class="footer__brand">Nimbus — remember it like it was yesterday.</p>
+    <ul class="footer__links">
+      <li><a href="#features">Features</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#faq">FAQ</a></li><li><a href="#top">Back to top</a></li>
+    </ul>
+    <p class="footer__copy">© 2026 Nimbus Photo Co. All summers reserved.</p>
+  </div>
+</footer>
+<script>
+(function(){
+var root=document.documentElement,btn=document.getElementById('themeToggle'),ic=btn.querySelector('.material-symbols-rounded');
+function sync(){var d=root.classList.contains('dark');btn.setAttribute('aria-pressed',String(d));btn.setAttribute('aria-label',d?'Switch to light mode':'Switch to dark mode');ic.textContent=d?'light_mode':'dark_mode';}
+btn.addEventListener('click',function(){var d=!root.classList.contains('dark');root.classList.toggle('dark',d);root.classList.toggle('light',!d);try{localStorage.setItem('nimbus-theme',d?'dark':'light')}catch(e){}sync();});
+sync();
+var f=document.getElementById('nlForm'),em=document.getElementById('nlEmail'),er=document.getElementById('nlErr'),ok=document.getElementById('nlOk'),sb=document.getElementById('nlBtn'),sbhtml=sb.innerHTML;
+f.addEventListener('submit',function(e){e.preventDefault();var v=em.value.trim(),good=/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(v);em.classList.toggle('input--valid',good);em.classList.toggle('input--invalid',!good);em.setAttribute('aria-invalid',String(!good));er.hidden=!good||v===''?false:good;er.hidden=good;ok.hidden=!good;if(good){sb.classList.add('btn--ok');sb.innerHTML='<span class="material-symbols-rounded" aria-hidden="true">check</span>Sent';}});
+em.addEventListener('input',function(){em.classList.remove('input--invalid');er.hidden=true;if(!ok.hidden){ok.hidden=true;em.classList.remove('input--valid');sb.classList.remove('btn--ok');sb.innerHTML=sbhtml;}});
+})();
+</script>
+</body>
+</html>

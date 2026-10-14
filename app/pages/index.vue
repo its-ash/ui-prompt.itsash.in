@@ -161,8 +161,8 @@ useHead({ title: 'PromptDeck - UI Theme Prompt Library' });
 
 .pg__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  gap: 0.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 0.875rem;
 }
 
 /* statuses */

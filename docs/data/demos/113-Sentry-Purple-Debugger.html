@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Traceback — Error Monitoring for Modern Teams</title>
+<meta name="description" content="Traceback captures every exception the moment it's thrown, groups errors by root cause, and alerts the right engineer before users notice.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Rubik:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet">
+<style>
+@layer tokens,base,layout,components,utilities;
+@layer tokens{
+:root{--primary:#6a5fc1;--secondary:#79628c;--accent:#c2ef4e;--accent-ink:#1f1633;--bg-primary:#150f23;--bg-secondary:#1f1633;--bg-tertiary:#2a1e47;--text-primary:#fff;--text-secondary:#b3a5cc;--text-success:#c2ef4e;--text-error:#fa7faa;--text-warning:#ffb287;--border-default:rgba(122,98,140,.35);--border-error:rgba(250,127,170,.6);--border-success:rgba(194,239,78,.6);--font-base:'Rubik',system-ui,sans-serif;--font-display:'Space Grotesk','Rubik',sans-serif;--font-mono:'JetBrains Mono',ui-monospace,monospace;--radius-sm:8px;--radius-md:12px;--radius-lg:13px;--shadow-sm:0 2px 8px rgba(0,0,0,.25);--shadow-md:0 8px 24px rgba(0,0,0,.35);--shadow-inset:rgba(0,0,0,.1) 0 1px 3px 0 inset;--glow-ambient:rgba(22,15,36,.9) 0 4px 4px 9px;--glow-accent:0 0 24px rgba(194,239,78,.3);--spacing-gap:1.5rem;--transition-fast:150ms;--transition-normal:300ms;--ease-standard:cubic-bezier(.4,0,.2,1);--z-header:100;--z-dropdown:200;--z-modal:300;--z-toast:400}
+[data-theme="light"]{--bg-primary:#f4f1fa;--bg-secondary:#fefefe;--bg-tertiary:#ece6f6;--text-primary:#1f1633;--text-secondary:#5b4b73;--text-success:#5f7a1a;--text-error:#d94f7e;--border-default:rgba(31,22,51,.15);--shadow-sm:0 2px 8px rgba(31,22,51,.08);--shadow-md:0 8px 24px rgba(31,22,51,.12);--glow-ambient:rgba(106,95,193,.28) 0 4px 4px 9px}
+}
+@layer base{
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:88px;overflow-x:clip}
+body{font:400 16px/1.6 var(--font-base);background:var(--bg-primary);color:var(--text-primary);overflow-x:clip}
+body::before{content:"";position:fixed;inset:0;z-index:-1;background-image:radial-gradient(rgba(179,165,204,.04) 1px,transparent 1px);background-size:26px 26px;pointer-events:none}
+h1,h2,h3{font-family:var(--font-display);line-height:1.12;font-weight:700}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+ul,ol{list-style:none}
+::selection{background:var(--accent);color:var(--accent-ink)}
+::placeholder{color:var(--text-secondary);opacity:.7}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+[data-theme="light"] :focus-visible{outline-color:var(--text-success)}
+.material-symbols-outlined{font-size:1.25rem;line-height:1;user-select:none}
+}
+@layer layout{
+.container{max-width:1200px;margin-inline:auto;padding-inline:1.5rem}
+.section{padding-block:clamp(3rem,7vw,4.5rem)}
+.section__head{max-width:46rem;margin:0 auto 2.75rem;text-align:center}
+.section__title{font-size:clamp(1.9rem,3.5vw,2.6rem);margin-top:.6rem}
+.section__intro{color:var(--text-secondary);margin-top:.75rem}
+.row{display:flex;flex-wrap:wrap;gap:var(--spacing-gap);align-items:center}
+}
+@layer components{
+/* header */
+.header{position:sticky;top:0;z-index:var(--z-header);background:color-mix(in srgb,var(--bg-primary) 72%,transparent);backdrop-filter:blur(18px) saturate(180%);-webkit-backdrop-filter:blur(18px) saturate(180%);border-bottom:1px solid transparent;transition:border-color var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard)}
+.header.is-scrolled{border-color:var(--border-default);box-shadow:var(--shadow-md)}
+.header__inner{display:flex;align-items:center;gap:1.25rem;min-height:72px}
+.logo{display:flex;align-items:center;gap:.5rem;font-family:var(--font-display);font-weight:700;font-size:1.3rem}
+.logo .material-symbols-outlined{color:var(--accent)}
+.nav{margin-left:auto}
+.nav__list{display:flex;gap:1.75rem}
+.nav__link{font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.2px;color:var(--text-secondary);transition:color var(--transition-fast) var(--ease-standard)}
+.nav__link:hover,.nav__link:focus-visible{color:var(--text-primary)}
+.header__actions{display:flex;align-items:center;gap:.75rem}
+.icon-btn{display:flex;width:44px;height:44px;align-items:center;justify-content:center;border:1px solid var(--border-default);border-radius:var(--radius-sm);box-shadow:var(--shadow-inset);transition:background var(--transition-normal) var(--ease-standard),border-color var(--transition-normal) var(--ease-standard)}
+.icon-btn:hover{background:var(--bg-tertiary);border-color:var(--primary)}
+.nav-toggle{display:none}
+/* buttons */
+.btn{position:relative;display:flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:.65rem 1.4rem;border:1px solid transparent;border-radius:var(--radius-lg);box-shadow:var(--shadow-inset);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.2px;cursor:pointer;transition:filter var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),background var(--transition-normal) var(--ease-standard),border-color var(--transition-normal) var(--ease-standard),transform var(--transition-fast) var(--ease-standard)}
+.btn:hover{filter:brightness(1.1)}
+.btn:active{transform:scale(.97)}
+.btn--primary{background:var(--accent);color:var(--accent-ink)}
+.btn--primary:hover{box-shadow:var(--glow-accent)}
+.btn--secondary{background:var(--secondary);color:#fff}
+.btn--secondary:hover{box-shadow:var(--shadow-md)}
+.btn--ghost{border-color:var(--border-default);color:var(--text-primary)}
+.btn--ghost:hover{background:var(--bg-tertiary);border-color:var(--primary)}
+.btn--danger{background:var(--text-error);color:#1f1633}
+.btn--danger:hover{box-shadow:var(--shadow-md)}
+.btn:disabled{opacity:.5;filter:grayscale(1);cursor:not-allowed}
+.btn.is-loading{pointer-events:none;color:transparent!important}
+.btn.is-loading::after{content:"";position:absolute;width:18px;height:18px;border-radius:50%;border:2px solid rgba(31,22,51,.25);border-top-color:#1f1633;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* cards */
+.card{position:relative;display:flex;flex-direction:column;align-items:flex-start;flex:1 1 300px;padding:1.75rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),border-color var(--transition-normal) var(--ease-standard)}
+/* exception: cards align children to start for body/list legibility */
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);border-color:var(--primary)}
+.card:focus-within{border-color:var(--accent)}
+.card__title{font-size:1.15rem;margin-top:1rem}
+.card__text{color:var(--text-secondary);margin-top:.6rem;font-size:.95rem}
+.card>.btn{width:100%;margin-top:auto}
+.card--glass{background:color-mix(in srgb,var(--bg-secondary) 55%,transparent);backdrop-filter:blur(18px) saturate(180%);-webkit-backdrop-filter:blur(18px) saturate(180%)}
+.icon-chip{display:flex;width:48px;height:48px;flex:none;align-items:center;justify-content:center;border:1px solid var(--border-default);border-radius:var(--radius-sm);background:color-mix(in srgb,var(--bg-tertiary) 65%,transparent);color:var(--accent)}
+/* hero */
+.hero{position:relative;overflow:hidden;padding-block:4rem 5.5rem}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(620px 420px at 72% 18%,rgba(106,95,193,.18),transparent 70%);pointer-events:none}
+.hero__inner{display:flex;flex-wrap:wrap;gap:3rem;align-items:center;position:relative}
+.hero__copy{flex:1 1 420px}
+.hero__visual{flex:1 1 380px}
+.eyebrow{font-family:var(--font-mono);font-weight:500;font-size:.72rem;text-transform:uppercase;letter-spacing:.2px;color:var(--text-secondary)}
+.eyebrow__mark{color:var(--accent)}
+.hero__title{font-size:clamp(2.75rem,6.5vw,5.5rem);line-height:1.05;letter-spacing:-.02em;margin-top:1rem}
+.hero__title em{font-style:normal;color:var(--accent)}
+.hero__sub{max-width:36rem;margin:1.25rem 0 2rem;color:var(--text-secondary);font-size:1.08rem}
+.hero__ctas{display:flex;flex-wrap:wrap;gap:1rem}
+.chips{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:2.25rem}
+.chip{font-family:var(--font-mono);font-size:.72rem;padding:.45rem .8rem;border:1px solid var(--border-default);border-radius:var(--radius-sm);background:color-mix(in srgb,var(--bg-secondary) 55%,transparent);backdrop-filter:blur(18px) saturate(180%);-webkit-backdrop-filter:blur(18px) saturate(180%);color:var(--text-secondary)}
+/* terminal mock */
+.term{background:var(--bg-primary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--glow-ambient),var(--shadow-md);font-family:var(--font-mono);font-size:.78rem}
+.term__bar{display:flex;align-items:center;gap:.45rem;padding:.65rem .9rem;border-bottom:1px solid var(--border-default)}
+.term__dot{width:10px;height:10px;border-radius:50%;background:var(--secondary)}
+.term__dot--err{background:var(--text-error)}
+.term__dot--warn{background:var(--text-warning)}
+.term__file{margin-left:auto;color:var(--text-secondary);font-size:.68rem}
+.term__body{padding:1rem 1.1rem;line-height:1.75;overflow-x:auto}
+.term__body p{display:flex;gap:.75rem;white-space:nowrap}
+.term__ln{color:var(--text-secondary);opacity:.55;flex:none}
+.term__err{color:var(--text-error)}
+.term__ok{color:var(--accent)}
+.pill{display:inline-flex;align-items:center;margin-left:.6rem;padding:.1rem .55rem;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:.6rem;text-transform:uppercase;letter-spacing:.2px}
+/* steps */
+.steps{display:flex;flex-wrap:wrap;gap:var(--spacing-gap)}
+.step{position:relative;flex:1 1 280px;display:flex;flex-direction:column;align-items:flex-start}
+.step__num{font-family:var(--font-mono);font-weight:700;color:var(--accent)}
+.step__title{font-size:1.25rem;margin:.5rem 0}
+.step__text{color:var(--text-secondary);font-size:.95rem}
+@media(min-width:880px){.step:not(:last-child)::after{content:"";position:absolute;top:12px;left:3rem;right:-1.5rem;border-top:2px dashed var(--border-default)}}
+.code-block{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.5rem;width:100%;margin-top:1.25rem;padding:.45rem .45rem .45rem 1rem;background:var(--bg-primary);border:1px solid var(--border-default);border-radius:var(--radius-sm);backdrop-filter:blur(18px) saturate(180%);-webkit-backdrop-filter:blur(18px) saturate(180%);font-family:var(--font-mono);font-size:.78rem}
+.code-block code{overflow-x:auto;white-space:nowrap}
+.code-block .btn{padding:.4rem .75rem}
+/* testimonials */
+.quote__mark{color:var(--primary);font-size:2rem}
+.stars{display:flex;gap:.15rem;margin-top:.75rem;color:var(--accent)}
+.stars .material-symbols-outlined{font-size:1rem}
+.quote__text{margin-top:.9rem;font-size:.97rem}
+.author{display:flex;align-items:center;gap:.9rem;margin-top:1.4rem}
+.avatar{display:flex;width:46px;height:46px;flex:none;align-items:center;justify-content:center;border-radius:50%;font-weight:600;font-size:.85rem;color:var(--accent-ink)}
+.avatar--a{background:linear-gradient(135deg,var(--primary),var(--text-error))}
+.avatar--b{background:linear-gradient(135deg,var(--primary),var(--accent))}
+.avatar--c{background:linear-gradient(135deg,var(--text-warning),var(--text-error))}
+.author__meta{display:flex;flex-direction:column}
+.author__name{font-weight:600;font-size:.92rem}
+.author__role{color:var(--text-secondary);font-size:.78rem}
+/* pricing */
+.tier__name{font-family:var(--font-mono);font-weight:500;font-size:.72rem;text-transform:uppercase;letter-spacing:.2px;color:var(--text-secondary)}
+.price{font-family:var(--font-mono);font-weight:700;font-size:2.3rem;margin:.4rem 0 1rem}
+.price span{font-size:.85rem;font-weight:400;color:var(--text-secondary)}
+.tier__list{display:flex;flex-direction:column;gap:.55rem;margin-bottom:1.75rem;font-size:.9rem}
+.tier__list li{display:flex;align-items:flex-start;gap:.5rem}
+.tier__list .material-symbols-outlined{font-size:1.05rem;color:var(--text-success)}
+.tier__list .is-off{color:var(--text-secondary)}
+.tier--featured{border-color:var(--accent);box-shadow:var(--glow-accent),var(--shadow-md);transform:translateY(-8px)}
+.tier--featured:hover{transform:translateY(-10px)}
+.tier__badge{position:absolute;top:-.8rem;left:50%;transform:translateX(-50%);padding:.28rem .75rem;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.2px;box-shadow:var(--shadow-sm);white-space:nowrap}
+.footnote{margin-top:1.5rem;text-align:center;color:var(--text-secondary);font-size:.8rem}
+/* FAQ */
+.faq{max-width:760px;margin-inline:auto;display:flex;flex-direction:column;gap:.75rem}
+.faq__question{display:flex;width:100%;align-items:center;justify-content:space-between;gap:1rem;padding:1.05rem 1.25rem;font-family:var(--font-base);font-weight:600;font-size:.98rem;text-align:left}
+.faq__question .material-symbols-outlined{color:var(--text-secondary);transition:transform var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard)}
+.faq__question[aria-expanded="true"] .material-symbols-outlined{transform:rotate(180deg);color:var(--accent)}
+.faq__answer{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--transition-normal) var(--ease-standard)}
+.faq__question[aria-expanded="true"]+.faq__answer{grid-template-rows:1fr}
+.faq__answer>div{overflow:hidden;min-height:0}
+.faq__answer p{padding:0 1.25rem 1.25rem;color:var(--text-secondary);font-size:.95rem}
+/* CTA */
+.cta__panel{position:relative;overflow:hidden;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:2.5rem;padding:3rem;background:linear-gradient(135deg,var(--bg-secondary),var(--bg-primary));border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--glow-ambient)}
+.cta__panel::before{content:"";position:absolute;inset:0;background:radial-gradient(420px 260px at 8% 0%,rgba(194,239,78,.14),transparent 70%),radial-gradient(520px 320px at 95% 100%,rgba(106,95,193,.18),transparent 70%);pointer-events:none}
+.cta__copy,.input-group{flex:1 1 340px;position:relative}
+.cta__title{font-size:clamp(1.9rem,3.5vw,2.5rem)}
+.cta__sub{margin-top:.75rem;color:var(--text-secondary)}
+.input-group__row{display:flex;flex-wrap:wrap;gap:.75rem}
+.input-group input{flex:1 1 200px;min-height:44px;padding:.6rem 1rem;background:var(--bg-primary);border:1px solid var(--border-default);border-radius:var(--radius-sm);color:var(--text-primary);font:inherit}
+.input-group--invalid input{border-color:var(--border-error)}
+.input-group--valid input{border-color:var(--border-success)}
+.input-group__error{display:none;align-items:center;gap:.4rem;margin-top:.6rem;color:var(--text-error);font-size:.85rem}
+.input-group--invalid .input-group__error{display:flex}
+.cta__micro{margin-top:.9rem;font-size:.78rem;color:var(--text-secondary)}
+/* footer */
+.footer{border-top:1px solid var(--border-default);padding:3rem 0 2rem}
+.footer__grid{display:flex;flex-wrap:wrap;gap:2.5rem}
+.footer__brand{flex:1 1 260px}
+.footer__tagline{margin:.8rem 0 1.25rem;color:var(--text-secondary);font-size:.9rem;max-width:17rem}
+.footer__social{display:flex;gap:.5rem}
+.footer__social a{display:flex;width:44px;height:44px;align-items:center;justify-content:center;border-radius:var(--radius-sm);color:var(--text-secondary);transition:color var(--transition-fast) var(--ease-standard),background var(--transition-fast) var(--ease-standard)}
+.footer__social a:hover{color:var(--accent);background:var(--bg-tertiary)}
+.footer__col{flex:1 1 150px}
+.footer__heading{font-family:var(--font-mono);font-weight:500;font-size:.68rem;text-transform:uppercase;letter-spacing:.2px;color:var(--text-secondary);margin-bottom:1rem}
+.footer__links{display:flex;flex-direction:column;gap:.55rem;font-size:.88rem}
+.footer__links a{color:var(--text-secondary)}
+.footer__links a:hover{color:var(--text-primary)}
+.footer__bottom{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:1rem;margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--border-default);color:var(--text-secondary);font-size:.82rem}
+.status{display:flex;align-items:center;gap:.5rem}
+.status__dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px rgba(194,239,78,.6)}
+/* toast */
+.toast{position:fixed;left:50%;bottom:1.5rem;z-index:var(--z-toast);display:flex;align-items:center;gap:.55rem;padding:.75rem 1.15rem;background:var(--bg-tertiary);border:1px solid var(--border-default);border-radius:var(--radius-sm);box-shadow:var(--shadow-md);font-size:.88rem;transform:translate(-50%,150%);opacity:0;pointer-events:none;transition:transform var(--transition-normal) var(--ease-standard),opacity var(--transition-normal) var(--ease-standard)}
+.toast.is-visible{transform:translate(-50%,0);opacity:1}
+.toast .material-symbols-outlined{color:var(--text-success)}
+.toast--err .material-symbols-outlined{color:var(--text-error)}
+/* skeleton & empty-state patterns */
+.skeleton{border-radius:var(--radius-sm);background:linear-gradient(90deg,var(--bg-tertiary) 25%,var(--bg-secondary) 45%,var(--bg-tertiary) 65%);background-size:200% 100%;animation:shimmer 1.4s linear infinite}
+@keyframes shimmer{to{background-position:-200% 0}}
+.empty{display:flex;flex-direction:column;align-items:center;gap:.75rem;padding:3rem 1rem;text-align:center;color:var(--text-secondary)}
+/* mobile nav */
+@media(max-width:767px){
+.nav{position:absolute;top:100%;left:0;right:0;display:none;background:color-mix(in srgb,var(--bg-secondary) 92%,transparent);backdrop-filter:blur(18px) saturate(180%);-webkit-backdrop-filter:blur(18px) saturate(180%);border-bottom:1px solid var(--border-default);box-shadow:var(--shadow-md)}
+.nav.is-open{display:block}
+.nav__list{flex-direction:column;gap:.25rem;padding:.75rem 1.5rem 1.25rem}
+.nav__link{display:block;padding:.75rem 0;font-size:.9rem}
+.nav-toggle{display:flex}
+}
+@media(max-width:479px){.header__cta{display:none}}
+/* light theme: lime-as-text maps to darkened lime for contrast */
+[data-theme="light"] .hero__title em,[data-theme="light"] .step__num,[data-theme="light"] .eyebrow__mark,[data-theme="light"] .stars,[data-theme="light"] .logo .material-symbols-outlined,[data-theme="light"] .icon-chip,[data-theme="light"] .faq__question[aria-expanded="true"] .material-symbols-outlined,[data-theme="light"] .card:focus-within{color:var(--text-success)}
+[data-theme="light"] .card:focus-within{border-color:var(--text-success)}
+}
+@layer utilities{
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.skip-link{position:fixed;top:.75rem;left:.75rem;z-index:var(--z-toast);padding:.75rem 1.25rem;background:var(--accent);color:var(--accent-ink);border-radius:var(--radius-sm);font-weight:600;transform:translateY(-200%);transition:transform var(--transition-fast) var(--ease-standard)}
+.skip-link:focus{transform:none}
+.reveal-init{opacity:0;transform:translateY(18px);transition:opacity var(--transition-normal) var(--ease-standard),transform var(--transition-normal) var(--ease-standard)}
+.reveal-init.is-visible{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){
+html{scroll-behavior:auto}
+*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+.reveal-init{opacity:1;transform:none}
+}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="header">
+<div class="container header__inner">
+<a class="logo" href="#hero"><span class="material-symbols-outlined" aria-hidden="true">bug_report</span>Traceback</a>
+<nav class="nav" id="site-nav" aria-label="Main navigation">
+<ul class="nav__list">
+<li><a class="nav__link" href="#features">Features</a></li>
+<li><a class="nav__link" href="#how-it-works">How it works</a></li>
+<li><a class="nav__link" href="#pricing">Pricing</a></li>
+<li><a class="nav__link" href="#faq">FAQ</a></li>
+</ul>
+</nav>
+<div class="header__actions">
+<button class="icon-btn" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to light theme"><span class="material-symbols-outlined" aria-hidden="true">light_mode</span></button>
+<a class="btn btn--primary header__cta" href="#cta">Get started</a>
+<button class="icon-btn nav-toggle" id="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu"><span class="material-symbols-outlined" aria-hidden="true">menu</span></button>
+</div>
+</div>
+</header>
+<main id="main">
+<section class="hero" id="hero" aria-labelledby="hero-title">
+<div class="container hero__inner">
+<div class="hero__copy">
+<p class="eyebrow"><span class="eyebrow__mark">//</span> Error monitoring for modern teams</p>
+<h1 class="hero__title" id="hero-title">Catch <em>every crash</em> before your users do.</h1>
+<p class="hero__sub">Traceback captures every exception the moment it&rsquo;s thrown, groups duplicates by root cause, and points to the exact commit that broke production.</p>
+<div class="hero__ctas">
+<a class="btn btn--primary" href="#cta">Start tracking free</a>
+<a class="btn btn--ghost" href="#how-it-works">See how it works</a>
+</div>
+<ul class="chips">
+<li class="chip">99.99% uptime</li>
+<li class="chip">&lt;50 ms alert latency</li>
+<li class="chip">SOC 2 Type II</li>
+<li class="chip">50k+ developers</li>
+</ul>
+</div>
+<div class="hero__visual">
+<div class="term" role="img" aria-label="Terminal mock showing a TypeError stack trace, resolved by commit a4f9e2c.">
+<div class="term__bar"><span class="term__dot term__dot--err"></span><span class="term__dot term__dot--warn"></span><span class="term__dot"></span><span class="term__file">issue #4821 &middot; production</span></div>
+<div class="term__body">
+<p><span class="term__ln">42</span><span class="term__err">TypeError: Cannot read properties of undefined (reading 'id')</span></p>
+<p><span class="term__ln">43</span><span>at ProductCard.render (src/components/ProductCard.tsx)</span></p>
+<p><span class="term__ln">44</span><span>at CatalogPage.renderList (src/pages/catalog.tsx)</span></p>
+<p><span class="term__ln">45</span><span class="term__ok">&#10003; resolved in commit a4f9e2c &middot; deploy v2.14.0</span><span class="pill">Resolved</span></p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="section" id="features" aria-labelledby="features-title">
+<div class="container">
+<div class="section__head reveal">
+<p class="eyebrow"><span class="eyebrow__mark">//</span> Features</p>
+<h2 class="section__title" id="features-title">Everything you need to debug faster</h2>
+<p class="section__intro">One SDK, three superpowers: see errors instantly, understand them deeply, and hear about them before anyone else does.</p>
+</div>
+<div class="row">
+<article class="card reveal">
+<span class="icon-chip"><span class="material-symbols-outlined" aria-hidden="true">bug_report</span></span>
+<h3 class="card__title">Real-time error detection</h3>
+<p class="card__text">Every exception is captured the moment it&rsquo;s thrown and grouped by root cause, so a thousand duplicates read as one actionable issue.</p>
+</article>
+<article class="card reveal">
+<span class="icon-chip"><span class="material-symbols-outlined" aria-hidden="true">terminal</span></span>
+<h3 class="card__title">Readable stack traces</h3>
+<p class="card__text">Decoded, source-mapped traces that point to the exact commit and line &mdash; even inside minified production bundles.</p>
+</article>
+<article class="card reveal">
+<span class="icon-chip"><span class="material-symbols-outlined" aria-hidden="true">notifications_active</span></span>
+<h3 class="card__title">Alerts that respect your sleep</h3>
+<p class="card__text">Severity-based routing to Slack, PagerDuty, and email. Noise is grouped, deduplicated, and silenced until it actually matters.</p>
+</article>
+</div>
+</div>
+</section>
+<section class="section" id="how-it-works" aria-labelledby="how-title">
+<div class="container">
+<div class="section__head reveal">
+<p class="eyebrow"><span class="eyebrow__mark">//</span> How it works</p>
+<h2 class="section__title" id="how-title">From install to insight in three steps</h2>
+</div>
+<ol class="steps">
+<li class="step reveal">
+<span class="step__num">01</span>
+<h3 class="step__title">Install the SDK</h3>
+<p class="step__text">One package, one line of config. Works with every major framework out of the box.</p>
+<div class="code-block">
+<code id="install-cmd">$ npm i @traceback/sdk</code>
+<button class="btn btn--ghost" id="copy-btn" type="button" data-copy="npm i @traceback/sdk"><span class="material-symbols-outlined" aria-hidden="true">content_copy</span><span class="btn__label">Copy</span></button>
+</div>
+</li>
+<li class="step reveal">
+<span class="step__num">02</span>
+<h3 class="step__title">Tag every release</h3>
+<p class="step__text">Deploy hooks attach commit SHA, environment, and user context to each event automatically.</p>
+</li>
+<li class="step reveal">
+<span class="step__num">03</span>
+<h3 class="step__title">Fix before users notice</h3>
+<p class="step__text">Alerts route to the right on-call engineer with full context &mdash; no triage spreadsheet required.</p>
+</li>
+</ol>
+</div>
+</section>
+<section class="section" id="testimonials" aria-labelledby="testimonials-title">
+<div class="container">
+<div class="section__head reveal">
+<p class="eyebrow"><span class="eyebrow__mark">//</span> Testimonials</p>
+<h2 class="section__title" id="testimonials-title">Loved by teams that ship daily</h2>
+</div>
+<div class="row">
+<figure class="card card--glass reveal">
+<span class="material-symbols-outlined quote__mark" aria-hidden="true">format_quote</span>
+<span class="stars" role="img" aria-label="Rated 5 out of 5 stars"><b class="material-symbols-outlined">star</b><b class="material-symbols-outlined">star</b><b class="material-symbols-outlined">star</b><b class="material-symbols-outlined">star</b><b class="material-symbols-outlined">star</b></span>
+<blockquote class="quote__text">&ldquo;Traceback cut our mean time to resolution from hours to minutes. Release tagging alone paid for itself in the first sprint.&rdquo;</blockquote>
+<figcaption class="author">
+<span class="avatar avatar--a" aria-hidden="true">MC</span>
+<span class="author__meta"><span class="author__name">Maya Chen</span><span class="author__role">VP of Engineering, Larkspur Systems</span></span>
+</figcaption>
+</figure>
+<figure class="card card--glass reveal">
+<span class="material-symbols-outlined quote__mark" aria-hidden="true">format_quote</span>
+<span class="stars" role="img" aria-label="Rated 5 out of 5 stars"><b class="material-symbols-outlined">star</b><b class="material-symbols-outlined">star</b><b class="material-symbols-outlined">star</b><b class="material-symbols-outlined">star</b><b class="material-symbols-outlined">star</b></span>
+<blockquote class="quote__text">&ldquo;We migrated 400 projects in a weekend. Traces that point at the commit mean our juniors ship their first fix on day one.&rdquo;</blockquote>
+<figcaption class="author">
+<span class="avatar avatar--b" aria-hidden="true">DR</span>
+<span class="author__meta"><span class="author__name">Diego Ram&iacute;rez</span><span class="author__role">Staff Engineer, Fathom Labs</span></span>
+</figcaption>
+</figure>
+<figure class="card card--glass reveal">
+<span class="material-symbols-outlined quote__mark" aria-hidden="true">format_quote</span>
+<span class="stars" role="img" aria-label="Rated 5 out of 5 stars"><b class="material-symbols-outlined">star</b><b class="material-symbols-outlined">star</b><b class="material-symbols-outlined">star</b><b class="material-symbols-outlined">star</b><b class="material-symbols-outlined">star</b></span>
+<blockquote class="quote__text">&ldquo;Alert routing is precise enough that on-call actually sleeps. False positives dropped 90% in the first week.&rdquo;</blockquote>
+<figcaption class="author">
+<span class="avatar avatar--c" aria-hidden="true">PN</span>
+<span class="author__meta"><span class="author__name">Priya Nair</span><span class="author__role">Head of Platform, Cobalt Freight</span></span>
+</figcaption>
+</figure>
+</div>
+</div>
+</section>
+<section class="section" id="pricing" aria-labelledby="pricing-title">
+<div class="container">
+<div class="section__head reveal">
+<p class="eyebrow"><span class="eyebrow__mark">//</span> Pricing</p>
+<h2 class="section__title" id="pricing-title">Simple pricing that scales with you</h2>
+<p class="section__intro">Start free, upgrade when your traffic does. No surprise invoices.</p>
+</div>
+<div class="row">
+<article class="card reveal">
+<h3 class="tier__name">Developer</h3>
+<p class="price">$0<span> / forever</span></p>
+<ul class="tier__list">
+<li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>10k events / month</li>
+<li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>1 project</li>
+<li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>7-day retention</li>
+<li><span class="material-symbols-outlined is-off" aria-hidden="true">remove</span>Release tagging</li>
+<li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>Community support</li>
+</ul>
+<a class="btn btn--ghost" href="#cta">Start free</a>
+</article>
+<article class="card tier--featured reveal">
+<span class="tier__badge">Most popular</span>
+<h3 class="tier__name">Team</h3>
+<p class="price">$29<span> / seat / mo</span></p>
+<ul class="tier__list">
+<li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>5M events / month</li>
+<li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>Unlimited projects</li>
+<li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>90-day retention</li>
+<li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>Slack &amp; PagerDuty alerts</li>
+<li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>Release tagging</li>
+</ul>
+<a class="btn btn--primary" href="#cta">Start 14-day trial</a>
+</article>
+<article class="card reveal">
+<h3 class="tier__name">Enterprise</h3>
+<p class="price">Custom</p>
+<ul class="tier__list">
+<li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>SSO / SAML</li>
+<li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>Self-hosted option</li>
+<li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>Audit logs</li>
+<li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>EU data residency</li>
+<li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>Dedicated support</li>
+</ul>
+<a class="btn btn--secondary" href="#cta">Contact sales</a>
+</article>
+</div>
+<p class="footnote">Prices in USD.</p>
+</div>
+</section>
+<section class="section" id="faq" aria-labelledby="faq-title">
+<div class="container">
+<div class="section__head reveal">
+<p class="eyebrow"><span class="eyebrow__mark">//</span> FAQ</p>
+<h2 class="section__title" id="faq-title">Questions, answered</h2>
+</div>
+<div class="faq">
+<div class="faq__item reveal">
+<h3><button class="faq__question" type="button" aria-expanded="false" aria-controls="faq-a1">Which languages and frameworks do you support?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button></h3>
+<div class="faq__answer" id="faq-a1"><div><p>JavaScript, TypeScript, Python, Ruby, Go, Java, PHP, and .NET &mdash; with first-class integrations for React, Next.js, Django, Rails, Laravel, and Spring.</p></div></div>
+</div>
+<div class="faq__item reveal">
+<h3><button class="faq__question" type="button" aria-expanded="false" aria-controls="faq-a2">Can I self-host Traceback?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button></h3>
+<div class="faq__answer" id="faq-a2"><div><p>Yes. Enterprise plans include Docker and Helm charts you can run in your own VPC, including fully air-gapped installations.</p></div></div>
+</div>
+<div class="faq__item reveal">
+<h3><button class="faq__question" type="button" aria-expanded="false" aria-controls="faq-a3">What happens if I exceed my event quota?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button></h3>
+<div class="faq__answer" id="faq-a3"><div><p>Nothing breaks. We keep capturing errors and bill overage at $0.60 per 1,000 events, with a monthly cap and usage alerts at 75% and 100%.</p></div></div>
+</div>
+<div class="faq__item reveal">
+<h3><button class="faq__question" type="button" aria-expanded="false" aria-controls="faq-a4">How is my data secured?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button></h3>
+<div class="faq__answer" id="faq-a4"><div><p>We&rsquo;re SOC 2 Type II certified. Data is encrypted with TLS 1.3 in transit and AES-256 at rest, with EU or US residency available on request.</p></div></div>
+</div>
+<div class="faq__item reveal">
+<h3><button class="faq__question" type="button" aria-expanded="false" aria-controls="faq-a5">How hard is migrating from Sentry?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button></h3>
+<div class="faq__answer" id="faq-a5"><div><p>Drop-in SDK aliases make switching a one-line change, and our importers migrate projects, issues, and assignment rules &mdash; typically in under a day.</p></div></div>
+</div>
+<div class="faq__item reveal">
+<h3><button class="faq__question" type="button" aria-expanded="false" aria-controls="faq-a6">Is there a free tier for open-source projects?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button></h3>
+<div class="faq__answer" id="faq-a6"><div><p>Yes. Public open-source repositories get the Developer plan free forever with 100k events per month &mdash; just verify your repo once.</p></div></div>
+</div>
+</div>
+</div>
+</section>
+<section class="section" id="cta" aria-labelledby="cta-title">
+<div class="container">
+<div class="cta__panel reveal">
+<div class="cta__copy">
+<h2 class="cta__title" id="cta-title">Ship with confidence.</h2>
+<p class="cta__sub">Join 50,000+ developers who know about production bugs before their users file tickets.</p>
+</div>
+<form class="input-group" id="cta-form" novalidate>
+<label class="sr-only" for="email">Work email</label>
+<div class="input-group__row">
+<input id="email" name="email" type="email" placeholder="you@company.com" autocomplete="email" aria-describedby="email-error" required>
+<button class="btn btn--primary" id="email-submit" type="submit">Get started</button>
+</div>
+<p class="input-group__error" id="email-error" aria-live="polite"><span class="material-symbols-outlined" aria-hidden="true">error</span>Please enter a valid work email address.</p>
+<p class="cta__micro">Free 14-day trial &middot; No credit card required</p>
+</form>
+</div>
+</div>
+</section>
+</main>
+<footer class="footer">
+<div class="container">
+<div class="footer__grid">
+<div class="footer__brand">
+<a class="logo" href="#hero"><span class="material-symbols-outlined" aria-hidden="true">bug_report</span>Traceback</a>
+<p class="footer__tagline">Error monitoring that finds the fix before your users find the bug.</p>
+<div class="footer__social">
+<a href="#" aria-label="Email us"><span class="material-symbols-outlined" aria-hidden="true">mail</span></a>
+<a href="#" aria-label="RSS feed"><span class="material-symbols-outlined" aria-hidden="true">rss_feed</span></a>
+<a href="#" aria-label="Website"><span class="material-symbols-outlined" aria-hidden="true">public</span></a>
+<a href="#" aria-label="Community forum"><span class="material-symbols-outlined" aria-hidden="true">forum</span></a>
+</div>
+</div>
+<nav class="footer__col" aria-label="Product">
+<h3 class="footer__heading">Product</h3>
+<ul class="footer__links"><li><a href="#features">Features</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#">Changelog</a></li><li><a href="#">Status</a></li></ul>
+</nav>
+<nav class="footer__col" aria-label="Resources">
+<h3 class="footer__heading">Resources</h3>
+<ul class="footer__links"><li><a href="#">Docs</a></li><li><a href="#">API reference</a></li><li><a href="#">Guides</a></li><li><a href="#">Community</a></li></ul>
+</nav>
+<nav class="footer__col" aria-label="Company">
+<h3 class="footer__heading">Company</h3>
+<ul class="footer__links"><li><a href="#">About</a></li><li><a href="#">Blog</a></li><li><a href="#">Careers</a></li><li><a href="#">Contact</a></li></ul>
+</nav>
+<nav class="footer__col" aria-label="Legal">
+<h3 class="footer__heading">Legal</h3>
+<ul class="footer__links"><li><a href="#">Privacy</a></li><li><a href="#">Terms</a></li><li><a href="#">Security</a></li><li><a href="#">DPA</a></li></ul>
+</nav>
+</div>
+<div class="footer__bottom">
+<p>&copy; 2026 Traceback, Inc.</p>
+<p class="status"><span class="status__dot" aria-hidden="true"></span>All systems operational</p>
+</div>
+</div>
+</footer>
+<div class="toast" id="toast" role="status" aria-live="polite"><span class="material-symbols-outlined" id="toast-icon" aria-hidden="true">check_circle</span><span id="toast-text"></span></div>
+<script>
+(function(){"use strict";
+var d=document,W=window;
+function q(s){return d.querySelector(s)}
+function qa(s){return d.querySelectorAll(s)}
+function mq(q){return W.matchMedia?W.matchMedia(q).matches:false}
+/* 1. theme toggle */
+var root=d.documentElement,KEY="traceback-theme",tt=q("#theme-toggle"),ttIcon=q("#theme-toggle .material-symbols-outlined");
+function setTheme(t,save){root.setAttribute("data-theme",t);var light=t==="light";tt.setAttribute("aria-pressed",light);tt.setAttribute("aria-label",light?"Switch to dark theme":"Switch to light theme");ttIcon.textContent=light?"dark_mode":"light_mode";if(save){try{localStorage.setItem(KEY,t)}catch(e){}}}
+var saved=null;try{saved=localStorage.getItem(KEY)}catch(e){}
+setTheme(saved||(mq("(prefers-color-scheme: light)")?"light":"dark"),false);
+tt.addEventListener("click",function(){setTheme(root.getAttribute("data-theme")==="dark"?"light":"dark",true)});
+/* 2. mobile nav */
+var nav=q("#site-nav"),nt=q("#nav-toggle"),ntIcon=q("#nav-toggle .material-symbols-outlined");
+function closeNav(){nav.classList.remove("is-open");nt.setAttribute("aria-expanded","false");nt.setAttribute("aria-label","Open menu");ntIcon.textContent="menu"}
+nt.addEventListener("click",function(){var o=!nav.classList.contains("is-open");nav.classList.toggle("is-open",o);nt.setAttribute("aria-expanded",o);nt.setAttribute("aria-label",o?"Close menu":"Open menu");ntIcon.textContent=o?"close":"menu"});
+d.addEventListener("keydown",function(e){if(e.key==="Escape"&&nav.classList.contains("is-open")){closeNav();nt.focus()}});
+nav.addEventListener("click",function(e){if(e.target.closest(".nav__link"))closeNav()});
+/* 6. toast (used by copy + form) */
+var toastEl=q("#toast");
+function toast(m,err){q("#toast-text").textContent=m;q("#toast-icon").textContent=err?"error":"check_circle";toastEl.classList.toggle("toast--err",!!err);toastEl.classList.add("is-visible");clearTimeout(toast.t);toast.t=setTimeout(function(){toastEl.classList.remove("is-visible")},4000)}
+/* 3. FAQ accordion: single open */
+qa(".faq__question").forEach(function(b){b.addEventListener("click",function(){var open=b.getAttribute("aria-expanded")==="true";qa('.faq__question[aria-expanded="true"]').forEach(function(o){o.setAttribute("aria-expanded","false")});b.setAttribute("aria-expanded",open?"false":"true")})});
+/* 4. copy install command */
+var cb=q("#copy-btn");
+function legacyCopy(t){var ta=d.createElement("textarea");ta.value=t;ta.setAttribute("readonly","");ta.style.position="fixed";ta.style.top="-100vh";d.body.appendChild(ta);ta.select();var ok=false;try{ok=d.execCommand("copy")}catch(e){}d.body.removeChild(ta);return ok}
+if(cb){cb.addEventListener("click",function(){
+var text=cb.getAttribute("data-copy"),ic=cb.querySelector(".material-symbols-outlined"),lb=cb.querySelector(".btn__label");
+function flash(ok){ic.textContent=ok?"check":"content_copy";lb.textContent=ok?"Copied":"Copy";toast(ok?"Install command copied to clipboard.":"Copy failed - please select the command and copy manually.",!ok);setTimeout(function(){ic.textContent="content_copy";lb.textContent="Copy"},2000)}
+if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(function(){flash(true)},function(){flash(legacyCopy(text))})}else{flash(legacyCopy(text))}
+})}
+/* 5. email form */
+var form=q("#cta-form");
+if(form){var input=q("#email"),submit=q("#email-submit");
+form.addEventListener("submit",function(e){e.preventDefault();
+var v=input.value.trim(),ok=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+form.classList.toggle("input-group--invalid",!ok);form.classList.toggle("input-group--valid",ok);
+if(!ok){input.focus();return}
+submit.classList.add("is-loading");submit.setAttribute("aria-busy","true");
+setTimeout(function(){submit.classList.remove("is-loading");submit.removeAttribute("aria-busy");submit.innerHTML='<span class="material-symbols-outlined" aria-hidden="true">check_circle</span><span class="btn__label">Subscribed</span>';toast("You're in! Your free trial starts now - check "+v+" for next steps.");form.reset()},1200);
+});
+input.addEventListener("input",function(){form.classList.remove("input-group--invalid","input-group--valid")})}
+/* 7. scroll reveal */
+if("IntersectionObserver" in W&&!mq("(prefers-reduced-motion: reduce)")){
+var io=new IntersectionObserver(function(es){es.forEach(function(en){if(en.isIntersecting){en.target.classList.add("is-visible");io.unobserve(en.target)}})},{threshold:.15});
+qa(".reveal").forEach(function(r){r.classList.add("reveal-init");io.observe(r)});
+}
+/* 8. sticky header state */
+var hdr=q(".header");
+function onScroll(){hdr.classList.toggle("is-scrolled",W.scrollY>8)}
+onScroll();W.addEventListener("scroll",onScroll,{passive:true});
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Low Tide — Read the water like a local</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0&display=block" rel="stylesheet">
+<style>
+:root{--primary:#20323a;--on-primary:#d8e8e4;--secondary:#9ab8b4;--on-secondary:#16303a;--bg-primary:#d8e8e4;--bg-secondary:#cfe8e0;--text-primary:#20323a;--text-secondary:#4f6d67;--text-success:#23684f;--text-error:#a63d33;--border-default:rgba(32,50,58,.15);--border-success:rgba(35,104,79,.55);--border-error:rgba(166,61,51,.55);--glass-bg:rgba(254,254,254,.42);--glass-border:rgba(255,255,255,.55);--blur-sm:8px;--blur-md:16px;--blur-lg:24px;--accent-sea:#7a9a94;--accent-sage:#a8c4be;--font-display:"Fraunces",Georgia,serif;--font-base:"Inter",system-ui,sans-serif;--radius-sm:10px;--radius-md:18px;--radius-lg:28px;--shadow-sm:0 2px 10px rgba(32,50,58,.08);--shadow-md:0 14px 36px rgba(32,50,58,.16);--spacing-gap:1.5rem;--spacing-section:clamp(4rem,9vw,6.5rem);--transition-fast:150ms;--transition-normal:300ms;--ease-standard:cubic-bezier(.4,0,.2,1);--z-dropdown:40;--z-modal:60;--z-toast:80;color-scheme:light}
+.dark{--primary:#d8e8e4;--on-primary:#14282e;--secondary:#9ab8b4;--on-secondary:#0e1c21;--bg-primary:#0e1c21;--bg-secondary:#14282e;--text-primary:#d8e8e4;--text-secondary:#a8c4be;--text-success:#7fd4b0;--text-error:#ff9a8c;--border-default:rgba(216,232,228,.16);--glass-bg:rgba(20,40,46,.5);--glass-border:rgba(154,184,180,.28);--shadow-sm:0 2px 10px rgba(0,0,0,.35);--shadow-md:0 14px 36px rgba(0,0,0,.5);--orb:rgba(122,154,148,.22);color-scheme:dark}
+@layer reset,base,comp,util;
+@layer reset{*,::before,::after{box-sizing:border-box;margin:0;padding:0}ul{list-style:none}}
+@layer base{html{scroll-behavior:smooth}body{font:400 1rem/1.6 var(--font-base);color:var(--text-primary);background:var(--bg-primary)}h1,h2,h3{font-family:var(--font-display);font-weight:600;line-height:1.12}h2{font-size:clamp(1.9rem,4.2vw,2.8rem)}:focus-visible{outline:2px solid var(--primary);outline-offset:3px}.wrap{max-width:72rem;margin-inline:auto;padding-inline:clamp(1rem,4vw,2.5rem)}.sec{padding-block:var(--spacing-section)}.material-symbols-rounded{font-size:1.25rem;line-height:1}}
+@layer comp{
+.backdrop{position:fixed;inset:0;z-index:-1;overflow:hidden;background:linear-gradient(180deg,var(--bg-primary),var(--bg-secondary) 55%,var(--secondary))}
+.dark .backdrop{background:linear-gradient(180deg,#0e1c21,#14282e 55%,#1c3b43)}
+.orb{position:absolute;width:42vmax;height:42vmax;border-radius:50%;background:radial-gradient(circle at 35% 35%,var(--orb,rgba(255,255,255,.5)),transparent 68%);filter:blur(48px);opacity:.55;animation:drift 26s ease-in-out infinite alternate}
+.orb--1{top:-12%;left:-8%}.orb--2{top:30%;right:-14%;animation-duration:34s;animation-delay:-8s}.orb--3{bottom:-16%;left:24%;width:34vmax;height:34vmax;animation-duration:40s;animation-delay:-16s}.orb--4{top:8%;left:38%;width:22vmax;height:22vmax;animation-duration:22s;animation-delay:-4s}
+@keyframes drift{from{transform:translate3d(0,0,0) scale(1);opacity:.35}to{transform:translate3d(6vw,-4vh,0) scale(1.15);opacity:.7}}
+.header{position:sticky;top:0;z-index:var(--z-dropdown);display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.65rem clamp(1rem,4vw,2.5rem);background:var(--glass-bg);border-bottom:1px solid var(--glass-border);backdrop-filter:blur(var(--blur-md)) saturate(1.4);-webkit-backdrop-filter:blur(var(--blur-md)) saturate(1.4)}
+.brand{display:flex;align-items:center;gap:.45rem;font:600 1.25rem var(--font-display);letter-spacing:.06em;text-decoration:none;color:var(--text-primary)}
+.brand .material-symbols-rounded{color:var(--accent-sea);font-size:1.55rem}
+.nav__links{display:flex;align-items:center;gap:clamp(.9rem,2.4vw,1.9rem)}
+.header__actions{display:flex;align-items:center;gap:.6rem}
+.link-u{position:relative;padding-block:.35rem;font-weight:500;font-size:.95rem;text-decoration:none;color:var(--text-primary)}
+.link-u::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;border-radius:2px;background:linear-gradient(90deg,var(--accent-sea),var(--accent-sage));transform:scaleX(0);transform-origin:left;transition:transform var(--transition-normal) var(--ease-standard)}
+.link-u:hover::after,.link-u:focus-visible::after{transform:scaleX(1)}
+@media(max-width:800px){.nav__links{display:none}}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;min-width:44px;padding:.7rem 1.5rem;border:1px solid transparent;border-radius:999px;background:var(--secondary);color:var(--on-secondary);font:600 1rem var(--font-base);cursor:pointer;text-decoration:none;transition:box-shadow var(--transition-normal) var(--ease-standard),filter var(--transition-normal),transform var(--transition-fast)}
+.btn:hover{filter:brightness(1.07);box-shadow:var(--shadow-md)}
+.btn:active{transform:scale(.97)}
+.btn--sm{padding:.5rem 1.1rem}
+.btn--primary{background:var(--primary);color:var(--on-primary)}
+.btn--glass{background:var(--glass-bg);border-color:var(--glass-border);color:var(--text-primary);backdrop-filter:blur(var(--blur-sm));-webkit-backdrop-filter:blur(var(--blur-sm))}
+.btn:disabled,.btn[aria-disabled="true"]{opacity:.5;filter:grayscale(1);cursor:not-allowed;box-shadow:none}
+.btn.is-loading{pointer-events:none}
+.btn.is-loading .material-symbols-rounded{display:none}
+.btn.is-loading::before{content:"";flex:none;width:1.25rem;height:1.25rem;border-radius:50%;border:2px solid currentColor;border-top-color:transparent;animation:spin .8s linear infinite}
+.btn.is-success{background:var(--text-success);color:var(--bg-primary)}
+.btn.is-error,.btn--danger{background:var(--text-error);color:var(--bg-primary)}
+@keyframes spin{to{transform:rotate(1turn)}}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;flex:none;border-radius:50%;border:1px solid var(--glass-border);background:var(--glass-bg);color:var(--text-primary);cursor:pointer;transition:box-shadow var(--transition-normal),transform var(--transition-fast)}
+.icon-btn:hover{box-shadow:var(--shadow-sm);transform:translateY(-1px)}
+.icon-btn:active{transform:scale(.95)}
+.eyebrow{display:inline-flex;align-items:center;gap:.5rem;padding:.35rem .95rem;border-radius:999px;border:1px solid var(--glass-border);background:var(--glass-bg);backdrop-filter:blur(var(--blur-sm));-webkit-backdrop-filter:blur(var(--blur-sm));font-size:.78rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text-secondary)}
+.eyebrow__dot{width:.55rem;height:.55rem;border-radius:50%;background:var(--text-success);animation:pulse 2.2s ease-out infinite}
+@keyframes pulse{from{box-shadow:0 0 0 0 rgba(122,154,148,.55)}to{box-shadow:0 0 0 12px rgba(122,154,148,0)}}
+.sec-head{display:flex;flex-direction:column;align-items:center;gap:1rem;text-align:center;margin-bottom:clamp(2.2rem,5vw,3.4rem)}
+.lead{max-width:52ch;color:var(--text-secondary)}
+.tide-line{width:min(18rem,50%);height:2px;margin:0 auto;border-radius:2px;background:linear-gradient(90deg,transparent,var(--accent-sea),var(--accent-sage),transparent)}
+.card{display:flex;flex-direction:column;align-items:flex-start;gap:1rem;padding:1.7rem;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);backdrop-filter:blur(var(--blur-md)) saturate(1.3);-webkit-backdrop-filter:blur(var(--blur-md)) saturate(1.3);transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal)}
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.card:focus-within{border-color:var(--accent-sea)}
+.row{display:flex;flex-wrap:wrap;align-items:stretch;gap:var(--spacing-gap)}/* stretch keeps card heights equal */
+.row>.card{flex:1 1 17rem}
+.hero{position:relative;min-height:88vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.3rem;padding:3rem clamp(1rem,4vw,2.5rem);text-align:center}
+.hero>*{position:relative;z-index:1}
+.hero::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(280px circle at var(--mx,50%) var(--my,32%),rgba(255,255,255,.3),transparent 72%)}
+.hero h1{font-size:clamp(2.7rem,7.5vw,4.7rem);text-shadow:0 3px 26px rgba(154,184,180,.65)}
+.hero__sub{max-width:46ch;color:var(--text-secondary);font-size:clamp(1rem,2vw,1.15rem)}
+.hero__cta{display:flex;flex-wrap:wrap;justify-content:center;gap:.8rem}
+.tide{width:min(36rem,100%);margin-top:1.2rem;text-align:left}
+.tide>*{width:100%}
+.tide__row{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.tide__label{font-weight:600}
+.tide__sk{display:flex;flex-direction:column;gap:.8rem}
+.skeleton{display:block;border-radius:999px;background:linear-gradient(100deg,var(--border-default) 40%,rgba(255,255,255,.6) 50%,var(--border-default) 60%);background-size:200% 100%;animation:shimmer 1.4s linear infinite}
+.skeleton--text{height:1.5rem;width:58%}
+.skeleton--bar{height:12px}
+@keyframes shimmer{to{background-position:-200% 0}}
+.tide__read{display:flex;flex-wrap:wrap;align-items:baseline;gap:.55rem;margin-bottom:.7rem}
+.tide__read strong{font:600 2.1rem/1 var(--font-display)}
+.tide__read span{color:var(--text-secondary);font-size:.95rem}
+.tide__track{height:12px;border-radius:999px;background:var(--border-default);overflow:hidden}
+.tide__fill{display:block;height:100%;width:100%;border-radius:inherit;background:linear-gradient(90deg,var(--accent-sea),var(--accent-sage));transform:scaleX(var(--p,0));transform-origin:left;transition:transform 1s var(--ease-standard)}
+.tide__empty{display:flex;flex-direction:column;align-items:center;gap:.55rem;text-align:center}
+.tide__empty .material-symbols-rounded{font-size:2rem;color:var(--accent-sea)}
+.chip{display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:38% 62% 55% 45%/50% 44% 56% 50%;background:linear-gradient(135deg,var(--accent-sea),var(--accent-sage));color:var(--on-secondary)}
+.chip .material-symbols-rounded{font-size:1.6rem}
+.card--feature p,.card--step p{color:var(--text-secondary)}
+.link-arrow{display:inline-flex;align-items:center;gap:.3rem;font-weight:600;text-decoration:none;color:var(--text-primary);margin-top:auto}
+.link-arrow .material-symbols-rounded{font-size:1.05rem;transition:transform var(--transition-normal) var(--ease-standard)}
+.link-arrow:hover .material-symbols-rounded{transform:translateX(4px)}
+.steps{position:relative;display:flex;flex-wrap:wrap;align-items:stretch;gap:var(--spacing-gap)}
+.steps::before{content:"";position:absolute;top:3.3rem;left:10%;right:10%;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--accent-sea) 20%,var(--accent-sage) 50%,var(--accent-sea) 80%,transparent);animation:flow 4.5s ease-in-out infinite}
+@keyframes flow{0%,100%{transform:scaleX(.9);opacity:.45}50%{transform:scaleX(1);opacity:1}}
+.card--step{flex:1 1 15rem}
+.step__badge{display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:50%;background:var(--primary);color:var(--on-primary);font:600 1rem var(--font-base);box-shadow:var(--shadow-sm)}
+.card--step h3{display:flex;align-items:center;gap:.5rem}
+@media(max-width:800px){.steps{flex-direction:column;padding-left:3rem;gap:1.3rem}.steps::before{top:2.5rem;bottom:2.5rem;left:1.1rem;right:auto;width:2px;height:auto;background:linear-gradient(180deg,var(--accent-sea),var(--accent-sage))}}
+.quote__stars{display:flex;align-items:center;gap:.15rem}
+.quote__stars .material-symbols-rounded{font-size:1.15rem;color:var(--accent-sea)}
+.card--quote blockquote{font-size:1.02rem}
+.card--quote blockquote::before{content:"\201C";display:block;height:1.3rem;font:600 2.6rem/1 var(--font-display);color:var(--accent-sage)}
+.quote__author{display:flex;align-items:center;gap:.8rem;margin-top:auto}
+.avatar{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;flex:none;border-radius:50%;background:linear-gradient(135deg,var(--accent-sea),var(--accent-sage));color:var(--on-secondary);font-weight:600}
+.quote__name{display:block;font-weight:600;line-height:1.3}
+.quote__role{color:var(--text-secondary);font-size:.85rem}
+.card--price{flex:1 1 16rem;position:relative}
+.card--featured{flex:1.4 1 19rem;padding:2.1rem;border:2px solid transparent;background:linear-gradient(var(--glass-bg),var(--glass-bg)) padding-box,linear-gradient(140deg,var(--accent-sea),var(--accent-sage)) border-box;box-shadow:var(--shadow-md)}
+@media(min-width:881px){.card--featured{transform:scale(1.03)}.card--featured:hover{transform:scale(1.03) translateY(-2px)}}
+.price__badge{position:absolute;top:-.95rem;left:50%;transform:translateX(-50%);padding:.32rem .95rem;border-radius:999px;background:var(--primary);color:var(--on-primary);font-size:.72rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
+.price__amount{font:600 2.5rem/1 var(--font-display)}
+.price__amount span{font:400 1rem var(--font-base);color:var(--text-secondary)}
+.price__blurb{color:var(--text-secondary);font-size:.95rem}
+.price__list{display:flex;flex-direction:column;gap:.55rem;width:100%}
+.price__list li{display:flex;align-items:center;gap:.55rem;color:var(--text-secondary);font-size:.95rem}
+.price__list .material-symbols-rounded{font-size:1.15rem;color:var(--accent-sea)}
+.card--price .btn{margin-top:auto;width:100%}
+.pricing__note{text-align:center;margin-top:1.6rem;color:var(--text-secondary);font-size:.9rem}
+.faq__list{display:flex;flex-direction:column;align-items:stretch;gap:.9rem;max-width:46rem;margin-inline:auto}/* stretch: full-width rows */
+.faq__item{border:1px solid var(--glass-border);border-radius:var(--radius-md);background:var(--glass-bg);backdrop-filter:blur(var(--blur-sm));-webkit-backdrop-filter:blur(var(--blur-sm))}
+.faq__item summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.05rem 1.3rem;cursor:pointer;list-style:none;font-weight:600;border-radius:var(--radius-md);transition:background var(--transition-normal)}
+.faq__item summary::-webkit-details-marker{display:none}
+.faq__item summary:hover{background:var(--border-default)}
+.faq__item summary .material-symbols-rounded{flex:none;color:var(--accent-sea);transition:transform var(--transition-normal) var(--ease-standard)}
+.faq__item[open] summary .material-symbols-rounded{transform:rotate(180deg)}
+.faq__item p{padding:0 1.3rem 1.2rem;color:var(--text-secondary);animation:fade var(--transition-normal) var(--ease-standard)}
+@keyframes fade{from{opacity:0}}
+.cta{position:relative;padding-block:calc(var(--spacing-section)*.9)}
+.cta::before{content:"";position:absolute;left:0;right:0;top:20%;bottom:0;background:linear-gradient(180deg,rgba(154,184,180,.35),var(--accent-sage));border-radius:50% 50% 0 0/9rem 9rem 0 0}
+.dark .cta::before{background:linear-gradient(180deg,rgba(122,154,148,.2),rgba(122,154,148,.45))}
+.cta .wrap{position:relative}
+.cta__panel{align-items:center;text-align:center;max-width:44rem;margin-inline:auto;padding:clamp(2rem,6vw,3.4rem);box-shadow:var(--shadow-md)}
+.cta__panel h2{margin-bottom:.6rem}
+.cta__panel>p{color:var(--text-secondary);max-width:48ch;margin-bottom:1.6rem}
+.input-group{display:flex;flex-direction:column;align-items:center;gap:.6rem;width:100%}
+.input-group__label{font-weight:600;font-size:.95rem}
+.input-group__row{display:flex;flex-wrap:wrap;justify-content:center;gap:.8rem;width:100%}
+.input-group__fieldwrap{position:relative;flex:1 1 15rem;display:flex}
+.input-group__field{flex:1;min-width:0;min-height:44px;padding:.7rem 2.6rem .7rem 1.1rem;border:1px solid var(--border-default);border-radius:999px;background:#fefefe;color:var(--text-primary);font:inherit;transition:border-color var(--transition-normal),box-shadow var(--transition-normal)}
+.dark .input-group__field{background:var(--bg-secondary)}
+.input-group__field::placeholder{color:var(--text-secondary)}
+.input-group__field:focus{outline:none;border-color:var(--accent-sea);box-shadow:0 0 0 3px rgba(122,154,148,.3)}
+.input-group__field:disabled{opacity:.5;cursor:not-allowed}
+.input-group__field[readonly]{background:var(--border-default)}
+.input-group__icon{position:absolute;top:50%;right:.9rem;transform:translateY(-50%);color:var(--text-success);opacity:0;transition:opacity var(--transition-normal)}
+.input-group--valid .input-group__field{border-color:var(--border-success)}
+.input-group--valid .input-group__icon{opacity:1}
+.input-group--invalid .input-group__field{border-color:var(--border-error)}
+.input-group__error,.input-group__msg{font-size:.9rem}
+.input-group__error{color:var(--text-error);font-weight:500}
+.input-group__error:not(:empty)::before{content:"error";font-family:'Material Symbols Rounded';font-size:1.1rem;vertical-align:-.25em;margin-right:.3rem}
+.input-group__error:empty,.input-group__msg:empty{display:none}
+.input-group__msg{color:var(--text-success);font-weight:600}
+.footer{padding:var(--spacing-section) clamp(1rem,4vw,2.5rem) 1.5rem;background:var(--bg-secondary);border-top:1px solid var(--border-default)}
+.footer__grid{display:flex;flex-wrap:wrap;align-items:flex-start;gap:2.4rem 3rem;max-width:72rem;margin-inline:auto}/* top-aligned columns */
+.footer__brand{flex:1.5 1 16rem;display:flex;flex-direction:column;align-items:flex-start;gap:.9rem}/* top-aligned stacks */
+.footer__tag{color:var(--text-secondary);max-width:30ch}
+.footer__social{display:flex;align-items:center;gap:.6rem}
+.footer__col{flex:1 1 9rem;display:flex;flex-direction:column;align-items:flex-start;gap:.7rem}/* top-aligned stacks */
+.footer__head{font:600 1rem var(--font-base)}
+.footer__col ul{display:flex;flex-direction:column;align-items:flex-start;gap:.35rem}/* left-aligned link lists */
+.footer__col .link-u{color:var(--text-secondary)}
+.footer__col .link-u:hover{color:var(--text-primary)}
+.footer__bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.8rem;max-width:72rem;margin:2.8rem auto 0;padding-top:1.3rem;border-top:1px solid var(--border-default);color:var(--text-secondary);font-size:.9rem}
+.footer__top{display:inline-flex;align-items:center;gap:.35rem;font-weight:600;text-decoration:none;color:var(--text-primary)}
+}
+@layer util{
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.skip{position:fixed;top:.7rem;left:.7rem;z-index:var(--z-toast);padding:.7rem 1.2rem;border-radius:999px;background:var(--primary);color:var(--on-primary);font-weight:600;text-decoration:none;transform:translateY(-300%);transition:transform var(--transition-fast)}
+.skip:focus{transform:none}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.orb,.eyebrow__dot,.skeleton,.steps::before{animation:none}.hero::after{display:none}.card,.btn,.icon-btn,.tide__fill,.link-arrow .material-symbols-rounded,.faq__item summary .material-symbols-rounded,.link-u::after{transition:none}}
+</style>
+</head>
+<body id="top">
+<a class="skip" href="#main">Skip to content</a>
+<p class="sr" aria-live="polite" id="live"></p>
+<div class="backdrop" aria-hidden="true"><span class="orb orb--1"></span><span class="orb orb--2"></span><span class="orb orb--3"></span><span class="orb orb--4"></span></div>
+<header class="header">
+ <a class="brand" href="#top"><span class="material-symbols-rounded" aria-hidden="true">waves</span>LOW TIDE</a>
+ <nav class="nav__links" aria-label="Primary">
+  <a class="link-u" href="#features">Features</a>
+  <a class="link-u" href="#how">How it works</a>
+  <a class="link-u" href="#testimonials">Testimonials</a>
+  <a class="link-u" href="#pricing">Pricing</a>
+  <a class="link-u" href="#faq">FAQ</a>
+ </nav>
+ <div class="header__actions">
+  <button class="icon-btn" id="themeBtn" type="button" aria-pressed="false" aria-label="Switch to dark mode"><span class="material-symbols-rounded" id="themeIcon" aria-hidden="true">dark_mode</span></button>
+  <a class="btn btn--primary btn--sm" href="#cta"><span class="btn__label">Get started</span></a>
+ </div>
+</header>
+<main id="main">
+<section class="hero" id="hero" aria-labelledby="heroTitle">
+ <p class="eyebrow"><span class="eyebrow__dot" aria-hidden="true"></span>Live tide data</p>
+ <h1 id="heroTitle">Read the water like a local.</h1>
+ <p class="hero__sub">Hyperlocal tide charts, glass-clear forecasts and pool-side alerts for the shore you actually stand on — refreshed every six minutes.</p>
+ <div class="hero__cta">
+  <a class="btn btn--primary" href="#cta"><span class="material-symbols-rounded" aria-hidden="true">notifications</span><span class="btn__label">Get tide alerts</span></a>
+  <a class="btn btn--glass" href="#features"><span class="material-symbols-rounded" aria-hidden="true">explore</span><span class="btn__label">Explore features</span></a>
+ </div>
+ <div class="card tide" id="tideCard">
+  <div class="tide__row">
+   <p class="tide__label">Live tide level — Sombrio Point</p>
+   <button class="icon-btn" id="tideRefresh" type="button" aria-label="Refresh tide reading"><span class="material-symbols-rounded" aria-hidden="true">refresh</span></button>
+  </div>
+  <div class="tide__sk" id="tideSk" aria-hidden="true"><span class="skeleton skeleton--text"></span><span class="skeleton skeleton--bar"></span></div>
+  <div id="tideData" hidden>
+   <p class="tide__read"><strong id="tidePct">—</strong><span>of the pool is uncovered — water dropping about 3 cm/h</span></p>
+   <div class="tide__track" id="tideBar" role="progressbar" aria-label="Current tide level at Sombrio Point" aria-valuemin="0" aria-valuemax="100" aria-valuenow="62"><span class="tide__fill" id="tideFill"></span></div>
+  </div>
+  <div class="tide__empty" id="tideEmpty" hidden>
+   <span class="material-symbols-rounded" aria-hidden="true">cloud_off</span>
+   <p>Tide station is offline right now. The signal usually returns within the hour.</p>
+   <button class="btn btn--glass btn--sm" id="tideRetry" type="button"><span class="btn__label">Retry connection</span></button>
+  </div>
+ </div>
+</section>
+<div class="tide-line" aria-hidden="true"></div>
+<section class="sec" id="features" aria-labelledby="featuresTitle">
+ <div class="wrap">
+  <header class="sec-head">
+   <p class="eyebrow"><span class="material-symbols-rounded" aria-hidden="true">grain</span>Features</p>
+   <h2 id="featuresTitle">Everything the shoreline tells you</h2>
+   <p class="lead">Three quiet instruments that turn a good guess into a confident plan for the coast.</p>
+  </header>
+  <div class="row">
+   <article class="card card--feature">
+    <span class="chip" aria-hidden="true"><span class="material-symbols-rounded">ssid_chart</span></span>
+    <h3>Hyperlocal tide charts</h3>
+    <p>Readings for the exact bench, cove or pool you wander — not the harbour two bays over. Updated every six minutes.</p>
+    <a class="link-arrow" href="#faq">Learn more<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+   </article>
+   <article class="card card--feature">
+    <span class="chip" aria-hidden="true"><span class="material-symbols-rounded">layers</span></span>
+    <h3>Forecasts in layers</h3>
+    <p>Swell, wind and lunar pull stacked as translucent layers, so you can see which one is really shaping the water today.</p>
+    <a class="link-arrow" href="#faq">Learn more<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+   </article>
+   <article class="card card--feature">
+    <span class="chip" aria-hidden="true"><span class="material-symbols-rounded">eco</span></span>
+    <h3>Pool-side alerts</h3>
+    <p>A gentle nudge the moment low tide starts exposing the anemone gardens — or when a king tide threatens your boots.</p>
+    <a class="link-arrow" href="#faq">Learn more<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+   </article>
+  </div>
+ </div>
+</section>
+<div class="tide-line" aria-hidden="true"></div>
+<section class="sec" id="how" aria-labelledby="howTitle">
+ <div class="wrap">
+  <header class="sec-head">
+   <p class="eyebrow"><span class="material-symbols-rounded" aria-hidden="true">route</span>How it works</p>
+   <h2 id="howTitle">From doorstep to tide pool in three steps</h2>
+   <p class="lead">Set it once — Low Tide keeps watch on the water so you can keep your eyes on the anemones.</p>
+  </header>
+  <div class="steps">
+   <article class="card card--step">
+    <span class="step__badge" aria-hidden="true">01</span>
+    <h3><span class="material-symbols-rounded" aria-hidden="true">pin_drop</span>Set your shore</h3>
+    <p>Drop a pin on your beach, jetty or secret pool. Low Tide calibrates to that exact stretch of water.</p>
+   </article>
+   <article class="card card--step">
+    <span class="step__badge" aria-hidden="true">02</span>
+    <h3><span class="material-symbols-rounded" aria-hidden="true">waves</span>Watch the water</h3>
+    <p>The live meter tracks the drop in real time, so you know how much pool is left before the sea returns.</p>
+   </article>
+   <article class="card card--step">
+    <span class="step__badge" aria-hidden="true">03</span>
+    <h3><span class="material-symbols-rounded" aria-hidden="true">notifications</span>Get pool-side alerts</h3>
+    <p>We ping you the morning the tide pulls back far enough for your spot — never earlier, never late.</p>
+   </article>
+  </div>
+ </div>
+</section>
+<div class="tide-line" aria-hidden="true"></div>
+<section class="sec" id="testimonials" aria-labelledby="testimonialsTitle">
+ <div class="wrap">
+  <header class="sec-head">
+   <p class="eyebrow"><span class="material-symbols-rounded" aria-hidden="true">forum</span>Testimonials</p>
+   <h2 id="testimonialsTitle">Word from the waterline</h2>
+   <p class="lead">Biologists, surfers and photographers who plan their days around the same tide you do.</p>
+  </header>
+  <div class="row">
+   <figure class="card card--quote">
+    <p class="quote__stars" aria-label="Rated 5 out of 5"><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span></p>
+    <blockquote>I plan field sampling around the live meter now. It matches my own gauge readings at Sombrio within two centimetres.</blockquote>
+    <figcaption class="quote__author"><span class="avatar" aria-hidden="true">M</span><span><span class="quote__name">Dr. Maya Okafor</span><span class="quote__role">Marine biologist</span></span></figcaption>
+   </figure>
+   <figure class="card card--quote">
+    <p class="quote__stars" aria-label="Rated 5 out of 5"><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span></p>
+    <blockquote>The layered forecast tells me if the swell or the wind is running the show. I've stopped driving an hour for flat water.</blockquote>
+    <figcaption class="quote__author"><span class="avatar" aria-hidden="true">J</span><span><span class="quote__name">Jonah Reyes</span><span class="quote__role">Big-wave surfer</span></span></figcaption>
+   </figure>
+   <figure class="card card--quote">
+    <p class="quote__stars" aria-label="Rated 5 out of 5"><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span></p>
+    <blockquote>Golden hour plus a minus-two tide in one alert. My anemone and starfish portfolio basically comes from this app.</blockquote>
+    <figcaption class="quote__author"><span class="avatar" aria-hidden="true">V</span><span><span class="quote__name">Marisol Vega</span><span class="quote__role">Coastal photographer</span></span></figcaption>
+   </figure>
+  </div>
+ </div>
+</section>
+<div class="tide-line" aria-hidden="true"></div>
+<section class="sec" id="pricing" aria-labelledby="pricingTitle">
+ <div class="wrap">
+  <header class="sec-head">
+   <p class="eyebrow"><span class="material-symbols-rounded" aria-hidden="true">payments</span>Pricing</p>
+   <h2 id="pricingTitle">Pick your tide</h2>
+   <p class="lead">From free evening strolls to station-grade history for crews and researchers.</p>
+  </header>
+  <div class="row">
+   <article class="card card--price">
+    <h3>Shoreline</h3>
+    <p class="price__amount">$0<span> / month</span></p>
+    <p class="price__blurb">For evening strolls and the occasional peek at the pools.</p>
+    <ul class="price__list">
+     <li><span class="material-symbols-rounded" aria-hidden="true">check</span>One saved shoreline</li>
+     <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Daily tide table</li>
+     <li><span class="material-symbols-rounded" aria-hidden="true">check</span>3-day outlook</li>
+    </ul>
+    <button class="btn btn--glass js-load" type="button"><span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span><span class="btn__label">Start free</span></button>
+   </article>
+   <article class="card card--price card--featured">
+    <p class="price__badge">Most popular</p>
+    <h3>Tide Pool</h3>
+    <p class="price__amount">$6<span> / month</span></p>
+    <p class="price__blurb">For regulars who live by the tide clock.</p>
+    <ul class="price__list">
+     <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Unlimited shorelines</li>
+     <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Live meter &amp; drop alerts</li>
+     <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Offline pool maps</li>
+     <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Community readings</li>
+    </ul>
+    <button class="btn btn--primary js-load" type="button"><span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span><span class="btn__label">Choose Tide Pool</span></button>
+   </article>
+   <article class="card card--price">
+    <h3>Open Ocean</h3>
+    <p class="price__amount">$14<span> / month</span></p>
+    <p class="price__blurb">For crews, guides and researchers working the whole coast.</p>
+    <ul class="price__list">
+     <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Everything in Tide Pool</li>
+     <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Swell &amp; barometric layers</li>
+     <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Share with 5 people</li>
+     <li><span class="material-symbols-rounded" aria-hidden="true">check</span>10 years of station history</li>
+    </ul>
+    <button class="btn btn--glass js-load" type="button"><span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span><span class="btn__label">Go open ocean</span></button>
+   </article>
+  </div>
+  <p class="pricing__note">Prices in USD. Switch or cancel any time — no rip currents attached.</p>
+ </div>
+</section>
+<div class="tide-line" aria-hidden="true"></div>
+<section class="sec" id="faq" aria-labelledby="faqTitle">
+ <div class="wrap">
+  <header class="sec-head">
+   <p class="eyebrow"><span class="material-symbols-rounded" aria-hidden="true">help</span>FAQ</p>
+   <h2 id="faqTitle">Questions from the shoreline</h2>
+   <p class="lead">The things people ask us while the water pulls back.</p>
+  </header>
+  <div class="faq__list">
+   <details class="faq__item"><summary>Where does Low Tide get its data?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary><p>We blend official government tide stations with community-verified readings, then correct for your exact pin using local bathymetry. Every number shows its source and age.</p></details>
+   <details class="faq__item"><summary>Which shorelines are covered?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary><p>Every major coast in North America, plus a growing set of community-mapped pools in the UK, Australia and Chile. If your pool isn't listed yet, you can add it yourself.</p></details>
+   <details class="faq__item"><summary>Does it work without signal?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary><p>Yes. Your last sync caches the day's tide curve, and paid plans include offline pool maps that load without a single bar of service.</p></details>
+   <details class="faq__item"><summary>Can I cancel any time?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary><p>Any time, from your account in two taps. You keep access until the end of the billing period — no questions asked.</p></details>
+   <details class="faq__item"><summary>Do you show metres or feet?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary><p>Both. Switch units in settings and we'll remember your choice across alerts, widgets and printed tide tables.</p></details>
+  </div>
+ </div>
+</section>
+<div class="tide-line" aria-hidden="true"></div>
+<section class="cta" id="cta" aria-labelledby="ctaTitle">
+ <div class="wrap">
+  <div class="card cta__panel">
+   <h2 id="ctaTitle">Meet me at low tide.</h2>
+   <p>Get a gentle heads-up the morning the water pulls back on your shore. Free for one beach, forever.</p>
+   <form class="input-group" id="ctaForm" novalidate>
+    <label class="input-group__label" for="email">Email address</label>
+    <div class="input-group__row">
+     <span class="input-group__fieldwrap"><input class="input-group__field" id="email" name="email" type="email" placeholder="you@shoreline.com" autocomplete="email" aria-describedby="emailErr"><span class="material-symbols-rounded input-group__icon" aria-hidden="true">check_circle</span></span>
+     <button class="btn btn--primary" id="ctaBtn" type="submit"><span class="material-symbols-rounded" id="ctaIco" aria-hidden="true">send</span><span class="btn__label" id="ctaLab">Send me alerts</span></button>
+    </div>
+    <p class="input-group__error" id="emailErr" aria-live="polite"></p>
+    <p class="input-group__msg" id="formMsg" aria-live="polite"></p>
+   </form>
+  </div>
+ </div>
+</section>
+</main>
+<footer class="footer">
+ <div class="footer__grid">
+  <div class="footer__brand">
+   <a class="brand" href="#top"><span class="material-symbols-rounded" aria-hidden="true">waves</span>LOW TIDE</a>
+   <p class="footer__tag">Weather for the strip of sea you actually visit.</p>
+   <div class="footer__social">
+    <a class="icon-btn" href="#cta" aria-label="Email the Low Tide crew"><span class="material-symbols-rounded" aria-hidden="true">mail</span></a>
+    <a class="icon-btn" href="#top" aria-label="Explore the community map"><span class="material-symbols-rounded" aria-hidden="true">public</span></a>
+    <a class="icon-btn" href="#top" aria-label="Follow our field notes feed"><span class="material-symbols-rounded" aria-hidden="true">rss_feed</span></a>
+   </div>
+  </div>
+  <nav class="footer__col" aria-label="Product">
+   <h3 class="footer__head">Product</h3>
+   <ul><li><a class="link-u" href="#features">Features</a></li><li><a class="link-u" href="#how">How it works</a></li><li><a class="link-u" href="#pricing">Pricing</a></li><li><a class="link-u" href="#faq">FAQ</a></li></ul>
+  </nav>
+  <nav class="footer__col" aria-label="Company">
+   <h3 class="footer__head">Company</h3>
+   <ul><li><a class="link-u" href="#top">About</a></li><li><a class="link-u" href="#top">Journal</a></li><li><a class="link-u" href="#top">Careers</a></li><li><a class="link-u" href="#cta">Contact</a></li></ul>
+  </nav>
+  <nav class="footer__col" aria-label="Legal">
+   <h3 class="footer__head">Legal</h3>
+   <ul><li><a class="link-u" href="#top">Privacy</a></li><li><a class="link-u" href="#top">Terms</a></li><li><a class="link-u" href="#top">Accessibility</a></li></ul>
+  </nav>
+ </div>
+ <div class="footer__bar">
+  <p>© <span id="year">2026</span> Low Tide Co. Made for shorelines everywhere.</p>
+  <a class="footer__top" href="#top">Back to top<span class="material-symbols-rounded" aria-hidden="true">arrow_upward</span></a>
+ </div>
+</footer>
+<script>
+(function(){var $=function(s,c){return (c||document).querySelector(s)};
+var root=document.documentElement,liveEl=$('#live'),say=function(m){liveEl.textContent=m};
+function theme(d,a){root.classList.toggle('dark',d);var b=$('#themeBtn');b.setAttribute('aria-pressed',String(d));b.setAttribute('aria-label',d?'Switch to light mode':'Switch to dark mode');$('#themeIcon').textContent=d?'light_mode':'dark_mode';try{localStorage.setItem('lowtide',d?'dark':'light')}catch(e){}if(a)say(d?'Midnight Tide theme enabled':'Day Tide theme enabled')}
+var saved=null;try{saved=localStorage.getItem('lowtide')}catch(e){}
+theme(saved?saved==='dark':matchMedia('(prefers-color-scheme:dark)').matches,false);
+$('#themeBtn').addEventListener('click',function(){theme(!root.classList.contains('dark'),true)});
+var hero=$('#hero');
+hero.addEventListener('pointermove',function(e){var r=hero.getBoundingClientRect();hero.style.setProperty('--mx',(e.clientX-r.left)+'px');hero.style.setProperty('--my',(e.clientY-r.top)+'px')});
+var sk=$('#tideSk'),td=$('#tideData'),te=$('#tideEmpty'),bar=$('#tideBar'),fill=$('#tideFill'),pct=$('#tidePct'),n=0;
+function show(el,on){el.hidden=!on}
+function loadTide(){show(sk,1);show(td,0);show(te,0);setTimeout(function(){n++;if(n%3===0){show(sk,0);show(te,1);say('Tide station offline. Retry to reconnect.')}else{var p=35+Math.round(Math.random()*45);show(sk,0);show(td,1);pct.textContent=p+'%';bar.setAttribute('aria-valuenow',p);fill.style.setProperty('--p',p/100);say('Tide level '+p+' percent. The pool is uncovering.')}},900)}
+$('#tideRefresh').addEventListener('click',loadTide);
+$('#tideRetry').addEventListener('click',loadTide);
+loadTide();
+document.querySelectorAll('.js-load').forEach(function(b){var i=b.querySelector('.material-symbols-rounded'),l=b.querySelector('.btn__label'),oi=i.textContent,ol=l.textContent;
+b.addEventListener('click',function(){if(b.classList.contains('is-loading')||b.classList.contains('is-success'))return;b.classList.add('is-loading');setTimeout(function(){b.classList.remove('is-loading');b.classList.add('is-success');i.textContent='check_circle';l.textContent='Saved';say('Plan saved: '+ol+'. Finish setup from your email.');setTimeout(function(){b.classList.remove('is-success');i.textContent=oi;l.textContent=ol},2600)},1000)})});
+var form=$('#ctaForm'),mail=$('#email'),err=$('#emailErr'),msg=$('#formMsg'),btn=$('#ctaBtn');
+function good(v){return /^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(v)}
+function validate(){var ok=good(mail.value),typed=!!mail.value;form.classList.toggle('input-group--valid',ok&&typed);form.classList.toggle('input-group--invalid',!ok&&typed);mail.setAttribute('aria-invalid',String(!ok&&typed));err.textContent=ok?'':'That address doesn\u2019t look right \u2014 check it so alerts can reach you.';return ok}
+mail.addEventListener('input',validate);
+form.addEventListener('submit',function(e){e.preventDefault();if(!validate()){mail.focus();return}btn.classList.add('is-loading');setTimeout(function(){btn.classList.remove('is-loading');btn.classList.add('is-success');$('#ctaIco').textContent='check_circle';$('#ctaLab').textContent='You\u2019re in';msg.textContent='Welcome to Low Tide \u2014 your first alert arrives the next time the water pulls back.';say('Subscription confirmed. Welcome to Low Tide.');form.reset();form.classList.remove('input-group--valid');setTimeout(function(){btn.classList.remove('is-success');$('#ctaIco').textContent='send';$('#ctaLab').textContent='Send me alerts'},4000)},1200)});
+var y=new Date().getFullYear();if(y>2026)$('#year').textContent=y;})();
+</script>
+</body>
+</html>

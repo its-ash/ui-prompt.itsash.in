@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nimbus — Drill-Down Analytics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL@20,400,1&display=swap" rel="stylesheet">
+<style>
+:root{--primary:#2563eb;--secondary:#0891b2;--bg-primary:#f4f6fa;--bg-secondary:#fefefe;--text-primary:#17233c;--text-secondary:#51607a;--text-success:#166534;--text-error:#be1f1f;--border-default:#d8dfec;--border-error:#e4a5a2;--border-success:#86cb9b;--drill-level-1:#4d90ee;--drill-level-2:#3b82f6;--drill-level-3:#1e40af;--breadcrumb-active:#1d4ed8;--path-indicator:#9aa8c0;--level-highlight:#e3ecfb;--radius-sm:8px;--radius-md:14px;--radius-lg:20px;--shadow-sm:0 1px 3px #17233c1f;--shadow-md:0 12px 30px #17233c24;--spacing-gap:1.4rem;--transition-fast:.15s;--transition-normal:.35s;--ease-standard:cubic-bezier(.4,0,.2,1);--z-dropdown:100;--z-modal:400;--z-toast:500;--font-base:'Inter',system-ui,sans-serif;--font-mono:'IBM Plex Mono',monospace;--on-fill:#fefefe}
+@media(prefers-color-scheme:dark){:root:not(.light){--primary:#60a5fa;--secondary:#22d3ee;--bg-primary:#0c1220;--bg-secondary:#151d31;--text-primary:#e8eefb;--text-secondary:#9db0cd;--text-success:#4ade80;--text-error:#f87171;--border-default:#2c3a58;--drill-level-1:#3e6db8;--drill-level-2:#3b82f6;--drill-level-3:#93c5fd;--breadcrumb-active:#7ab3ff;--path-indicator:#41527a;--level-highlight:#1d2a47;--shadow-sm:0 1px 3px #0007;--shadow-md:0 14px 34px #000b;--on-fill:#0c1220}}
+.dark{--primary:#60a5fa;--secondary:#22d3ee;--bg-primary:#0c1220;--bg-secondary:#151d31;--text-primary:#e8eefb;--text-secondary:#9db0cd;--text-success:#4ade80;--text-error:#f87171;--border-default:#2c3a58;--drill-level-1:#3e6db8;--drill-level-2:#3b82f6;--drill-level-3:#93c5fd;--breadcrumb-active:#7ab3ff;--path-indicator:#41527a;--level-highlight:#1d2a47;--shadow-sm:0 1px 3px #0007;--shadow-md:0 14px 34px #000b;--on-fill:#0c1220}
+/* row flex containers center-align; column stacks intentionally keep default stretch */
+*{margin:0;padding:0;box-sizing:border-box}
+ul,ol{list-style:none}
+summary{list-style:none}
+summary::-webkit-details-marker{display:none}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.55;overflow-x:clip}
+h1,h2,h3{line-height:1.2}
+.ms{font-family:'Material Symbols Rounded';font-size:1.25rem;line-height:1;user-select:none;font-variation-settings:'FILL' 1;display:inline-flex}
+.wrap{max-width:1080px;margin:0 auto;padding:0 1.25rem}
+.sec{padding:3.4rem 0;scroll-margin-top:84px}
+.sec h2{font-size:clamp(1.35rem,3vw,1.85rem)}
+.sub{color:var(--text-secondary);max-width:58ch;margin:.45rem 0 2rem}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+section:focus{outline:none}
+section:focus-visible{outline:2px solid var(--secondary);outline-offset:4px}
+.btn{display:flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:.4rem 1.1rem;border:1px solid transparent;border-radius:var(--radius-sm);background:var(--primary);color:var(--on-fill);font:inherit;font-weight:600;text-decoration:none;cursor:pointer;transition:filter var(--transition-fast),box-shadow var(--transition-fast),transform var(--transition-fast),background var(--transition-fast),color var(--transition-fast),border-color var(--transition-fast)}
+.btn:hover{filter:brightness(1.08);box-shadow:var(--shadow-sm)}
+.btn:active,.chip:active,.kpi:active{transform:scale(.97)}
+.btn:focus-visible,.crumbs a:focus-visible,summary:focus-visible,.chip:focus-visible,.kpi:focus-visible,.foot a:focus-visible,.input:focus-visible{outline:2px solid var(--secondary);outline-offset:2px}
+.btn--secondary{background:transparent;border-color:var(--primary);color:var(--primary)}
+.btn--secondary:hover{background:var(--level-highlight);filter:none}
+.btn--ghost{background:transparent;color:var(--text-primary)}
+.btn--ghost:hover{background:var(--level-highlight);filter:none;box-shadow:none}
+.btn--danger{background:transparent;border-color:var(--text-error);color:var(--text-error)}
+.btn--danger:hover{background:var(--text-error);color:var(--on-fill);filter:none}
+.btn--icon{width:44px;padding:0;flex:none}
+.btn--back{background:var(--bg-secondary);border-color:var(--border-default);color:var(--text-primary);font-size:.85rem;padding:.35rem .8rem;flex:none}
+.btn--back:hover{filter:none;background:var(--level-highlight)}
+.btn.is-loading{pointer-events:none;opacity:.7}
+.btn.is-loading .ms{animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(1turn)}}
+.btn.is-success{background:var(--text-success);color:var(--on-fill);filter:none}
+.btn.is-error{background:var(--text-error);color:var(--on-fill);filter:none}
+.bar{position:sticky;top:0;z-index:var(--z-dropdown);display:flex;align-items:center;gap:.6rem;background:var(--bg-primary);border-bottom:1px solid var(--border-default);padding:.5rem 1.25rem}
+.logo{display:flex;align-items:center;gap:.4rem;font-weight:700;font-size:1.05rem;color:var(--text-primary);text-decoration:none;flex:none}
+.logo .ms{color:var(--primary)}
+.crumbs{display:flex;align-items:center;gap:.1rem;flex:1;min-width:0;overflow:hidden}
+.crumbs li{display:flex;align-items:center}
+.crumbs a{display:flex;align-items:center;min-height:44px;padding:0 .55rem;border-radius:var(--radius-sm);color:var(--text-secondary);text-decoration:none;font-size:.88rem;white-space:nowrap;transition:background var(--transition-fast),color var(--transition-fast)}
+.crumbs a:hover,.crumbs a:active{background:var(--level-highlight);color:var(--text-primary)}
+.crumbs a[aria-current]{color:var(--breadcrumb-active);font-weight:600}
+.crumbs .sep{color:var(--path-indicator);font-size:1.05rem}
+.hero{display:flex;flex-wrap:wrap;align-items:center;gap:2.2rem;padding:3.2rem 0 2.6rem}
+.hero__copy{flex:1 1 330px;display:flex;flex-direction:column;gap:1rem}
+.hero h1{font-size:clamp(1.85rem,4.4vw,2.7rem);line-height:1.12;letter-spacing:-.02em}
+.hero p{color:var(--text-secondary)}
+.hero__cta{display:flex;flex-wrap:wrap;align-items:center;gap:.8rem}
+.mock{flex:1 1 370px;min-width:0;display:flex;flex-direction:column;gap:.8rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);padding:1rem}
+.mock__crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:.25rem;font-family:var(--font-mono);font-size:.76rem;color:var(--text-secondary)}
+.mock__crumbs .cur{color:var(--breadcrumb-active);font-weight:700}
+.mock__crumbs .ms{font-size:.95rem;color:var(--path-indicator)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:.6rem}
+.kpi{display:flex;flex-direction:column;align-items:flex-start;gap:.1rem;background:var(--bg-primary);border:1px solid var(--border-default);border-radius:var(--radius-sm);padding:.55rem .7rem;font:inherit;color:var(--text-primary);cursor:pointer;text-align:left;transition:border-color var(--transition-fast),transform var(--transition-fast)}
+.kpi:hover{border-color:var(--primary)}
+.kpi__label{font-size:.68rem;letter-spacing:.05em;text-transform:uppercase;color:var(--text-secondary)}
+.kpi__val{font-family:var(--font-mono);font-weight:700}
+.kpi__delta{display:flex;align-items:center;gap:.2rem;font-size:.72rem}
+.kpi__delta .ms{font-size:.95rem}
+.kpi__delta--up{color:var(--text-success)}
+.kpi__delta--down{color:var(--text-error)}
+.chart{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;align-items:end;height:108px;border-bottom:2px solid var(--border-default);padding:0 .2rem}
+.chart span{display:block;border-radius:4px 4px 0 0;background:var(--lc,var(--drill-level-2));min-height:4px;transition:height var(--transition-normal) var(--ease-standard)}
+.chart span:nth-child(1){height:var(--h1)}.chart span:nth-child(2){height:var(--h2)}.chart span:nth-child(3){height:var(--h3)}.chart span:nth-child(4){height:var(--h4)}.chart span:nth-child(5){height:var(--h5)}.chart span:nth-child(6){height:var(--h6)}.chart span:nth-child(7){height:var(--h7)}
+.mock[data-lv="1"]{--lc:var(--drill-level-1);--h1:96%;--h2:72%;--h3:88%;--h4:62%;--h5:92%;--h6:76%;--h7:66%}
+.mock[data-lv="2"]{--lc:var(--drill-level-2);--h1:50%;--h2:84%;--h3:38%;--h4:96%;--h5:64%;--h6:88%;--h7:46%}
+.mock[data-lv="3"]{--lc:var(--drill-level-3);--h1:32%;--h2:58%;--h3:20%;--h4:74%;--h5:12%;--h6:92%;--h7:42%}
+.mock.is-reloading .chart span,.mock.is-reloading .kpi__val{animation:pulse .55s var(--ease-standard)}
+@keyframes pulse{50%{opacity:.25}}
+.chips{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem}
+.chip{display:flex;align-items:center;gap:.45rem;min-height:44px;padding:.2rem .85rem;border:1px solid var(--border-default);border-radius:999px;background:var(--bg-primary);color:var(--text-secondary);font:inherit;font-size:.8rem;cursor:pointer;transition:border-color var(--transition-fast),background var(--transition-fast),color var(--transition-fast),transform var(--transition-fast)}
+.chip:hover{border-color:var(--primary)}
+.chip[aria-pressed="true"]{border-color:var(--primary);background:var(--level-highlight);color:var(--text-primary)}
+.dot{width:10px;height:10px;border-radius:50%;flex:none}
+.chip--1 .dot{background:var(--drill-level-1)}.chip--2 .dot{background:var(--drill-level-2)}.chip--3 .dot{background:var(--drill-level-3)}
+.mock__foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.6rem}
+.mock__note{font-size:.75rem;color:var(--text-secondary)}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:var(--spacing-gap)}
+.card{display:flex;flex-direction:column;gap:.75rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:1.35rem;box-shadow:var(--shadow-sm);transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),border-color var(--transition-fast)}
+.row>.card{flex:1 1 290px}
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.card:focus-within{border-color:var(--primary)}
+.card.is-flash{border-color:var(--secondary);box-shadow:0 0 0 3px var(--level-highlight),var(--shadow-md)}
+.card h3{font-size:1.02rem}
+.card p{color:var(--text-secondary);font-size:.94rem}
+.f__icon{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-sm);background:var(--level-highlight);color:var(--primary);flex:none}
+.drill{margin-top:auto}
+.drill summary{display:flex;align-items:center;gap:.4rem;min-height:44px;cursor:pointer;font-weight:600;color:var(--primary);border-radius:var(--radius-sm)}
+.drill summary .ms{transition:transform var(--transition-normal) var(--ease-standard)}
+.drill[open] summary .ms{transform:rotate(180deg)}
+.dbody{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--transition-normal) var(--ease-standard)}
+details[open] .dbody{grid-template-rows:1fr}
+.dinner{overflow:hidden;min-height:0}
+.tree{display:flex;flex-direction:column;gap:.45rem;padding-top:.6rem}
+.tree li{display:flex;align-items:center;gap:.5rem;font-size:.86rem;color:var(--text-secondary)}
+.tree li::before{content:"";width:9px;height:9px;border-radius:3px;flex:none}
+.tree li:nth-child(3n+1)::before{background:var(--drill-level-1)}
+.tree li:nth-child(3n+2)::before{background:var(--drill-level-2);margin-left:.95rem}
+.tree li:nth-child(3n+3)::before{background:var(--drill-level-3);margin-left:1.9rem}
+.steps{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:var(--spacing-gap);position:relative}
+.steps::before{content:"";position:absolute;top:21px;left:10%;width:80%;height:3px;border-radius:2px;background:var(--path-indicator)}
+.step{flex:1 1 250px;max-width:290px;display:flex;flex-direction:column;align-items:center;gap:.65rem;text-align:center}
+.step__num{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:700;background:var(--bg-secondary);box-shadow:var(--shadow-sm);position:relative;z-index:1}
+.step--1 .step__num{border:3px solid var(--drill-level-1)}
+.step--2 .step__num{border:3px solid var(--drill-level-2)}
+.step--3 .step__num{border:3px solid var(--drill-level-3)}
+.step p{color:var(--text-secondary);font-size:.9rem}
+.lvtag{display:inline-flex;align-items:center;gap:.4rem;font-family:var(--font-mono);font-size:.72rem;padding:.2rem .6rem;border:1px solid var(--drill-level-2);border-radius:999px}
+.lvtag .dot{width:9px;height:9px}
+.lvtag--1{border-color:var(--drill-level-1)}.lvtag--1 .dot{background:var(--drill-level-1)}
+.lvtag--2 .dot{background:var(--drill-level-2)}
+.lvtag--3{border-color:var(--drill-level-3)}.lvtag--3 .dot{background:var(--drill-level-3)}
+.t__quote{font-size:.95rem}
+.t__who{display:flex;align-items:center;gap:.75rem;margin-top:auto}
+.avatar{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;background:var(--level-highlight);color:var(--breadcrumb-active);font-weight:700;font-size:.82rem;letter-spacing:.03em;flex:none}
+.t__name{display:block;font-size:.9rem;font-weight:600}
+.t__role{display:block;font-size:.78rem;color:var(--text-secondary)}
+.tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--spacing-gap);align-items:center}
+.tier{display:flex;flex-direction:column;gap:.8rem;position:relative}
+.tier--pop{border-width:2px;padding:calc(1.35rem - 1px);border-color:var(--primary);box-shadow:var(--shadow-md)}
+.badge{position:absolute;top:-13px;left:50%;translate:-50%;background:var(--primary);color:var(--on-fill);font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:.22rem .7rem;border-radius:999px;white-space:nowrap}
+.tier__lv{font-family:var(--font-mono);font-size:.72rem;color:var(--text-secondary)}
+.tier h3{font-size:1.15rem}
+.tier .price{font-family:var(--font-mono);font-weight:700;font-size:2rem;line-height:1;color:var(--text-primary)}
+.price small{font-family:var(--font-base);font-size:.78rem;font-weight:400;color:var(--text-secondary)}
+.tier ul{display:flex;flex-direction:column;gap:.5rem;font-size:.88rem}
+.tier li{display:flex;align-items:center;gap:.5rem}
+.tier li .ms{font-size:1.05rem;color:var(--text-success)}
+.tier .btn{margin-top:.4rem}
+.faq{display:flex;flex-direction:column;gap:.7rem;max-width:760px;margin:0 auto}
+.faq details{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);transition:border-color var(--transition-fast)}
+.faq details[open]{border-color:var(--primary)}
+.faq summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:44px;padding:.65rem 1.1rem;cursor:pointer;font-weight:600;border-radius:var(--radius-md)}
+.faq summary .ms{color:var(--text-secondary);transition:transform var(--transition-normal) var(--ease-standard)}
+.faq details[open] summary .ms{transform:rotate(180deg)}
+.faq .dinner p{padding:0 1.1rem .85rem;color:var(--text-secondary);font-size:.9rem}
+.cta{display:flex;flex-direction:column;align-items:center;gap:.9rem;text-align:center;background:linear-gradient(135deg,var(--primary),var(--secondary));border-radius:var(--radius-lg);padding:2.6rem 1.4rem;color:var(--on-fill);box-shadow:var(--shadow-md)}
+.cta h2{color:inherit}
+.cta p{opacity:.92;max-width:52ch}
+.cta__card{width:min(480px,100%);background:var(--bg-secondary);color:var(--text-primary);border-radius:var(--radius-md);padding:1.2rem;display:flex;flex-direction:column;gap:.6rem;box-shadow:var(--shadow-md)}
+.form__label{font-size:.85rem;font-weight:600;text-align:left}
+.input-group{position:relative;display:flex;align-items:center}
+.input{width:100%;min-height:44px;padding:.5rem 2.5rem .5rem .9rem;border:1px solid var(--border-default);border-radius:var(--radius-sm);background:var(--bg-primary);color:var(--text-primary);font:inherit;transition:border-color var(--transition-fast)}
+.input::placeholder{color:var(--text-secondary)}
+.input:focus-visible{outline:2px solid var(--secondary);outline-offset:1px}
+.input.is-invalid{border-color:var(--text-error)}
+.input.is-valid{border-color:var(--text-success)}
+.input:disabled{opacity:.55;cursor:not-allowed;filter:grayscale(1)}
+.input__icon{position:absolute;right:.7rem;top:50%;translate:0 -50%;font-size:1.05rem;color:var(--text-secondary);pointer-events:none;display:none}
+.input.is-invalid~.input__icon{display:inline-flex;color:var(--text-error)}
+.input.is-valid~.input__icon{display:inline-flex;color:var(--text-success)}
+.form__msg{display:flex;align-items:center;gap:.35rem;font-size:.84rem;min-height:1.25rem;text-align:left}
+.form__msg .ms{font-size:1rem}
+.form__msg--error{color:var(--text-error)}
+.form__msg--ok{color:var(--text-success)}
+.cta .btn{width:100%}
+.foot{border-top:1px solid var(--border-default);margin-top:3.5rem;padding:2.5rem 0 1.6rem}
+.foot__grid{display:flex;flex-wrap:wrap;gap:2rem 3rem}
+.foot__col{display:flex;flex-direction:column;gap:.3rem;flex:1 1 160px}
+.foot h4{font-size:.8rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-secondary);margin-bottom:.35rem}
+.foot a{display:flex;align-items:center;min-height:40px;color:var(--text-secondary);text-decoration:none;font-size:.9rem;transition:color var(--transition-fast)}
+.foot a:hover{color:var(--breadcrumb-active)}
+.foot__base{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1rem;margin-top:2.2rem;padding-top:1.3rem;border-top:1px solid var(--border-default);font-size:.84rem;color:var(--text-secondary)}
+.here{display:flex;align-items:center;gap:.25rem;font-family:var(--font-mono);font-size:.78rem}
+.here .ms{font-size:.95rem;color:var(--path-indicator)}
+.here b{color:var(--breadcrumb-active)}
+.social{display:flex;gap:.4rem}
+.social a{min-width:44px;min-height:44px;justify-content:center}
+.social .ms{color:var(--text-secondary)}
+@media(max-width:840px){.tiers{grid-template-columns:minmax(0,420px);justify-content:center}}
+@media(max-width:760px){.steps::before{display:none}}
+@media(max-width:740px){.crumbs li:not(:has([aria-current])){display:none}.crumbs .sep{display:none}.btn--back .btn__label{display:none}.bar{gap:.4rem;padding:.5rem .8rem}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+<script>try{var t=localStorage.getItem('nimbus');if(t==='dark')document.documentElement.classList.add('dark');else if(t==='light')document.documentElement.classList.add('light')}catch(e){}</script>
+</head>
+<body id="top">
+<header class="bar">
+<a class="logo" href="#top"><span class="ms" aria-hidden="true">insights</span>Nimbus</a>
+<button class="btn btn--back" id="backBtn" aria-label="Back to previous level"><span class="ms" aria-hidden="true">arrow_back</span><span class="btn__label">Back</span></button>
+<nav aria-label="Breadcrumb"><ol class="crumbs">
+<li><a href="#features" aria-current="page">Features</a><span class="ms sep" aria-hidden="true">chevron_right</span></li>
+<li><a href="#how">Drill path</a><span class="ms sep" aria-hidden="true">chevron_right</span></li>
+<li><a href="#pricing">Pricing</a><span class="ms sep" aria-hidden="true">chevron_right</span></li>
+<li><a href="#faq">FAQ</a></li>
+</ol></nav>
+<button class="btn btn--ghost btn--icon" id="themeToggle" aria-label="Toggle dark mode" aria-pressed="false"><span class="ms" aria-hidden="true">dark_mode</span></button>
+</header>
+<main>
+<section class="hero" aria-label="Intro"><div class="wrap">
+<div class="hero__copy">
+<h1>Every answer, one level deeper.</h1>
+<p>Nimbus is the BI workspace where you click any number and drill from company-wide summaries down to the row that caused it — without ever losing your path.</p>
+<div class="hero__cta">
+<a class="btn btn--primary" href="#pricing"><span class="ms" aria-hidden="true">arrow_downward</span>Start drilling free</a>
+<a class="btn btn--secondary" href="#how"><span class="ms" aria-hidden="true">play_circle</span>See the drill path</a>
+</div>
+</div>
+<div class="mock" id="demo" data-lv="1">
+<nav class="mock__crumbs" aria-label="Demo breadcrumb"><span>Overview</span><span class="ms" aria-hidden="true">chevron_right</span><span>Revenue</span><span class="ms" aria-hidden="true">chevron_right</span><span class="cur" id="demoCrumb">Q4 · All regions</span></nav>
+<div class="kpis">
+<button class="kpi" data-drill="features"><span class="kpi__label">Revenue</span><span class="kpi__val">$4.2M</span><span class="kpi__delta kpi__delta--up"><span class="ms" aria-hidden="true">trending_up</span>+12.4%</span></button>
+<button class="kpi" data-drill="features"><span class="kpi__label">Accounts</span><span class="kpi__val">18,430</span><span class="kpi__delta kpi__delta--up"><span class="ms" aria-hidden="true">trending_up</span>+3.1%</span></button>
+<button class="kpi" data-drill="features"><span class="kpi__label">Churn</span><span class="kpi__val">2.1%</span><span class="kpi__delta kpi__delta--down"><span class="ms" aria-hidden="true">trending_down</span>-0.4 pts</span></button>
+</div>
+<div class="chart" role="img" aria-label="Revenue bar chart for the selected drill level"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+<div class="chips" role="group" aria-label="Drill level">
+<button class="chip chip--1" data-lv="1" data-crumb="Q4 · All regions" aria-pressed="true"><span class="dot" aria-hidden="true"></span>Level 1 · Summary</button>
+<button class="chip chip--2" data-lv="2" data-crumb="Q4 · EMEA" aria-pressed="false"><span class="dot" aria-hidden="true"></span>Level 2 · Category</button>
+<button class="chip chip--3" data-lv="3" data-crumb="Order #48112" aria-pressed="false"><span class="dot" aria-hidden="true"></span>Level 3 · Detail</button>
+</div>
+<div class="mock__foot"><span class="mock__note">Live demo — pick a level, or click a KPI to drill into the detail below.</span><button class="btn btn--danger" id="resetDemo"><span class="ms" aria-hidden="true">restart_alt</span>Reset view</button></div>
+<p class="sr" id="drillLive" aria-live="polite"></p>
+</div>
+</div></section>
+<section class="sec" id="features"><div class="wrap">
+<h2>Built for depth</h2>
+<p class="sub">Summary-to-detail is a first-class interaction in Nimbus, not an afterthought. Every control on this page works — try the drills.</p>
+<div class="row">
+<article class="card">
+<span class="f__icon"><span class="ms" aria-hidden="true">insights</span></span>
+<h3>Click any metric</h3>
+<p>Every KPI is a doorway. One click descends from dashboard totals to the exact records behind them.</p>
+<details class="drill"><summary>Drill deeper<span class="ms" aria-hidden="true">expand_more</span></summary>
+<div class="dbody"><div class="dinner"><ul class="tree">
+<li>Level 1 · Total revenue rollup, all regions</li>
+<li>Level 2 · Category: EMEA is 18.2% of the total</li>
+<li>Level 3 · Detail: order #48112 — $1,240, Berlin</li>
+</ul></div></div></details>
+</article>
+<article class="card">
+<span class="f__icon"><span class="ms" aria-hidden="true">account_tree</span></span>
+<h3>Never lose your path</h3>
+<p>Breadcrumbs record every hop of a drill, and the back button retraces it exactly — no re-querying.</p>
+<details class="drill"><summary>Drill deeper<span class="ms" aria-hidden="true">expand_more</span></summary>
+<div class="dbody"><div class="dinner"><ul class="tree">
+<li>Level 1 · Path: Overview / Revenue / Q4</li>
+<li>Level 2 · Context: filters and date range preserved</li>
+<li>Level 3 · Return: one click, full history intact</li>
+</ul></div></div></details>
+</article>
+<article class="card">
+<span class="f__icon"><span class="ms" aria-hidden="true">layers</span></span>
+<h3>Levels you can see</h3>
+<p>Color-coded level indicators keep summary, category, and detail visually distinct in every chart and theme.</p>
+<details class="drill"><summary>Drill deeper<span class="ms" aria-hidden="true">expand_more</span></summary>
+<div class="dbody"><div class="dinner"><ul class="tree">
+<li>Level 1 · An ordered light-to-deep color ramp</li>
+<li>Level 2 · Always paired with a text label</li>
+<li>Level 3 · Retuned for light and dark modes</li>
+</ul></div></div></details>
+</article>
+</div>
+</div></section>
+<section class="sec" id="how"><div class="wrap">
+<h2>The drill path</h2>
+<p class="sub">Three levels, one uninterrupted train of thought. The sticky breadcrumb and back button above mirror it in real time.</p>
+<div class="steps">
+<div class="step step--1">
+<span class="step__num">1</span>
+<span class="lvtag lvtag--1"><span class="dot" aria-hidden="true"></span>Level 1 · Summary</span>
+<h3>Start wide</h3>
+<p>Open a dashboard of rolled-up KPIs. Every total is query-backed and trustworthy.</p>
+</div>
+<div class="step step--2">
+<span class="step__num">2</span>
+<span class="lvtag lvtag--2"><span class="dot" aria-hidden="true"></span>Level 2 · Category</span>
+<h3>Drill in</h3>
+<p>Click a segment. The breadcrumb records the hop and your filters come along for the ride.</p>
+</div>
+<div class="step step--3">
+<span class="step__num">3</span>
+<span class="lvtag lvtag--3"><span class="dot" aria-hidden="true"></span>Level 3 · Detail</span>
+<h3>Reach the row</h3>
+<p>Land on the exact record. The back button walks the whole path home.</p>
+</div>
+</div>
+</div></section>
+<section class="sec" id="stories"><div class="wrap">
+<h2>What analysts say</h2>
+<p class="sub">Teams that moved to summary-to-detail workflows tell it best.</p>
+<div class="row">
+<article class="card">
+<p class="t__quote">“I stopped exporting CSVs to answer follow-up questions. The answer is always two clicks deeper.”</p>
+<div class="t__who"><span class="avatar" aria-hidden="true">MO</span><span><span class="t__name">Maya Osei</span><span class="t__role">Head of Analytics · Fernwood Retail</span></span></div>
+</article>
+<article class="card">
+<p class="t__quote">“The breadcrumb changed how our whole team reads dashboards. You always know exactly where you are.”</p>
+<div class="t__who"><span class="avatar" aria-hidden="true">DR</span><span><span class="t__name">Daniel Reyes</span><span class="t__role">BI Lead · Corvata</span></span></div>
+</article>
+<article class="card">
+<p class="t__quote">“Our monthly review went from a full day of slide-making to ten live minutes of drilling, together.”</p>
+<div class="t__who"><span class="avatar" aria-hidden="true">PN</span><span><span class="t__name">Priya Nair</span><span class="t__role">VP Data · Halden Group</span></span></div>
+</article>
+</div>
+</div></section>
+<section class="sec" id="pricing"><div class="wrap">
+<h2>Pick your level</h2>
+<p class="sub">Start at the summary. Go as deep as your data does. Every plan includes unlimited drilling.</p>
+<div class="tiers">
+<article class="card tier">
+<span class="tier__lv">Level 1 · Summary</span>
+<h3>Explorer</h3>
+<p class="price">$0<small> / forever</small></p>
+<p>For solo analysts reading the rollups.</p>
+<ul>
+<li><span class="ms" aria-hidden="true">check</span>3 dashboards</li>
+<li><span class="ms" aria-hidden="true">check</span>1M rows per source</li>
+<li><span class="ms" aria-hidden="true">check</span>7-day query history</li>
+</ul>
+<a class="btn btn--secondary" href="#cta">Start free</a>
+</article>
+<article class="card tier tier--pop">
+<span class="badge">Most popular</span>
+<span class="tier__lv">Level 2 · Category</span>
+<h3>Analyst</h3>
+<p class="price">$29<small> / user / month</small></p>
+<p>For teams that live in the drill path.</p>
+<ul>
+<li><span class="ms" aria-hidden="true">check</span>Unlimited dashboards</li>
+<li><span class="ms" aria-hidden="true">check</span>50M rows per source</li>
+<li><span class="ms" aria-hidden="true">check</span>Full drill-down history</li>
+<li><span class="ms" aria-hidden="true">check</span>Scheduled reports</li>
+</ul>
+<a class="btn btn--primary" href="#cta">Start 14-day trial</a>
+</article>
+<article class="card tier">
+<span class="tier__lv">Level 3 · Detail</span>
+<h3>Team</h3>
+<p class="price">$79<small> / user / month</small></p>
+<p>For orgs that need row-level truth.</p>
+<ul>
+<li><span class="ms" aria-hidden="true">check</span>Everything in Analyst</li>
+<li><span class="ms" aria-hidden="true">check</span>Row-level security</li>
+<li><span class="ms" aria-hidden="true">check</span>1B+ rows, audit logs</li>
+</ul>
+<a class="btn btn--secondary" href="#cta">Contact sales</a>
+</article>
+</div>
+</div></section>
+<section class="sec" id="faq"><div class="wrap">
+<h2>Frequently drilled questions</h2>
+<p class="sub">The basics, answered. Anything deeper lives in the docs.</p>
+<div class="faq">
+<details><summary>How deep can I drill?<span class="ms" aria-hidden="true">expand_more</span></summary><div class="dbody"><div class="dinner"><p>All the way. Every chart is query-backed, so a drill is just a narrower query — from company totals to a single row, with no exports.</p></div></div></details>
+<details><summary>Does drilling change my filters?<span class="ms" aria-hidden="true">expand_more</span></summary><div class="dbody"><div class="dinner"><p>Never. Your date range and filters carry through every level and stay visible in the breadcrumb, so any drill is one Back click away.</p></div></div></details>
+<details><summary>Does Nimbus work with my warehouse?<span class="ms" aria-hidden="true">expand_more</span></summary><div class="dbody"><div class="dinner"><p>Nimbus connects read-only to Snowflake, BigQuery, Postgres, and Redshift. Your data never leaves your warehouse.</p></div></div></details>
+<details><summary>Is there a free plan?<span class="ms" aria-hidden="true">expand_more</span></summary><div class="dbody"><div class="dinner"><p>Yes — Explorer is free forever and includes unlimited drilling across three dashboards.</p></div></div></details>
+<details><summary>Can I change plans later?<span class="ms" aria-hidden="true">expand_more</span></summary><div class="dbody"><div class="dinner"><p>Any time. Upgrades apply instantly; downgrades take effect at the end of your billing cycle. No sales calls required.</p></div></div></details>
+</div>
+</div></section>
+<section class="sec" id="cta"><div class="wrap">
+<div class="cta">
+<h2>Go one level deeper.</h2>
+<p>Join the waitlist for the Nimbus beta and get an invite as seats open.</p>
+<form class="cta__card" id="ctaForm" novalidate>
+<label class="form__label" for="email">Work email</label>
+<div class="input-group">
+<input class="input" id="email" name="email" type="email" placeholder="you@company.com" autocomplete="email" required>
+<span class="ms input__icon" id="inputIcon" aria-hidden="true"></span>
+</div>
+<p class="form__msg" id="formMsg" aria-live="polite"><span class="ms" id="msgIcon" aria-hidden="true"></span><span id="msgText"></span></p>
+<button class="btn btn--primary" type="submit" id="ctaBtn"><span class="btn__label" id="btnLabel">Request invite</span><span class="ms" id="btnIcon" aria-hidden="true">arrow_forward</span></button>
+</form>
+</div>
+</div></section>
+</main>
+<footer class="foot"><div class="wrap">
+<div class="foot__grid">
+<div class="foot__col"><h4>Product</h4><a href="#features">Features</a><a href="#how">Drill path</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a></div>
+<div class="foot__col"><h4>Resources</h4><a href="#">Documentation</a><a href="#">API reference</a><a href="#">Changelog</a><a href="#">Status</a></div>
+<div class="foot__col"><h4>Company</h4><a href="#">About</a><a href="#">Careers</a><a href="#">Contact</a><a href="#">Press kit</a></div>
+</div>
+<div class="foot__base">
+<span>© 2026 Nimbus Analytics, Inc. All rights reserved.</span>
+<p class="here">You are here <span class="ms" aria-hidden="true">chevron_right</span> <b aria-current="page">Home</b></p>
+<div class="social">
+<a href="#" aria-label="Email newsletter"><span class="ms" aria-hidden="true">mail</span></a>
+<a href="#" aria-label="Blog feed"><span class="ms" aria-hidden="true">rss_feed</span></a>
+<a href="#" aria-label="Community forum"><span class="ms" aria-hidden="true">forum</span></a>
+</div>
+</div>
+</div></footer>
+<script>
+(function(){var d=document,r=d.documentElement,rm=matchMedia('(prefers-reduced-motion:reduce)').matches;
+var tog=d.getElementById('themeToggle'),ti=tog.firstElementChild;
+var dark=function(){return r.classList.contains('dark')||(!r.classList.contains('light')&&matchMedia('(prefers-color-scheme:dark)').matches)};
+var sync=function(){var k=dark();tog.setAttribute('aria-pressed',k);ti.textContent=k?'light_mode':'dark_mode'};
+tog.addEventListener('click',function(){var k=!dark();r.classList.toggle('dark',k);r.classList.toggle('light',!k);try{localStorage.setItem('nimbus',k?'dark':'light')}catch(e){}sync()});
+sync();
+var crumbs=[].slice.call(d.querySelectorAll('.crumbs a'));
+var sec=function(c){return d.getElementById(c.getAttribute('href').slice(1))};
+var io=new IntersectionObserver(function(es){es.forEach(function(en){if(!en.isIntersecting)return;crumbs.forEach(function(c){if(sec(c)===en.target)c.setAttribute('aria-current','page');else c.removeAttribute('aria-current')})})},{rootMargin:'-40% 0px -55% 0px'});
+crumbs.forEach(function(c){var s=sec(c);if(s)io.observe(s)});
+[].forEach.call(d.querySelectorAll('a[href^="#"]'),function(a){a.addEventListener('click',function(){var s=d.getElementById(a.getAttribute('href').slice(1));if(s){s.tabIndex=-1;setTimeout(function(){s.focus({preventScroll:true})},rm?0:450)}})});
+d.getElementById('backBtn').addEventListener('click',function(){var i=crumbs.map(function(c){return c.getAttribute('aria-current')}).indexOf('page');var t=i>0?sec(crumbs[i-1]):d.body;(t||d.body).scrollIntoView({behavior:rm?'auto':'smooth',block:'start'})});
+var demo=d.getElementById('demo'),live=d.getElementById('drillLive'),dc=d.getElementById('demoCrumb'),names=['','Summary','Category','Detail'];
+var chips=[].slice.call(d.querySelectorAll('.chip'));
+chips.forEach(function(c){c.addEventListener('click',function(){chips.forEach(function(x){x.setAttribute('aria-pressed',x===c?'true':'false')});demo.setAttribute('data-lv',c.dataset.lv);dc.textContent=c.dataset.crumb;live.textContent='Now viewing: '+names[c.dataset.lv]+' level';if(rm)return;demo.classList.remove('is-reloading');void demo.offsetWidth;demo.classList.add('is-reloading');clearTimeout(demo._t);demo._t=setTimeout(function(){demo.classList.remove('is-reloading')},600)})});
+d.getElementById('resetDemo').addEventListener('click',function(){d.querySelector('.chip[data-lv="1"]').click()});
+[].forEach.call(d.querySelectorAll('.kpi'),function(k){k.addEventListener('click',function(){var t=d.getElementById(k.dataset.drill);t.scrollIntoView({behavior:rm?'auto':'smooth'});live.textContent='Drilling from summary to the detail breakdown';var cs=t.querySelectorAll('.card');[].forEach.call(cs,function(c){c.classList.add('is-flash')});setTimeout(function(){[].forEach.call(cs,function(c){c.classList.remove('is-flash')})},rm?0:900)})});
+var f=d.getElementById('ctaForm'),inp=d.getElementById('email'),b=d.getElementById('ctaBtn'),bl=d.getElementById('btnLabel'),bi=d.getElementById('btnIcon'),mi=d.getElementById('msgIcon'),mt=d.getElementById('msgText'),mg=d.getElementById('formMsg'),ic=d.getElementById('inputIcon');
+var say=function(c,i,t){mg.className='form__msg '+c;mi.textContent=i;mt.textContent=t};
+inp.addEventListener('input',function(){inp.classList.remove('is-invalid','is-valid');ic.textContent='';say('','','')});
+f.addEventListener('submit',function(e){e.preventDefault();
+if(b.classList.contains('is-loading'))return;
+var v=inp.value.trim();
+if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)){inp.classList.add('is-invalid');ic.textContent='error';say('form__msg--error','error','That does not look like a valid work email.');inp.focus();return}
+inp.classList.remove('is-invalid');inp.classList.add('is-valid');ic.textContent='check';
+b.classList.add('is-loading');bl.textContent='Checking';bi.textContent='progress';
+setTimeout(function(){b.classList.remove('is-loading');b.classList.add('is-success');bl.textContent='Invited';bi.textContent='check';inp.disabled=true;say('form__msg--ok','check','You are on the list — an invite will reach '+v+'.')},1000);
+});
+})();
+</script>
+</body>
+</html>

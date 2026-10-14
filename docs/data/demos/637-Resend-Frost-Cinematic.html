@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nimbus – Email that feels like cinema</title>
+<meta name="description" content="Developer‑first email API with a frost‑kissed cinematic UI.">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400&family=Poppins:wght@600&family=Inter:wght@400;500&family=Commit+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-primary:#000000;
+  --bg-secondary:#0a0a0a;
+  --text-primary:#f0f0f0;
+  --text-secondary:#a1a4a5;
+  --text-success:#22ff99;
+  --text-error:#ff5555;
+  --border-default:rgba(214,235,253,0.19);
+  --border-success:rgba(34,255,153,0.3);
+  --border-error:rgba(255,85,85,0.3);
+  --accent-orange:#ff801f;
+  --accent-green:#22ff99;
+  --accent-blue:#3b9eff;
+  --accent-yellow:#ffea00;
+  --accent-red:#ff4d4d;
+  --radius-sm:8px;
+  --radius-md:16px;
+  --radius-pill:9999px;
+  --shadow-sm:0 1px 2px rgba(0,0,0,0.2);
+  --shadow-md:0 4px 6px rgba(0,0,0,0.3);
+  --ring:0 0 0 1px rgba(176,199,217,0.145);
+  --spacing-gap:1rem;
+  --transition-fast:150ms;
+  --transition-normal:300ms;
+  --ease-standard:cubic-bezier(0.4,0,0.2,1);
+  --z-dropdown:1000;
+  --z-modal:2000;
+  --z-toast:3000;
+  --font-display:'Playfair Display',serif;
+  --font-heading:'Poppins',sans-serif;
+  --font-base:'Inter',sans-serif;
+  --font-mono:'Commit Mono',monospace;
+}
+.light{
+  --bg-primary:#fefefe;
+  --bg-secondary:#f5f5f5;
+  --text-primary:#111;
+  --text-secondary:#555;
+  --text-success:#006400;
+  --text-error:#b22222;
+  --border-default:rgba(214,235,253,0.19);
+  --border-success:rgba(34,255,153,0.3);
+  --border-error:rgba(255,85,85,0.3);
+  --accent-orange:#ff801f;
+  --accent-green:#22ff99;
+  --accent-blue:#3b9eff;
+  --accent-yellow:#ffea00;
+  --accent-red:#ff4d4d;
+  --ring:0 0 0 1px rgba(0,0,0,0.1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px}
+body{
+  background:var(--bg-primary);
+  color:var(--text-primary);
+  font-family:var(--font-base);
+  line-height:1.5;
+  min-height:100vh;
+  transition:background var(--transition-normal),color var(--transition-normal)
+}
+a{color:inherit;text-decoration:none}
+button,input,select,textarea{font:inherit}
+.container{width:90%;max-width:1200px;margin:0 auto;padding:var(--spacing-gap)0}
+.flex{display:flex;align-items:center;gap:var(--spacing-gap)}
+.flex-col{flex-direction:column;align-items:stretch}
+.justify-between{justify-content:space-between}
+.text-center{text-align:center}
+.text-left{text-align:left}
+.text-right{text-align:right}
+.overflow-hidden{overflow:hidden}
+h1,h2,h3,h4,h5,h6{font-weight:600;line-height:1.2;margin-bottom:0.5em}
+h1{font-family:var(--font-display);font-size:6rem;letter-spacing:-0.06rem}
+h2{font-family:var(--font-heading);font-size:3.5rem;letter-spacing:-0.175rem}
+h3{font-size:1.25rem}
+p{margin-bottom:1em;color:var(--text-secondary)}
+.code{
+  font-family:var(--font-mono);
+  background:var(--bg-secondary);
+  padding:0.5em 0.75em;
+  border-radius:var(--radius-sm);
+  border:1px solid var(--border-default);
+  font-size:0.9em;
+  overflow-x:auto
+}
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:0.5rem;
+  height:3rem;
+  min-height:44px;
+  min-width:44px;
+  padding:0 1.5rem;
+  border-radius:var(--radius-pill);
+  border:2px solid var(--border-default);
+  background:transparent;
+  color:var(--text-primary);
+  cursor:pointer;
+  font-weight:500;
+  transition:background var(--transition-fast),border-color var(--transition-fast),transform var(--transition-fast)
+}
+.btn:hover{background:rgba(255,255,255,0.05);border-color:var(--border-default)}
+.btn:focus-visible{outline:none;box-shadow:var(--ring)}
+.btn:active{transform:scale(0.97)}
+.btn[disabled],.btn.disabled{opacity:0.5;cursor:not-allowed}
+.btn-primary{border-color:var(--accent-blue);color:var(--accent-blue)}
+.btn-primary:hover{background:rgba(59,158,255,0.1)}
+.btn-secondary{border-color:var(--border-default);color:var(--text-secondary)}
+.btn-secondary:hover{background:rgba(255,255,255,0.05)}
+.btn-danger{border-color:var(--accent-red);color:var(--accent-red)}
+.btn-danger:hover{background:rgba(255,77,77,0.1)}
+.card{
+  background:var(--bg-secondary);
+  border:2px solid var(--border-default);
+  border-radius:var(--radius-md);
+  padding:1.5rem;
+  transition:transform var(--transition-normal),box-shadow var(--transition-normal);
+  box-shadow:var(--ring)
+}
+.card:hover{transform:translateY(-2px);box-shadow:0 8px 16px rgba(0,0,0,0.3)}
+.card:focus-within{border-color:var(--accent-blue);box-shadow:0 0 0 2px rgba(59,158,255,0.3)}
+.icon{width:2rem;height:2rem;flex-shrink:0}
+.icon-orange{color:var(--accent-orange)}
+.icon-green{color:var(--accent-green)}
+.icon-blue{color:var(--accent-blue)}
+.icon-yellow{color:var(--accent-yellow)}
+.icon-red{color:var(--accent-red)}
+.nav{
+  position:sticky;
+  top:0;
+  background:var(--bg-primary);
+  border-bottom:1px solid var(--border-default);
+  padding:0.75rem 0;
+  z-index:var(--z-dropdown)
+}
+.nav .container{justify-content:space-between}
+.nav-links{gap:1.5rem}
+.nav-links a{
+  font-weight:500;
+  padding:0.25rem 0;
+  position:relative
+}
+.nav-links a::after{
+  content:"";
+  position:absolute;
+  left:0;
+  bottom:-2px;
+  width:0;
+  height:2px;
+  background:var(--accent-blue);
+  transition:width var(--transition-normal)
+}
+.nav-links a:hover::after,.nav-links a[aria-current="page"]::after{width:100%}
+.theme-toggle{
+  background:transparent;
+  border:none;
+  color:var(--text-secondary);
+  font-size:1.25rem;
+  cursor:pointer;
+  padding:0.25rem
+}
+.theme-toggle:focus-visible{outline:none;box-shadow:var(--ring)}
+.hero{
+  text-align:center;
+  padding:4rem 0
+}
+.hero h1{font-size:6rem;letter-spacing:-0.06rem}
+.hero p{max-width:48rem;margin:0 auto 2rem;font-size:1.25rem}
+.hero .btn{margin:0 0.5rem}
+.hero .code{margin-top:2rem;max-width:30rem;align-self:center}
+.features{
+  display:grid;
+  gap:var(--spacing-gap);
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr))
+}
+.features .card{text-align:center}
+.features .icon{margin:0 auto 1rem;font-size:2rem}
+.how{
+  display:grid;
+  gap:var(--spacing-gap);
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr))
+}
+.step{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:1rem
+}
+.step-number{
+  width:2.5rem;height:2.5rem;
+  background:var(--bg-secondary);
+  border:2px solid var(--border-default);
+  border-radius:50%;
+  color:var(--text-primary);
+  font-weight:600;
+  display:flex;
+  align-items:center;
+  justify-content:center
+}
+.step-number.orange{border-color:var(--accent-orange);color:var(--accent-orange)}
+.step-number.green{border-color:var(--accent-green);color:var(--accent-green)}
+.step-number.blue{border-color:var(--accent-blue);color:var(--accent-blue)}
+.step-content{text-align:center}
+.testimonials{
+  display:grid;
+  gap:var(--spacing-gap);
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr))
+}
+.testimonials .card{position:relative}
+.testimonials .quote{
+  font-size:1.125rem;
+  font-style:italic;
+  margin-bottom:1rem
+}
+.testimonials .author{
+  display:flex;
+  align-items:center;
+  gap:0.75rem
+}
+.testimonials .author img{
+  width:2.5rem;height:2.5rem;
+  border-radius:50%;
+  object-fit:cover;
+  border:2px solid var(--border-default)
+}
+.testimonials .author-info{flex:1}
+.testimonials .author-name{font-weight:600}
+.testimonials .author-role{font-size:0.875rem;color:var(--text-secondary)}
+.pricing{
+  display:grid;
+  gap:var(--spacing-gap);
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr))
+}
+.pricing .card{position:relative}
+.pricing .card.popular{
+  border-color:var(--accent-green);
+  box-shadow:0 0 0 2px rgba(34,255,153,0.2)
+}
+.pricing .badge{
+  position:absolute;
+  top:-0.75rem;
+  left:1rem;
+  background:var(--accent-green);
+  color:var(--bg-primary);
+  padding:0.25rem 0.75rem;
+  border-radius:var(--radius-pill);
+  font-size:0.875rem;
+  font-weight:600
+}
+.pricing .price{
+  font-size:2.25rem;
+  font-weight:600;
+  margin:1rem 0
+}
+.pricing .price span{font-size:1rem;opacity:0.7}
+.pricing .features-list{
+  list-style:none;
+  margin:1.5rem 0
+}
+.pricing .features-list li{
+  margin:0.5rem 0;
+  display:flex;
+  align-items:center;
+  gap:0.5rem
+}
+.pricing .features-list li::before{
+  content:"✓";
+  color:var(--text-success)
+}
+.pricing .btn{width:100%;margin-top:1rem}
+.faq{
+  max-width:48rem;
+  margin:0 auto
+}
+.faq details{
+  border:2px solid var(--border-default);
+  border-radius:var(--radius-md);
+  margin-bottom:1rem;
+  overflow:hidden
+}
+.faq summary{
+  padding:1rem 1.5rem;
+  font-weight:600;
+  cursor:pointer;
+  list-style:none;
+  display:flex;
+  justify-content:space-between;
+  align-items:center
+}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{
+  content:"▸";
+  transition:transform var(--transition-normal);
+  display:inline-block;
+  width:1rem;
+  text-align:center
+}
+.faq details[open] summary::after{transform:rotate(90deg)}
+.faq .faq-content{
+  padding:1.5rem;
+  color:var(--text-secondary)
+}
+.faq details[open]{border-color:var(--accent-blue)}
+.cta{
+  text-align:center;
+  padding:4rem 0
+}
+.cta h2{font-size:2.5rem;margin-bottom:1.5rem}
+.cta .btn{font-size:1.125rem}
+.footer{
+  border-top:1px solid var(--border-default);
+  padding:2rem 0;
+  font-size:0.875rem;
+  color:var(--text-secondary)
+}
+.footer .container{justify-content:space-between;flex-wrap:wrap;gap:1rem}
+.footer-links{gap:1rem}
+.footer-links a{opacity:0.7;transition:opacity var(--transition-fast)}
+.footer-links a:hover{opacity:1}
+.footer .mono{
+  font-family:var(--font-mono);
+  font-size:0.75rem;
+  opacity:0.6
+}
+@media (max-width:480px){
+  h1{font-size:2.25rem}
+  h2{font-size:1.75rem}
+  .hero{padding:3rem 0}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition-duration:0.001ms!important;transition-delay:0!important}
+}
+@media (prefers-color-scheme:light){
+  :root{
+    --bg-primary:#fefefe;
+    --bg-secondary:#f5f5f5;
+    --text-primary:#111;
+    --text-secondary:#555;
+    --text-success:#006400;
+    --text-error:#b22222;
+    --border-default:rgba(214,235,253,0.19);
+    --border-success:rgba(34,255,153,0.3);
+    --border-error:rgba(255,85,85,0.3);
+    --ring:0 0 0 1px rgba(0,0,0,0.1)
+  }
+}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="container flex justify-between">
+    <div class="flex">
+      <a href="#" aria-current="page">Nimbus</a>
+      <nav class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#how">How it works</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#docs">Docs</a>
+      </nav>
+    </div>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Switch to light mode" aria-pressed="false">
+      <!-- Material Symbols: brightness_4 for light, brightness_2 for dark; we'll use a simple icon via unicode -->
+      🌙
+    </button>
+  </div>
+</header>
+
+<section class="hero" id="hero">
+  <div class="container">
+    <h1>Email that feels like cinema</h1>
+    <p>Send, track, and scale your transactional emails with a frost‑kissed interface built for developers.</p>
+    <div class="flex justify-center flex-wrap">
+      <a href="#pricing" class="btn btn-primary">Get Started Free</a>
+      <a href="#docs" class="btn btn-secondary">View Docs</a>
+    </div>
+    <pre class="code"><code>curl https://api.nimbus.dev/v1/send \
+  -X POST \
+  -H "Authorization: Bearer sk_test_..." \
+  -d '{"to":"user@example.com","subject":"Welcome","body":"Hey there!"}'</code></pre>
+  </div>
+</section>
+
+<section class="features" id="features">
+  <div class="container">
+    <h2 class="text-center">Features</h2>
+    <div class="flex flex-col gap-4">
+      <div class="card">
+        <div class="icon icon-orange">🛡️</div>
+        <h3>Enterprise security</h3>
+        <p>TLS encryption, SOC 2 compliance, and granular API keys keep your data safe.</p>
+      </div>
+      <div class="card">
+        <div class="icon icon-green">⚡</div>
+        <h3>Blazing fast delivery</h3>
+        <p>Edge‑optimized MTAs achieve sub‑second latency for transactional emails.</p>
+      </div>
+      <div class="card">
+        <div class="icon icon-blue">📊</div>
+        <h3>Real‑time analytics</h3>
+        <p>Open, click, and bounce metrics streamed via webhooks or dashboards.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="how" id="how">
+  <div class="container">
+    <h2 class="text-center">How it works</h2>
+    <div class="flex flex-col gap-4">
+      <div class="step">
+        <div class="step-number orange">1</div>
+        <div class="step-content">
+          <h3>Connect your SMTP</h3>
+          <p>Add your domain, verify DNS, and start sending via API or SMTP relay.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-number green">2</div>
+        <div class="step-content">
+          <h3>Design your template</h3>
+          <p>Use our drag‑and‑drop editor or bring your own HTML with Handlebars‑style variables.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-number blue">3</div>
+        <div class="step-content">
+          <h3>Send &amp; analyze</h3>
+          <p>Trigger emails, monitor delivery, and optimize with real‑time insights.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="testimonials" id="testimonials">
+  <div class="container">
+    <h2 class="text-center">What developers say</h2>
+    <div class="flex flex-col gap-4">
+      <div class="card">
+        <p class="quote">“Nimbus cut our email latency by 80 % and the docs are a joy to read.”</p>
+        <div class="author">
+          <img src="https://i.pravatar.cc/40?u=1" alt="Avatar">
+          <div class="author-info">
+            <div class="author-name">Lena Torres</div>
+            <div class="author-role">Backend Engineer, Stellar Corp</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <p class="quote">“The webhook payloads are clean, and the pricing is transparent.”</p>
+        <div class="author">
+          <img src="https://i.pravatar.cc/40?u=2" alt="Avatar">
+          <div class="author-info">
+            <div class="author-name">Jae Kim</div>
+            <div class="author-role">DevOps Lead, Nova Labs</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <p class="quote">“Switching from SendGrid was painless; the frost UI makes monitoring fun.”</p>
+        <div class="author">
+          <img src="https://i.pravatar.cc/40?u=3" alt="Avatar">
+          <div class="author-info">
+            <div class="author-name">Priya Desai</div>
+            <div class="author-role">Founder, InboxAI</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="pricing" id="pricing">
+  <div class="container">
+    <h2 class="text-center">Pricing</h2>
+    <div class="flex flex-col gap-4">
+      <div class="card">
+        <h3>Free</h3>
+        <div class="price"><span>$</span>0<span>/mo</span></div>
+        <ul class="features-list">
+          <li>Up to 10 k emails/mo</li>
+          <li>Basic analytics</li>
+          <li>Community support</li>
+        </ul>
+        <a href="#cta" class="btn btn-primary">Start Free</a>
+      </div>
+      <div class="card popular">
+        <div class="badge">Popular</div>
+        <h3>Pro</h3>
+        <div class="price"><span>$</span>29<span>/mo</span></div>
+        <ul class="features-list">
+          <li>Up to 100 k emails/mo</li>
+          <li>Advanced analytics + webhooks</li>
+          <li>Priority support</li>
+          <li>Dedicated IP</li>
+        </ul>
+        <a href="#cta" class="btn btn-primary">Get Pro</a>
+      </div>
+      <div class="card">
+        <h3>Enterprise</h3>
+        <div class="price"><span>$</span>99<span>/mo</span></div>
+        <ul class="features-list">
+          <li>Unlimited emails</li>
+          <li>Custom SLA &amp; account manager</li>
+          <li>SSO &amp; audit logs</li>
+          <li>On‑premise options</li>
+        </ul>
+        <a href="#cta" class="btn btn-primary">Talk Sales</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="faq" id="faq">
+  <div class="container">
+    <h2 class="text-center">Frequently asked questions</h2>
+    <div class="flex flex-col gap-2">
+      <details>
+        <summary>How do I verify my domain?</summary>
+        <div class="faq-content">
+          Add the provided DKIM and SPF TXT records to your DNS provider. Once propagated, use the <code>Verify Domain</code> endpoint or the dashboard checker.
+        </div>
+      </details>
+      <details>
+        <summary>Can I send attachments?</summary>
+        <div class="faq-content">
+          Yes. Encode files as base64 and include them in the <code>attachments</b> array of the send payload. Total message size limit is 25 MB.
+        </div>
+      </details>
+      <details>
+        <summary>Is there a rate limit?</summary>
+        <div class="faq-content">
+          Free tier: 100 requests/minute. Paid tiers scale with your plan; contact us for custom limits.
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="cta" id="cta">
+  <div class="container">
+    <h2>Ready to send like a director?</h2>
+    <p>Join thousands of developers who trust Nimbus for reliable, beautiful email.</p>
+    <a href="#pricing" class="btn btn-primary">Start Free Trial</a>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container flex flex-col gap-3">
+    <div>
+      <a href="#" class="footer-links">Docs</a>
+      <a href="#" class="footer-links">Status</a>
+      <a href="#" class="footer-links">Blog</a>
+    </div>
+    <div class="footer-links">
+      <a href="#" class="footer-links">Twitter</a>
+      <a href="#" class="footer-links">GitHub</a>
+      <a href="#" class="footer-links">LinkedIn</a>
+    </div>
+    <div class="text-center">
+      <span>© 2026 Nimbus. All rights reserved.</span>
+      <div class="mono">Built with frost and code.</div>
+    </div>
+  </div>
+</footer>
+
+<script defer>
+  const STORAGE_KEY = 'theme-preference';
+  const htmlEl = document.documentElement;
+  const toggleBtn = document.getElementById('theme-toggle');
+
+  function setTheme(isLight) {
+    if (isLight) {
+      htmlEl.classList.add('light');
+      toggleBtn.setAttribute('aria-pressed', 'true');
+      toggleBtn.setAttribute('aria-label', 'Switch to dark mode');
+    } else {
+      htmlEl.classList.remove('light');
+      toggleBtn.setAttribute('aria-pressed', 'false');
+      toggleBtn.setAttribute('aria-label', 'Switch to light mode');
+    }
+    localStorage.setItem(STORAGE_KEY, isLight ? 'light' : 'dark');
+  }
+
+  function initTheme() {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored === 'light' || stored === 'dark') {
+      setTheme(stored === 'light');
+    } else {
+      const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+      setTheme(prefersLight);
+    }
+  }
+
+  toggleBtn.addEventListener('click', () => {
+    const isLight = !htmlEl.classList.contains('light');
+    setTheme(isLight);
+  });
+
+  initTheme();
+</script>
+</body>
+</html>

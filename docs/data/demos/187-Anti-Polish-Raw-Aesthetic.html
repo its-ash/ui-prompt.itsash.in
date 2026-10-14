@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Smudge — the sketchbook app for unfinished ideas.">
+<title>Smudge — the sketchbook app for unfinished ideas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Kalam:wght@400;700&family=Caveat:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<style>
+@layer tokens, base, layout, components, utilities;
+@layer tokens{
+:root{--primary:#1A1A1A;--secondary:#C4A77D;--bg-primary:#FAFAF8;--bg-secondary:#F1EDE3;--text-primary:#1A1A1A;--text-secondary:#4A4A4A;--text-success:#3E6B4F;--text-error:#B3261E;--border-default:#4A4A4A;--border-error:#B3261E;--border-success:#3E6B4F;--radius-sm:2px;--radius-md:2px;--radius-lg:4px;--shadow-sm:3px 3px 0 var(--border-default);--shadow-md:6px 6px 0 var(--primary);--spacing-gap:1rem;--transition-fast:60ms;--transition-normal:140ms;--ease-standard:steps(3,end);--font-display:'Permanent Marker',cursive;--font-base:'Kalam',cursive;--font-accent:'Caveat',cursive;--z-dropdown:10;--z-modal:100;--z-toast:200}
+html.dark{--bg-primary:#1E1D1B;--bg-secondary:#262521;--text-primary:#F4F1E8;--text-secondary:#B9B4A9;--primary:#F4F1E8;--secondary:#C4A77D;--text-error:#E57368;--text-success:#8FBF9A;--border-default:#B9B4A9;--border-error:#E57368;--border-success:#8FBF9A;--shadow-md:6px 6px 0 var(--primary)}
+@media (prefers-color-scheme:dark){html:not(.dark):not(.light){--bg-primary:#1E1D1B;--bg-secondary:#262521;--text-primary:#F4F1E8;--text-secondary:#B9B4A9;--primary:#F4F1E8;--secondary:#C4A77D;--text-error:#E57368;--text-success:#8FBF9A;--border-default:#B9B4A9;--border-error:#E57368;--border-success:#8FBF9A;--shadow-md:6px 6px 0 var(--primary)}}
+}
+@layer base{
+*,::before,::after{box-sizing:border-box}
+html{overflow-x:clip}
+body{margin:0;overflow-x:clip;font-family:var(--font-base);font-size:1rem;background:var(--bg-primary);color:var(--text-primary);line-height:1.55}
+body::before{content:"";position:fixed;inset:0;z-index:var(--z-toast);pointer-events:none;opacity:.06;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E")}
+h1,h2,h3,h4{font-family:var(--font-display);font-weight:400;line-height:1.15;margin:0 0 .5em}
+p,ul,ol{margin:0 0 1em}
+ul,ol{padding:0;list-style:none}
+a{color:inherit}
+button{font:inherit;color:inherit}
+.material-symbols-outlined{line-height:1;user-select:none}
+@media (prefers-reduced-motion:reduce){*,::before,::after{transition:none!important;animation:none!important}}
+}
+@layer layout{
+.wrap{max-width:1080px;margin-inline:auto;padding-inline:1rem}
+.section{padding-block:2.6rem;scroll-margin-top:4.5rem}
+.section__title{font-size:clamp(1.7rem,4vw,2.4rem);margin-bottom:.2rem}
+.section__lede{color:var(--text-secondary);max-width:56ch;margin-bottom:1.6rem}
+.site-header{position:sticky;top:0;z-index:var(--z-dropdown);display:flex;align-items:center;flex-wrap:wrap;gap:.35rem .9rem;padding:.5rem 1rem;background:var(--bg-secondary);border-bottom:2px solid var(--border-default)}
+.brand{display:inline-flex;align-items:center;gap:.25rem;font-family:var(--font-display);font-size:1.4rem;text-decoration:none;rotate:-1deg}
+.site-nav{display:flex;align-items:center;flex-wrap:wrap;gap:.2rem;margin-left:auto}
+.site-nav a{display:inline-flex;align-items:center;min-height:44px;padding:.2rem .55rem;text-decoration:none;border-bottom:3px dashed transparent}
+.site-nav a:hover{border-color:var(--border-default)}
+.site-nav a:focus-visible,.footer__social a:focus-visible{outline:2px dashed var(--border-default);outline-offset:3px}
+.hero{position:relative;display:flex;align-items:center;flex-wrap:wrap;gap:1.6rem 2.4rem;padding-block:3.2rem 2.6rem}
+.hero__inner{flex:1 1 320px;position:relative;z-index:1}
+.hero__collage{flex:0 1 290px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:1.2rem}
+.hero__title{font-size:clamp(2.3rem,7vw,4rem);margin-bottom:.4rem}
+.hero__sub{font-size:1.1rem;color:var(--text-secondary);max-width:50ch}
+.hero__cta{display:flex;align-items:center;flex-wrap:wrap;gap:var(--spacing-gap);margin:1.2rem 0 .8rem}
+.row3{display:flex;align-items:center;flex-wrap:wrap;gap:var(--spacing-gap)}
+.row3>*{flex:1 1 260px}
+.steps{display:flex;flex-direction:column;gap:1.7rem;position:relative} /* exception: full-width steps */
+.step{display:flex;align-items:center;gap:1rem;position:relative}
+.step:not(:last-child)::after{content:"";position:absolute;left:25px;top:calc(50% + 26px);bottom:calc(-1.7rem - 2px);border-left:3px dashed var(--border-default)}
+.step__text{flex:1}
+.pricing{align-items:stretch} /* exception: stretch gives equal-height tiers */
+.cta{background:var(--bg-secondary);border-block:2px solid var(--border-default)}
+.cta .wrap{display:flex;align-items:center;flex-wrap:wrap;gap:1rem 2rem;padding-block:2.4rem}
+.cta__pitch{flex:1 1 280px}
+.cta__pitch p{color:var(--text-secondary);max-width:46ch}
+.cta__form{flex:1 1 320px;display:flex;align-items:center;flex-wrap:wrap;gap:.7rem}
+.site-footer{background:var(--bg-secondary);border-top:2px solid var(--border-default)}
+.footer__cols{display:flex;align-items:flex-start;flex-wrap:wrap;gap:1.4rem 2.6rem;padding-block:2.2rem 1rem} /* exception: columns read top-aligned */
+.footer__cols>div{flex:1 1 150px}
+.footer__cols h4{font-size:1.05rem;margin:0 0 .2rem}
+.footer__cols a{display:flex;align-items:center;min-height:44px;text-decoration:underline;text-decoration-style:dashed}
+.footer__cols a:hover{text-decoration-style:wavy}
+.footer__social{display:flex;align-items:center;gap:.4rem}
+.footer__social a{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border:2px solid var(--border-default);border-radius:var(--radius-sm);text-decoration:none;transition:rotate var(--transition-fast) var(--ease-standard)}
+.footer__social a:hover{rotate:-6deg;background:var(--bg-primary)}
+.footer__meta{display:flex;align-items:center;flex-wrap:wrap;gap:.2rem 2rem;padding-block:.4rem 1.4rem}
+.footer__meta p{margin:0}
+@media (min-width:820px){
+.steps{flex-direction:row;align-items:flex-start;gap:1.2rem} /* exception: badges sit on the connector line */
+.step{flex-direction:column;text-align:center;flex:1;gap:.4rem}
+.step__text{flex:none}
+.step:not(:last-child)::after{display:none}
+.steps::before{content:"";position:absolute;top:26px;left:15%;right:15%;border-top:3px dashed var(--border-default)}
+}
+}
+@layer components{
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;min-width:44px;padding:.5rem 1.1rem;font-family:var(--font-base);font-weight:700;font-size:1rem;background:var(--bg-primary);color:var(--text-primary);border:2px solid var(--primary);border-radius:var(--radius-sm);box-shadow:var(--shadow-sm);cursor:pointer;text-decoration:none;transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard)}
+.btn .material-symbols-outlined{font-size:1.25rem}
+.btn:hover{transform:translate(-1px,-1px) rotate(-.7deg);box-shadow:5px 5px 0 var(--border-default)}
+.btn:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--primary)}
+.btn:focus-visible{outline:2px dashed var(--border-default);outline-offset:3px}
+.btn--secondary{background:var(--bg-secondary)}
+.btn--primary{background:var(--primary);color:var(--bg-primary)}
+.btn--danger{background:var(--text-error);color:var(--bg-primary);border-color:var(--text-error)}
+.btn--success{background:var(--text-success);color:var(--bg-primary);border-color:var(--text-success)}
+.btn--error{background:var(--text-error);color:var(--bg-primary);border-color:var(--text-error)}
+.btn:disabled,.btn[aria-disabled="true"]{opacity:.5;filter:grayscale(1);cursor:not-allowed;transform:none;box-shadow:none}
+.btn[aria-busy="true"]{pointer-events:none}
+.btn__spinner{position:absolute;inset:0;display:none;align-items:center;justify-content:center}
+.btn__spinner .material-symbols-outlined{animation:spin .8s steps(8,end) infinite}
+.btn[aria-busy="true"] .btn__spinner{display:flex}
+.btn[aria-busy="true"] .btn__text,.btn[aria-busy="true"] .btn__icon{visibility:hidden}
+@keyframes spin{to{transform:rotate(360deg)}}
+.theme-toggle{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding:0;background:var(--bg-primary);color:var(--text-primary);border:2px solid var(--primary);border-radius:var(--radius-sm);box-shadow:var(--shadow-sm);cursor:pointer;transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard)}
+.theme-toggle:hover{transform:translate(-1px,-1px) rotate(3deg);box-shadow:5px 5px 0 var(--border-default)}
+.theme-toggle:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--primary)}
+.theme-toggle:focus-visible{outline:2px dashed var(--border-default);outline-offset:3px}
+.card{position:relative;display:flex;flex-direction:column;align-items:center;gap:.55rem;padding:1.5rem 1.2rem 1.2rem;background:var(--bg-secondary);border:2px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);transition:translate var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard)}
+.card:hover{translate:0 -2px;box-shadow:var(--shadow-md)}
+.card:focus-within{border-color:var(--secondary)}
+.card h3{font-size:1.25rem;margin:0 0 .15rem}
+.card p:last-child{margin-bottom:0}
+.card__icon{display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border:2px solid var(--border-default);border-radius:50%;outline:2px dashed var(--border-default);outline-offset:3px;rotate:2deg}
+.card__icon .material-symbols-outlined{font-size:1.8rem}
+.card--empty{border-style:dashed;box-shadow:none;color:var(--text-secondary)}
+.card--skeleton{min-height:190px;color:transparent;background:linear-gradient(90deg,var(--bg-secondary),var(--bg-primary) 50%,var(--bg-secondary)) 0 0/200% 100%;animation:shimmer 1s steps(6,end) infinite}
+.card--skeleton *{visibility:hidden}
+@keyframes shimmer{to{background-position:-200% 0}}
+.tape{position:relative}
+.tape::before{content:"";position:absolute;top:-11px;left:50%;width:70px;height:20px;transform:translateX(-50%) rotate(-4deg);background:var(--secondary);opacity:.85;filter:grayscale(.1)}
+.step__badge{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;width:52px;height:52px;flex:0 0 52px;font-family:var(--font-display);font-size:1.5rem;background:var(--bg-primary);border:2px solid var(--border-default);border-radius:50%;outline:2px dashed var(--border-default);outline-offset:3px;rotate:-3deg;box-shadow:3px 3px 0 var(--border-default)}
+.step:nth-child(2) .step__badge{rotate:2deg}
+.step:nth-child(3) .step__badge{rotate:-1deg}
+.step h3{font-size:1.2rem;margin:0 0 .1rem}
+.step p{margin:0;color:var(--text-secondary)}
+.quote__mark{font-size:2rem;color:var(--text-secondary)}
+.quote blockquote{margin:0;font-size:1.05rem}
+.quote figcaption{font-family:var(--font-accent);font-size:1.25rem;color:var(--text-secondary)}
+.tier__price{font-family:var(--font-display);font-size:2rem;margin:0 0 .5rem}
+.tier__price small{font-family:var(--font-base);font-size:.85rem;color:var(--text-secondary)}
+.tier__list{display:flex;flex-direction:column;gap:.4rem;width:100%;margin:0 0 1rem} /* exception: full-width feature rows */
+.tier__feat{display:flex;align-items:center;gap:.45rem}
+.tier__feat .material-symbols-outlined{font-size:1.2rem;color:var(--text-success)}
+.tier__feat--no{color:var(--text-secondary)}
+.tier__feat--no .material-symbols-outlined{color:var(--text-error)}
+.tier--popular{border-color:var(--secondary)}
+.tier__sticker{position:absolute;top:-14px;right:10px;rotate:7deg;padding:.1rem .5rem;font-family:var(--font-display);font-size:.72rem;background:var(--secondary);color:#1A1A1A;border:2px solid #1A1A1A}
+.accordion{display:flex;flex-direction:column;gap:.8rem;max-width:760px;margin-inline:auto} /* exception: full-width items */
+.accordion__heading{margin:0}
+.accordion__trigger{display:flex;align-items:center;justify-content:space-between;gap:1rem;width:100%;min-height:48px;padding:.55rem .9rem;font-family:var(--font-base);font-weight:700;font-size:1.02rem;text-align:left;background:var(--bg-secondary);border:2px solid var(--border-default);cursor:pointer;transition:background var(--transition-fast) var(--ease-standard)}
+.accordion__trigger:hover{border-color:var(--secondary)}
+.accordion__trigger:focus-visible{outline:2px dashed var(--border-default);outline-offset:3px}
+.accordion__trigger[aria-expanded="true"]{background:var(--secondary);color:#1A1A1A}
+.accordion__trigger[aria-expanded="true"] .accordion__icon{rotate:180deg}
+.accordion__icon{transition:rotate var(--transition-normal) var(--ease-standard)}
+.accordion__panel{padding:.7rem .95rem .95rem;border:2px dashed var(--border-default);border-top:0}
+.accordion__panel p{margin:0}
+.input-group{display:flex;flex-direction:column;align-items:flex-start;gap:.3rem;flex:1 1 240px} /* exception: labels stack left */
+.input-group__label{font-weight:700}
+.input-group__field{position:relative;display:flex;align-items:center;width:100%}
+.input-group__input{width:100%;min-height:46px;padding:.45rem 2.4rem .45rem .7rem;font:inherit;color:var(--text-primary);background:var(--bg-primary);border:2px solid var(--border-default);border-radius:var(--radius-sm)}
+.input-group__input::placeholder{color:var(--text-secondary)}
+.input-group__input:focus-visible{outline:2px dashed var(--border-default);outline-offset:3px}
+.input-group__input:disabled{opacity:.5;cursor:not-allowed}
+.input-group__input[readonly]{border-style:dashed}
+.input-group__icon{display:none;position:absolute;right:.5rem;color:var(--text-secondary)}
+.input-group[data-state="valid"] .input-group__input{border-color:var(--border-success)}
+.input-group[data-state="invalid"] .input-group__input{border-color:var(--border-error)}
+.input-group[data-state="valid"] .input-group__icon--ok{display:inline-flex;color:var(--text-success)}
+.input-group[data-state="invalid"] .input-group__icon--bad{display:inline-flex;color:var(--text-error)}
+.input-group__feedback{min-height:1.4em;margin:0;font-size:.9rem;color:var(--text-error)}
+.input-group[data-state="valid"] .input-group__feedback{color:var(--text-success)}
+.cta__status{flex-basis:100%;margin:0;font-family:var(--font-accent);font-size:1.3rem;color:var(--text-success)}
+.cta__status:empty{display:none}
+}
+@layer utilities{
+.skip-link{position:fixed;top:-100px;left:8px;z-index:var(--z-modal);padding:.7rem 1rem;background:var(--bg-secondary);border:2px solid var(--primary);font-weight:700;text-decoration:none}
+.skip-link:focus{top:8px}
+.caveat{font-family:var(--font-accent);font-size:1.3rem;color:var(--text-secondary)}
+.u-scribble{position:relative;display:inline-block;padding-bottom:.4rem}
+.u-scribble::after{content:"";position:absolute;left:0;right:0;bottom:0;height:8px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='8'%3E%3Cpath d='M1 5c4-4 9-4 13 0s9 4 13 0' fill='none' stroke='%23C4A77D' stroke-width='2.2'/%3E%3C/svg%3E") repeat-x}
+.hero__splat{position:absolute;inset:0;pointer-events:none;opacity:.85;filter:grayscale(.25) contrast(.9);background:radial-gradient(circle at 85% 12%,var(--primary) 0 2px,transparent 3px),radial-gradient(circle at 89% 24%,var(--primary) 0 5px,transparent 6px),radial-gradient(circle at 80% 30%,var(--text-error) 0 2px,transparent 3px),radial-gradient(circle at 9% 88%,var(--secondary) 0 6px,transparent 7px),radial-gradient(circle at 15% 94%,var(--secondary) 0 2px,transparent 3px)}
+.collage__card{width:150px;padding:.9rem .7rem;text-align:center;background:var(--bg-secondary);border:2px solid var(--border-default);box-shadow:var(--shadow-sm)}
+.collage__card:first-child{rotate:-4deg}
+.collage__card:last-child{rotate:3deg}
+.collage__card .material-symbols-outlined{font-size:2rem}
+.collage__card p{margin:.2rem 0 0;font-size:1.1rem}
+.tilt>:nth-child(3n+1){rotate:-1.1deg}
+.tilt>:nth-child(3n+2){rotate:.8deg}
+.tilt>:nth-child(3n){rotate:-.5deg}
+.tilt>.tier--popular{rotate:0deg}
+.js .reveal{opacity:0;clip-path:inset(0 100% 0 0)}
+.js .reveal.is-visible{opacity:1;clip-path:inset(0 0 0 0);transition:opacity 160ms steps(2,end),clip-path 260ms steps(4,end)}
+@media (prefers-reduced-motion:reduce){
+.js .reveal{opacity:1;clip-path:none}
+.btn:hover,.theme-toggle:hover{transform:translate(-1px,-1px)}
+.footer__social a:hover{rotate:0deg}
+}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header" id="top">
+  <a class="brand" href="#top">Smudge<span class="material-symbols-outlined" aria-hidden="true">ink_marker</span></a>
+  <nav class="site-nav" aria-label="Main navigation">
+    <a href="#features">Features</a>
+    <a href="#how">How It Works</a>
+    <a href="#testimonials">Testimonials</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#faq">FAQ</a>
+  </nav>
+  <button id="themeToggle" class="theme-toggle" aria-pressed="false" aria-label="Switch to dark mode">
+    <span class="material-symbols-outlined" aria-hidden="true">dark_mode</span>
+  </button>
+</header>
+<main id="main">
+  <section class="hero wrap" aria-labelledby="heroTitle">
+    <div class="hero__splat" aria-hidden="true"></div>
+    <div class="hero__inner reveal">
+      <h1 id="heroTitle" class="hero__title">Ideas deserve <span class="u-scribble">rough edges</span>.</h1>
+      <p class="hero__sub">Smudge is a sketchbook app for unfinished thinking — scribble, tape things down, cross stuff out. No gradients, no gloss, just honest progress.</p>
+      <div class="hero__cta">
+        <a class="btn btn--primary" href="#cta"><span class="material-symbols-outlined btn__icon" aria-hidden="true">ink_marker</span><span class="btn__text">Start scribbling — free</span></a>
+        <a class="btn btn--secondary" href="#how"><span class="material-symbols-outlined btn__icon" aria-hidden="true">arrow_downward</span><span class="btn__text">Show me how</span></a>
+      </div>
+      <p class="caveat">~ yes, it's really supposed to look like this ~</p>
+    </div>
+    <div class="hero__collage reveal" aria-hidden="true">
+      <div class="collage__card tape"><span class="material-symbols-outlined">gesture</span><p class="caveat">draft v0.3 — do not ship</p></div>
+      <div class="collage__card tape"><span class="material-symbols-outlined">push_pin</span><p class="caveat">taped, not glued</p></div>
+    </div>
+  </section>
+  <section id="features" class="section wrap reveal" aria-labelledby="featuresTitle">
+    <h2 id="featuresTitle" class="section__title"><span class="u-scribble">What's in the tin</span></h2>
+    <p class="section__lede">Three honest tools and one very forgiving eraser. Everything looks hand-made, because a human made it.</p>
+    <div class="row3 tilt">
+      <article class="card tape reveal">
+        <span class="card__icon" aria-hidden="true"><span class="material-symbols-outlined">draw</span></span>
+        <h3>Sketchy by design</h3>
+        <p>Wobbly borders, torn tape and paper grain baked right in. Your drafts look like drafts — because they are.</p>
+      </article>
+      <article class="card tape reveal">
+        <span class="card__icon" aria-hidden="true"><span class="material-symbols-outlined">layers</span></span>
+        <h3>Tape everything down</h3>
+        <p>Pin fragments, screenshots and half-thoughts onto one messy board. Nothing has to be finished to be useful.</p>
+      </article>
+      <article class="card tape reveal">
+        <span class="card__icon" aria-hidden="true"><span class="material-symbols-outlined">history</span></span>
+        <h3>Keep the ugly drafts</h3>
+        <p>Every version stays, smudges included. Look back at where an idea came from, not just where it landed.</p>
+      </article>
+    </div>
+  </section>
+  <section id="how" class="section wrap reveal" aria-labelledby="howTitle">
+    <h2 id="howTitle" class="section__title"><span class="u-scribble">How it works</span></h2>
+    <p class="section__lede">Three steps. Zero cleanup crew.</p>
+    <ol class="steps">
+      <li class="step">
+        <span class="step__badge" aria-hidden="true">1</span>
+        <div class="step__text"><h3>Scribble</h3><p>Open a page and make a mess. No templates, no onboarding parade.</p></div>
+      </li>
+      <li class="step">
+        <span class="step__badge" aria-hidden="true">2</span>
+        <div class="step__text"><h3>Smudge</h3><p>Rearrange, tape over, cross out. Smudge never tidies up behind you.</p></div>
+      </li>
+      <li class="step">
+        <span class="step__badge" aria-hidden="true">3</span>
+        <div class="step__text"><h3>Ship it rough</h3><p>Share the unfinished thing. Feedback lands on real work, not on polish.</p></div>
+      </li>
+    </ol>
+  </section>
+  <section id="testimonials" class="section wrap reveal" aria-labelledby="quotesTitle">
+    <h2 id="quotesTitle" class="section__title"><span class="u-scribble">Notes from the margin</span></h2>
+    <div class="row3 tilt">
+      <figure class="card quote tape reveal">
+        <span class="material-symbols-outlined quote__mark" aria-hidden="true">format_quote</span>
+        <blockquote>I stopped agonizing over blank canvases. Smudge gives you permission to be bad on purpose — and somehow that's freeing.</blockquote>
+        <figcaption>Ren Okafor — illustrator</figcaption>
+      </figure>
+      <figure class="card quote tape reveal">
+        <span class="material-symbols-outlined quote__mark" aria-hidden="true">format_quote</span>
+        <blockquote>Our best idea this year started as a taped-up napkin scan in here. Still ugly. Still shipped.</blockquote>
+        <figcaption>Mara Voss — product lead</figcaption>
+      </figure>
+      <figure class="card quote tape reveal">
+        <span class="material-symbols-outlined quote__mark" aria-hidden="true">format_quote</span>
+        <blockquote>It feels like my desk, not like software. My zine layouts have never been this happily disorganized.</blockquote>
+        <figcaption>Jonas Peña — zine maker</figcaption>
+      </figure>
+    </div>
+  </section>
+  <section id="pricing" class="section wrap reveal" aria-labelledby="pricingTitle">
+    <h2 id="pricingTitle" class="section__title"><span class="u-scribble">Pricing, scribbled on a receipt</span></h2>
+    <p class="section__lede">Pick a plan. Cancel whenever. We'll only be a little sad.</p>
+    <div class="row3 pricing tilt">
+      <article class="card tier tape">
+        <h3>Sketchbook</h3>
+        <p class="tier__price">$0 <small>/ forever</small></p>
+        <ul class="tier__list">
+          <li class="tier__feat"><span class="material-symbols-outlined" aria-hidden="true">check</span>1 messy board</li>
+          <li class="tier__feat"><span class="material-symbols-outlined" aria-hidden="true">check</span>20 taped cards</li>
+          <li class="tier__feat tier__feat--no"><span class="material-symbols-outlined" aria-hidden="true">close</span><s>PDF export</s></li>
+          <li class="tier__feat tier__feat--no"><span class="material-symbols-outlined" aria-hidden="true">close</span><s>Version smudges</s></li>
+        </ul>
+        <a class="btn btn--secondary" href="#cta">Grab it free</a>
+      </article>
+      <article class="card tier tape tier--popular">
+        <p class="tier__sticker">MOST POPULAR</p>
+        <h3>Studio</h3>
+        <p class="tier__price">$6 <small>/ month</small></p>
+        <ul class="tier__list">
+          <li class="tier__feat"><span class="material-symbols-outlined" aria-hidden="true">check</span>Unlimited boards</li>
+          <li class="tier__feat"><span class="material-symbols-outlined" aria-hidden="true">check</span>Version smudges</li>
+          <li class="tier__feat"><span class="material-symbols-outlined" aria-hidden="true">check</span>PDF &amp; PNG export</li>
+          <li class="tier__feat"><span class="material-symbols-outlined" aria-hidden="true">check</span>No watermark doodles</li>
+        </ul>
+        <a class="btn btn--primary" href="#cta"><span class="btn__text">Pick Studio</span></a>
+      </article>
+      <article class="card tier tape">
+        <h3>Print Shop</h3>
+        <p class="tier__price">$14 <small>/ month</small></p>
+        <ul class="tier__list">
+          <li class="tier__feat"><span class="material-symbols-outlined" aria-hidden="true">check</span>Everything in Studio</li>
+          <li class="tier__feat"><span class="material-symbols-outlined" aria-hidden="true">check</span>Shared team boards</li>
+          <li class="tier__feat"><span class="material-symbols-outlined" aria-hidden="true">check</span>Shared tape &amp; stickers</li>
+          <li class="tier__feat"><span class="material-symbols-outlined" aria-hidden="true">check</span>Priority support (a human)</li>
+        </ul>
+        <a class="btn btn--secondary" href="#cta">Go all in</a>
+      </article>
+    </div>
+  </section>
+  <section id="faq" class="section wrap reveal" aria-labelledby="faqTitle">
+    <h2 id="faqTitle" class="section__title"><span class="u-scribble">Questions, answered roughly</span></h2>
+    <div class="accordion">
+      <div class="accordion__item">
+        <h3 class="accordion__heading"><button class="accordion__trigger" id="faq1" aria-expanded="true" aria-controls="panel1">Is it really supposed to look this unfinished?<span class="material-symbols-outlined accordion__icon" aria-hidden="true">expand_more</span></button></h3>
+        <div class="accordion__panel" id="panel1" role="region" aria-labelledby="faq1"><p>Yes. Every wobble, tape mark and coffee ring is on purpose. We think a tool should look like the messy process it holds, not like a magazine ad.</p></div>
+      </div>
+      <div class="accordion__item">
+        <h3 class="accordion__heading"><button class="accordion__trigger" id="faq2" aria-expanded="false" aria-controls="panel2">Can I still export clean, polished files?<span class="material-symbols-outlined accordion__icon" aria-hidden="true">expand_more</span></button></h3>
+        <div class="accordion__panel" id="panel2" role="region" aria-labelledby="faq2" hidden><p>You can export honest ones: PNG and PDF of your pages exactly as drawn. We refuse to auto-smooth your lines — that's the whole point.</p></div>
+      </div>
+      <div class="accordion__item">
+        <h3 class="accordion__heading"><button class="accordion__trigger" id="faq3" aria-expanded="false" aria-controls="panel3">Is dark mode just inverted colors?<span class="material-symbols-outlined accordion__icon" aria-hidden="true">expand_more</span></button></h3>
+        <div class="accordion__panel" id="panel3" role="region" aria-labelledby="faq3" hidden><p>Nope. Dark mode is a charcoal sketchbook: chalk strokes, warm kraft tape, and pencil marks redrawn by hand for dark paper.</p></div>
+      </div>
+      <div class="accordion__item">
+        <h3 class="accordion__heading"><button class="accordion__trigger" id="faq4" aria-expanded="false" aria-controls="panel4">What happens to my old drafts?<span class="material-symbols-outlined accordion__icon" aria-hidden="true">expand_more</span></button></h3>
+        <div class="accordion__panel" id="panel4" role="region" aria-labelledby="faq4" hidden><p>Nothing — and that's the feature. Smudge keeps every smudged version, so you can trace an idea back to its worst first attempt.</p></div>
+      </div>
+      <div class="accordion__item">
+        <h3 class="accordion__heading"><button class="accordion__trigger" id="faq5" aria-expanded="false" aria-controls="panel5">Is there a team plan?<span class="material-symbols-outlined accordion__icon" aria-hidden="true">expand_more</span></button></h3>
+        <div class="accordion__panel" id="panel5" role="region" aria-labelledby="faq5" hidden><p>Yes — Print Shop includes shared boards and shared tape. Most teams take about a week to stop apologizing for rough drafts.</p></div>
+      </div>
+    </div>
+  </section>
+  <section id="cta" class="cta reveal" aria-labelledby="ctaTitle">
+    <div class="wrap">
+      <div class="cta__pitch">
+        <h2 id="ctaTitle" class="section__title">Go make a beautiful mess.</h2>
+        <p>Get an invite to the free Sketchbook plan — no card, no pressure. We'll email you a slightly crooked welcome note.</p>
+      </div>
+      <form id="ctaForm" class="cta__form" novalidate>
+        <div class="input-group" id="emailGroup">
+          <label class="input-group__label" for="email">Your email</label>
+          <div class="input-group__field">
+            <input class="input-group__input" id="email" name="email" type="email" autocomplete="email" placeholder="you@sketchpad.ink" required>
+            <span class="material-symbols-outlined input-group__icon input-group__icon--ok" aria-hidden="true">check</span>
+            <span class="material-symbols-outlined input-group__icon input-group__icon--bad" aria-hidden="true">error</span>
+          </div>
+          <p class="input-group__feedback" id="emailFeedback" aria-live="polite"></p>
+        </div>
+        <button class="btn btn--primary" id="ctaBtn" type="submit">
+          <span class="btn__spinner"><span class="material-symbols-outlined" aria-hidden="true">progress</span></span>
+          <span class="material-symbols-outlined btn__icon" aria-hidden="true">send</span>
+          <span class="btn__text">Send me an invite</span>
+        </button>
+        <p class="cta__status" id="ctaStatus" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </section>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer__cols">
+    <div>
+      <h4>Product</h4>
+      <a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a><a href="#cta">Get an invite</a>
+    </div>
+    <div>
+      <h4>Company</h4>
+      <a href="#top">About</a><a href="#top">Journal</a><a href="#top">Contact</a>
+    </div>
+    <div>
+      <h4>Resources</h4>
+      <a href="#top">Help desk</a><a href="#top">Ink blot blog</a><a href="#top">Status</a>
+    </div>
+    <div>
+      <h4>Elsewhere</h4>
+      <div class="footer__social">
+        <a href="#top" aria-label="Email us"><span class="material-symbols-outlined" aria-hidden="true">mail</span></a>
+        <a href="#top" aria-label="RSS feed"><span class="material-symbols-outlined" aria-hidden="true">rss_feed</span></a>
+        <a href="#top" aria-label="Community forum"><span class="material-symbols-outlined" aria-hidden="true">groups</span></a>
+      </div>
+    </div>
+  </div>
+  <div class="wrap footer__meta">
+    <p>© 2026 Smudge &amp; Co. All smudges reserved.</p>
+    <p class="caveat">made by hand, mostly after midnight</p>
+  </div>
+</footer>
+<script>
+(function(){
+var root=document.documentElement;root.classList.add('js');
+var btn=document.getElementById('themeToggle'),ico=btn.querySelector('.material-symbols-outlined'),
+mq=matchMedia('(prefers-color-scheme: dark)'),rm=matchMedia('(prefers-reduced-motion: reduce)');
+function apply(d){root.classList.toggle('dark',d);root.classList.toggle('light',!d);
+btn.setAttribute('aria-pressed',d);btn.setAttribute('aria-label',d?'Switch to light mode':'Switch to dark mode');
+ico.textContent=d?'light_mode':'dark_mode';}
+var saved=null;try{saved=localStorage.getItem('smudge-theme');}catch(e){}
+apply(saved?saved==='dark':mq.matches);
+btn.addEventListener('click',function(){var d=!root.classList.contains('dark');
+try{localStorage.setItem('smudge-theme',d?'dark':'light');}catch(e){}
+apply(d);});
+var els=document.querySelectorAll('.reveal');
+if('IntersectionObserver' in window && !rm.matches){
+var io=new IntersectionObserver(function(es){es.forEach(function(e){
+if(e.isIntersecting){e.target.classList.add('is-visible');io.unobserve(e.target);}});},{threshold:.15});
+els.forEach(function(el){io.observe(el);});
+}else{els.forEach(function(el){el.classList.add('is-visible');});}
+document.querySelectorAll('.accordion__trigger').forEach(function(t){
+t.addEventListener('click',function(){var x=t.getAttribute('aria-expanded')==='true',
+p=document.getElementById(t.getAttribute('aria-controls'));
+t.setAttribute('aria-expanded',String(!x));p.hidden=x;});});
+var form=document.getElementById('ctaForm'),grp=document.getElementById('emailGroup'),
+mail=document.getElementById('email'),fb=document.getElementById('emailFeedback'),
+st=document.getElementById('ctaStatus'),sub=document.getElementById('ctaBtn'),
+bi=sub.querySelector('.btn__icon'),bt=sub.querySelector('.btn__text');
+function reset(){sub.classList.remove('btn--success','btn--error');sub.classList.add('btn--primary');
+bi.textContent='send';bt.textContent='Send me an invite';}
+form.addEventListener('submit',function(e){e.preventDefault();
+if(sub.getAttribute('aria-busy')==='true')return;
+var v=mail.value.trim();
+if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)){
+grp.dataset.state='invalid';fb.textContent='That address looks smudged — mind checking it?';
+sub.classList.add('btn--error');bi.textContent='error';bt.textContent='Oops';st.textContent='';
+setTimeout(function(){if(sub.classList.contains('btn--error'))reset();},1400);
+mail.focus();return;}
+grp.dataset.state='valid';fb.textContent='Looks good.';st.textContent='Scribbling your invite...';
+sub.setAttribute('aria-busy','true');
+setTimeout(function(){sub.removeAttribute('aria-busy');
+sub.classList.remove('btn--primary','btn--error');sub.classList.add('btn--success');
+bi.textContent='check';bt.textContent='Invited! Check your inbox';
+st.textContent='Done! Your invite is heading to '+v+'.';},1200);});
+mail.addEventListener('input',function(){grp.dataset.state='';fb.textContent='';
+if(sub.classList.contains('btn--success')||sub.classList.contains('btn--error')){reset();st.textContent='';}});
+})();
+</script>
+</body>
+</html>

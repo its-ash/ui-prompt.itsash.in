@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="description" content="Claymates — a squishy stop-motion studio for sculpting and animating tiny clay stories.">
+<title>Claymates — Squish, sculpt &amp; animate tiny clay stories</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,500,1,0" rel="stylesheet">
+<style>
+:root{--primary:#FF8A5B;--secondary:#FFE082;--bg-primary:#AEE2F6;--bg-secondary:#FEFEFE;--text-primary:#4A3B32;--text-secondary:#5F5044;--text-success:#4E7B34;--text-error:#C24C3C;--border-default:rgba(74,59,50,.15);--accent-grass:#AED581;--ink:#4A3B32;--on-primary:#4A3B32;--on-danger:#FEFEFE;--noise:rgba(74,59,50,.035);--head-bg:rgba(174,226,246,.86);--radius-sm:12px;--radius-md:18px;--radius-lg:25px;--shadow-sm:3px 3px 6px rgba(0,0,0,.15);--shadow-md:5px 5px 10px rgba(0,0,0,.2);--gap:1.5rem;--fast:150ms;--normal:300ms;--ease:cubic-bezier(.4,0,.2,1);--squish:cubic-bezier(.34,1.56,.64,1);--font-display:'Fredoka One',cursive;--font-base:'Fredoka',sans-serif;--z-dropdown:100;--z-header:90;--z-toast:300;color-scheme:light}
+/* Dark "Moonlit Clay" — class-only override: first visit always defaults to light */
+.dark{--bg-primary:#2E2533;--bg-secondary:#3B3040;--text-primary:#F6EBDD;--text-secondary:#D9C7BA;--text-success:#AED581;--text-error:#EB8A76;--border-default:rgba(246,235,221,.22);--noise:rgba(246,235,221,.05);--head-bg:rgba(46,37,51,.88);--shadow-sm:3px 3px 6px rgba(0,0,0,.4);--shadow-md:5px 5px 10px rgba(0,0,0,.5);color-scheme:dark}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:6rem;overflow-x:clip}
+body{font-family:var(--font-base);color:var(--text-primary);background-color:var(--bg-primary);background-image:repeating-radial-gradient(circle at 12% 8%,var(--noise) 0 2px,transparent 2px 19px),repeating-radial-gradient(circle at 88% 82%,var(--noise) 0 2px,transparent 2px 23px);line-height:1.6;overflow-x:clip}
+h1,h2,h3{font-family:var(--font-display);font-weight:400;line-height:1.18}
+h2{font-size:clamp(1.7rem,4vw,2.4rem)}
+h3{font-size:1.22rem}
+p{color:var(--text-secondary)}
+.ms{font-family:'Material Symbols Rounded';font-weight:normal;font-style:normal;line-height:1;display:inline-block;white-space:nowrap;user-select:none;font-size:24px}
+:focus-visible{outline:3px solid var(--text-primary);outline-offset:2px}
+.wrap{max-width:1100px;margin-inline:auto;padding-inline:clamp(1rem,4vw,2rem)}
+.sec{padding-block:clamp(2.6rem,6vw,4.4rem)}
+.sec-head{display:flex;flex-direction:column;align-items:center;gap:.55rem;text-align:center;max-width:660px;margin:0 auto 2.4rem}
+.skip{position:fixed;top:.6rem;left:-200px;z-index:var(--z-toast);background:var(--secondary);color:var(--ink);font-weight:600;padding:.75rem 1.1rem;border-radius:var(--radius-sm)}
+.skip:focus{left:.6rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;min-width:44px;padding:.6rem 1.4rem;font:inherit;font-weight:600;color:var(--on-primary);background:var(--primary);border:0;border-radius:25px 27px 23px 28px;box-shadow:var(--shadow-md),inset 0 2px 0 rgba(255,255,255,.35);cursor:pointer;text-decoration:none;transition:transform var(--fast) var(--squish),filter var(--fast) var(--ease)}
+.btn .ms{font-size:20px}
+.btn:hover{filter:brightness(1.07);transform:translateY(-1px)}
+.btn:active{transform:scale(.94)}
+.btn--secondary{background:var(--secondary)}
+.btn--ghost{background:transparent;color:var(--text-primary);border:2px solid var(--text-primary);box-shadow:none}
+.btn--ghost:hover{background:color-mix(in srgb,var(--text-primary),transparent 92%)}
+.btn--danger{background:var(--text-error);color:var(--on-danger)}
+.btn--icon{padding:.55rem;background:var(--bg-secondary);color:var(--text-primary);border:2px solid var(--border-default);box-shadow:var(--shadow-sm),inset 0 2px 0 rgba(255,255,255,.35);border-radius:46% 54% 48% 52%/52% 48% 52% 48%}
+.btn:disabled{opacity:.55;filter:grayscale(.6);cursor:not-allowed;transform:none}
+.btn.is-loading{pointer-events:none}
+.btn.is-loading,.btn.is-success{opacity:1;filter:none}
+.is-loading .ms{animation:spin .8s steps(8,end) infinite}
+.btn.is-success{background:var(--text-success);color:var(--on-danger)}
+.head{position:sticky;top:0;z-index:var(--z-header);background:var(--head-bg);backdrop-filter:blur(8px);border-bottom:2px solid var(--border-default)}
+.head .wrap{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding-block:.55rem}
+.logo{display:flex;align-items:center;gap:.55rem;font-family:var(--font-display);font-size:1.3rem;color:var(--text-primary);text-decoration:none}
+.logo__blob{flex:0 0 auto;width:36px;height:31px;border-radius:48% 52% 46% 54%/60% 62% 38% 42%;background-color:var(--primary);background-image:radial-gradient(circle at 38% 42%,var(--ink) 0 2.5px,transparent 3.5px),radial-gradient(circle at 62% 42%,var(--ink) 0 2.5px,transparent 3.5px),radial-gradient(circle at 35% 28%,rgba(255,255,255,.45),transparent 55%);box-shadow:var(--shadow-sm),inset 0 2px 0 rgba(255,255,255,.35)}
+.nav{display:flex;align-items:center;margin-right:auto}
+.menu-btn{display:none}
+.nav__list{display:flex;align-items:center;gap:.25rem;list-style:none}
+.nav__list a{display:inline-flex;align-items:center;min-height:44px;padding:.35rem .85rem;font-weight:600;color:var(--text-primary);text-decoration:none;border-radius:var(--radius-sm);transition:background var(--fast) var(--ease)}
+.nav__list a:hover{background:color-mix(in srgb,var(--primary),transparent 82%)}
+.head__actions{display:flex;align-items:center;gap:.45rem}
+.t-sun{display:none}
+.dark .t-sun{display:inline-block}
+.dark .t-moon{display:none}
+@media(max-width:767px){.menu-btn{display:inline-flex}
+.nav__list{display:none;position:absolute;top:100%;left:0;right:0;flex-direction:column;align-items:stretch;gap:.2rem;background:var(--bg-secondary);padding:.9rem clamp(1rem,4vw,2rem);border-bottom:2px solid var(--border-default);box-shadow:var(--shadow-md);z-index:var(--z-dropdown)}
+.nav__list.is-open{display:flex;animation:pop var(--normal) var(--ease)}
+.nav__list a{min-height:48px}}
+@media(max-width:479px){.head__cta{display:none}}
+.hero{display:flex;align-items:center;gap:2.4rem;padding-block:clamp(2rem,5vw,3.4rem) 1rem}
+.hero__copy{display:flex;flex-direction:column;align-items:stretch;gap:1.1rem}/* left-aligned text: exception */
+.hero h1{font-size:clamp(2rem,5.5vw,3.2rem)}
+.hero .lead{font-size:1.15rem;max-width:34rem}
+.hero__cta{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap}
+.scene{position:relative;flex:0 1 42%;min-height:260px;overflow:hidden;border:2px solid var(--border-default);border-radius:30px 26px 34px 24px;box-shadow:var(--shadow-sm);background:radial-gradient(circle at 72% 10%,color-mix(in srgb,var(--bg-primary),var(--bg-secondary) 30%),var(--bg-primary))}
+.sun{position:absolute;top:9%;right:9%;width:72px;height:72px;border-radius:50%;background-color:var(--secondary);background-image:radial-gradient(circle at 35% 30%,rgba(255,255,255,.55),transparent 60%);box-shadow:0 0 0 8px color-mix(in srgb,var(--secondary),transparent 78%);animation:pulse 3.6s steps(4,end) infinite}
+.cloud{position:absolute;background:var(--bg-secondary);border-radius:30px;box-shadow:var(--shadow-sm);animation:drift 6s steps(4,end) infinite}
+.cloud--a{top:12%;left:5%;width:86px;height:26px}
+.cloud--b{top:34%;left:46%;width:58px;height:20px;animation-delay:-3s}
+.cloud::before,.cloud::after{content:"";position:absolute;background:inherit;border-radius:50%}
+.cloud::before{width:32px;height:32px;top:-14px;left:13px}
+.cloud::after{width:24px;height:24px;top:-9px;right:14px}
+.hill{position:absolute;bottom:-16px;left:-8%;width:116%;height:46%;border-radius:50% 50% 0 0/100% 100% 0 0;background-color:var(--accent-grass);background-image:radial-gradient(ellipse at 50% 6%,rgba(255,255,255,.28),transparent 62%);box-shadow:inset 0 6px 0 rgba(255,255,255,.25)}
+.blob{position:absolute;bottom:24%;left:16%;width:100px;height:88px;border-radius:48% 52% 46% 54%/60% 62% 38% 42%;background-color:var(--primary);background-image:radial-gradient(circle at 32% 35%,var(--ink) 0 3.5px,transparent 4.5px),radial-gradient(circle at 67% 35%,var(--ink) 0 3.5px,transparent 4.5px),radial-gradient(circle at 34% 24%,rgba(255,255,255,.45),transparent 58%);box-shadow:var(--shadow-md),inset 0 5px 0 rgba(255,255,255,.35);animation:bob 2.4s steps(3,end) infinite}
+.blob::before{content:"";position:absolute;left:50%;top:52%;transform:translateX(-50%);width:24px;height:12px;border:3.5px solid var(--ink);border-top:0;border-radius:0 0 24px 24px}
+.blob::after{content:"";position:absolute;top:14%;right:15%;width:24px;height:12px;border-radius:50%;box-shadow:inset 2px 2px 4px rgba(74,59,50,.2)}
+.hi{position:absolute;bottom:60%;left:12%;padding:.45rem .9rem;background:var(--bg-secondary);color:var(--text-primary);font-family:var(--font-display);font-size:.95rem;border-radius:16px 18px 16px 5px;box-shadow:var(--shadow-sm);animation:bob 2.8s steps(2,end) infinite}
+.hi::after{content:"";position:absolute;bottom:-8px;left:16px;width:15px;height:15px;background:inherit;border-radius:3px;transform:rotate(45deg)}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes drift{0%,100%{transform:translateX(0)}50%{transform:translateX(18px)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes spin{to{transform:rotate(1turn)}}
+@keyframes pop{from{opacity:0;transform:translateY(-5px)}}
+.grid{display:grid;gap:var(--gap)}
+.card{display:flex;flex-direction:column;align-items:center;gap:.8rem;text-align:center;padding:1.7rem 1.4rem;background:var(--bg-secondary);border:2px solid var(--border-default);border-radius:26px 23px 28px 25px;box-shadow:var(--shadow-md);transition:transform var(--normal) var(--ease),box-shadow var(--normal) var(--ease),border-color var(--normal)}
+.card:hover{transform:translateY(-3px);box-shadow:7px 8px 16px rgba(0,0,0,.22)}
+.card:focus-within{border-color:var(--primary)}
+.badge{display:flex;align-items:center;justify-content:center;width:58px;height:58px;border-radius:46% 54% 52% 48%/54% 48% 54% 46%;background-color:var(--secondary);background-image:radial-gradient(circle at 32% 28%,rgba(255,255,255,.5),transparent 58%);box-shadow:var(--shadow-sm),inset 0 3px 0 rgba(255,255,255,.4)}
+.badge .ms{font-size:30px;color:var(--ink)}
+.badge--orange{background-color:var(--primary)}
+.badge--grass{background-color:var(--accent-grass)}
+.steps{display:flex;flex-direction:column;align-items:center;gap:var(--gap)}
+.step{position:relative;display:flex;flex-direction:column;align-items:center;gap:.55rem;text-align:center;max-width:30rem}
+.step>.ms{font-size:34px;color:var(--primary)}
+.step__num{display:flex;align-items:center;justify-content:center;width:52px;height:52px;font-family:var(--font-display);font-size:1.35rem;color:var(--ink);background-color:var(--secondary);background-image:radial-gradient(circle at 32% 28%,rgba(255,255,255,.5),transparent 58%);border-radius:46% 54% 52% 48%/54% 46% 54% 48%;box-shadow:var(--shadow-sm),inset 0 3px 0 rgba(255,255,255,.4)}
+.tiers{align-items:center}
+.tier{position:relative;display:flex;flex-direction:column;align-items:center;gap:1rem;padding:2.1rem 1.5rem;text-align:center;background:var(--bg-secondary);border:2px solid var(--border-default);border-radius:26px 29px 25px 28px;box-shadow:var(--shadow-md);transition:transform var(--normal) var(--ease),box-shadow var(--normal) var(--ease)}
+.tier:hover{transform:translateY(-3px)}
+.tier--popular{border-color:var(--primary);box-shadow:var(--shadow-md),0 12px 26px color-mix(in srgb,var(--primary),transparent 62%)}
+.tier__flag{position:absolute;top:-16px;left:50%;transform:translateX(-50%) rotate(-3deg);padding:.28rem .85rem;background:var(--secondary);color:var(--ink);font-family:var(--font-display);font-size:.82rem;border-radius:13px 15px 12px 16px;box-shadow:var(--shadow-sm)}
+.price{font-family:var(--font-display);font-size:2.5rem;line-height:1;color:var(--text-primary)}
+.price small{font-family:var(--font-base);font-size:.95rem;color:var(--text-secondary)}
+.tier ul{list-style:none;display:flex;flex-direction:column;align-items:flex-start;gap:.55rem}
+.tier li{display:flex;align-items:center;gap:.5rem;font-size:.98rem}
+.tier li::before{content:"check_circle";font-family:'Material Symbols Rounded';font-size:20px;line-height:1;color:var(--text-success)}
+.quote{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:.9rem;padding:1.6rem 1.5rem;background:var(--bg-secondary);border-radius:24px 27px 22px 26px;box-shadow:var(--shadow-md);transition:transform var(--normal) var(--ease),box-shadow var(--normal)}/* prose reads best left-aligned */
+.quote:hover{transform:translateY(-2px);box-shadow:7px 8px 16px rgba(0,0,0,.22)}
+.quote::after{content:"";position:absolute;bottom:-9px;left:32px;width:20px;height:20px;background:var(--bg-secondary);border-radius:4px 2px 6px 3px;transform:rotate(45deg);box-shadow:var(--shadow-sm)}
+.quote blockquote{font-size:1.05rem;color:var(--text-primary)}
+.stars::before{content:"star star star star star";font-family:'Material Symbols Rounded';font-size:21px;line-height:1;letter-spacing:3px;color:var(--primary)}
+.who{display:flex;align-items:center;gap:.7rem}
+.who small{color:var(--text-secondary)}
+.avatar{display:flex;align-items:center;justify-content:center;flex:0 0 auto;width:52px;height:52px;font-family:var(--font-display);font-size:1.15rem;color:var(--ink);background-color:var(--primary);background-image:radial-gradient(circle at 32% 28%,rgba(255,255,255,.5),transparent 58%);border-radius:47% 53% 55% 45%/55% 48% 52% 45%;box-shadow:var(--shadow-sm),inset 0 3px 0 rgba(255,255,255,.35)}
+.avatar--gold{background-color:var(--secondary)}
+.faq{display:flex;flex-direction:column;gap:1rem;max-width:780px;margin-inline:auto}
+.faq__item{background:var(--bg-secondary);border:2px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);transition:border-color var(--normal)}
+.faq__item[open]{border-color:color-mix(in srgb,var(--primary),transparent 35%)}
+.faq__item summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:56px;padding:.9rem 1.2rem;cursor:pointer;font-weight:600;list-style:none}
+summary::-webkit-details-marker{display:none}
+.faq__item summary .ms{flex:0 0 auto;color:var(--primary);transition:transform var(--normal) var(--squish)}
+.faq__item[open] summary .ms{transform:rotate(180deg)}
+.faq__item h3{flex:1;font-size:1.05rem}
+.faq__body{padding:.1rem 1.25rem 1.1rem;animation:pop var(--normal) var(--ease)}
+.cta-band{background:radial-gradient(circle at 50% -20%,color-mix(in srgb,var(--primary),var(--secondary) 22%),var(--primary));border-radius:34px 30px 36px 28px;padding:clamp(2.4rem,6vw,3.6rem) clamp(1.4rem,5vw,3rem);display:flex;flex-direction:column;align-items:center;gap:1rem;text-align:center;box-shadow:var(--shadow-md)}
+.cta-band h2,.cta-band p{color:var(--ink)}
+.cta-band p{max-width:44ch}
+.waitlist{display:flex;flex-direction:column;align-items:center;gap:.9rem;width:min(460px,100%);margin-top:.6rem}
+.field{display:flex;flex-direction:column;align-items:stretch;gap:.4rem;width:100%}/* stretch: inputs need full width */
+.field label{font-weight:600;font-size:.9rem;color:var(--ink);text-align:left}
+.input{width:100%;min-height:48px;padding:.55rem 1.1rem;font:inherit;color:var(--text-primary);background:var(--bg-secondary);border:2px solid var(--border-default);border-radius:14px 16px 12px 17px;transition:border-color var(--fast),box-shadow var(--fast)}
+.input:focus{border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary),transparent 60%)}
+.input::placeholder{color:color-mix(in srgb,var(--text-secondary),transparent 25%)}
+.field.is-error .input{border-color:var(--text-error)}
+.field__msg{display:none;align-items:center;gap:.35rem;text-align:left;font-size:.85rem;font-weight:600;color:var(--text-error)}
+.field.is-error .field__msg{display:flex}
+.foot{margin-top:2rem;background:var(--bg-secondary);border-top:2px solid var(--border-default)}
+.foot__grid{display:grid;gap:2rem;padding-block:2.6rem;grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.foot h3{font-size:1rem;margin-bottom:.55rem;color:var(--text-primary)}
+.foot ul{list-style:none;display:flex;flex-direction:column;align-items:flex-start;gap:.45rem}/* link lists read left-aligned */
+.foot a{color:var(--text-secondary);text-decoration:none;transition:color var(--fast)}
+.foot a:hover{color:var(--primary);text-decoration:underline}
+.foot__brand p{margin-top:.7rem;font-size:.95rem;max-width:26ch}
+.social{display:flex;align-items:center;gap:.5rem;margin-top:1rem}
+.copy{border-top:2px solid var(--border-default);padding:1.1rem;text-align:center;font-size:.92rem}
+.toast{position:fixed;left:50%;bottom:1.2rem;z-index:var(--z-toast);display:flex;align-items:center;gap:.6rem;max-width:min(92vw,480px);padding:.8rem 1.2rem;background:var(--bg-secondary);color:var(--text-primary);border:2px solid color-mix(in srgb,var(--text-success),transparent 65%);border-radius:var(--radius-md);box-shadow:var(--shadow-md);opacity:0;transform:translate(-50%,160%);pointer-events:none;transition:transform var(--normal) var(--squish),opacity var(--normal)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast .ms{color:var(--text-success)}
+.reveal{opacity:0;transform:translateY(14px);transition:opacity var(--normal) var(--ease),transform var(--normal) var(--ease)}
+.reveal.in{opacity:1;transform:none}
+@media(min-width:768px){.grid-3{grid-template-columns:repeat(3,1fr)}.grid-2{grid-template-columns:repeat(2,1fr)}
+.steps{flex-direction:row;align-items:flex-start}/* tops aligned so connectors meet the badges */
+.step{flex:1;max-width:none}
+.step+.step::before{content:"";position:absolute;top:25px;left:calc(-1*var(--gap));width:var(--gap);border-top:3px dashed color-mix(in srgb,var(--text-secondary),transparent 55%)}}
+@media(max-width:767px){.hero{flex-direction:column;align-items:stretch}.scene{flex:none;min-height:240px}}
+@media(min-width:900px){.tiers{grid-template-columns:repeat(3,1fr)}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="head">
+  <div class="wrap">
+    <a class="logo" href="#main"><span class="logo__blob" aria-hidden="true"></span>Claymates</a>
+    <nav class="nav" aria-label="Primary">
+      <button class="btn btn--icon menu-btn" id="menuBtn" aria-expanded="false" aria-controls="navList" aria-label="Open menu"><span class="ms" aria-hidden="true">menu</span></button>
+      <ul class="nav__list" id="navList">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+    </nav>
+    <div class="head__actions">
+      <button class="btn btn--icon" id="themeBtn" aria-pressed="false" aria-label="Switch to dark theme"><span class="ms t-moon" aria-hidden="true">dark_mode</span><span class="ms t-sun" aria-hidden="true">light_mode</span></button>
+      <a class="btn btn--primary head__cta" href="#cta">Start free</a>
+    </div>
+  </div>
+</header>
+<main id="main">
+  <section class="hero wrap">
+    <div class="hero__copy reveal">
+      <h1>Squish, sculpt &amp; star in your own clay stories.</h1>
+      <p class="lead">Claymates is a pocket stop-motion studio — mold wobbly characters, snap frames, and premiere tiny films. No kiln, no mess.</p>
+      <div class="hero__cta">
+        <a class="btn btn--primary" href="#cta">Start sculpting free<span class="ms" aria-hidden="true">arrow_forward</span></a>
+        <a class="btn btn--ghost" href="#how">See how it wiggles</a>
+      </div>
+    </div>
+    <div class="scene reveal" aria-hidden="true">
+      <div class="sun"></div>
+      <div class="cloud cloud--a"></div>
+      <div class="cloud cloud--b"></div>
+      <div class="hill"></div>
+      <div class="blob"></div>
+      <div class="hi">Let's make a movie!</div>
+    </div>
+  </section>
+  <section class="sec wrap" id="features">
+    <div class="sec-head reveal">
+      <h2>A whole clay box in your pocket</h2>
+      <p>Everything you need to go from a plain lump to a lovable little film.</p>
+    </div>
+    <div class="grid grid-3">
+      <article class="card reveal">
+        <span class="badge" aria-hidden="true"><span class="ms">gesture</span></span>
+        <h3>Squishy sculpting</h3>
+        <p>Push, poke, and pinch digital plasticine. Every surface keeps its thumbprints, and every smudge fades with one tap of undo.</p>
+      </article>
+      <article class="card reveal">
+        <span class="badge badge--orange" aria-hidden="true"><span class="ms">animation</span></span>
+        <h3>Stop-motion made simple</h3>
+        <p>Nudge your pal a hair, snap a frame, repeat. Onion-skin ghosts keep each wiggle perfectly on beat.</p>
+      </article>
+      <article class="card reveal">
+        <span class="badge badge--grass" aria-hidden="true"><span class="ms">theaters</span></span>
+        <h3>A stage for your stars</h3>
+        <p>Export loopable GIFs and tiny shorts, post them to the gallery, and watch the reshaping ripples spread.</p>
+      </article>
+    </div>
+  </section>
+  <section class="sec wrap" id="how">
+    <div class="sec-head reveal">
+      <h2>From lump to legend in three steps</h2>
+      <p>If you can squish playdough, you can make a Claymates short.</p>
+    </div>
+    <div class="steps">
+      <div class="step reveal">
+        <span class="step__num">1</span>
+        <span class="ms" aria-hidden="true">face</span>
+        <h3>Shape a pal</h3>
+        <p>Roll a ball, stretch some limbs, stick on googly eyes. Your first Claymate is ready in minutes.</p>
+      </div>
+      <div class="step reveal">
+        <span class="step__num">2</span>
+        <span class="ms" aria-hidden="true">photo_camera</span>
+        <h3>Pose &amp; snap</h3>
+        <p>Move them a smidge, capture a frame, and repeat until the wobble feels alive.</p>
+      </div>
+      <div class="step reveal">
+        <span class="step__num">3</span>
+        <span class="ms" aria-hidden="true">movie</span>
+        <h3>Premiere it</h3>
+        <p>Press play, sprinkle in wobbly sound effects, and share your tiny masterpiece with the world.</p>
+      </div>
+    </div>
+  </section>
+  <section class="sec wrap" id="pricing">
+    <div class="sec-head reveal">
+      <h2>Pick your blob size</h2>
+      <p>Friendly plans for hobby squishers, serious storytellers, and whole classrooms.</p>
+    </div>
+    <div class="grid tiers">
+      <article class="tier reveal">
+        <h3>Lump</h3>
+        <p class="price">$0<small>/month</small></p>
+        <p>For first-time squishers.</p>
+        <ul>
+          <li>3 clay colors</li>
+          <li>720p exports</li>
+          <li>Community gallery</li>
+        </ul>
+        <a class="btn btn--ghost" href="#cta">Grab a lump</a>
+      </article>
+      <article class="tier tier--popular reveal">
+        <span class="tier__flag">Most popular</span>
+        <h3>Blob</h3>
+        <p class="price">$6<small>/month</small></p>
+        <p>For storytellers on a roll.</p>
+        <ul>
+          <li>Every clay color &amp; tool</li>
+          <li>4K exports &amp; onion skins</li>
+          <li>Wobbly sound pack</li>
+          <li>Priority kiln support</li>
+        </ul>
+        <a class="btn btn--primary" href="#cta">Start sculpting</a>
+      </article>
+      <article class="tier reveal">
+        <h3>Studio</h3>
+        <p class="price">$14<small>/month</small></p>
+        <p>For classrooms &amp; studios.</p>
+        <ul>
+          <li>5 maker seats</li>
+          <li>Shared clay shelf</li>
+          <li>Ad-free gallery mode</li>
+        </ul>
+        <a class="btn btn--secondary" href="#cta">Book the studio</a>
+      </article>
+    </div>
+  </section>
+  <section class="sec wrap" id="testimonials">
+    <div class="sec-head reveal">
+      <h2>Words from the clay crew</h2>
+      <p>Kids, teachers, and hobby animators on what Claymates feels like.</p>
+    </div>
+    <div class="grid grid-2">
+      <figure class="quote reveal">
+        <div class="stars" role="img" aria-label="Rated 5 out of 5 stars"></div>
+        <blockquote>&ldquo;My clay cat has forty thousand followers now. Animating in Claymates feels like recess, not homework.&rdquo;</blockquote>
+        <figcaption class="who">
+          <span class="avatar" aria-hidden="true">M</span>
+          <span><b>Maya, 12</b><br><small>Junior animator &amp; cat director</small></span>
+        </figcaption>
+      </figure>
+      <figure class="quote reveal">
+        <div class="stars" role="img" aria-label="Rated 5 out of 5 stars"></div>
+        <blockquote>&ldquo;I storyboarded a whole short film on the school bus. The little squish sounds alone are worth it.&rdquo;</blockquote>
+        <figcaption class="who">
+          <span class="avatar avatar--gold" aria-hidden="true">T</span>
+          <span><b>Theo, 15</b><br><small>Aspiring stop-motion director</small></span>
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+  <section class="sec wrap" id="faq">
+    <div class="sec-head reveal">
+      <h2>Squishy questions</h2>
+      <p>The things folks always poke us about.</p>
+    </div>
+    <div class="faq">
+      <details class="faq__item reveal">
+        <summary><h3>Do I need to know how to draw or animate?</h3><span class="ms" aria-hidden="true">expand_more</span></summary>
+        <p class="faq__body">Not at all. If you can squish playdough, you can make a Claymates short. Every tool is a big friendly button, and undo forgives everything.</p>
+      </details>
+      <details class="faq__item reveal">
+        <summary><h3>Can I use Claymates offline?</h3><span class="ms" aria-hidden="true">expand_more</span></summary>
+        <p class="faq__body">Yes — the whole clay box lives on your device. Your films sync to the shelf whenever you wander back online.</p>
+      </details>
+      <details class="faq__item reveal">
+        <summary><h3>Is it safe for kids and classrooms?</h3><span class="ms" aria-hidden="true">expand_more</span></summary>
+        <p class="faq__body">Built side-by-side with teachers and parents: no ads, no strangers' comments, and a locked-down gallery mode made for classrooms.</p>
+      </details>
+    </div>
+  </section>
+  <section class="sec wrap" id="cta">
+    <div class="cta-band reveal">
+      <h2>Ready to get your hands virtually dirty?</h2>
+      <p>Join the Claymates waitlist — we'll fire your invite the moment the kiln cools.</p>
+      <form class="waitlist" id="waitlist" novalidate>
+        <div class="field" id="field">
+          <label for="email">Email address</label>
+          <input class="input" type="email" id="email" name="email" placeholder="you@example.com" autocomplete="email" aria-describedby="fieldMsg">
+          <p class="field__msg" id="fieldMsg" aria-live="polite"><span class="ms" aria-hidden="true">error</span><span>Hmm, that email looks a little lumpy — mind checking it?</span></p>
+        </div>
+        <button class="btn btn--primary" id="subBtn" type="submit"><span class="ms" aria-hidden="true">send</span><span class="btn__label">Save my spot</span></button>
+      </form>
+    </div>
+  </section>
+</main>
+<footer class="foot">
+  <div class="wrap foot__grid">
+    <div class="foot__brand">
+      <a class="logo" href="#main"><span class="logo__blob" aria-hidden="true"></span>Claymates</a>
+      <p>Squishy stories, hand-rolled one frame at a time.</p>
+      <div class="social">
+        <a class="btn btn--icon" href="#cta" aria-label="Email us"><span class="ms" aria-hidden="true">mail</span></a>
+        <a class="btn btn--icon" href="#cta" aria-label="Our blog feed"><span class="ms" aria-hidden="true">rss_feed</span></a>
+        <a class="btn btn--icon" href="#cta" aria-label="Community chat"><span class="ms" aria-hidden="true">forum</span></a>
+      </div>
+    </div>
+    <nav aria-label="Product">
+      <h3>Product</h3>
+      <ul>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#how">How it works</a></li>
+      </ul>
+    </nav>
+    <nav aria-label="Company">
+      <h3>Company</h3>
+      <ul>
+        <li><a href="#main">About us</a></li>
+        <li><a href="#main">Careers</a></li>
+        <li><a href="#main">Press kit</a></li>
+      </ul>
+    </nav>
+    <nav aria-label="Support">
+      <h3>Support</h3>
+      <ul>
+        <li><a href="#faq">FAQ</a></li>
+        <li><a href="#main">Contact</a></li>
+        <li><a href="#main">Community rules</a></li>
+      </ul>
+    </nav>
+  </div>
+  <p class="copy">© 2026 Claymates. Hand-rolled with love — no clay was wasted making this page.</p>
+</footer>
+<div class="toast" id="toast" role="status"><span class="ms" aria-hidden="true">check_circle</span><span id="toastMsg"></span></div>
+<script>
+(function(){var d=document,r=d.documentElement,st=(function(){try{return localStorage}catch(e){}})(),K='claymates-dark',tb=d.getElementById('themeBtn');
+function setT(x){r.classList.toggle('dark',x);tb.setAttribute('aria-pressed',x);tb.setAttribute('aria-label',x?'Switch to light theme':'Switch to dark theme')}
+setT(!!st&&st.getItem(K)==='1');
+tb.addEventListener('click',function(){var x=!r.classList.contains('dark');setT(x);if(st)st.setItem(K,x?'1':'0')});
+var mb=d.getElementById('menuBtn'),nl=d.getElementById('navList');
+mb.addEventListener('click',function(){var o=nl.classList.toggle('is-open');mb.setAttribute('aria-expanded',o)});
+nl.addEventListener('click',function(e){if(e.target.closest('a')){nl.classList.remove('is-open');mb.setAttribute('aria-expanded','false')}});
+var f=d.getElementById('waitlist'),m=d.getElementById('email'),g=d.getElementById('field'),b=d.getElementById('subBtn'),bi=b.querySelector('.ms'),bl=b.querySelector('.btn__label'),t=d.getElementById('toast'),tm=d.getElementById('toastMsg'),tt;
+m.addEventListener('input',function(){g.classList.remove('is-error');m.removeAttribute('aria-invalid')});
+f.addEventListener('submit',function(e){e.preventDefault();
+if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(m.value.trim())){g.classList.add('is-error');m.setAttribute('aria-invalid','true');m.focus();return}
+b.disabled=true;b.classList.add('is-loading');bi.textContent='progress';bl.textContent='Molding...';
+setTimeout(function(){b.classList.remove('is-loading');b.classList.add('is-success');bi.textContent='check_circle';bl.textContent="You're in!";m.disabled=true;
+tm.textContent='Welcome to the Claymates club — your invite is in the kiln!';t.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('show')},4500)},1400)});
+if('IntersectionObserver'in window&&!matchMedia('(prefers-reduced-motion: reduce)').matches){var io=new IntersectionObserver(function(es){es.forEach(function(en){if(en.isIntersecting){en.target.classList.add('in');io.unobserve(en.target)}})},{threshold:.12});d.querySelectorAll('.reveal').forEach(function(el){io.observe(el)})}})();
+</script>
+</body>
+</html>

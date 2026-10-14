@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FUSE — Shell Designer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Symbols+Rounded">
+<style>
+/* ---------- CSS Variables ---------- */
+:root{
+  --primary:#060a14;
+  --secondary:#6a82a8;
+  --bg-primary:#e8eef8;
+  --bg-secondary:#d8e2f0;
+  --text-primary:#060a14;
+  --text-secondary:#6a82a8;
+  --border-default:rgba(0,0,0,0.1);
+  --glass-bg:rgba(255,255,255,0.6);
+  --glass-border:rgba(255,255,255,0.3);
+  --backdrop-blur:16px;
+  --radius-sm:4px;
+  --radius-md:8px;
+  --radius-lg:12px;
+  --shadow-sm:0 2px 4px rgba(0,0,0,0.05);
+  --shadow-md:0 4px 12px rgba(0,0,0,0.08);
+  --transition-fast:150ms ease-out;
+  --transition-normal:300ms ease-out;
+  --ease-standard:ease-out;
+  --z-dropdown:100;
+  --z-modal:200;
+}
+.dark{
+  --primary:#060a14;
+  --secondary:#6a82a8;
+  --bg-primary:#060a14;
+  --bg-secondary:#0a1020;
+  --text-primary:#e8eef8;
+  --text-secondary:#d8e2f0;
+  --border-default:rgba(255,255,255,0.1);
+  --glass-bg:rgba(6,10,20,0.6);
+  --glass-border:rgba(255,255,255,0.2);
+  --backdrop-blur:20px;
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition:none!important;animation:none!important}
+}
+
+/* ---------- Base ---------- */
+*{box-sizing:border-box;margin:0;padding:0;overflow-x:hidden}
+html{font-family:var(--font-base),system-ui,sans-serif;color:var(--text-primary);background:var(--bg-primary)}
+body{display:flex;flex-direction:column;min-height:100vh}
+
+/* ---------- Theme Toggle (JS adds .dark) ---------- */
+.theme-toggle{
+  all:unset;
+  width:40px;height:40px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  font-variant:material-symbols-rounded;
+  font-size:1.8rem;
+  color:var(--text-secondary);
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius-md);
+  backdrop-filter:var(--backdrop-blur);
+  -webkit-backdrop-filter:var(--backdrop-blur);
+}
+.theme-toggle[aria-pressed="true"]{color:var(--primary)};
+
+/* ---------- Nav ---------- */
+.site-header{
+  position:sticky;top:0;z-index:var(--z-dropdown);
+  background:var(--glass-bg);
+  backdrop-filter:var(--backdrop-blur);
+  -webkit-backdrop-filter:var(--backdrop-blur);
+  border-bottom:1px solid var(--glass-border);
+}
+.nav{
+  display:flex;align-items:center;gap:1rem;padding:0.75rem 1rem;
+  max-width:1200px;margin:auto;
+}
+.nav-logo{
+  font-family:var(--font-display),Inter,sans-serif;
+  font-size:1.4rem;font-weight:700;color:var(--primary);
+  white-space:nowrap;
+}
+.nav-links{
+  display:flex;gap:1.5rem;margin-left:auto;
+}
+.nav-links a{
+  all:unset;color:var(--text-secondary);font-size:0.95rem;cursor:pointer;
+  position:relative;padding-bottom:2px;
+}
+.nav-links a::after{
+  content:'';position:absolute;bottom:0;left:0;width:0;height:2px;background:var(--primary);
+  transition:var(--transition-fast);width:100%;
+}
+.nav-links a:hover::after{width:100%}
+.nav-cta .btn{margin-left:1rem}
+
+/* ---------- Hero ---------- */
+.hero{
+  position:relative;padding:6rem 1rem 4rem;
+  max-width:1200px;margin:auto;display:flex;flex-direction:column;gap:1.5rem;
+}
+.badge{
+  display:inline-flex;align-items:center;gap:0.5rem;
+  padding:0.4rem 0.8rem;background:var(--glass-bg);
+  border:1px solid var(--glass-border);border-radius:var(--radius-md);
+  font-size:0.8rem;color:var(--text-secondary);
+  backdrop-filter:var(--backdrop-blur);
+  -webkit-backdrop-filter:var(--backdrop-blur);
+}
+.hero h1{
+  font-family:var(--font-display),Space Grotesk,Inter,sans-serif;
+  font-size:2.8rem;font-weight:700;line-height:1.1;color:var(--primary);
+  margin:0.5rem 0 0.5rem;
+}
+.hero p{
+  font-size:1.1rem;color:var(--text-secondary);margin:0;
+}
+.hero .ctas{
+  display:flex;gap:1rem;align-items:center;flex-wrap:wrap;
+}
+.hero .trust{
+  font-size:0.85rem;color:var(--text-secondary);margin-top:1rem;
+}
+
+/* ---------- Features (3 cards) ---------- */
+.features{
+  max-width:1200px;margin:auto;padding:4rem 1rem;display:flex;gap:1.5rem;flex-wrap:wrap;justify-content:center;
+}
+.glass-card{
+  flex:1 1 calc(33% - 1rem);min-width:260px;
+  display:flex;flex-direction:column;align-items:center;padding:1.5rem;
+  background:var(--glass-bg);border:1px solid var(--glass-border);
+  border-radius:var(--radius-lg);box-shadow:var(--shadow-md);
+  backdrop-filter:var(--backdrop-blur);
+  -webkit-backdrop-filter:var(--backdrop-blur);
+  transition:transform var(--transition-normal);
+}
+.glass-card:hover{transform:translateY(-2px);}
+.glass-card:focus-within{border-color:var(--primary);}
+.glass-card__icon{
+  width:48px;height:48px;display:flex;align-items:center;justify-content:center;
+  margin-bottom:0.75rem;
+  background:var(--glass-bg);border-radius:50%;
+  backdrop-filter:var(--backdrop-blur);
+  -webkit-backdrop-filter:var(--backdrop-blur);
+}
+.glass-card__icon .material-symbols-rounded{
+  font-variant:material-symbols-rounded;color:var(--secondary);font-size:1.8rem;
+}
+.glass-card__title{font-size:1.1rem;font-weight:600;color:var(--primary);margin-bottom0.25rem;}
+.glass-card__copy{font-size:0.9rem;color:var(--text-secondary);text-align:center;width:100%;}
+
+/* ---------- How It Works (3 steps) ---------- */
+.steps{
+  max-width:1200px;margin:auto;padding:4rem 1rem;position:relative;
+}
+.step-list{
+  display:flex;gap:2rem;align-items:center;justify-content:center;position:relative;
+  counter-reset:step;
+}
+.step-list::before{
+  content:'';position:absolute;top:1.2rem;width:100%;height:2px;background:var(--border-default);
+  z-index:0;pointer-events:none;
+}
+.step{
+  display:flex;flex-direction:column;align-items:center;gap:0.5rem;z-index:1;
+  text-align:center;
+}
+.step-number{
+  all:unset;width:3rem;height:3rem;display:flex;align-items:center;justify-content:center;
+  background:var(--glass-bg);border:1px solid var(--glass-border);
+  border-radius:50%;font-size:0.9rem;color:var(--text-secondary);
+  backdrop-filter:var(--backdrop-blur);
+  -webkit-backdrop-filter:var(--backdrop-blur);
+}
+.step:hover .step-number,
+.step:focus-within .step-number{
+  background:var(--primary);color:#fff;
+}
+.step-title{font-size:1rem;font-weight:600;color:var(--primary);}
+.step-copy{font-size:0.85rem;color:var(--text-secondary);}
+
+/* ---------- Testimonials (2 cards) ---------- */
+.testimonials{
+  max-width:1200px;margin:auto;padding:4rem 1rem;display:flex;gap:1.5rem;flex-wrap:wrap;justify-content:center;
+}
+.testimonial-card{
+  flex:1 1 calc(50% - 0.75rem);min-width:280px;
+  display:flex;flex-direction:column;align-items:center;padding:1.5rem;
+  background:var(--glass-bg);border:1px solid var(--glass-border);
+  border-radius:var(--radius-lg);box-shadow:var(--shadow-md);
+  backdrop-filter:var(--backdrop-blur);
+  -webkit-backdrop-filter:var(--backdrop-blur);
+}
+.avatar{
+  width:60px;height:60px;border-radius:50%;background:radial-gradient(ellipse at center,var(--primary),var(--secondary));
+  display:flex;align-items:center;justify-content:center;font-family:var(--font-display),Space Grotesk,Inter,sans-serif;
+  font-weight:700;font-size:1.5rem;color:#fff;margin-bottom0.75ms;
+}
+.stars{color:#f5a623;font-size:0.9rem;}
+.testimonial-card q{font-size:0.95rem;color:var(--text-primary);margin:0.5rem 0;line-height:1.4;}
+.testimonial-card cite{font-size:0.85rem;color:var(--text-secondary);margin-top:0.5rem;}
+.testimonial-card .role{font-size:0.75rem;color:var(--text-secondary);margin-top:0.2rem;}
+
+/* ---------- Pricing (3 tiers) ---------- */
+.pricing{
+  max-width:1200px;margin:auto;padding:4rem 1rem;display:flex;gap:1.5rem;flex-wrap:wrap;justify-content:center;
+}
+.pricing-card{
+  flex:1 1 calc(33% - 1rem);min-width:260px;
+  display:flex;flex-direction:column;align-items:center;padding:1.5rem;
+  background:var(--glass-bg);border:1px solid var(--glass-border);
+  border-radius:var(--radius-lg);box-shadow:var(--shadow-md);
+  backdrop-filter:var(--backdrop-blur);
+  -webkit-backdrop-filter:var(--backdrop-blur);
+  transition:transform var(--transition-normal);
+}
+.pricing-card:hover{transform:translateY(-2px);}
+.pricing-card--featured{
+  position:relative;z-index:1;
+  border-color:var(--primary);background:linear-gradient(135deg,rgba(6,10,20,0.8),rgba(10,20,32,0.8));
+  color:#fff;
+}
+.pricing-card--featured .pricing-name{color:#fff;}
+.pricing-card--featured .pricing-price{color:#e8eef8;}
+.pricing-card--featured .pricing-cta{
+  background:var(--primary);color:#fff;border-color:var(--primary);
+}
+.pricing-card--featured .pricing-cta:hover{background:#0a142a;}
+.pricing-name{font-size:1.1rem;font-weight:600;margin-bottom0.25rem;}
+.pricing-price{font-size:1.8rem;font-weight:700;margin-bottom1rem;}
+.pricing-features{margin:1rem 0;list-style:none;display:flex;flex-direction:column;gap0.5rem;color:var(--text-secondary);}
+.pricing-features li{display:flex;align-items:center;gap0.4rem;}
+.pricing-features .material-symbols-rounded{color:#6af;}
+.pricing-cta{all:unset;padding:0.6rem 1.2rem;font-size:0.9rem;font-weight:600;cursor:pointer;
+  border:1px solid currentColor;border-radius:var(--radius-md);transition:var(--transition-fast);}
+.pricing-toggle{
+  margin:1rem 0;display:flex;gap1rem;align-items:center;
+}
+.pricing-toggle .switch{
+  position:relative;display:inline-block;width:44px;height:24px;
+  background:var(--glass-border);border-radius:12px;cursor:pointer;
+}
+.pricing-toggle .switch-input{
+  all:unset;position:absolute;opacity:0;width:100%;height:100%;
+}
+.pricing-toggle .slider{
+  position:absolute;top:2px;left:2px;width:20px;height:20px;
+  background:var(--primary);border-radius:50%;transition:var(--transition-fast);
+}
+
+/* ---------- FAQ (3 details) ---------- */
+.faq{
+  max-width:1200px;margin:auto;padding:4rem 1rem;
+}
+.faq-item{
+  border-top:1px solid var(--border-default);margin-top1rem;
+}
+.faq-trigger{
+  width:100%;padding:0.75rem 1rem;background:none;border:none;
+  text-align:left;font-size:1rem;font-weight:600;color:var(--primary);
+  cursor:pointer;display:flex;justify-content:space-between;align-items:center;
+}
+.faq-trigger .chevron{
+  font-variant:material-symbols-rounded;font-size:0.8rem;color:var(--text-transition);
+  transition:transform var(--transition-fast);
+}
+.faq-trigger[aria-expanded="true"] .chevron{transform:rotate(180deg);}
+.faq-content{
+  overflow:hidden;max-height:0;transition:max-height var(--transition-normal) ease-out;
+  color:var(--text-secondary);font-size:0.9rem;line-height:1.5;
+}
+.faq-content.show{max-height:200px;padding:0.5rem 1rem;transition:max-height var(--transition-normal) ease-out}
+
+/* ---------- Final CTA ---------- */
+.final-cta{
+  max-width:1200px;margin:auto;padding:5rem 1rem;text-align:center;position:relative;
+}
+.final-cta .panel{
+  display:inline-block;background:var(--glass-bg);border:1px solid var(--glass-border);
+  border-radius:var(--radius-lg);padding:2rem 2.5rem;backdrop-filter:var(--backdrop-blur);
+  -webkit-backdrop-filter:var(--backdrop-blur);width:90%;max-width:460px;
+}
+.final-cta h2{font-family:var(--font-display),Space Grotesk,Inter,sans-serif;font-size:2rem;font-weight:700;color:var(--primary);margin-bottom0.5rem;}
+.final-cta p{font-size:1.05rem;color:var(--text-secondary);margin-bottom1.5rem;}
+/* Input Group */
+.input-group{display:flex;flex-direction:column;align-items:center;gap0.5rem;margin-top1rem;width:100%}
+.input-group__label{font-size:0.85rem;color:var(--text-secondary);width:100%}
+.input-group__input{
+  width:100%;padding0.75rem 1rem;font-size:1rem;border:1px solid var(--border-default);
+  border-radius:var(--radius-md);background:var(--bg-secondary);color:var(--text-primary);
+  transition:border-color var(--transition-fast);&:focus{outline:none;border-color:var(--primary);}
+}
+.input-group__error{
+  font-size:0.75rem;color:var(--text-error);margin-top0.25rem;display:none;
+}
+.input-group__error--show{display:block;}
+/* Button states */
+.btn{
+  all:unset;padding:0.7rem 1.4rem;font-size:0.95rem;font-weight:600;cursor:pointer;
+  border:none;border-radius:var(--radius-md);display:inline-flex;align-items:center;justify-content:center;gap0.5rem;
+  transition:transform var(--transition-fast),box-shadow var(--transition-fast);
+  min-height:44px;min-width:120px;
+}
+.btn:focus-visible{outline:2px solid var(--primary);outline-offset:2px;}
+.btn:hover{transform:scale(1.02);}
+.btn:active{transform:scale(0.97);}
+.btn--primary{
+  background:linear-gradient(135deg,var(--primary),#0a142a);color:#fff;border-color:var(--primary);
+}
+.btn--primary:focus-visible{outline:2px solid var(--primary);outline-offset:2px;}
+.btn--primary.loading .material-symbols-rounded{animation:spin var(--transition-fast) linear infinite;}
+.btn--glass{
+  background:var(--glass-bg);color:var(--primary);border:1px solid var(--glass-border);
+}
+.btn--glass:hover{border-color:var(--primary);color:var(--primary);}
+.btn--danger{
+  background:#d4302b;color:#fff;border-color:#d4302b;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---------- Footer ---------- */
+.footer{
+  max-width:1200px;margin:auto;padding:2rem 1rem;display:flex;flex-wrap:wrap;gap2rem;justify-content:center;
+}
+.footer-col{flex:1 1 calc(25% - 2rem);min-width:160px;}
+.footer-col h4{font-size:0.9rem;font-weight:600;color:var(--primary);margin-bottom1rem;}
+.footer-col ul{list-style:none;padding:0;margin:0;}
+.footer-col li{margin-bottom0.5rem;}
+.footer-col a{
+  all:unset;font-size:0.85rem;color:var(--text-secondary);cursor:pointer;transition:color var(--transition-fast);
+}
+.footer-col a:hover{color:var(--primary);}
+.footer-bottom{
+  max-width:1200px;margin:auto;padding:1rem 1rem 0;text-align:center;font-size0.8rem;color:var(--text-secondary);
+  border-top:1px solid var(--border-default);margin-topauto;
+}
+
+/* Reduced motion for blooms */
+@media (prefers-reduced-motion:reduce){
+  .bloom{animation:none;transform:none;}
+}
+</style>
+</head>
+<body>
+  <!-- Theme toggle state via .dark class, persisted in localStorage -->
+  <script>
+    (()=>{const prefersDark=window.matchMedia('(prefers-color-scheme:dark)').matches;
+    const stored=localStorage.getItem('theme');
+    const html=document.documentElement;const toggle=document.querySelector('.theme-toggle');
+    const setTheme=d=>{html.classList.toggle('dark',d==='dark');localStorage.setItem('theme',d);if(toggle)toggle.setAttribute('aria-pressed',d==='dark')};
+    if(stored){setTheme(stored)}else if(!prefersDark){setTheme('light')};
+    toggle.addEventListener('click',()=>{const newTheme=html.classList.contains('dark')?'light':'dark';setTheme(newTheme)})})()
+  </script>
+
+  <!-- ==== GLASS TOP BAR (within Hero) ==== -->
+  <header class="site-header">
+    <nav class="nav">
+      <div class="nav-logo">FUSE</div>
+      <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#steps">How It Works</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+      <button class="theme-toggle" aria-pressed="false" aria-label="Toggle dark mode">
+        <span class="material-symbols-rounded">sun</span>
+      </button>
+      <a href="#final-cta" class="btn btn--primary">Start designing</a>
+    </nav>
+  </header>
+
+  <!-- ==== HERO ==== -->
+  <section class="hero" id="hero">
+    <span class="badge"><span class="material-symbols-rounded">fireworks</span>New — Firework engine</span>
+    <h1>Design your shell like a studio piece</h1>
+    <p>Craft prompt segments, colors, and glyphs in a live preview and export ready configs for zsh, fish, PowerShell, and Starship.</p>
+    <div class="ctas">
+      <a href="#final-cta" class="btn btn--glass">How it works</a>
+      <a href="#final-cta" class="btn btn--primary">Start designing</a>
+    </div>
+    <p class="trust">Trusted by thousands of terminal enthusiasts worldwide.</p>
+  </section>
+
+  <!-- ==== FEATURES (3 glass cards) ==== -->
+  <section class="features" id="features">
+    <div class="glass-card">
+      <div class="glass-card__icon"><span class="material-symbols-rounded">preview</span></div>
+      <h3 class="glass-card__title">Live prompt preview</h3>
+      <p class="glass-card__copy">See changes instantly as you adjust colors, glyphs, and segment styles.</p>
+    </div>
+    <div class="glass-card">
+      <div class="glass-card__icon"><span class="material-symbols-rounded">palette</span></div>
+      <h3 class="glass-card__title">Segment & theme controls</h3>
+      <p class="glass-card__copy">Fine‑tune every segment with granular controls and preset palettes.</p>
+    </div>
+    <div class="glass-card">
+      <div class="glass-card__icon"><span class="material-symbols-rounded">download</span></div>
+      <h3 class="glass-card__title">One‑click export</h3>
+      <p class="glass-card__copy">Export configs for zsh, fish, PowerShell, and Starship in a single click.</p>
+    </div>
+  </section>
+
+  <!-- ==== HOW IT WORKS (3 steps) ==== -->
+  <section class="steps" id="steps">
+    <ol class="step-list">
+      <li class="step">
+        <span class="step-number">01</span>
+        <h3 class="step-title">Pick a base shell</h3>
+        <p class="step-copy">Choose from zsh, fish, PowerShell, or Starship as your foundation.</p>
+      </li>
+      <li class="step">
+        <span class="step-number">02</span>
+        <h3 class="step-title">Compose segments in the studio</h3>
+        <p class="step-copy">Arrange prompt segments, pick colors, and add custom glyphs.</p>
+      </li>
+      <li class="step">
+        <span class="step-number">03</span>
+        <h3 class="step-title">Export & fuse into your terminal</h3>
+        <p class="step-copy">Download a ready‑to‑use config and fuse it instantly.</p>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ==== TESTIMONIALS (2 cards) ==== -->
+  <section class="testimonials" id="testimonials">
+    <div class="testimonial-card">
+      <div class="avatar">AB</div>
+      <q>FUSE turned my static prompt into a living work of art. The live preview is a game‑changer.</q>
+      <cite>Morgan T.</cite>
+      <div class="role">Designer · GitHub</div>
+      <span class="stars material-symbols-rounded">star</span>
+      <span class="stars material-symbols-rounded">star</span>
+      <span class="stars material-symbols-rounded">star</span>
+      <span class="stars material-symbols-rounded">star</span>
+      <span class="stars material-symbols-rounded">star</span>
+    </div>
+    <div class="testimonial-card">
+      <div class="avatar">JD</div>
+      <q>Exporting configs for zsh and PowerShell was effortless. Love the firework engine.</q>
+      <cite>Jae‑Duke</cite>
+      <div class="role">Developer · Stack Overflow</div>
+      <span class="stars material-symbols-rounded">star</span>
+      <span class="stars material-symbols-rounded">star</span>
+      <span class="stars material-symbols-rounded">star</span>
+      <span class="stars material-symbols-rounded">star</span>
+      <span class="stars material-symbols-rounded">star</span>
+    </div>
+  </section>
+
+  <!-- ==== PRICING (3 tiers) ==== -->
+  <section class="pricing" id="pricing">
+    <div class="pricing-card pricing-card--featured" id="card-spark">
+      <div class="pricing-name">Spark</div>
+      <div class="pricing-price">Free <span>/ month</span></div>
+      <ul class="pricing-features">
+        <li><span class="material-symbols-rounded">check</span> Base shell selection</li>
+        <li><span class="material-symbols-rounded">check</span> Color palette editor</li>
+        <li><span class="material-symbols-rounded">check</span> Export zsh config</li>
+        <li><span class="material-symbols-rounded">check</span> Community support</li>
+      </ul>
+      <button class="pricing-cta btn btn--primary">Get Started</button>
+    </div>
+    <div class="pricing-card" id="card-ignite">
+      <div class="pricing-name">Ignite</div>
+      <div class="pricing-price">$12 <span>/ month</span></div>
+      <ul class="pricing-features">
+        <li><span class="material-symbols-rounded">check</span> All Spark features</li>
+        <li><span class="material-symbols-rounded">check</span> Advanced segment controls</li>
+        <li><span class="material-symbols-rounded">check</span> Export fish & PowerShell</li>
+        <li><span class="material-symbols-rounded">check</span> Priority support</li>
+      </ul>
+      <button class="pricing-cta btn btn--glass">Start Pro</button>
+    </div>
+    <div class="pricing-card" id="card-studio">
+      <div class="pricing-name">Studio</div>
+      <div class="pricing-price">$49 <span>/ month</span></div>
+      <ul class="pricing-features">
+        <li><span class="material-symbols-rounded">check</span> All Ignite features</li>
+        <li><span class="material-symbols-rounded">check</span> Team collaboration</li>
+        <li><span class="material-symbols-rounded">check</span> Custom glyph library</li>
+        <li><span class="material-symbols-rounded">check</span> Dedicated account manager</li>
+      </ul>
+      <button class="pricing-cta btn btn--glass">Start Team</button>
+    </div>
+    <div class="pricing-toggle">
+      <label class="switch"><input type="checkbox" class="switch-input" id="billing-monthly"><span class="slider"></span></label>
+      <span>Monthly</span><span>Yearly</span>
+    </div>
+  </section>
+
+  <!-- ==== FAQ (3 details/summary) ==== -->
+  <section class="faq" id="faq">
+    <div class="faq-item">
+      <button class="faq-trigger" aria-expanded="false">
+        Which shells does FUSE support?
+        <span class="chevron material-symbols-rounded">chevron_down</span>
+      </button>
+      <div class="faq-content">FUSE currently supports zsh, fish, PowerShell, and Starship. Additional shells may be added in future updates.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-trigger" aria-expanded="false">
+        Can I export to other config formats?
+        <span class="chevron material-symbols-rounded">chevron_down</span>
+      </button>
+      <div class="faq-content">Export formats are zsh, fish, PowerShell, and Starship. Custom format requests are welcome via our feedback channel.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-trigger" aria-expanded="false">
+        What happens if I cancel my subscription?
+        <span class="chevron material-symbols-rounded">chevron_down</span>
+      </button>
+      <div class="faq-content">You may cancel at any time from your account settings. Access continues until the end of your billing period.</div>
+    </div>
+  </section>
+
+  <!-- ==== FINAL CTA ==== -->
+  <section class="final-cta" id="final-cta">
+    <div class="panel">
+      <h2>Ready to fuse your theme?</h2>
+      <p>Join thousands of creators who personalize their terminal. Enter your email for early‑access and tips.</p>
+      <form class="input-group" id="email-form" novalidate>
+        <label for="email" class="input-group__label">Enter your email</label>
+        <input type="email" id="email" class="input-group__input" placeholder="you@domain.com" aria-describedby="email-error" required>
+        <span class="input-group__error" id="email-error" role="alert">Please enter a valid email address.</span>
+        <button type="submit" class="btn btn--primary" id="cta-btn">Send invitation</button>
+      </form>
+      <p class="privacy">We’ll only use your email to send you theme tips and early‑access updates. <a href="#">Privacy policy</a>.</p>
+    </div>
+  </section>
+
+  <!-- ==== FOOTER ==== -->
+  <footer class="footer" id="footer">
+    <div class="footer-col">
+      <h4>FUSE</h4>
+      <p>Browser‑based design studio for custom terminal shell themes.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Product</h4>
+      <ul>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#steps">How It Works</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Resources</h4>
+      <ul>
+        <li><a href="#faq">FAQ</a></li>
+        <li><a href="#">Blog</a></li>
+        <li><a docs>Documentation</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <ul>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Careers</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+    <div class="footer-bottom">
+      &copy; 2026 FUSE — Shell Designer. All rights reserved.
+    </div>
+  </footer>
+
+  <!-- ==== Script for interactions ==== -->
+  <script>
+    (()=>{// Pricing billing toggle
+      const monthly=document.getElementById('billing-monthly');
+      const priceSpans=document.querySelectorAll('#card-spark .pricing-price,#card-ignite .pricing-price,#card-studio .pricing-price');
+      const labels=document.querySelectorAll('.pricing-toggle span');
+      function updatePrices(){const isMonth=monthly.checked;
+        priceSpans.forEach(span=>{span.textContent=isMonth?span.dataset.month:span.dataset.year});
+        labels.forEach(l=>l.textContent=isMonth?'Monthly':'Yearly');
+      }
+      updatePrices();monthly.addEventListener('change',updatePrices);
+
+      // CTA form validation + success state
+      const form=document.getElementById('email-form');
+      const btn=document.getElementById('cta-btn');
+      form.addEventListener('submit',e=>{
+        e.preventDefault();
+        const input=form.querySelector('.input-group__input');
+        const error=form.querySelector('.input-group__error');
+        if(input.value&&input.value.includes('@')){
+          btn.classList.add('loading');
+          btn.disabled=true;
+          setTimeout(()=>{
+            btn.classList.remove('loading');
+            btn.classList.add('success');
+            btn.innerHTML='<span class="material-symbols-rounded">check_circle</span> Sent!';
+            const live=document.getElementById('email-error');
+            live.setAttribute('aria-live','polite');
+            live.textContent='Success! Check your inbox.';
+            setTimeout(()=>{btn.innerHTML='Send invitation';btn.classList.remove('success');btn.disabled=false;},2500);
+          },1500);
+        }else{
+          error.classList.add('input-group__error--show');
+        }
+      });
+      // input focus state
+      form.querySelector('.input-group__input').addEventListener('focus',()=>form.querySelector('.input-group__error')?.classList.remove('input-group__error--show'));
+      form.querySelector('.input-group__input').addEventListener('blur',()=>{if(!form.querySelector('.input-group__input').validity.valid)form.querySelector('.input-group__error')?.classList.add('input-group__error--show')});
+
+      // FAQ accordion
+      document.querySelectorAll('.faq-trigger').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          const expanded=btn.getAttribute('aria-expanded')==='true';
+          btn.setAttribute('aria-expanded',!expanded);
+          const content=btn.nextElementSibling;
+          if(!expanded){
+            content.classList.add('show');
+          }else{
+            content.classList.remove('show');
+            content.style.maxHeight='';
+          }
+        });
+      });
+
+      // Scroll‑to‑anchor for nav links
+      document.querySelectorAll('a[href^="#"]').forEach(anchor=>{
+        anchor.addEventListener('click',function(e){
+          e.preventDefault();
+          const target=document.querySelector(this.getAttribute('href'));
+          if(target){target.scrollIntoView({behavior:'smooth'});}
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

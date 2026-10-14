@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nimbus — Turn Busywork Into Quests</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet">
+<script>try{var t=localStorage.getItem('nimbus-theme');if(t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme:dark)').matches))document.documentElement.className='dark';else if(t==='light')document.documentElement.className='light'}catch(e){}</script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--primary:#448AFF;--primary-deep:#1565C0;--secondary:#66BB6A;--accent:#69F0AE;--lava:#FF7043;--lava-deep:#D84315;--bg-primary:#E8F0FE;--bg-secondary:#fefefe;--bg-tertiary:#DCE9FB;--text-primary:#5D4037;--text-secondary:#6D4C41;--text-success:#2E7D32;--text-error:#C62828;--border-default:#C7D7F5;--border-error:#E57373;--border-success:#66BB6A;--radius-sm:4px;--radius-md:8px;--radius-lg:16px;--shadow-sm:0 2px 4px rgba(93,64,55,.08);--shadow-md:0 6px 16px rgba(93,64,55,.14);--vx:#C9D8F0;--shadow-voxel:-6px 6px 0 var(--vx);--shadow-voxel-lg:-10px 10px 0 var(--vx);--spacing-gap:1.5rem;--transition-fast:120ms;--transition-normal:250ms;--ease-standard:cubic-bezier(.34,1.56,.64,1);--z-dropdown:1000;--z-modal:2000;--z-toast:3000;--font-base:'Nunito',sans-serif;--font-display:'Baloo 2',var(--font-base);--on-accent:#5D4037}
+.dark{--bg-primary:#101A33;--bg-secondary:#1B2A4A;--bg-tertiary:#22345C;--text-primary:#E8F0FE;--text-secondary:#A9BEE0;--border-default:#31486F;--primary:#6EA8FF;--primary-deep:#9CC3FF;--vx:#0A1226;--on-accent:#101A33}
+@media(prefers-color-scheme:dark){:root:not(.light){--bg-primary:#101A33;--bg-secondary:#1B2A4A;--bg-tertiary:#22345C;--text-primary:#E8F0FE;--text-secondary:#A9BEE0;--border-default:#31486F;--primary:#6EA8FF;--primary-deep:#9CC3FF;--vx:#0A1226;--on-accent:#101A33}}
+html{scroll-behavior:smooth;scroll-padding-top:84px}
+body{font:400 1.02rem/1.6 var(--font-base);background:var(--bg-primary);color:var(--text-primary);overflow-x:hidden}
+h1,h2,h3{font-family:var(--font-display);line-height:1.15}
+h1{font-size:clamp(2.1rem,5vw,3.3rem)}
+h2{font-size:clamp(1.7rem,3.5vw,2.3rem)}
+a{color:var(--primary-deep)}
+:focus-visible{outline:3px solid var(--primary-deep);outline-offset:2px}
+.ms{font-family:'Material Symbols Rounded';font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24;line-height:1;display:inline-block;vertical-align:middle}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+.sec{padding:72px 0}
+.sec--alt{background:var(--bg-tertiary);border-top:2px solid var(--border-default);border-bottom:2px solid var(--border-default)}
+.sec-head{text-align:center;max-width:660px;margin:0 auto 2.4rem}
+.sec-head p{color:var(--text-secondary);margin-top:.5rem;font-weight:600}
+.skip{position:absolute;left:-999px}.skip:focus{left:10px;top:10px;z-index:3000;background:var(--bg-secondary);color:var(--text-primary);padding:.7rem 1.1rem;border-radius:var(--radius-sm);box-shadow:var(--shadow-md)}
+.btn{display:flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:.65rem 1.3rem;font:700 1rem var(--font-base);border:2px solid transparent;border-radius:var(--radius-sm);cursor:pointer;text-decoration:none;color:inherit;background:none;box-shadow:var(--shadow-voxel);transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal),background var(--transition-normal)}
+.btn:hover{transform:translate(2px,-2px);box-shadow:-8px 8px 0 var(--vx)}
+.btn:active{transform:translate(-4px,4px) scale(.97);box-shadow:0 0 0 var(--vx)}
+.btn--primary{background:var(--accent);color:var(--on-accent)}
+.btn--secondary{background:var(--primary-deep);color:#fff}.dark .btn--secondary{color:#101A33}
+.btn--ghost{background:var(--bg-secondary);color:var(--primary-deep);border-color:var(--border-default);box-shadow:none}
+.btn--ghost:hover{border-color:var(--primary-deep);box-shadow:-8px 8px 0 var(--vx)}
+.btn--danger{background:var(--lava-deep);color:#fff}
+.btn:disabled{opacity:.5;filter:grayscale(1);cursor:not-allowed;box-shadow:none;transform:none}
+.btn.is-loading{pointer-events:none}
+.btn.is-loading .btn__icon{animation:spin .8s linear infinite}
+.btn.is-success{background:var(--text-success);color:#fff}
+@keyframes spin{to{transform:rotate(360deg)}}
+.icon-btn{width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:var(--bg-secondary);border:2px solid var(--border-default);border-radius:var(--radius-sm);cursor:pointer;color:var(--text-primary);box-shadow:var(--shadow-sm);transition:transform var(--transition-normal) var(--ease-standard),border-color var(--transition-normal)}
+.icon-btn:hover{transform:translateY(-2px);border-color:var(--primary)}
+.hdr{position:sticky;top:0;z-index:1000;background:var(--bg-primary);border-bottom:2px solid var(--border-default)}
+.hdr__inner{display:flex;align-items:center;justify-content:space-between;gap:1rem;max-width:1080px;margin:0 auto;padding:.6rem 20px}
+.logo{display:flex;align-items:center;gap:.6rem;font:800 1.4rem var(--font-display);color:var(--text-primary);text-decoration:none}
+.logo__cube{width:36px;height:36px;background:var(--primary);border-radius:var(--radius-sm);box-shadow:var(--shadow-voxel);display:flex;align-items:center;justify-content:center;color:#fff}
+.nav__links{display:flex;align-items:center;gap:1.4rem;list-style:none}
+.nav__links a{font-weight:800;text-decoration:none;color:var(--text-secondary);padding:.5rem .2rem;border-bottom:3px solid transparent;transition:color var(--transition-fast),border-color var(--transition-fast)}
+.nav__links a:hover{color:var(--primary-deep);border-bottom-color:var(--primary)}
+.hdr__actions{display:flex;align-items:center;gap:.6rem}
+.nav-toggle{display:none}
+@media(max-width:820px){.nav__links{display:none;position:absolute;top:100%;left:0;right:0;flex-direction:column;align-items:flex-start;background:var(--bg-secondary);border-bottom:2px solid var(--border-default);padding:.6rem 20px;gap:0;box-shadow:var(--shadow-md)}
+.nav__links.is-open{display:flex}.nav__links a{display:block;width:100%;padding:.9rem 0}
+.nav-toggle{display:flex}}
+@media(max-width:520px){.hdr__inner>.btn{display:none}}
+.hero{position:relative;overflow:hidden;background:linear-gradient(135deg,var(--bg-primary),#DCF7E9 55%,#D5E5FF);padding:76px 0 88px}
+.dark .hero{background:linear-gradient(135deg,#101A33,#173355 55%,#12233F)}
+.hero__inner{display:flex;align-items:center;gap:2.4rem;flex-wrap:wrap}
+.hero__copy{flex:1 1 420px}
+.hero__scene{flex:1 1 380px}
+.eyebrow{display:inline-flex;align-items:center;gap:.4rem;background:var(--bg-secondary);border:2px solid var(--border-default);padding:.3rem .8rem;border-radius:var(--radius-sm);font-size:.78rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--primary-deep);box-shadow:var(--shadow-sm)}
+.hero p.sub{color:var(--text-secondary);font-size:1.08rem;margin-top:1rem;max-width:34rem}
+.hero__cta{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-top:1.7rem}
+.trust{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-top:1.8rem}
+.avatars{display:flex;align-items:center}
+.avatar{width:44px;height:44px;border-radius:var(--radius-sm);border:3px solid var(--bg-secondary);display:flex;align-items:center;justify-content:center;color:#fff;margin-left:-10px;box-shadow:var(--shadow-sm)}
+.avatar:nth-child(1){background:var(--primary-deep)}.avatar:nth-child(2){background:var(--secondary)}.avatar:nth-child(3){background:var(--lava-deep)}.avatar:nth-child(4){background:var(--accent);color:var(--on-accent)}
+.stars{color:var(--lava-deep);letter-spacing:1px;font-size:.95rem}
+.trust small{font-weight:800;color:var(--text-secondary)}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.iso{position:relative;min-height:380px}
+.flt{position:absolute;animation:float 4.5s ease-in-out infinite}
+.d1{animation-delay:.5s}.d2{animation-delay:1.2s}.d3{animation-delay:1.9s}.d4{animation-delay:2.6s}
+.vcube{width:var(--s);height:var(--s);transform-style:preserve-3d;transform:rotateX(60deg) rotateZ(-45deg)}
+.vcube i{position:absolute;inset:0;background:var(--cf);border-radius:var(--radius-sm);box-shadow:inset 4px 4px 0 rgba(255,255,255,.25),inset -4px -4px 0 rgba(0,0,0,.18)}
+.vcube i:nth-child(1){transform:translateZ(calc(var(--s)/2));background:var(--ct,var(--cf))}
+.vcube i:nth-child(2){transform:rotateY(90deg) translateZ(calc(var(--s)/2));filter:brightness(.78)}
+.vcube i:nth-child(3){transform:rotateX(90deg) translateZ(calc(var(--s)/2));filter:brightness(.6)}
+.k-big{--s:132px;--cf:#8D6E63;--ct:var(--secondary)}
+.k-mid{--s:74px;--cf:var(--primary-deep);--ct:var(--primary)}
+.k-sm{--s:50px;--cf:var(--lava-deep);--ct:var(--lava)}
+.f-a{left:28%;top:32%}.f-b{left:66%;top:56%}.f-c{left:6%;top:64%}
+.iso-avatar{left:41%;top:4%;width:62px;height:72px;background:var(--accent);color:var(--on-accent);border:3px solid var(--bg-secondary);border-radius:var(--radius-sm);box-shadow:var(--shadow-voxel);display:flex;align-items:center;justify-content:center;position:absolute;animation:float 5s ease-in-out infinite}
+.iso-avatar .ms{font-size:2.2rem}
+@media(max-width:768px){.iso{min-height:260px;transform:scale(.7);transform-origin:top center}}
+.deco{position:absolute;border-radius:var(--radius-sm);box-shadow:inset 3px 3px 0 rgba(255,255,255,.35),inset -3px -3px 0 rgba(0,0,0,.15);animation:float 5.5s ease-in-out infinite}
+.x1{width:26px;height:26px;top:12%;left:5%;background:var(--primary)}
+.x2{width:18px;height:18px;top:64%;left:3%;background:var(--secondary);animation-delay:1.2s}
+.x3{width:22px;height:22px;top:9%;right:7%;background:var(--lava);animation-delay:2s}
+.x4{width:15px;height:15px;top:76%;right:5%;background:var(--accent);animation-delay:.8s}
+/* stretch exception: equal-height card/step columns */
+.grid3{display:flex;align-items:stretch;flex-wrap:wrap;gap:var(--spacing-gap)}
+.grid3>*{flex:1 1 280px}
+.card{background:var(--bg-secondary);border:2px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-voxel);padding:1.6rem;display:flex;flex-direction:column;gap:.9rem;transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal),border-color var(--transition-normal)}
+.card:hover{transform:translateY(-4px);box-shadow:-8px 8px 0 var(--vx)}
+.card:focus-within{border-color:var(--primary)}
+.feature-card__icon{width:56px;height:56px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:1.8rem;color:#fff;box-shadow:var(--shadow-sm)}
+.feature-card__icon--a{background:var(--primary)}.feature-card__icon--b{background:var(--text-success)}.feature-card__icon--c{background:var(--lava-deep)}
+.card p{color:var(--text-secondary)}
+.steps{display:flex;align-items:stretch;gap:1rem}
+.step{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;gap:.9rem;text-align:center}
+.step:nth-child(2){margin-top:1.4rem}
+.step__badge{width:58px;height:58px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font:800 1.15rem var(--font-display);color:#fff;box-shadow:var(--shadow-voxel);z-index:1}
+.step:nth-child(1) .step__badge{background:var(--primary-deep)}.step:nth-child(2) .step__badge{background:var(--text-success)}.step:nth-child(3) .step__badge{background:var(--lava-deep)}
+.step:not(:last-child)::after{content:"";position:absolute;top:28px;left:calc(50% + 42px);width:calc(100% - 84px);border-top:3px dashed var(--primary)}
+.step p{color:var(--text-secondary);font-size:.95rem}
+@media(max-width:768px){.steps{flex-direction:column;align-items:center}
+.step{flex-direction:row;text-align:left;width:100%;max-width:480px}
+.step:nth-child(2){margin-top:0}
+.step:not(:last-child)::after{left:27px;top:70px;width:0;height:40px;border-top:0;border-left:3px dashed var(--primary)}}
+.t-card blockquote{font-size:.97rem}
+.t-meta{display:flex;align-items:center;gap:.8rem;margin-top:auto}
+.t-meta .avatar{margin:0;width:48px;height:48px}
+.t-meta b{display:block}.t-meta small{color:var(--text-secondary);font-weight:700}
+.price-card{position:relative}
+.price-card--featured{border-color:var(--primary);box-shadow:-10px 10px 0 var(--vx);transform:translateY(-8px)}
+.price-card--featured:hover{transform:translateY(-12px)}
+.price-card__badge{position:absolute;top:-15px;left:50%;translate:-50% 0;background:var(--lava-deep);color:#fff;font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:.3rem .8rem;border-radius:var(--radius-sm);box-shadow:var(--shadow-sm)}
+.price{font:800 2.5rem var(--font-display);display:flex;align-items:baseline;gap:.3rem}
+.price-note{font-size:.8rem;color:var(--text-secondary);font-weight:700}
+.price-card__list{list-style:none;display:flex;flex-direction:column;gap:.6rem;margin-top:.4rem}
+.price-card__list li{display:flex;align-items:center;gap:.5rem;font-size:.94rem}
+.tick{color:var(--text-success);font-size:1.1rem}
+.cancel-note{text-align:center;margin-top:1.6rem;font-size:.85rem;color:var(--text-secondary);font-weight:700}
+.faq{max-width:740px;margin:0 auto;display:flex;flex-direction:column;gap:1rem}
+.faq details{background:var(--bg-secondary);border:2px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);transition:border-color var(--transition-normal)}
+.faq details[open]{border-color:var(--primary)}
+.faq summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:44px;padding:1rem 1.2rem;font-weight:800;cursor:pointer;list-style:none}
+.faq summary::-webkit-details-marker{display:none}
+.faq .chev{color:var(--primary-deep);transition:transform var(--transition-normal) var(--ease-standard)}
+.faq details[open] .chev{transform:rotate(180deg)}
+.faq details p{padding:0 1.2rem 1.1rem;color:var(--text-secondary);animation:fadein .3s var(--ease-standard)}
+@keyframes fadein{from{opacity:0;translate:0 -6px}}
+.cta-band{position:relative;overflow:hidden;background:linear-gradient(120deg,#CDE9FF,#D9F7E8 55%,#CFE0FF);padding:80px 0;text-align:center}
+.dark .cta-band{background:linear-gradient(120deg,#173056,#1C3A5E 55%,#152A4C)}
+.cta-band .wrap{position:relative;z-index:1}
+.cta-band p.sub{color:var(--text-secondary);font-weight:600;margin:0 auto;max-width:520px}
+.input-group{display:flex;flex-direction:column;gap:.5rem;text-align:left;max-width:540px;margin:1.8rem auto 0}
+.input-group label{font-weight:800;font-size:.9rem}
+.input-row{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap}
+.input-row input{flex:1 1 240px;min-height:44px;padding:.5rem .9rem;border:2px solid var(--border-default);border-radius:var(--radius-sm);background:var(--bg-secondary);color:var(--text-primary);font:inherit}
+.input-group.has-error input{border-color:var(--border-error)}
+.input-group.is-valid input{border-color:var(--border-success)}
+.input-group__error,.input-group__ok{display:flex;align-items:center;gap:.35rem;font-size:.85rem;font-weight:700;min-height:1.3em}
+.input-group__error{color:var(--text-error)}.input-group__ok{color:var(--text-success)}
+.input-group__error:not(:empty)::before,.input-group__ok:not(:empty)::before{font-family:'Material Symbols Rounded';font-variation-settings:'FILL' 1;line-height:1}
+.input-group__error:not(:empty)::before{content:"error"}
+.input-group__ok:not(:empty)::before{content:"check_circle"}
+.ftr{background:var(--bg-tertiary);border-top:2px solid var(--border-default);padding:56px 0 26px}
+.ftr__grid{display:flex;align-items:flex-start;flex-wrap:wrap;gap:2.4rem;justify-content:space-between}
+.ftr__brand{max-width:300px}
+.ftr__brand p{color:var(--text-secondary);font-size:.92rem;margin:.8rem 0 1rem;font-weight:600}
+.social{display:flex;gap:.6rem}
+.social a{width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:var(--bg-secondary);border:2px solid var(--border-default);border-radius:var(--radius-sm);color:var(--primary-deep);box-shadow:var(--shadow-sm);transition:transform var(--transition-normal) var(--ease-standard),border-color var(--transition-normal)}
+.social a:hover{transform:translateY(-3px);border-color:var(--primary)}
+.ftr__cols{display:flex;align-items:flex-start;flex-wrap:wrap;gap:2.6rem}
+.ftr__col h3{font:800 .8rem var(--font-base);letter-spacing:.12em;text-transform:uppercase;color:var(--text-secondary)}
+.ftr__col ul{list-style:none;display:flex;flex-direction:column;gap:.55rem;margin-top:.8rem}
+.ftr__col a{color:var(--text-primary);text-decoration:none;font-weight:700;font-size:.94rem;border-bottom:2px solid transparent;transition:color var(--transition-fast),border-color var(--transition-fast)}
+.ftr__col a:hover{color:var(--primary-deep);border-bottom-color:var(--primary)}
+.ftr__bottom{display:flex;align-items:center;flex-wrap:wrap;justify-content:space-between;gap:1rem;margin-top:2.6rem;padding-top:1.3rem;border-top:2px solid var(--border-default);font-size:.85rem;color:var(--text-secondary);font-weight:600}
+.ftr__bottom a{color:var(--text-secondary);text-decoration:none;margin-left:1rem}
+.ftr__bottom a:hover{color:var(--primary-deep)}
+.modal{position:fixed;inset:0;z-index:var(--z-modal);display:flex;align-items:center;justify-content:center;padding:20px}
+.modal[hidden]{display:none}
+.modal__backdrop{position:absolute;inset:0;background:rgba(16,26,51,.6)}
+.modal__panel{position:relative;background:var(--bg-secondary);border:2px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-voxel-lg);max-width:560px;width:100%;padding:1.7rem;transform:scale(.9);opacity:0;transition:transform var(--transition-normal) var(--ease-standard),opacity var(--transition-normal)}
+.modal.is-open .modal__panel{transform:none;opacity:1}
+.modal__close{position:absolute;top:12px;right:12px}
+.modal__video{aspect-ratio:16/9;margin:1rem 0;background:var(--bg-tertiary);border:2px solid var(--border-default);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center}
+.modal__video .ms{font-size:3rem;color:var(--primary-deep);background:var(--bg-secondary);width:84px;height:84px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-sm);box-shadow:var(--shadow-voxel)}
+.modal__actions{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;margin-top:1rem}
+.modal__actions p{color:var(--text-secondary);font-size:.9rem}
+.reveal{opacity:0;translate:0 22px;transition:opacity .5s,translate .5s var(--ease-standard)}
+.reveal.is-in{opacity:1;translate:0 0}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}html{scroll-behavior:auto}.reveal{opacity:1!important;translate:0 0!important}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="hdr">
+  <div class="hdr__inner">
+    <a class="logo" href="#main"><span class="logo__cube"><span class="ms" aria-hidden="true">sports_esports</span></span>Nimbus</a>
+    <nav aria-label="Primary">
+      <ul class="nav__links" id="navLinks">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how">How to Play</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+    </nav>
+    <div class="hdr__actions">
+      <button class="icon-btn" id="themeBtn" aria-pressed="false" aria-label="Toggle dark mode"><span class="ms" aria-hidden="true">dark_mode</span></button>
+      <button class="icon-btn nav-toggle" id="navToggle" aria-expanded="false" aria-controls="navLinks" aria-label="Open menu"><span class="ms" aria-hidden="true">menu</span></button>
+      <a class="btn btn--primary" href="#pricing">Start Free</a>
+    </div>
+  </div>
+</header>
+<main id="main">
+  <section class="hero">
+    <span class="deco x1" aria-hidden="true"></span><span class="deco x2" aria-hidden="true"></span><span class="deco x3" aria-hidden="true"></span><span class="deco x4" aria-hidden="true"></span>
+    <div class="wrap hero__inner">
+      <div class="hero__copy">
+        <span class="eyebrow"><span class="ms" aria-hidden="true">bolt</span>Now in open beta</span>
+        <h1>Turn Busywork Into Quests Worth Playing</h1>
+        <p class="sub">Nimbus maps your projects onto isometric quest boards — clear blocks, earn XP, unlock power-ups, and hit every deadline like a speedrunner.</p>
+        <div class="hero__cta">
+          <a class="btn btn--primary" href="#pricing"><span class="ms btn__icon" aria-hidden="true">flag</span>Start Your Quest</a>
+          <button class="btn btn--ghost" data-open-modal><span class="ms btn__icon" aria-hidden="true">play_circle</span>Watch Demo</button>
+        </div>
+        <div class="trust">
+          <div class="avatars" aria-hidden="true"><span class="avatar"><span class="ms">person</span></span><span class="avatar"><span class="ms">face</span></span><span class="avatar"><span class="ms">sports_esports</span></span><span class="avatar"><span class="ms">rocket_launch</span></span></div>
+          <div><span class="stars" role="img" aria-label="Rated 4.9 out of 5 stars"><span class="ms">star</span><span class="ms">star</span><span class="ms">star</span><span class="ms">star</span><span class="ms">star</span></span><br><small>4.9/5 from 12,000+ players</small></div>
+        </div>
+      </div>
+      <div class="hero__scene">
+        <div class="iso" aria-hidden="true">
+          <div class="iso-avatar d4"><span class="ms">face</span></div>
+          <div class="flt f-a d1"><div class="vcube k-big"><i></i><i></i><i></i></div></div>
+          <div class="flt f-b d2"><div class="vcube k-mid"><i></i><i></i><i></i></div></div>
+          <div class="flt f-c d3"><div class="vcube k-sm"><i></i><i></i><i></i></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="sec reveal" id="features">
+    <div class="wrap">
+      <div class="sec-head"><h2>Power-Ups for Real Work</h2><p>Three upgrades that make your workflow feel like a well-designed game.</p></div>
+      <div class="grid3">
+        <article class="card"><span class="feature-card__icon feature-card__icon--a"><span class="ms" aria-hidden="true">bolt</span></span><h3>XP for Everything</h3><p>Every task you clear drops XP and shiny loot. Streaks multiply your rewards, so momentum literally pays off.</p></article>
+        <article class="card"><span class="feature-card__icon feature-card__icon--b"><span class="ms" aria-hidden="true">diversity_3</span></span><h3>Party Up</h3><p>Invite your guild, share quest boards, and trade power-ups. The leaderboard makes friendly rivalry official.</p></article>
+        <article class="card"><span class="feature-card__icon feature-card__icon--c"><span class="ms" aria-hidden="true">insights</span></span><h3>Boss-Mode Analytics</h3><p>Track party stats, spot blockers early, and plan your next sprint like a perfectly executed raid.</p></article>
+      </div>
+    </div>
+  </section>
+  <section class="sec sec--alt reveal" id="how">
+    <div class="wrap">
+      <div class="sec-head"><h2>How to Play</h2><p>From spawn screen to victory royale in three moves.</p></div>
+      <div class="steps">
+        <div class="step"><span class="step__badge">01</span><div><h3>Create Your World</h3><p>Sign up in 30 seconds and spawn your first quest board. No downloads, no tutorials — just blocks.</p></div></div>
+        <div class="step"><span class="step__badge">02</span><div><h3>Summon Your Party</h3><p>Invite teammates, assign roles, and hang an XP bounty on every quest. Ownership stays crystal clear.</p></div></div>
+        <div class="step"><span class="step__badge">03</span><div><h3>Loot Your Goals</h3><p>Clear quests, level up, and trade XP for real rewards. Victory royale, every single sprint.</p></div></div>
+      </div>
+    </div>
+  </section>
+  <section class="sec reveal" id="testimonials">
+    <div class="wrap">
+      <div class="sec-head"><h2>Party Chat</h2><p>What players say after their first raid.</p></div>
+      <div class="grid3">
+        <article class="card t-card">
+          <span class="stars" role="img" aria-label="5 out of 5 stars"><span class="ms">star</span><span class="ms">star</span><span class="ms">star</span><span class="ms">star</span><span class="ms">star</span></span>
+          <blockquote>“Our sprint retro is basically a loot ceremony now. Shipping feels like beating a final boss — confetti included.”</blockquote>
+          <div class="t-meta"><span class="avatar" aria-hidden="true"><span class="ms">person</span></span><div><b>Maya Chen</b><small>Product Lead · PixelForge Studio</small></div></div>
+        </article>
+        <article class="card t-card">
+          <span class="stars" role="img" aria-label="5 out of 5 stars"><span class="ms">star</span><span class="ms">star</span><span class="ms">star</span><span class="ms">star</span><span class="ms">star</span></span>
+          <blockquote>“I cleared 214 quests last quarter and my team hit every single deadline. Achievement unlocked, for real.”</blockquote>
+          <div class="t-meta"><span class="avatar" style-hidden aria-hidden="true"><span class="ms">face</span></span><div><b>Jordan Reyes</b><small>Founder · Nova Loop Games</small></div></div>
+        </article>
+      </div>
+    </div>
+  </section>
+  <section class="sec sec--alt reveal" id="pricing">
+    <div class="wrap">
+      <div class="sec-head"><h2>Choose Your Class</h2><p>Pick a plan and press start. Every tier includes unlimited respawns.</p></div>
+      <div class="grid3">
+        <article class="card price-card">
+          <h3>Starter</h3><div class="price">$0<span class="price-note">/ forever</span></div>
+          <ul class="price-card__list"><li><span class="ms tick" aria-hidden="true">check</span>1 quest board</li><li><span class="ms tick" aria-hidden="true">check</span>3 party members</li><li><span class="ms tick" aria-hidden="true">check</span>Basic power-ups</li><li><span class="ms tick" aria-hidden="true">check</span>Community support</li></ul>
+          <a class="btn btn--secondary" href="#cta"><span class="ms btn__icon" aria-hidden="true">flag</span>Play Free</a>
+        </article>
+        <article class="card price-card price-card--featured">
+          <span class="price-card__badge">Most Popular</span>
+          <h3>Adventurer</h3><div class="price">$9<span class="price-note">/ player / month · billed yearly</span></div>
+          <ul class="price-card__list"><li><span class="ms tick" aria-hidden="true">check</span>Unlimited quest boards</li><li><span class="ms tick" aria-hidden="true">check</span>Party of up to 10</li><li><span class="ms tick" aria-hidden="true">check</span>Streaks, loot & power-ups</li><li><span class="ms tick" aria-hidden="true">check</span>Boss-mode analytics</li><li><span class="ms tick" aria-hidden="true">check</span>Priority support</li></ul>
+          <a class="btn btn--primary" href="#cta"><span class="ms btn__icon" aria-hidden="true">bolt</span>Start Your Quest</a>
+        </article>
+        <article class="card price-card">
+          <h3>Legend</h3><div class="price">$19<span class="price-note">/ player / month · billed yearly</span></div>
+          <ul class="price-card__list"><li><span class="ms tick" aria-hidden="true">check</span>Everything in Adventurer</li><li><span class="ms tick" aria-hidden="true">check</span>Unlimited guild members</li><li><span class="ms tick" aria-hidden="true">check</span>API & integrations</li><li><span class="ms tick" aria-hidden="true">check</span>SSO & audit logs</li></ul>
+          <a class="btn btn--secondary" href="#cta"><span class="ms btn__icon" aria-hidden="true">diamond</span>Go Legendary</a>
+        </article>
+      </div>
+      <p class="cancel-note"><span class="ms" aria-hidden="true">lock</span> Cancel anytime — no game-over screens, no hidden traps.</p>
+    </div>
+  </section>
+  <section class="sec reveal" id="faq">
+    <div class="wrap">
+      <div class="sec-head"><h2>Frequently Asked Quests</h2><p>Quick answers before you hit start.</p></div>
+      <div class="faq">
+        <details><summary>Do I need design or 3D skills to play?<span class="ms chev" aria-hidden="true">expand_more</span></summary><p>Nope. If you can drag a block, you're qualified. Every board starts from a ready-made template, and the isometric magic renders automatically.</p></details>
+        <details><summary>Can I switch plans mid-quest?<span class="ms chev" aria-hidden="true">expand_more</span></summary><p>Yes — upgrade or downgrade anytime from your profile. Your boards, XP, and streaks carry over, so nothing ever resets.</p></details>
+        <details><summary>Is my party's data safe?<span class="ms chev" aria-hidden="true">expand_more</span></summary><p>All data is encrypted at rest and in transit, backed up hourly, and fully exportable. We're GDPR compliant, and you can wipe your save data whenever you like.</p></details>
+      </div>
+    </div>
+  </section>
+  <section class="cta-band reveal" id="cta">
+    <span class="deco x1" aria-hidden="true"></span><span class="deco x2" aria-hidden="true"></span><span class="deco x3" aria-hidden="true"></span><span class="deco x4" aria-hidden="true"></span>
+    <div class="wrap">
+      <h2>Ready, Player One?</h2>
+      <p class="sub">Drop your email to unlock early access, founding-player loot, and a confetti cannon on launch day.</p>
+      <form class="input-group" id="ctaForm" novalidate>
+        <label for="email">Email address</label>
+        <div class="input-row">
+          <input type="email" id="email" name="email" placeholder="player@lootmail.gg" autocomplete="email" required>
+          <button class="btn btn--primary" id="ctaSubmit" type="submit"><span class="ms btn__icon" aria-hidden="true">bolt</span><span class="btn__label">Unlock Access</span></button>
+        </div>
+        <p class="input-group__error" id="emailErr" role="status" aria-live="polite"></p>
+        <p class="input-group__ok" id="emailOk" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </section>
+</main>
+<footer class="ftr">
+  <div class="wrap">
+    <div class="ftr__grid">
+      <div class="ftr__brand">
+        <a class="logo" href="#main"><span class="logo__cube"><span class="ms" aria-hidden="true">sports_esports</span></span>Nimbus</a>
+        <p>Build worlds. Ship quests. Level up — one block at a time.</p>
+        <div class="social">
+          <a href="#" aria-label="Community"><span class="ms" aria-hidden="true">forum</span></a>
+          <a href="#" aria-label="Code"><span class="ms" aria-hidden="true">code</span></a>
+          <a href="#" aria-label="Website"><span class="ms" aria-hidden="true">public</span></a>
+          <a href="#" aria-label="Email"><span class="ms" aria-hidden="true">mail</span></a>
+        </div>
+      </div>
+      <div class="ftr__cols">
+        <div class="ftr__col"><h3>Product</h3><ul><li><a href="#features">Features</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#">Changelog</a></li><li><a href="#">Roadmap</a></li></ul></div>
+        <div class="ftr__col"><h3>Company</h3><ul><li><a href="#">About</a></li><li><a href="#">Careers</a></li><li><a href="#">Press kit</a></li></ul></div>
+        <div class="ftr__col"><h3>Support</h3><ul><li><a href="#faq">Help Center</a></li><li><a href="#">Contact</a></li><li><a href="#">Status</a></li></ul></div>
+      </div>
+    </div>
+    <div class="ftr__bottom"><span>© 2026 Nimbus Labs. All rights reserved.</span><span><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Cookies</a></span></div>
+  </div>
+</footer>
+<div class="modal" id="demoModal" role="dialog" aria-modal="true" aria-labelledby="demoTitle" hidden>
+  <div class="modal__backdrop" data-close></div>
+  <div class="modal__panel">
+    <button class="icon-btn modal__close" data-close aria-label="Close dialog"><span class="ms" aria-hidden="true">close</span></button>
+    <h3 id="demoTitle">Nimbus — Official Trailer</h3>
+    <div class="modal__video" role="img" aria-label="Trailer video placeholder"><span class="ms" aria-hidden="true">play_arrow</span></div>
+    <p>60 seconds of voxel magic, zero downloads required.</p>
+    <div class="modal__actions"><a class="btn btn--primary" href="#cta" data-close><span class="ms btn__icon" aria-hidden="true">bolt</span>Get Early Access</a><button class="btn btn--ghost" data-close>Maybe later</button></div>
+  </div>
+</div>
+<script>
+(function(){
+var $=function(s,c){return (c||document).querySelector(s)},$$=function(s,c){return [].slice.call((c||document).querySelectorAll(s))},root=document.documentElement,mq=matchMedia('(prefers-color-scheme:dark)');
+var themeBtn=$('#themeBtn');
+function isDark(){return root.classList.contains('dark')||(!root.classList.contains('light')&&mq.matches)}
+function paintTheme(){var d=isDark();themeBtn.querySelector('.ms').textContent=d?'light_mode':'dark_mode';themeBtn.setAttribute('aria-pressed',d);themeBtn.setAttribute('aria-label',d?'Switch to light mode':'Switch to dark mode')}
+paintTheme();
+themeBtn.addEventListener('click',function(){var d=!isDark();root.classList.toggle('dark',d);root.classList.toggle('light',!d);try{localStorage.setItem('nimbus-theme',d?'dark':'light')}catch(e){}paintTheme()});
+var navBtn=$('#navToggle'),links=$('#navLinks');
+function closeNav(){links.classList.remove('is-open');navBtn.setAttribute('aria-expanded','false');navBtn.querySelector('.ms').textContent='menu';navBtn.setAttribute('aria-label','Open menu')}
+navBtn.addEventListener('click',function(){var o=links.classList.toggle('is-open');navBtn.setAttribute('aria-expanded',o);navBtn.querySelector('.ms').textContent=o?'close':'menu';navBtn.setAttribute('aria-label',o?'Close menu':'Open menu')});
+links.addEventListener('click',function(e){if(e.target.closest('a'))closeNav()});
+var modal=$('#demoModal'),lastFocus;
+function openModal(){lastFocus=document.activeElement;modal.hidden=false;requestAnimationFrame(function(){modal.classList.add('is-open')});modal.querySelector('.modal__close').focus();document.body.style.overflow='hidden'}
+function closeModal(){modal.classList.remove('is-open');document.body.style.overflow='';setTimeout(function(){modal.hidden=true},250);if(lastFocus)lastFocus.focus()}
+$$('[data-open-modal]').forEach(function(b){b.addEventListener('click',openModal)});
+modal.addEventListener('click',function(e){if(e.target.closest('[data-close]'))closeModal()});
+document.addEventListener('keydown',function(e){
+  if(modal.hidden)return;
+  if(e.key==='Escape'){closeModal();return}
+  if(e.key==='Tab'){var f=$$('button,a,input',modal).filter(function(x){return !x.disabled}),i=f.indexOf(document.activeElement);if(f.length){e.preventDefault();f[(i+(e.shiftKey?-1:1)+f.length)%f.length].focus()}}
+});
+var form=$('#ctaForm'),email=$('#email'),grp=form,btn=$('#ctaSubmit'),err=$('#emailErr'),ok=$('#emailOk');
+email.addEventListener('input',function(){grp.classList.remove('has-error');err.textContent=''});
+form.addEventListener('submit',function(e){
+  e.preventDefault();
+  var v=email.value.trim(),good=/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(v);
+  if(!good){grp.classList.remove('is-valid');grp.classList.add('has-error');ok.textContent='';err.textContent='That doesn\u2019t look like a valid email — try again, hero.';email.focus();return}
+  grp.classList.remove('has-error');err.textContent='';
+  btn.classList.add('is-loading');btn.querySelector('.btn__icon').textContent='progress';btn.querySelector('.btn__label').textContent='Loading\u2026';
+  setTimeout(function(){
+    btn.classList.remove('is-loading');btn.classList.add('is-success');
+    btn.querySelector('.btn__icon').textContent='check_circle';btn.querySelector('.btn__label').textContent='Quest unlocked!';
+    grp.classList.add('is-valid');ok.textContent='Power-up acquired! Check your inbox for your invite link.';email.setAttribute('readonly','');
+  },1200);
+});
+var rev=$$('.reveal');
+if(matchMedia('(prefers-reduced-motion: reduce)').matches){rev.forEach(function(r){r.classList.add('is-in')})}
+else{var io=new IntersectionObserver(function(es){es.forEach(function(x){if(x.isIntersecting){x.target.classList.add('is-in');io.unobserve(x.target)}})},{threshold:.12});rev.forEach(function(r){io.observe(r)})}
+})();
+</script>
+</body>
+</html>

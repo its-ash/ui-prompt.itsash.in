@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nimbus — 3D & Hyperrealism</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght@48,400&display=swap">
+
+<!-- Tailwind CDN for layout utilities (reference only) -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Three.js UMD build -->
+<script src="https://unpkg.com/three@0.164.0/build/three.min.js"></script>
+
+<style>
+/* ==================================================================
+   CSS Variables – Light (Studio Daylight) & Dark (Midnight Studio)
+   ================================================================== */
+:root{
+  /* core tokens */
+  --primary:#001F3F; --secondary:#800020; --accent-forest:#228B22; --accent-gold:#FFD700; --accent-silver:#C0C0C0;
+  --bg-primary:#ECF0F4; --bg-secondary:#FEFEFE; --text-primary:#001F3F; --text-secondary:#3E4E61; --text-success:#1A6B1A; --text-error:#800020;
+  --border-default:rgba(0,31,63,.15); --border-error:rgba(128,0,32,.15); --border-success:rgba(26,107,26,.15);
+  --radius-sm:10px; --radius-md:16px; --radius-lg:26px;
+  --shadow-sm:0 1px 2px 0 rgba(0,0,0,.05);
+  --shadow-md:0 4px 6px -1px rgba(0,0,0,.1),0 2px 4px -1px rgba(0,0,0,.06);
+  --shadow-raised:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -2px rgba(0,0,0,.05);
+  --shadow-pressed:inset 0 2px 4px 0 rgba(0,0,0,.06);
+  --shadow-inset-highlight:inset 0 1px 0 0 rgba(255,255,255,.3);
+  --spacing-gap:1.5rem;
+  --transition-fast:180ms; --transition-normal:350ms;
+  --ease-standard:.4s cubic-bezier(.4,0,.2,1);
+  --ease-spatial:.33s cubic-bezier(.16,1,.3,1);
+  --z-canvas:0; --z-header:900; --z-dropdown:1000; --z-modal:2000; --z-toast:3000;
+  --font-base:'Inter',system-ui,sans-serif;
+  --font-display:'Sora',system-ui,sans-serif;
+  --focus-ring-color:rgba(0,31,63,.55);
+  --prefers-reduced-motion:no-preference;
+}
+
+/* Dark mode via class + media query */
+.dark{
+  --bg-primary:#00162B; --bg-secondary:#022B47; --text-primary:#EEF3F9; --text-secondary:#A3B6C9;
+  --text-success:#7DD87D; --text-error:#FF8095; --border-default:rgba(192,192,192,.18); --border-error:rgba(255,128,149,.18); --border-success:rgba(125,216,125,.18);
+  --focus-ring-color:rgba(255,215,0,.55);
+  --shadow-sm:0 1px 2px 0 rgba(0,0,0,.3);
+  --shadow-md:0 4px 6px -1px rgba(0,0,0,.4),0 2px 4px -1px rgba(0,0,0,.3);
+  --shadow-raised:0 10px 15px -3px rgba(0,0,0,.5),0 4px 6px -2px rgba(0,0,0,.3);
+  --shadow-pressed:inset 0 2px 4px 0 rgba(0,0,0,.4);
+  --shadow-inset-highlight:inset 0 1px 0 0 rgba(255,255,255,.1);
+}
+
+/* prefer-reduced-motion detection */
+@media (prefers-reduced-motion: reduce){
+  :root{ --prefers-reduced-motion:reduce; }
+}
+
+/* ==================================================================
+   Base & Typography
+   ================================================================== */
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:var(--font-base);
+  background:var(--bg-primary);
+  color:var(--text-primary);
+  line-height:1.6;
+  -webkit-tap-highlight-color:transparent;
+}
+h1,h2,h3{font-family:var(--font-display);}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;}
+img{max-width:100%;display:block;}
+/* focus ring */
+*:focus-visible{outline:2px solid var(--focus-ring-color);outline-offset:2px;}
+.skip-link{
+  position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;
+}
+.skip-link:focus{left:0;top:0;width:auto;height:auto;background:#fff;padding:1rem;z-index:var(--z-dropdown);}
+}
+
+/* ==================================================================
+   Gradients (tokens)
+   ================================================================== */
+:root{
+  --gradient-gold:linear-gradient(135deg,#FFF3C4 0%,#FFD700 25%,#B88600 50%,#FFD700 75%,#8A6D00 100%);
+  --gradient-silver:linear-gradient(135deg,#E8E8E8 0%,#C0C0C0 50%,#A8A8A8 100%);
+  --gradient-depth:linear-gradient(180deg,#001F3F 0%,#00142F 40%,#000A1F 70%,#0B0412 100%);
+  --gradient-cta:linear-gradient(135deg,#FF6B35 0%,#F78C6B 30%,#FFD700 50%,#F78C6B 70%,#FF6B35 100%);
+}
+
+/* ==================================================================
+   Components
+   ================================================================== */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
+  min-width:160px;padding:.75rem 1.5rem;border:none;border-radius:var(--radius-md);
+  font-weight:600;font-size:.95rem;transition:transform var(--transition-fast) var(--ease-standard),
+    box-shadow var(--transition-fast) var(--ease-standard);min-height:44px;touch-action:manipulation;
+}
+.btn--primary{background:var(--gradient-gold);color:var(--primary);box-shadow:var(--shadow-md),var(--shadow-inset-highlight);}
+.btn--primary:hover{transform:translateY(-1px);box-shadow:var(--shadow-raised),var(--shadow-inset-highlight);}
+.btn--primary:focus-visible{box-shadow:var(--shadow-md),0 0 0 3px var(--focus-ring-color);}
+.btn--primary:active{transform:scale(0.97);box-shadow:var(--shadow-pressed);}
+.btn--secondary{background:var(--bg-secondary);color:var(--text-primary);border:1px solid var(--border-default);}
+.btn--secondary:hover{border-color:var(--primary);transform:translateY(-1px);}
+.btn--ghost{background:transparent;color:var(--text-primary);}
+.btn--ghost:hover{color:var(--accent-gold);}
+.btn--danger{background:var(--secondary);color:#fff;}
+.btn--ghost .spinner{
+  width:18px;height:18px;border:2px solid currentColor;border-top-color:transparent;
+  border-radius:50%;animation:spin var(--transition-fast) linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+.btn.is-loading .btn--primary,.btn.is-loading .btn--secondary{pointer-events:none;}
+.btn.is-loading .spinner{display:block;}
+.btn.is-success{color:var(--text-success);}
+.btn.is-error{color:var(--text-error);}
+.btn__icon{
+  width:1rem;height:1rem;display:flex;align-items:center;justify-content:center;
+}
+.btn__icon .symbol{
+  width:1rem;height:1rem;color:currentColor;
+}
+
+/* card */
+.card{
+  display:flex;flex-direction:column;background:var(--bg-secondary);
+  border:1px solid var(--border-default);border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-md);overflow:hidden;transition:transform var(--transition-normal) var(--ease-spatial),
+    box-shadow var(--transition-normal) var(--ease-spatial);
+}
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-raised);}
+.card:focus-within{border-color:var(--primary);box-shadow:var(--shadow-raised);}
+.card--tilt{perspective:1000px;}
+.card__inner{
+  padding:var(--spacing-gap);flex:1;display:flex;flex-direction:column;
+}
+.card__tilt{transform:rotateX(calc(var(--py,0) * 1deg)) rotateY(calc(var(--px,0) * 1deg));transition:transform var(--transition-fast) var(--ease-standard);}
+@media (prefers-reduced-motion: reduce){
+  .card__tilt{transform:none!important;}
+}
+
+/* input group */
+.input-group{
+  display:flex;flex-direction:column;gap:.25rem;min-width:280px;
+}
+.input-group__label{
+  font-size:.85rem;color:var(--text-secondary);font-weight:500;
+}
+.input-group__input{
+  width:100%;padding:.75rem 1rem;border:1px solid var(--border-default);
+  border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary);
+  font:inherit;transition:border-color var(--transition-fast),background var(--transition-fast);
+}
+.input-group__input:focus{outline:none;border-color:var(--primary);background:var(--bg-secondary);}
+.input-group__input:focus-visible{outline:2px solid var(--focus-ring-color);}
+.input-group__input.is-valid{border-color:var(--border-success);background:rgba(26,107,26,.05);}
+.input-group__input.is-invalid{border-color:var(--border-error);background:rgba(128,0,32,.05);}
+.input-group__feedback{
+  font-size:.75rem;color:var(--text-error);margin-top:.25rem;align-self:flex-start;
+}
+
+/* button within card */
+.card__btn{margin-top:var(--spacing-gap);}
+
+/* skeleton */
+.card--skeleton{background:var(--bg-primary);animation:shimmer 1.5s ease-in-out infinite;}
+@keyframes shimmer{0%{background:var(--bg-primary)}50%{background:rgba(254,254,254,.3)}100%{background:var(--bg-primary)}}
+
+/* empty state */
+.card--empty{padding:var(--spacing-gap);text-align:center;color:var(--text-secondary);}
+.card--empty .symbol{width:3rem;height:3rem;margin:0 auto var(--spacing-gap);color:var(--border-default);}
+
+/* steps */
+.step{display:flex;flex-direction:column;align-items:center;gap:.5rem;}
+.step__number{
+  width:3rem;height:3rem;border-radius:50%;background:var(--gradient-gold);color:var(--primary);
+  font-weight:700;font-size:1.1rem;display:flex;align-items:center;justify-content:center;
+}
+.step__line{width:100%;height:2px;background:var(--gradient-silver);margin:1rem 0;position:relative;}
+.step__line::after{content:'';position:absolute;right:0;top:50%;transform:translateY(-50%);width:8px;height:8px;border-radius:50%;background:var(--bg-primary);}
+
+/* testimonial */
+.testimonial{text-align:center;padding:var(--spacing-gap);}
+.testimonial__avatar{
+  width:5rem;height:5rem;border-radius:50%;margin:0 auto var(--spacing-gap);
+  background:var(--gradient-gold);display:flex;align-items:center;justify-content:center;font-size:1.5rem;
+}
+.testimonial__stars{color:#FFD700;margin:.25rem 0;}
+.testimonial__name{font-weight:600;margin-top:.5rem;}
+.testimonial__role{font-size:.85rem;color:var(--text-secondary);}
+
+/* pricing */
+.pricing-tier{
+  border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:var(--spacing-gap);
+  background:var(--bg-secondary);transition:box-shadow var(--transition-normal) var(--ease-spatial);
+}
+.pricing-tier:hover,.pricing-tier--featured{box-shadow:var(--shadow-raised);}
+.pricing-tier--featured{border-color:var(--primary);padding-top:2rem;padding-bottom:2rem;}
+.pricing-tier__badge{
+  position:absolute;top:var(--spacing-gap);right:var(--spacing-gap);
+  background:var(--secondary);color:#fff;padding:.25rem .5rem;border-radius:var(--radius-sm);
+  font-size:.75rem;font-weight:700;text-transform:uppercase;
+}
+.pricing-tier__price{font-size:2.5rem;font-weight:700;margin:var(--spacing-gap) 0;}
+.pricing-tier__period{color:var(--text-secondary);font-size:.9rem;}
+.pricing-tier__list{list-style:none;padding:var(--spacing-gap) 0;}
+.pricing-tier__list li{padding:.25rem 0;border-bottom:1px solid var(--border-default);}
+.pricing-tier__list li:last-child{border-bottom:none;}
+.pricing-tier__btn{width:100%;}
+
+/* faq */
+.faq-item{margin-bottom:.5rem;border-radius:var(--radius-lg);overflow:hidden;}
+.faq-item__trigger{
+  width:100%;padding:var(--spacing-gap);background:var(--bg-secondary);
+  border:none;text-align:left;font-weight:500;color:var(--text-primary);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.faq-item__trigger .symbol{color:var(--accent-forest);font-size:1.2rem;}
+.faq-item__trigger[aria-expanded="true"] .symbol{transform:rotate(180deg);transition:transform var(--transition-normal) var(--ease-spatial);}
+.faq-item__panel{
+  max-height:0;overflow:hidden;background:var(--bg-secondary);transition:max-height var(--transition-normal) var(--ease-spatial);
+}
+.faq-item__panel--open{max-height:200px;}
+
+/* footer */
+.footer{padding:3rem 0 1rem;background:var(--bg-secondary);color:var(--text-secondary);}
+.footer__brand{font-weight:700;margin-bottom var(--spacing-gap);}
+.footer__links{list-style:none;display:flex;flex-wrap:wrap;gap:1rem;margin-top:var(--spacing-gap);}
+.footer__social{display:flex;gap:.5rem;}
+.footer__social .symbol{width:1.2rem;height:1.2rem;color:var(--text-primary);}
+.copyright{margin-top:2rem;padding-top:1rem;border-top:1px solid var(--border-default);font-size:.85rem;color:var(--text-error);}
+
+/* reduced motion */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{transition:none!important;animation:none!important;}
+  .card__tilt{transform:none!important;}
+  .faq-item__trigger[aria-expanded="true"] .symbol{transform:none!important;}
+}
+
+/* ==================================================================
+   Layout
+   ================================================================== */
+body{min-height:100vh;}
+
+/* skip link */
+.skip-link{position:fixed;left:-100%;top:50%;transform:translateY(-50%);z-index:9999;
+  background:var(--bg-primary);padding:1rem 1.5rem;border-radius:var(--radius-md);
+  border:1px solid var(--border-default);color:var(--text-primary);}
+.skip-link:focus{left:0;}
+
+/* header */
+header{
+  position:sticky;top:0;background:var(--bg-secondary);z-index:var(--z-header);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--border-default);
+}
+.header{display:flex;align-items:center;justify-content:space-between;padding:1rem var(--spacing-gap);flex-wrap:wrap;gap:1rem;}
+.header__brand{font-family:var(--font-display);font-size:1.5rem;font-weight:700;color:var(--primary);}
+.header__nav{display:flex;gap:2rem;align-items:center;}
+.header__nav a{position:relative;color:var(--text-secondary);transition:color var(--transition-fast);}
+.header__nav a::after{content:'';position:absolute;bottom:-4px;width:0;height:2px;background:var(--primary);transition:width var(--transition-fast);}
+.header__nav a:hover{color:var(--primary);}
+.header__nav a:hover::after{width:100%;}
+.header__actions{display:flex;align-items:center;gap:.75rem;}
+.header__toggle{background:transparent;border:none;color:var(--text-primary);cursor:pointer;padding:.5rem;}
+.header__toggle .symbol{font-variation-settings:'FILL' 0,'wght' 480,'opsz' 24;}
+/* mobile overlay */
+.overlay{
+  position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:var(--z-modal);
+  display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);
+}
+.overlay--open{display:flex;}
+.overlay__menu{display:flex;flex-direction:column;gap:2rem;color:#fff;}
+.overlay__menu a{color:#fff;font-size:1.2rem;}
+.overlay__close{background:transparent;border:none;color:#fff;cursor:pointer;position:absolute;top:1.5rem;right:2rem;}
+.overlay__close .symbol{font-size:2rem;}
+
+/* hero */
+.hero{
+  position:relative;min-height:100vh;overflow-x:hidden;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;
+  padding:0 var(--spacing-gap);
+  background:var(--gradient-depth);
+}
+.hero__canvas{
+  position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:var(--z-canvas);
+}
+.hero__content{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:1rem;}
+.hero__eyebadge{
+  display:inline-block;padding:.25rem .75rem;border-radius:var(--radius-sm);
+  background:var(--gradient-gold);color:var(--primary);font-size:.75rem;font-weight:600;text-transform:uppercase;
+}
+.hero__h1{font-size:3rem;font-weight:700;line-height:1.1;color:var(--gradient-gold);
+  background:var(--gradient-gold);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;}
+.hero__sub{color:var(--text-secondary);max-width:600px;font-size:1.2rem;}
+.hero__ctas{display:flex;gap:.75rem;align-items:center;}
+.hero__scroll-cue{
+  position:absolute;bottom:2rem;color:var(--text-secondary);font-size:.85rem;
+  animation:bounce 2s infinite;-webkit-animation:bounce 2s infinite;}
+@keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(.5rem);}}
+@media (prefers-reduced-motion: reduce){
+  .hero__scroll-cue{animation:none!important;}}
+.hero__scroll-cue .symbol{vertical-align:middle;}
+
+/* features */
+.features{padding:4rem var(--spacing-gap);background:var(--bg-primary);}
+.features__grid{
+  display:flex;flex-wrap:wrap;gap:var(--spacing-gap);justify-content:center;
+}
+.features__card{flex:1 1 280px;min-width:260px;}
+/* how it works */
+.how-it-works{
+  padding:4rem var(--spacing-gap);background:var(--bg-secondary);
+}
+.how-it-works__steps{
+  display:flex;flex-wrap:wrap;gap:var(--spacing-gap);align-items:center;justify-content:center;
+  position:relative;
+}
+.how-it-works__steps::before{
+  content:'';position:absolute;top:50%;left:5%;right:5%;height:2px;background:var(--gradient-silver);
+  transform:translateY(-50%);z-index:0;
+}
+.how-it-works__step{flex:0 0 33.333%;display:flex;flex-direction:column;align-items:center;gap:.5rem;position:relative;z-index:1;}
+/* testimonials */
+.testimonials{
+  padding:4rem var(--spacing-gap);background:var(--bg-primary);
+}
+.testimonials__grid{
+  display:flex;flex-wrap:wrap;gap:var(--spacing-gap);justify-content:center;
+}
+.testimonials__card{flex:0 1 300px;max-width:340px;text-align:center;}
+/* pricing */
+.pricing{
+  padding:4rem var(--spacing-gap);background:var(--gradient-cta);color:#fff;position:relative;
+}
+.pricing__title{font-size:2rem;margin-bottom var(--spacing-gap);}
+.pricing__tiers{
+  display:flex;flex-wrap:wrap;gap:var(--spacing-gap);justify-content:center;max-width:900px;margin:0 auto;
+}
+.pricing__tier{
+  flex:0 0 280px;background:rgba(255,255,255,.15);border-radius:var(--radius-lg);
+  padding:var(--spacing-gap);transition:background var(--transition-normal) var(--ease-spatial);
+}
+.pricing__tier:hover{background:rgba(255,255,255,.25);}
+.pricing__tier--featured{background:rgba(255,255,255,.3);border:1px solid rgba(255,255,255,.4);}
+.pricing__tier__badge{position:relative;top:0;right:0;margin:var(--spacing-gap) auto;}
+.pricing__tier__price{font-size:2rem;margin:var(--spacing-gap) 0;}
+.pricing__tier__period{font-size:.9rem;opacity:.8;margin-bottom var(--spacing-gap);}
+.pricing__tier__list{list-style:none;padding:var(--spacing-gap) 0;}
+.pricing__tier__list li{padding:.3rem 0;border-bottom:1px solid rgba(255,255,255,.2);}
+.pricing__tier__list li:last-child{border-bottom:none;}
+/* cta final */
+.cta-final{
+  padding:4rem var(--spacing-gap);background:var(--gradient-depth);color:#fff;text-align:center;
+  position:relative;}
+.cta-final__form{display:flex;flex-direction:column;align-items:center;gap:1rem;max-width:500px;margin:0 auto;}
+.cta-final__input{width:100%;max-width:360px;padding:.75rem 1rem;border:none;border-radius:var(--radius-md);
+  background:rgba(255,255,255,.2);color:#fff;font:inherit;}
+.cta-final__input:focus{outline:none;background:rgba(255,255,255,.3);}
+.cta-final__btn{width:100%;max-width:200px;}
+/* footer */
+.footer{
+  padding:3rem 0 1rem;background:var(--bg-secondary);color:var(--text-secondary);}
+.footer__inner{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2rem;}
+.footer__col{flex:1 1 150px;min-width:150px;}
+.footer__col h4{font-weight:600;margin-bottom .5rem;color:var(--text-primary);}
+.footer__col ul{list-style:none;display:flex;flex-direction:column;gap:.5rem;}
+.footer__col a{color:var(--text-secondary);transition:color var(--transition-fast);}
+.footer__col a:hover{color:var(--primary);}
+.footer__social{display:flex;gap:.5rem;}
+.copyright{margin-top:2rem;padding-top:1rem;border-top:1px solid var(--border-default);
+  font-size:.85rem;color:var(--text-error);}
+
+/* reduced motion for hero scroll cue */
+@media (prefers-reduced-motion: reduce){
+  .hero__scroll-cue{display:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- skip link -->
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<header>
+  <div class="header">
+    <h1 class="Header__brand">Nimbus</h1>
+
+    <nav class="Header__nav">
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="#testimonials">Testimonials</a>
+      <a href="#pricing">Pricing</a>
+    </nav>
+
+    <div class="Header__actions">
+      <button class="btn btn--ghost Header__toggle" aria-label="Switch to dark mode" aria-pressed="false" role="button">
+        <span class="symbol material-symbols-rounded">dark_mode</span>
+      </button>
+      <a class="btn btn--primary" href="#final-cta">Start Building Free</a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <!-- Hero -->
+  <section class="hero" aria-label="Hero section">
+    <canvas class="hero__canvas" id="heroCanvas" aria-hidden="true"></canvas>
+    <div class="hero__content">
+      <span class="hero__eyebadge">real-time 3D</span>
+      <h1 class="hero__h1">Spatial Visualization, Reimagined</h1>
+      <p class="hero__sub">Build, explore, and share interactive 3D experiences directly from your browser. No plugins. No downloads.</p>
+      <div class="hero__ctas">
+        <a class="btn btn--primary" href="#final-cta">Start Building Free</a>
+        <a class="btn btn--ghost" href="#how-it-works">How It Works</a>
+      </div>
+      <p class="hero__scroll-cue"><span class="symbol material-symbols-rounded">expand_more</span> scroll</p>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" class="features" aria-label="Features section">
+    <div class="Features__grid">
+      <article class="card card--tilt features__card">
+        <div class="card__inner">
+          <div class="card__tilt">
+            <span class="symbol material-symbols-rounded" style="font-variation-settings:'FILL' 0,'wght' 400,'opsz' 24;">brush</span>
+            <h3 class="card__title">Real-time Rendering</h3>
+            <p class="card__description">Instantly render complex scenes with physically‑based materials, dynamic lighting, and sub‑frame performance.</p>
+            <button class="card__btn btn btn--ghost">Explore</button>
+          </div>
+        </div>
+      </article>
+      <article class="card card--tilt features__card">
+        <div class="card__inner">
+          <div class="card__tilt">
+            <span class="symbol material-symbols-rounded" style="font-variation-settings:'FILL' 0,'wght' 400,'opsz' 24;">grid_on</span>
+            <h3 class="card__title">Hyper‑real Materials</h3>
+            <p class="card__description">Metallic sheens, glass refraction, and subsurface scattering built on physically‑shaded materials.</p>
+            <button class="card__btn btn btn--ghost">Explore</button>
+          </div>
+        </div>
+      </article>
+      <article class="card card--tilt features__card">
+        <div class="card__inner">
+          <div class="card__tilt">
+            <span class="symbol material-symbols-rounded" style="font-variation-settings:'FILL' 0,'wght' 400,'opsz' 24;">star</span>
+            <h3 class="card__title">Collaborative Workspaces</h3>
+            <p class="card__description">Share scenes with teammates, embed in websites, or export for offline presentations.</p>
+            <button class="card__btn btn btn--ghost">Explore</button>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section id="how-it-works" class="how-it-works" aria-label="How It Works section">
+    <div class="how-it-works__steps">
+      <div class="step step--1">
+        <div class="step__number"><span class="symbol material-symbols-rounded">flash_on</span></div>
+        <span>Setup Scene</span>
+        <div class="step__line"></div>
+      </div>
+      <div class="step step--2">
+        <div class="step__number"><span class="symbol material-symbols-rounded">settings</span></div>
+        <span>Add Materials</span>
+        <div class="step__line"></div>
+      </div>
+      <div class="step step--3">
+        <div class="step__number"><span class="symbol material-symbols-rounded">share</span></div>
+        <span>Publish</span>
+        <div class="step__line"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section id="testimonials" class="testimonials" aria-label="Testimonials section">
+    <div class="testimonials__grid">
+      <article class="testimonials__card">
+        <div class="testimonial__avatar"><span class="symbol material-symbols-rounded">person</span></div>
+        <blockquote>"Nimbus transformed our product demos from static images into immersive experiences. Our users stay 3x longer."</blockquote>
+        <div class="testimonial__stars"><span class="symbol material-symbols-rounded">star</span><span class="symbol material-symbols-rounded">star</span><span class="symbol material-symbols-rounded">star</span><span class="symbol material-symbols-rounded">star</span><span class="symbol material-symbols-rounded">star</span></div>
+        <p class="testimonial__name">Alex Rivera</p>
+        <p class="testimonial__role">Senior Product Designer, Orion Studios</p>
+      </article>
+      <article class="testimonials__card">
+        <div class="testimonial__avatar"><span class="symbol material-symbols-rounded">person</span></div>
+        <blockquote>"The material system is incredibly intuitive. I can go from concept to interactive 3D in minutes, not days."</blockquote>
+        <div class="testimonial__stars"><span class="symbol material-symbols-rounded">star</span><span class="symbol material-symbols-rounded">star</span><span class="symbol material-symbols-rounded">star</span><span class="symbol material-symbols-rounded">star</span><span class="symbol material-symbols-rounded half">star</span></div>
+        <p class="testimonial__name">Mira Chen</p>
+        <p class="testimonial__role">Lead Engineer, Vexel Labs</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section id="pricing" class="pricing" aria-label="Pricing section">
+    <h2 class="pricing__title">Choose Your Plan</h2>
+    <div class="pricing__tiers">
+      <div class="pricing__tier pricing__tier--free">
+        <span class="pricing__tier__badge">Free</span>
+        <div class="pricing__tier__price">$0</div>
+        <div class="pricing__tier__period">per month</div>
+        <ul class="pricing__tier__list">
+          <li>5 scenes</li>
+          <li>Basic materials</li>
+          <li>Embed anywhere</li>
+        </ul>
+        <button class="pricing__tier__btn btn btn--ghost">Get Started</button>
+      </div>
+
+      <div class="pricing__tier pricing__tier--featured">
+        <span class="pricing__tier__badge">Most Popular</span>
+        <div class="pricing__tier__price">$29</div>
+        <div class="pricing__tier__period">per month</div>
+        <ul class="pricing__tier__list">
+          <li>Unlimited scenes</li>
+          <li>Advanced materials</li>
+          <li>Team collaboration</li>
+          <li>Priority support</li>
+        </ul>
+        <button class="pricing__tier__btn btn btn--primary">Select Plan</button>
+      </div>
+
+      <div class="pricing__tier pricing__tier--studio">
+        <span class="pricing__tier__badge">Studio</span>
+        <div class="pricing__tier__price">$99</div>
+        <div class="pricing__tier__period">per month</div>
+        <ul class="pricing__tier__list">
+          <li>All features</li>
+          <li>Custom domains</li>
+          <li>API access</li>
+          <li>Dedicated support</li>
+        </ul>
+        <button class="pricing__tier__btn btn btn--primary">Get Started</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="faq" aria-label="FAQ section">
+    <dl class="faq__list">
+      <div class="faq-item">
+        <button class="faq-item__trigger" aria-controls="faq-1" aria-expanded="false">
+          <span>What can I build with Nimbus?</span>
+          <span class="symbol material-symbols-rounded">chevron_right</span>
+        </button>
+        <div class="faq-item__panel" id="faq-1">
+          <p>You can create interactive product visualizations, architectural walkthroughs, data explorations, and artistic 3D scenes — all from a browser.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-item__trigger" aria-controls="faq-2" aria-expanded="false">
+          <span>Do I need to know WebGL?</span>
+          <span class="symbol material-symbols-rounded">chevron_right</span>
+        </button>
+        <div class="faq-item__panel" id="faq-2">
+          <p>No. Nimbus abstracts the WebGL layer. Use our visual material editor or import glTF models; the engine handles shading and lighting.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-item__trigger" aria-controls="faq-3" aria-expanded="false">
+          <span>How does pricing work?</span>
+          <span class="symbol material-symbols-rounded">chevron_right</span>
+        </button>
+        <div class="faq-item__panel" id="faq-3">
+          <p>We offer a free tier, Pro at $29/mo, and Studio at $99/mo. Annual billing gives a ~20% discount.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-item__trigger" aria-controls="faq-4" aria-expanded="false">
+          <span>Is my content private?</span>
+          <span class="symbol material-symbols-rounded">chevron_right</span>
+        </button>
+        <div class="faq-item__panel" id="faq-4">
+          <p>Scenes are private by default. You choose what to share or embed. All data stays on your infrastructure when using the self‑hosted option.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-item__trigger" aria-controls="faq-5" aria-expanded="false">
+          <span>What are the system requirements?</span>
+          <span class="symbol material-symbols-rounded">chevron_right</span>
+        </button>
+        <div class="faq-item__panel" id="faq-5">
+          <p>A modern browser with WebGL2 support. Mobile devices are supported; performance scales with hardware.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-item__trigger" aria-controls="faq-6" aria-expanded="false">
+          <span>Do you offer refunds?</span>
+          <span class="symbol material-symbols-rounded">chevron_right</span>
+        </button>
+        <div class="faq-item__panel" id="faq-6">
+          <p>Yes. Cancel anytime within 30 days of purchase for a full refund. No‑questions asked.</p>
+        </div>
+      </div>
+    </dl>
+  </section>
+
+  <!-- Final CTA -->
+  <section id="final-cta" class="cta-final" aria-label="Final CTA section">
+    <div class="cta-final__form">
+      <h3>Start your free trial</h3>
+      <p>Join thousands of creators building real-time 3D experiences.</p>
+      <form class="input-group" id="ctaForm" novalidate>
+        <label class="input-group__label" for="email">Email address</label>
+        <input class="input-group__input" type="email" id="email" name="email" placeholder="you@domain.com" required>
+        <div class="input-group__feedback" role="status" aria-live="polite"></div>
+        <button class="cta-final__btn btn btn--primary" type="submit">Begin Now</button>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer class="footer" aria-label="Footer">
+  <div class="footer__inner">
+    <div class="footer__brand">
+      <h4>Nimbus</h4>
+      <p>Spatial visualization for everyone. <span>2026</span></p>
+    </div>
+    <ul class="footer__links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#how-it-works">How It Works</a></li>
+      <li><a href="#testimonials">Testimonials</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+    </ul>
+    <div class="footer__social">
+      <a class="symbol material-symbols-rounded" href="#" aria-label="Twitter"><span>forum</span></a>
+      <a class="symbol material-symbols-rounded" href="#" aria-label="LinkedIn"><span>linked_in</span></a>
+      <a class="symbol material-symbols-rounded" href="#" aria-label="Discord"><span>discord</span></a>
+    </div>
+  </div>
+  <div class="copyright">© 2026 Nimbus. All rights reserved. <a href="#" aria-label="Privacy Policy">Privacy</a> <a href="#" aria-label="Terms of Service">Terms</a></div>
+</footer>
+
+<!-- ==================================================================
+     Script – Theme, Three.js, reduced motion, scroll parallax
+     ================================================================== -->
+<script>
+/* =====================
+   Theme initialization – MUST run first
+   ===================== */
+(function(){
+  const html = document.documentElement;
+  const toggle = document.querySelector('.Header__toggle');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+  // restore from localStorage or fallback to media query
+  const stored = localStorage.getItem('nimbus-theme');
+  const isDark = stored ? stored === 'dark' : prefersDark;
+  if (isDark) html.classList.add('dark');
+  else html.classList.remove('dark');
+
+  // update toggle UI
+  function updateToggle(){
+    const pressed = html.classList.contains('dark');
+    toggle.setAttribute('aria-pressed', pressed);
+    toggle.setAttribute('aria-label', pressed ? 'Switch to light mode' : 'Switch to dark mode');
+  }
+  updateToggle();
+
+  toggle.addEventListener('click',()=>{
+    if (html.classList.contains('dark')) {
+      html.classList.remove('dark');
+      localStorage.setItem('nimbus-theme','light');
+    } else {
+      html.classList.add('dark');
+      localStorage.setItem('nimbus-theme','dark');
+    }
+    updateToggle();
+  });
+})();
+
+/* =====================
+   Three.js hero scene
+   ===================== */
+(function(){
+  const canvas = document.getElementById('heroCanvas');
+  if (!canvas) return;
+
+  const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color('#000a1a');
+
+  const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 100);
+  camera.position.set(0,2,5);
+
+  // lights
+  const keyLight = new THREE.DirectionalLight('#ffd700', 1.2);
+  keyLight.position.set(5,5,5);
+  scene.add(keyLight);
+
+  const rimLight = new THREE.DirectionalLight('#b8860b', 0.6);
+  rimLight.position.set(-5,-5,5);
+  scene.add(rimLight);
+
+  const ambient = new THREE.AmbientLight('#001f3f', 0.3);
+  scene.add(ambient);
+
+  // objects
+  const geometry = new THREE.TorusGeometry(1,0.3,16,48);
+  const material = new THREE.MeshPhysicalMaterial({
+    color:'#ffd700',
+    metalness:0.8,
+    roughness:0.2,
+    clearcoat:1,
+    clearcoatRoughness:0.1,
+    transmission:0.4,
+    thickness:0.5,
+    envMapIntensity:0.5
+  });
+  const torus = new THREE.Mesh(geometry, material);
+  scene.add(torus);
+
+  const sphereGeom = new THREE.SphereGeometry(0.8,32,32);
+  const sphereMat = new THREE.MeshPhysicalMaterial({
+    color:'#c0c0c0',
+    metalness:0.1,
+    roughness:0.9,
+    transmission:0.7,
+    ior:1.5
+  });
+  const sphere = new THREE.Mesh(sphereGeom, sphereMat);
+  sphere.position.x = -2;
+  scene.add(sphere);
+
+  const icosaGeom = new THREE.IcosahedronGeometry(0.7);
+  const icoMat = new THREE.MeshPhysicalMaterial({
+    color:'#228b22',
+    metalness:0.3,
+    roughness:0.4,
+    transmission:0.2,
+    thickness:0.3
+  });
+  const icosa = new THREE.Mesh(icosaGeom, icoMat);
+  icosa.position.x = 2;
+  scene.add(icosa);
+
+  let rotate = true;
+  function animate(){
+    if (rotate){
+      torus.rotation.y += 0.005;
+      sphere.rotation.y += 0.003;
+      icosa.rotation.y += 0.004;
+    }
+    renderer.render(scene,camera);
+    requestAnimationFrame(animate);
+  }
+  animate();
+
+  // pause on blur / reduced motion
+  let reduced = false;
+  const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+  function onChange(e){ reduced = e.matches; }
+  onChange(mq); mq.addListener(onChange);
+
+  window.addEventListener('blur',()=>{ rotate = false; });
+  window.addEventListener('focus',()=>{ rotate = true; });
+
+  // resize
+  function resize(){
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    renderer.setSize(width,height);
+    camera.aspect = width/height; camera.updateProjectionMatrix();
+  }
+  window.addEventListener('resize', resize);
+})();
+
+/* =====================
+   Scroll‑driven parallax layers (CSS custom properties)
+   ===================== */
+(function(){
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const html = document.documentElement;
+  let ticking = false;
+
+  function updateParallax(){
+    const scrollY = window.scrollY;
+    // layers move at different rates
+    html.style.setProperty('--px','calc(-0.2rem + '+ scrollY * 0.02 + 'rem)');
+    html.style.setProperty('--py','calc(-0.1rem + '+ scrollY * 0.01 + 'rem)');
+    ticking = false;
+  }
+
+  window.addEventListener('scroll',()=>{
+    if (!ticking){
+      requestAnimationFrame(updateParallax);
+      ticking = true;
+    }
+  }, {passive:true});
+})();
+</script>
+
+</body>
+</html>

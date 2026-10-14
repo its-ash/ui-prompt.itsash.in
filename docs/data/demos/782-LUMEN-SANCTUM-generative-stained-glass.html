@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LUMEN SANCTUM — Generative Stained-Glass Art Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Rounded" rel="stylesheet">
+<style>
+:root{
+  --primary:#14121a;--secondary:#e8d8b0;--bg-primary:#ece7da;--bg-secondary:#d8d0c0;--bg-glass:rgba(216,208,192,0.55);
+  --text-primary:#14121a;--text-secondary:#5a5448;--text-success:#2e6b4f;--text-error:#8a2b2b;
+  --border-default:rgba(58,54,48,0.25);--border-success:rgba(46,107,79,0.25);--border-error:rgba(138,43,43,0.25);
+  --radius-sm:6px;--radius-md:12px;--radius-lg:20px;
+  --shadow-sm:rgba(20,18,26,0.12) 0px 2px 8px;--shadow-md:rgba(20,18,26,0.18) 0px 4px 16px;
+  --spacing-gap:1.5rem;--transition-fast:150ms;--transition-normal:300ms;--ease-standard:cubic-bezier(0.4,0,0.2,1);
+  --z-dropdown:1000;--z-modal:2000;--z-toast:3000;--z-header:900;
+  --font-display:'Cinzel',serif;--font-base:'Outfit',sans-serif;
+}
+.dark{
+  --primary:#d8d0c0;--secondary:#e8d8b0;--bg-primary:#14121a;--bg-secondary:#3a3630;--bg-glass:rgba(58,54,48,0.45);
+  --text-primary:#d8d0c0;--text-secondary:rgba(216,208,192,0.72);--text-success:#7bc79a;--text-error:#e58a8a;
+  --border-default:rgba(216,208,192,0.22);--border-success:rgba(123,199,154,0.22);--border-error:rgba(229,138,138,0.22);
+  --shadow-sm:rgba(216,208,192,0.1) 0px 2px 8px;--shadow-md:rgba(216,208,192,0.15) 0px 4px 16px;
+}
+*,*:before,*:after{box-sizing:border-box;margin:0;padding:0}
+html{color-scheme:light;scroll-behavior:smooth}
+body{
+  min-height:100vh;background:var(--bg-primary);color:var(--text-primary);
+  font-family:var(--font-base);font-size:1rem;line-height:1.6;
+  transition:background var(--transition-normal),color var(--transition-normal);
+}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;height:auto}
+button{
+  font-family:inherit;font-size:1rem;cursor:pointer;border:none;background:none;
+}
+.material-symbols-rounded{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:.5rem;
+  padding:.75rem 1.5rem;border-radius:var(--radius-md);font-weight:500;
+  transition:background var(--transition-normal),color var(--transition-normal),
+    transform var(--transition-fast),box-shadow var(--transition-normal);
+  min-height:44px;
+}
+.btn--primary{
+  background:var(--secondary);color:var(--primary);
+  border:1px solid var(--secondary);
+}
+.btn--primary:hover{background:#f0e4c8}
+.btn--primary:active{transform:scale(0.97)}
+.btn--ghost{
+  background:var(--bg-glass);color:var(--text-primary);
+  border:1px solid var(--border-default);backdrop-filter:blur(12px) saturate(1.2);
+}
+.btn--ghost:hover{background:rgba(216,208,192,0.65)}
+@supports not (backdrop-filter:blur(12px)){
+  .btn--ghost{background:rgba(216,208,192,0.65)}
+}
+.btn--danger{
+  background:var(--text-error);color:#fff;border:1px solid var(--border-error);
+}
+.btn--danger:hover{background:#c43a3a}
+.btn[aria-busy="true"]{pointer-events:none;opacity:.7}
+.btn--loading::after{
+  content:"\uf1ce";font-family:"Material Symbols Rounded";animation:spin 1s linear infinite;
+  display:inline-block;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.input-group{
+  display:flex;gap:.5rem;align-items:center;
+}
+.input-group input{
+  flex:1;padding:.75rem 1rem;border:1px solid var(--border-default);
+  border-radius:var(--radius-md);background:var(--bg-glass);color:var(--text-primary);
+  backdrop-filter:blur(12px) saturate(1.2);
+  transition:border var(--transition-normal),box-shadow var(--transition-normal);
+}
+@supports not (backdrop-filter:blur(12px)){
+  .input-group input{background:rgba(216,208,192,0.65)}
+}
+.input-group input:focus{
+  outline:none;border-color:var(--secondary);box-shadow:0 0 0 2px rgba(232,216,176,.25);
+}
+.input-group input:valid{border-color:var(--border-success)}
+.input-group input:invalid{border-color:var(--border-error)}
+.input-group .error{
+  font-size:.875rem;color:var(--text-error);min-height:1.25em;
+}
+.card{
+  background:var(--bg-glass);border:1px solid var(--border-default);
+  border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);
+  backdrop-filter:blur(15px) saturate(1.3);display:flex;flex-direction:column;
+  gap:1rem;padding:1.5rem;transition:transform var(--transition-normal),
+    box-shadow var(--transition-normal),border-color var(--transition-normal);
+}
+@supports not (backdrop-filter:blur(15px)){
+  .card{background:rgba(216,208,192,0.65)}
+}
+.card:hover{
+  transform:translateY(-2px);box-shadow:var(--shadow-md);
+  border-color:var(--secondary);
+}
+.card:focus-within{border-color:var(--secondary)}
+.card--skeleton{
+  background:linear-gradient(90deg,#e0e0e0 25%,#f0f0f0 50%,#e0e0e0 75%);
+  background-size:200% 100%;animation:shimmer 1.5s infinite;
+}
+@keyframes shimmer{
+  0%{background-position:200% 0}
+  100%{background-position:-200% 0}
+}
+.header{
+  position:sticky;top:0;z-index:var(--z-header);background:var(--bg-glass);
+  backdrop-filter:blur(18px) saturate(1.5);border-bottom:1px solid var(--border-default);
+  padding:1rem clamp(1rem,5vw,2rem);display:flex;justify-content:space-between;
+  align-items:center;flex-wrap:gap;
+}
+@supports not (backdrop-filter:blur(18px)){
+  .header{background:rgba(216,208,192,0.65)}
+}
+.brand{
+  display:flex;align-items:center;gap:.5rem;font-family:var(--font-display);
+  font-weight:700;font-size:1.25rem;letter-spacing:-0.5px;
+}
+.nav{
+  display:flex;gap:2rem;align-items:center;
+}
+.nav a{font-weight:500;position:relative}
+.nav a::after{
+  content:"";position:absolute;bottom:-4px;left:0;width:0;height:2px;
+  background:var(--secondary);transition:width var(--transition-normal);
+}
+.nav a:hover::after{width:100%}
+.theme-toggle{
+  background:none;border:none;color:var(--text-secondary);font-size:1.25rem;
+  width:2.5rem;height:2.5rem;display:flex;align-items:center;justify-content:center;
+  border-radius:var(--radius-md);transition:background var(--transition-normal);
+}
+.theme-toggle:hover{background:var(--bg-glass)}
+.mobile-menu-btn{
+  display:none;background:none;border:none;color:var(--text-secondary);
+  font-size:1.5rem;width:2.5rem;height:2.5rem;display:flex;align-items:center;
+  justify-content:center;border-radius:var(--radius-md);
+}
+.mobile-menu-btn:hover{background:var(--bg-glass)}
+.mobile-menu{
+  position:fixed;top:0;right:-100%;height:100vh;width:80%;max-width:300px;
+  background:var(--bg-glass);backdrop-filter:blur(18px) saturate(1.5);
+  flex-direction:column;padding:4rem 2rem 2rem;gap:2rem;
+  transition:right var(--transition-normal);z-index:var(--z-dropdown);
+}
+@supports not (backdrop-filter:blur(18px)){
+  .mobile-menu{background:rgba(216,208,192,0.65)}
+}
+.mobile-menu.open{right:0}
+.mobile-menu a{
+  font-size:1.25rem;font-weight:500;padding:.5rem 0;width:100%;
+  text-align:center;border-bottom:1px solid var(--border-default);
+}
+.mobile-menu a:last-child{border-bottom:none}
+.hero{
+  position:relative;overflow:hidden;padding:4rem clamp(1rem,5vw,2rem);
+  background:var(--bg-primary);color:var(--text-primary);
+  display:flex;flex-direction:column;align-items:center;text-align:center;
+  gap:2rem;
+}
+.hero::before{
+  content:"";position:absolute;inset:0;background:
+    radial-gradient(circle at 30% 20%,rgba(232,216,176,.15) 0%,transparent 40%),
+    radial-gradient(circle at 70% 80%,rgba(216,208,192,.1) 0%,transparent 40%),
+    conic-gradient(from 45deg at 50% 50%,rgba(232,216,176,.08) 0%,rgba(216,208,192,.06) 25%,
+      rgba(20,18,26,.04) 50%,rgba(216,208,192,.06) 75%,rgba(232,216,176,.08) 100%);
+  animation:heroBg 40s ease-in-out infinite;
+}
+@keyframes heroBg{
+  0%,100%{transform:rotate(0deg)}
+  50%{transform:rotate(5deg)}
+}
+.hero-light{
+  position:absolute;inset:0;pointer-events:none;
+}
+.hero-light::before,.hero-light::after{
+  content:"";position:absolute;border-radius:50%;filter:blur(60px);
+  opacity:.4;animation:lightFloat 30s ease-in-out infinite;
+}
+.hero-light::before{
+  width:300px;height:300px;background:var(--secondary);
+  top:-10%;left:-10%;animation-delay:0s;
+}
+.hero-light::after{
+  width:200px;height:200px;background:rgba(232,216,176,.7);
+  bottom:-15%;right:-15%;animation-delay:15s;
+}
+@keyframes lightFloat{
+  0%,100%{transform:translate(0,0) rotate(0deg)}
+  33%{transform:translate(30px,-20px) rotate(5deg)}
+  66%{transform:translate(-20px,40px) rotate(-5deg)}
+}
+.hero-content{
+  position:relative;z-index:2;max-width:36rem;
+}
+.hero h1{
+  font-family:var(--font-display);font-weight:700;font-size:clamp(2.5rem,6vw,4.5rem);
+  line-height:1.2;margin-bottom:.5rem;background:linear-gradient(to right,var(--primary),var(--secondary));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.hero p{font-size:1.125rem;color:var(--text-secondary);max-width:28rem;margin:0 auto 1.5rem;}
+.hero .cta-group{
+  display:flex;flex-wrap:wrap;gap:1rem;justify-content:center;
+}
+.trust{
+  display:flex;align-items:center;gap:1.5rem;font-size:.875rem;
+  color:var(--text-secondary);margin-top:2rem;padding-top:1.5rem;
+  border-top:1px solid rgba(216,208,192,.2);
+}
+.features{
+  padding:4rem clamp(1rem,5vw,2rem);background:var(--bg-primary);
+  display:flex;flex-direction:column;align-items:center;gap:3rem;
+}
+.features h2{
+  font-family:var(--font-display);font-weight:600;font-size:2rem;
+  text-align:center;margin-bottom:2rem;
+}
+.features-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:var(--spacing-gap);width:100%;
+}
+.features .icon{
+  width:48px;height:48px;background:var(--secondary);color:var(--primary);
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  margin-bottom:1rem;
+}
+.features h3{
+  font-family:var(--font-display);font-weight:600;font-size:1.25rem;
+  margin-bottom:.5rem;
+}
+.features p{color:var(--text-secondary);font-size:.95rem;line-height:1.5;}
+.how-it-works{
+  padding:4rem clamp(1rem,5vw,2rem);background:var(--bg-primary);
+  display:flex;flex-direction:column;align-items:center;gap:3rem;
+}
+.how-it-works h2{
+  font-family:var(--font-display);font-weight:600;font-size:2rem;
+  text-align:center;margin-bottom:2rem;
+}
+.steps{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:var(--spacing-gap);width:100%;position:relative;
+}
+.steps::before{
+  content:"";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:1px;height:80%;background:rgba(216,208,192,.15);
+  z-index:-1;
+}
+.step{
+  display:flex;flex-direction:column;align-items:center;text-align:center;
+  gap:1.5rem;padding:2rem;position:relative;
+}
+.step .number{
+  width:3rem;height:3rem;background:var(--secondary);color:var(--primary);
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-weight:700;font-size:1.5rem;
+  box-shadow:var(--shadow-sm);
+}
+.step .icon{
+  width:40px;height:40px;background:var(--bg-glass);color:var(--text-primary);
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--border-default);backdrop-filter:blur(10px);
+}
+@supports not (backdrop-filter:blur(10px)){
+  .step .icon{background:rgba(216,208,192,.55)}
+}
+.step h3{
+  font-family:var(--font-display);font-weight:600;font-size:1.25rem;
+}
+.step p{color:var(--text-secondary);font-size:.95rem;}
+.testimonials{
+  padding:4rem clamp(1rem,5vw,2rem);background:var(--bg-primary);
+  display:flex;flex-direction:column;align-items:center;gap:3rem;
+}
+.testimonials h2{
+  font-family:var(--font-display);font-weight:600;font-size:2rem;
+  text-align:center;margin-bottom:2rem;
+}
+.testimonials-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:var(--spacing-gap);width:100%;
+}
+.testimonial{
+  text-align:center;padding:2rem;position:relative;
+}
+.testimonial::before{
+  content:"\"";font-family:var(--font-display);font-size:4rem;
+  color:var(--secondary);opacity:.15;position:absolute;top:-10%;left:50%;
+  transform:translateX(-50%);
+}
+.testimonial p{
+  font-style:italic;color:var(--text-secondary);margin-bottom:1.5rem;
+  line-height:1.6;
+}
+.avatar{
+  width:48px;height:48px;background:var(--secondary);color:var(--primary);
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-weight:600;margin:0 auto 1rem;
+}
+.testimonial h3{
+  font-family:var(--font-display);font-weight:600;font-size:1.125rem;
+  margin-bottom:.25rem;
+}
+.testimonial p.role{font-size:.9rem;color:var(--text-secondary);margin:0;}
+.pricing{
+  padding:4rem clamp(1rem,5vw,2rem);background:var(--bg-primary);
+  display:flex;flex-direction:column;align-items:center;gap:3rem;
+}
+.pricing h2{
+  font-family:var(--font-display);font-weight:600;font-size:2rem;
+  text-align:center;margin-bottom:2rem;
+}
+.pricing-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:var(--spacing-gap);width:100%;
+}
+.pricing .card{
+  height:100%;display:flex;flex-direction:column;
+}
+.pricing .card--featured{
+  border:2px solid var(--secondary);box-shadow:var(--shadow-md);
+  transform:scale(1.02);
+}
+.pricing .card--featured:hover{transform:scale(1.03)}
+.pricing-header{
+  text-align:center;padding-bottom:1.5rem;border-bottom:1px solid var(--border-default);
+  margin-bottom:1.5rem;
+}
+.pricing-header h3{
+  font-family:var(--font-display);font-weight:600;font-size:1.5rem;
+  margin-bottom:.5rem;
+}
+.pricing-header .price{
+  font-family:var(--font-display);font-size:2.25rem;font-weight:700;
+  color:var(--primary);
+}
+.pricing-header .price sup{font-size:.75em;vertical-align:top;}
+.pricing-header .badge{
+  display:inline-block;background:var(--secondary);color:var(--primary);
+  padding:.25rem .75rem;border-radius:var(--radius-sm);font-size:.85rem;
+  font-weight:600;margin-top:.5rem;
+}
+.pricing-features{
+  list-style:none;margin:1.5rem 0;padding:0;flex-grow:1;
+}
+.pricing-features li{
+  display:flex;align-items:center;gap:.75rem;padding:.5rem 0;
+  color:var(--text-secondary);font-size:.9rem;
+}
+.pricing-features li::before{
+  content:"\uf12c";font-family:"Material Symbols Rounded";color:var(--text-success);
+}
+.pricing .btn{
+  margin-top:auto;align-self:center;
+}
+.faq{
+  padding:4rem clamp(1rem,5vw,2rem);background:var(--bg-primary);
+  display:flex;flex-direction:column;align-items:center;gap:3rem;
+}
+.faq h2{
+  font-family:var(--font-display);font-weight:600;font-size:2rem;
+  text-align:center;margin-bottom:2rem;
+}
+.faq-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+  gap:var(--spacing-gap);width:100%;
+}
+.faq-item{
+  border:1px solid var(--border-default);border-radius:var(--radius-lg);
+  overflow:hidden;
+}
+.faq-question{
+  padding:1.25rem 1.5rem;background:var(--bg-glass);
+  backdrop-filter:blur(10px);display:flex;justify-content:space-between;
+  align-items:center;cursor:pointer;transition:background var(--transition-normal);
+}
+@supports not (backdrop-filter:blur(10px)){
+  .faq-question{background:rgba(216,208,192,.55)}
+}
+.faq-question:hover{background:rgba(216,208,192,.65)}
+.faq-question h3{
+  font-family:var(--font-display);font-weight:600;font-size:1.125rem;
+  margin:0;flex-grow:1;
+}
+.faq-answer{
+  max-height:0;overflow:hidden;transition:max-height var(--transition-normal) ease;
+  background:var(--bg-primary);padding:0 1.5rem;
+}
+.faq-answer p{
+  color:var(--text-secondary);font-size:.95rem;line-height:1.6;
+  padding:1rem 0;
+}
+.faq-item.open .faq-answer{max-height:20rem;transition:max-height var(--transition-normal) ease}
+.faq-item.open .faq-question{background:var(--secondary);color:var(--primary);}
+.faq-item.open .faq-question h3{color:var(--primary);}
+.faq-item.open .faq-toggle{transform:rotate(180deg);}
+.faq-toggle{
+  transition:transform var(--transition-normal);
+  display:flex;align-items:center;justify-content:center;
+  width:2rem;height:2rem;
+}
+.cta-final{
+  position:relative;overflow:hidden;padding:4rem clamp(1rem,5vw,2rem);
+  background:var(--bg-primary);color:var(--text-primary);
+  display:flex;flex-direction:column;align-items:center;text-align:center;
+  gap:2rem;
+}
+.cta-final::before{
+  content:"";position:absolute;inset:0;background:
+    radial-gradient(circle at 40% 30%,rgba(232,216,176,.1) 0%,transparent 50%),
+    radial-gradient(circle at 60% 70%,rgba(216,208,192,.08) 0%,transparent 50%);
+  animation:ctaBg 50s ease-in-out infinite;
+}
+@keyframes ctaBg{
+  0%,100%{transform:rotate(0deg)}
+  50%{transform:rotate(-3deg)}
+}
+.cta-light{
+  position:absolute;inset:0;pointer-events:none;
+}
+.cta-light::before,.cta-light::after{
+  content:"";position:absolute;border-radius:50%;filter:blur(70px);
+  opacity:.3;animation:ctaLightFloat 40s ease-in-out infinite;
+}
+.cta-light::before{
+  width:400px;height:400px;background:var(--secondary);
+  top:-15%;left:-10%;animation-delay:0s;
+}
+.cta-light::after{
+  width:250px;height:250px;background:rgba(232,216,176,.6);
+  bottom:-20%;right:-15%;animation-delay:20s;
+}
+@keyframes ctaLightFloat{
+  0%,100%{transform:translate(0,0) rotate(0deg)}
+  33%{transform:translate(40px,-30px) rotate(3deg)}
+  66%{transform:translate(-30px,50px) rotate(-3deg)}
+}
+.cta-final h2{
+  font-family:var(--font-display);font-weight:600;font-size:2rem;
+  margin-bottom:1rem;
+}
+.cta-final p{font-size:1.125rem;color:var(--text-secondary);max-width:28rem;margin:0 auto 1.5rem;}
+.footer{
+  padding:3rem clamp(1rem,5vw,2rem);background:var(--bg-secondary);
+  color:var(--text-secondary);font-size:.9rem;
+  display:flex;flex-direction:column;align-items:center;gap:2rem;
+}
+.footer-links{
+  display:flex;flex-wrap:wrap;gap:2rem;justify-content:center;
+}
+.footer-links div{
+  display:flex;flex-direction:column;gap:.5rem;
+}
+.footer-links h4{
+  font-family:var(--font-display);font-weight:600;font-size:1rem;
+  margin-bottom:.5rem;color:var(--text-primary);
+}
+.footer-links a{
+  color:var(--text-secondary);transition:color var(--transition-normal);
+}
+.footer-links a:hover{color:var(--text-primary)}
+.footer-social{
+  display:flex;gap:1.5rem;
+}
+.footer-social a{
+  width:2.5rem;height:2.5rem;background:var(--bg-glass);
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  color:var(--text-secondary);transition:background var(--transition-normal);
+}
+.footer-social a:hover{background:var(--secondary);color:var(--primary)}
+.footer-bottom{
+  display:flex;flex-direction:column;align-items:center;gap:.5rem;
+  font-size:.85rem;color:var(--text-secondary);
+}
+.footer-bottom a{color:var(--text-secondary);text-decoration:none}
+.footer-bottom a:hover{text-decoration:underline}
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:0.001ms !important;transition-duration:0.001ms !important;}
+  .hero-light::before,.hero-light::after{animation:none;}
+  .cta-light::before,.cta-light::after{animation:none;}
+}
+@media (max-width:768px){
+  .nav{display:none}
+  .mobile-menu-btn{display:flex}
+  .header{justify-content:center}
+  .brand{margin-right:auto}
+  .steps{grid-template-columns:1fr}
+  .steps::before{display:none}
+  .faq-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="brand">LUMEN SANCTUM</div>
+  <nav class="nav">
+    <a href="#features">Features</a>
+    <a href="#how-it-works">How It Works</a>
+    <a href="#testimonials">Testimonials</a>
+    <a href="#pricing">Pricing</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Activate dark mode" aria-pressed="false">
+    <span class="material-symbols-rounded">dark_mode</span>
+  </button>
+  <button class="mobile-menu-btn" aria-label="Open menu" aria-controls="mobile-menu" aria-expanded="false">
+    <span class="material-symbols-rounded">menu</span>
+  </button>
+</header>
+<div class="mobile-menu" id="mobile-menu">
+  <a href="#features">Features</a>
+  <a href="#how-it-works">How It Works</a>
+  <a href="#testimonials">Testimonials</a>
+  <a href="#pricing">Pricing</a>
+  <a href="#faq">FAQ</a>
+  <a href="#cta-final">Get Started</a>
+</div>
+
+<section class="hero" id="hero">
+  <div class="hero-light"></div>
+  <div class="hero-content">
+    <h1>Where Light Becomes Art</h1>
+    <p>Algorithmically compose cathedral-style stained-glass masterpieces in seconds. No artistic skill required—just pure luminous creation.</p>
+    <div class="cta-group">
+      <a href="#cta-final" class="btn btn--primary">Create Your First Piece</a>
+      <a href="#features" class="btn btn--ghost">Explore Features</a>
+    </div>
+    <div class="trust">
+      <div><span class="material-symbols-rounded">shield</span> Secure & Private</div>
+      <div><span class="material-symbols-rounded">speed</span> Instant Generation</div>
+      <div><span class="material-symbols-rounded">palette">Endless Variations</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="features" id="features">
+  <h2>Living Glass, Powered by Code</h2>
+  <div class="features-grid">
+    <div class="card">
+      <div class="icon"><span class="material-symbols-rounded">palette</span></div>
+      <h3>Generative Design Engine</h3>
+      <p>Our proprietary algorithm blends historical glasswork principles with procedural generation to create unique, cathedral-worthy compositions every time.</p>
+    </div>
+    <div class="card">
+      <div class="icon"><span class="material-symbols-rounded">color_lens</span></div>
+      <h3>Real-Time Light Simulation</h3>
+      <p>Watch as virtual sunlight passes through your creation, casting dynamic colored shadows that shift throughout the day—just like real stained glass.</p>
+    </div>
+    <div class="card">
+      <div class="icon"><span class="material-symbols-rounded">settings</span></div>
+      <h3>Export & Share</h3>
+      <p>Download high-resolution PNGs or SVG vectors, or share directly to social media. All creations are royalty-free for personal and commercial use.</p>
+    </div>
+  </div>
+</section>
+
+<section class="how-it-works" id="how-it-works">
+  <h2>Three Steps to Luminescence</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="number">1</div>
+      <div class="icon"><span class="material-symbols-rounded">photo</span></div>
+      <h3>Choose Your Inspiration</h3>
+      <p>Select a base style—Gothic, Art Nouveau, or Modern Abstract—or let the algorithm surprise you with a randomized starting point.</p>
+    </div>
+    <div class="step">
+      <div class="number">2</div>
+      <div class="icon"><span class="material-symbols-rounded">tune</span></div>
+      <h3>Refine Your Vision</h3>
+      <p>Adjust complexity, color palette, and lead line density with intuitive sliders. See changes update in real-time beneath virtual sunlight.</p>
+    </div>
+    <div class="step">
+      <div class="number">3</div>
+      <div class="icon"><span class="material-symbols-rounded">download</span></div>
+      <h3>Generate & Illuminate</h3>
+      <p>One click renders your masterpiece at 4K resolution. Download instantly or save to your Lumen Sanctum gallery for future refinement.</p>
+    </div>
+  </div>
+</section>
+
+<section class="testimonials" id="testimonials">
+  <h2>Voices from the Atelier</h2>
+  <div class="testimonials-grid">
+    <div class="testimonial">
+      <p>“I’ve created more meaningful art in one hour with Lumen Sanctum than in years of traditional mediums. The way the light interacts—it’s spiritual.”</p>
+      <div class="avatar">EL</div>
+      <h3>Elara Voss</h3>
+      <p class="role">Digital Illustrator</p>
+    </div>
+    <div class="testimonial">
+      <p>“As a architect, I use this to prototype window designs for clients. The real-time light simulation is unmatched—it’s like having a virtual sun studio.”</p>
+      <div class="avatar">JR</div>
+      <h3>Jonas Reed</h3>
+      <p class="role">Architectural Designer</p>
+    </div>
+    <div class="testimonial">
+      <p>“The generative aspect feels collaborative, not random. It suggests patterns I’d never conceive, yet each result feels deeply intentional and mine.”</p>
+      <div class="avatar">MS</div>
+      <h3>Marcus Silva</h3>
+      <p class="role">Glass Artisan</p>
+    </div>
+  </div>
+</section>
+
+<section class="pricing" id="pricing">
+  <h2>Choose Your Illumination</h2>
+  <div class="pricing-grid">
+    <div class="card">
+      <div class="pricing-header">
+        <h3>Apprentice</h3>
+        <div class="price">$<span>9</span><span class="sup">/mo</span></div>
+        <div class="badge">Perfect for Beginners</div>
+      </div>
+      <ul class="pricing-features">
+        <li><span>Up to 10 generations/day</span></li>
+        <li><span>Standard resolution (1080p)</span></li>
+        <li><span>Basic color palettes</span></li>
+        <li><span>Community gallery access</span></li>
+      </ul>
+      <a href="#cta-final" class="btn btn--ghost">Start Free Trial</a>
+    </div>
+    <div class="card card--featured">
+      <div class="pricing-header">
+        <h3>Artisan</h3>
+        <div class="price">$<span>24</span><span class="sup">/mo</span></div>
+        <div class="badge">Most Illuminated</div>
+      </div>
+      <ul class="pricing-features">
+        <li><span>Unlimited generations</span></li>
+        <li><span>4K resolution export</span></li>
+        <li><span>All palettes + custom uploads</span></li>
+        <li><span>Priority rendering</span></li>
+        <li><span>Commercial license included</span></li>
+      </ul>
+      <a href="#cta-final" class="btn btn--primary">Begin Trial</a>
+    </div>
+    <div class="card">
+      <div class="pricing-header">
+        <h3>Master</h3>
+        <div class="price">$<span>49</span><span class="sup">/mo</span></div>
+        <div class="badge">For Studios & Pros</div>
+      </div>
+      <ul class="pricing-features">
+        <li><span>Unlimited everything</span></li>
+        <li><span>Team collaboration (5 seats)</span></li>
+        <li><span>API access</span></li>
+        <li><span>Dedicated support</span></li>
+        <li><span>White-label options</span></li>
+      </ul>
+      <a href="#cta-final" class="btn btn--ghost">Contact Sales</a>
+    </div>
+  </div>
+</section>
+
+<section class="faq" id="faq">
+  <h2>Frequently Illuminated Questions</h2>
+  <div class="faq-grid">
+    <div class="faq-item">
+      <div class="faq-question">
+        <h3>Do I need artistic or technical experience?</h3>
+        <button class="faq-toggle" aria-expanded="false" aria-controls="faq-answer-1">
+          <span class="material-symbols-rounded">expand_more</span>
+        </button>
+      </div>
+      <div class="faq-answer" id="faq-answer-1">
+        <p>None at all. Lumen Sanctum is designed for complete beginners while offering depth for professionals. The algorithm handles the complexity—you guide the vision.</p>
+      </div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-question">
+        <h3>Can I use creations commercially?</h3>
+        <button class="faq-toggle" aria-expanded="false" aria-controls="faq-answer-2">
+          <span class="material-symbols-rounded">expand_more</span>
+        </button>
+      </div>
+      <div class="faq-answer" id="faq-answer-2">
+        <p>Yes! All paid plans include a commercial license. Free trial creations are for personal use only. Check our Terms of Service for full details.</p>
+      </div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-question">
+        <h3>How does the light simulation work?</h3>
+        <button class="faq-toggle" aria-expanded="false" aria-controls="faq-answer-3">
+          <span class="material-symbols-rounded">expand_more</span>
+        </button>
+      </div>
+      <div class="faq-answer" id="faq-answer-3">
+        <p>We simulate sunlight at configurable times of day and angles, calculating how light refracts through virtual glass and lead lines to cast accurate colored shadows and highlights.</p>
+      </div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-question">
+        <h3>What file formats can I export?</h3>
+        <button class="faq-toggle" aria-expanded="false" aria-controls="faq-answer-4">
+          <span class="material-symbols-rounded">expand_more</span>
+        </button>
+      </div>
+      <div class="faq-answer" id="faq-answer-4">
+        <p>PNG (up to 4K), SVG vector, and layered PSD (Artisan and Master plans). All exports maintain transparency for easy overlay on any background.</p>
+      </div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-question">
+        <h3>Is my data private?</h3>
+        <button class="faq-toggle" aria-expanded="false" aria-controls="faq-answer-5">
+          <span class="material-symbols-rounded">expand_more</span>
+        </button>
+      </div>
+      <div class="faq-answer" id="faq-answer-5">
+        <p>Absolutely. Your creations and prompts are stored encrypted on our servers. We never use your data for training. Read our Privacy Policy for full transparency.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-final" id="cta-final">
+  <div class="cta-light"></div>
+  <h2>Ready to Create Light?</h2>
+  <p>Join thousands of artists, designers, and dreamers who are turning algorithmic inspiration into tangible beauty.</p>
+  <form class="input-group" id="newsletter-form" aria-live="polite">
+    <label for="email-input" class="visually-hidden">Email address</label>
+    <input type="email" id="email-input" placeholder="your@email.com" required aria-required="true">
+    <button type="submit" class="btn btn--primary">Illuminate My Inbox</button>
+    <div class="error" id="form-error"></div>
+  </form>
+</section>
+
+<footer class="footer">
+  <div class="footer-links">
+    <div>
+      <h4>Product</h4>
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="#pricing">Pricing</a>
+    </div>
+    <div>
+      <h4>Studio</h4>
+      <a href="#">About Us</a>
+      <a href="#">Careers</a>
+      <a href="#">Press</a>
+    </div>
+    <div>
+      <h4>Legal</h4>
+      <a href="#">Terms of Service</a>
+      <a href="#">Privacy Policy</a>
+      <a href="#">Licensing</a>
+    </div>
+  </div>
+  <div class="footer-social">
+    <a href="#" aria-label="Instagram"><span class="material-symbols-rounded">camera_alt</span></a>
+    <a href="#" aria-label="Twitter"><span class="material-symbols-rounded">public</span></a>
+    <a href="#" aria-label="Pinterest"><span class="material-symbols-rounded">image</span></a>
+  </div>
+  <div class="footer-bottom">
+    <p>&copy; 2026 LUMEN SANCTUM. All rights reserved.</p>
+    <p><a href="#">Accessibility Statement</a> · <a href="#">Site Map</a></p>
+  </div>
+</footer>
+
+<script>
+  // Theme Toggle
+  const htmlEl = document.documentElement;
+  const themeToggle = document.querySelector('.theme-toggle');
+  const STORAGE_KEY = 'lumen-sanctum-theme';
+
+  function setTheme(isDark) {
+    if (isDark) {
+      htmlEl.classList.add('dark');
+      htmlEl.classList.remove('light');
+      themeToggle.setAttribute('aria-label', 'Activate light mode');
+      themeToggle.setAttribute('aria-pressed', 'true');
+      themeToggle.innerHTML = '<span class="material-symbols-rounded">light_mode</span>';
+    } else {
+      htmlEl.classList.add('light');
+      htmlEl.classList.remove('dark');
+      themeToggle.setAttribute('aria-label', 'Activate dark mode');
+      themeToggle.setAttribute('aria-pressed', 'false');
+      themeToggle.innerHTML = '<span class="material-symbols-rounded">dark_mode</span>';
+    }
+    localStorage.setItem(STORAGE_KEY, isDark ? 'dark' : 'light');
+  }
+
+  function initTheme() {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored === 'dark') {
+      setTheme(true);
+    } else if (stored === 'light') {
+      setTheme(false);
+    } else {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      // Per spec: Light is primary default unless user preference exists
+      setTheme(prefersDark && !stored); // Only use prefers-dark if no prior choice
+    }
+  }
+
+  themeToggle.addEventListener('click', () => {
+    const isDark = htmlEl.classList.contains('light');
+    setTheme(isDark);
+  });
+
+  // Mobile Menu
+  const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+  const mobileMenu = document.getElementById('mobile-menu');
+
+  mobileMenuBtn.addEventListener('click', () => {
+    const expanded = mobileMenuBtn.getAttribute('aria-expanded') === 'true';
+    mobileMenuBtn.setAttribute('aria-expanded', String(!expanded));
+    mobileMenu.classList.toggle('open');
+  });
+
+  // FAQ Accordion
+  document.querySelectorAll('.faq-question').forEach(button => {
+    button.addEventListener('click', () => {
+      const item = button.parentElement;
+      const isOpen = item.classList.contains('open');
+      item.classList.toggle('open');
+      button.querySelector('.faq-toggle').setAttribute('aria-expanded', String(!isOpen));
+    });
+  });
+
+  // Newsletter Form
+  const form = document.getElementById('newsletter-form');
+  const input = document.getElementById('email-input');
+  const errorDiv = document.getElementById('form-error');
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const email = input.value.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      input.setAttribute('aria-invalid', 'true');
+      errorDiv.textContent = 'Please enter a valid email address.';
+      input.focus();
+      return;
+    }
+    input.setAttribute('aria-invalid', 'false');
+    errorDiv.textContent = '';
+    const btn = form.querySelector('button[type="submit"]');
+    btn.setAttribute('aria-busy', 'true');
+    btn.innerHTML = '<span class="material-symbols-rounded">sync</span> Sending...';
+    // Simulate API call
+    setTimeout(() => {
+      btn.removeAttribute('aria-busy');
+      btn.innerHTML = '<span class="material-symbols-rounded">check_circle</span> Subscribed!';
+      input.value = '';
+      setTimeout(() => {
+        btn.innerHTML = 'Illuminate My Inbox';
+      }, 2000);
+    }, 1500);
+  });
+
+  // Initialize
+  initTheme();
+</script>
+</body>
+</html>

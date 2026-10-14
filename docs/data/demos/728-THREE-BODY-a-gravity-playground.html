@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THREE BODY — a Gravity Playground</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<style>
+:root{
+--color-scheme:light;
+--bg-primary:#e8eefb;
+--bg-secondary:#c9d2e8;
+--text-primary:#08090f;
+--text-secondary:#2a3350;
+--primary:#08090f;
+--text-on-primary:#e8eefb;
+--secondary:#5a7ac9;
+--text-success:#0f7a4d;
+--text-error:#c93440;
+--border-default:rgba(8,9,15,0.18);
+--glass-bg:rgba(232,238,251,0.55);
+--glass-border:rgba(103,114,154,0.35);
+--glass-blur:16px;
+--radius-sm:8px;
+--radius-md:16px;
+--radius-lg:28px;
+--shadow-sm:0 2px 4px rgba(0,0,0,0.1);
+--shadow-md:0 4px 6px rgba(0,0,0,0.15);
+--shadow-glow:0 0 48px rgba(90,122,201,0.35);
+--spacing-gap:1.5rem;
+--spacing-section:clamp(4rem,10vw,7rem);
+--transition-fast:150ms;
+--transition-normal:300ms;
+--ease-standard:cubic-bezier(0.4,0,0.2,1);
+--container-max:1200px;
+--z-dropdown:100;
+--z-modal:1000;
+--z-toast:2000;
+--font-display:'Space Grotesk',sans-serif;
+--font-base:'Inter',sans-serif;
+--focus-ring:rgba(90,122,201,0.5)
+}
+.dark{
+--bg-primary:#08090f;
+--bg-secondary:rgba(42,51,80,0.7);
+--text-primary:#e8eefb;
+--text-secondary:#c9d2e8;
+--primary:#e8eefb;
+--text-on-primary:#08090f;
+--secondary:#5a7ac9;
+--text-success:#3ddc97;
+--text-error:#ff6b76;
+--border-default:rgba(201,210,232,0.18);
+--glass-bg:rgba(42,51,80,0.35);
+--glass-border:rgba(201,210,232,0.15);
+--shadow-sm:0 2px 4px rgba(0,0,0,0.3);
+--shadow-md:0 4px 6px rgba(0,0,0,0.4);
+--shadow-glow:0 0 48px rgba(90,122,201,0.5);
+--focus-ring:rgba(90,122,201,0.7)
+}
+:root{color-scheme:light}
+.dark{color-scheme:dark}
+*,*:before,*:after{box-sizing:border-box}
+html{font-size:16px}
+body{
+margin:0;
+font-family:var(--font-base);
+background:var(--bg-primary);
+color:var(--text-primary);
+line-height:1.6;
+overflow-x:hidden
+}
+h1,h2,h3{font-family:var(--font-display);line-height:1.2;margin-top:0}
+h1{font-size:clamp(2.5rem,5vw,3.5rem)}
+h2{font-size:clamp(2rem,4vw,2.5rem)}
+h3{font-size:clamp(1.5rem,3vw,1.75rem)}
+p{margin:0 0 1rem}
+a{color:var(--secondary);text-decoration:none}
+a:hover{text-decoration:underline}
+img{max-width:100%;height:auto}
+button{
+font-family:inherit;
+font-size:1rem;
+cursor:pointer
+}
+.skip-link{
+position:absolute;
+left:-999px;
+top:auto;
+width:1px;
+height:1px;
+overflow:hidden
+}
+.skip-link:focus{
+left:0;
+top:0;
+width:auto;
+height:auto;
+overflow:auto;
+background:var(--bg-secondary);
+color:var(--text-primary);
+padding:1rem;
+z-index:var(--z-dropdown)
+}
+.cosmic-backdrop{
+position:fixed;
+inset:0;
+z-index:-1;
+overflow:hidden
+}
+.cosmic-backdrop::before{
+content:"";
+position:absolute;
+inset:0;
+background:
+radial-gradient(circle at 20% 30%,rgba(90,122,201,0.15)0%,transparent 50%),
+radial-gradient(circle at 80% 70%,rgba(42,51,80,0.1)0%,transparent 50%)
+}
+.cosmic-backdrop::after{
+content:"";
+position:absolute;
+inset:0;
+background:radial-gradient(circle,#fff 1px,transparent 1px)0 0/50px 50px;
+animation:drift 120s linear infinite
+}
+@keyframes drift{
+to{background-position:50px 50px}
+}
+@media(prefers-reduced-motion:no-preference){
+.cosmic-backdrop::after{animation:drift 120s linear infinite}
+}
+main{
+position:relative;
+z-index:1
+}
+section{
+padding:var(--spacing-section) 0;
+max-width:var(--container-max);
+margin:0 auto;
+padding-left:clamp(1rem,5vw,2.5rem);
+padding-right:clamp(1rem,5vw,2.5rem)
+}
+section+h1,section+h2{margin-top:calc(var(--spacing-section)*-1)}
+.theme-toggle{
+position:fixed;
+top:1rem;
+right:1rem;
+width:2.5rem;
+height:2.5rem;
+background:var(--glass-bg);
+border:1px solid var(--glass-border);
+border-radius:var(--radius-md);
+display:flex;
+align-items:center;
+justify-content:center;
+color:var(--text-primary);
+backdrop-filter:blur(var(--glass-blur)) saturate(1.8);
+transition:background var(--transition-normal),border-color var(--transition-normal),transform var(--transition-normal);
+z-index:var(--z-dropdown)
+}
+.theme-toggle:hover{
+background:var(--glass-bg);
+transform:scale(1.05)
+}
+.theme-toggle:focus-visible{
+box-shadow:0 0 0 3px var(--focus-ring)
+}
+.theme-toggle[aria-pressed="true"] .material-symbols-rounded{content:"light_mode"}
+.theme-toggle[aria-pressed="false"] .material-symbols-rounded{content:"dark_mode"}
+.material-symbols-rounded{
+font-variation-settings:
+'FILL' 0,
+'wght' 400,
+'GRAD' 0,
+'opsz' 24
+}
+.btn{
+display:flex;
+align-items:center;
+justify-content:center;
+gap:0.5rem;
+font-weight:600;
+border:none;
+border-radius:var(--radius-md);
+padding:0.75rem 1.5rem;
+min-height:44px;
+min-width:44px;
+transition:background var(--transition-normal),color var(--transition-normal),transform var(--transition-normal),filter var(--transition-normal)
+}
+.btn:hover{filter:brightness(1.08)}
+.btn:active{transform:scale(0.97)}
+.btn:focus-visible{
+box-shadow:0 0 0 3px var(--focus-ring)
+}
+.btn--primary{
+background:var(--primary);
+color:var(--text-on-primary)
+}
+.btn--secondary{
+background:transparent;
+border:1px solid var(--border-default);
+color:var(--text-primary)
+}
+.btn--secondary:hover{
+background:rgba(0,0,0,0.02)
+}
+.btn--accent{
+background:var(--secondary);
+color:var(--text-on-primary)
+}
+.btn.is-loading{
+pointer-events:none;
+opacity:0.7
+}
+.btn.is-loading::after{
+content:"";
+display:inline-block;
+width:1em;
+height:1em;
+border:2px solid currentColor;
+border-top-color:transparent;
+border-radius:50%;
+animation:spin 0.6s linear infinite
+}
+@keyframes spin{
+to{transform:rotate(360deg)}
+}
+.card{
+display:flex;
+flex-direction:column;
+background:var(--bg-secondary);
+border:1px solid var(--border-default);
+border-radius:var(--radius-lg);
+padding:1.5rem;
+transition:transform var(--transition-normal),border-color var(--transition-normal),box-shadow var(--transition-normal)
+}
+.card:hover{
+transform:translateY(-2px);
+box-shadow:var(--shadow-glow)
+}
+.card--glass{
+background:var(--glass-bg);
+border:1px solid var(--glass-border);
+backdrop-filter:blur(var(--glass-blur)) saturate(1.8)
+}
+.card--glass:hover{
+border-color:var(--secondary)
+}
+.card--featured{
+transform:scale(1.03)
+}
+.icon-circle{
+display:flex;
+align-items:center;
+justify-content:center;
+width:3rem;
+height:3rem;
+background:var(--glass-bg);
+border:1px solid var(--glass-border);
+border-radius:50%;
+backdrop-filter:blur(var(--glass-blur)) saturate(1.8);
+margin-bottom:1rem
+}
+.icon-circle .material-symbols-rounded{
+font-size:1.5rem
+}
+.steps{
+display:flex;
+gap:var(--spacing-gap);
+align-items:center
+}
+.step-number{
+display:flex;
+align-items:center;
+justify-content:center;
+width:2.5rem;
+height:2.5rem;
+background:var(--glass-bg);
+border:1px solid var(--glass-border);
+border-radius:50%;
+color:var(--secondary);
+font-weight:600;
+backdrop-filter:blur(var(--glass-blur)) saturate(1.8);
+flex-shrink:0
+}
+.step-line{
+flex:1;
+height:1px;
+background:repeating-linear-gradient(90deg,var(--glass-border) 0,var(--glass-border) 2px,transparent 2px,transparent 6px);
+margin:0 var(--spacing-gap)
+}
+@media(max-width:640px){
+.steps{flex-direction:column;align-items:flex-start}
+.step-line{display:none}
+}
+.testimonial-card{
+display:flex;
+flex-direction:column;
+align-items:center
+}
+.testimonial-avatar{
+width:4rem;
+height:4rem;
+background:radial-gradient(circle,#5a7ac9 0%,#2a3350 70%);
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+color:var(--text-on-primary);
+font-weight:600;
+margin-bottom:1rem
+}
+.testimonial-quote{
+font-style:italic;
+color:var(--text-secondary);
+margin:1rem 0
+}
+.star-rating{
+display:flex;
+gap:0.25rem
+}
+.star-rating .material-symbols-rounded{
+color:#ffc107;
+font-size:1.25rem
+}
+.pricing-features{
+display:flex;
+flex-direction:column;
+gap:0.75rem
+}
+.pricing-features li{
+display:flex;
+align-items:flex-start;
+gap:0.5rem
+}
+.pricing-features .material-symbols-rounded{
+flex-shrink:0;
+color:var(--text-success);
+font-size:1.125rem
+}
+.faq-item{
+margin-bottom:1rem
+}
+.faq-item summary{
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:1rem;
+background:var(--glass-bg);
+border:1px solid var(--glass-border);
+border-radius:var(--radius-md);
+font-weight:600;
+color:var(--text-primary);
+backdrop-filter:blur(var(--glass-blur)) saturate(1.8);
+cursor:pointer;
+outline:none
+}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-item summary::after{
+content:"";
+display:inline-block;
+width:0.75rem;
+height:0.75rem;
+border-top:2px solid currentColor;
+border-right:2px solid currentColor;
+transform:rotate(45deg);
+transition:transform var(--transition-normal)
+}
+.faq-item[open] summary::after{transform:rotate(225deg)}
+.faq-item[open] summary{border-bottom:1px solid var(--glass-border)}
+.faq-item[open] .faq-answer{opacity:1;max-height:20rem;transition:opacity var(--transition-normal),max-height var(--transition-normal)}
+.faq-answer{
+padding:1rem;
+color:var(--text-secondary);
+opacity:0;
+max-height:0;
+overflow:hidden
+}
+.cta-form{
+display:flex;
+gap:0.5rem;
+flex-wrap:wrap
+}
+.cta-form input{
+flex:1;
+min-width:150px;
+padding:0.75rem 1rem;
+border:1px solid var(--border-default);
+border-radius:var(--radius-md);
+background:var(--glass-bg);
+color:var(--text-primary);
+font:inherit
+}
+.cta-form input:focus{
+outline:none;
+border-color:var(--secondary);
+box-shadow:0 0 0 3px rgba(90,122,201,0.2)
+}
+.cta-form input::placeholder{color:var(--text-secondary)}
+.cta-form .btn{
+flex-shrink:0
+}
+.privacy{
+font-size:0.875rem;
+color:var(--text-secondary);
+margin-top:1rem
+}
+footer{
+background:var(--glass-bg);
+border-top:1px solid var(--glass-border);
+padding:2rem 0;
+color:var(--text-secondary);
+backdrop-filter:blur(var(--glass-blur)) saturate(1.8)
+}
+.footer-content{
+display:flex;
+flex-wrap:wrap;
+gap:var(--spacing-gap)
+}
+.footer-column{
+flex:1;
+min-width:180px
+}
+.footer-column h3{
+font-size:1.125rem;
+margin-bottom:1rem
+}
+.footer-column a{
+display:block;
+margin-bottom:0.5rem
+}
+.footer-column a:hover{text-decoration:underline}
+.social-links{
+display:flex;
+gap:0.75rem
+}
+.social-links .material-symbols-rounded{
+font-size:1.5rem
+}
+.footer-bottom{
+margin-top:2rem;
+padding-top:1.5rem;
+border-top:1px solid var(--glass-border);
+font-size:0.875rem;
+display:flex;
+flex-wrap:wrap;
+gap:1rem
+}
+@media(max-width:960px){
+#hero{flex-direction:column;text-align:center}
+#hero .hero-text{margin-bottom:2rem}
+}
+@media(max-width:640px){
+#features,.card{flex-direction:column;align-items:center}
+#how{flex-direction:column;align-items:center}
+#pricing{flex-direction:column;align-items:center}
+#testimonials{flex-direction:column;align-items:center}
+}
+.hero{
+display:flex;
+align-items:center;
+gap:var(--spacing-gap)
+}
+.hero-text{
+flex:1
+}
+.hero-label{
+display:inline-block;
+background:var(--glass-bg);
+border:1px solid var(--glass-border);
+border-radius:var(--radius-sm);
+padding:0.25rem 0.75rem;
+font-size:0.875rem;
+font-weight:500;
+color:var(--secondary);
+backdrop-filter:blur(var(--glass-blur)) saturate(1.8);
+margin-bottom:1rem
+}
+.hero-orbit{
+flex:0 0 280px;
+height:280px;
+position:relative
+}
+.hero-orbit__ring{
+position:absolute;
+inset:0;
+border:2px solid rgba(90,122,201,0.3);
+border-radius:50%;
+animation:spin linear infinite
+}
+.hero-orbit__ring--1{animation-duration:60s}
+.hero-orbit__ring--2{
+width:80%;
+height:80%;
+top:10%;
+left:10%;
+animation-duration:90s
+}
+.hero-orbit__ring--3{
+width:60%;
+height:60%;
+top:20%;
+left:20%;
+animation-duration:120s
+}
+.hero-orbit__body{
+position:absolute;
+top:50%;
+left:50%;
+width:24px;
+height:24px;
+margin:-12px 0 0 -12px;
+background:radial-gradient(circle,#e8eefb 0%,#c9d2e8 70%);
+box-shadow:0 0 12px rgba(90,122,201,0.5);
+border-radius:50%
+}
+.hero-orbit__body--1{transform:translateX(80px)}
+.hero-orbit__body--2{transform:translateX(50px)}
+.hero-orbit__body--3{transform:translateX(30px)}
+@keyframes spin{
+to{transform:rotate(360deg)}
+}
+@media(prefers-reduced-motion:no-preference){
+.hero-orbit__ring{animation:spin linear infinite}
+}
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to main content</a>
+<div class="cosmic-backdrop" aria-hidden="true"></div>
+<main id="main">
+<section id="hero">
+<div class="hero-text">
+<div class="hero-label">Explore the Cosmos</div>
+<h1>Gravity, at your fingertips</h1>
+<p>Simulate celestial mechanics in your browser. Place bodies, set initial conditions, and watch gravity unfold in real-time.</p>
+<div>
+<a href="#cta" class="btn--primary">Start exploring</a>
+<a href="#how" class="btn--secondary">See how it works</a>
+</div>
+<p><small>Trusted by educators and enthusiasts worldwide</small></p>
+</div>
+<div class="hero-orbit" aria-label="Orbital system">
+<div class="hero-orbit__ring hero-orbit__ring--1"></div>
+<div class="hero-orbit__ring hero-orbit__ring--2"></div>
+<div class="hero-orbit__ring hero-orbit__ring--3"></div>
+<div class="hero-orbit__body hero-orbit__body--1" aria-label="Body 1"></div>
+<div class="hero-orbit__body hero-orbit__body--2" aria-label="Body 2"></div>
+<div class="hero-orbit__body hero-orbit__body--3" aria-label="Body 3"></div>
+</div>
+</section>
+<section id="features">
+<h2>Features</h2>
+<div>
+<div class="card card--glass">
+<div class="icon-circle"><span class="material-symbols-rounded">hub</span></div>
+<h3>Real-time Simulation</h3>
+<p>Experience gravity calculations with zero latency. Watch orbits evolve as you adjust parameters.</p>
+</div>
+<div class="card card--glass">
+<div class="icon-circle"><span class="material-symbols-rounded">track_changes</span></div>
+<h3>Parameter Control</h3>
+<p>Fine-tune mass, velocity, and position. Save and share your configurations.</p>
+</div>
+<div class="card card--glass">
+<div class="icon-circle"><span class="material-symbols-rounded">rocket_launch</span></div>
+<h3>Visualization Tools</h3>
+<p>Trace orbits, view energy graphs, and export high-quality visualizations.</p>
+</div>
+</div>
+</section>
+<section id="how">
+<h2>How It Works</h2>
+<div class="steps">
+<div>
+<div class="step-number">01</div>
+<h3>Place your bodies</h3>
+<p>Set initial positions and velocities for up to three celestial bodies.</p>
+</div>
+<div class="step-line" aria-hidden="true"></div>
+<div>
+<div class="step-number">02</div>
+<h3>Define properties</h3>
+<p>Adjust mass, size, and visual properties for each body.</p>
+</div>
+<div class="step-line" aria-hidden="true"></div>
+<div>
+<div class="step-number">03</div>
+<h3>Watch gravity unfold</h3>
+<p>Press play and observe the intricate dance of gravitational forces.</p>
+</div>
+</div>
+</section>
+<section id="testimonials">
+<h2>What Users Say</h2>
+<div>
+<div class="testimonial-card">
+<div class="testimonial-avatar">AS</div>
+<blockquote class="testimonial-quote">"This tool transformed my astrophysics class. Students grasp complex concepts through interactive experimentation."</blockquote>
+<div class="star-rating" aria-label="Rated 5 out of 5"><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span></div>
+<div><strong>Alex Smith</strong><br><small>Physics Professor</small></div>
+</div>
+<div class="testimonial-card">
+<div class="testimonial-avatar">JL</div>
+<blockquote class="testimonial-quote">"As an amateur astronomer, I finally understand orbital resonances. The visualizations are stunning and accurate."</blockquote>
+<div class="star-rating" aria-label="Rated 5 out of 5"><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span></div>
+<div><strong>Jordan Lee</strong><br><small>Astronomy Enthusiast</small></div>
+</div>
+<div class="testimonial-card">
+<div class="testimonial-avatar">KM</div>
+<blockquote class="testimonial-quote">"The parameter controls are intuitive. I've recreated famous three-body configurations with ease."</blockquote>
+<div class="star-rating" aria-label="Rated 5 out of 5"><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span></div>
+<div><strong>Casey Morgan</strong><br><small>Software Engineer</small></div>
+</div>
+</div>
+</section>
+<section id="pricing">
+<h2>Choose Your Orbit</h2>
+<div>
+<div class="card card--glass">
+<h3>Free</h3>
+<p class="price">$0<span class="period">/month</span></p>
+<ul class="pricing-features">
+<li><span class="material-symbols-rounded">check_circle</span>Basic simulation</li>
+<li><span class="material-symbols-rounded">check_circle</span>Two bodies maximum</li>
+<li><span class="material-symbols-rounded">check_circle</span>Standard visualization</li>
+</ul>
+<a href="#cta" class="btn--secondary">Get started</a>
+</div>
+<div class="card card--glass card--featured">
+<h3>Pro</h3>
+<p class="price">$9<span class="period">/month</span></p>
+<ul class="pricing-features">
+<li><span class="material-symbols-rounded">check_circle</span>Advanced physics</li>
+<li><span class="material-symbols-rounded">check_circle</span>Three bodies</li>
+<li><span class="material-symbols-rounded">check_circle</span>Export visualizations</li>
+<li><span class="material-symbols-rounded">check_circle</span>Priority support</li>
+</ul>
+<a href="#cta" class="btn--primary">Choose Pro</a>
+<div class="badge">Most popular</div>
+</div>
+<div class="card card--glass">
+<h3>Enterprise</h3>
+<p class="price">$29<span class="period">/month</span></p>
+<ul class="pricing-features">
+<li><span class="material-symbols-rounded">check_circle</span>Unlimited bodies</li>
+<li><span class="material-symbols-rounded">check_circle</span>Custom branding</li>
+<li><span class="material-symbols-rounded">check_circle</span>API access</li>
+<li><span class="material-symbols-rounded">check_circle</span>Dedicated support</li>
+</ul>
+<a href="#cta" class="btn--second">Contact us</a>
+</div>
+</div>
+</section>
+<section id="faq">
+<h2>Frequently Asked Questions</h2>
+<div class="faq-item">
+<summary>Is this simulation scientifically accurate?</summary>
+<div class="faq-answer">Yes! We use a high-precision numerical integrator (Runge-Kutta 4th order) with adaptive time stepping to ensure accurate gravitational calculations while maintaining interactive performance.</div>
+</div>
+<div class="faq-item">
+<summary>Can I save and share my simulations?</summary>
+<div class="faq-answer">Absolutely! All simulations can be saved as JSON files or shared via unique URLs. Pro and Enterprise tiers include cloud saving and collaboration features.</div>
+</div>
+<div class="faq-item">
+<summary>What devices and browsers are supported?</summary>
+<div class="faq-answer">THREE BODY works on all modern browsers (Chrome, Firefox, Safari, Edge) and is fully responsive for desktop, tablet, and mobile devices.</div>
+</div>
+</section>
+<section id="cta">
+<div class="cta-form">
+<label for="email">Stay updated</label>
+<input type="email" id="email" placeholder="you@example.com" required>
+<button type="submit" class="btn--primary">Join the mission</button>
+</div>
+<p class="privacy">We'll never share your email. Privacy policy.</p>
+</section>
+</main>
+<footer>
+<div class="footer-content">
+<div class="footer-column">
+<h3>THREE BODY<span class="material-symbols-rounded">orbit</span></h3>
+<p>Explore the beauty of gravitational interactions through interactive simulation.</p>
+</div>
+<div class="footer-column">
+<h3>Product</h3>
+<a href="#features">Features</a>
+<a href="#how">How it works</a>
+<a href="#pricing">Pricing</a>
+<a href="#cta">Get started</a>
+</div>
+<div class="footer-column">
+<h3>Company</h3>
+<a href="#">About</a>
+<a href="#">Careers</a>
+<a href="#">Press</a>
+</div>
+<div class="footer-column">
+<h3>Support</h3>
+<a href="#">Documentation</a>
+<a href="#">Contact</a>
+<a href="#">Status</a>
+</div>
+<div class="footer-column">
+<h3>Social</h3>
+<div class="social-links">
+<a href="#" aria-label="Twitter"><span class="material-symbols-rounded">twitter</span></a>
+<a href="#" aria-label="GitHub"><span class="material-symbols-rounded">code</span></a>
+<a href="#" aria-label="LinkedIn"><span class="material-symbols-rounded">linkedin</span></a>
+</div>
+</div>
+</div>
+<div class="footer-bottom">
+<p>© 2026 THREE BODY. All rights reserved.</p>
+<a href="#">Terms</a>
+<a href="#">Privacy</a>
+</div>
+</footer>
+<button class="theme-toggle" aria-pressed="false" aria-label="Switch to dark mode">
+<span class="material-symbols-rounded">dark_mode</span>
+</button>
+<script>
+const STORAGE_KEY = 'theme-preference';
+const getStoredTheme = () => localStorage.getItem(STORAGE_KEY);
+const setStoredTheme = theme => localStorage.setItem(STORAGE_KEY, theme);
+const getPreferredTheme = () => {
+const stored = getStoredTheme();
+if (stored) return stored;
+return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+};
+const setTheme = theme => {
+document.documentElement.classList.toggle('dark', theme === 'dark');
+const toggle = document.querySelector('.theme-toggle');
+if (toggle) {
+toggle.setAttribute('aria-pressed', theme === 'dark');
+toggle.setAttribute('aria-label', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+}
+};
+const initTheme = () => {
+const preferred = getPreferredTheme();
+setTheme(preferred);
+setStoredTheme(preferred);
+};
+const handleToggle = () => {
+const isDark = document.documentElement.classList.contains('dark');
+setTheme(isDark ? 'light' : 'dark');
+setStoredTheme(isDark ? 'light' : 'dark');
+};
+document.addEventListener('DOMContentLoaded', () => {
+initTheme();
+const toggle = document.querySelector('.theme-toggle');
+if (toggle) toggle.addEventListener('click', handleToggle);
+// FAQ accordion behavior
+const faqItems = document.querySelectorAll('.faq-item');
+faqItems.forEach(item => {
+item.addEventListener('click', e => {
+if (e.target === item.querySelector('summary')) {
+faqItems.forEach(other => {
+if (other !== item && other.hasAttribute('open')) other.removeAttribute('open');
+});
+}
+});
+});
+// CTA form handling
+const form = document.querySelector('.cta-form');
+if (form) {
+const emailInput = form.querySelector('input[type="email"]');
+const submitBtn = form.querySelector('.btn--primary');
+form.addEventListener('submit', e => {
+e.preventSubmit();
+if (!emailInput.value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+emailInput.setAttribute('aria-invalid', 'true');
+emailInput.setAttribute('aria-describedby', 'email-error');
+let errorEl = document.getElementById('email-error');
+if (!errorEl) {
+errorEl = document.createElement('div');
+errorEl.id = 'email-error';
+errorEl.className = 'error-message';
+errorEl.setAttribute('aria-live', 'assertive');
+emailInput.parentNode.insertBefore(errorEl, emailInput.nextSibling);
+}
+errorEl.textContent = 'Please enter a valid email address';
+return;
+}
+submitBtn.classList.add('is-loading');
+submitBtn.setAttribute('aria-busy', 'true');
+// Simulate API call
+setTimeout(() => {
+submitBtn.classList.remove('is-loading');
+submitBtn.removeAttribute('aria-busy');
+// Show success state
+const successMsg = document.createElement('div');
+successMsg.className = 'success-message';
+successMsg.setAttribute('aria-live', 'polite');
+successMsg.textContent = 'You\'re in orbit — check your inbox to confirm.';
+successMsg.style.color = 'var(--text-success)';
+form.insertBefore(successMsg, submitBtn.nextSibling);
+emailInput.value = '';
+// Remove success message after 5 seconds
+setTimeout(() => successMsg.remove(), 5000);
+}, 1500);
+});
+}
+// Smooth scroll for prefers-reduced-motion: no-preference
+if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+document.documentElement.style.scrollBehavior = 'smooth';
+}
+});
+</script>
+</body>
+</html>

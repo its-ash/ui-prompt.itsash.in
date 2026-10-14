@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHROMA LAB — Color Theory Bench</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0,0" rel="stylesheet">
+<style>
+:root {
+  --primary: #2F6BFF;
+  --primary-strong: #1F55E0;
+  --secondary: #8B887F;
+  --bg-primary: #F5F4F0;
+  --bg-secondary: #FFFFFF;
+  --bg-tertiary: #ECEBE4;
+  --text-primary: #1C1B18;
+  --text-secondary: #6B685F;
+  --text-success: #15803D;
+  --text-error: #B42318;
+  --border-default: #E3E1D8;
+  --border-success: #15803D;
+  --border-error: #B42318;
+  --radius-sm: 4px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+  --spacing-gap: 1.5rem;
+  --transition-fast: 120ms;
+  --transition-normal: 240ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --z-header: 50;
+  --z-dropdown: 100;
+  --z-modal: 1000;
+  --z-toast: 1100;
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-base: 'Inter', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --spec-red: #FF5252;
+  --spec-yellow: #FFD43B;
+  --spec-blue: #2F6BFF;
+  --mix-blend: multiply;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-primary: #1C1B18;
+    --bg-secondary: #26241E;
+    --bg-tertiary: #2E2C26;
+    --text-primary: #F5F4F0;
+    --text-secondary: #A9A59A;
+    --border-default: #3B3931;
+    --primary: #2F6BFF;
+    --primary-strong: #7DA2FF;
+    --text-success: #4ADE80;
+    --text-error: #FF8073;
+    --border-success: #4ADE80;
+    --border-error: #FF8073;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -1px rgba(0,0,0,0.2);
+    --mix-blend: screen;
+    color-scheme: dark;
+  }
+}
+.dark {
+  --bg-primary: #1C1B18;
+  --bg-secondary: #26241E;
+  --bg-tertiary: #2E2C26;
+  --text-primary: #F5F4F0;
+  --text-secondary: #A9A59A;
+  --border-default: #3B3931;
+  --primary: #2F6BFF;
+  --primary-strong: #7DA2FF;
+  --text-success: #4ADE80;
+  --text-error: #FF8073;
+  --border-success: #4ADE80;
+  --border-error: #FF8073;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -1px rgba(0,0,0,0.2);
+  --mix-blend: screen;
+  color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { font-size: 16px; }
+body {
+  margin: 0;
+  font-family: var(--font-base);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+.skip-link:focus {
+  left: 0;
+  top: 0;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  background: var(--bg-secondary);
+  padding: 0.5rem 1rem;
+  z-index: 1000;
+}
+.container {
+  width: 90%;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-gap);
+}
+header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-header);
+  background: rgba(245, 244, 240, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border-default);
+  padding: 1rem 0;
+}
+@supports not (backdrop-filter: blur(10px)) {
+  header { background: var(--bg-secondary); }
+}
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+.logo .material-symbols-outlined {
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 400,
+  'GRAD' 0,
+  'opsz' 24;
+}
+nav {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+.nav-link {
+  font-family: var(--font-base);
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  position: relative;
+  padding: 0.25rem 0;
+  transition: color var(--transition-fast) var(--ease-standard);
+}
+.nav-link:hover,
+.nav-link:focus {
+  color: var(--text-primary);
+}
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0;
+  height: 2px;
+  background: var(--primary);
+  transition: width var(--transition-normal) var(--ease-standard);
+}
+.nav-link:hover::after,
+.nav-link:focus::after {
+  width: 100%;
+}
+.theme-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: background-color var(--transition-fast) var(--ease-standard);
+}
+.theme-toggle:hover,
+.theme-toggle:focus {
+  background-color: rgba(0,0,0,0.05);
+}
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.theme-toggle .material-symbols-outlined {
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 400,
+  'GRAD' 0,
+  'opsz' 24;
+  font-size: 1.5rem;
+  color: var(--text-primary);
+}
+.nav-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+.nav-toggle .material-symbols-outlined {
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 400,
+  'GRAD' 0,
+  'opsz' 24;
+  font-size: 1.5rem;
+  color: var(--text-primary);
+}
+.nav-menu {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+@media (max-width: 768px) {
+  .nav-toggle { display: block; }
+  .nav-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg-secondary);
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height var(--transition-normal) var(--ease-standard);
+    z-index: var(--z-dropdown);
+    border-top: 1px solid var(--border-default);
+  }
+  .nav-menu.open {
+    max-height: 300px;
+  }
+  .nav-link {
+    padding: 1rem;
+    width: 100%;
+    text-align: left;
+    border-bottom: 1px solid var(--border-default);
+  }
+}
+.hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-gap);
+  align-items: center;
+  padding: 6rem 0;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 1px,
+    var(--border-default) 1px,
+    var(--border-default) 2px
+  );
+  opacity: 0.1;
+  pointer-events: none;
+}
+.hero-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+.hero h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(2.5rem, 8vw, 3.5rem);
+  line-height: 1.2;
+  margin: 0;
+  position: relative;
+}
+.hero h1 .gradient-text {
+  background: linear-gradient(90deg, var(--spec-red), var(--spec-yellow), var(--spec-blue));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.hero p {
+  font-size: 1.125rem;
+  color: var(--text-secondary);
+  max-width: 40ch;
+}
+.hero-ctas {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.mixer-visual {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--bg-tertiary);
+}
+.mixer-circle {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  filter: blur(48px);
+  mix-blend-mode: var(--mix-blend);
+  animation: drift 20s ease-in-out infinite;
+}
+.mixer-circle:nth-child(1) {
+  background: var(--spec-red);
+  animation-delay: 0s;
+}
+.mixer-circle:nth-child(2) {
+  background: var(--spec-yellow);
+  animation-delay: 6s;
+}
+.mixer-circle:nth-child(3) {
+  background: var(--spec-blue);
+  animation-delay: 12s;
+}
+@keyframes drift {
+  0%, 100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  33% {
+    transform: translate(15%, -10%) rotate(120deg);
+  }
+  66% {
+    transform: translate(-10%, 15%) rotate(240deg);
+  }
+}
+.mixer-label {
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-primary);
+  background: rgba(255,255,255,0.7);
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+}
+.mixer-label.red { left: 1rem; }
+.mixer-label.yellow { left: 50%; transform: translateX(-50%); }
+.mixer-label.blue { right: 1rem; left: auto; }
+.stats {
+  display: flex;
+  gap: 2rem;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+.stats div {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--font-base);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1.5rem;
+  min-height: 44px;
+  transition: all var(--transition-normal) var(--ease-standard);
+}
+.btn--primary {
+  background-color: var(--primary-strong);
+  color: var(--bg-secondary);
+}
+.btn--primary:hover,
+.btn--primary:focus {
+  background-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.btn--primary:active {
+  transform: scale(0.97);
+}
+.btn--ghost {
+  border: 2px solid var(--border-default);
+  color: var(--text-primary);
+  background: transparent;
+}
+.btn--ghost:hover,
+.btn--ghost:focus {
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+.btn--ghost:active {
+  transform: scale(0.97);
+}
+.section {
+  padding: 6rem 0;
+}
+.section-title {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+.section-title h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(2rem, 5vw, 2.5rem);
+  margin: 0 0 0.5rem;
+  color: var(--text-primary);
+}
+.section-title p {
+  font-size: 1.125rem;
+  color: var(--text-secondary);
+  max-width: 50ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--spacing-gap);
+}
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: 2rem;
+  transition: all var(--transition-normal) var(--ease-standard);
+}
+.card:hover,
+.card:focus-within {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary);
+}
+.card-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  color: var(--primary);
+}
+.card-icon .material-symbols-outlined {
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 400,
+  'GRAD' 0,
+  'opsz' 24;
+  font-size: 1.5rem;
+}
+.card h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.25rem;
+  margin: 0;
+  color: var(--text-primary);
+}
+.card p {
+  flex-grow: 1;
+  color: var(--text-secondary);
+  margin: 0;
+}
+.card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-family: var(--font-base);
+  font-weight: 500;
+  color: var(--primary);
+  text-decoration: none;
+  font-size: 0.875rem;
+}
+.card-link:hover,
+.card-link:focus {
+  text-decoration: underline;
+}
+.card-link .material-symbols-outlined {
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 400,
+  'GRAD' 0,
+  'opsz' 20;
+  font-size: 1rem;
+  transition: transform var(--transition-fast) var(--ease-standard);
+}
+.card-link:hover .material-symbols-outlined,
+.card-link:focus .material-symbols-outlined {
+  transform: translateX(2px);
+}
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--spacing-gap);
+  position: relative;
+}
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1.5rem;
+  padding: 2rem;
+}
+.step-number {
+  font-family: var(--font-mono);
+  font-size: 3.5rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  line-height: 1;
+}
+.step-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+.step-swatch {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+}
+.step-swatch:nth-child(1) { background: var(--spec-red); }
+.step-swatch:nth-child(2) { background: var(--spec-yellow); }
+.step-swatch:nth-child(3) { background: var(--spec-blue); }
+.step h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.25rem;
+  margin: 0;
+  color: var(--text-primary);
+}
+.step p {
+  color: var(--text-secondary);
+  max-width: 20ch;
+}
+.progress-line {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1px;
+  height: 80%;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 4px,
+    var(--border-default) 4px,
+    var(--border-default) 8px
+  );
+  transform: translate(-50%, -50%);
+}
+@media (max-width: 768px) {
+  .progress-line {
+    width: 80%;
+    height: 1px;
+    top: auto;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+.testimonials {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--spacing-gap);
+}
+.testimonial-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: 2rem;
+}
+.testimonial-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-tertiary);
+  border-radius: 50%;
+  color: var(--primary);
+}
+.testimonial-icon .material-symbols-outlined {
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 400,
+  'GRAD' 0,
+  'opsz' 20;
+  font-size: 1.25rem;
+}
+.testimonial-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.testimonial-content blockquote {
+  margin: 0;
+  font-style: italic;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+.testimonial-avatar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.avatar-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  color: var(--bg-secondary);
+}
+.avatar-circle.red { background: var(--spec-red); }
+.avatar-circle.yellow { background: var(--spec-yellow); }
+.avatar-circle.blue { background: var(--spec-blue); }
+.avatar-info {
+  display: flex;
+  flex-direction: column;
+}
+.avatar-info h4 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+.avatar-info p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+.pricing {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--spacing-gap);
+}
+.pricing-toggle {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+.toggle-label {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--border-default);
+  transition: .4s;
+  border-radius: 24px;
+}
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 2px;
+  bottom: 2px;
+  background-color: var(--bg-secondary);
+  transition: .4s;
+  border-radius: 50%;
+}
+input:checked + .toggle-slider {
+  background-color: var(--primary);
+}
+input:checked + .toggle-slider:before {
+  transform: translateX(20px);
+}
+.pricing-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: 2rem;
+  transition: all var(--transition-normal) var(--ease-standard);
+}
+.pricing-card:hover,
+.pricing-card:focus-within {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary);
+}
+.pricing-card.highlight {
+  border: 2px solid;
+  background: linear-gradient(
+    135deg,
+    rgba(47, 107, 255, 0.1),
+    rgba(47, 107, 255, 0.05)
+  );
+  transform: scale(1.02);
+  box-shadow: var(--shadow-md);
+}
+.pricing-card.highlight .badge {
+  display: block;
+}
+.badge {
+  display: none;
+  background: var(--primary-strong);
+  color: var(--bg-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0.75rem;
+  border-radius: var-radius-sm;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 1rem;
+  align-self: flex-start;
+}
+.pricing-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+.pricing-icon {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-tertiary);
+  border-radius: 50%;
+}
+.pricing-icon .material-symbols-outlined {
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 400,
+  'GRAD' 0,
+  'opsz' 24;
+  font-size: 2rem;
+  color: var(--primary);
+}
+.pricing-card.highlight .pricing-icon {
+  background: var(--primary);
+}
+.pricing-card.highlight .pricing-icon .material-symbols-outlined {
+  color: var(--bg-secondary);
+}
+.pricing-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.5rem;
+  margin: 0;
+  color: var(--text-primary);
+}
+.pricing-price {
+  font-family: var(--font-mono);
+  font-size: 2.25rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin: 0;
+}
+.pricing-price sup {
+  font-size: 0.75em;
+}
+.pricing-price sub {
+  font-size: 0.75em;
+}
+.pricing-period {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+.pricing-features {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex-grow: 1;
+}
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+}
+.feature-item .material-symbols-outlined {
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 400,
+  'GRAD' 0,
+  'opsz' 20;
+  font-size: 1.25rem;
+  color: var(--primary);
+}
+.pricing-cta {
+  margin-top: 1.5rem;
+}
+.faq {
+  max-width: 800px;
+  margin: 0 auto;
+}
+.faq-item {
+  border-bottom: 1px solid var(--border-default);
+}
+.faq-button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 1.5rem;
+  background: none;
+  border: none;
+  text-align: left;
+  font-family: var(--font-base);
+  font-weight: 600;
+  font-size: 1.125rem;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.faq-button:hover,
+.faq-button:focus {
+  background-color: var(--bg-tertiary);
+}
+.faq-button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.faq-button .material-symbols-outlined {
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 400,
+  'GRAD' 0,
+  'opsz' 24;
+  font-size: 1.25rem;
+  transition: transform var(--transition-normal) var(--ease-standard);
+}
+.faq-button[aria-expanded="true"] .material-symbols-outlined {
+  transform: rotate(180deg);
+}
+.faq-panel {
+  padding: 0 1.5rem;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height var(--transition-normal) var(--ease-standard);
+  background: var(--bg-tertiary);
+}
+.faq-panel[aria-hidden="false"] {
+  max-height: 200px;
+}
+.faq-panel p {
+  margin: 0 0 1rem;
+  color: var(--text-secondary);
+}
+.cta-band {
+  position: relative;
+  overflow: hidden;
+  padding: 6rem 0;
+  text-align: center;
+}
+.cta-band::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(47, 107, 255, 0.15),
+    transparent 50%
+  ),
+  radial-gradient(
+    circle at 70% 70%,
+    rgba(255, 212, 59, 0.15),
+    transparent 50%
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+.cta-band h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(2rem, 5vw, 2.5rem);
+  margin: 0 0 1.5rem;
+  color: var(--text-primary);
+  position: relative;
+}
+.input-group {
+  display: flex;
+  gap: 0.5rem;
+  max-width: 480px;
+  margin: 0 auto;
+}
+.input-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-family: var(--font-base);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.input-group input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  font-family: var(--font-base);
+  font-size: 1rem;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+.input-group input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(47, 107, 255, 0.2);
+}
+.input-group button {
+  flex-shrink: 0;
+  padding: 0.75rem 1.5rem;
+}
+.footer {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  padding: 4rem 0 2rem;
+}
+.footer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-gap);
+  margin-bottom: 2rem;
+}
+.footer-column h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.25rem;
+  margin: 0 0 1rem;
+  color: var(--text-primary);
+}
+.footer-column ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.footer-column li {
+  margin-bottom: 0.5rem;
+}
+.footer-column a {
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+.footer-column a:hover,
+.footer-column a:focus {
+  color: var(--text-primary);
+}
+.footer-social {
+  display: flex;
+  gap: 1rem;
+}
+.footer-social a {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-secondary);
+  border-radius: 50%;
+  color: var(--text-primary);
+}
+.footer-social a:hover,
+.footer-social a:focus {
+  background: var(--primary);
+  color: var(--bg-secondary);
+}
+.footer-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  border-top: 1px solid var(--border-default);
+  padding-top: 1.5rem;
+  margin-top: 2rem;
+}
+.footer-bottom p {
+  margin: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .mixer-circle {
+    animation: none;
+  }
+  .progress-line {
+    background: var(--border-default);
+  }
+}
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<header>
+  <div class="container header-content">
+    <a href="#" class="logo">CHROMA LAB<span class="material-symbols-outlined">science</span></a>
+    <button class="nav-toggle" aria-expanded="false" aria-controls="primary-menu">
+      <span class="material-symbols-outlined">menu</span>
+    </button>
+    <nav class="nav-menu" id="primary-menu">
+      <a href="#features" class="nav-link">Features</a>
+      <a href="#how-it-works" class="nav-link">Process</a>
+      <a href="#pricing" class="nav-link">Pricing</a>
+      <a href="#faq" class="nav-link">FAQ</a>
+    </nav>
+    <button class="theme-toggle" aria-pressed="false" aria-label="Toggle dark mode">
+      <span class="material-symbols-outlined" id="theme-icon">dark_mode</span>
+    </button>
+    <a href="#cta" class="btn btn--primary">Open the Bench</a>
+  </div>
+</header>
+<main id="main-content">
+  <section class="hero">
+    <div class="container">
+      <div class="hero-content">
+        <div class="eyebrow">SPECIMEN 01 — COLOR MIXER</div>
+        <h1>Color theory, <span class="gradient-text">put to the test.</span></h1>
+        <p>CHROMA LAB is a scientific bench for mixing, measuring, and shipping accessible color. Validate palettes against WCAG, translate across gamuts, and export production-ready assets — all in one interactive environment.</p>
+        <div class="hero-ctas">
+          <a href="#cta" class="btn btn--primary">Open the Bench</a>
+          <a href="#how-it-works" class="btn btn--ghost">See the method</a>
+        </div>
+        <div class="stats">
+          <div><span class="material-symbols-outlined">palette</span>16.7M mixable values</div>
+          <div><span class="material-symbols-outlined">check_circle</span>WCAG-checked output</div>
+          <div><span class="material-symbols-outlined">code</span>Zero image assets</div>
+        </div>
+      </div>
+      <div class="mixer-visual" aria-label="Color mixer visualization">
+        <div class="mixer-circle"></div>
+        <div class="mixer-circle"></div>
+        <div class="mixer-circle"></div>
+        <div class="mixer-label red">SPECIMEN 01</div>
+        <div class="mixer-label yellow">SPECIMEN 02</div>
+        <div class="mixer-label blue">SPECIMEN 03</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="features" class="section">
+    <div class="container">
+      <div class="section-title">
+        <h2 id="features-heading">Features</h2>
+        <p>Precision tools built for the modern color scientist.</p>
+      </div>
+      <div class="features">
+        <div class="card">
+          <div class="card-icon"><span class="material-symbols-outlined">tune</span></div>
+          <h3>Spectral Mixer</h3>
+          <p>Blend colors in RGB, LAB, and HCL spaces with real-time delta-E calculation. See how mixtures shift under different illuminants.</p>
+          <a href="#" class="card-link">Learn more →<span class="material-symbols-outlined">arrow_forward</span></a>
+          <div class="card-gradient" style="background: linear-gradient(90deg, var(--spec-red), var(--spec-yellow), var(--spec-blue)); height: 4px; border-radius: var(--radius-sm);"></div>
+        </div>
+        <div class="card">
+          <div class="card-icon"><span class="material-symbols-outlined">visibility</span></div>
+          <h3>Contrast Lab</h3>
+          <p>Every mix is automatically scored against WCAG 2.1 AA and AAA thresholds. Get instant feedback on text and UI element accessibility.</p>
+          <a href="#" class="card-link">Learn more →<span class="material-symbols-outlined">arrow_forward</span></a>
+          <div class="card-gradient" style="background: linear-gradient(90deg, var(--spec-yellow), var(--spec-blue), var(--spec-red)); height: 4px; border-radius: var(--radius-sm);"></div>
+        </div>
+        <div class="card">
+          <div class="card-icon"><span class="material-symbols-outlined">palette</span></div>
+          <h3>Gamut Mapper</h3>
+          <p>Translate palettes between sRGB, Display P3, and CMYK with perceptual intent preservation. Export device-specific profiles.</p>
+          <a href="#" class="card-link">Learn more →<span class="material-symbols-outlined">arrow_forward</span></a>
+          <div class="card-gradient" style="background: linear-gradient(90deg, var(--spec-blue), var(--spec-red), var(--spec-yellow)); height: 4px; border-radius: var(--radius-sm);"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how-it-works" class="section">
+    <div class="container">
+      <div class="section-title">
+        <h2 id="how-it-works-heading">How It Works</h2>
+        <p>Three steps to validate and export your color system.</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">01</div>
+          <div class="step-content">
+            <div class="step-swatch"></div>
+            <h3>Load your swatches</h3>
+            <p>Paste HEX, RGB, or LAB values or drag-and-drop ASE, JSON, or CSV files.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">02</div>
+          <div class="step-content">
+            <div class="step-swatch"></div>
+            <h3>Run the mix</h3>
+            <p>Create mixtures, adjust ratios, and see instant contrast and gamut mapping.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">03</div>
+          <div class="step-content">
+            <div class="step-swatch"></div>
+            <h3>Export the evidence</h3>
+            <p>Generate accessible palettes, contrast reports, and design tokens for Figma, CSS, or iOS/Android.</p>
+          </div>
+        </div>
+      </div>
+      <div class="progress-line" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  <section id="testimonials" class="section">
+    <div class="container">
+      <div class="section-title">
+        <h2 id="testimonials-heading">Testimonials</h2>
+        <p>What color scientists and designers are saying.</p>
+      </div>
+      <div class="testimonials">
+        <div class="testimonial-card">
+          <div class="testimonial-icon"><span class="material-symbols-outlined">format_quote</span></div>
+          <div class="testimonial-content">
+            <blockquote>CHROMA LAB cut our color validation time by 70%. The contrast scoring is spot-on and has prevented multiple accessibility issues before release.</blockquote>
+            <div class="testimonial-avatar">
+              <div class="avatar-circle red">AR</div>
+              <div class="avatar-info">
+                <h4>Alex Rivera</h4>
+                <p>Lead Designer, Veridian Systems</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <div class="testimonial-icon"><span class="material-symbols-outlined">format_quote</span></div>
+          <div class="testimonial-content">
+            <blockquote>Finally, a tool that treats color as a scientific measurement. The gamut mapping saved us from costly print reworks.</blockquote>
+            <div class="testimonial-avatar">
+              <div class="avatar-circle yellow">MS</div>
+              <div class="avatar-info">
+                <h4>Morgan Smith</h4>
+                <p>Color Scientist, Pigment Labs</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <div class="testimonial-icon"><span class="material-symbols-outlined">format_quote</span></div>
+          <div class="testimonial-content">
+            <blockquote>The WCAG integration is seamless. We now ship with confidence knowing our palettes meet accessibility standards.</blockquote>
+            <div class="testimonial-avatar">
+              <div class="avatar-circle blue">TK</div>
+              <div class="avatar-info">
+                <h4>Taylor Kim</h4>
+                <p>Accessibility Lead, Apex Digital</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing" class="section">
+    <div class="container">
+      <div class="section-title">
+        <h2 id="pricing-heading">Pricing</h2>
+        <p>Plans for every stage of your color journey.</p>
+      </div>
+      <div class="pricing-toggle">
+        <label class="toggle-label">
+          <span>Annual billing (save 20%)</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="billing-toggle" aria-checked="false">
+            <span class="toggle-slider"></span>
+          </label>
+        </label>
+        <p class="save-note" aria-live="polite">Monthly billing</p>
+      </div>
+      <div class="pricing">
+        <div class="pricing-card">
+          <div class="badge">FREE</div>
+          <div class="pricing-header">
+            <div class="pricing-icon"><span class="material-symbols-outlined">palette</span></div>
+            <h3 class="pricing-title">Bench</h3>
+          </div>
+          <div class="pricing-price">$0<span class="pricing-period">/mo</span></div>
+          <div class="pricing-features">
+            <div class="feature-item"><span class="material-symbols-outlined">check</span>Unlimited mixes</div>
+            <div class="feature-item"><span class="material-symbols-outlined">check</span>Basic contrast scoring</div>
+            <div class="feature-item"><span class="material-symbols-outlined">check</span>HEX/RGB export</div>
+            <div class="feature-item"><span class="material-symbols-outlined">check</span>Community support</div>
+          </div>
+          <a href="#" class="btn btn--primary">Get Started Free</a>
+        </div>
+        <div class="pricing-card highlight">
+          <div class="badge">MOST TESTED</div>
+          <div class="pricing-header">
+            <div class="pricing-icon"><span class="material-symbols-outlined">palette</span></div>
+            <h3 class="pricing-title">Lab</h3>
+          </div>
+          <div class="pricing-price">$29<span class="pricing-period">/mo</span></div>
+          <div class="pricing-features">
+            <div class="feature-item"><span class="material-symbols-outlined">check</span>Everything in Bench</div>
+            <div class="feature-item"><span class="material-symbols-outlined">check</span>Advanced gamut mapping</div>
+            <div class="feature-item"><span class="material-symbols-outlined">check</span>WCAG 2.1 AAA reporting</div>
+            <div class="feature-item"><span class="material-symbols-outlined">check</span>Figma & CSS plugin</div>
+            <div class="feature-item"><span class="material-symbols-outlined">check</span>Priority support</div>
+          </div>
+          <a href="#" class="btn btn--primary">Start Trial</a>
+        </div>
+        <div class="pricing-card">
+          <div class="pricing-header">
+            <div class="pricing-icon"><span class="material-symbols-outlined">palette</span></div>
+            <h3 class="pricing-title">Studio</h3>
+          </div>
+          <div class="pricing-price">$99<span class="pricing-period">/mo</span></div>
+          <div class="pricing-features">
+            <div class="feature-item"><span class="material-symbols-outlined">check</span>Everything in Lab</div>
+            <div class="feature-item"><span class="material-symbols-outlined">check</span>Team workspaces</div>
+            <div class="feature-item"><span class="material-symbols-outlined">check</span>API access</div>
+            <div class="feature-item"><span class="material-symbols-outlined">check</span>Custom gamut profiles</div>
+            <div class="feature-item"><span class="material-symbols-outlined">check</span>Dedicated account manager</div>
+          </div>
+          <a href="#" class="btn btn--primary">Contact Sales</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq" class="section">
+    <div class="container">
+      <div class="section-title">
+        <h2 id="faq-heading">FAQ</h2>
+        <p>Answers to common questions about color science and accessibility.</p>
+      </div>
+      <div class="faq">
+        <div class="faq-item">
+          <button class="faq-button" aria-expanded="false" aria-controls="faq-1">
+            What color spaces does CHROMA LAB support?
+            <span class="material-symbols-outlined">expand_more</span>
+          </button>
+          <div class="faq-panel" id="faq-1" aria-hidden="true" role="region">
+            <p>We support RGB, sRGB, Display P3, LAB, LCH, HCL, and CMYK. All conversions use ICC v4 profiles with perceptual intent preservation for accurate cross-device matching.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-button" aria-expanded="false" aria-controls="faq-2">
+            How does the contrast scoring work?
+            <span class="material-symbols-outlined">expand_more</span>
+          </button>
+          <div class="faq-panel" id="faq-2" aria-hidden="true" role="region">
+            <p>Every mix is evaluated against WCAG 2.1 using the luminance contrast ratio formula. We test both normal and large text thresholds at AA and AAA levels, reporting pass/fail states with exact ratio values.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-button" aria-expanded="false" aria-controls="faq-3">
+            What export formats are available?
+            <span class="material-symbols-outlined">expand_more</span>
+          </button>
+          <div class="faq-panel" id="faq-3" aria-hidden="true" role="region">
+            <p>Export as ASE (Adobe Swatch Exchange), JSON, CSS variables, SVG gradients, Figma plugins, iOS UIColor/Android ColorStateList, and Adobe Color themes. All exports include contrast metadata.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-button" aria-expanded="false" aria-controls="faq-4">
+            Which browsers are supported?
+            <span class="material-symbols-outlined">expand_more</span>
+          </button>
+          <div class="faq-panel" id="faq-4" aria-hidden="true" role="region">
+            <p>CHROMA LAB works in all modern browsers: Chrome, Firefox, Safari, and Edge. We use progressive enhancement — core functionality works without JavaScript, while advanced features like the mixer visual enhance the experience.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-button" aria-expanded="false" aria-controls="faq-5">
+            What is your refund policy?
+            <span class="material-symbols-outlined">expand_more</span>
+          </button>
+          <div class="faq-panel" id="faq-5" aria-hidden="true" role="region">
+            <p>We offer a 30-day money-back guarantee on all paid plans. If you're not satisfied, contact us within 30 days of your first payment for a full refund — no questions asked.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="cta" class="section cta-band">
+    <div class="container">
+      <h2>Put your palette on the bench.</h2>
+      <form class="input-group" id="cta-form" aria-label="Email signup for CHROMA LAB">
+        <label for="cta-email">
+          <span class="material-symbols-outlined">email</span>
+          Email address
+        </label>
+        <input type="email" id="cta-email" name="email" placeholder="you@example.com" required>
+        <button type="submit" class="btn btn--primary">Join the Lab</button>
+      </form>
+      <div id="cta-feedback" aria-live="polite"></div>
+    </div>
+  </section>
+</main>
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-column">
+        <h3>CHROMA LAB<span class="material-symbols-outlined">science</span></h3>
+        <p>Color theory, put to the test.</p>
+        <div class="footer-social">
+          <a href="#" aria-label="Twitter"><span class="material-symbols-outlined">twitter</span></a>
+          <a href="#" aria-label="LinkedIn"><span class="material-symbols-outlined">linkedin</span></a>
+          <a href="#" aria-label="GitHub"><span class="material-symbols-outlined">code</span></a>
+        </div>
+      </div>
+      <div class="footer-column">
+        <h3>Product</h3>
+        <ul>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+          <li><a href="#">Changelog</a></li>
+          <li><a href="#">Roadmap</a></li>
+        </ul>
+      </div>
+      <div class="footer-column">
+        <h3>Resources</h3>
+        <ul>
+          <li><a href="#">Color docs</a></li>
+          <li><a href="#">Contrast guide</a></li>
+          <li><a href="#">API</a></li>
+        </ul>
+      </div>
+      <div class="footer-column">
+        <h3>Company</h3>
+        <ul>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Contact</a></li>
+          <li><a href="#">Privacy</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 CHROMA LAB. All rights reserved.</p>
+      <p>Built on the visible spectrum <span class="material-symbols-outlined">brightness_5</span></p>
+    </div>
+  </div>
+</footer>
+<script>
+  // Theme toggle with localStorage persistence
+  const themeToggle = document.querySelector('.theme-toggle');
+  const themeIcon = document.getElementById('theme-icon');
+  const htmlEl = document.documentElement;
+  
+  // Check for saved theme or prefer-color-scheme
+  const getPreferredTheme = () => {
+    const saved = localStorage.getItem('chroma-lab-theme');
+    if (saved) return saved;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  };
+  
+  const setTheme = (theme) => {
+    if (theme === 'dark') {
+      htmlEl.classList.add('dark');
+      htmlEl.classList.remove('light');
+      themeIcon.textContent = 'light_mode';
+      themeToggle.setAttribute('aria-pressed', 'true');
+    } else {
+      htmlEl.classList.add('light');
+      htmlEl.classList.remove('dark');
+      themeIcon.textContent = 'dark_mode';
+      themeToggle.setAttribute('aria-pressed', 'false');
+    }
+    localStorage.setItem('chroma-lab-theme', theme);
+  };
+  
+  // Initialize theme
+  setTheme(getPreferredTheme());
+  
+  // Toggle theme
+  themeToggle.addEventListener('click', () => {
+    const newTheme = htmlEl.classList.contains('dark') ? 'light' : 'dark';
+    setTheme(newTheme);
+  });
+  
+  // Mobile nav toggle
+  const navToggle = document.querySelector('.nav-toggle');
+  const navMenu = document.querySelector('.nav-menu');
+  navToggle.addEventListener('click', () => {
+    const isOpen = navToggle.getAttribute('aria-expanded') === 'true';
+    navToggle.setAttribute('aria-expanded', !isOpen);
+    navMenu.classList.toggle('open', !isOpen);
+  });
+  
+  // Close mobile nav on escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && navMenu.classList.contains('open')) {
+      navToggle.setAttribute('aria-expanded', 'false');
+      navMenu.classList.remove('open');
+    }
+  });
+  
+  // FAQ accordion
+  const faqButtons = document.querySelectorAll('.faq-button');
+  faqButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      const expanded = button.getAttribute('aria-expanded') === 'true';
+      button.setAttribute('aria-expanded', !expanded);
+      const panel = button.nextElementSibling;
+      panel.setAttribute('aria-hidden', expanded);
+    });
+  });
+  
+  // Pricing toggle
+  const billingToggle = document.getElementById('billing-toggle');
+  const saveNote = document.querySelector('.save-note');
+  const pricingPrices = document.querySelectorAll('.pricing-price');
+  const monthlyPrices = ['$0', '$29', '$99'];
+  const annualPrices = ['$0', '$23', '$79']; // 20% off
+  
+  billingToggle.addEventListener('change', () => {
+    const isAnnual = billingToggle.checked;
+    saveNote.textContent = isAnnual ? 'Monthly billing' : 'Annual billing (save 20%)';
+    billingToggle.setAttribute('aria-checked', isAnnual);
+    
+    pricingPrices.forEach((price, index) => {
+      price.textContent = isAnnual ? annualPrices[index] : monthlyPrices[index];
+    });
+    
+    // Announce change
+    saveNote.dispatchEvent(new CustomEvent('announce', { detail: isAnnual ? 'Annual billing selected' : 'Monthly billing selected' }));
+  });
+  
+  // CTA form handling
+  const ctaForm = document.getElementById('cta-form');
+  const ctaFeedback = document.getElementById('cta-feedback');
+  ctaForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const emailInput = ctaForm.elements['email'];
+    const email = emailInput.value.trim();
+    
+    // Simple email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      ctaFeedback.textContent = 'Please enter a valid email address.';
+      ctaFeedback.style.color = 'var(--text-error)';
+      emailInput.setAttribute('aria-invalid', 'true');
+      emailInput.focus();
+      return;
+    }
+    
+    // Simulate loading
+    const submitBtn = ctaForm.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> Submitting...';
+    
+    setTimeout(() => {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = 'Join the Lab';
+      ctaFeedback.textContent = 'Thanks for joining! We\'ll notify you when the bench opens.';
+      ctaFeedback.style.color = 'var(--text-success)';
+      emailInput.value = '';
+      emailInput.removeAttribute('aria-invalid');
+    }, 1500);
+  });
+  
+  // IntersectionObserver for reveal animations (respects reduced motion)
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+        }
+      });
+    }, { threshold: 0.1 });
+    
+    document.querySelectorAll('.section, .hero, .cta-band').forEach(el => {
+      observer.observe(el);
+    });
+  }
+</script>
+</body>
+</html>

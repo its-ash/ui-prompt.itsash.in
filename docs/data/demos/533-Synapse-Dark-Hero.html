@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Synapse Dark Hero</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<style>
+:root {
+ --primary: #ffffff;
+ --secondary: #888888;
+ --bg-primary: #000000;
+ --bg-secondary: #0a0a0a;
+ --text-primary: #ffffff;
+ --text-secondary: #888888;
+ --muted: #6B7280;
+ --glass-badge: rgba(255,255,255,0.1);
+ --glass-border: rgba(255,255,255,0.2);
+ --gradient-border: rgba(255,255,255,0.3);
+ --text-success: #4ade80;
+ --text-error: #f87171;
+ --border-default: var(--glass-border);
+ --border-error: var(--text-error);
+ --border-success: var(--text-success);
+ --radius-sm: 0.375rem;
+ --radius-md: 0.5rem;
+ --radius-lg: 0.75rem;
+ --shadow-sm: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+ --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+ --spacing-gap: 1.5rem;
+ --transition-fast: 150ms;
+ --transition-normal: 300ms;
+ --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+ --z-dropdown: 1000;
+ --z-modal: 2000;
+ --z-toast: 3000;
+}
+.dark { }
+.light {
+ --bg-primary: #fefefe;
+ --bg-secondary: #f5f5f5;
+ --text-primary: #111827;
+ --text-secondary: #6b7280;
+ --muted: #9ca3af;
+ --glass-badge: rgba(0,0,0,0.05);
+ --glass-border: rgba(0,0,0,0.1);
+ --gradient-border: rgba(0,0,0,0.2);
+ --text-success: #16a34a;
+ --text-error: #dc2626;
+}
+* { box-sizing: border-box; margin:0; padding:0; }
+html { scroll-behavior: smooth; }
+body {
+ background: var(--bg-primary);
+ color: var(--text-primary);
+ font-family: 'Inter', sans-serif;
+ line-height: 1.6;
+ overflow-x: hidden;
+}
+a { color: inherit; text-decoration: none; }
+button, .btn {
+ cursor: pointer;
+ font-family: inherit;
+}
+.btn {
+ display: inline-flex;
+ align-items: center;
+ justify-content: center;
+ gap: 0.5rem;
+ padding: 0.75rem 1.5rem;
+ font-weight: 600;
+ border-radius: var(--radius-md);
+ border: 2px solid transparent;
+ transition: background-color var(--transition-fast) var(--ease-standard),
+             border-color var(--transition-fast) var(--ease-standard),
+             color var(--transition-fast) var(--ease-standard),
+             transform var(--transition-fast) var(--ease-standard);
+ min-height: 44px;
+}
+.btn-primary {
+ background: var(--bg-primary);
+ color: var(--text-primary);
+ border-color: var(--text-primary);
+}
+.btn-primary:hover { background: rgba(255,255,255,0.05); }
+.btn-primary:focus-visible { outline: 2px solid var(--text-primary); outline-offset: 2px; }
+.btn-primary:active { transform: scale(0.97); }
+.btn-primary[disabled], .btn-primary.disabled { opacity:0.5; pointer-events:none; cursor:not-allowed; }
+
+.btn-glass {
+ background: var(--glass-badge);
+ backdrop-filter: blur(12px);
+ border: 1px solid var(--glass-border);
+ color: var(--text-primary);
+}
+.btn-glass:hover { background: rgba(255,255,255,0.15); }
+.btn-glass:focus-visible { outline: 2px solid var(--text-primary); outline-offset:2px; }
+.btn-glass:active { transform: scale(0.97); }
+.btn-glass[disabled], .btn-glass.disabled { opacity:0.5; pointer-events:none; cursor:not-allowed; }
+
+.navbar {
+ position: fixed;
+ inset: 0 0 auto 0;
+ height: 4rem;
+ display: flex;
+ align-items: center;
+ justify-content: space-between;
+ padding: 0 var(--spacing-gap);
+ background: rgba(255,255,255,0.1);
+ backdrop-filter: blur(12px);
+ border-bottom: 1px solid var(--glass-border);
+ z-index: var(--z-dropdown);
+}
+.nav-brand { font-weight:700; font-size:1.25rem; }
+.nav-links { display:flex; gap:1.5rem; }
+.nav-links a { font-weight:500; }
+.theme-toggle {
+ background:transparent;
+ border:none;
+ color:var(--text-primary);
+ font-size:1.5rem;
+ cursor:pointer;
+ padding:0.25rem;
+}
+.theme-toggle[aria-pressed="true"] { color:var(--text-success); }
+
+.hero {
+ position:relative;
+ min-height: 100vh;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ text-align:center;
+ padding:0 var(--spacing-gap);
+ overflow:hidden;
+}
+.hero video {
+ position:absolute;
+ inset:0;
+ width:100%;
+ height:100%;
+ object-fit:cover;
+ opacity:1;
+ pointer-events:none;
+ z-index:-1;
+}
+.hero-content {
+ position:relative;
+ z-index:2;
+ max-width: 800px;
+}
+.badges {
+ display:flex;
+ gap:1rem;
+ justify-content:center;
+ margin-bottom:1.5rem;
+ flex-wrap:wrap;
+}
+.badge {
+ background:var(--glass-badge);
+ backdrop-filter:blur(12px);
+ border:1px solid var(--glass-border);
+ border-radius:var(--radius-md);
+ padding:0.75rem 1rem;
+ display:flex;
+ align-items:center;
+ gap:0.5rem;
+ font-size:0.9rem;
+}
+.badge .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400; }
+h1 {
+ font-size:clamp(2.5rem, 8vw, 5rem);
+ font-weight:700;
+ margin-bottom:1rem;
+ line-height:1.1;
+ animation: fadeInUp 0.8s ease-out;
+}
+p.subhead {
+ color:var(--text-secondary);
+ margin-bottom:2rem;
+ max-width:500px;
+ margin-left:auto;
+ margin-right:auto;
+ animation: fadeInUp 0.8s ease-out 0.2s;
+}
+.cta-buttons {
+ display:flex;
+ gap:1rem;
+ justify-content:center;
+ flex-wrap:wrap;
+ animation: fadeInUp 0.8s ease-out 0.4s;
+}
+@keyframes fadeInUp {
+ from { opacity:0; transform:translateY(20px); }
+ to   { opacity:1; transform:translateY(0); }
+}
+.features {
+ padding:4rem var(--spacing-gap);
+ background:var(--bg-primary);
+}
+.features h2 { text-align:center; margin-bottom:2rem; font-size:2rem; }
+.cards {
+ display:flex;
+ gap:var(--spacing-gap);
+ flex-wrap:wrap;
+ justify-content:center;
+}
+.card {
+ background:var(--bg-secondary);
+ border:1px solid var(--glass-border);
+ border-radius:var(--radius-md);
+ padding:1.5rem;
+ flex:1 1 260px;
+ display:flex;
+ flex-direction:column;
+ align-items:center;
+ text-align:center;
+ transition:transform var(--transition-normal) var(--ease-standard),
+             box-shadow var(--transition-normal) var(--ease-standard);
+}
+.card:hover { transform:translateY(-4px); box-shadow:var(--shadow-md); }
+.card:focus-within { border-color:var(--text-primary); outline:none; }
+.card .icon { font-size:2.5rem; margin-bottom:1rem; }
+.card h3 { margin-bottom:0.75rem; font-size:1.25rem; }
+.card p { color:var(--text-secondary); flex-grow:1; }
+.steps {
+ padding:4rem var(--spacing-gap);
+ background:var(--bg-primary);
+}
+.steps h2 { text-align:center; margin-bottom:2rem; font-size:2rem; }
+.steps-row {
+ display:flex;
+ gap:var(--spacing-gap);
+ align-items:flex-start;
+ justify-content:center;
+ flex-wrap:wrap;
+}
+.step {
+ position:relative;
+ display:flex;
+ flex-direction:column;
+ align-items:center;
+ max-width:260px;
+}
+.step-number {
+ background:var(--glass-badge);
+ backdrop-filter:blur(12px);
+ border:1px solid var(--glass-border);
+ border-radius:50%;
+ width:2.5rem;
+ height:2.5rem;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ font-weight:600;
+ margin-bottom:1rem;
+}
+.step-content { text-align:center; }
+.step-content h3 { margin-bottom:0.5rem; font-size:1.25rem; }
+.step-content p { color:var(--text-secondary); }
+.step::after {
+ content:"";
+ position:absolute;
+ top:50%;
+ left:50%;
+ transform:translate(-50%, -50%);
+ width:2px;
+ height:calc(100% + 2rem);
+ background:var(--glass-border);
+ z-index:-1;
+}
+.step:last-child::after { display:none; }
+.testimonials {
+ padding:4rem var(--spacing-gap);
+ background:var(--bg-primary);
+}
+.testimonials h2 { text-align:center; margin-bottom:2rem; font-size:2rem; }
+.testimonials-row {
+ display:flex;
+ gap:var(--spacing-gap);
+ flex-wrap:wrap;
+ justify-content:center;
+}
+.testimonial-card {
+ background:var(--glass-badge);
+ backdrop-filter:blur(12px);
+ border:1px solid var(--glass-border);
+ border-radius:var(--radius-md);
+ padding:1.5rem;
+ max-width:300px;
+ text-align:center;
+}
+.testimonial-card .avatar {
+ width:3rem;
+ height:3rem;
+ background:var(--bg-secondary);
+ border-radius:50%;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ margin:0 auto 1rem;
+ font-size:1.5rem;
+ color:var(--text-primary);
+}
+.testimonial-card blockquote {
+ font-style:italic;
+ margin:1rem 0;
+ color:var(--text-primary);
+}
+.testimonial-card .author { font-weight:600; }
+.testimonial-card .role { color:var(--text-secondary); font-size:0.9rem; }
+.pricing {
+ padding:4rem var(--spacing-gap);
+ background:var(--bg-primary);
+}
+.pricing h2 { text-align:center; margin-bottom:2rem; font-size:2rem; }
+.pricing-row {
+ display:flex;
+ gap:var(--spacing-gap);
+ flex-wrap:wrap;
+ justify-content:center;
+}
+.pricing-card {
+ background:var(--bg-secondary);
+ border:1px solid var(--glass-border);
+ border-radius:var(--radius-lg);
+ padding:2rem;
+ width:260px;
+ position:relative;
+ text-align:center;
+ transition:transform var(--transition-normal) var(--ease-standard);
+}
+.pricing-card:hover { transform:translateY(-2px); }
+.pricing-card.popular {
+ border:2px solid transparent;
+ position:relative;
+}
+.pricing-card.popular::before {
+ content:"";
+ position:absolute;
+ inset:0;
+ border:2px solid;
+ border-image: linear-gradient(to bottom, var(--gradient-border), var(--text-secondary)) 1;
+ border-radius:var(--radius-lg);
+ pointer-events:none;
+}
+.popular-badge {
+ background:var(--glass-badge);
+ backdrop-filter:blur(12px);
+ border:1px solid var(--glass-border);
+ border-radius:var(--radius-sm);
+ padding:0.25rem 0.75rem;
+ font-size:0.85rem;
+ font-weight:600;
+ position:absolute;
+ top:-0.5rem;
+ left:50%;
+ transform:translateX(-50%);
+}
+.price { font-size:2rem; font-weight:700; margin:1rem 0; }
+.features-list { text-align:left; margin:1.5rem 0; }
+.features-list li {
+ display:flex;
+ align-items:center;
+ gap:0.5rem;
+ margin:0.5rem 0;
+ color:var(--text-primary);
+}
+.features-list .material-symbols-outlined { color:var(--text-success); font-variation-settings: 'FILL' 1, 'wght' 600; }
+.pricing-card .btn { width:100%; margin-top:1rem; }
+.faq {
+ padding:4rem var(--spacing-gap);
+ background:var(--bg-primary);
+}
+.faq h2 { text-align:center; margin-bottom:2rem; font-size:2rem; }
+.faq-details {
+ max-width:800px;
+ margin:0 auto;
+}
+.faq-details details {
+ background:var(--glass-badge);
+ backdrop-filter:blur(12px);
+ border:1px solid var(--glass-border);
+ border-radius:var(--radius-md);
+ margin-bottom:0.75rem;
+ padding:1rem;
+}
+.faq-details summary {
+ font-weight:600;
+ cursor:pointer;
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ list-style:none;
+}
+.faq-details summary::-webkit-details-marker { display:none; }
+.faq-details summary::after {
+ content:"";
+ font-family: "Material Symbols Outlined";
+ font-variation-settings: 'FILL' 0, 'wght' 400;
+ content: "\e5cf"; /* expand_more */
+ transition:transform var(--transition-normal) var(--ease-standard);
+}
+.faq-details details[open] summary::after {
+ transform:rotate(180deg);
+}
+.faq-details .answer {
+ margin-top:0.75rem;
+ color:var(--text-primary);
+ line-height:1.5;
+}
+.cta-band {
+ position:relative;
+ background:var(--glass-badge);
+ backdrop-filter:blur(12px);
+ border:1px solid var(--glass-border);
+ padding:3rem var(--spacing-gap);
+ text-align:center;
+ overflow:hidden;
+}
+.cta-band h2 { font-size:2rem; margin-bottom:1.5rem; }
+.cta-band .btn { margin-top:1rem; }
+footer {
+ background:var(--bg-secondary);
+ color:var(--text-secondary);
+ padding:2rem var(--spacing-gap);
+ font-size:0.9rem;
+ display:flex;
+ flex-wrap:wrap;
+ gap:2rem;
+ justify-content:center;
+}
+.footer-col { min-width:180px; }
+.footer-col h4 { margin-bottom:1rem; font-weight:600; font-size:1rem; }
+.footer-col a { display:block; margin:0.25rem 0; }
+.footer-col a:hover { text-decoration:underline; }
+.copyright { margin-top:2rem; text-align:center; font-size:0.85rem; color:var(--muted); width:100%; }
+@media (prefers-reduced-motion: reduce) {
+ * {
+   animation-duration: 0.001ms !important;
+   transition-duration: 0.001ms !important;
+   animation-iteration-count: 1 !important;
+ }
+}
+</style>
+</head>
+<body>
+<header>
+  <nav class="navbar">
+    <div class="nav-brand">Synapse</div>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="#testimonials">Testimonials</a>
+      <a href="#pricing">Pricing</a>
+    </div>
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark/light theme" aria-pressed="false">
+      <span class="material-symbols-outlined">brightness_4</span>
+    </button>
+  </nav>
+</header>
+
+<section class="hero" id="hero">
+  <video autoplay muted loop playsinline poster="https://media.istockphoto.com/id/1300845620/vector/abstract-technology-background.jpg?s=612x612&w=0&k=20&c=G6vZz6VYk6b0R2X6Jy9K0X6gZ9f4X6K6VfVx6X6Y6Z8=">
+    <source src="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8" type="application/x-mpegurl">
+  </video>
+  <div class="hero-content">
+    <div class="badges">
+      <div class="badge"><span class="material-symbols-outlined">security</span>Secure</div>
+      <div class="badge"><span class="material-symbols-outlined">speed</span>Fast</div>
+      <div class="badge"><span class="material-symbols-outlined">storage</span>Scalable</div>
+    </div>
+    <h1>Accelerate Your Workflow</h1>
+    <p class="subhead">All-in-one platform that adapts to your team’s needs.</p>
+    <div class="cta-buttons">
+      <button class="btn btn-primary">Get Started</button>
+      <button class="btn btn-glass">Learn More</button>
+    </div>
+  </div>
+</section>
+
+<section class="features" id="features">
+  <h2>Features</h2>
+  <div class="cards">
+    <div class="card">
+      <span class="material-symbols-outlined icon">shield</span>
+      <h3>Enterprise Security</h3>
+      <p>End‑to‑end encryption, SOC 2 compliance, and granular permissions keep your data safe.</p>
+    </div>
+    <div class="card">
+      <span class="material-symbols-outlined icon">bolt</span>
+      <h3>Lightning Fast</h3>
+      <p>Built on a distributed cache and edge network for sub‑100ms latency worldwide.</p>
+    </div>
+    <div class="card">
+      <span class="material-symbols-outlined icon>storage</span>
+      <h3>Unlimited Scale</h3>
+      <p>Store petabytes without worrying about sharding or rebalancing.</p>
+    </div>
+  </div>
+</section>
+
+<section class="steps" id="how-it-works">
+  <h2>How It Works</h2>
+  <div class="steps-row">
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        <h3>Connect</h3>
+        <p>Link your data sources in seconds with our secure connectors.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        <h3>Transform</h3>
+        <p>Use visual pipelines to clean, enrich, and prepare your data.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <h3>Deploy</h3>
+        <p>One‑click deployment to any cloud or on‑premise environment.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="testimonials" id="testimonials">
+  <h2>What Customers Say</h2>
+  <div class="testimonials-row">
+    <div class="testimonial-card">
+      <div class="avatar">J</div>
+      <blockquote>“Synapse cut our ETL time by 70% and gave us real‑time insights.”</blockquote>
+      <div class="author">Maria L.</div>
+      <div class="role">CTO, Finova</div>
+    </div>
+    <div class="testimonial-card">
+      <div class="avatar">T</div>
+      <blockquote>“The UI is intuitive and the support team is outstanding.”</blockquote>
+      <div class="author">Tomás R.</div>
+      <div class="role">Head of Data, Lumina</div>
+    </div>
+    <div class="testimonial-card">
+      <div class="avatar">A</div>
+      <blockquote>“Scaling to millions of events per second was seamless.”</blockquote>
+      <div class="author">Anita K.</div>
+      <div class="role">VP Engineering, Pulse</div>
+    </div>
+  </div>
+</section>
+
+<section class="pricing" id="pricing">
+  <h2>Pricing</h2>
+  <div class="pricing-row">
+    <div class="pricing-card">
+      <h3>Starter</h3>
+      <div class="price">$0</div>
+      <p class="muted">Free forever</p>
+      <ul class="features-list">
+        <li><span class="material-symbols-outlined">check_circle</span>Up to 10 GB storage</li>
+        <li><span class="material-symbols-outlined">check_circle</span>Basic connectors</li>
+        <li><span class="material-symbols-outlined">check_circle</span>Community support</li>
+      </ul>
+      <button class="btn btn-primary">Start Free</button>
+    </div>
+    <div class="pricing-card popular">
+      <div class="popular-badge">Most Popular</div>
+      <h3>Professional</h3>
+      <div class="price">$49<span class="muted">/mo</span></div>
+      <ul class="features-list">
+        <li><span class="material-symbols-outlined">check_circle</span>Unlimited storage</li>
+        <li><span class="material-symbols-outlined">check_circle</span>Advanced transforms</li>
+        <li><span class="material-symbols-outlined">check_circle</span>Priority support</li>
+      </ul>
+      <button class="btn btn-primary">Choose Plan</button>
+    </div>
+    <div class="pricing-card">
+      <h3>Enterprise</h3>
+      <div class="price">Custom</div>
+      <p class="muted">Contact sales</p>
+      <ul class="features-list">
+        <li><span class="material-symbols-outlined">check_circle</span>Dedicated account manager</li>
+        <li><span class="material-symbols-outlined">check_circle</span>On‑premise deployment</li>
+        <li><span class="material-symbols-outlined">check_circle</span>SLA guarantees</li>
+      </ul>
+      <button class="btn btn-glass">Talk to Sales</button>
+    </div>
+  </div>
+</section>
+
+<section class="faq" id="faq">
+  <h2>Frequently Asked Questions</h2>
+  <div class="faq-details">
+    <details>
+      <summary>What is Synapse?</summary>
+      <div class="answer">Synapse is a unified data platform that combines ingestion, transformation, and orchestration in a single UI.</div>
+    </details>
+    <details>
+      <summary>Is my data secure?</summary>
+      <div class="answer">Yes. All data is encrypted at rest and in transit, and we are SOC 2 Type II compliant.</div>
+    </details>
+    <details>
+      <summary>Can I run Synapse on my own infrastructure?</summary>
+      <div class="answer">Absolutely. We offer Kubernetes‑based deployments for private clouds and on‑premise data centers.</div>
+    </details>
+    <details>
+      <summary>What support options are available?</summary>
+      <div class="answer">Free tier includes community forums. Paid plans add email and phone support with SLA‑backed response times.</div>
+    </details>
+    <details>
+      <summary>How do I migrate from my existing ETL tool?</summary>
+      <div class="answer">We provide import connectors and a migration assistant to move jobs, schemas, and history with zero downtime.</div>
+    </details>
+  </div>
+</section>
+
+<section class="cta-band">
+  <h2>Ready to transform your data?</h2>
+  <p class="muted">Start free or talk to an expert to find the right plan.</p>
+  <button class="btn btn-primary">Get Started Free</button>
+</section>
+
+<footer>
+  <div class="footer-col">
+    <h4>Synapse</h4>
+    <p>Unified data platform for modern teams.</p>
+  </div>
+  <div class="footer-col">
+    <h4>Product</h4>
+    <a href="#features">Features</a>
+    <a href="#how-it-works">How It Works</a>
+    <a href="#pricing">Pricing</a>
+  </div>
+  <div class="footer-col">
+    <h4>Company</h4>
+    <a href="#">About</a>
+    <a href="#">Blog</a>
+    <a href="#">Careers</a>
+  </div>
+  <div class="footer-col">
+    <h4>Legal</h4>
+    <a href="#">Privacy Policy</a>
+    <a href="#">Terms of Service</a>
+    <a href="#">Security</a>
+  </div>
+</footer>
+
+<script defer>
+  // Theme toggle persistence
+  const themeToggle = document.getElementById('themeToggle');
+  const root = document.documentElement;
+
+  function applyTheme(isDark) {
+    if (isDark) {
+      root.classList.remove('light');
+      root.classList.add('dark');
+      themeToggle.setAttribute('aria-pressed', 'true');
+      themeToggle.innerHTML = '<span class="material-symbols-outlined">brightness_2</span>';
+    } else {
+      root.classList.remove('dark');
+      root.classList.add('light');
+      themeToggle.setAttribute('aria-pressed', 'false');
+      themeToggle.innerHTML = '<span class="material-symbols-outlined">brightness_4</span>';
+    }
+  }
+
+  // Initialize from localStorage or system preference
+  const stored = localStorage.getItem('theme');
+  if (stored === 'dark' || stored === 'light') {
+    applyTheme(stored === 'dark');
+  } else {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    applyTheme(prefersDark);
+  }
+
+  // Toggle handler
+  themeToggle.addEventListener('click', () => {
+    const isDark = root.classList.contains('dark');
+    applyTheme(!isDark);
+    localStorage.setItem('theme', isDark ? 'light' : 'dark');
+  });
+
+  // Optional: simple button loading state demo (not used but present)
+  function setButtonLoading(btn, loading) {
+    if (loading) {
+      btn.disabled = true;
+      btn.setAttribute('aria-busy', 'true');
+      const spinner = document.createElement('span');
+      spinner.className = 'material-symbols-outlined';
+      spinner.innerHTML = 'autorenew';
+      spinner.style.fontSize = '1rem';
+      btn.prepend(spinner);
+    } else {
+      btn.disabled = false;
+      btn.removeAttribute('aria-busy');
+      const spinner = btn.querySelector('.material-symbols-outlined');
+      if (spinner) spinner.remove();
+    }
+  }
+
+  // Example usage: attach to CTA buttons if needed
+  document.querySelectorAll('.btn-primary').forEach(btn => {
+    btn.addEventListener('click', () => {
+      setButtonLoading(btn, true);
+      setTimeout(() => setButtonLoading(btn, false), 1500);
+    });
+  });
+</script>
+</body>
+</html>
