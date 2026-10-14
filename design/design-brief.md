@@ -50,5 +50,16 @@ Before building, decide silently: page kind, audience, vibe, and what makes THIS
 - No em-dashes in visible copy, no emojis, no scroll cues, no version labels, no section-number eyebrows, no decorative status dots, no fake-precise stats.
 - Forms: visible <label> above input, helper/error text below, no placeholder-as-label.
 
-## 8. Pre-flight (check before output)
+## 8. Known failure modes (seen in earlier output, never repeat)
+- Text on a colored surface (button, ribbon, badge, band) uses an explicit on-color variable defined in BOTH :root and :root[data-theme="dark"]; never the same hue as its background (e.g. gold text on gold button in dark mode).
+- Add [hidden]{display:none!important} so component display rules never override the hidden attribute (success messages showing before submit).
+- Mobile nav: below 768px show a visible menu button (aria-expanded, aria-controls) that opens the nav links as a panel; close on link click and Escape. Never just display:none the nav.
+- Decorative absolute/rotated/overlapping elements (notes, stickers, rotated labels, offset shadows) become static or hidden below 640px; nothing may cause horizontal scroll at 360px.
+- Responsive rules come AFTER the base rules they override (source order), or they silently lose.
+- Specificity: theme overrides like :root[data-theme="dark"] .card beat plain .card--featured; give variant rules matching specificity in dark mode.
+- Every icon class you use (material-symbols-rounded / -outlined / -sharp) has its own Google Fonts <link>; otherwise raw words like dark_mode appear.
+- Copyright year 2026. No scroll cues. No em-dashes anywhere in visible text, title or aria-labels.
+- Declare each script variable once with const/let inside an IIFE; all inline scripts share global scope.
+
+## 9. Pre-flight (check before output)
 Hero in viewport with real visual / nav one line / 4+ layout families / one accent / one radius system / AA contrast both modes / toggle works and persists / no empty grid cells or blank boxes / mobile single-column at 390px, no horizontal scroll / reduced-motion handled / no banned copy / every script variable declared once / valid HTML from <!DOCTYPE html> to </html>.

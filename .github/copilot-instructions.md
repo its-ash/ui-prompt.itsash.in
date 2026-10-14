@@ -33,6 +33,12 @@ Prompt library site. Users filter by category, open a design full view, copy the
 - `server/api/` - API reads `design/` at runtime; generation step bakes data at build time
 - `docs/` - GitHub Pages artifact, committed to the repo
 
+## Demo generation rules
+
+- ALWAYS generate or redesign demos through `scripts/build-demos.mjs` so the NVIDIA system prompt includes `design/design-brief.md` (distilled from the `design` skill). Never call NVIDIA for page design without it.
+- Default models: `moonshotai/kimi-k3`, fallback `google/gemma-4-31b-it` (benchmarked best on NVIDIA free tier). Nemotron spends its budget on reasoning.
+- Redesign one page: `DEMO_ONLY=<id> DEMO_NOTE="<audit of current page>" make demos`, then check both modes, mobile, console, and fix leftovers by hand.
+
 ## SEO
 
 - Site constants (`SITE_URL`, name, description, GA id) live at the top of `nuxt.config.ts`; pages read them via `useRuntimeConfig().public`.

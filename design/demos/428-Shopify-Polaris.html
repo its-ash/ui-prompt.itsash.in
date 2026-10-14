@@ -1,235 +1,571 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<title>Nimbus – Analytics for Merchants</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nimbus - Order and inventory analytics for independent merchants</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet">
 <style>
+/* ============ Polaris tokens ============ */
 :root{
---color-bg:#f1f2f4;--color-surface:#ffffff;--color-surface-strong:#f6f6f7;--color-border:#d2d5d9;--color-text:#1a1c1d;--color-text-muted:#5c5f62;--color-primary:#008060;--color-accent:#2c6ecb;--color-critical:#d82c0d;--radius-sm:6px;--radius-md:8px;--radius-lg:12px;--radius-pill:999px;--shadow-sm:0 1px 2px rgba(0,0,0,.07);--shadow-md:0 2px 4px rgba(0,0,0,.1);--shadow-lg:0 4px 8px rgba(0,0,0,.12);--ease-standard:cubic-bezier(0.4,0,0.2,1);--transition-fast:120ms;--transition-normal:200ms;--spacing-gap:1rem;--focus-ring:0 0 0 3px var(--color-primary);--color-success:#008060;--color-error:#d82c0d;--border-success:var(--color-success);--border-error:var(--color-error);--z-dropdown:1000;--z-modal:1100;--z-toast:1200;--font-sans:'Inter',-apple-system,'Segoe UI','Helvetica Neue',system-ui,sans-serif;
+  --color-bg:#f1f2f4; --color-surface:#ffffff; --color-surface-strong:#f6f6f7;
+  --color-border:#d2d5d9; --color-text:#1a1c1d; --color-text-muted:#5c5f62;
+  --color-primary:#008060; --color-primary-hover:#006e52; --color-primary-strong:#008060;
+  --color-accent:#2c6ecb; --color-critical:#d82c0d;
+  --on-primary:#ffffff;
+  --radius-sm:6px; --radius-md:8px; --radius-lg:12px; --radius-pill:999px;
+  --shadow-sm:0 1px 2px rgba(26,28,29,.06);
+  --shadow-md:0 1px 3px rgba(26,28,29,.08);
+  --shadow-lg:0 4px 12px rgba(26,28,29,.10);
+  --font-sans:'Inter',-apple-system,'Segoe UI','Helvetica Neue',system-ui,sans-serif;
+  --ease-standard:cubic-bezier(0.4,0,0.2,1);
+  --focus-ring:0 0 0 3px rgba(44,110,203,.35);
+  --card-divider:1px solid var(--color-border);
+  --space-4:1rem; --space-6:1.5rem;
+  /* aliases */
+  --primary:var(--color-primary); --secondary:var(--color-accent);
+  --bg-primary:var(--color-bg); --bg-secondary:var(--color-surface-strong);
+  --text-primary:var(--color-text); --text-secondary:var(--color-text-muted);
+  --text-success:#007a5c; --border-success:#95c9b4;
+  --text-error:#b91f06; --border-error:#e8a79b;
+  --border-default:var(--color-border);
+  --spacing-gap:1.25rem; --transition-fast:120ms; --transition-normal:200ms;
+  --z-dropdown:1000; --z-modal:1100; --z-toast:1200;
 }
-@media (prefers-color-scheme: dark), .dark{
---color-bg:#1a1c1d;--color-surface:#232527;--color-surface-strong:#2c2f31;--color-border:#45484a;--color-text:#e3e5e7;--color-text-muted:#a4a8ab;--color-primary:#008060;--color-accent:#7cb1f2;--color-critical:#ff5c40;--focus-ring:0 0 0 3px var(--color-primary);--color-success:#4cd0ab;--color-error:#ff5c40;--border-success:var(--color-success);--border-error:var(--color-error);
+:root[data-theme="dark"]{
+  --color-bg:#1a1c1d; --color-surface:#232527; --color-surface-strong:#2c2f31;
+  --color-border:#45484a; --color-text:#e3e5e7; --color-text-muted:#a4a8ab;
+  --color-primary:#008060; --color-primary-hover:#0a9b74; --color-primary-strong:#4cd0ab;
+  --color-accent:#7cb1f2; --color-critical:#ff5c40;
+  --on-primary:#ffffff;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.3);
+  --shadow-md:0 1px 3px rgba(0,0,0,.35);
+  --shadow-lg:0 4px 12px rgba(0,0,0,.4);
+  --focus-ring:0 0 0 3px rgba(124,177,242,.4);
+  --text-success:#4cd0ab; --border-success:#2f6b58;
+  --text-error:#ff8a73; --border-error:#8a3a2a;
 }
-body{margin:0;font-family:var(--font-sans);background:var(--color-bg);color:var(--color-text);line-height:1.6;}
-.container{max-width:1120px;margin:auto;padding:0 1rem;}
-.nav{display:flex;justify-content:space-between;align-items:center;padding:1rem 0;border-bottom:1px solid var(--color-border);}
-.nav__brand{display:flex;align-items:center;gap:.5rem;font-weight:700;font-size:1.25rem;color:var(--color-text);text-decoration:none;}
-.nav__links{display:flex;gap:1rem;align-items:center;}
-.nav__links a{color:var(--color-text-muted);text-decoration:none;font-size:.9rem;}
-.nav__links a:hover{color:var(--color-text);}
-.nav__toggle{background:none;border:none;color:var(--color-text);font-size:1.5rem;cursor:pointer;}
-.nav__cta{margin-left:1rem;}
-.btn{display:flex;align-items:center;justify-content:center;gap:.5rem;padding:.75rem 1.5rem;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-surface);color:var(--color-text);font-weight:600;cursor:pointer;transition:var(--transition-normal) var(--ease-standard);min-height:44px;}
-.btn:hover{background:var(--color-surface-strong);}
-.btn--primary{background:var(--color-primary);color:#fff;border-color:var(--color-primary);}
-.btn--primary:hover{background:#006e52;}
-.btn[disabled],.btn:disabled{opacity:.5;cursor:not-allowed;}
-.btn:focus-visible{outline:var(--focus-ring);}
-.btn.is-loading{position:relative;pointer-events:none;}
-.btn.is-loading::after{content:"progress";font-family:"Material Symbols Outlined";font-size:1.25rem;animation:spin var(--transition-normal) linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
-.card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:1.5rem;box-shadow:var(--shadow-sm);transition:var(--transition-normal) var(--ease-standard);}
-.card:hover{box-shadow:var(--shadow-lg);transform:translateY(-2px);}
-.card--highlight{border-color:var(--color-primary);}
-.card__icon{font-size:2.5rem;color:var(--color-surface-strong);margin-bottom:.5rem;}
-.card__title{font-size:1.25rem;margin:0 0 .5rem 0;}
-.card__desc{color:var(--color-text-muted);font-size:.95rem;}
-.badge{display:inline-block;padding:.25rem .5rem;background:var(--color-surface-strong);color:var(--color-text-muted);border-radius:var(--radius-sm);font-size:.75rem;}
-.hero{text-align:center;padding:4rem 0;}
-.hero h1{font-size:2.5rem;margin:1rem 0 .5rem 0;}
-.hero p{color:var(--color-text-muted);margin-bottom:1.5rem;}
-.hero .btn{margin:0 .5rem;}
-.hero .card{display:inline-block;margin-top:2rem;}
-.features,.steps,.testimonials,.pricing,.faq,.cta{padding:4rem 0;}
-.features .grid,.steps .grid,.pricing .grid{display:flex;flex-wrap:wrap;gap:1.5rem;}
-.features .card,.steps .card,.pricing .card{flex:1 1 calc(33.33% - 1rem);}
-@media(max-width:768px){.features .card,.steps .card,.pricing .card{flex:1 1 100%;}}
-.input-group{display:flex;flex-direction:column;margin-top:1rem;}
-.input-group label{font-size:.9rem;margin-bottom:.25rem;}
-.input-group input{padding:.5rem 1rem;border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:1rem;}
-.input-group input:focus{outline:none;border-color:var(--color-accent);box-shadow:var(--focus-ring);}
-.footer{background:var(--color-surface-strong);padding:2rem 0;}
-.footer__nav{display:flex;flex-wrap:wrap;gap:2rem;}
-.footer__nav a{color:var(--color-text-muted);text-decoration:none;font-size:.9rem;}
-.footer__nav a:hover{color:var(--color-text);}
-.footer__bottom{text-align:center;margin-top:1rem;font-size:.8rem;color:var(--color-text-muted);}
-.faq details{border:1px solid var(--color-border);border-radius:var(--radius-sm);margin-bottom:.5rem;padding:.5rem 1rem;}
-.faq summary{cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-weight:600;}
-.faq summary::after{content:"expand_more";font-family:"Material Symbols Outlined";transition:transform var(--transition-normal) var(--ease-standard);}
-.faq details[open] summary::after{transform:rotate(180deg);}
-.cta form{display:flex;flex-direction:column;gap:.5rem;max-width:400px;margin:auto;}
-.cta h2{font-size:1.75rem;margin-bottom:.5rem;text-align:center;}
-.cta p{text-align:center;margin-bottom:1rem;}
-.cta .btn{width:100%;}
-@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;}}
-</style>
-<script id="pd-theme-init">(()=>{try{const s=localStorage.getItem('theme');document.documentElement.dataset.theme=s==='dark'||s==='light'?s:(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}catch{document.documentElement.dataset.theme='light'}})();</script>
-<style id="pd-dark">
-html[data-theme="dark"]{--color-bg:#1a1c1d;--color-surface:#232527;--color-surface-strong:#2c2f31;--color-border:#45484a;--color-text:#e3e5e7;--color-text-muted:#a4a8ab;--color-primary:#2ea88a;--color-accent:#7cb1f2;--color-critical:#ff5c40;--color-success:#4cd0ab;--color-error:#ff5c40;--border-success:var(--color-success);--border-error:var(--color-error);--shadow-sm:0 1px 2px rgba(0,0,0,.3);--shadow-md:0 2px 4px rgba(0,0,0,.4);--shadow-lg:0 4px 8px rgba(0,0,0,.5);--focus-ring:0 0 0 3px rgba(46,168,138,.5);}
-html[data-theme="dark"] body{background:var(--color-bg);color:var(--color-text);}
-html[data-theme="dark"] .nav{border-bottom-color:var(--color-border);}
-html[data-theme="dark"] .nav__brand{color:var(--color-text);}
-html[data-theme="dark"] .nav__links a{color:var(--color-text-muted);}
-html[data-theme="dark"] .nav__links a:hover{color:var(--color-text);}
-html[data-theme="dark"] .nav__toggle{color:var(--color-text);}
-html[data-theme="dark"] .btn{background:var(--color-surface);color:var(--color-text);border-color:var(--color-border);}
-html[data-theme="dark"] .btn:hover{background:var(--color-surface-strong);}
-html[data-theme="dark"] .btn--primary{background:var(--color-primary);color:#0d1512;border-color:var(--color-primary);}
-html[data-theme="dark"] .btn--primary:hover{background:#4cc0a2;}
-html[data-theme="dark"] .btn:focus-visible{outline:var(--focus-ring);}
-html[data-theme="dark"] .card{background:var(--color-surface);border-color:var(--color-border);box-shadow:var(--shadow-sm);}
-html[data-theme="dark"] .card:hover{box-shadow:var(--shadow-lg);}
-html[data-theme="dark"] .card--highlight{border-color:var(--color-primary);}
-html[data-theme="dark"] .card__icon{color:var(--color-text-muted);}
-html[data-theme="dark"] .card__title{color:var(--color-text);}
-html[data-theme="dark"] .card__desc{color:var(--color-text-muted);}
-html[data-theme="dark"] .badge{background:var(--color-surface-strong);color:var(--color-text-muted);}
-html[data-theme="dark"] .hero h1{color:var(--color-text);}
-html[data-theme="dark"] .hero p{color:var(--color-text-muted);}
-html[data-theme="dark"] .features h2,
-html[data-theme="dark"] .steps h2,
-html[data-theme="dark"] .testimonials h2,
-html[data-theme="dark"] .pricing h2,
-html[data-theme="dark"] .faq h2,
-html[data-theme="dark"] .cta h2{color:var(--color-text);}
-html[data-theme="dark"] .testimonials .card p{color:var(--color-text);}
-html[data-theme="dark"] .pricing .card li{color:var(--color-text-muted);}
-html[data-theme="dark"] .input-group label{color:var(--color-text);}
-html[data-theme="dark"] .input-group input{background:var(--color-surface);color:var(--color-text);border-color:var(--color-border);}
-html[data-theme="dark"] .input-group input::placeholder{color:var(--color-text-muted);}
-html[data-theme="dark"] .input-group input:focus{border-color:var(--color-accent);box-shadow:var(--focus-ring);}
-html[data-theme="dark"] .footer{background:var(--color-surface-strong);}
-html[data-theme="dark"] .footer h3{color:var(--color-text);}
-html[data-theme="dark"] .footer__nav a{color:var(--color-text-muted);}
-html[data-theme="dark"] .footer__nav a:hover{color:var(--color-text);}
-html[data-theme="dark"] .footer__bottom{color:var(--color-text-muted);}
-html[data-theme="dark"] .faq details{border-color:var(--color-border);background:var(--color-surface);}
-html[data-theme="dark"] .faq summary{color:var(--color-text);}
-html[data-theme="dark"] .faq details p{color:var(--color-text-muted);}
-html[data-theme="dark"] .cta p{color:var(--color-text-muted);}
-html[data-theme="dark"] .material-symbols-outlined{color:inherit;}
-html[data-theme="dark"] .btn.is-loading::after{color:inherit;}
-html[data-theme="dark"] .btn.is-success{background:var(--color-success);color:#0d1512;border-color:var(--color-success);}
-html[data-theme="dark"] ::selection{background:rgba(46,168,138,.4);color:var(--color-text);}
-.pd-theme-btn{display:inline-grid;place-items:center;width:44px;height:44px;margin-left:.5rem;border-radius:999px;border:1px solid currentColor;background:transparent;color:inherit;cursor:pointer;flex-shrink:0}
-.pd-theme-btn:focus-visible{outline:2px solid currentColor;outline-offset:2px}
-.pd-theme-btn--float{position:fixed;right:16px;bottom:16px;z-index:60;background:#fff;color:#16171b;border-color:#d5d7dc}
-html[data-theme="dark"] .pd-theme-btn--float{background:#1b1c21;color:#ededf0;border-color:#2d2f35}
+/* ============ Base ============ */
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:var(--font-sans);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;font-size:1rem;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+img,svg{max-width:100%}
+h1,h2,h3{line-height:1.15;letter-spacing:-0.02em;margin:0 0 .5em;font-weight:700;color:var(--text-primary)}
+h1{font-size:clamp(2.1rem,4.5vw,3.25rem)}
+h2{font-size:clamp(1.6rem,3vw,2.25rem)}
+h3{font-size:1.125rem;font-weight:600;letter-spacing:0}
+p{margin:0 0 1rem;max-width:65ch}
+a{color:var(--color-accent);text-decoration:none}
+.container{max-width:1120px;margin:0 auto;padding:0 1.25rem}
+@media(min-width:768px){.container{padding:0 2rem}}
+section{padding:clamp(4rem,8vw,6.5rem) 0}
+.section-head{max-width:640px;margin:0 auto 3rem;text-align:center}
+.section-head p{color:var(--text-secondary);margin:0}
+.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;font-size:1.25rem;line-height:1;vertical-align:middle}
+/* ============ Buttons ============ */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;min-width:44px;padding:.55rem 1.1rem;font:600 .9375rem/1.3 var(--font-sans);color:var(--text-primary);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);cursor:pointer;transition:background var(--transition-normal) var(--ease-standard),transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.btn:hover{background:var(--color-surface-strong)}}
+.btn:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+.btn:active{transform:scale(.97)}
+.btn[disabled]{opacity:.5;cursor:not-allowed;filter:grayscale(.4)}
+.btn--primary{background:var(--color-primary);border-color:var(--color-primary);color:var(--on-primary)}
+@media(hover:hover) and (pointer:fine){.btn--primary:hover{background:var(--color-primary-hover);border-color:var(--color-primary-hover)}}
+.btn--critical{background:var(--color-critical);border-color:var(--color-critical);color:#fff}
+.btn.is-loading{pointer-events:none;opacity:.85}
+.btn.is-loading .material-symbols-outlined{animation:spin 1s linear infinite}
+.btn.is-success{border-color:var(--border-success);color:var(--text-success);background:var(--color-surface)}
+.btn.is-error{border-color:var(--border-error);color:var(--text-error);background:var(--color-surface)}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* ============ Badge ============ */
+.badge{display:inline-flex;align-items:center;gap:.35rem;padding:.2rem .65rem;font:600 .75rem/1.4 var(--font-sans);letter-spacing:.02em;color:var(--color-primary-strong);background:var(--color-surface-strong);border:1px solid var(--color-border);border-radius:var(--radius-pill)}
+.badge--num{font-variant-numeric:tabular-nums;color:var(--text-secondary)}
+/* ============ Nav ============ */
+.nav{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--color-surface);border-bottom:1px solid var(--color-border)}
+.nav__inner{display:flex;align-items:center;gap:1.5rem;height:64px;max-width:1120px;margin:0 auto;padding:0 1.25rem}
+@media(min-width:768px){.nav__inner{padding:0 2rem}}
+.nav__brand{display:flex;align-items:center;gap:.5rem;font-weight:700;font-size:1.05rem;color:var(--text-primary)}
+.nav__brand .material-symbols-outlined{color:var(--color-primary-strong)}
+.nav__links{display:flex;align-items:center;gap:1.25rem;margin-left:auto}
+.nav__links a{color:var(--text-secondary);font-size:.9rem;font-weight:500;padding:.4rem .2rem;border-radius:var(--radius-sm)}
+@media(hover:hover) and (pointer:fine){.nav__links a:hover{color:var(--text-primary)}}
+.nav__links a:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+.nav__actions{display:flex;align-items:center;gap:.75rem}
+.nav__toggle{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface);color:var(--text-primary);cursor:pointer;transition:background var(--transition-normal) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.nav__toggle:hover{background:var(--color-surface-strong)}}
+.nav__toggle:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+.nav__menu-btn{display:none;width:44px;height:44px;align-items:center;justify-content:center;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface);color:var(--text-primary);cursor:pointer}
+@media(max-width:767px){
+  .nav__inner{flex-wrap:wrap;height:auto;padding-top:.6rem;padding-bottom:.6rem}
+  .nav__menu-btn{display:inline-flex;margin-left:auto}
+  .nav__actions{margin-left:0}
+  .nav__links{display:none;flex-direction:column;align-items:stretch;gap:.25rem;width:100%;margin:0;padding:.5rem 0;border-top:1px solid var(--color-border)}
+  .nav__links.is-open{display:flex}
+  .nav__links a{padding:.65rem .5rem}
+}
+/* ============ Hero ============ */
+.hero{padding:clamp(3.5rem,7vw,5.5rem) 0 clamp(4rem,8vw,6rem)}
+.hero__grid{display:flex;align-items:center;gap:3rem}
+.hero__copy{flex:1 1 46%}
+.hero__copy p{color:var(--text-secondary);font-size:1.0625rem;margin:.75rem 0 1.5rem}
+.hero__ctas{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+.hero__visual{flex:1 1 54%;min-width:0}
+@media(max-width:820px){.hero__grid{flex-direction:column;align-items:stretch;gap:2.25rem}}
+/* Preview card composition */
+.preview{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);padding:var(--space-6);display:flex;flex-direction:column;gap:1rem}
+.preview__head{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding-bottom:.9rem;border-bottom:var(--card-divider)}
+.preview__title{font-weight:600;font-size:.95rem}
+.preview__stats{display:flex;gap:1rem}
+.preview__stat{flex:1;background:var(--color-surface-strong);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:.8rem .9rem}
+.preview__stat b{display:block;font-size:1.15rem;letter-spacing:-0.01em}
+.preview__stat span{font-size:.78rem;color:var(--text-secondary)}
+.preview__bars{display:flex;align-items:flex-end;gap:.5rem;height:96px;padding-top:.25rem}
+.preview__bar{flex:1;background:var(--color-primary);opacity:.85;border-radius:var(--radius-sm) var(--radius-sm) 0 0;min-height:12%}
+.preview__bar:nth-child(2n){opacity:.55}
+.preview__rows{display:flex;flex-direction:column}
+.preview__row{display:flex;align-items:center;gap:.7rem;padding:.65rem 0;border-top:var(--card-divider);font-size:.875rem}
+.preview__row .material-symbols-outlined{color:var(--color-primary-strong);font-size:1.1rem}
+.preview__row b{margin-left:auto;font-weight:600;font-variant-numeric:tabular-nums}
+/* ============ Cards ============ */
+.card{display:flex;flex-direction:column;background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);padding:var(--space-6);transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard)}
+.card:focus-within{border-color:var(--color-accent)}
+.grid-3{display:flex;gap:var(--spacing-gap);align-items:stretch}
+.grid-3>.card{flex:1;min-width:0}
+@media(max-width:820px){.grid-3{flex-direction:column}}
+@media(hover:hover) and (pointer:fine){.card--interactive:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}}
+.card__icon-tile{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;background:var(--color-surface-strong);border:1px solid var(--color-border);border-radius:var(--radius-md);color:var(--color-primary-strong);margin-bottom:1rem}
+.card p{color:var(--text-secondary);font-size:.9375rem;margin:0}
+/* ============ Steps ============ */
+.steps{display:flex;flex-direction:column;gap:0;max-width:760px;margin:0 auto}
+.step{display:flex;align-items:flex-start;gap:1.25rem;padding:1.5rem 0;border-top:var(--card-divider)}
+.step:first-child{border-top:none;padding-top:0}
+.step p{margin:0;color:var(--text-secondary);font-size:.9375rem}
+.step h3{margin-bottom:.25rem}
+/* ============ Testimonials ============ */
+.quote__text{font-size:1rem;color:var(--text-primary);margin:0 0 1.25rem}
+.quote__text::before{content:"\201C"}
+.quote__text::after{content:"\201D"}
+.quote__foot{display:flex;align-items:center;gap:.8rem;margin-top:auto}
+.avatar{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:50%;background:var(--color-primary);color:var(--on-primary);font-weight:700;font-size:.85rem;letter-spacing:.02em;flex:none}
+.quote__who b{display:block;font-size:.9rem}
+.quote__who span{font-size:.8rem;color:var(--text-secondary)}
+/* ============ Pricing ============ */
+.pricing-card__name{font-weight:600;font-size:1rem}
+.pricing-card__price{font-size:2rem;font-weight:800;letter-spacing:-0.03em;margin:.35rem 0 .1rem}
+.pricing-card__price span{font-size:.9rem;font-weight:500;color:var(--text-secondary);letter-spacing:0}
+.pricing-card__list{list-style:none;margin:1.25rem 0 1.5rem;padding:1.25rem 0 0;border-top:var(--card-divider);display:flex;flex-direction:column;gap:.6rem}
+.pricing-card__list li{display:flex;align-items:flex-start;gap:.55rem;font-size:.9rem;color:var(--text-secondary)}
+.pricing-card__list .material-symbols-outlined{color:var(--color-primary-strong);font-size:1.1rem;margin-top:.1rem}
+.pricing-card .btn{margin-top:auto;width:100%}
+.card--highlight{border:2px solid var(--color-primary);position:relative}
+:root[data-theme="dark"] .card--highlight{border-color:var(--color-primary-strong)}
+.card--highlight .badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--color-primary);color:var(--on-primary);border-color:var(--color-primary)}
+/* ============ FAQ ============ */
+.faq{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:.75rem}
+.faq details{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md)}
+.faq summary{display:flex;align-items:center;gap:.75rem;min-height:44px;padding:1rem 1.15rem;font-weight:600;font-size:.95rem;cursor:pointer;list-style:none;border-radius:var(--radius-md)}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary .material-symbols-outlined{margin-left:auto;color:var(--text-secondary);transition:transform var(--transition-normal) var(--ease-standard)}
+.faq details[open] summary .material-symbols-outlined{transform:rotate(180deg)}
+.faq summary:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+.faq details p{padding:0 1.15rem 1.1rem;margin:0;color:var(--text-secondary);font-size:.925rem}
+/* ============ CTA band ============ */
+.cta-band{padding-bottom:clamp(4rem,8vw,6.5rem)}
+.cta-card{align-items:center;text-align:center;padding:clamp(2.5rem,6vw,4rem) var(--space-6)}
+.cta-card p{color:var(--text-secondary)}
+.input-group{display:flex;flex-direction:column;gap:.4rem;width:100%;max-width:460px;margin:0 auto;text-align:left}
+.input-group label{font-weight:600;font-size:.875rem}
+.input-row{display:flex;gap:.6rem}
+.input{flex:1;min-height:44px;padding:.55rem .85rem;font:400 .9375rem var(--font-sans);color:var(--text-primary);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);transition:border-color var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard)}
+.input:focus{outline:none;border-color:var(--color-accent);box-shadow:var(--focus-ring)}
+.input[aria-invalid="true"]{border-color:var(--color-critical)}
+.input-group__msg{font-size:.8rem;min-height:1.2em;margin:0}
+.input-group__msg.is-error{color:var(--text-error)}
+.input-group__msg.is-success{color:var(--text-success)}
+@media(max-width:520px){.input-row{flex-direction:column}.input-row .btn{width:100%}}
+/* ============ Footer ============ */
+.footer{border-top:1px solid var(--color-border);background:var(--color-surface);padding:3rem 0 2rem}
+.footer__grid{display:flex;gap:2.5rem;flex-wrap:wrap}
+.footer__brand{flex:1 1 220px;display:flex;flex-direction:column;gap:.6rem;align-items:flex-start}
+.footer__brand p{font-size:.875rem;color:var(--text-secondary);margin:0}
+.footer__cols{display:flex;gap:3rem;flex-wrap:wrap;flex:2 1 480px}
+.footer__col{display:flex;flex-direction:column;gap:.5rem;min-width:120px}
+.footer__col h3{font-size:.8rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-secondary);margin-bottom:.35rem}
+.footer__link{color:var(--text-secondary);font-size:.875rem;padding:.15rem 0}
+@media(hover:hover) and (pointer:fine){.footer__link:hover{color:var(--text-primary)}}
+.footer__bottom{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-top:2.5rem;padding-top:1.5rem;border-top:var(--card-divider);font-size:.825rem;color:var(--text-secondary)}
+.footer__icons{display:flex;gap:.5rem}
+.footer__icons a{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-md);color:var(--text-secondary)}
+@media(hover:hover) and (pointer:fine){.footer__icons a:hover{background:var(--color-surface-strong);color:var(--text-primary)}}
+/* ============ Reveal ============ */
+.reveal{opacity:0;transform:translateY(14px);transition:opacity .4s var(--ease-standard),transform .4s var(--ease-standard)}
+.reveal.is-visible{opacity:1;transform:none}
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+  .reveal{opacity:1;transform:none}
+}
+@media (prefers-reduced-transparency: reduce){.nav{background:var(--color-surface)}}
 </style>
 </head>
 <body>
-<header class="nav container">
-<a href="#" class="nav__brand"><span class="material-symbols-outlined">storefront</span>Nimbus</a>
-<div class="nav__links">
-<a href="#hero">Home</a>
-<a href="#features">Features</a>
-<a href="#how">How It Works</a>
-<a href="#pricing">Pricing</a>
-<a href="#faq">FAQ</a>
-</div>
-<div class="nav__cta">
-<button id="theme-toggle" class="nav__toggle" aria-label="Switch to dark theme" aria-pressed="false">dark_mode</button>
-<a href="#cta" class="btn btn--primary">Start free trial</a>
-</div>
+
+<header class="nav">
+  <div class="nav__inner">
+    <a class="nav__brand" href="#top" aria-label="Nimbus home">
+      <span class="material-symbols-outlined" aria-hidden="true">storefront</span>Nimbus
+    </a>
+    <button class="nav__menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">
+      <span class="material-symbols-outlined" aria-hidden="true">menu</span>
+    </button>
+    <nav class="nav__links" id="nav-links" aria-label="Primary">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="nav__actions">
+      <button class="nav__toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-outlined" id="theme-icon" aria-hidden="true">dark_mode</span>
+      </button>
+      <a class="btn btn--primary" href="#cta">Start free trial</a>
+    </div>
+  </div>
 </header>
-<main>
-<section id="hero" class="hero container" aria-labelledby="hero-title">
-<span class="badge">New</span>
-<h1 id="hero-title">All-in-One Analytics for Your Store</h1>
-<p>Track sales, inventory, and customer trends with real-time dashboards.</p>
-<div>
-<a href="#cta" class="btn btn--primary">Start free trial</a>
-<a href="#features" class="btn">Learn more</a>
-</div>
-<div class="card" style="max-width:300px;margin:auto;">
-<div class="card__icon material-symbols-outlined">trending_up</div>
-<div class="card__title">Dashboard Preview</div>
-<div class="card__desc">Real-time metrics at a glance.</div>
-</div>
-</section>
-<section id="features" class="features container" aria-labelledby="features-title">
-<h2 id="features-title">Features</h2>
-<div class="grid">
-<div class="card"><div class="card__icon material-symbols-outlined">inventory_2</div><div class="card__title">Inventory Management</div><div class="card__desc">Keep stock levels accurate across channels.</div></div>
-<div class="card"><div class="card__icon material-symbols-outlined">storefront</div><div class="card__title">Sales Insights</div><div class="card__desc">Analyze revenue trends and top products.</div></div>
-<div class="card"><div class="card__icon material-symbols-outlined">support_agent</div><div class="card__title">Customer Support</div><div class="card__desc">Track support tickets and response times.</div></div>
-</div>
-</section>
-<section id="how" class="steps container" aria-labelledby="how-title">
-<h2 id="how-title">How It Works</h2>
-<div class="grid">
-<div class="card"><span class="badge">01</span><div class="card__title">Connect Your Store</div><div class="card__desc">Link your Shopify store in seconds.</div></div>
-<div class="card"><span class="badge">02</span><div class="card__title">Collect Data</div><div class="card__desc">Automated data pulls from sales and inventory.</div></div>
-<div class="card"><span class="badge">03</span><div class="card__title">Analyze & Act</div><div class="card__desc">Make informed decisions with actionable insights.</div></div>
-</div>
-</section>
-<section id="testimonials" class="testimonials container" aria-labelledby="testimonials-title">
-<h2 id="testimonials-title">Testimonials</h2>
-<div class="grid">
-<div class="card"><p>"Nimbus gives me clear visibility into my sales. It's a game changer."</p><div class="card__icon material-symbols-outlined">verified</div><div class="card__title">Alex R.</div><div class="card__desc">Store Owner</div></div>
-<div class="card"><p>"The dashboard is intuitive and saves me hours."</p><div class="card__icon material-symbols-outlined">verified</div><div class="card__title">Mia S.</div><div class="card__desc">E-commerce Manager</div></div>
-</div>
-</section>
-<section id="pricing" class="pricing container" aria-labelledby="pricing-title">
-<h2 id="pricing-title">Pricing</h2>
-<div class="grid">
-<div class="card"><div class="badge">Starter</div><div class="card__title">$19 / month</div><ul><li>Basic analytics</li><li>Unlimited users</li></ul><a href="#cta" class="btn">Select</a></div>
-<div class="card card--highlight"><div class="badge">Most popular</div><div class="card__title">$49 / month</div><ul><li>Advanced analytics</li><li>Priority support</li></ul><a href="#cta" class="btn btn--primary">Select</a></div>
-<div class="card"><div class="badge">Enterprise</div><div class="card__title">$99 / month</div><ul><li>All features</li><li>Dedicated account manager</li></ul><a href="#cta" class="btn">Select</a></div>
-</div>
-</section>
-<section id="faq" class="faq container" aria-labelledby="faq-title">
-<h2 id="faq-title">FAQ</h2>
-<details><summary>What data sources does Nimbus integrate with?</summary><p>We support Shopify, WooCommerce, and custom APIs.</p></details>
-<details><summary>Is my data secure?</summary><p>All data is encrypted in transit and at rest, with strict access controls.</p></details>
-<details><summary>Can I cancel anytime?</summary><p>Yes, cancel from your account settings with no penalty.</p></details>
-</section>
-<section id="cta" class="cta container" aria-labelledby="cta-title">
-<h2 id="cta-title">Join 20,000 merchants using Nimbus</h2>
-<p>Enter your email to start a free trial.</p>
-<form id="cta-form" class="input-group">
-<label for="email">Email address</label>
-<input type="email" id="email" required placeholder="you@example.com">
-<button type="submit" class="btn btn--primary">Subscribe</button>
-</form>
-</section>
+
+<main id="top">
+
+  <!-- Hero -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="container hero__grid">
+      <div class="hero__copy">
+        <span class="badge">New</span>
+        <h1 id="hero-title">Know your numbers, grow your store</h1>
+        <p>Nimbus turns orders and inventory into clear reports, so independent merchants can reorder with confidence.</p>
+        <div class="hero__ctas">
+          <a class="btn btn--primary" href="#cta">Start free trial</a>
+          <a class="btn" href="#how">See how it works</a>
+        </div>
+      </div>
+      <div class="hero__visual" aria-hidden="true">
+        <div class="preview">
+          <div class="preview__head">
+            <span class="preview__title">Store overview</span>
+            <span class="badge">Live</span>
+          </div>
+          <div class="preview__stats">
+            <div class="preview__stat"><b>$4,280</b><span>Sales this week</span></div>
+            <div class="preview__stat"><b>312</b><span>Orders</span></div>
+            <div class="preview__stat"><b>18</b><span>Low stock</span></div>
+          </div>
+          <div class="preview__bars">
+            <span class="preview__bar" style="height:38%"></span><span class="preview__bar" style="height:56%"></span><span class="preview__bar" style="height:44%"></span><span class="preview__bar" style="height:72%"></span><span class="preview__bar" style="height:60%"></span><span class="preview__bar" style="height:88%"></span><span class="preview__bar" style="height:70%"></span>
+          </div>
+          <div class="preview__rows">
+            <div class="preview__row"><span class="material-symbols-outlined">inventory_2</span>Linen apron, natural<b>Reorder 24</b></div>
+            <div class="preview__row"><span class="material-symbols-outlined">trending_up</span>Ceramic mug set<b>+18% sales</b></div>
+            <div class="preview__row"><span class="material-symbols-outlined">verified</span>Stock synced<b>2 min ago</b></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" aria-labelledby="features-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="features-title">Built for daily decisions</h2>
+        <p>Three tools that answer the questions merchants ask every morning.</p>
+      </div>
+      <div class="grid-3">
+        <article class="card card--interactive reveal">
+          <span class="card__icon-tile"><span class="material-symbols-outlined" aria-hidden="true">insights</span></span>
+          <h3>Sales reports that read themselves</h3>
+          <p>Daily summaries highlight what changed, which products moved, and where refunds are rising.</p>
+        </article>
+        <article class="card card--interactive reveal">
+          <span class="card__icon-tile"><span class="material-symbols-outlined" aria-hidden="true">inventory_2</span></span>
+          <h3>Reorder points without spreadsheets</h3>
+          <p>Set stock thresholds per product and get a clear reorder list before you sell out.</p>
+        </article>
+        <article class="card card--interactive reveal">
+          <span class="card__icon-tile"><span class="material-symbols-outlined" aria-hidden="true">support_agent</span></span>
+          <h3>Answers from people who retail</h3>
+          <p>Every plan includes support from a team that has run stores and speaks plain language.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section id="how" aria-labelledby="how-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="how-title">Up and running in an afternoon</h2>
+        <p>Connect your store once. Nimbus handles the rest.</p>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <span class="badge badge--num">01</span>
+          <div><h3>Connect your store</h3><p>Link your shop in two clicks. Nimbus imports products, orders, and customers securely.</p></div>
+        </div>
+        <div class="step reveal">
+          <span class="badge badge--num">02</span>
+          <div><h3>Set your thresholds</h3><p>Tell Nimbus your minimum stock levels and lead times for each product you carry.</p></div>
+        </div>
+        <div class="step reveal">
+          <span class="badge badge--num">03</span>
+          <div><h3>Act on clear reports</h3><p>Open your dashboard each morning to see sales trends and a ready reorder list.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section id="pricing" aria-labelledby="pricing-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="pricing-title">Pricing that scales with you</h2>
+        <p>Start free for 14 days. No credit card required.</p>
+      </div>
+      <div class="grid-3">
+        <article class="card pricing-card reveal">
+          <span class="pricing-card__name">Starter</span>
+          <p class="pricing-card__price">$19<span>/month</span></p>
+          <ul class="pricing-card__list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>1 store, 500 products</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Daily sales summary</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Basic reorder alerts</li>
+          </ul>
+          <a class="btn" href="#cta">Choose Starter</a>
+        </article>
+        <article class="card card--highlight pricing-card reveal">
+          <span class="badge">Most popular</span>
+          <span class="pricing-card__name">Growth</span>
+          <p class="pricing-card__price">$49<span>/month</span></p>
+          <ul class="pricing-card__list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>3 stores, unlimited products</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Full analytics and trends</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Smart reorder lists</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Priority support</li>
+          </ul>
+          <a class="btn btn--primary" href="#cta">Choose Growth</a>
+        </article>
+        <article class="card pricing-card reveal">
+          <span class="pricing-card__name">Plus</span>
+          <p class="pricing-card__price">$99<span>/month</span></p>
+          <ul class="pricing-card__list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Unlimited stores</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Custom reports and exports</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Dedicated onboarding</li>
+          </ul>
+          <a class="btn" href="#cta">Choose Plus</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section aria-labelledby="quotes-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="quotes-title">Merchants on Nimbus</h2>
+        <p>Independent shops use Nimbus to spend less time counting and more time selling.</p>
+      </div>
+      <div class="grid-3" style="max-width:860px;margin:0 auto">
+        <article class="card reveal">
+          <p class="quote__text">I used to guess at reorder quantities. Now the list is waiting for me every Monday, and stockouts are rare.</p>
+          <div class="quote__foot">
+            <span class="avatar" aria-hidden="true">MR</span>
+            <div class="quote__who"><b>Marta Reyes</b><span>Owner, Fern &amp; Fable Home Goods</span></div>
+          </div>
+        </article>
+        <article class="card reveal">
+          <p class="quote__text">The morning summary tells me exactly what changed overnight. It replaced three spreadsheets and a lot of worry.</p>
+          <div class="quote__foot">
+            <span class="avatar" aria-hidden="true">DK</span>
+            <div class="quote__who"><b>Daniel Kwon</b><span>Founder, Kwon Cycle Supply</span></div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" aria-labelledby="faq-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="faq-title">Common questions</h2>
+        <p>Everything merchants usually ask before starting a trial.</p>
+      </div>
+      <div class="faq">
+        <details class="reveal">
+          <summary>How long does setup take?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></summary>
+          <p>Most stores connect in under ten minutes. Nimbus imports your catalog and order history automatically, and your first report is ready the same day.</p>
+        </details>
+        <details class="reveal">
+          <summary>Can I change or cancel my plan later?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></summary>
+          <p>Yes. You can upgrade, downgrade, or cancel at any time from your account settings. Changes take effect on your next billing date.</p>
+        </details>
+        <details class="reveal">
+          <summary>Is my store data secure?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></summary>
+          <p>All data is encrypted in transit and at rest. Nimbus only requests read access to your store and never modifies your products or orders.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="cta-band" id="cta" aria-labelledby="cta-title">
+    <div class="container">
+      <div class="card cta-card">
+        <h2 id="cta-title">Start your free 14-day trial</h2>
+        <p>Enter your work email and we will send your setup link. No credit card required.</p>
+        <form class="input-group" id="cta-form" novalidate>
+          <label for="cta-email">Work email</label>
+          <div class="input-row">
+            <input class="input" id="cta-email" name="email" type="email" autocomplete="email" required>
+            <button class="btn btn--primary" id="cta-submit" type="submit">Start free trial</button>
+          </div>
+          <p class="input-group__msg" id="cta-msg" aria-live="polite"></p>
+        </form>
+      </div>
+    </div>
+  </section>
 </main>
+
 <footer class="footer">
-<div class="footer__nav container">
-<div><h3>Product</h3><a href="#features">Features</a><a href="#how">How It Works</a><a href="#pricing">Pricing</a></div>
-<div><h3>Company</h3><a href="#">About</a><a href="#">Careers</a></div>
-<div><h3>Support</h3><a href="#">Help Center</a><a href="#">Contact</a></div>
-<div><h3>Legal</h3><a href="#">Privacy</a><a href="#">Terms</a></div>
-</div>
-<div class="footer__bottom">© 2026 Nimbus. All rights reserved.</div>
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <a class="nav__brand" href="#top"><span class="material-symbols-outlined" aria-hidden="true">storefront</span>Nimbus</a>
+        <p>Order and inventory analytics for independent merchants.</p>
+      </div>
+      <nav class="footer__cols" aria-label="Footer">
+        <div class="footer__col">
+          <h3>Product</h3>
+          <a class="footer__link" href="#features">Features</a>
+          <a class="footer__link" href="#pricing">Pricing</a>
+          <a class="footer__link" href="#how">How it works</a>
+        </div>
+        <div class="footer__col">
+          <h3>Company</h3>
+          <a class="footer__link" href="#top">About</a>
+          <a class="footer__link" href="#cta">Contact sales</a>
+        </div>
+        <div class="footer__col">
+          <h3>Support</h3>
+          <a class="footer__link" href="#faq">FAQ</a>
+          <a class="footer__link" href="#cta">Get started</a>
+        </div>
+        <div class="footer__col">
+          <h3>Legal</h3>
+          <a class="footer__link" href="#top">Privacy</a>
+          <a class="footer__link" href="#top">Terms</a>
+        </div>
+      </nav>
+    </div>
+    <div class="footer__bottom">
+      <span>© 2026 Nimbus Analytics, Inc. All rights reserved.</span>
+      <div class="footer__icons">
+        <a href="#top" aria-label="Nimbus on X"><span class="material-symbols-outlined" aria-hidden="true">share</span></a>
+        <a href="#top" aria-label="Nimbus community forum"><span class="material-symbols-outlined" aria-hidden="true">forum</span></a>
+        <a href="#cta" aria-label="Email Nimbus support"><span class="material-symbols-outlined" aria-hidden="true">mail</span></a>
+      </div>
+    </div>
+  </div>
 </footer>
+
 <script>
-document.addEventListener('DOMContentLoaded',()=>{
-const html=document.documentElement;
-const toggle=document.getElementById('theme-toggle');
-const stored=localStorage.getItem('theme');
-const prefers=window.matchMedia('(prefers-color-scheme: dark)').matches;
-if(stored){ if(stored==='dark'){html.classList.add('dark');} }
-else if(prefers){html.classList.add('dark');}
-const setToggle=()=>{ if(html.classList.contains('dark')){ toggle.textContent='light_mode'; toggle.setAttribute('aria-label','Switch to light theme'); toggle.setAttribute('aria-pressed','true'); }else{ toggle.textContent='dark_mode'; toggle.setAttribute('aria-label','Switch to dark theme'); toggle.setAttribute('aria-pressed','false'); } };
-setToggle();
-toggle.addEventListener('click',()=>{ html.classList.toggle('dark'); setToggle(); localStorage.setItem('theme',html.classList.contains('dark')?'dark':'light'); });
-const form=document.getElementById('cta-form');
-form.addEventListener('submit',e=>{ e.preventDefault(); const btn=form.querySelector('.btn'); btn.classList.add('is-loading'); setTimeout(()=>{ btn.classList.remove('is-loading'); btn.classList.add('is-success'); btn.textContent='✓ Subscribed'; form.setAttribute('aria-live','polite'); },1500); });
-});
+(function(){
+  "use strict";
+  /* Theme toggle */
+  var root=document.documentElement;
+  var toggle=document.getElementById("theme-toggle");
+  var icon=document.getElementById("theme-icon");
+  function applyTheme(t){
+    root.dataset.theme=t;
+    var dark=t==="dark";
+    toggle.setAttribute("aria-pressed",String(dark));
+    toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+    icon.textContent=dark?"light_mode":"dark_mode";
+  }
+  applyTheme(root.dataset.theme==="dark"?"dark":"light");
+  toggle.addEventListener("click",function(){
+    var next=root.dataset.theme==="dark"?"light":"dark";
+    localStorage.setItem("theme",next);
+    applyTheme(next);
+  });
+
+  /* Mobile menu */
+  var menuBtn=document.getElementById("menu-btn");
+  var navLinks=document.getElementById("nav-links");
+  function closeMenu(){navLinks.classList.remove("is-open");menuBtn.setAttribute("aria-expanded","false");menuBtn.setAttribute("aria-label","Open menu");}
+  menuBtn.addEventListener("click",function(){
+    var open=navLinks.classList.toggle("is-open");
+    menuBtn.setAttribute("aria-expanded",String(open));
+    menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");
+  });
+  navLinks.addEventListener("click",function(e){if(e.target.tagName==="A"){closeMenu();}});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape"){closeMenu();}});
+
+  /* Reveal on scroll */
+  var reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var items=document.querySelectorAll(".reveal");
+  if(reduce||!("IntersectionObserver" in window)){
+    items.forEach(function(el){el.classList.add("is-visible");});
+  }else{
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){en.target.classList.add("is-visible");io.unobserve(en.target);}
+      });
+    },{threshold:.15});
+    items.forEach(function(el,i){el.style.transitionDelay=(i%3)*60+"ms";io.observe(el);});
+  }
+
+  /* CTA form */
+  var form=document.getElementById("cta-form");
+  var email=document.getElementById("cta-email");
+  var submit=document.getElementById("cta-submit");
+  var msg=document.getElementById("cta-msg");
+  var original=submit.innerHTML;
+  form.addEventListener("submit",function(e){
+    e.preventDefault();
+    msg.className="input-group__msg";msg.textContent="";
+    email.removeAttribute("aria-invalid");
+    var val=email.value.trim();
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)){
+      email.setAttribute("aria-invalid","true");
+      msg.classList.add("is-error");
+      msg.textContent="Enter a valid email address to continue.";
+      email.focus();
+      return;
+    }
+    submit.classList.add("is-loading");
+    submit.disabled=true;
+    submit.innerHTML='<span class="material-symbols-outlined" aria-hidden="true">progress</span>Sending';
+    window.setTimeout(function(){
+      submit.classList.remove("is-loading");
+      submit.classList.add("is-success");
+      submit.disabled=false;
+      submit.innerHTML='<span class="material-symbols-outlined" aria-hidden="true">check</span>Link sent';
+      msg.classList.add("is-success");
+      msg.textContent="Check your inbox for the setup link.";
+      form.reset();
+      window.setTimeout(function(){
+        submit.classList.remove("is-success");
+        submit.innerHTML=original;
+      },3500);
+    },1200);
+  });
+})();
 </script>
-<script id="pd-theme-toggle">(()=>{const r=document.documentElement,I={"sun":"<svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4\"/></svg>","moon":"<svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z\"/></svg>"};
-let s=null;try{s=localStorage.getItem('theme')}catch{}
-r.dataset.theme=s==='dark'||s==='light'?s:(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
-let b=[...document.querySelectorAll("#theme-toggle,#themeToggle,.theme-toggle,[data-theme-toggle],button[aria-label*=\"theme\" i],button[aria-label*=\"dark\" i],button[aria-label*=\"light\" i],button[aria-label*=\"mode\" i]")].find(e=>e.offsetParent!==null);
-const own=!b;
-if(own){b=document.createElement('button');b.type='button';b.className='pd-theme-btn';const h=document.querySelector('nav')||document.querySelector('header');h?h.appendChild(b):(b.classList.add('pd-theme-btn--float'),document.body.appendChild(b));}
-const sync=()=>{const d=r.dataset.theme==='dark';r.classList.toggle('dark',d);r.classList.toggle('light',!d);b.setAttribute('aria-pressed',String(d));b.setAttribute('aria-label',d?'Switch to light mode':'Switch to dark mode');
-if(own){b.innerHTML=d?I.sun:I.moon;return;}const g=b.querySelector('[class*="material-symbols"],[class*="material-icons"]');if(g)g.textContent=d?'light_mode':'dark_mode';else if(!b.querySelector('svg,img'))b.innerHTML=d?I.sun:I.moon;};
-b.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();r.dataset.theme=r.dataset.theme==='dark'?'light':'dark';try{localStorage.setItem('theme',r.dataset.theme)}catch{}sync();},true);
-sync();addEventListener('load',sync);})();</script>
 </body>
 </html>

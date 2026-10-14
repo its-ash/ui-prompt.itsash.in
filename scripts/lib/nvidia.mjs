@@ -2,11 +2,11 @@ import process from 'node:process';
 
 const NVIDIA_URL = 'https://integrate.api.nvidia.com/v1/chat/completions';
 export const NVIDIA_KEY = process.env.NVIDIA_API_KEY ?? '';
-export const MODELS = (process.env.NVIDIA_MODELS ?? 'nvidia/nemotron-3-super-120b-a12b,nvidia/nemotron-3.5-lightning-30b-a3b,openai/gpt-oss-20b')
+export const MODELS = (process.env.NVIDIA_MODELS ?? 'moonshotai/kimi-k3,google/gemma-4-31b-it')
   .split(',')
   .map((m) => m.trim())
   .filter(Boolean);
-const TIMEOUT_MS = Number(process.env.DEMO_TIMEOUT_MS ?? 480000);
+const TIMEOUT_MS = Number(process.env.DEMO_TIMEOUT_MS ?? 1500000);
 
 export function requireKey(tag) {
   if (NVIDIA_KEY) return;
