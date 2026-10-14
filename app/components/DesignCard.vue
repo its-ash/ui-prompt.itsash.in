@@ -2,6 +2,8 @@
 import type { DesignItem } from '~/types';
 
 const props = defineProps<{ item: DesignItem }>();
+const mode = useDemoMode();
+const thumb = computed(() => `/data/thumbs/${props.item.id}${mode.value === 'dark' && props.item.hasDark ? '.dark' : ''}.jpg`);
 
 const swatch = computed(() => {
   let h = 0;
@@ -22,11 +24,8 @@ const swatch = computed(() => {
     :aria-label="`View ${item.name} theme and prompt`"
   >
     <span class="tk__shot" :style="item.hasThumb ? undefined : { background: swatch.bg }" aria-hidden="true">
-      <img v-if="item.hasThumb" :src="`/data/thumbs/${item.id}.jpg`" alt="" width="480" height="300" loading="lazy" decoding="async" />
+      <img v-if="item.hasThumb" :src="thumb" alt="" width="480" height="300" loading="lazy" decoding="async" />
       <span v-else class="tk__noshot mono">{{ item.ready ? 'demo pending' : 'prompt pending' }}</span>
-    </span>
-    <span class="tk__swatch" :style="{ background: swatch.bg }" aria-hidden="true">
-      <span class="tk__dot" :style="{ background: swatch.fg }"></span>
     </span>
     <span class="tk__body">
       <span class="tk__name">{{ item.name }}</span>
@@ -127,6 +126,7 @@ const swatch = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 0.125rem;
+  padding-left: 1rem;
 }
 
 .tk__name {

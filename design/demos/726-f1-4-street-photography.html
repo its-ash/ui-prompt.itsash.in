@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>f/1.4 — Street Photography Community</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Rounded" rel="stylesheet">
+<style>
+@layer tokens, base, layout, components, utilities;
+
+/* Design Tokens */
+@layer tokens {
+  :root {
+    --primary: #141416;
+    --secondary: #c23b22;
+    --bg-primary: #ececee;
+    --bg-secondary: #d8d8dc;
+    --bg-glass: rgba(254, 254, 254, 0.55);
+    --border-glass: rgba(255, 255, 255, 0.38);
+    --text-primary: #141416;
+    --text-secondary: #5a5a64;
+    --text-success: #1e7a46;
+    --text-error: #b3261e;
+    --border-default: rgba(20, 20, 22, 0.12);
+    --border-success: #1e7a46;
+    --border-error: #b3261e;
+    --text-on-accent: #fefefe;
+    --radius-sm: 10px;
+    --radius-md: 18px;
+    --radius-lg: 28px;
+    --shadow-sm: 0 2px 8px rgba(20, 20, 22, 0.08);
+    --shadow-md: 0 12px 32px rgba(20, 20, 22, 0.16);
+    --spacing-gap: 1.5rem;
+    --transition-fast: 150ms;
+    --transition-normal: 300ms;
+    --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+    --z-dropdown: 100;
+    --z-modal: 200;
+    --z-toast: 300;
+    --glass-blur: 18px;
+    --font-display: 'Bebas Neue', sans-serif;
+    --font-base: 'Inter', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+  .dark {
+    --primary: #ececee;
+    --secondary: #e0563a;
+    --bg-primary: #141416;
+    --bg-secondary: #1e1e23;
+    --bg-glass: rgba(30, 30, 35, 0.5);
+    --border-glass: rgba(236, 236, 238, 0.12);
+    --text-primary: #ececee;
+    --text-secondary: #d8d8dc;
+    --text-success: #4ade80;
+    --text-error: #ff9b8f;
+    --border-default: rgba(236, 236, 238, 0.12);
+    --border-success: #4ade80;
+    --border-error: #ff9b8f;
+    --text-on-accent: #141416;
+  }
+}
+
+/* Base Styles */
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 16px; scroll-behavior: smooth; }
+  body {
+    font-family: var(--font-base);
+    font-weight: 400;
+    line-height: 1.6;
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  img { max-width: 100%; height: auto; display: block; }
+  a { color: inherit; text-decoration: none; }
+  button, input, select, textarea { font: inherit; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--secondary); outline-offset: 2px; }
+  ::selection { background: var(--secondary); color: var(--text-on-accent); }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition-duration: 0.001ms !important; }
+    :focus-visible { outline: none; }
+  }
+}
+
+/* Layout */
+@layer layout {
+  .container { width: 90%; max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
+  .grid-3 { display: grid; gap: var(--spacing-gap); grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+  .flex { display: flex; align-items: center; gap: 1rem; }
+  .flex-col { flex-direction: column; }
+  .justify-between { justify-content: space-between; }
+  .text-center { text-align: center; }
+  .hidden { display: none; }
+  .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+}
+
+/* Components */
+@layer components {
+  /* Glass Panel */
+  .glass {
+    background: var(--bg-glass);
+    backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition-fast) var(--ease-standard), box-shadow var(--transition-fast) var(--ease-standard);
+  }
+  .glass:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+  .glass:focus-within { border-color: var(--secondary); box-shadow: 0 0 0 3px rgba(194, 59, 34, 0.25); }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    height: 3rem;
+    min-width: 9rem;
+    font-weight: 600;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: background-color var(--transition-fast) var(--ease-standard), 
+                transform var(--transition-fast) var(--ease-standard),
+                box-shadow var(--transition-fast) var(--ease-standard);
+    font-size: 1rem;
+    padding: 0 1.5rem;
+    overflow: hidden;
+    position: relative;
+  }
+  .btn--primary {
+    background: var(--secondary);
+    color: var(--text-on-accent);
+  }
+  .btn--primary:hover { background: #d33e24; }
+  .btn--primary:active { transform: scale(0.97); }
+  .btn--ghost {
+    background: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--border-glass);
+  }
+  .btn--ghost:hover { background: rgba(0,0,0,0.03); }
+  .btn--ghost:active { transform: scale(0.97); }
+  .btn--lg { height: 3.5rem; min-width: 11rem; font-size: 1.125rem; }
+  .btn--loading::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .btn--loading::before {
+    content: "\e8b8";
+    font-family: "Material Symbols Rounded";
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    font-size: 1.5rem;
+    color: var(--text-on-accent);
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .btn--disabled, .btn[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+  .btn--success { background: var(--text-success); color: var(--text-on-accent); }
+  .btn--error { background: var(--text-error); color: var(--text-on-accent); }
+  .btn--danger { background: var(--text-error); color: var(--text-on-accent); }
+
+  /* Input Group */
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .input-group label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+  .input-group input {
+    height: 2.75rem;
+    padding: 0 1rem;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--text-primary);
+    transition: border-color var(--transition-fast) var(--ease-standard), box-shadow var(--transition-fast) var(--ease-standard);
+  }
+  .input-group input:focus {
+    outline: none;
+    border-color: var(--secondary);
+    box-shadow: 0 0 0 3px rgba(194, 59, 34, 0.25);
+  }
+  .input-group input.is-valid { border-color: var(--border-success); }
+  .input-group input.is-invalid { border-color: var(--border-error); }
+  .input-group .error-message {
+    font-size: 0.75rem;
+    color: var(--text-error);
+    min-height: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  .input-group .error-message::before {
+    content: "\e86c";
+    font-family: "Material Symbols Rounded";
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+  }
+
+  /* Cards */
+  .card { padding: var(--spacing-gap); }
+  .card h3 { margin-bottom: 0.75rem; font-size: 1.25rem; font-weight: 600; }
+  .card p { font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 1rem; }
+
+  /* Chip */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    background: rgba(0,0,0,0.05);
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--radius-sm);
+  }
+
+  /* Avatar */
+  .avatar {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border-glass);
+    background: var(--bg-secondary);
+  }
+
+  /* Star Rating */
+  .rating { color: var(--secondary); font-size: 1.25rem; letter-spacing: -0.5px; }
+  .rating[aria-hidden="true"] { opacity: 0.7; }
+
+  /* Pricing Tier */
+  .tier {
+    position: relative;
+  }
+  .tier--highlighted {
+    border: 2px solid var(--secondary);
+    transform: scale(1.03);
+    z-index: 2;
+  }
+  .tier--highlighted .badge {
+    position: absolute;
+    top: -0.75rem;
+    right: -0.75rem;
+    background: var(--secondary);
+    color: var(--text-on-accent);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.6rem;
+    border-radius: var-radius-sm;
+    transform: rotate(15deg);
+  }
+  .tier-header { padding: 1.5rem 1rem; text-align: center; }
+  .tier-header h2 { font-size: 1.75rem; margin-bottom: 0.5rem; }
+  .tier-header .price { font-size: 2.25rem; font-weight: 700; font-family: var(--font-display); }
+  .tier-body { padding: 1.5rem 1rem; }
+  .tier-body ul { list-style: none; }
+  .tier-body li { margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; }
+  .tier-body li::before {
+    content: "\e86b";
+    font-family: "Material Symbols Rounded";
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+    color: var(--text-success);
+  }
+  .tier-footer { padding: 1.5rem 1rem; text-align: center; }
+
+  /* Testimonial */
+  .testimonial {
+    text-align: center;
+    padding: var(--spacing-gap);
+  }
+  .testimonial blockquote {
+    font-style: italic;
+    margin-bottom: 1.5rem;
+    position: relative;
+    line-height: 1.7;
+  }
+  .testimonial blockquote::before {
+    content: "\e14d";
+    font-family: "Material Symbols Rounded";
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    opacity: 0.3;
+    font-size: 3rem;
+    position: absolute;
+    top: -1.5rem;
+    left: -0.5rem;
+  }
+  .testimonial .author { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 1rem; }
+  .testimonial .author-info { text-align: left; }
+  .testimonial .author-info h4 { margin-bottom: 0.25rem; font-weight: 600; }
+  .testimonial .author-info p { font-size: 0.875rem; color: var(--text-secondary); }
+
+  /* FAQ */
+  .faq-item {
+    margin-bottom: 1rem;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--border-default);
+  }
+  .faq-item summary {
+    padding: 1.25rem 1.5rem;
+    font-weight: 600;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    background: transparent;
+    transition: background-color var(--transition-fast) var(--ease-standard);
+  }
+  .faq-item summary::-webkit-details-marker { display: none; }
+  .faq-item summary::after {
+    content: "\e315";
+    font-family: "Material Symbols Rounded";
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    transition: transform var(--transition-fast) var(--ease-standard);
+  }
+  .faq-item[open] summary::after { transform: rotate(180deg); }
+  .faq-item summary:hover { background: rgba(0,0,0,0.02); }
+  .faq-item summary:focus-visible { outline: 2px solid var(--secondary); }
+  .faq-item .faq-content {
+    padding: 0 1.5rem 1.5rem;
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--bg-glass);
+    backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-md);
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    max-width: 300px;
+    box-shadow: var(--shadow-md);
+    z-index: var(--z-toast);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity var(--transition-normal) var(--ease-standard), transform var(--transition-normal) var(--ease-standard);
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast-icon {
+    font-size: 1.5rem;
+    color: var(--text-success);
+  }
+  .toast-error .toast-icon { color: var(--text-error); }
+  .toast-message { flex: 1; }
+
+  /* Skeleton Loader */
+  .skeleton {
+    background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--bg-primary) 50%, var(--bg-secondary) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: var(--radius-md);
+  }
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  .is-loaded .skeleton { background: none; animation: none; }
+
+  /* Scroll Snap */
+  .scroll-snap-x {
+    scroll-snap-type: x mandatory;
+    overflow-x: auto;
+    padding-bottom: 1rem;
+    scrollbar-width: none;
+  }
+  .scroll-snap-x::-webkit-scrollbar { display: none; }
+  .scroll-snap-x > * {
+    scroll-snap-align: center;
+    flex: 0 0 100%;
+  }
+  @media (min-width: 1024px) {
+    .scroll-snap-x { scroll-snap-type: none; overflow-x: visible; }
+    .scroll-snap-x > * { flex: 1; }
+  }
+}
+
+/* Utilities */
+@layer utilities {
+  .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .text-sm { font-size: 0.875rem; }
+  .text-lg { font-size: 1.25rem; }
+  .text-xl { font-size: 1.5rem; }
+  .text-2xl { font-size: 2rem; }
+  .text-3xl { font-size: 2.5rem; }
+  .text-4xl { font-size: 3rem; }
+  .font-display { font-family: var(--font-display); }
+  .font-mono { font-family: var(--font-mono); }
+  .uppercase { text-transform: uppercase; letter-spacing: 0.5px; }
+}
+
+/* Theme Toggle */
+.theme-toggle {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color var(--transition-fast) var(--ease-standard);
+}
+.theme-toggle:hover { background: rgba(0,0,0,0.05); }
+.theme-toggle .moon { display: none; }
+.theme-toggle .sun { display: block; }
+.dark .theme-toggle .moon { display: block; }
+.dark .theme-toggle .sun { display: none; }
+
+/* Header */
+header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-dropdown);
+  background: var(--bg-glass);
+  backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  border-bottom: 1px solid var(--border-glass);
+  padding: 1rem 0;
+}
+header .logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+}
+header .logo .aperture {
+  font-family: "Material Symbols Rounded";
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-size: 1.5rem;
+}
+header nav {
+  display: none;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+header nav.active { display: flex; }
+header nav a {
+  font-weight: 500;
+  padding: 0.5rem;
+  border-radius: var(--radius-sm);
+  transition: background-color var(--transition-fast) var(--ease-standard);
+}
+header nav a:hover { background: rgba(0,0,0,0.03); }
+header .menu-btn {
+  display: none;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: 2rem;
+  height: 2rem;
+}
+header .menu-btn span {
+  display: block;
+  height: 2px;
+  background: var(--text-primary);
+  border-radius: 2px;
+  transition: all var(--transition-fast) var(--ease-standard);
+}
+header .menu-btn.active span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+header .menu-btn.active span:nth-child(2) { opacity: 0; }
+header .menu-btn.active span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+@media (min-width: 768px) {
+  header nav { display: flex !important; flex-direction: row; gap: 2rem; margin-top: 0; }
+  header .menu-btn { display: none; }
+}
+
+/* Hero */
+.hero {
+  min-height: 90vh;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url('https://picsum.photos/seed/f14/2000/1200.jpg') center/cover no-repeat;
+  filter: grayscale(100%) contrast(1.1) brightness(0.9);
+  transform: scale(1.05);
+  z-index: -2;
+}
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 30% 30%, rgba(194, 59, 34, 0.15) 0%, transparent 40%),
+              radial-gradient(circle at 70% 70%, rgba(216, 216, 220, 0.1) 0%, transparent 40%);
+  z-index: -1;
+}
+.hero-content {
+  text-align: center;
+  max-width: 800px;
+  padding: 2rem;
+}
+.hero-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  background: rgba(0,0,0,0.05);
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 1.5rem;
+}
+.hero h1 {
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 1rem;
+  font-family: var(--font-display);
+}
+.hero p {
+  font-size: 1.125rem;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin: 0 auto 2rem;
+}
+.hero-ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+.hero-polaroid {
+  position: absolute;
+  bottom: 10%;
+  left: 10%;
+  width: 120px;
+  height: 160px;
+  background: var(--bg-glass);
+  backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transform: rotate(-5deg);
+  z-index: 1;
+}
+.hero-polaroid::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: conic-gradient(from 0deg, transparent 0%, transparent 45%, var(--secondary) 45%, var(--secondary) 55%, transparent 55%, transparent 100%);
+  border-radius: var(--radius-md);
+  mask: radial-gradient(circle at 50% 50%, transparent 40%, black 41%);
+  -webkit-mask: radial-gradient(circle at 50% 50%, transparent 40%, black 41%);
+}
+
+/* Sections */
+section { padding: 5rem 0; }
+.section-title {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+.section-title h2 {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 700;
+  margin-bottom: 1rem;
+  font-family: var(--font-display);
+}
+.section-title p {
+  max-width: 600px;
+  margin: 0 auto;
+  font-size: 1.125rem;
+  color: var(--text-secondary);
+}
+
+/* Features */
+.features .card { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem; }
+.features .card-icon {
+  font-size: 2.5rem;
+  color: var(--secondary);
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(194, 59, 34, 0.1);
+  border-radius: 50%;
+}
+
+/* How It Works */
+.steps {
+  display: flex;
+  align-items: flex-start;
+  gap: 2.5rem;
+  position: relative;
+}
+.steps::before {
+  content: "";
+  position: absolute;
+  top: 2rem;
+  bottom: 2rem;
+  left: 50%;
+  width: 2px;
+  background: var(--border-default);
+  transform: translateX(-50%);
+}
+.step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+}
+.step-number {
+  font-family: var(--font-mono);
+  font-size: 3rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+}
+.step-icon {
+  font-size: 2rem;
+  color: var(--secondary);
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(194, 59, 34, 0.1);
+  border-radius: 50%;
+  margin-bottom: 1rem;
+}
+.step h3 { margin-bottom: 0.75rem; }
+@media (max-width: 1023px) {
+  .steps { flex-direction: column; align-items: center; }
+  .steps::before { display: none; }
+  .step { width: 100%; max-width: 400px; }
+}
+
+/* Testimonials */
+.testimonials .scroll-snap-x { display: flex; gap: var(--spacing-gap); }
+.testimonials .testimonial { min-width: 300px; flex-shrink: 0; }
+
+/* Pricing */
+.pricing .grid-3 { gap: 2rem; }
+.pricing .tier { background: var(--bg-secondary); border-radius: var(--radius-lg); overflow: hidden; }
+.pricing .tier--highlighted { background: var(--bg-primary); }
+
+/* FAQ */
+.faq { max-width: 800px; margin: 0 auto; }
+
+/* Final CTA */
+.cta-band {
+  position: relative;
+  overflow: hidden;
+  padding: 6rem 0;
+  text-align: center;
+}
+.cta-band::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 20% 30%, rgba(194, 59, 34, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 80% 70%, rgba(216, 216, 220, 0.1) 0%, transparent 50%);
+  z-index: -2;
+}
+.cta-band::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url('https://picsum.photos/seed/f14-cta/2000/1200.jpg') center/cover no-repeat;
+  filter: grayscale(100%) contrast(1.2) brightness(0.85);
+  opacity: 0.15;
+  z-index: -1;
+}
+.cta-content { position: relative; z-index: 0; }
+.cta-band h2 {
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  margin-bottom: 1.5rem;
+  font-family: var(--font-display);
+}
+.cta-form {
+  max-width: 500px;
+  margin: 0 auto;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.cta-form input {
+  flex: 1 1 250px;
+  min-width: 150px;
+}
+.cta-form .btn { flex: 1 1 150px; }
+
+/* Footer */
+footer {
+  background: var(--primary);
+  color: var(--text-on-accent);
+  padding: 4rem 0 2rem;
+}
+footer .footer-grid {
+  display: grid;
+  gap: 2.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+footer h3 {
+  font-size: 1.25rem;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+footer ul { list-style: none; }
+footer li { margin-bottom: 0.75rem; font-size: 0.9rem; }
+footer li:hover { text-decoration: underline; }
+footer .social-links {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+footer .social-links a {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color var(--transition-fast) var(--ease-standard);
+}
+footer .social-links a:hover { background: var(--border-glass); }
+footer .social-links .material-symbols-rounded { font-size: 1.25rem; }
+footer .exif {
+  margin-top: 2rem;
+  font-size: 0.875rem;
+  font-family: var(--font-mono);
+  opacity: 0.7;
+  text-align: center;
+}
+</style>
+</head>
+<body>
+<a href="#main-content" class="visually-hidden-focusable">Skip to content</a>
+<header>
+  <div class="container flex justify-between">
+    <div class="logo">
+      <span class="material-symbols-rounded aperture">aperture</span>
+      f/1.4
+    </div>
+    <nav id="nav-menu">
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="#testimonials">Testimonials</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="flex">
+      <button class="theme-toggle" id="theme-toggle" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-rounded moon">dark_mode</span>
+        <span class="material-symbols-rounded sun">wb_sunny</span>
+      </button>
+      <button class="menu-btn" id="menu-btn" aria-controls="nav-menu" aria-expanded="false" aria-label="Open menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main-content">
+  <section class="hero">
+    <div class="container hero-content reveal">
+      <div class="hero-chip">
+        ISO 400 · 1/250s · f/1.4
+      </div>
+      <h1>The street doesn't pose. Neither do we.</h1>
+      <p>Join a community of street photographers capturing raw, unfiltered moments. Get curated locations, presets, and weekly challenges to sharpen your eye.</p>
+      <div class="hero-ctas">
+        <a href="#join" class="btn btn--primary btn--lg">Join the hunt</a>
+        <a href="#gallery" class="btn btn--ghost btn--lg">See the gallery</a>
+      </div>
+      <div class="hero-polaroid" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  <section id="features" class="features">
+    <div class="container">
+      <div class="section-title">
+        <h2>What You Get</h2>
+        <p>Everything you need to shoot, share, and stand out.</p>
+      </div>
+      <div class="grid-3">
+        <article class="glass card reveal">
+          <div class="card-icon">
+            <span class="material-symbols-rounded">location_on</span>
+          </div>
+          <h3>Curated Street Spots</h3>
+          <p>Access a constantly updated map of photogenic locations worldwide, vetted by fellow shooters for lighting, safety, and character.</p>
+        </article>
+        <article class="glass card reveal">
+          <div class="card-icon">
+            <span class="material-symbols-rounded">tune</span>
+          </div>
+          <h3>Wide-Open Presets</h3>
+          <p>Download exclusive Lightroom presets designed for shallow depth of street work—optimized for bokeh, contrast, and grain.</p>
+        </article>
+        <article class="glass card reveal">
+          <div class="card-icon">
+            <span class="material-symbols-rounded">emoji_events</span>
+          </div>
+          <h3>Weekly Challenges</h3>
+          <p>Push your creativity with themed challenges. Submit your best frame for community feedback and a chance to be featured.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="how-it-works" class="how-it-works">
+    <div class="container">
+      <div class="section-title">
+        <h2>How It Works</h2>
+        <p>Three simple steps to elevate your street photography.</p>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <div class="step-number">01</div>
+          <div class="step-icon">
+            <span class="material-symbols-rounded">photo_camera</span>
+          </div>
+          <h3>Shoot Wide Open</h3>
+          <p>Use our location guides and presets to capture candid moments with that signature f/1.4 look—soft backgrounds, sharp subjects.</p>
+        </div>
+        <div class="step reveal">
+          <div class="step-number">02</div>
+          <div class="step-icon">
+            <span class="material-symbols-rounded">cloud_upload</span>
+          </div>
+          <h3>Share Your Frames</h3>
+          <p>Upload your best shots to the community feed. Get feedback, discover new techniques, and build your portfolio.</p>
+        </div>
+        <div class="step reveal">
+          <div class="step-number">03</div>
+          <div class="step-icon">
+            <span class="material-symbols-rounded">workspace_premium</span>
+          </div>
+          <h3>Get Featured</h3>
+          <p>Top submissions each week are highlighted in our newsletter and gallery. Gain exposure and connect with editors.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="testimonials" class="testimonials">
+    <div class="container">
+      <div class="section-title">
+        <h2>What Shooters Say</h2>
+        <p>Real feedback from photographers using f/1.4 in the wild.</p>
+      </div>
+      <div class="scroll-snap-x">
+        <article class="glass testimonial reveal">
+          <blockquote>
+            “f/1.4 transformed my approach. The spot guides led me to hidden alleys I’d never found, and the presets saved hours in editing.”
+          </blockquote>
+          <div class="author">
+            <img src="https://picsum.photos/seed/avatar1/200/200" alt="Alex Chen" class="avatar">
+            <div class="author-info">
+              <h4>Alex Chen</h4>
+              <p>Documentary Photographer</p>
+            </div>
+            <div class="rating" aria-label="Rated 5 out of 5">★★★★★</div>
+          </div>
+        </article>
+        <article class="glass testimonial reveal">
+          <blockquote>
+            “The weekly challenges pushed me out of my comfort zone. My third submission got featured—best validation I’ve ever had.”
+          </blockquote>
+          <div class="author">
+            <img src="https://picsum.photos/seed/avatar2/200/200" alt="Jordan Lee" class="avatar">
+            <div class="author-info">
+              <h4>Jordan Lee</h4>
+              <p>Street Photography Enthusiast</p>
+            </div>
+            <div class="rating" aria-label="Rated 5 out of 5">★★★★★</div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing" class="pricing">
+    <div class="container">
+      <div class="section-title">
+        <h2>Plans for Every Shooter</h2>
+        <p>Choose the tier that fits your journey. All plans include core features.</p>
+      </div>
+      <div class="grid-3">
+        <div class="glass tier reveal">
+          <div class="tier-header">
+            <h2>Rookie</h2>
+            <div class="price">$0</div>
+            <p>/month</p>
+          </div>
+          <div class="tier-body">
+            <ul>
+              <li>Access to basic location map</li>
+              <li>Limited preset pack (5)</li>
+              <li>Participate in challenges</li>
+              <li>Community feedback</li>
+            </ul>
+          </div>
+          <div class="tier-footer">
+            <a href="#signup" class="btn btn--ghost">Get Started Free</a>
+          </div>
+        </div>
+        <div class="glass tier tier--highlighted reveal">
+          <div class="tier-header">
+            <h2>Street Pro</h2>
+            <div class="price">$12</div>
+            <p>/month</p>
+            <div class="badge">Most popular</div>
+          </div>
+          <div class="tier-body">
+            <ul>
+              <li>Full location map (global)</li>
+              <li>Complete preset library</li>
+              <li>Weekly challenges + feedback</li>
+              <li>Monthly portfolio review</li>
+              <li>Featured submission priority</li>
+            </ul>
+          </div>
+          <div class="tier-footer">
+            <a href="#signup-pro" class="btn btn--primary btn--lg">Start Free Trial</a>
+          </div>
+        </div>
+        <div class="glass tier reveal">
+          <div class="tier-header">
+            <h2>Studio</h2>
+            <div class="price">$29</div>
+            <p>/month</p>
+          </div>
+          <div class="tier-body">
+            <ul>
+              <li>Everything in Pro</li>
+              <li>Custom preset creation</li>
+              <li>Bi-monthly 1:1 coaching</li>
+              <li>Commercial use license</li>
+              <li>Priority support</li>
+            </ul>
+          </div>
+          <div class="tier-footer">
+            <a href="#signup-studio" class="btn btn--ghost">Learn More</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq" class="faq">
+    <div class="container">
+      <div class="section-title">
+        <h2>Frequently Asked Questions</h2>
+        <p>Answers to common questions about f/1.4.</p>
+      </div>
+      <div class="accordion">
+        <details class="faq-item reveal">
+          <summary>
+            Do I need expensive gear to use f/1.4?
+            <span class="visually-hidden">Expand for answer</span>
+          </summary>
+          <div class="faq-content">
+            No! While our presets are optimized for fast lenses, they work great with kit lenses and smartphones. The core value is in the community, challenges, and location guides—gear-agnostic.
+          </div>
+        </details>
+        <details class="faq-item reveal">
+          <summary>
+            Can I sell photos taken with f/1.4 presets?
+            <span class="visually-hidden">Expand for answer</span>
+          </summary>
+          <div class="faq-content">
+            Absolutely. All presets are royalty-free for commercial use. Photos you take are yours to sell, print, or license as you wish.
+          </div>
+        </details>
+        <details class="faq-item reveal">
+          <summary>
+            How often are new locations added?
+            <span class="visually-hidden">Expand for answer</span>
+          </summary>
+          <div class="faq-content">
+            Our team adds 5-10 new verified spots weekly, based on community submissions and scouting reports. You can also suggest locations for review.
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-band">
+    <div class="container cta-content reveal">
+      <h2>Ready to Shoot Like a Pro?</h2>
+      <p>Join thousands of street photographers who trust f/1.4 to elevate their craft.</p>
+      <form class="cta-form" id="cta-form">
+        <div class="input-group">
+          <label for="cta-email">Email address</label>
+          <input type="email" id="cta-email" name="email" placeholder="you@example.com" required>
+          <div class="error-message" aria-live="polite"></div>
+        </div>
+        <button type="submit" class="btn btn--primary btn--lg">Join Free</button>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container footer-grid">
+    <div>
+      <h3>f/1.4</h3>
+      <p>Street photography community and toolkit for capturing authentic urban moments.</p>
+    </div>
+    <div>
+      <h3>Explore</h3>
+      <ul>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#testimonials">Testimonials</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3>Community</h3>
+      <ul>
+        <li><a href="#">Discord</a></li>
+        <li><a href="#">Instagram</a></li>
+        <li><a href="#">Twitter/X</a></li>
+        <li><a href="#">Newsletter</a></li>
+      </ul>
+    </div>
+    <div class="social-links">
+      <a href="#" aria-label="Discord"><span class="material-symbols-rounded">chat</span></a>
+      <a href="#" aria-label="Instagram"><span class="material-symbols-rounded">camera_alt</span></a>
+      <a href="#" aria-label="Twitter/X"><span class="material-symbols-rounded">public</span></a>
+    </div>
+  </div>
+  <div class="exif">
+    ISO 400 · 1/250s · f/1.4 · 2026
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true">
+  <span class="material-symbols-rounded toast-icon">check_circle</span>
+  <div class="toast-message"></div>
+</div>
+
+<script>
+  // Theme Manager
+  const html = document.documentElement;
+  const themeToggle = document.getElementById('theme-toggle');
+  const STORAGE_KEY = 'theme';
+
+  function setTheme(isDark) {
+    if (isDark) {
+      html.classList.add('dark');
+      themeToggle.setAttribute('aria-pressed', 'true');
+      themeToggle.setAttribute('aria-label', 'Switch to light mode');
+    } else {
+      html.classList.remove('dark');
+      themeToggle.setAttribute('aria-pressed', 'false');
+      themeToggle.setAttribute('aria-label', 'Switch to dark mode');
+    }
+    localStorage.setItem(STORAGE_KEY, isDark ? 'dark' : 'light');
+  }
+
+  // Initialize theme from storage or system preference
+  const storedTheme = localStorage.getItem(STORAGE_KEY);
+  if (storedTheme === 'dark') {
+    setTheme(true);
+  } else if (storedTheme === 'light') {
+    setTheme(false);
+  } else {
+    setTheme(window.matchMedia('(prefers-color-scheme: dark)').matches);
+  }
+
+  // Theme toggle handler
+  themeToggle.addEventListener('click', () => {
+    const isDark = html.classList.toggle('dark');
+    setTheme(isDark);
+  });
+
+  // Mobile Menu
+  const menuBtn = document.getElementById('menu-btn');
+  const navMenu = document.getElementById('nav-menu');
+  menuBtn.addEventListener('click', () => {
+    const isOpen = navMenu.classList.toggle('active');
+    menuBtn.setAttribute('aria-expanded', isOpen);
+    menuBtn.classList.toggle('active', isOpen);
+    // Close menu when clicking a link
+    navMenu.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        navMenu.classList.remove('active');
+        menuBtn.setAttribute('aria-expanded', false);
+        menuBtn.classList.remove('active');
+      });
+    });
+  });
+  // Close menu on ESC
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && navMenu.classList.contains('active')) {
+      navMenu.classList.remove('active');
+      menuBtn.setAttribute('aria-expanded', false);
+      menuBtn.classList.remove('active');
+    }
+  });
+
+  // Form Validation & Submission
+  const ctaForm = document.getElementById('cta-form');
+  const emailInput = ctaForm.querySelector('#cta-email');
+  const errorMessage = ctaForm.querySelector('.error-message');
+  const submitBtn = ctaForm.querySelector('button[type="submit"]');
+  const toast = document.getElementById('toast');
+  const toastMessage = toast.querySelector('.toast-message');
+
+  function showToast(message, isError = false) {
+    toastMessage.textContent = message;
+    toast.classList.toggle('toast-error', isError);
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  function validateEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  ctaForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = emailInput.value.trim();
+    if (!validateEmail(email)) {
+      errorMessage.textContent = 'Please enter a valid email address';
+      emailInput.classList.add('is-invalid');
+      emailInput.focus();
+      return;
+    }
+    errorMessage.textContent = '';
+    emailInput.classList.remove('is-invalid');
+    emailInput.classList.add('is-valid');
+    
+    // Loading state
+    submitBtn.classList.add('btn--loading');
+    submitBtn.disabled = true;
+    
+    // Simulate API call
+    setTimeout(() => {
+      submitBtn.classList.remove('btn--loading');
+      submitBtn.disabled = false;
+      ctaForm.reset();
+      emailInput.classList.remove('is-valid');
+      showToast('Thanks for joining! Check your inbox.');
+    }, 1200);
+  });
+
+  // Image Loading for Skeleton Effect
+  document.querySelectorAll('img').forEach(img => {
+    if (img.complete) {
+      img.parentElement.classList.add('is-loaded');
+    } else {
+      img.addEventListener('load', () => img.parentElement.classList.add('is-loaded'));
+      img.addEventListener('error', () => img.parentElement.classList.add('is-loaded'));
+    }
+  });
+
+  // Reveal on Scroll
+  const revealElements = document.querySelectorAll('.reveal');
+  const revealOnScroll = () => {
+    const windowHeight = window.innerHeight;
+    revealElements.forEach(el => {
+      const elementTop = el.getBoundingClientRect().top;
+      if (elementTop < windowHeight - 100) {
+        el.classList.add('visible');
+      }
+    });
+  };
+  window.addEventListener('load', revealOnScroll);
+  window.addEventListener('scroll', revealOnScroll);
+  window.addEventListener('resize', revealOnScroll);
+
+  // FAQ Accordion (native details/summary already accessible, but we add smooth animation)
+  document.querySelectorAll('.faq-item').forEach(item => {
+    item.addEventListener('toggle', () => {
+      if (item.open) {
+        item.style.height = item.scrollHeight + 'px';
+      } else {
+        item.style.height = '0px';
+      }
+    });
+    // Set initial height for closed items
+    if (!item.open) {
+      item.style.height = '0px';
+    }
+  });
+</script>
+</body>
+</html>

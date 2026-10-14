@@ -9,6 +9,7 @@ export interface DesignItem {
   promptLength: number;
   hasDemo: boolean;
   hasThumb?: boolean;
+  hasDark?: boolean;
 }
 
 export interface LibraryIndex {

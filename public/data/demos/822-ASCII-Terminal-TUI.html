@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark light">
+<title>Nimbus – Terminal‑First Deploy CLI</title>
+<meta name="description">Deploy anything from the terminal. Nimbus brings ASCII‑style workflows to modern cloud.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  :root{
+    /* color — dark mode (canonical terminal theme) */
+    --bg-primary:#0a0e0a;
+    --bg-secondary:#0f150f;
+    --text-primary:#33ff66;
+    --text-secondary:#1f9944;
+    --primary:#33ff66;
+    --secondary:#ffb000;
+    --accent:#ffb000;
+    --text-on-primary:#111111;
+    --text-success:#33ff66;
+    --text-error:#ff4d4d;
+    --border-default:#33ff66;
+    --border-error:#ff4d4d;
+    --border-success:#33ff66;
+    /* radius — sharp corners are thematic */
+    --radius-sm:0px;--radius-md:0px;--radius-lg:0px;
+    /* shadow — phosphor glow */
+    --shadow-sm:0 0 2px rgba(51,255,102,0.35);
+    --shadow-md:0 0 4px rgba(51,255,102,0.7);
+    /* spacing & motion — theme scale in ch units */
+    --spacing-gap:1ch;
+    --space-1:0.5ch;--space-2:1ch;--space-3:1.5ch;--space-4:2ch;
+    --space-6:3ch;--space-8:4ch;--space-12:6ch;--space-16:8ch;
+    --transition-fast:120ms;
+    --transition-normal:240ms;
+    --ease-standard:steps(1,end);
+    /* stacking */
+    --z-dropdown:1000;--z-modal:2000;--z-toast:3000;
+    /* typography */
+    --font-base:'IBM Plex Mono','Courier New',monospace;
+    --text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;
+    --text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:2rem;--text-4xl:2.5rem;--text-5xl:3rem;
+    /* signature tokens */
+    --scanline:repeating-linear-gradient(0deg,rgba(51,255,102,0.08)0 1px,transparent 1px 2px);
+    --glow-text:0 0 4px rgba(51,255,102,0.7);
+  }
+  .light{
+    /* light "paper terminal" variant */
+    --bg-primary:#eef2ec;
+    --bg-secondary:#fefefe;
+    --text-primary:#0a3d1a;
+    --text-secondary:#2f6b3f;
+    --primary:#0a7a33;
+    --secondary:#8a5a00;
+    --accent:#8a5a00;
+    --text-on-primary:#fefefe;
+    --text-success:#0a7a33;
+    --text-error:#b3001b;
+    --border-default:#0a3d1a;
+    --border-error:#b3001b;
+    --border-success:#0a7a33;
+    --shadow-md:0 2px 8px rgba(10,61,26,0.18);
+  }
+  *, *::before, *::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:100%;font-family:var(--font-base);color:var(--text-primary);background-color:var(--bg-primary);}
+  body{min-height:100vh;position:relative;overflow-x:hidden;}
+  body::after{
+    content:"";
+    position:fixed;inset:0;
+    background:var(--scanline);
+    pointer-events:none;
+    z-index:9999;
+    opacity:0.6;
+  }
+  @media (prefers-reduced-motion: reduce){
+    .cursor{animation:none !important;}
+    body::after{animation:none !important;}
+    *[style*="transition"], *[style*="animation"]{transition:none !important;animation:none !important;}
+  }
+  .cursor{
+    display:inline-block;width:0.6ch;height:1em;
+    background-color:var(--text-primary);
+    animation:blink 1s steps(1) infinite;
+    margin-left:0.2ch;
+    vertical-align:-0.1em;
+  }
+  @keyframes blink{to{background-color:transparent;}}
+  a{color:inherit;text-decoration:none;}
+  :focus-visible{
+    outline:2px solid var(--accent);
+    outline-offset:2px;
+  }
+  /* Skip link */
+  #skip-link{
+    position:absolute;left:-999px;top:auto;width:1px;height:1px;overflow:hidden;
+  }
+  #skip-link:focus{left:0;top:0;width:auto;height:auto;background:var(--bg-secondary);color:var(--text-on-primary);padding:0.5ch 1ch;z-index:var(--z-dropdown);}
+  /* Nav */
+  .nav{
+    position:sticky;top:0;z-index:var(--z-dropdown);
+    display:flex;align-items:center;justify-content:space-between;
+    padding:var(--space-2) var(--space-4);
+    background-color:var(--bg-secondary);
+    border-bottom:2px solid var(--border-default);
+    backdrop-filter:blur(4px);
+  }
+  .nav__brand{font-weight:600;letter-spacing:-0.05ch;}
+  .nav__menu{display:flex;gap:var(--space-4);flex-wrap:wrap;}
+  .nav__link{font-weight:500;}
+  .nav__toggle{
+    background:none;border:none;color:var(--text-primary);
+    font-size:1.2rem;padding:var(--space-1);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .nav__toggle[aria-pressed="true"] .material-symbols-outlined{content:"dark_mode";}
+  .nav__toggle[aria-pressed="false"] .material-symbols-outlined{content:"light_mode";}
+  /* Hero */
+  .hero{
+    display:flex;flex-direction:column;align-items:center;gap:var(--space-6);
+    padding:var(--space-12) var(--space-4);min-height:calc(100vh - 4.5ch);
+    text-align:center;
+  }
+  .hero__art{font-family:var(--font-base);font-size:clamp(1.5rem,8vw,4rem);line-height:1;color:var(--text-primary);opacity:0.9;}
+  .hero__title{font-size:clamp(1.5rem,5vw,2.5rem);font-weight:600;position:relative;}
+  .hero__title::after{content:"";display:block;width:0;height:1em;background-color:var(--text-primary);animation:blink 1s steps(1) infinite;position:absolute;right:-0.3ch;top:0;}
+  .hero__copy{color:var(--text-secondary);max-width:38ch;}
+  .hero__ctas{display:flex;gap:var(--space-3);flex-wrap:wrap;justify-content:center;}
+  .hero__mock{
+    background-color:var(--bg-secondary);border:2px solid var(--border-default);
+    border-radius:var(--radius-sm);padding:var(--space-4);
+    font-family:var(--font-base);color:var(--text-primary);
+    line-height:1.4;white-space:pre-wrap;max-width:40ch;
+  }
+  /* Features */
+  .features{padding:var(--space-12) var(--space-4);background-color:var(--bg-secondary);}
+  .features__heading{font-size:1.5rem;font-weight:600;text-align:center;margin-bottom:var(--space-6);}
+  .features__grid{
+    display:flex;flex-wrap:wrap;gap:var(--space-6);justify-content:center;
+  }
+  .card{
+    background-color:var(--bg-secondary);border:2px solid var(--border-default);
+    border-radius:var(--radius-sm);padding:var(--space-6);
+    display:flex;flex-direction:column;gap:var(--space-3);
+    box-shadow:var(--shadow-md);
+    transition:transform var(--transition-fast),box-shadow var(--transition-fast);
+  }
+  .card:hover{transform:translateY(-2px);box-shadow:0 0 6px rgba(51,255,102,0.8);}
+  .card__icon{font-size:1.5rem;height:2ch;width:2ch;display:flex;align-items:center;justify-content:center;color:var(--primary);}
+  .card__title{font-size:1.25rem;font-weight:600;}
+  .card__desc{color:var(--text-secondary);flex:1;}
+  .card__detail{font-family:var(--font-base);font-size:0.9rem;color:var(--text-secondary);}
+  /* How it works */
+  .how{padding:var(--space-12) var(--space-4);background-color:var(--bg-primary);}
+  .how__heading{font-size:1.5rem;font-weight:600;text-align:center;margin-bottom:var(--space-6);}
+  .steps{
+    display:flex;flex-direction:column;gap:var(--space-8);align-items:center;
+    counter-reset:step;
+  }
+  .step{
+    display:flex;align-items:flex-start;gap:var(--space-4);width:100%;max-width:32ch;
+    padding:var(--space-4);border-left:2px solid var(--border-default);
+    position:relative;
+  }
+  .step::before{
+    counter-increment:step;
+    content:"step-" counter(step);
+    font-family:var(--font-base);font-size:0.9rem;color:var(--text-secondary);
+    position:absolute;left:-2ch;top:50%;transform:translateY(-50%);
+  }
+  .step__title{font-weight:600;min-width:0;}
+  .step__desc{color:var(--text-secondary);}
+  /* Testimonials */
+  .testimonials{padding:var(--space-12) var(--space-4);background-color:var(--bg-secondary);}
+  .testimonials__heading{font-size:1.5rem;font-weight:600;text-align:center;margin-bottom:var(--space-6);}
+  .testimonials__grid{
+    display:flex;flex-wrap:wrap;gap:var(--space-6);justify-content:center;
+  }
+  .testimonial{background-color:var(--bg-secondary);border:2px solid var(--border-default);border-radius:var(--radius-sm);padding:var(--space-6);}
+  .testimonial__header{font-family:var(--font-base);font-size:0.9rem;color:var(--text-secondary);margin-bottom:var(--space-2);}
+  blockquote{margin:var(--space-3)0;font-style:normal;color:var(--text-primary);border-left:2px solid var(--primary);padding-left:var(--space-3);}
+  .testimonial__author{display:flex;justify-content:flex-end;color:var(--text-secondary);font-size:0.9rem;margin-top:var(--space-2);}
+  /* Pricing */
+  .pricing{padding:var(--space-12) var(--space-4);background-color:var(--bg-primary);}
+  .pricing__heading{font-size:1.5rem;font-weight:600;text-align:center;margin-bottom:var(--space-6);}
+  .pricing__grid{
+    display:flex;flex-wrap:wrap;gap:var(--space-6);justify-content:center;
+  }
+  .pricing-card{
+    background-color:var(--bg-secondary);border:2px solid var(--border-default);
+    border-radius:var(--radius-sm);padding:var(--space-6);
+    display:flex;flex-direction:column;gap:var(--space-3);
+    box-shadow:var(--shadow-md);
+    transition:transform var(--transition-fast),box-shadow var(--transition-fast);
+  }
+  .pricing-card:hover{transform:translateY(-2px);box-shadow:0 0 6px rgba(51,255,102,0.8);}
+  .pricing-card--featured{border-color:var(--secondary);}
+  .pricing-card__name{font-size:1.25rem;font-weight:600;text-align:center;}
+  .pricing-card__price{font-size:2rem;font-weight:700;text-align:center;margin:var(--space-2)0;}
+  .pricing-card__features{list-style:none;padding:0;margin:var(--space-2)0;flex:1;display:flex;flex-direction:column;gap:var(--space-2);}
+  .pricing-card__feature{display:flex;align-items:center;gap:var(--space-2);font-size:0.9rem;color:var(--text-secondary);}
+  .pricing-card__feature::before{content:"├─";color:var(--border-default);}
+  .pricing-card__feature:last-child::before{content:"└─";}
+  .pricing-card__cta{align-self:stretch;text-align:center;}
+  /* Badge */
+  .badge{
+    display:inline-block;padding:0.2ch 0.5ch;font-size:0.75rem;font-weight:600;
+    background-color:var(--primary);color:var(--text-on-primary);
+    border-radius:var(--radius-sm);
+  }
+  /* FAQ */
+  .faq{padding:var(--space-12) var(--space-4);background-color:var(--bg-secondary);}
+  .faq__heading{font-size:1.5rem;font-weight:600;text-align:center;margin-bottom:var(--space-6);}
+  .faq-item{border-top:1px solid var(--border-default);}
+  .faq-item:first-child{border-top:none;}
+  .faq-item summary{
+    padding:var(--space-4)0;display:flex;align-items:center;justify-content:space-between;
+    cursor:pointer;font-weight:600;outline:none;
+  }
+  .faq-item summary::-webkit-details-marker{display:none;}
+  .faq-item summary::after{
+    content:"";display:inline-block;width:0.8ch;height:0.8ch;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2333ff66' viewBox='0 0 16 16'%3E%3Cpath d='M4 6.414L6.414 4l1.414 1.414L6.828 8l2.706 2.706-1.414 1.414L8 9.414l-2.706 2.706-1.414-1.414L5.172 8 2.464 5.292z'/%3E%3C/svg%3E");
+    transition:transform var(--transition-normal);
+  }
+  .faq-item[open] summary::after{transform:rotate(180deg);}
+  .faq-item[open] summary{color:var(--primary);}
+  .faq-item[open] .faq-item__content{margin-top:var(--space-3);}
+  .faq-item__content{padding:0 var(--space-4) var(--space-4);color:var(--text-secondary);font-size:0.9rem;}
+  /* Final CTA */
+  .cta-band{
+    position:relative;overflow:hidden;
+    background-color:var(--bg-secondary);
+    border:2px solid var(--border-default);
+    padding:var(--space-8) var(--space-4);
+    text-align:center;
+  }
+  .cta-band::after{
+    content:"";position:absolute;inset:0;
+    background:var(--scanline);
+    pointer-events:none;
+    opacity:0.4;
+  }
+  .cta-band__title{font-size:clamp(1.5rem,5vw,2.5rem);font-weight:600;margin-bottom:var(--space-3);position:relative;}
+  .cta-band__title::after{content:"";display:block;width:0;height:1em;background-color:var(--text-primary);animation:blink 1s steps(1) infinite;position:absolute;right:-0.3ch;top:0;}
+  .cta-band__desc{color:var(--text-secondary);max-width:38ch;margin:0 auto var(--space-6);}
+  .input-group{
+    display:flex;flex-direction:column;gap:var(--space-2);align-items:stretch;
+    max-width:28ch;margin:0 auto;
+  }
+  .input-group label{font-weight:600;align-self:flex-start;}
+  .input-group input{
+    padding:var(--space-2) var(--space-3);font-family:var(--font-base);
+    font-size:1rem;background-color:var(--bg-secondary);
+    color:var(--text-primary);border:2px solid var(--border-default);
+    border-radius:var(--radius-sm);
+  }
+  .input-group input:focus{
+    outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(138,90,0,0.2);
+  }
+  .input-group__error{color:var(--text-error);font-size:0.875rem;min-height:1.2em;}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;
+    gap:var(--space-2);padding:var(--space-2) var(--space-4);
+    font-family:var(--font-base);font-weight:600;
+    font-size:1rem;border:2px solid var(--border-default);
+    background-color:var(--bg-secondary);color:var(--text-primary);
+    border-radius:var(--radius-sm);cursor:pointer;
+    transition:transform var(--transition-fast),box-shadow var(--transition-fast),filter var(--transition-fast);
+    min-height:44px;
+  }
+  .btn:hover{transform:translateY(-1px);filter:brightness(1.05);}
+  .btn:active{transform:scale(0.97);}
+  .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .btn--primary{
+    background-color:var(--primary);color:var(--text-on-primary);
+    border-color:var(--primary);
+  }
+  .btn--ghost{
+    background:none;color:var(--text-primary);
+    border-color:transparent;
+  }
+  .btn--ghost:hover{color:var(--primary);text-decoration:underline;}
+  .btn--danger{
+    background-color:var(--text-error);color:var(--text-on-primary);
+    border-color:var(--text-error);
+  }
+  .btn--danger:hover{filter:brightness(1.05);}
+  .btn.is-loading{pointer-events:none;opacity:0.7;}
+  .btn.is-loading .material-symbols-outlined{animation:spin 1s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .btn.is-success{background-color:var(--text-success);color:var(--text-on-primary);}
+  .btn.is-error{background-color:var(--text-error);color:var(--text-on-primary);}
+  /* Footer */
+  .footer{
+    padding:var(--space-8) var(--space-4);background-color:var(--bg-primary);
+    color:var(--text-secondary);font-size:0.9rem;
+    display:flex;flex-wrap:wrap;gap:var(--space-6);justify-content:center;
+  }
+  .footer__brand{flex:1 1 12ch;text-align:center;}
+  .footer__col{flex:1 1 12ch;min-width:10ch;}
+  .footer__col h4{font-size:0.9rem;font-weight:600;margin-bottom:var(--space-2);}
+  .footer__col a{display:block;margin-top:var(--space-1);}
+  .footer__status{font-family:var(--font-base);font-size:0.9rem;color:var(--text-secondary);margin-top:auto;}
+  .footer__copyright{margin-top:var(--space-4);font-size:0.8rem;text-align:center;color:var(--text-secondary);}
+  /* Utility: hide visually but keep for screen readers */
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;}
+</style>
+</head>
+<body>
+<a href="#main" id="skip-link">Skip to content</a>
+
+<header>
+  <nav class="nav">
+    <div class="nav__brand">~/nimbus</div>
+    <div class="nav__menu">
+      <a href="#features" class="nav__link">Features</a>
+      <a href="#how" class="nav__link">How It Works</a>
+      <a href="#pricing" class="nav__link">Pricing</a>
+      <a href="#faq" class="nav__link">FAQ</a>
+    </div>
+    <button class="nav__toggle" id="theme-toggle" aria-pressed="false" aria-label="Switch to light mode">
+      <span class="material-symbols-outlined" aria-hidden="true">light_mode</span>
+    </button>
+    <a href="#pricing" class="btn btn--primary">Get Started</a>
+  </nav>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <pre class="hero__art" aria-hidden="true">
+ _   _      _ _        __        __         _
+| | | | ___| | | ___   \ \      / /__  _ __| | ___
+| |_| |/ _ \ | |/ _ \   \ \ /\ / / _ \| '__| |/ _ \
+|  _  |  __/ | | (_) |   \ V  V / (_) | |  | |  __/
+|_| |_|\___|_|_|\___/     \_/\_/ \___/|_|  |_|\___|
+    </pre>
+    <h1 class="hero__title">Deploy from the terminal, no GUI needed</h1>
+    <p class="hero__copy">Nimbus turns your shell into a powerful deployment console. Instant rollbacks, live logs, and zero‑config pipelines.</p>
+    <div class="hero__ctas">
+      <a href="#pricing" class="btn btn--primary">See Pricing</a>
+      <a href="#features" class="btn btn--ghost">Features</a>
+    </div>
+    <div class="hero__mock">
+$ nimbus init
+✔ Project initialized
+$ nimbus deploy --prod
+✔ Deployed to production (v1.2.3)
+    </div>
+  </section>
+
+  <section id="features" class="features">
+    <h2 class="features__heading">$ ls ./features</h2>
+    <div class="features__grid">
+      <div class="card">
+        <span class="material-symbols-outlined card__icon">rocket_launch</span>
+        <h3 class="card__title">Instant Rollbacks</h3>
+        <p class="card__desc">One‑click revert to any previous release without leaving the terminal.</p>
+        <span class="card__detail">--flag: rollback-enabled</span>
+      </div>
+      <div class="card">
+        <span class="material-symbols-outlined card__icon">monitoring</span>
+        <h3 class="card__title">Live Log Streaming</h3>
+        <p class="card__desc">Watch logs flow in real time, filter by level, and search on the fly.</p>
+        <span class="card__detail">--flag: live-logs</span>
+      </div>
+      <div class="card">
+        <span class="material-symbols-outlined card__icon">security</span>
+        <h3 class="card__title">Built‑in Secrets Vault</h3>
+        <p class="card__desc">Encrypt and inject environment variables securely at deploy time.</p>
+        <span class="card__detail">--flag: vault-sealed</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="how" class="how">
+    <h2 class="how__heading">$ ./nimbus --help</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step__title">nimbus init</div>
+        <p class="step__desc">Create a nimbus.yml config in your project root.</p>
+      </div>
+      <div class="step">
+        <div class="step__title">nimbus build</div>
+        <p class="step__desc">Compile assets and containerize your app.</p>
+      </div>
+      <div class="step">
+        <div class="step__title">nimbus deploy</div>
+        <p class="step__desc">Push to your cloud provider with zero‑downtime.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="testimonials" class="testimonials">
+    <h2 class="testimonials__heading">$ cat reviews/*.txt</h2>
+    <div class="testimonials__grid">
+      <div class="testimonial">
+        <div class="testimonial__header">deployer@nimbus:~$ cat reviews/01.txt</div>
+        <blockquote>“Nimbus cut our release cycle from days to minutes. The terminal UI feels like home.”</blockquote>
+        <div class="testimonial__author">— Alex P., Lead DevOps</div>
+      </div>
+      <div class="testimonial">
+        <div class="testimonial__header">deployer@nimbus:~$ cat reviews/02.txt</div>
+        <blockquote>“Zero‑config pipelines and instant rollbacks saved us during a critical outage.”</blockquote>
+        <div class="testimonial__author">— Samir K., Site Reliability Engineer</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing" class="pricing">
+    <h2 class="pricing__heading">$ nimbus pricing</h2>
+    <div class="pricing__grid">
+      <div class="pricing-card">
+        <div class="pricing-card__name">Free</div>
+        <div class="pricing-card__price">$0<span class="text-xs">/mo</span></div>
+        <ul class="pricing-card__features">
+          <li class="pricing-card__feature">Public repos only</li>
+          <li class="pricing-card__feature">100 builds/month</li>
+          <li class="pricing-card__feature">Community support</li>
+        </ul>
+        <button class="btn btn--ghost">Start Free</button>
+      </div>
+      <div class="pricing-card pricing-card--featured">
+        <div class="pricing-card__name">Pro</div>
+        <div class="pricing-card__price">$25<span class="text-xs">/mo</span></div>
+        <div class="badge">RECOMMENDED</div>
+        <ul class="pricing-card__features">
+          <li class="pricing-card__feature">Private repos</li>
+          <li class="pricing-card__feature">Unlimited builds</li>
+          <li class="pricing-card__feature">Live logs & rollbacks</li>
+          <li class="pricing-card__feature">Secrets vault</li>
+          <li class="pricing-card__feature">Priority support</li>
+        </ul>
+        <button class="btn btn--primary">Choose Pro</button>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-card__name">Team</div>
+        <div class="pricing-card__price">$75<span class="text-xs">/mo</span></div>
+        <ul class="pricing-card__features">
+          <li class="pricing-card__feature">Everything in Pro</li>
+          <li class="pricing-card__feature">SSO & SCIM</li>
+          <li class="pricing-card__feature">Audit logs</li>
+          <li class="pricing-card__feature">Dedicated account manager</li>
+        </ul>
+        <button class="btn btn--ghost">Contact Sales</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq" class="faq">
+    <h2 class="faq__heading">$ man nimbus-faq</h2>
+    <details class="faq-item">
+      <summary>How does Nimbus handle rollbacks?</summary>
+      <div class="faq-item__content">Each deployment creates an immutable snapshot. Rolling back simply switches the active snapshot, restoring the exact previous state in seconds.</div>
+    </details>
+    <details class="faq-item">
+      <summary>Is my data encrypted in transit and at rest?</summary>
+      <div class="faq-item__content">Yes. All traffic uses TLS 1.3, and stored artifacts are encrypted with AES‑256‑GCM using per‑project keys.</div>
+    </details>
+    <details class="faq-item">
+      <summary>Can I use Nimbus with self‑hosted Kubernetes?</summary>
+      <div class="faq-item__content">Absolutely. Provide your kubeconfig and Nimbus will apply Helm manifests or raw YAML files directly to your cluster.</div>
+    </details>
+  </section>
+
+  <section class="cta-band">
+    <h2 class="cta-band__title">Stay updated with the latest releases</h2>
+    <p class="cta-band__desc">Get notified when we drop new features, security patches, or community events.</p>
+    <form id="cta-form" novalidate>
+      <div class="input-group">
+        <label for="cta-email">Email address</label>
+        <input type="email" id="cta-email" name="email" placeholder="you@example.com" required>
+        <div class="input-group__error" aria-live="polite"></div>
+      </div>
+      <button type="submit" class="btn btn--primary">Subscribe</button>
+    </form>
+    <div id="cta-status" aria-live="polite" class="mt-4"></div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="footer__brand">
+    <div>~/nimbus</div>
+    <div class="text-xs">Terminal‑first deployment CLI</div>
+  </div>
+  <div class="footer__col">
+    <h4>Product</h4>
+    <a href="#features">Features</a>
+    <a href="#how">How It Works</a>
+    <a href="#pricing">Pricing</a>
+  </div>
+  <div class="footer__col">
+    <h4>Resources</h4>
+    <a href="#">Docs</a>
+    <a href="#">Blog</a>
+    <a href="#">Changelog</a>
+  </div>
+  <div class="footer__col">
+    <h4>Legal</h4>
+    <a href="#">Terms</a>
+    <a href="#">Privacy</a>
+    <a href="#">Security</a>
+  </div>
+  <div class="footer__status">[ ok ] all systems operational</div>
+  <div class="footer__copyright">© 2026 Nimbus</div>
+</footer>
+
+<script defer>
+  // Theme handling
+  const STORAGE_KEY = 'nimbus-theme';
+  const htmlEl = document.documentElement;
+  const themeToggle = document.getElementById('theme-toggle');
+  const liveRegion = document.createElement('div');
+  liveRegion.setAttribute('aria-live', 'polite');
+  liveRegion.classList.add('sr-only');
+  document.body.appendChild(liveRegion);
+
+  function setTheme(theme) {
+    if (theme === 'light') {
+      htmlEl.classList.add('light');
+      themeToggle.setAttribute('aria-pressed', 'true');
+      themeToggle.setAttribute('aria-label', 'Switch to dark mode');
+      themeToggle.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">dark_mode</span>';
+    } else {
+      htmlEl.classList.remove('light');
+      themeToggle.setAttribute('aria-pressed', 'false');
+      themeToggle.setAttribute('aria-label', 'Switch to light mode');
+      themeToggle.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">light_mode</span>';
+    }
+    liveRegion.textContent = `Theme switched to ${theme} mode`;
+  }
+
+  function initTheme() {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      setTheme(stored);
+    } else {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setTheme(prefersDark ? 'dark' : 'light');
+    }
+  }
+
+  themeToggle.addEventListener('click', () => {
+    const isLight = htmlEl.classList.contains('light');
+    const newTheme = isLight ? 'dark' : 'light';
+    setTheme(newTheme);
+    localStorage.setItem(STORAGE_KEY, newTheme);
+  });
+
+  initTheme();
+
+  // Smooth scroll for anchor links (respect reduced motion)
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+      if (this.getAttribute('href') === '#') return;
+      const target = document.querySelector(this.getAttribute('href'));
+      if (!target) return;
+      e.preventDefault();
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        target.scrollIntoView();
+      } else {
+        target.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  });
+
+  // CTA form handling
+  const form = document.getElementById('cta-form');
+  const emailInput = document.getElementById('cta-email');
+  const errorDiv = form.querySelector('.input-group__error');
+  const statusDiv = document.getElementById('cta-status');
+
+  function showError(message) {
+    errorDiv.textContent = message;
+    emailInput.setAttribute('aria-invalid', 'true');
+    emailInput.classList.add('is-invalid');
+    statusDiv.textContent = '';
+  }
+
+  function clearError() {
+    errorDiv.textContent = '';
+    emailInput.removeAttribute('aria-invalid');
+    emailInput.classList.remove('is-invalid');
+  }
+
+  function setLoading(isLoading) {
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (isLoading) {
+      submitBtn.classList.add('is-loading');
+      submitBtn.setAttribute('aria-busy', 'true');
+      submitBtn.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">progress</span> Subscribing…';
+    } else {
+      submitBtn.classList.remove('is-loading');
+      submitBtn.removeAttribute('aria-busy');
+      submitBtn.innerHTML = 'Subscribe';
+    }
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    clearError();
+    const email = emailInput.value.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      showError('Please enter a valid email address.');
+      return;
+    }
+    setLoading(true);
+    // Simulate async request
+    setTimeout(() => {
+      // Pretend success
+      setLoading(false);
+      statusDiv.textContent = 'Thanks! You’ll hear from us soon.';
+      statusDiv.style.color = 'var(--text-success)';
+      emailInput.value = '';
+      // Also announce via live region for screen readers
+      liveRegion.textContent = 'Subscription successful';
+    }, 1500);
+  });
+</script>
+</body>
+</html>

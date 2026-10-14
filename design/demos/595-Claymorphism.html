@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Squishly - A Squishy 3D Story-Building Studio for Curious Kids</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<style>
+@layer tokens, base, layout, components, utilities;
+@layer tokens {
+  :root {
+    --primary: #FDBCB4;
+    --secondary: #ADD8E6;
+    --accent-mint: #98FF98;
+    --accent-lilac: #E6E6FA;
+    --bg-primary: #FBF3EC;
+    --bg-secondary: #FEFEFE;
+    --text-primary: #4A3B44;
+    --text-secondary: #8A7683;
+    --text-on-accent: #4A3B44;
+    --text-success: #2E7D5B;
+    --text-error: #C25450;
+    --border-default: #EFC3BB;
+    --border-success: #8FD9B4;
+    --border-error: #EBA6A2;
+    --radius-sm: 16px;
+    --radius-md: 20px;
+    --radius-lg: 24px;
+    --clay-border: 3px;
+    --clay-border-chunky: 4px;
+    --clay-shadow: inset -2px -2px 8px rgba(255,255,255,.85), 4px 4px 8px rgba(178,148,160,.35);
+    --clay-shadow-hover: inset -2px -2px 8px rgba(255,255,255,.85), 6px 6px 14px rgba(178,148,160,.45);
+    --clay-shadow-pressed: inset 3px 3px 8px rgba(74,59,68,.18), 1px 1px 3px rgba(178,148,160,.30);
+    --shadow-sm: 4px 4px 8px rgba(178,148,160,.25);
+    --shadow-md: 8px 8px 18px rgba(178,148,160,.35);
+    --gradient-primary: linear-gradient(135deg, #FDBCB4 0%, #F7CDC4 45%, #ADD8E6 100%);
+    --gradient-hero: linear-gradient(135deg, #FDBCB4 0%, #E6E6FA 55%, #ADD8E6 100%);
+    --gradient-mint: linear-gradient(135deg, #98FF98 0%, #ADD8E6 100%);
+    --font-display: "Baloo 2", "Nunito", sans-serif;
+    --font-base: "Nunito", sans-serif;
+    --spacing-gap: 1.5rem;
+    --transition-fast: 200ms ease-out;
+    --transition-normal: 300ms ease-out;
+    --ease-standard: ease-out;
+    --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --z-dropdown: 100;
+    --z-modal: 200;
+    --z-toast: 300;
+  }
+  .dark, @media (prefers-color-scheme: dark) {
+    :root:not(.light) {
+      --bg-primary: #2B2633;
+      --bg-secondary: #37303F;
+      --primary: #E79B90;
+      --secondary: #8FC0D6;
+      --accent-mint: #7BD98F;
+      --accent-lilac: #C9C2E8;
+      --text-primary: #F4EEF3;
+      --text-secondary: #B9ABC0;
+      --text-on-accent: #F4EEF3;
+      --border-default: #4C4256;
+      --border-success: #6FB88F;
+      --border-error: #C97A76;
+      --clay-shadow: inset -2px -2px 8px rgba(255,255,255,.07), 4px 4px 8px rgba(0,0,0,.45);
+      --clay-shadow-hover: inset -2px -2px 8px rgba(255,255,255,.07), 6px 6px 14px rgba(0,0,0,.55);
+      --clay-shadow-pressed: inset 3px 3px 8px rgba(244,238,243,.18), 1px 1px 3px rgba(0,0,0,.40);
+      --shadow-sm: 4px 4px 8px rgba(0,0,0,.3);
+      --shadow-md: 8px 8px 18px rgba(0,0,0,.4);
+    }
+  }
+}
+@layer base {
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { font-size:16px; scroll-behavior:smooth; }
+  body {
+    font-family:var(--font-base);
+    background:var(--bg-primary);
+    color:var(--text-primary);
+    line-height:1.6;
+  }
+  h1, h2, h3 { font-family:var(--font-display); line-height:1.2; margin-bottom:0.5rem; }
+  h1 { font-size:clamp(2rem, 5vw, 3rem); }
+  h2 { font-size:clamp(1.75rem, 4vw, 2.5rem); }
+  h3 { font-size:clamp(1.25rem, 3vw, 1.75rem); }
+  p { margin-bottom:1rem; }
+  a { color:var(--text-primary); text-decoration:none; }
+  a:hover, a:focus { text-decoration:underline; }
+  img { max-width:100%; height:auto; display:block; }
+  button { font-family:inherit; }
+  :focus-visible { outline:3px solid var(--secondary); outline-offset:3px; }
+  [hidden] { display:none !important; }
+}
+@layer layout {
+  .container { width:90%; max-width:1200px; margin:0 auto; }
+  .section { padding:4rem 0; }
+  .section-title { text-align:center; margin-bottom:2rem; }
+  .section-title h2 { position:relative; display:inline-block; }
+  .section-title h2::after {
+    content:""; position:absolute; left:0; bottom:-8px; height:4px; width:40px;
+    background:var(--gradient-primary); border-radius:2px;
+  }
+  .skip-link {
+    position:absolute; left:-999px; top:auto; width:1px; height:1px; overflow:hidden;
+  }
+  .skip-link:focus {
+    left:1rem; top:1rem; width:auto; height:auto; background:var(--bg-secondary);
+    border:var(--clay-border) solid var(--border-default); border-radius:var-radius-sm;
+    padding:0.5rem 1rem; z-index:1000;
+  }
+}
+@layer components {
+  .btn {
+    display:flex; align-items:center; justify-content:center; gap:0.5rem;
+    min-height:44px; min-width:44px; padding:0.75rem 1.5rem;
+    font-weight:600; border:var(--clay-border-chunky) solid var(--border-default);
+    border-radius:var(--radius-md); background:var(--gradient-primary);
+    color:var(--text-on-accent); box-shadow:var(--clay-shadow);
+    cursor:pointer; transition:var(--transition-fast);
+    font-size:1rem;
+  }
+  .btn:hover { transform:translateY(-2px); box-shadow:var(--clay-shadow-hover); }
+  .btn:focus-visible { outline:3px solid var(--secondary); outline-offset:3px; }
+  .btn:active { transform:scale(0.97); box-shadow:var(--clay-shadow-pressed); }
+  .btn--secondary { background:var(--bg-secondary); color:var(--text-primary); }
+  .btn--danger {
+    background:linear-gradient(135deg, #F7CDC4, #E6E6FA);
+    border-color:#EFC3BB;
+  }
+  .btn.is-loading {
+    pointer-events:none; opacity:0.8;
+  }
+  .btn.is-loading .btn-label { visibility:hidden; }
+  .btn.is-loading .btn-loader {
+    display:inline-block; width:1em; height:1em;
+    border:2px solid currentColor; border-top-color:transparent;
+    border-radius:50%; animation:spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .btn.is-success { background:var(--gradient-mint); border-color:var(--border-success); }
+  .btn.is-error { background:linear-gradient(135deg, #F7CDC4, #E6E6FA); border-color:var(--border-error); }
+  .clay-card {
+    display:flex; flex-direction:column;
+    background:var(--bg-secondary);
+    border:var(--clay-border) solid var(--border-default);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--clay-shadow);
+    padding:var(--spacing-gap);
+    transition:var(--transition-normal);
+  }
+  .clay-card:hover { transform:translateY(-2px); box-shadow:var(--clay-shadow-hover); }
+  .clay-card:focus-within { border-color:var(--secondary); }
+  .clay-card--featured {
+    border-width:var(--clay-border-chunky);
+    box-shadow:var(--shadow-md);
+    transform:translateY(-4px);
+  }
+  .icon-chip {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:2.5rem; height:2.5rem;
+    background:var(--primary);
+    border:var(--clay-border) solid var(--border-default);
+    border-radius:var(--radius-sm);
+    font-size:1.25rem;
+    color:var(--text-on-accent);
+  }
+  .icon-chip--peach { background:var(--primary); }
+  .icon-chip--blue { background:var(--secondary); }
+  .icon-chip--mint { background:var(--accent-mint); }
+  .icon-chip--lilac { background:var(--accent-lilac); }
+  .feature-icon { font-size:1.5rem; width:2rem; height:2rem; }
+  .step-number {
+    display:flex; align-items:center; justify-content:center;
+    width:2.5rem; height:2.5rem;
+    background:var(--primary);
+    border:var(--clay-border) solid var(--border-default);
+    border-radius:50%;
+    font-weight:700;
+    color:var(--text-on-accent);
+    font-size:1.25rem;
+  }
+  .step-connector {
+    flex:1; height:2px;
+    background:linear-gradient(to right, transparent, var(--border-default), transparent);
+    margin:0 1rem;
+  }
+  .step-connector-vertical {
+    width:2px; height:100%;
+    background:linear-gradient(to bottom, transparent, var(--border-default), transparent);
+    margin:1rem 0;
+  }
+  .testimonial-card {
+    position:relative;
+  }
+  .testimonial-card::before {
+    content:"\201C"; position:absolute; top:-10px; left:-10px;
+    font-size:4rem; color:var(--primary); opacity:0.2;
+    font-family:var(--font-display);
+    line-height:1;
+  }
+  .avatar {
+    width:3.5rem; height:3.5rem;
+    background:var(--primary);
+    border:var(--clay-border) solid var(--border-default);
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700;
+    color:var(--text-on-accent);
+    font-size:1.5rem;
+  }
+  .star-row {
+    display:flex; gap:0.25rem; margin:0.5rem 0;
+  }
+  .star-row .material-symbols-rounded {
+    font-size:1.25rem;
+    color:var(--primary);
+  }
+  .pricing-badge {
+    position:absolute; top:-10px; right:-10px;
+    background:var(--accent-mint);
+    border:var(--clay-border) solid var(--border-default);
+    border-radius:var(--radius-sm);
+    padding:0.25rem 0.5rem;
+    font-size:0.875rem;
+    font-weight:600;
+    color:var(--text-on-accent);
+  }
+  .faq-item {
+    border-bottom:1px solid var(--border-default);
+  }
+  .faq-question {
+    display:flex; align-items:center; justify-content:space-between;
+    width:100%; padding:1rem 0;
+    background:none; border:none; text-align:left;
+    font-weight:600;
+    color:var(--text-primary);
+    cursor:pointer;
+  }
+  .faq-question .material-symbols-rounded {
+    transition:transform var(--transition-normal);
+  }
+  .faq-item[open] .faq-question .material-symbols-rounded {
+    transform:rotate(180deg);
+  }
+  .faq-answer {
+    padding:0 1rem; overflow:hidden;
+    max-height:0; transition:max-height var(--transition-normal) ease-out;
+  }
+  .faq-item[open] .faq-answer {
+    max-height:200px;
+  }
+  .toast-container {
+    position:fixed; bottom:2rem; right:2rem; display:flex; flex-direction:column; gap:0.5rem;
+    z-index:var(--z-toast);
+  }
+  .toast {
+    display:flex; align-items:center; gap:0.75rem;
+    background:var(--bg-secondary);
+    border:var(--clay-border) solid var(--border-default);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--clay-shadow);
+    padding:1rem;
+    min-width:250px;
+    max-width:350px;
+    animation:slideIn 0.3s ease-out forwards, slideOut 0.3s ease-out forwards 3.7s;
+  }
+  @keyframes slideIn {
+    from { transform:translateX(100%); opacity:0; }
+    to { transform:translateX(0); opacity:1; }
+  }
+  @keyframes slideOut {
+    from { transform:translateX(0); opacity:1; }
+    to { transform:translateX(100%); opacity:0; }
+  }
+  .toast-success { border-color:var(--border-success); }
+  .toast-error { border-color:var(--border-error); }
+  .toast .material-symbols-rounded { font-size:1.5rem; }
+  .input-group {
+    display:flex; flex-direction:column; gap:0.25rem;
+  }
+  .input-group label {
+    font-weight:600;
+    color:var(--text-primary);
+  }
+  .input {
+    padding:0.75rem 1rem;
+    border:var(--clay-border) solid var(--border-default);
+    border-radius:var(--radius-md);
+    background:var(--bg-secondary);
+    color:var(--text-primary);
+    font:inherit;
+    transition:var(--transition-fast);
+  }
+  .input:focus {
+    outline:3px solid var(--secondary);
+    outline-offset:3px;
+    border-color:var(--secondary);
+  }
+  .input.is-valid { border-color:var(--border-success); }
+  .input.is-invalid { border-color:var(--border-error); }
+  .input-group__error {
+    color:var(--text-error);
+    font-size:0.875rem;
+    min-height:1.25rem;
+    display:flex; align-items:center; gap:0.25rem;
+  }
+  .input-group__error .material-symbols-rounded { font-size:1rem; }
+  .cta-form {
+    display:flex; gap:0.5rem;
+    flex-wrap:wrap;
+  }
+  .cta-form .input { flex:1; min-width:200px; }
+  .cta-form .btn { flex-shrink:0; }
+  .nav {
+    display:flex; align-items:center; justify-content:space-between;
+    height:4rem;
+  }
+  .nav-links {
+    display:flex; gap:2rem;
+  }
+  .nav-link {
+    font-weight:600;
+    position:relative;
+  }
+  .nav-link::after {
+    content:""; position:absolute; left:0; bottom:-4px;
+    height:2px; width:0;
+    background:var(--primary);
+    transition:width var(--transition-normal);
+  }
+  .nav-link:hover::after, .nav-link:focus-visible::after { width:100%; }
+  .hamburger {
+    display:none; flex-direction:column; gap:0.25rem;
+    width:1.5rem; height:1.5rem;
+  }
+  .hamburger span {
+    display:block; height:2px;
+    background:var(--text-primary);
+    border-radius:2px;
+  }
+  .nav-mobile {
+    position:fixed; top:4rem; right:0; background:var(--bg-secondary);
+    border-left:var(--clay-border) solid var(--border-default);
+    border-bottom:var(--clay-border) solid var(--border-default);
+    border-bottom-left-radius:var(--radius-lg);
+    width:200px; padding:1rem;
+    box-shadow:var(--shadow-md);
+    z-index:var(--z-dropdown);
+    transform:translateX(100%);
+    transition:transform var(--transition-normal);
+  }
+  .nav-mobile.open { transform:translateX(0); }
+  .nav-mobile a {
+    display:block; padding:0.5rem 0;
+    border-bottom:1px solid var(--border-default);
+  }
+  .nav-mobile a:last-child { border-bottom:none; }
+  .header-scrolled {
+    box-shadow:0 4px 12px rgba(0,0,0,.1);
+  }
+  .floating-blob {
+    position:absolute;
+    border-radius:50%;
+    background:var(--primary);
+    opacity:0.3;
+    filter:blur(8px);
+    pointer-events:none;
+    animation:float 6s ease-in-out infinite alternate;
+  }
+  @keyframes float {
+    from { transform:translateY(0); }
+    to { transform:translateY(-8px); }
+  }
+  .blob-1 { width:4rem; height:4rem; left:10%; top:20%; animation-delay:0s; }
+  .blob-2 { width:3rem; height:3rem; right:15%; top:40%; animation-delay:2s; }
+  .blob-3 { width:5rem; height:5rem; left:5%; bottom:10%; animation-delay:4s; }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration:0.001ms !important; transition-duration:0.001ms !important; }
+    .floating-blob { animation:none; }
+    .btn:hover { transform:none; }
+    .clay-card:hover { transform:none; }
+  }
+}
+@layer utilities {
+  .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0; }
+  .text-center { text-align:center; }
+  .flex { display:flex; }
+  .flex-col { flex-direction:column; }
+  .items-center { align-items:center; }
+  .justify-center { justify-content:center; }
+  .justify-between { justify-content:space-between; }
+  .gap-1 { gap:0.25rem; }
+  .gap-2 { gap:0.5rem; }
+  .gap-3 { gap:0.75rem; }
+  .gap-4 { gap:1rem; }
+  .gap-5 { gap:1.5rem; }
+  .gap-6 { gap:2rem; }
+  .w-full { width:100%; }
+  .max-w-sm { max-width:24rem; }
+  .max-w-md { max-width:28rem; }
+  .max-w-lg { max-width:32rem; }
+  .max-w-xl { max-width:36rem; }
+  .max-w-2xl { max-width:42rem; }
+  .max-w-3xl { max-width:48rem; }
+  .max-w-4xl { max-width:56rem; }
+  .max-w-5xl { max-width:64rem; }
+  .max-w-6xl { max-width:72rem; }
+  .max-w-full { max-width:none; }
+}
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<header class="header">
+  <div class="container flex justify-between items-center nav">
+    <div class="flex items-center gap-3">
+      <div class="icon-chip icon-chip--peach">
+        <span class="material-symbols-rounded" aria-hidden="true">child_friendly</span>
+      </div>
+      <h1>Squishly</h1>
+    </div>
+    <nav class="nav-links">
+      <a href="#features" class="nav-link">Features</a>
+      <a href="#how-it-works" class="nav-link">How It Works</a>
+      <a href="#testimonials" class="nav-link">Testimonials</a>
+      <a href="#pricing" class="nav-link">Pricing</a>
+      <a href="#faq" class="nav-link">FAQ</a>
+    </nav>
+    <button id="theme-toggle" aria-label="Toggle dark mode" aria-pressed="false">
+      <span class="material-symbols-rounded" id="theme-icon">dark_mode</span>
+    </button>
+    <a href="#pricing" class="btn btn--primary">Get Started</a>
+    <div class="hamburger" id="hamburger" aria-label="Open menu" aria-controls="nav-mobile" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+  <div class="nav-mobile" id="nav-mobile" aria-label="Mobile menu">
+    <a href="#features">Features</a>
+    <a href="#how-it-works">How It Works</a>
+    <a href="#testimonials">Testimonials</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#faq">FAQ</a>
+  </div>
+</header>
+
+<main id="main-content">
+  <section class="hero section" id="hero">
+    <div class="container flex flex-col md:flex-row items-center gap-5">
+      <div class="flex flex-col items-center text-center gap-4">
+        <div class="icon-chip icon-chip--peach">
+          <span class="material-symbols-rounded" aria-hidden="true">child_friendly</span>
+        </div>
+        <h1>Build Squishy 3D Stories</h1>
+        <p class="text-center">Where imagination takes shape — literally. Create, animate, and share your own claymation adventures with intuitive tools designed for young creators.</p>
+        <div class="flex flex-col sm:flex-row gap-3 w-full justify-center">
+          <a href="#features" class="btn btn--secondary">Explore Features</a>
+          <a href="#pricing" class="btn btn--primary">Start Free Trial</a>
+        </div>
+        <div class="flex items-center gap-3 text-center">
+          <div class="flex gap-1">
+            <span class="material-symbols-rounded" aria-hidden="true">star</span>
+            <span class="material-symbols-rounded" aria-hidden="true">star</span>
+            <span class="material-symbols-rounded" aria-hidden="true">star</span>
+            <span class="material-symbols-rounded" aria-hidden="true">star</span>
+            <span class="material-symbols-rounded" aria-hidden="true">star_half</span>
+          </div>
+          <span>Loved by 10,000+ junior creators</span>
+        </div>
+      </div>
+      <div class="relative flex-1">
+        <div class="clay-card featured-card relative z-10 p-6">
+          <h2 class="text-center mb-4">My First Adventure</h2>
+          <p class="text-center text-secondary">A day in the life of Squishy the Cat</p>
+          <div class="flex items-center justify-center gap-3">
+            <span class="material-symbols-rounded feature-icon" aria-hidden="true">play_arrow</span>
+            <span class="material-symbols-rounded feature-icon" aria-hidden="true">palette</span>
+            <span class="material-symbols-rounded feature-icon" aria-hidden="true">videocam</span>
+          </div>
+        </div>
+        <div class="floating-blob blob-1" aria-hidden="true"></div>
+        <div class="floating-blob blob-2" aria-hidden="true"></div>
+        <div class="floating-blob blob-3" aria-hidden="true"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="features">
+    <div class="container">
+      <div class="section-title">
+        <h2>Features</h2>
+      </div>
+      <p class="text-center max-w-lg mx-auto">Why kids and parents love Squishly</p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <article class="clay-card">
+          <div class="flex items-center justify-center gap-3 mb-4">
+            <div class="icon-chip icon-chip--peach">
+              <span class="material-symbols-rounded" aria-hidden="true">brush</span>
+            </div>
+            <h3>Intuitive 3D Sculpting</h3>
+          </div>
+          <p>Pull, push, and twist virtual clay with natural gestures. No complex menus — just pure, squishy fun that feels like real playdough.</p>
+        </article>
+        <article class="clay-card">
+          <div class="flex items-center justify-center gap-3 mb-4">
+            <div class="icon-chip icon-chip--blue">
+              <span class="material-symbols-rounded" aria-hidden="true">animation</span>
+            </div>
+            <h3>Frame-by-Frame Animation</h3>
+          </div>
+          <p>Bring your creations to life with simple timeline controls. See instant playback and adjust timing with squishy, responsive sliders.</p>
+        </article>
+        <article class="clay-card">
+          <div class="flex items-center justify-center gap-3 mb-4">
+            <div class="icon-chip icon-chip--mint">
+              <span class="material-symbols-rounded" aria-hidden="true">share</span>
+            </div>
+            <h3>Safe Sharing & Collaboration</h3>
+          </div>
+          <p>Share animations with family in a moderated environment. Collaborate on stories with friends using encrypted, parent-approved links.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="how-it-works">
+    <div class="container">
+      <div class="section-title">
+        <h2>How It Works</h2>
+      </div>
+      <p class="text-center max-w-lg mx-auto">Three simple steps to create your first squishy masterpiece</p>
+      <div class="flex flex-col sm:flex-row gap-5 items-start">
+        <div class="flex flex-col gap-4">
+          <div class="flex items-center gap-3">
+            <div class="step-number">1</div>
+            <div>
+              <h3>Choose Your Clay</h3>
+              <p>Pick from vibrant, squishy colors and textures. Each clay type behaves uniquely — stretchy, firm, or fluffy — for endless experimentation.</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="step-number">2</div>
+            <div>
+              <h3>Shape & Animate</h3>
+              <p>Use intuitive gestures to sculpt characters and props. Set keyframes for movement, facial expressions, and squishy physics effects.</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="step-number">3</div>
+            <div>
+              <h3>Share Your Story</h3>
+              <p>Export as GIF or video, or share directly to the Squishly Gallery. Get feedback with emoji reactions and build a following of fellow creators.</p>
+            </div>
+          </div>
+        </div>
+        <div class="flex-1 hidden sm:block">
+          <div class="step-connector"></div>
+          <div class="step-connector"></div>
+        </div>
+      </div>
+      <div class="flex flex-col sm:hidden gap-5">
+        <div class="step-connector-vertical"></div>
+        <div class="flex items-start gap-3">
+          <div class="step-number">1</div>
+          <div>
+            <h3>Choose Your Clay</h3>
+            <p>Pick from vibrant, squishy colors and textures. Each clay type behaves uniquely — stretchy, firm, or fluffy — for endless experimentation.</p>
+          </div>
+        </div>
+        <div class="step-connector-vertical"></div>
+        <div class="flex items-start gap-3">
+          <div class="step-number">2</div>
+          <div>
+            <h3>Shape & Animate</h3>
+            <p>Use intuitive gestures to sculpt characters and props. Set keyframes for movement, facial expressions, and squishy physics effects.</p>
+          </div>
+        </div>
+        <div class="step-connector-vertical"></div>
+        <div class="flex items-start gap-3">
+          <div class="step-number">3</div>
+          <div>
+            <h3>Share Your Story</h3>
+            <p>Export as GIF or video, or share directly to the Squishly Gallery. Get feedback with emoji reactions and build a following of fellow creators.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="testimonials">
+    <div class="container">
+      <div class="section-title">
+        <h2>What Creators Say</h2>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <article class="clay-card testimonial-card">
+          <blockquote>
+            "I made a dinosaur dance party! It's so easy to make my clay dino wiggle and shake. My friends love watching it!"
+          </blockquote>
+          <div class="star-row">
+            <span class="material-symbols-rounded" aria-label="Rated 5 out of 5">star</span>
+            <span class="material-symbols-rounded" aria-label="Rated 5 out of 5">star</span>
+            <span class="material-symbols-rounded" aria-label="Rated 5 out of 5">star</span>
+            <span class="material-symbols-rounded" aria-label="Rated 5 out of 5">star</span>
+            <span class="material-symbols-rounded" aria-label="Rated 5 out of 5">star</span>
+          </div>
+          <div class="flex items-center gap-3 mt-4">
+            <div class="avatar">AS</div>
+            <div>
+              <strong>Ava S.</strong>
+              <span class="text-secondary">Age 8</span>
+            </div>
+          </div>
+        </article>
+        <article class="clay-card testimonial-card">
+          <blockquote>
+            "As a parent, I love that Squishly encourages creativity without frustrating controls. My son spends hours building worlds and giggling at the results."
+          </blockquote>
+          <div class="star-row">
+            <span class="material-symbols-rounded" aria-label="Rated 5 out of 5">star</span>
+            <span class="material-symbols-rounded" aria-label="Rated 5 out of 5">star</span>
+            <span class="material-symbols-rounded" aria-label="Rated 5 out of 5">star</span>
+            <span class="material-symbols-rounded" aria-label="Rated 5 out of 5">star</span>
+            <span class="material-symbols-rounded" aria-label="Rated 4 out of 5">star_half</span>
+          </div>
+          <div class="flex items-center gap-3 mt-4">
+            <div class="avatar">MK</div>
+            <div>
+              <strong>Miguel K.</strong>
+              <span class="text-secondary">Parent</span>
+            </div>
+          </div>
+        </article>
+        <article class="clay-card testimonial-card">
+          <blockquote>
+            "The squishy physics are amazing! When I throw my clay ball, it wobbles just like real clay. It feels magical to see my ideas come alive."
+          </blockquote>
+          <div class="star-row">
+            <span class="material-symbols-rounded" aria-label="Rated 5 out of 5">star</span>
+            <span class="material-symbols-rounded" aria-label="Rated 5 out of 5">star</span>
+            <span class="material-symbols-rounded" aria-label="Rated 5 out of 5">star</span>
+            <span class="material-symbols-rounded" aria-label="Rated 5 out of 5">star</span>
+            <span class="material-symbols-rounded" aria-label="Rated 5 out of 5">star</span>
+          </div>
+          <div class="flex items-center gap-3 mt-4">
+            <div class="avatar">LJ</div>
+            <div>
+              <strong>Leo J.</strong>
+              <span class="text-secondary">Age 10</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="pricing">
+    <div class="container">
+      <div class="section-title">
+        <h2>Pricing</h2>
+      </div>
+      <p class="text-center max-w-lg mx-auto">Choose the plan that fits your family's creative journey</p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <article class="clay-card">
+          <h3 class="text-center">Explorer</h3>
+          <p class="text-center text-secondary">Free</p>
+          <ul class="list-none space-y-3">
+            <li><span class="material-symbols-rounded feature-icon" aria-hidden="true">check_circle</span> Basic sculpting tools</li>
+            <li><span class="material-symbols-rounded feature-icon" aria-hidden="true">check_circle</span> 5 clay colors</li>
+            <li><span class="material-symbols-rounded feature-icon" aria-hidden="true">check_circle</span> 30-second animations</li>
+            <li><span class="material-symbols-rounded feature-icon" aria-hidden="true">check_circle</span> Local saving only</li>
+            <li><span class="material-symbols-rounded feature-icon" aria-hidden="true">check_circle</span> Community gallery access</li>
+          </ul>
+          <a href="#" class="btn btn--secondary w-full">Start for Free</a>
+        </article>
+        <article class="clay-card clay-card--featured">
+          <div class="pricing-badge">Most Popular</div>
+          <h3 class="text-center">Creator</h3>
+          <p class="text-center text-secondary">$4.99/month</p>
+          <ul class="list-none space-y-3">
+            <li><span class="material-symbols-rounded feature-icon" aria-hidden="true">check_circle</span> All sculpting tools</li>
+            <li><span class="material-symbols-rounded feature-icon" aria-hidden="true">check_circle</span> 50+ clay colors & textures</li>
+            <li><span class="material-symbols-rounded feature-icon" aria-hidden="true">check_circle</span> Unlimited animation length</li>
+            <li><span class="material-symbols-rounded feature-icon" aria-hidden="true">check_circle</span> Cloud saving & sharing</li>
+            <li><span class="material-symbols-rounded feature-icon" aria-hidden="true">check_circle</span> Monthly creative challenges</li>
+          </ul>
+          <a href="#" class="btn btn--primary w-full">Choose Plan</a>
+        </article>
+        <article class="clay-card">
+          <h3 class="text-center">Studio</h3>
+          <p class="text-center text-secondary">$12.99/month</p>
+          <ul class="list-none space-y-3">
+            <li><span class="material-symbols-rounded feature-icon" aria-hidden="true">check_circle</span> Everything in Creator</li>
+            <li><span class="material-symbols-rounded feature-icon" aria-hidden="true">check_circle</span> Advanced physics & effects</li>
+            <li><span class="material-symbols-rounded feature-icon" aria-hidden="true">check_circle</span> Team collaboration (up to 5)</li>
+            <li><span class="material-symbols-rounded feature-icon" aria-hidden="true">check_circle</span> Priority support</li>
+            <li><span class="material-symbols-rounded feature-icon" aria-hidden="true">check_circle</span> Custom clay creation</li>
+          </ul>
+          <a href="#" class="btn btn--secondary w-full">Contact Sales</a>
+        </article>
+      </div>
+      <p class="text-center mt-5 text-secondary max-w-lg mx-auto">
+        Cancel anytime. No squishy commitments. All plans include access to educational resources and parental controls.
+      </p>
+    </div>
+  </section>
+
+  <section class="section" id="faq">
+    <div class="container">
+      <div class="section-title">
+        <h2>Frequently Asked Questions</h2>
+      </div>
+      <div class="accordion">
+        <div class="faq-item">
+          <button class="faq-question" aria-controls="faq-1" aria-expanded="false">
+            Is Squishly safe for young children?
+            <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
+          </button>
+          <div id="faq-1" class="faq-answer" hidden>
+            Absolutely! Squishly is designed with child safety as our top priority. We have no ads, no in-app purchases, and all sharing features require parental approval. Our content is moderated, and we comply with COPPA and GDPR-K regulations.
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" aria-controls="faq-2" aria-expanded="false">
+            What devices does Squishly work on?
+            <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
+          </button>
+          <div id="faq-2" class="faq-answer" hidden>
+            Squishly works on iPad, Android tablets, and touch-enabled Windows devices. We recommend devices with at least 2GB RAM and a screen size of 8 inches or larger for the best sculpting experience. A stylus is optional but enhances precision.
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" aria-controls="faq-3" aria-expanded="false">
+            Can I use Squishly offline?
+            <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
+          </button>
+          <div id="faq-3" class="faq-answer" hidden>
+            Yes! The Explorer plan works completely offline for local creation. Creator and Studio plans require periodic online verification (every 30 days) to maintain cloud saving and sharing features, but core creation remains offline-capable.
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" aria-controls="faq-4" aria-expanded="false">
+            How does the free trial work?
+            <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
+          </button>
+          <div id="faq-4" class="faq-answer" hidden>
+            The Creator plan includes a 7-day free trial with full access to all features. No credit card is required to start. After the trial, you'll automatically revert to the free Explorer plan unless you choose to subscribe.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="final-cta">
+    <div class="container">
+      <div class="clay-card p-8 text-center relative overflow-hidden" style="background:var(--gradient-hero);">
+        <h2>Ready to Start Squishing?</h2>
+        <p class="mb-6">Join thousands of young creators bringing their imagination to life, one squishy frame at a time.</p>
+        <form id="cta-form" class="cta-form">
+          <div class="input-group">
+            <label for="cta-email" class="sr-only">Email address</label>
+            <input type="email" id="cta-email" name="email" placeholder="Your email address" class="input" required>
+            <div class="input-group__error" aria-live="polite">
+              <span class="material-symbols-rounded" aria-hidden="true">error</span>
+              <span id="cta-email-error"></span>
+            </div>
+          </div>
+          <button type="submit" class="btn btn--primary">
+            <span class="btn-label">Get Early Access</span>
+            <span class="btn-loader" aria-hidden="true"></span>
+          </button>
+        </form>
+        <div id="cta-success" class="hidden mt-4 text-success">
+          <p>Thanks for joining! Check your email for early access details.</p>
+        </div>
+        <div class="floating-blob blob-1" aria-hidden="true" style="bottom:-10%; left:-10%;"></div>
+        <div class="floating-blob blob-2" aria-hidden="true" style="top:-10%; right:-10%;"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-6">
+      <div class="flex flex-col items-center sm:items-start gap-3">
+        <div class="flex items-center gap-3">
+          <div class="icon-chip icon-chip--peach">
+            <span class="material-symbols-rounded" aria-hidden="true">child_friendly</span>
+          </div>
+          <div>
+            <h2>Squishly</h2>
+            <p class="text-secondary">Where imagination takes shape</p>
+          </div>
+        </div>
+        <div class="flex gap-3">
+          <a href="#" aria-label="Facebook" class="flex items-center justify-center w-8 h-8">
+            <span class="material-symbols-rounded" aria-hidden="true">facebook</span>
+          </a>
+          <a href="#" aria-label="Instagram" class="flex items-center justify-center w-8 h-8">
+            <span class="material-symbols-rounded" aria-hidden="true">instagram</span>
+          </a>
+          <a href="#" aria-label="YouTube" class="flex items-center justify-center w-8 h-8">
+            <span class="material-symbols-rounded" aria-hidden="true">youtube</span>
+          </a>
+          <a href="#" aria-label="TikTok" class="flex items-center justify-center w-8 h-8">
+            <span class="material-symbols-rounded" aria-hidden="true">tiktok</span>
+          </a>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <div>
+          <h3 class="mb-3">Product</h3>
+          <a href="#features" class="flex items-center gap-2">Features</a>
+          <a href="#how-it-works" class="flex items-center gap-2">How It Works</a>
+          <a href="#pricing" class="flex items-center gap-2">Pricing</a>
+        </div>
+        <div>
+          <h3 class="mb-3">Company</h3>
+          <a href="#" class="flex items-center gap-2">About Us</a>
+          <a href="#" class="flex items-center gap-2">Blog</a>
+          <a href="#" class="flex items-center gap-2">Careers</a>
+        </div>
+        <div>
+          <h3 class="mb-3">Support</h3>
+          <a href="#" class="flex items-center gap-2">Help Center</a>
+          <a href="#" class="flex items-center gap-2">Contact Us</a>
+          <a href="#" class="flex items-center gap-2">Privacy Policy</a>
+          <a href="#" class="flex items-center gap-2">Terms of Service</a>
+        </div>
+      </div>
+    </div>
+    <div class="mt-6 pt-4 border-t border-border-default">
+      <p class="text-center text-secondary">
+        © 2026 Squishly. All rights reserved.
+        <a href="#" class="ml-2">Privacy</a> ·
+        <a href="#" class="ml-2">Terms</a>
+      </p>
+    </div>
+  </div>
+</footer>
+
+<div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+<script>
+  // Theme Management
+  const themeToggle = document.getElementById('theme-toggle');
+  const themeIcon = document.getElementById('theme-icon');
+  const htmlEl = document.documentElement;
+  
+  const setTheme = (theme) => {
+    if (theme === 'dark') {
+      htmlEl.classList.add('dark');
+      htmlEl.classList.remove('light');
+      themeToggle.setAttribute('aria-pressed', 'true');
+      themeIcon.textContent = 'light_mode';
+    } else {
+      htmlEl.classList.add('light');
+      htmlEl.classList.remove('dark');
+      themeToggle.setAttribute('aria-pressed', 'false');
+      themeIcon.textContent = 'dark_mode';
+    }
+    localStorage.setItem('clay-theme', theme);
+  };
+  
+  const initTheme = () => {
+    const savedTheme = localStorage.getItem('clay-theme');
+    if (savedTheme === 'light' || savedTheme === 'dark') {
+      setTheme(savedTheme);
+    } else {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setTheme(prefersDark ? 'dark' : 'light');
+    }
+  };
+  
+  themeToggle.addEventListener('click', () => {
+    const isDark = htmlEl.classList.contains('dark');
+    setTheme(isDark ? 'light' : 'dark');
+  });
+  
+  // Mobile Nav
+  const hamburger = document.getElementById('hamburger');
+  const navMobile = document.getElementById('nav-mobile');
+  
+  hamburger.addEventListener('click', () => {
+    const isOpen = hamburger.getAttribute('aria-expanded') === 'true';
+    hamburger.setAttribute('aria-expanded', String(!isOpen));
+    navMobile.classList.toggle('open');
+  });
+  
+  // Close mobile nav when clicking a link
+  navMobile.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      hamburger.setAttribute('aria-expanded', 'false');
+      navMobile.classList.remove('open');
+    });
+  });
+  
+  // Header scroll effect
+  const header = document.querySelector('.header');
+  let lastScroll = 0;
+  
+  window.addEventListener('scroll', () => {
+    const currentScroll = window.pageYOffset;
+    if (currentScroll <= 0) {
+      header.classList.remove('header-scrolled');
+    } else if (currentScroll > lastScroll && !header.classList.contains('header-scrolled')) {
+      header.classList.add('header-scrolled');
+    } else if (currentScroll < lastScroll && header.classList.contains('header-scrolled')) {
+      header.classList.remove('header-scrolled');
+    }
+    lastScroll = currentScroll;
+  });
+  
+  // Smooth scrolling for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth' });
+        // Close mobile nav if open
+        if (navMobile.classList.contains('open')) {
+          hamburger.setAttribute('aria-expanded', 'false');
+          navMobile.classList.remove('open');
+        }
+      }
+    });
+  });
+  
+  // FAQ Accordion
+  document.querySelectorAll('.faq-question').forEach(button => {
+    button.addEventListener('click', () => {
+      const item = button.parentElement;
+      const isOpen = item.hasAttribute('open');
+      item.toggleAttribute('open', !isOpen);
+      button.setAttribute('aria-expanded', String(!isOpen));
+    });
+  });
+  
+  // Button loading states
+  document.querySelectorAll('.btn').forEach(button => {
+    button.addEventListener('click', (e) => {
+      // Prevent double clicks on loading state
+      if (button.classList.contains('is-loading')) {
+        e.preventDefault();
+        return;
+      }
+      
+      // Simulate loading for pricing buttons
+      if (button.closest('.pricing-card') || button.closest('.clay-card--featured')) {
+        e.preventDefault();
+        button.classList.add('is-loading');
+        setTimeout(() => {
+          button.classList.remove('is-loading');
+          button.classList.add('is-success');
+          showToast('success', 'Plan selected! Check your email for next steps.');
+          setTimeout(() => {
+            button.classList.remove('is-success');
+          }, 2000);
+        }, 1500);
+      }
+    });
+  });
+  
+  // CTA Form
+  const ctaForm = document.getElementById('cta-form');
+  const ctaEmail = document.getElementById('cta-email');
+  const ctaSuccess = document.getElementById('cta-success');
+  const ctaEmailError = document.getElementById('cta-email-error');
+  
+  ctaForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = ctaEmail.value.trim();
+    
+    // Reset states
+    ctaEmail.classList.remove('is-valid', 'is-invalid');
+    ctaEmailError.textContent = '';
+    ctaSuccess.classList.add('hidden');
+    
+    // Validate
+    if (!email) {
+      ctaEmail.classList.add('is-invalid');
+      ctaEmailError.textContent = 'Please enter your email address';
+      return;
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      ctaEmail.classList.add('is-invalid');
+      ctaEmailError.textContent = 'Please enter a valid email address';
+      return;
+    }
+    
+    // Simulate submission
+    ctaEmail.classList.add('is-valid');
+    ctaForm.classList.add('is-loading');
+    setTimeout(() => {
+      ctaForm.classList.remove('is-loading');
+      ctaSuccess.classList.remove('hidden');
+      showToast('success', 'Thanks for joining! Check your email.');
+      ctaEmail.value = '';
+    }, 1500);
+  });
+  
+  // Toast System
+  function showToast(type, message) {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `
+      <span class="material-symbols-rounded" aria-hidden="true">
+        ${type === 'success' ? 'check_circle' : 'error'}
+      </span>
+      <span>${message}</span>
+      <button class="toast-dismiss" aria-label="Dismiss">
+        <span class="material-symbols-rounded" aria-hidden="true">close</span>
+      </span>
+    `;
+    
+    container.appendChild(toast);
+    
+    // Auto remove after animation
+    setTimeout(() => {
+      toast.remove();
+    }, 4500);
+    
+    // Dismiss button
+    toast.querySelector('.toast-dismiss').addEventListener('click', () => {
+      toast.remove();
+    });
+  }
+  
+  // Scroll Reveal
+  const revealElements = document.querySelectorAll('.clay-card, .section-title, .hero > *');
+  
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+  });
+  
+  revealElements.forEach(el => {
+    revealObserver.observe(el);
+  });
+  
+  // Initialize
+  initTheme();
+  
+  // Add is-visible class initially for elements that are already in view
+  revealElements.forEach(el => {
+    if (el.getBoundingClientRect().top < window.innerHeight && el.getBoundingClientRect().bottom >= 0) {
+      el.classList.add('is-visible');
+    }
+  });
+</script>
+</body>
+</html>

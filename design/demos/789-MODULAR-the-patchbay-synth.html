@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MODULAR — The Patchbay Synth</title>
+  <meta name="description" content="MODULAR — The Patchbay Synth, a contemporary modular synthesizer with patchbay connectivity">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,GRAD,SLT@20..48,100..700,0..100,0&display=swap">
+  <style>
+    :root{
+      --primary:#3e2c1a;--secondary:#8a7050;--bg-primary:#d8cfc0;--bg-secondary:#fefefe;--text-primary:#171310;--text-secondary:#5c4630;--text-success:#2f6b4a;--text-error:#b3402b;--border-default:rgba(62,44,26,.18);--border-success:#2f6b4a;--border-error:#b3402b;--radius-sm:8px;--radius-md:16px;--radius-lg:28px;--shadow-sm:0 1px 2px rgba(0,0,0,.05);--shadow-md:0 4px 12px rgba(0,0,0,.1);--shadow-neu-out:2px 2px 4px rgba(23,19,16,.15),-2px -2px 4px rgba(254,254,254,.6);--shadow-neu-in:inset 2px 2px 4px rgba(23,19,16,.15),inset -2px -2px 4px rgba(254,254,254,.6);--transition-fast:150ms;--transition-normal:300ms;--ease-standard:.4s cubic-bezier(.4,0,.2,1);--z-dropdown:100;--z-modal:200;--z-toast:300;--gradient-warm:linear-gradient(135deg,#3e2c1a,#2c1e10);--gradient-cable:linear-gradient(90deg,#8a7050,#d8cfc0,#8a7050);--gradient-panel:radial-gradient(100% 100% at 50% 0%,rgba(62,44,26,.15),transparent 50%);--font-heading:Space Grotesk;--font-base:Inter;--font-mono:Space Mono}.dark{
+      --bg-primary:#1c130a;--bg-secondary:#2c1e10;--text-primary:#d8cfc0;--text-secondary:#a8906d;--border-default:rgba(28,19,10,.3);--shadow-neu-out:2px 2px 4px rgba(0,0,0,.5),-2px -2px 4px rgba(255,255,255,.05);--shadow-neu-in:inset 2px 2px 4px rgba(0,0,0,.5),inset -2px -2px 4px rgba(255,255,255,.05)}
+    *{box-sizing:border-box;margin:0;padding:0}html{-webkit-tap-highlight-color:transparent}[role=region]{font-variant:normal}body{
+      font-family:var(--font-base),system-ui,sans-serif;background:var(--bg-primary);color:var(--text-primary);line-height:1.6;-webkit-tap-highlight-color:transparent}
+    a{color:inherit;text-decoration:none}img{max-width:100%;display:block}[hidden]{display:none!important}
+    .skip-link{
+      position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(1px,1px,1px,1px);
+      z-index:999;background:#3e2c1a;color:#fff;padding:1rem;outline:none}
+    .skip-link:focus{left:auto;top:1rem;padding:1rem;width:auto}
+    .theme-toggle{
+      display:flex;align-items:center;gap:.5rem;padding:.5rem;border:none;background:transparent;cursor:pointer;
+      color:var(--text-primary);font-family:var(--font-mono);font-size:.9rem}
+    .theme-toggle[symbol]{width:1.2em;height:1.2em}
+    @media (prefers-reduced-motion:reduce){
+      *,*:before,:after{animation-duration:0s!important;transition-duration:0s!important}}
+    .header{
+      position:sticky;top:0;background:var(--bg-secondary);z-index:var(--z-dropdown);
+      backdrop-filter:blur(8px);border-bottom:1px solid var(--border-default)}
+    .header__inner{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.5rem;gap:1rem;items-center}
+    .wordmark{
+      font-family:var(--font-heading),var(--font-base);font-weight:700;letter-spacing:.2em;color:var(--primary);
+      display:flex;align-items:center;gap:.3rem}
+    .wordmark__badge{
+      font-family:var(--font-mono);font-size:.75em;color:var(--secondary);opacity:.8}
+    .nav__list{
+      display:flex;gap:2rem;font-family:var(--font-heading);font-size:.9rem;letter-spacing:.05em}
+    .nav__list a{position:relative;padding-bottom:.25rem}
+    .nav__list a::after{content:'';position:absolute;bottom:0;left:0;width:0;height:2px;background:var(--secondary);transition:var(--transition-fast) width}
+    .nav__list a:hover::after{width:100%}
+    .nav__toggle{
+      display:none;background:transparent;border:none;cursor:padding:0;color:var(--text-primary);
+      padding:.5rem;align-items:center;justify-content:center}
+    .nav__toggle[aria-expanded="true"]+ .nav__mobile{transform:translateY(0)}
+    .nav__mobile{
+      position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg-secondary);
+      transform:translateY(-100%);transition:var(--transition-fast) transform;z-index:var(--z-dropdown);
+      padding:2rem;overflow-y:auto;align-items:center;justify-content:center;flex-direction:column}
+    .nav__mobile a{font-size:1.5rem;margin:.5rem 0;color:var(--text-primary)}
+    .nav__close{
+      position:absolute;top:1.5rem;right:2rem;background:transparent;border:none;color:var(--text-primary);
+      font-family:var(--font-mono);font-size:1.5rem;cursor:pointer}
+    .header__actions{display:flex;align-items:center;gap:.75rem}
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.6rem 1.2rem;
+      font-family:var(--font-base);font-size:.9rem;font-weight:500;border:none;cursor:pointer;
+      min-width:140px;min-height:44px;border-radius:var(--radius-md);transition:transform var(--transition-fast)}
+    .btn:focus-visible{outline:3px solid var(--secondary);outline-offset:3px}
+    .btn:active{transform:scale(.97)}
+    .btn--primary{background:var(--gradient-warm);color:#d8cfc0}
+    .btn--secondary{
+      background:var(--bg-secondary);color:var(--text-primary);border:1px solid var(--border-default)}
+    .btn--secondary:hover{box-shadow:var(--shadow-neu-out)}
+    .btn--secondary:active{box-shadow:var(--shadow-neu-in)}
+    .btn--danger{background:#b3402b;color:#fff}
+    .btn.is-loading{pointer-events:none}
+    .btn.is-loading .symbol{animation:spin var(--transition-fast) linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .hero{
+      padding:3rem 1.5rem;display:flex;flex-wrap:wrap;gap:2rem;align-items:center;justify-content:center}
+    .hero__copy{
+      flex:1;min-width:280px;max-width:520px}
+    .hero__badge{
+      font-family:var(--font-mono);font-size:.8rem;color:var(--secondary);text-transform:uppercase;letter-spacing:.3em;margin-bottom:.5rem}
+    .hero__title{
+      font-family:var(--font-heading);font-size:clamp(2rem,6vw,3.5rem);font-weight:700;line-height:1.2;color:var(--text-primary);
+      margin-bottom:.5rem}
+    .hero__title .accent{
+      background:var(--gradient-warm);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .hero__subtitle{
+      font-size:1.1rem;color:var(--text-secondary);margin-bottom:1.5rem}
+    .hero__ctgs{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap}
+    .hero__panel{
+      flex:0 0 280px;max-width:280px;background:var(--gradient-panel);border-radius:var(--radius-lg);
+      padding:2rem;position:relative;align-self:center}
+    .hero__panel::before{
+      content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);
+      width:120px;height:1px;background:var(--border-default)}
+    .knob-panel{
+      display:flex;flex-direction:column;align-items:center;gap:1rem}
+    .knob{
+      width:60px;height:60px;border-radius:50%;background:var(--bg-secondary);
+      display:flex;align-items:center;justify-content:center;position:relative;transition:transform var(--transition-fast)}
+    .knob:hover{transform:scale(1.08)}
+    @media (prefers-reduced-motion:reduce){.knob:hover{transform:none}}
+    .knob .symbol{font-variant:tabular-nums}
+    .socket{position:relative;width:12px;height:12px;border-radius:50%;background:var(--bg-primary);
+      border:2px solid var(--secondary);margin:.5rem}
+    .cable{
+      position:absolute;left:50%;top:50%;width:30px;height:6px;background:var(--gradient-cable);
+      border-radius:3px;transform:translate(-50%,-50%) rotate(45deg);transition:opacity var(--transition-fast)}
+    @media (prefers-reduced-motion:reduce){.cable{animation:none!important}}
+    .features__grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;
+      align-items:center;justify-items:center}
+    .card{
+      background:var(--bg-secondary);border-radius:var(--radius-lg);padding:1.5rem;position:relative;
+      transition:transform var(--transition-normal)}
+    .card:hover{transform:translateY(-4px);box-shadow:var(--shadow-neu-out)}
+    @media (prefers-reduced-motion:reduce){.card:hover{transform:none}}
+    .card__icon{font-size:2rem;color:var(--secondary);margin-bottom:.75rem;display:block}
+    .card__title{font-family:var(--font-heading);font-size:1.1rem;font-weight:600;margin-bottom:.5rem}
+    .card__copy{color:var(--text-secondary);font-size:.85rem}}
+    .steps__grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;text-align:center}
+    .step{position:relative;padding-left:2.5rem}
+    .step__num{
+      position:absolute;left:0;top:50%;transform:translateY(-50%);font-family:var(--font-mono);
+      font-size:1.2rem;color:var(--secondary);width:1.8rem;height:1.8rem;border-radius:50%;
+      background:var(--bg-primary);display:flex;align-items:center;justify-content:center}}
+    .testimonials__grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem;
+      align-items:center;justify-items:center}
+    .testimonial__card{
+      background:var(--bg-secondary);border-radius:var(--radius-lg);padding:1.5rem;position:relative;
+      transition:transform var(--transition-normal)}
+    .testimonial__card:hover{transform:translateY(-2px);box-shadow:var(--shadow-neu-out)}
+    @media (prefers-reduced-motion:reduce){.testimonial__card:hover{transform:none}}
+    .testimonial__text{color:var(--text-secondary);margin-bottom:1rem;font-size:.9rem}
+    .testimonial__author{display:flex;gap:.5rem;margin-top:1rem;align-items:center}
+    .testimonial__avatar{
+      width:40px;height:40px;border-radius:50%;background:var(--primary);color:#d8cfc0;
+      display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:700}
+    .rating{color:#f5a623;font-size:.8rem}}
+    .pricing__grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.5rem;
+      align-items:center;justify-items:center}
+    .pricing-card{
+      background:var(--bg-secondary);border-radius:var(--radius-lg);padding:1.5rem;position:relative;
+      transition:transform var(--transition-normal)}
+    .pricing-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-neu-out)}
+    @media (prefers-reduced-motion:reduce){.pricing-card:hover{transform:none}}
+    .pricing-card.featured{border-radius:var(--radius-lg);overflow:hidden}
+    .pricing-card.featured::before{
+      content:'Most Popular';position:absolute;top:1rem;right:1rem;font-size:.7rem;text-transform:uppercase;
+      color:var(--bg-primary);background:var(--secondary);padding:.3rem .6rem;border-radius:999px}
+    .pricing-card.featured .pricing-card__price{
+      background:var(--gradient-warm);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+      background-clip:text;color:transparent}
+    .pricing-card__name{font-family:var(--font-heading);font-size:1.1rem;font-weight:600;margin-bottom:.25rem}
+    .pricing-card__price{font-family:var(--font-mono);font-size:1.3rem;margin-bottom:1rem;display:block}
+    .pricing-card__list{color:var(--text-secondary);margin-bottom:1.5rem;font-size:.85rem}
+    .pricing-card__list li{display:flex;align-items:center;gap:.4rem;margin:.4rem 0}
+    .pricing-card__list .symbol{color:var(--text-success)}
+    .pricing-card__cta{width:100%}}
+    .faq__item{background:var(--bg-secondary);border-radius:var(--radius-lg);margin-bottom:.5rem;overflow:hidden}
+    .faq__question{
+      width:100%;padding:1rem 1.5rem;background:none;border:none;text-align:left;
+      font-family:var(--font-base);font-size:.95rem;color:var(--text-primary);
+      display:flex;justify-content:space-between;align-items:center;cursor:pointer;
+      transition:background var(--transition-fast)}
+    .faq__question:focus{background:var(--bg-primary);outline:none}
+    .faq__question:hover{background:rgba(62,44,26,.08)}
+    .faq__question[aria-expanded="true"]{background:rgba(62,44,26,.04)}
+    .faq__question .symbol{font-variant:tabular-nums;transition:transform var(--transition-fast)}
+    .faq__question[aria-expanded="true"] .symbol{transform:rotate(180deg)}
+    .faq__panel{
+      padding:0 1.5rem;max-height:0;overflow:hidden;transition:max-height var(--transition-normal) ease-out}
+    .faq__panel[aria-hidden="false"]{max-height:var(--max-height)}
+    .faq__panel .symbol{color:var(--secondary);float:right;margin:.2rem 0 0}
+    .faq__answer{padding:1rem 1.5rem;color:var(--text-secondary);font-size:.85rem}
+    .modal{
+      position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(23,19,16,.6);
+      backdrop-filter:blur(8px);align-items:center;justify-content:center;z-index:var(--z-modal);
+      padding:1.5rem;display:none;align-items:center}
+    .modal[open]{display:flex}
+    .modal__panel{
+      background:var(--bg-secondary);border-radius:var(--radius-lg);padding:2rem;width:90%;max-width:420px;
+      position:relative;transform:scale(.96);transition:transform var(--transition-fast)}
+    .modal[open] .modal__panel{transform:scale(1)}
+    .modal__close{
+      position:absolute;top:1rem;right:1rem;background:transparent;border:none;color:var(--text-primary);
+      font-size:1.5rem;cursor:pointer}
+    .modal__body{margin-top:1.5rem}
+    .modal__spinner{display:flex;gap:.5rem;color:var(--secondary)}
+    .modal__spinner .symbol{animation:spin var(--transition-fast) linear infinite}
+    .newsletter{display:flex;flex-direction:column;gap:.75rem;max-width:400px}
+    .input-group{
+      display:flex;flex-direction:column;gap:.3rem;min-height:44px}
+    .input-group__label{
+      font-size:.85rem;color:var(--text-secondary);font-family:var(--font-base)}
+    .input-group__input{
+      background:var(--bg-primary);color:var(--text-primary);border:none;padding:.75rem 1rem;
+      font-family:var(--font-base);font-size:1rem;border-radius:var(--radius-md);
+      width:100%;transition:border-color var(--transition-fast)}
+    .input-group__input:focus{outline:none;border-color:var(--secondary)}
+    .input-group__input:valid{border-color:var(--text-success)}
+    .input-group__input:invalid:not(:focus){border-color:var(--text-error)}
+    .input-group__error{
+      color:var(--text-error);font-size:.75rem;margin-top:.3rem;visibility:hidden}
+    .input-group__error.visible{visibility:visible}
+    .newsletter__submit{
+      align-self:flex-start;padding:.6rem 1.2rem;font-size:.9rem}
+    .newsletter__msg{
+      margin-top:.5rem;font-size:.85rem;align-self:center}
+    .footer{
+      background:var(--bg-secondary);color:var(--text-secondary);padding:2rem 1.5rem 1rem}
+    .footer__inner{display:flex;flex-wrap:wrap;gap:2rem;justify-content:space-between}
+    .footer__col{flex:1;min-width:160px}
+    .footer__links{margin-bottom:1rem}
+    .footer__links h4{font-family:var(--font-mono);font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.8rem}
+    .footer__links a{display:block;padding:.4rem .5rem;transition:background var(--transition-fast)}
+    .footer__links a:hover{background:rgba(62,44,26,.08)}
+    .footer__social{display:flex;gap:.5rem}
+    .footer__social .symbol{cursor:pointer;color:var(--text-primary)}
+    .footer__copyright{font-size:.75rem;margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--border-default)}
+    @media (max-width:640px){
+      .header__inner{flex-direction:column;gap:.75rem;text-align:center}
+      .nav__list{display:none;position:absolute;top:100%;left:0;width:100%;background:var(--bg-secondary);
+        padding:1rem;gap:1rem;flex-direction:column;align-items:center}
+      .nav__list.active{display:flex}
+      .features__grid,.steps__grid,.testimonials__grid,.pricing__grid{grid-template-columns:1fr}}
+    .btn{min-width:160px;padding:.7rem 1.5rem;font-size:1rem}
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header class="header" aria-labelledby="brand">
+    <div class="header__inner">
+      <h1 class="wordmark" id="brand"><span>MODULAR</span><span class="wordmark__badge">the patchbay synth</span></h1>
+      <nav class="nav" aria-label="Main navigation">
+        <ul class="nav__list" role="menubar">
+          <li role="none"><a class="nav__link" href="#features" role="menuitem">Features</a></li>
+          <li role="none"><a class="nav__link" href="#how-it-works" role="menuitem">How It Works</a></li>
+          <li role="none"><a class="nav__link" href="#testimonials" role="menuitem">Testimonials</a></li>
+          <li role="none"><a class="nav__link" href="#pricing" role="menuitem">Pricing</a></li>
+          <li role="none"><a class="nav__link" href="#faq" role="menuitem">FAQ</a></li>
+        </ul>
+        <button class="nav__toggle" aria-controls="nav-mobile" aria-expanded="false" aria-label="Open navigation">
+          <span class="symbol" aria-hidden="true">menu</span>
+        </button>
+        <button class="theme-toggle" id="theme-toggle" aria-pressed="false" aria-label="Switch to dark mode">
+          <span class="symbol" aria-hidden="true">dark_mode</span>
+        </button>
+        <a class="btn btn--primary" href="#preorder">Pre-order</a>
+      </nav>
+      <div class="nav__mobile" id="nav-mobile" role="navigation" aria-label="Secondary navigation">
+        <button class="nav__close" aria-label="Close navigation">
+          <span class="symbol" aria-hidden="true">close</span>
+        </button>
+        <ul class="nav__list" role="menubar">
+          <li role="none"><a class="nav__link" href="#features" role="menuitem">Features</a></li>
+          <li role="none"><a class="nav__link" href="#how-it-works" role="menuitem">How It Works</a></li>
+          <li role="none"><a class="nav__link" href="#testimonials" role="menuitem">Testimonials</a></li>
+          <li role="none"><a class="nav__link" href="#pricing" role="menuitem">Pricing</a></li>
+          <li role="none"><a class="nav__link" href="#faq" role="menuitem">FAQ</a></li>
+        </ul>
+      </div>
+    </div>
+  </header>
+  <main id="main">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero__copy">
+        <div class="hero__badge">OS 2.0 — NOW SHIPPING</div>
+        <h1 class="hero__title" id="hero-title"><span class="accent">MODULAR</span> <span>the patchbay synth</span></h1>
+        <p class="hero__subtitle">A contemporary modular synthesizer with a flexible patchbay, analog-modeled engine, and CV/MIDI connectivity.</p>
+        <div class="hero__ctgs">
+          <a class="btn btn--primary" href="#preorder">Pre-order — $499</a>
+          <button class="btn btn--secondary" data-modal-open>Watch the demo</button>
+        </div>
+      </div>
+      <div class="hero__panel">
+        <div class="knob-panel">
+          <div class="knob"><span class="symbol">tune</span></div>
+          <div class="knob"><span class="symbol">cable</span></div>
+          <div class="knob"><span class="symbol">graphic_eq</span></div>
+        </div>
+        <div class="socket" aria-hidden="true"></div>
+        <div class="cable" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <section class="features" id="features" aria-labelledby="features-title">
+      <h2 class="visually-hidden" id="features-title">Features</h2>
+      <div class="features__grid">
+        <article class="card">
+          <div class="card__icon"><span class="symbol">cable</span></div>
+          <h3 class="card__title">Patch Matrix</h3>
+          <p class="card__copy">Route any oscillator to any filter or effect. 24-point normalized patchbay with half-normaling for complex signal flows.</p>
+        </article>
+        <article class="card">
+          <div class="card__icon"><span class="symbol">tune</span></div>
+          <h3 class="card__title">Analog Engine</h3>
+          <p class="card__copy">Oscillators, filters, and VCA’s modeled after classic 1970s semi-modular architecture. Warm, organic timbre.</p>
+        </article>
+        <article class="card">
+          <div class="card__icon"><span class="symbol">graphic_eq</span></div>
+          <h3 class="card__title">CV/MIDI</h3>
+          <p class="card__copy">Hardware CV jacks and USB-MIDI. Sync to your DAW or stand-alone. Polyphonic aftertouch via MIDI Polyphonic Expression.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="how-it-works" id="how-it-works" aria-labelledby="steps-title">
+      <h2 class="visually-hidden" id="steps-title">How It Works</h2>
+      <div class="steps__grid">
+        <div class="step"><span class="step__num">01</span><div class="symbol" aria-hidden="true">tune</div><span>Patch it</span></div>
+        <div class="step"><span class="step__num">02</span><div class="symbol" aria-hidden="true">graphic_eq</span><span>Shape it</span></div>
+        <div class="step"><span class="step__num">03</span><div class="symbol" aria-hidden="true">album</span><span>Play it</span></div>
+      </div>
+    </section>
+
+    <section class="testimonials" id="testimonials" aria-labelledby="testimonials-title">
+      <h2 class="visually-hidden" id="testimonials-title">Testimonials</h2>
+      <div class="testimonials__grid">
+        <article class="testimonial__card">
+          <blockquote class="testimonial__text">“MODULAR transformed my hybrid setup. The patchbay feels like an instrument itself.”</blockquote>
+          <div class="testimonial__author">
+            <div class="testimonial__avatar">JD</div>
+            <div>
+              <div class="testimonial__text" style="font-size:.8rem;margin:0">Jordan Decker</div>
+              <div style="font-size:.75rem;color:var(--text-secondary)">Producer & Engineer</div>
+            </div>
+          </div>
+          <div class="rating"><span class="symbol">star</span><span class="symbol">star</span><span class="symbol">star</span><span class="symbol">star</span><span class="symbol">star</span></div>
+        </article>
+        <article class="testimonial__card">
+          <blockquote class="testimonial__text">“The most intuitive patchbay I’ve ever used. Signal routing is instant and visual.”</blockquote>
+          <div class="testimonial__author">
+            <div class="testimonial__avatar">MC</div>
+            <div>
+              <div class="testimonial__text" style="font-size:.8rem;margin:0">Mia Chen</div>
+              <div style="font-size:.75rem;color:var(--text-secondary)">Composer</div>
+            </div>
+          </div>
+          <div class="rating"><span class="symbol">star</span><span class="symbol">star</span><span class="symbol">star</span><span class="symbol">star</span><span class="symbol">star</span></div>
+        </article>
+        <article class="testimonial__card">
+          <blockquote class="testimonial__text">“Finally a modular that stays in tune. The CV implementation is rock-solid.”</blockquote>
+          <div class="testimonial__author">
+            <div class="testimonial__avatar">RS</div>
+            <div>
+              <div class="testimonial__text" style="font-size:.8rem;margin:0">Ravi Singh</div>
+              <div style="font-size:.75rem;color:var(--text-secondary)">Sound Designer</div>
+            </div>
+          </div>
+          <div class="rating"><span class="symbol">star</span><span class="symbol">star</span><span class="symbol">star</span><span class="symbol">star</span><span class="symbol">star</span></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="pricing" id="pricing" aria-labelledby="pricing-title">
+      <h2 class="visually-hidden" id="pricing-title">Pricing</h2>
+      <div class="pricing__grid">
+        <article class="pricing-card"><span class="pricing-card__name">MODULAR Kit</span><span class="pricing-card__price">$399</span><ul class="pricing-card__list"><li><span class="symbol">check_circle</span> 8 oscillators</li><li><span class="symbol">check_circle</span> 4 filters</li><li><span class="symbol">check_circle</span> USB-MIDI</li></ul><button class="btn btn--secondary pricing-card__cta">Select</button></article>
+        <article class="pricing-card featured"><span class="pricing-card__name">MODULAR Studio</span><span class="pricing-card__price">$699</span><ul class="pricing-card__list"><li><span class="symbol">check_circle</span> 16 oscillators</li><li><span class="symbol">check_circle</span> 8 filters</li><li><span class="symbol">check_circle</span> Expandable case</li><li><span class="symbol">check_circle</span> CV & MIDI</li></ul><button class="btn btn--primary pricing-card__cta">Select</button></article>
+        <article class="pricing-card"><span class="pricing-card__name">MODULAR Lifetime</span><span class="pricing-card__price">$1,499</span><ul class="pricing-card__list"><li><span class="symbol">check_circle</span> All future modules</li><li><span class="symbol">check_circle</span> Priority firmware</li><li><span class="symbol">check_circle</span> Unlimited patches</li></ul><button class="btn btn--secondary pricing-card__cta">Select</button></article>
+      </div>
+    </section>
+
+    <section class="faq" id="faq" aria-labelledby="faq-title">
+      <h2 class="visually-hidden" id="faq-title">FAQ</h2>
+      <div class="faq__item">
+        <button class="faq__question" aria-controls="faq-1" aria-expanded="true">
+          <span class="symbol">expand_more</span><span>Is MODULAR compatible with my DAW?</span>
+        </button>
+        <div class="faq__panel" aria-hidden="false" id="faq-1">
+          <p class="faq__answer">Yes. MODULAR ships with VST3, AU, and standalone .exe/.app support. It also sends/receives MIDI Clock and MMC for sync.</p>
+        </div>
+      </div>
+      <div class="faq__item">
+        <button class="faq__question" aria-controls="faq-2" aria-expanded="false">
+          <span class="symbol">expand_more</span><span>What’s the warranty period?</span>
+        </button>
+        <div class="faq__panel" aria-hidden="true" id="faq-2">
+          <p class="faq__answer">Two-year limited warranty covering parts and labor. Extended warranty available via registration.</p>
+        </div>
+      </div>
+      <div class="faq__item">
+        <button class="faq__question" aria-controls="faq-3" aria-expanded="false">
+          <span class="symbol">expand_more</span><span>Can I expand the case later?</span>
+        </button>
+        <div class="faq__panel" aria-hidden="true" id="faq-3">
+          <p class="faq__answer">Yes. The case supports up to 64HP. Additional panels and power supplies ship separately.</p>
+        </div>
+      </div>
+      <div class="faq__item">
+        <button class="faq__question" aria-controls="faq-4" aria-expanded="false">
+          <span class="symbol">expand_more</span><span>How do I update firmware?</span>
+        </button>
+        <div class="faq__panel" aria-hidden="true" id="faq-4">
+          <p class="faq__answer">Via USB-C to your computer. Download the latest .fw file from the support portal and double-click to install.</p>
+        </div>
+      </div>
+      <div class="faq__item">
+        <button class="faq__question" aria-controls="faq-5" aria-expanded="false">
+          <span class="symbol">expand_more</span><span>What’s included in the box?</span>
+        </button>
+        <div class="faq__panel" aria-hidden="true" id="faq-5">
+          <p class="faq__answer">MODULAR unit, power cable, quick-start guide, 24-patch cable set, certificate of conformity.</p>
+        </div>
+      </div>
+      <div class="faq__item">
+        <button class="faq__question" aria-controls="faq-6" aria-expanded="false">
+          <span class="symbol">expand_more</span><span>System requirements?</span>
+        </button>
+        <div class="faq__panel" aria-hidden="true" id="faq-6">
+          <p class="faq__answer">Windows 10/11 or macOS 10.15+. 4GB RAM minimum, 2GHz processor. USB-A or C port for firmware.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta" style="background:var(--gradient-warm);color:#d8cfc0;padding:3rem 1.5rem;text-align:center">
+      <h2 style="font-family:var(--font-heading);font-size:2rem;margin-bottom:.5rem">Join the waiting list</h2>
+      <p style="font-size:1.1rem;margin-bottom:1.5rem;opacity:.9">Be the first to know about shipping updates and exclusive demo access.</p>
+      <form class="newsletter" aria-live="polite" role="form">
+        <div class="input-group">
+          <label class="input-group__label" for="newsletter-email">Email address</label>
+          <input class="input-group__input" type="email" id="newsletter-email" placeholder="you@email.com" required aria-describedby="newsletter-msg">
+          <span class="input-group__error" id="newsletter-msg">Please enter a valid email.</span>
+        </div>
+        <button class="newsletter__submit btn btn--primary" type="submit">Subscribe</button>
+        <p class="newsletter__msg" id="newsletter-msg-final">You're on the list. Thank you!</p>
+      </form>
+    </section>
+  </main>
+
+  <footer class="footer" role="contentinfo">
+    <div class="footer__inner">
+      <div class="footer__col">
+        <h2 class="wordmark"><span>MODULAR</span><span class="wordmark__badge">the patchbay synth</span></h2>
+        <p style="font-size:.85rem;margin:1rem 0;opacity:.8">Flexible patchbay. Analog-modeled engine. CV/MIDI ready.</p>
+      </div>
+      <div class="footer__col">
+        <h4>Product</h4>
+        <ul class="footer__links">
+          <li><a href="#features">Features</a></li>
+          <li><a href="#how-it-works">How It Works</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h4>Resources</h4>
+        <ul class="footer__links">
+          <li><a href="#faq">FAQ</a></li>
+          <li><a href="#">Documentation</a></li>
+          <li><a href="#">Community Forum</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h4>Company</h4>
+        <ul class="footer__links">
+          <li><a href="#">About</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer__social">
+      <span class="symbol" aria-label="Twitter" tabindex="0">comment</span>
+      <span class="symbol" aria-label="GitHub" tabindex="0">code</span>
+      <span class="symbol" aria-label="YouTube" tabindex="0">video_library</span>
+    </div>
+    <p class="footer__copyright">© <span id="copyright-year">2025</span> MODULAR. All rights reserved.</p>
+  </footer>
+
+  <script>
+    (()=>{
+      'use strict';
+      const html=document.documentElement;
+      const prefers=window.matchMedia('(prefers-reduced-motion:reduce)');
+      const themeToggle=document.getElementById('theme-toggle');
+      const htmlRoot=document.documentElement;
+      let currentTheme='light';
+
+      function setTheme(t){
+        currentTheme=t;
+        htmlRoot.classList.toggle('dark',t==='dark');
+        themeToggle.setAttribute('aria-pressed',t==='dark');
+        themeToggle.setAttribute('aria-label',t==='dark'?'Switch to light mode':'Switch to dark mode');
+        localStorage.setItem('modular-theme',t);
+      }
+
+      const saved=localStorage.getItem('modular-theme');
+      if(saved&&saved!=='light'){setTheme(saved);}else{setTheme('light');}
+
+      themeToggle.addEventListener('click',()=>{
+        setTheme(currentTheme==='light'?'dark':'light');
+      });
+
+      const mobileToggle=document.querySelector('.nav__toggle');
+      const navMobile=document.getElementById('nav-mobile');
+      const navClose=document.querySelector('.nav__close');
+      function openMobileMenu(){html.classList.add('nav-open');mobileToggle.setAttribute('aria-expanded',true)}
+      function closeMobileMenu(){html.classList.remove('nav-open');mobileToggle.setAttribute('aria-expanded',false)}
+      mobileToggle.addEventListener('click',openMobileMenu);
+      navClose.addEventListener('click',closeMobileMenu);
+      document.querySelectorAll('.nav__mobile a').forEach(l=>l.addEventListener('click',closeMobileMenu));
+
+      const faqQuestions=document.querySelectorAll('.faq__question');
+      faqQuestions.forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          const expanded=btn.getAttribute('aria-expanded')==='true';
+          btn.setAttribute('aria-expanded',!expanded);
+          const panel=document.getElementById(btn.getAttribute('aria-controls'));
+          panel.setAttribute('aria-hidden',expanded);
+        });
+      });
+
+      const modalBtns=document.querySelectorAll('[data-modal-open]');
+      const modal=document.querySelector('.modal');
+      const modalClose=document.querySelector('.modal__close');
+      modalBtns.forEach(b=>b.addEventListener('click',()=>{modal.setAttribute('open','');document.querySelector('.hero__ctgs .btn--secondary').focus()}));
+      modalClose.addEventListener('click',()=>{modal.removeAttribute('open');document.querySelector('.nav__toggle').focus()});
+      modal.addEventListener('click',e=>{if(e.target===modal){modal.removeAttribute('open');document.querySelector('.nav__toggle').focus()}});
+      document.addEventListener('keydown',e=>{
+        if(e.key==='Escape'&&modal.hasAttribute('open')){
+          modal.removeAttribute('open');
+          document.querySelector('.nav__toggle').focus();
+        }
+      });
+
+      const form=document.querySelector('.newsletter');
+      const emailInput=document.getElementById('newsletter-email');
+      const errorSpan=document.getElementById('newsletter-msg');
+      const finalMsg=document.getElementById('newsletter-msg-final');
+      form.addEventListener('submit',e=>{
+        e.preventDefault();
+        if(emailInput.validity.valid){
+          emailInput.disabled=true;
+          const subBtn=document.querySelector('.newsletter__submit');
+          subBtn.classList.add('is-loading');
+          setTimeout(()=>{
+            subBtn.classList.remove('is-loading');
+            emailInput.value='';
+            emailInput.disabled=false;
+            errorSpan.classList.remove('visible');
+            finalMsg.classList.add('visible');
+            emailInput.focus();
+          },800);
+        }else{
+          errorSpan.classList.add('visible');
+        }
+      });
+
+      const yearEl=document.getElementById('copyright-year');
+      yearEl.textContent=new Date().getFullYear();
+
+      document.querySelectorAll('a[href^="#"]').forEach(anchor=>{
+        anchor.addEventListener('click',function(e){
+          if(prefers.matches){e.preventDefault();return;}
+          const target=document.querySelector(this.getAttribute('href'));
+          if(target){
+            e.preventDefault();
+            target.scrollIntoView({behavior:'smooth'});
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

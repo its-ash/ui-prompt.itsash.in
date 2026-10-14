@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Terrazzo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Nunito:wght@400;600&family=Fraunces:wght@700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,0..1,-25..25" rel="stylesheet">
+<style>
+:root{
+  --primary:#e2574c;--secondary:#2f9e8f;
+  --bg-primary:#f7f3ec;--bg-secondary:#fefefe;--bg-secondary-strong:#efe8db;
+  --text-primary:#221f1a;--text-secondary:#5c564a;
+  --text-success:#1e7f70;--text-error:#b3261e;
+  --border-default:#e0d6c2;--border-error:#b3261e;--border-success:#2f9e8f;
+  --color-chip-a:#f2b705;--color-chip-b:#7c5cff;--color-chip-c:#2f9e8f;--color-chip-d:#e2574c;
+  --terrazzo-chips:
+    radial-gradient(circle at 20% 30%,var(--color-chip-a)0%,transparent 16%),
+    radial-gradient(circle at 80% 20%,var(--color-chip-b)0%,transparent 16%),
+    radial-gradient(circle at 40% 80%,var(--color-chip-c)0%,transparent 16%),
+    radial-gradient(circle at 10% 70%,var(--color-chip-d)0%,transparent 16%),
+    radial-gradient(circle at 90% 10%,var(--color-chip-a)0%,transparent 16%),
+    radial-gradient(circle at 30% 60%,var(--color-chip-b)0%,transparent 16%);
+  --terrazzo-size:140px 140px;
+  --radius-sm:8px;--radius-md:14px;--radius-lg:22px;--radius-pill:999px;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.1);
+  --shadow-md:0 4px 6px -1px rgba(0,0,0,.1),0 2px 4px -1px rgba(0,0,0,.06);
+  --shadow-lg:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -2px rgba(0,0,0,.05);
+  --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;
+  --transition-fast:.15s;--transition-normal:.25s;--ease-standard:cubic-bezier(.34,1.4,.64,1);
+  --z-dropdown:1000;--z-modal:1100;--z-toast:1200;
+  --font-base:'Poppins',sans-serif;--font-sans:'Poppins',sans-serif;--font-display:'Fraunces',serif;
+}
+.dark{
+  --primary:#ec6a5f;--secondary:#3fb3a3;
+  --bg-primary:#1b1915;--bg-secondary:#262219;--bg-secondary-strong:#2e2a20;
+  --text-primary:#f4efe4;--text-secondary:#b5ac9c;
+  --text-success:#6fcfc3;--text-error:#f28c8c;
+  --border-default:#3d3830;--border-error:#f28c8c;--border-success:#3fb3a3;
+  --color-chip-a:#f9c85a;--color-chip-b:#9a8cff;--color-chip-c:#5fb3a3;--color-chip-d:#ec6a5f;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{font-size:100%}
+body{
+  margin:0;font-family:var(--font-base);
+  background:var(--bg-primary);color:var(--text-primary);
+  line-height:1.5;
+}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;font:inherit}
+img{display:block;max-width:100%;height:auto}
+.visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+.skip-to-content{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden}
+.skip-to-content:focus{left:0;top:0;width:auto;height:auto;background:var(--bg-secondary);color:var(--text-primary;padding:.5rem 1rem;z-index:1000}
+
+/* Utility */
+.flex{display:flex;align-items:center;gap:var(--space-4)}
+.flex-col{flex-direction:column}
+.jc-between{justify-content:space-between}
+.jc-center{justify-content:center}
+.items-start{align-items:flex-start}
+.items-end{align-items:flex-end}
+.w-full{width:100%}
+.max-w-2xl{max-width:42rem;margin-left:auto;margin-right:auto}
+.text-center{text-align:center}
+.text-left{text-align:left}
+.text-right{text-align:right}
+.overflow-hidden{overflow:hidden}
+
+/* Typography */
+h1,h2,h3,h4,h5,h6{font-family:var(--font-display);font-weight:700;line-height:1.2;margin:0 0 .5rem}
+h1{font-size:clamp(2rem,5vw,3.5rem)}
+h2{font-size:clamp(1.5rem,4vw,2.5rem)}
+h3{font-size:clamp(1.25rem,3vw,2rem)}
+p{margin:0 0 1rem}
+.section-title{margin-bottom:2rem;text-align:center}
+
+/* Button */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  gap:.5rem;height:3rem;padding:0 1.5rem;
+  font-weight:600;border:none;border-radius:var(--radius-pill);
+  background:var(--primary);color:#fff;
+  transition:background var(--transition-fast),transform var(--transition-fast),box-shadow var(--transition-fast);
+}
+.btn:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.btn:focus-visible{outline:2px solid var(--secondary);outline-offset:2px}
+.btn:active{transform:scale(.97)}
+.btn--secondary{background:var(--secondary);color:#fff}
+.btn--danger{background:var(--text-error);color:#fff}
+.btn[disabled],.btn.disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn--loading{position:relative}
+.btn--loading::after{
+  content:"";position:absolute;inset:0;margin:auto;width:1rem;height:1rem;
+  border:2px solid currentColor;border-top-color:transparent;border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Input */
+.input{
+  flex:1;min-height:3rem;padding:.5rem 1rem;
+  border:1px solid var(--border-default);border-radius:var-radius-md;
+  background:var(--bg-secondary);color:var(--text-primary);
+  transition:border-color var(--transition-fast),box-shadow var(--transition-fast);
+}
+.input:focus{outline:none;border-color:var(--secondary);box-shadow:0 0 0 2px rgba(var(--secondary-rgb,47,158,143),.25)}
+.input-group{display:flex;gap:var(--space-2);align-items:stretch}
+.form-error{color:var(--text-error);font-size:.875rem;margin-top:.25rem;min-height:1.25rem}
+
+/* Badge */
+.badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:.25rem .75rem;border-radius:var(--radius-sm);
+  font-size:.875rem;font-weight:600;
+}
+.badge--primary{background:var(--terrazzo-chips),var(--bg-secondary);background-size:var(--terrazzo-size);color:#fff}
+.badge--most-popular{background:var(--terrazzo-chips),var(--bg-secondary);background-size:60px 60px;color:#fff;position:absolute;top:-10px;right:-10px}
+
+/* Nav */
+.nav{
+  position:sticky;top:0;z-index:var(--z-dropdown);
+  display:flex;align-items:center;justify-content:space-between;
+  height:4rem;padding:0 var(--space-6);
+  background:var(--terrazzo-chips),var(--bg-secondary);background-size:var(--terrazzo-size);
+  border-radius:var(--radius-pill);
+}
+.nav__logo{font-weight:700;font-size:1.25rem;color:#fff}
+.nav__menu{display:flex;gap:var(--space-6)}
+.nav__link{font-weight:500;color:#fff;padding:.25rem 0;position:relative}
+.nav__link::after{content:"";position:absolute;left:0;bottom:-2px;width:0;height:2px;background:#fff;transition:width var(--transition-normal)}
+.nav__link:hover::after{width:100%}
+.nav__cta{margin-left:auto}
+.nav__theme-toggle{background:transparent;color:#fff;border:none;padding:var(--space-2);font-size:1.25rem}
+.nav__menu-btn{display:none;background:transparent;color:#fff;border:none;font-size:1.5rem;padding:var(--space-2)}
+@media(max-width:768px){
+  .nav__menu{position:fixed;top:4rem;right:-100%;background:var(--bg-secondary);flex-direction:column;width:180px;padding:var(--space-6);box-shadow:var(--shadow-md);border-radius:var(--radius-lg);transition:right var(--transition-normal);}
+  .nav__menu.open{right:0}
+  .nav__menu-btn{display:block}
+}
+
+/* Hero */
+.hero{
+  position:relative;padding:6rem var(--space-6) 4rem;
+  background:var(--terrazzo-chips),var(--bg-secondary);background-size:var(--terrazzo-size);
+  color:#fff;overflow:hidden;
+}
+.hero__badge{position:absolute;top:var(--space-6);left:var(--space-6)}
+.hero__title{margin-bottom:1rem}
+.hero__subtitle{margin-bottom:2rem;max-width:36rem;font-size:1.125rem;opacity:.9}
+.hero__ctas{margin-bottom:2rem;gap:var(--space-4)}
+.hero__visual{height:200px;background:var(--terrazzo-chips),var(--bg-secondary);background-size:var(--terrazzo-size);border-radius:var(--radius-lg);margin-bottom:2rem}
+.hero__stats{display:flex;gap:var(--space-6);font-size:.875rem;color:rgba(255,255,255,.8)}
+.stat{display:flex;flex-direction:column;align-items:center}
+.stat__number{font-weight:600;font-size:1.25rem}
+
+/* Features */
+.features{padding:4rem var(--space-6)}
+.features__grid{display:grid;gap:var(--space-6);grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.card{
+  background:var(--bg-secondary);border:1px solid var(--border-default);
+  border-radius:var(--radius-lg);box-shadow:var(--shadow-md);
+  display:flex;flex-direction:column;align-items:center;text-align:center;padding:var(--space-6);
+  transition:transform var(--transition-normal),box-shadow var(--transition-normal);
+}
+.card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
+.card__icon{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:var(--space-4);font-size:1.5rem}
+.chip-a{background:var(--color-chip-a);color:#fff}
+.chip-b{background:var(--color-chip-b);color:#fff}
+.chip-c{background:var(--color-chip-c);color:#fff}
+.card__title{margin-bottom:var(--space-2)}
+.card__description{font-size:.9rem;color:var(--text-secondary);line-height:1.4}
+
+/* How It Works */
+.how-it-works{padding:4rem var(--space-6);position:relative}
+.steps{
+  display:flex;gap:var(--space-8);align-items:flex-start;
+}
+.step{
+  display:flex;align-items:flex-start;gap:var(--space-4);
+}
+.step__marker{
+  width:2.5rem;height:2.5rem;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-weight:600;color:#fff;font-size:1.125rem;
+}
+.chip-a{background:var(--color-chip-a)}
+.chip-b{background:var(--color-chip-b)}
+.chip-c{background:var(--color-chip-c)}
+.step__content{flex:1}
+.step__title{margin-bottom:var(--space-2)}
+.step__desc{font-size:.9rem;color:var(--text-secondary)}
+.steps__connector{
+  position:absolute;top:0;left:50%;width:2px;height:100%;background:var(--border-default);
+  transform:translateX(-50%);
+}
+@media(max-width:768px){
+  .steps{flex-direction:column;align-items:center}
+  .steps__connector{display:none}
+}
+
+/* Testimonials */
+.testimonials{padding:4rem var(--space-6)}
+.testimonials__grid{display:grid;gap:var(--space-6);grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.testimonial-card{
+  background:var(--bg-secondary);border:1px solid var(--border-default);
+  border-radius:var(--radius-lg);box-shadow:var(--shadow-md);
+  padding:var(--space-6);position:relative
+}
+.avatar{
+  width:3rem;height:3rem;border-radius:50%;background:var(--color-chip-a);display:flex;align-items:center;justify-content:center;
+  color:#fff;font-weight:600;margin-bottom:var(--space-4)
+}
+.testimonial-card__quote{font-style:italic;margin-bottom:var(--space-4);line-height:1.4}
+.testimonial-card__meta{display:flex;flex-direction:column;margin-bottom:var(--space-4)}
+.name{font-weight:600}
+.role{font-size:.875rem;color:var(--text-secondary)}
+.rating{display:flex;align-items:center;gap:var(--space-2);font-size:.875rem}
+.rating__label{color:var(--text-secondary)}
+.avatar.chip-b{background:var(--color-chip-b)}
+.avatar.chip-c{background:var(--color-chip-c)}
+
+/* Pricing */
+.pricing{padding:4rem var(--space-6)}
+.pricing__grid{display:grid;gap:var(--space-6);grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.pricing-card{
+  background:var(--bg-secondary);border:1px solid var(--border-default);
+  border-radius:var(--radius-lg);box-shadow:var(--shadow-md);
+  padding:var(--space-6);position:relative;text-align:center
+}
+.pricing-card--highlighted{border:2px solid var(--secondary);box-shadow:var(--shadow-lg)}
+.pricing-card__title{margin-bottom:var(--space-2)}
+.pricing-card__price{font-size:2rem;font-weight:700;margin-bottom:var(--space-4)}
+.pricing-card__features{list-style:none;padding:0;margin:0 0 var(--space-4);text-align:left}
+.pricing-card__features li{display:flex;align-items:center;gap:var(--space-2);margin-bottom:var(--space-2);font-size:.9rem}
+.pricing-card__features li::before{content:"";display:inline-block;width:.75rem;height:.75rem;background:var(--color-chip-c);mask:url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5 13l4 4L19 7' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}/* check */
+.faq-item{border-top:1px solid var(--border-default)}
+.faq-question{
+  width:100%;text-align:left;background:none;border:none;padding:var(--space-6) var(--space-4);
+  font-weight:600;display:flex;align-items:center;justify-content:space-between;
+}
+.faq-icon{transition:transform var(--transition-normal)}
+.faq-item[open] .faq-icon{transform:rotate(180deg)}
+.faq-panel{padding:0 var(--space-4) var(--space-6);color:var(--text-secondary);font-size:.9rem}
+
+/* Final CTA */
+.final-cta{
+  position:relative;padding:4rem var(--space-6);
+  background:var(--terrazzo-chips),var(--bg-secondary);background-size:var(--terrazzo-size);
+  color:#fff;text-align:center
+}
+.final-cta__title{margin-bottom:1rem}
+.final-cta__subtitle{margin-bottom:2rem;max-width:32rem;margin-left:auto;margin-right:auto;opacity:.9}
+.final-cta__form{
+  display:flex;flex-direction:column;gap:var(--space-4);align-items:center
+}
+.final-cta__form-label{font-weight:600;text-align:left;width:100%}
+.input{width:100%;max-width:28rem}
+.final-cta__privacy{font-size:.75rem;opacity:.8;margin-top:1rem}
+
+/* Footer */
+.footer{
+  padding:4rem var(--space-6);background:var(--bg-secondary-strong);color:var(--text-secondary);
+}
+.footer__grid{display:grid;gap:var(--space-6);grid-template-columns:repeat(auto-fit,minmax(180px,1fr));margin-bottom:var(--space-6)}
+.footer__heading{font-weight:600;margin-bottom:var(--space-4);font-size:1rem;color:var(--text-primary)}
+.footer__list{list-style:none;padding:0;margin:0}
+.footer__list li{margin-bottom:var(--space-2)}
+.footer__list a{color:var(--text-secondary);transition:color var(--transition-fast)}
+.footer__list a:hover{color:var(--text-primary)}
+.footer__social{display:flex;gap:var(--space-4)}
+.footer__social-link{color:var(--text-secondary);font-size:1.25rem;transition:color var(--transition-fast)}
+.footer__social-link:hover{color:var(--text-primary)}
+.footer__copyright{font-size:.75rem;text-align:center;opacity:.7}
+
+/* Reduced motion */
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:0s !important;transition-duration:0s !important}
+}
+
+/* Dark mode icons adjust */
+.dark .nav__link{color:#fff}
+.dark .nav__link::after{background:#fff}
+.dark .nav__cta{background:var(--primary);color:#fff}
+.dark .nav__theme-toggle{color:#fff}
+.dark .nav__menu-btn{color:#fff}
+.dark .nav__menu{background:var(--bg-secondary)}
+.dark .nav__menu a{color:var(--text-primary)}
+.dark .nav__menu a:hover{color:var(--primary)}
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-to-content">Skip to content</a>
+<header>
+  <nav class="nav">
+    <div class="nav__logo">Terrazzo</div>
+    <ul class="nav__menu">
+      <li><a href="#features" class="nav__link">Features</a></li>
+      <li><a href="#how-it-works" class="nav__link">How it works</a></li>
+      <li><a href="#testimonials" class="nav__link">Testimonials</a></li>
+      <li><a href="#pricing" class="nav__link">Pricing</a></li>
+    </ul>
+    <div class="nav__actions">
+      <button class="nav__cta btn btn--primary">Get Started</button>
+      <button class="nav__theme-toggle btn btn--secondary" aria-label="Toggle theme" aria-pressed="false">
+        <span class="theme-icon material-symbols-rounded">dark_mode</span>
+      </button>
+    </div>
+    <button class="nav__menu-btn" aria-label="Open menu" aria-controls="nav-menu" aria-expanded="false">
+      <span class="material-symbols-rounded">menu</span>
+    </button>
+  </nav>
+</header>
+
+<main id="main-content">
+  <!-- Hero -->
+  <section id="hero" class="hero">
+    <div class="hero__badge badge badge--primary">New</div>
+    <h1 class="hero__title">Playful Surfaces, Crafted</h1>
+    <p class="hero__subtitle">Bring the timeless charm of terrazzo to your spaces with our customizable kits.</p>
+    <div class="hero__ctas">
+      <button class="btn btn--primary">Explore Kits</button>
+      <button class="btn btn--secondary">Learn More</button>
+    </div>
+    <div class="hero__visual"></div>
+    <div class="hero__stats">
+      <div class="stat"><span class="stat__number">500+</span><span class="stat__label">Projects</span></div>
+      <div class="stat"><span class="stat__number">12</span><span class="stat__label">Colors</span></div>
+      <div class="stat"><span class="stat__number">24h</span><span class="stat__label">Delivery</span></div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" class="features">
+    <h2 class="section-title">Features</h2>
+    <div class="features__grid">
+      <div class="card">
+        <div class="card__icon chip-a"><span class="material-symbols-rounded">palette</span></div>
+        <h3 class="card__title">Custom Mixes</h3>
+        <p class="card__description">Choose from dozens of chip colors to create your unique blend.</p>
+      </div>
+      <div class="card">
+        <div class="card__icon chip-b"><span class="material-symbols-rounded">architecture</span></div>
+        <h3 class="card__title">Easy Installation</h3>
+        <p class="card__description">Peel‑and‑stick tiles that set in minutes.</p>
+      </div>
+      <div class="card">
+        <div class="card__icon chip-c"><span class="material-symbols-rounded">auto_fix_high</span></div>
+        <h3 class="card__title">Durable Finish</h3>
+        <p class="card__description">Resistant to stains, scratches, and moisture.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section id="how-it-works" class="how-it-works">
+    <h2 class="section-title">How It Works</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step__marker chip-a">1</div>
+        <div class="step__content">
+          <h3 class="step__title">Select Your Kit</h3>
+          <p class="step__desc">Pick size, color mix, and quantity.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step__marker chip-b">2</div>
+        <div class="step__content">
+          <h3 class="step__title">Apply & Set</h3>
+          <p class="step__desc">Lay the tiles, press, and let cure.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step__marker chip-c">3</div>
+        <div class="step__content">
+          <h3 class="step__title">Enjoy</h3>
+          <p class="step__desc">Your surface is ready for life.</p>
+        </div>
+      </div>
+    </div>
+    <div class="steps__connector"></div>
+  </section>
+
+  <!-- Testimonials -->
+  <section id="testimonials" class="testimonials">
+    <h2 class="section-title">What Makers Say</h2>
+    <div class="testimonials__grid">
+      <div class="testimonial-card">
+        <div class="avatar chip-a"><span class="avatar__initials">JL</span></div>
+        <blockquote class="testimonial-card__quote">“The terrazzo kit transformed our studio floor in a weekend.”</blockquote>
+        <div class="testimonial-card__meta">
+          <div class="name">Jordan Lee</div>
+          <div class="role">Interior Designer</div>
+        </div>
+        <div class="rating">
+          <span class="material-symbols-rounded">star</span>
+          <span class="rating__label">5 out of 5</span>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="avatar chip-b"><span class="avatar__initials">MA</span></div>
+        <blockquote class="testimonial-card__quote">“Installation was a breeze and the look is stunning.”</blockquote>
+        <div class="testimonial-card__meta">
+          <div class="name">Morgan Avery</div>
+          <div class="role">Home Renovator</div>
+        </div>
+        <div class="rating">
+          <span class="material-symbols-rounded">star</span>
+          <span class="rating__label">4 out of 5</span>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="avatar chip-c"><span class="avatar__initials">TS</span></div>
+        <blockquote class="testimonial-card__quote">“Durable and easy to clean—perfect for our kitchen.”</blockquote>
+        <div class="testimonial-card__meta">
+          <div class="name">Taylor Samuels</div>
+          <div class="role">Chef</div>
+        </div>
+        <div class="rating">
+          <span class="material-symbols-rounded">star</span>
+          <span class="rating__label">5 out of 5</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section id="pricing" class="pricing">
+    <h2 class="section-title">Pricing</h2>
+    <div class="pricing__grid">
+      <div class="pricing-card">
+        <h3 class="pricing-card__title">Starter</h3>
+        <p class="pricing-card__price">$49</p>
+        <ul class="pricing-card__features">
+          <li><span class="material-symbols-rounded">check_circle</span> 1 m² coverage</li>
+          <li><span class="material-symbols-rounded">check_circle</span> 3 colors</li>
+          <li><span class="material-symbols-rounded">check_circle</span> Standard support</li>
+        </ul>
+        <button class="btn btn--primary">Choose</button>
+      </div>
+      <div class="pricing-card pricing-card--highlighted">
+        <div class="badge badge--most-popular">Most Popular</div>
+        <h3 class="pricing-card__title">Pro</h3>
+        <p class="pricing-card__price">$99</p>
+        <ul class="pricing-card__features">
+          <li><span class="material-symbols-rounded">check_circle</span> 3 m² coverage</li>
+          <li><span class="material-symbols-rounded">check_circle</span> 6 colors</li>
+          <li><span class="material-symbols-rounded">check_circle</span> Priority support</li>
+        </ul>
+        <button class="btn btn--primary">Choose</button>
+      </div>
+      <div class="pricing-card">
+        <h3 class="pricing-card__title">Studio</h3>
+        <p class="pricing-card__price">$199</p>
+        <ul class="pricing-card__features">
+          <li><span class="material-symbols-rounded">check_circle</span> 10 m² coverage</li>
+          <li><span class="material-symbols-rounded">check_circle</span> 12 colors</li>
+          <li><span class="material-symbols-rounded">check_circle</span> Dedicated manager</li>
+        </ul>
+        <button class="btn btn--primary">Choose</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="faq">
+    <h2 class="section-title">Frequently Asked Questions</h2>
+    <div class="faq__accordion">
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false" aria-controls="faq1-panel">
+          How long does shipping take?
+          <span class="faq-icon material-symbols-rounded">expand_more</span>
+        </button>
+        <div class="faq-panel" id="faq1-panel" hidden>
+          <p>Standard shipping arrives within 3‑5 business days.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false" aria-controls="faq2-panel">
+          Can I return the tiles if I change my mind?
+          <span class="faq-icon material-symbols-rounded">expand_more</span>
+        </button>
+        <div class="faq-panel" id="faq2-panel" hidden>
+          <p>Yes, unused tiles can be returned within 30 days for a full refund.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false" aria-controls="faq3-panel">
+          Do the tiles need sealing?
+          <span class="faq-icon material-symbols-rounded">expand_more</span>
+        </button>
+        <div class="faq-panel" id="faq3-panel" hidden>
+          <p>No sealing required; the surface is already stain‑resistant.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false" aria-controls="faq4-panel">
+          Are the materials eco‑friendly?
+          <span class="faq-icon material-symbols-rounded">expand_more</span>
+        </button>
+        <div class="faq-panel" id="faq4-panel" hidden>
+          <p>We use recycled glass and stone chips in our mixes.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false" aria-controls="faq5-panel">
+          What tools are needed for installation?
+          <span class="faq-icon material-symbols-rounded">expand_more</span>
+        </button>
+        <div class="faq-panel" id="faq5-panel" hidden>
+          <p>Just a clean surface and a roller; no special tools.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section id="final-cta" class="final-cta">
+    <div class="final-cta__content">
+      <h2 class="final-cta__title">Ready to Transform Your Space?</h2>
+      <p class="final-cta__subtitle">Join thousands of creators who trust Terrazzo.</p>
+      <form class="final-cta__form" id="email-form" novalidate>
+        <label class="final-cta__form-label" for="email">Email address</label>
+        <div class="input-group">
+          <input type="email" id="email" class="input" placeholder="you@example.com" required>
+          <button type="submit" class="btn btn--primary">Subscribe</button>
+        </div>
+        <div class="form-error" aria-live="polite"></div>
+        <p class="final-cta__privacy">We never share your email. <a href="#">Privacy policy</a>.</p>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="footer__grid">
+    <div class="footer__column">
+      <h4 class="footer__heading">Product</h4>
+      <ul class="footer__list">
+        <li><a href="#">Kits</a></li>
+        <li><a href="#">Samples</a></li>
+        <li><a href="#">Accessories</a></li>
+      </ul>
+    </div>
+    <div class="footer__column">
+      <h4 class="footer__heading">Company</h4>
+      <ul class="footer__list">
+        <li><a href="#">About</a></li>
+        <li><a href="#">Blog</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+    <div class="footer__column">
+      <h4 class="footer__heading">Resources</h4>
+      <ul class="footer__list">
+        <li><a href="#">Guide</a></li>
+        <li><a href="#">FAQ</a></li>
+        <li><a href="#">Video Tutorials</a></li>
+      </ul>
+    </div>
+    <div class="footer__column">
+      <h4 class="footer__heading">Legal</h4>
+      <ul class="footer__list">
+        <li><a href="#">Terms</a></li>
+        <li><a href="#">Privacy</a></li>
+        <li><a href="#">Cookies</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer__social">
+    <a href="#" class="footer__social-link"><span class="material-symbols-rounded">facebook</span></a>
+    <a href="#" class="footer__social-link"><span class="material-symbols-rounded">instagram</span></a>
+    <a href="#" class="footer__social-link"><span class="material-symbols-rounded">twitter</span></a>
+    <a href="#" class="footer__social-link"><span class="material-symbols-rounded">pinterest</span></a>
+  </div>
+  <div class="footer__copyright">&copy; 2026 Terrazzo. All rights reserved.</div>
+</footer>
+
+<script>
+/* Theme handling */
+(function(){
+  const html = document.documentElement;
+  const toggle = document.querySelector('.nav__theme-toggle');
+  const icon = toggle.querySelector('.theme-icon');
+  const STORAGE_KEY = 'terrazzo-theme';
+
+  const setTheme = (theme)=>{
+    if(theme==='dark'){
+      html.classList.add('dark');
+      toggle.setAttribute('aria-pressed','true');
+      icon.textContent='light_mode';
+    }else{
+      html.classList.remove('dark');
+      toggle.setAttribute('aria-pressed','false');
+      icon.textContent='dark_mode';
+    }
+    localStorage.setItem(STORAGE_KEY,theme);
+  };
+
+  const initTheme = ()=>{
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if(saved){
+      setTheme(saved);
+    }else{
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setTheme(prefersDark?'dark':'light');
+    }
+  };
+
+  toggle.addEventListener('click',()=>{
+    const isDark = html.classList.contains('dark');
+    setTheme(isDark?'light':'dark');
+  });
+
+  initTheme();
+
+  /* Mobile menu */
+  const menuBtn = document.querySelector('.nav__menu-btn');
+  const menu = document.querySelector('.nav__menu');
+  menuBtn.addEventListener('click',()=>{
+    const open = menuBtn.getAttribute('aria-expanded')==='true';
+    menuBtn.setAttribute('aria-expanded',String(!open));
+    menu.classList.toggle('open',!open);
+  });
+
+  /* FAQ accordion */
+  document.querySelectorAll('.faq-question').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const expanded = btn.getAttribute('aria-expanded')==='true';
+      btn.setAttribute('aria-expanded',String(!expanded));
+      const panel = document.getElementById(btn.getAttribute('aria-controls'));
+      if(panel){ panel.hidden = expanded; }
+    });
+  });
+
+  /* Form validation */
+  const form = document.getElementById('email-form');
+  const errorEl = form.querySelector('.form-error');
+  form.addEventListener('submit',e=>{
+    e.preventDefault();
+    const email = form.email.value.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if(!emailRegex.test(email)){
+      errorEl.textContent='Please enter a valid email address.';
+      form.email.focus();
+      return;
+    }
+    errorEl.textContent='';
+    // Simulate success
+    form.innerHTML = `<p class="final-cta__privacy">Thanks! We’ll be in touch.</p>`;
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family:var(--font-base);">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scatterbrain - Collaborative Brainstorming</title>
+<link href="https://fonts.googleapis.com/css2?family=Shrikhand&family=Caveat:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,SLANT,FILL@20..48,100..700,0..20,0..200">
+<style>
+:root{
+  --primary:#FFE066;--secondary:#A5D8FF;--accent-pink:#FFC9C9;--accent-green:#B2F2BB;--accent-orange:#FFCC80;--accent-purple:#D0BFFF;
+  --bg-primary:#F5F0E0;--bg-secondary:#F7F5F0;--text-primary:#2A2A2A;--text-secondary:#6B6353;--text-success:#2F6B3F;--text-error:#B3261E;
+  --border-default:#E4DCC6;--border-error;--border-success;
+  --radius-sm:4px;--radius-md:8px;--radius-lg:14px;
+  --shadow-sm:3px 3px 8px rgba(0,0,0,0.15);--shadow-md:6px 6px 16px rgba(0,0,0,0.2);
+  --spacing-gap:1.2rem;--transition-fast:200ms;--transition-normal:320ms;
+  --ease-standard:cubic-bezier(0.34,1.56,0.64,1);
+  --z-dropdown:1000;--z-modal:1100;--z-toast:1200;
+  --font-display:'Shrikhand',cursive;--font-base:'Caveat',cursive;
+}
+html{
+  background:var(--bg-primary);
+  color:var(--text-primary);
+  transition:background .3s,color .3s;
+  overflow-x:hidden;
+}
+@media (prefers-color-scheme:dark){
+  html{--bg-primary:#2A2721;--bg-secondary:#3A3530;--text-primary:#F5F0E0;--text-secondary:#C0B8B0;--border-default:#4A4541;}
+}
+html.dark{--bg-primary:#2A2721;--bg-secondary:#3A3530;--text-primary:#F5F0E0;--text-secondary:#C0B8B0;--border-default:#4A4541;}
+@media (prefers-reduced-motion:reduce){
+  html *{transition:none!important;animation:none!important}
+}
+* {box-sizing:border-box;}
+body{margin:0;font:var(--font-base) 1rem/1.5 var(--font-base);}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.6rem 1.2rem;border:none;border-radius:var(--radius-sm);font:var(--font-base) 1rem/1.2 var(--font-base);cursor:pointer;transition:transform var(--transition-fast) var(--ease-standard);min-height:44px;min-width:44px;}
+.btn--primary{background:var(--primary);color:#2A2A2A;}
+.btn--primary:hover{transform:scale(1.03);box-shadow:var(--shadow-md);}
+.btn--primary:active{transform:scale(0.97) var(--ease-standard);}
+.btn--secondary{background:var(--bg-secondary);color:var(--text-primary);border:1px solid var(--border-default);}
+.btn--secondary:hover{background:#e8e4df;}
+.btn--secondary:focus{outline:2px solid var(--primary);outline-offset:2px;}
+.btn--disabled{opacity:.5;cursor:not-allowed;}
+/* Focus ring for accessibility */
+*:focus-visible{outline:2px solid var(--primary);outline-offset:2px;}
+
+/* Sticky-note core */
+.sticky-note{display:flex;flex-direction:column;padding:1rem 1.2rem;border-radius:var(--radius-sm);background:#FFE066;color:#2A2A2A;box-shadow:var(--shadow-sm);transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast);position:relative;overflow:hidden;}
+.sticky-note--blue{background:var(--secondary);color:#2A2A2A;}
+.sticky-note--pink{background:var(--accent-pink);color:#2A2A2A;}
+.sticky-note--green{background:var(--accent-green);color:#2A2A2A;}
+.sticky-note--orange{background:var(--accent-orange);color:#2A2A2A;}
+.sticky-note--purple{background:var(--accent-purple);color:#2A2A2A;}
+.sticky-note__title{font:var(--font-display) 1.25rem;margin:.2rem 0 0;}
+.sticky-note__copy{font-size:.85rem;color:#444; margin-top:.4rem;}
+/* Rotations */
+.sticky-note--tilt-l{transform:rotate(-3deg);}
+.sticky-note--tilt-r{transform:rotate(3deg);}
+.sticky-note--featured{rotate:0;box-shadow:var(--shadow-md);}
+/* Most Popular badge */
+.badge{position:absolute;top:-4px;right:-4px;background:#2A2A2A;color:#fff;padding:.2rem .5rem;border-radius:50%;font-size:.7rem;}
+
+/* Nav */
+.nav{position:sticky;top:0;background:var(--bg-secondary);z-index:var(--z-dropdown);padding:.8rem 1rem;display:flex;align-items:center;gap:1rem;border-bottom:1px solid var(--border-default);}
+.nav__link{font:var(--font-base) .95rem;color:var(--text-primary);text-decoration:none;transition:color var(--transition-fast);} 
+.nav__link:hover{color:var(--primary);}
+.nav__theme-toggle{background:none;border:none;cursor:pointer;padding:.5rem;}
+
+/* Hero */
+.hero{padding:3rem 1rem 1rem;text-align:center;}
+.hero__headline{font:var(--font-display) 3.2rem;line-height:1.2;margin:.2rem 0;}
+.hero__sub{font:var(--font-base) 1.1rem;color:var(--text-secondary);margin-bottom:1.5rem;}
+.hero__cta{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap;}
+/* Decorative sticky notes */
+.dec-sticky{position:absolute;width:2rem;height:3rem;border-radius:var(--radius-sm);background:var(--primary);transform:rotate(-6deg);opacity:.5;}
+
+/* Features */
+.features{padding:2rem 1rem;display:flex;gap:var(--spacing-gap);justify-content:center;flex-wrap:wrap;}
+.features .sticky-note{max-width:180px;}
+/* How It Works */
+.steps{padding:2rem 1rem;display:flex;gap:var(--spacing-gap);justify-content:center;flex-wrap:wrap;}
+.steps .sticky-note{aspect-ratio:1;display:flex;align-items:center;justify-content:center;}
+.step-number{font:var(--font-display) 3rem;color:var(--primary);}
+
+/* Testimonials */
+.testimonials{padding:2rem 1rem;display:flex;gap:var(--spacing-gap);justify-content:center;flex-wrap:wrap;align-items:center;}
+.testimonial .sticky-note{max-width:260px;padding:1rem;text-align:center;}
+.testimonial__quote{font-style:italic;margin-bottom:.8rem;}
+.testimonial__attribution{font-weight:600;}
+
+/* Pricing */
+.pricing{padding:2rem 1rem;display:flex;gap:var(--spacing-gap);justify-content:center;flex-wrap:wrap;align-items:center;}
+.pricing .sticky-note{max-width:220px;}
+.pricing .sticky-note--featured{background:var(--primary);color:#2A2A2A;box-shadow:var(--shadow-md);border:2px solid var(--primary);}
+.pricing .sticky-note--featured .badge{background:var(--text-primary);}
+/* FAQ */
+.faq{padding:2rem 1rem;}
+.faq__item{margin-bottom:1rem;}
+.faq__trigger{width:100%;padding:1rem 1.2rem;border:none;background:var(--bg-secondary);color:var(--text-primary);text-align:left;font:var(--font-base) 1rem;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:.5rem;}
+.faq__trigger:hover{background:var(--border-default);}
+.faq__trigger:focus{outline:2px solid var(--primary);outline-offset:2px;}
+.faq__icon{color:var(--primary);}
+.faq__panel{max-height:0;overflow:hidden;transition:max-height var(--transition-normal) var(--ease-standard);}
+.faq__panel p{padding:.5rem 0 0;}
+.faq__item[aria-expanded="true"] .faq__panel{max-height:100px;}
+.faq__chevron{transition:transform var(--transition-fast) var(--ease-standard);}
+.faq__item[aria-expanded="true"] .faq__chevron{transform:rotate(180deg);}
+
+/* Final CTA */
+.cta{padding:2rem 1rem;text-align:center;background:var(--primary);color:#2A2A2A;}
+.cta__headline{font:var(--font-display) 2.5rem;margin-bottom:.2rem;}
+.cta__form{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;}
+.cta__input{flex:1;padding:.6rem .8rem;border:none;border-radius:var(--radius-sm);font:var(--font-base) 1rem;background:#fff;color:var(--text-primary);}
+.cta__input:focus{outline:2px solid var(--primary);outline-offset:2px;}
+.cta__input:valid{background:#e6f7e6;}
+.cta__input:invalid:not(:focus){border-color:var(--text-error);}
+
+/* Footer */
+.footer{padding:2rem 1rem;background:var(--bg-secondary);color:var(--text-primary);display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;}
+.footer__brand{font:var(--font-display) 1.2rem;margin-bottom:.5rem;}
+.footer__links{display:flex;gap:1.5rem;flex-wrap:wrap;}
+.footer__link{font:var(--font-base) .9rem;color:var(--text-primary);text-decoration:none;}
+.footer__social{display:flex;gap:.8rem;}
+.footer__social .material-symbols-outlined{font-variation-settings:'FILL' wght 400 opsz 24;color:var(--primary);width:1em;height:1em;}
+.footer__copyright{font-size:.8rem;color:#777;}
+</style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="nav" aria-label="Main navigation">
+    <a href="#" class="nav__link">Home</a>
+    <a href="#features" class="nav__link">Features</a>
+    <a href="#pricing" class="nav__link">Pricing</a>
+    <a href="#testimonials" class="nav__link">Testimonials</a>
+    <button class="nav__theme-toggle" aria-pressed="false" aria-label="Switch to dark theme" role="button">
+      <span class="material-symbols-outlined" id="theme-icon">light_mode</span>
+    </button>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero" aria-labelledby="hero-headline">
+    <h1 id="hero-headline" class="hero__headline">Scatterbrain</h1>
+    <p class="hero__sub">A playful collaborative brainstorming tool for teams that love a little chaos.</p>
+    <div class="hero__cta">
+      <button class="btn btn--primary">Get Started</button>
+      <button class="btn btn--secondary">Watch Demo</button>
+    </div>
+    <!-- decorative sticky notes -->
+    <div class="dec-sticky" style="background:var(--secondary); left:2%; top:30%;"></div>
+    <div class="dec-sticky" style="background:var(--accent-pink); right:5%; top:50%;"></div>
+    <div class="dec-sticky" style="background:var(--accent-green); left:10%; bottom:20%;"></div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" class="features" aria-label="Features">
+    <div class="sticky-note sticky-note--tilt-l">
+      <h3 class="sticky-note__title">Organize</h3>
+      <p class="sticky-note__copy">Capture every idea on a virtual sticky and group them by theme.</p>
+    </div>
+    <div class="sticky-note sticky-note--blue sticky-note--tilt-r">
+      <span class="material-symbols-outlined" style="width:1em;height:1em;">lightbulb</span>
+      <h3 class="sticky-note__title">Ideate</h3>
+      <p class="sticky-note__copy">Spawn wild thoughts with no judgment — the messier the better.</p>
+    </div>
+    <div class="sticky-note sticky-note--green">
+      <span class="material-symbols-outlined" style="width:1em;height:1em;">handshake</span>
+      <h3 class="sticky-note__title">Collaborate</h3>
+      <p class="sticky-note__copy">Invite teammates, vote, and build on each other's sparks.</p>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section id="how-it-works" class="steps" aria-label="How it works">
+    <div class="sticky-note sticky-note--tilt-l step-number">1</div>
+    <div class="sticky-note sticky-note--tilt-r step-number">2</div>
+    <div class="sticky-note sticky-note--featured step-number">3</div>
+    <div class="sticky-note sticky-note--tilt-l" style="background:var(--primary);color:#2A2A2A;">
+      <h3 class="sticky-note__title">Write it down</h3>
+      <p class="sticky-note__copy">Jot any thought on a digital sticky.</p>
+    </div>
+    <div class="sticky-note sticky-note--blue" style="background:var(--secondary);color:#2A2A2A;">
+      <h3 class="sticky-note__title">Group ideas</h3>
+      <p class="sticky-note__copy">Drag and cluster related notes.</p>
+    </div>
+    <div class="sticky-note sticky-note--green" style="background:var(--accent-green);color:#2A2A2A;">
+      <h3 class="sticky-note__title">Share &amp; vote</h3>
+      <p class="sticky-note__copy">Invite the room and let the best ideas rise.</p>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section id="testimonials" class="testimonials" aria-label="Testimonials">
+    <div class="sticky-note sticky-note--tilt-l" style="background:var(--accent-pink);color:#2A2A2A;">
+      <p class="testimonial__quote">“Scatterbrain turned our chaotic meetings into focused sprints.”</p>
+      <div class="testimonial__attribution">— Alex, Product Lead</div>
+    </div>
+    <div class="sticky-note sticky-note--blue sticky-note--tilt-r" style="background:var(--secondary);color:#2A2A2A;">
+      <p class="testimonial__quote">“The pastel cards make brainstorming feel like play.”</p>
+      <div class="testimonial__attribution">— Maya, Designer</div>
+    </div>
+    <div class="sticky-note sticky-note--green" style="background:var(--accent-green);color:#2A2A2A;">
+      <p class="testimonial__quote">“Our best ideas came from the walls we built together.”</p>
+      <div class="testimonial__attribution">— Sam, Engineer</div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section id="pricing" class="pricing" aria-label="Pricing">
+    <div class="sticky-note" style="background:var(--accent-pink);color:#2A2A2A;">
+      <h3 class="sticky-note__title">Starter</h3>
+      <p class="sticky-note__copy">Perfect for individuals.</p>
+      <button class="btn btn--secondary">Free</button>
+    </div>
+    <div class="sticky-note sticky-note--featured" style="background:var(--primary);color:#2A2A2A;">
+      <h3 class="sticky-note__title">Pro</h3>
+      <p class="sticky-note__copy">For growing teams.</p>
+      <button class="btn btn--primary">$12/mo</button>
+      <span class="badge">Most Popular</span>
+    </div>
+    <div class="sticky-note sticky-note--orange" style="background:var(--accent-orange);color:#2A2A2A;">
+      <h3 class="sticky-note__title">Enterprise</h3>
+      <p class="sticky-note__copy">For organizations.</p>
+      <button class="btn btn--secondary">Custom</button>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="faq" aria-label="Frequently asked questions">
+    <div class="faq__item">
+      <button class="faq__trigger" aria-expanded="false" aria-controls="faq-1">
+        How do I reset my password?
+        <span class="faq__icon material-symbols-outlined">chevron_right</span>
+      </button>
+      <div class="faq__panel" id="faq-1">
+        <p>Use the “Forgot Password” link on the login page. We’ll send a reset link to your email within 15 minutes.</p>
+      </div>
+    </div>
+    <div class="faq__item">
+      <button class="faq__trigger" aria-expanded="false" aria-controls="faq-2">
+        Is there a mobile app?
+        <span class="faq__icon material-symbols-outlined">chevron_right</span>
+      </button>
+      <div class="faq__panel" id="faq-2">
+        <p>Yes! Scatterbrain works offline on iOS and Android via progressive web app. Install from your browser’s share menu.</p>
+      </div>
+    </div>
+    <div class="faq__item">
+      <button class="faq__trigger" aria-expanded="false" aria-controls="faq-3">
+        Can I export my notes?
+      </button>
+      <div class="faq__panel" id="faq-3">
+        <p>Absolutely. Export as PDF, CSV, or copy to clipboard from the notes menu.</p>
+      </div>
+    </div>
+    <div class="faq__item">
+      <button class="faq__trigger" aria-expanded="false" aria-controls="faq-4">
+        What if I accidentally delete a board?
+      </button>
+      <div class="faq__panel" id="faq-4">
+        <p>Deleted boards go to the trash and can be restored within 30 days. After 30 days they’re permanently removed.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="cta" aria-label="Final call to action">
+    <h2 class="cta__headline">Ready to scatter your ideas?</h2>
+    <form class="cta__form" novalidate>
+      <input type="email" class="cta__input" placeholder="your@email.com" required>
+      <button class="btn btn--primary" type="submit">Join the board</button>
+    </form>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer" role="contentinfo">
+    <div class="footer__brand">Scatterbrain</div>
+    <nav class="footer__links">
+      <a href="#features" class="footer__link">Features</a>
+      <a href="#pricing" class="footer__link">Pricing</a>
+      <a href="#testimonials" class="footer__link">Testimonials</a>
+      <a href="#faq" class="footer__link">FAQ</a>
+    </nav>
+    <div class="footer__social">
+      <span class="material-symbols-outlined">facebook</span>
+      <span class="material-symbols-outlined">twitter</span>
+      <span class="material-symbols-outlinked">linked_in</span>
+    </div>
+    <p class="footer__copyright">© 2026 Scatterbrain. All rights reserved.</p>
+  </footer>
+
+  <script>
+    // Theme toggle with localStorage persistence
+    (function(){
+      const html = document.documentElement;
+      const themeToggle = document.querySelector('.nav__theme-toggle');
+      const themeIcon = document.getElementById('theme-icon');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+      
+      function setTheme(isDark){
+        html.classList.toggle('dark', isDark);
+        themeIcon.textContent = isDark ? 'light_mode' : 'dark_mode';
+        themeToggle.setAttribute('aria-pressed', isDark);
+        themeToggle.setAttribute('aria-label', isDark ? 'Switch to light theme' : 'Switch to dark theme');
+        // persist
+        try { localStorage.setItem('scatterbrain-theme', isDark ? 'dark' : 'light'); } catch(e){}
+      }
+      
+      // check storage on load
+      let saved = null;
+      try { saved = localStorage.getItem('scatterbrain-theme'); } catch(e){}
+      if(saved) setTheme(saved === 'dark');
+      else setTheme(prefersDark.matches);
+      
+      // listen to system changes
+      prefersDark.addEventListener('change', e => {
+        if(!localStorage.getItem('scatterbrain-theme')) setTheme(e.matches);
+      });
+      
+      themeToggle.addEventListener('click', () => {
+        const isDark = html.classList.contains('dark');
+        setTheme(!isDark);
+      });
+    })();
+    
+    // FAQ accordion
+    (function(){
+      const triggers = document.querySelectorAll('.faq__trigger');
+      triggers.forEach(t => {
+        t.addEventListener('click', () => {
+          const expanded = t.getAttribute('aria-expanded') === 'true';
+          t.setAttribute('aria-expanded', !expanded);
+          const panel = document.getElementById(t.getAttribute('aria-controls'));
+          if(!expanded){
+            panel.style.maxHeight = panel.scrollHeight + 'px';
+          }else{
+            panel.style.maxHeight = 0;
+          }
+        });
+      });
+      // initially set maxHeight for open items if any
+      document.querySelectorAll('.faq__panel').forEach(p => p.style.maxHeight = 0);
+    })();
+    
+    // smooth anchor scrolling respecting reduced motion
+    (function(){
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e){
+          const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          if(reduced) return;
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute('href'));
+          if(target){
+            target.scrollIntoView({behavior: 'smooth'});
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

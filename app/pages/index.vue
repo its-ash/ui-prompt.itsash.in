@@ -83,9 +83,7 @@ useHead({ title: 'PromptDeck - UI Theme Prompt Library' });
     </main>
 
     <footer class="pg__foot">
-      <p class="pg__footnote mono">
-        Prompts processed from raw theme specs via design/agent.md - CSS-first, dark mode, state-complete. Static build.
-      </p>
+
     </footer>
   </div>
 </template>

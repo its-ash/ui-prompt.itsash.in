@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Grimoire – AI‑Native Code Editor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,8..144,400;0,8..144,500;1,8..144,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400&display=swap">
+  <style>
+    /* ---------- reset & base ---------- */
+    *,::before,::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:var(--font-body),serif;font-feature-settings:normal;line-height:1.5;color:var(--text-primary);background:var(--bg-primary);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+    reduced-motion html{scroll-behavior:auto}
+    @media (prefers-reduced-motion:reduce){.reduced-motion *{transition:none!important;animation:none!important}}
+    a{color:var(--primary);text-decoration:underline;text-underline-offset:4px;transition:color var(--transition-fast) var(--ease-standard)}
+    a:hover{color:var(--text-error)}
+    .btn{cursor:pointer}
+    img{max-width:100%;display:block}
+    /* ---------- tokens ---------- */
+    :root{
+      --primary:#f54e00;--secondary:#c08532;
+      --bg-primary:#f2f1ed;--bg-secondary:#ebeae5;--bg-tertiary:#e6e5e0;
+      --text-primary:#26251e;--text-secondary:#6f6a5c;
+      --text-success:#3e7a4f;--text-error:#cf2d56;
+      --border-default:oklab(0.263 -0.002 0.012 /0.10);
+      --border-strong:oklab(0.263 -0.002 0.012 /0.24);
+      --border-error:rgba(207,45,86,0.50);
+      --border-success:rgba(62,122,79,0.50);
+      --header-bg:rgba(242,241,237,0.88);
+      --radius-sm:6px;--radius-md:8px;--radius-lg:12px;--radius-pill:9999px;
+      --shadow-sm:0 1px 2px rgba(38,37,30,.07),0 1px 3px rgba(38,37,30,.05);
+      --shadow-md:0 6px 16px rgba(38,37,30,.10),0 2px 4px rgba(38,37,30,.06);
+      --spacing-gap:1.5rem;
+      --transition-fast:150ms;--transition-normal:250ms;
+      --ease-standard:cubic-bezier(0.22,1,0.36,1);
+      --z-header:90;--z-dropdown:100;--z-modal:200;--z-toast:300;
+      --font-display:'Space Grotesk',sans-serif;
+      --font-body:'Fraunces',serif;
+      --font-mono:'JetBrains Mono',monospace;
+    }
+    .dark{
+      --primary:#f54e00;--secondary:#c08532;
+      --bg-primary:#1f1e18;--bg-secondary:#26251e;--bg-tertiary:#2d2b23;
+      --text-primary:#f2f1ed;--text-secondary:#b3ae9e;
+      --text-success:#8cc49a;--text-error:#e2637f;
+      --border-default:oklab(0.925 -0.002 0.012 /0.14);
+      --border-strong:oklab(0.925 -0.002 0.012 /0.30);
+      --border-error:rgba(226,99,127,0.55);
+      --border-success:rgba(140,196,154,0.55);
+      --header-bg:rgba(31,30,24,0.88);
+      --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+      --shadow-md:0 6px 16px rgba(0,0,0,.45);
+    }
+    /* ---------- focus ring ---------- */
+    .focus-ring:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+    /* ---------- reduced motion class ---------- */
+    .reduced-motion{transition:none!important;animation:none!important}
+    /* ---------- layout utilities ---------- */
+    .container{max-width:1120px;margin:0 auto;padding:0 var(--spacing-gap)}
+    .flex{display:flex;align-items:center}
+    .row{flex-direction:row}
+    .col{flex-direction:column}
+    .gap-1{gap:0.5rem}
+    .gap-2{gap:1rem}
+    .gap-3{gap:var(--spacing-gap)}
+    .flex-1{flex:1 1 auto}
+    .btn-base{
+      display:flex;align-items:center;justify-content:center;
+      gap:0.5rem;padding:0.6rem 1.2rem;border-radius:var(--radius-pill);
+      font-family:var(--font-display),sans-serif;font-weight:500;
+      font-size:0.875rem;transition:transform var(--transition-fast) var(--ease-standard),
+        box-shadow var(--transition-fast) var(--ease-standard);
+    }
+    .btn-base:hover{transform:scale(0.96);box-shadow:var(--shadow-md)}
+    .btn-base:active{transform:scale(0.94)}
+    .btn-base:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+    .btn-base:disabled{opacity:0.5;cursor:not-allowed;filter:grayscale(1)}
+    /* ---------- sticky header ---------- */
+    .header{position:sticky;top:0;z-index:var(--z-header);
+      background:var(--header-bg);backdrop-filter:blur(10px);
+      border-bottom:1px solid var(--border-default)}
+    .header__inner{max-height:64px;padding:0 var(--spacing-gap)}
+    .header__brand{font-family:var(--font-display),sans-serif;font-weight:700;font-size:1rem}
+    .header__nav{flex:1;overflow-x:auto}
+    .header__list{display:flex;gap:2rem}
+    .header__link{font-family:var(--font-display),sans-serif;font-weight:500;font-size:0.875rem;
+      color:var(--text-primary);transition:color var(--transition-fast) var(--ease-standard)}
+    .header__link:hover{color:var(--text-error)}
+    .header__actions{display:flex;gap:0.75rem;align-items:center}
+    .header__toggle{width:44px;height:44px;border:none;border-radius:var(--radius-pill);
+      background:transparent;color:var(--text-primary);font-size:1.25rem;
+      cursor:pointer;position:relative;flex-shrink:0}
+    .header__toggle .material-symbols-outlined{width:1em;height:1em}
+    /* mobile menu */
+    .menu-btn{display:none;width:44px;height:44px;border:none;background:transparent;
+      color:var(--text-primary);font-size:1.5rem;cursor:pointer;flex-shrink:0}
+    .mobile-menu{position:fixed;top:0;right:0;width:260px;height:100vh;background:var(--bg-secondary);
+      border-left:1px solid var(--border-default);padding:2rem;transform:translateX(100%);
+      transition:transform var(--transition-normal) var(--ease-standard);z-index:var(--z-dropdown)}
+    .mobile-menu.open{transform:translateX(0)}
+    .mobile-menu__list{flex-direction:column;gap:1rem}
+    .mobile-menu__link{font-family:var(--font-display),sans-serif;font-weight:500;color:var(--text-primary)}
+    /* ---------- hero ---------- */
+    .hero{padding:4rem 0 2rem}
+    .hero__inner{flex-wrap:wrap;gap:2rem}
+    .hero__copy{flex:1 min-width:0}
+    .hero__eyebrow{font-family:var(--font-mono),monospace;font-size:0.6875rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--secondary);margin-bottom:0.5rem}
+    .hero__h1{font-family:var(--font-display),sans-serif;font-weight:700;font-size:clamp(2.75rem,6vw,4.5rem);
+      letter-spacing:-0.03em;line-height:1.1;margin:0.5rem 0}
+    .hero__h1 .swash{font-family:var(--font-body),serif;font-style:italic;font-feature-settings:"swsh" 1}
+    .hero__lede{font-size:1.125rem;color:var(--text-secondary);margin:0.5rem 0}
+    .hero__buttons{display:flex;gap:0.5rem;margin-top:1rem}
+    .hero__mono{font-family:var(--font-mono),monospace;font-size:0.75rem;color:var(--text-secondary);
+      margin-top:1rem}
+    .hero__mock{flex:1 min-width:280px}
+    .hero__card{background:var(--bg-secondary);border:1px solid var(--border-default);
+      border-radius:var(--radius-lg);padding:1.5rem;position:relative}
+    .hero__tab-bar{display:flex;gap:0.5rem;margin-bottom:1rem;font-family:var(--font-mono),monospace;font-size:0.75rem;color:var(--text-secondary)}
+    .hero__tab{position:relative;padding-bottom:2px}
+    .hero__tab.active::after{content:'';position:absolute;bottom:0;left:0;width:100%;height:2px;background:var(--primary)}
+    .hero__dot{display:flex;gap:0.5rem;margin-top:1rem}
+    .hero__dot span{width:8px;height:8px;border-radius:var(--radius-pill);background:var(--secondary)}
+    .hero__dot span:nth-child(2){background:var(--primary)}
+    .hero__code{font-family:var(--font-mono),monospace;font-size:0.8125rem;color:var(--text-secondary);line-height:1.6;margin-top:1rem}
+    .hero__code span{color:var(--primary)}
+    /* ---------- features ---------- */
+    .features{padding:4rem 0}
+    .features__header{display:flex;flex-direction:column;gap:0.5rem}
+    .features__eyebrow{font-family:var(--font-mono),monospace;text-transform:uppercase;letter-spacing:0.08em;color:var(--secondary);
+      font-size:0.6875rem}
+    .features__h2{font-family:var(--font-display),sans-serif;font-weight:700;font-size:1.75rem;letter-spacing:-0.02em;margin:0}
+    .features__intro{color:var(--text-secondary);font-size:0.9375rem;margin:0}
+    .features__grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--spacing-gap);margin-top:2rem}
+    .features__card{background:var(--bg-secondary);border:1px solid var(--border-default);
+      border-radius:var(--radius-lg);padding:1.5rem;position:relative}
+    .features__card__symbol{position:absolute;top:1rem;right:1rem;width:32px;height:32px;
+      border:2px solid var(--primary);border-radius:var(--radius-pill);display:flex;align-items:center;justify-content:center}
+    .features__card__symbol .material-symbols-outlined{color:var(--primary)}
+    .features__card__title{font-family:var(--font-display),sans-serif;font-weight:700;font-size:1.125rem;letter-spacing:-0.02em;margin:1.25rem 0 0.75rem}
+    .features__card__desc{color:var(--text-secondary);font-size:0.875rem;line-height:1.5}
+    .features__card__learn{display inline-flex;align-items:center;gap:0.3rem;font-family:var(--font-mono),monospace;
+      color:var(--text-secondary);font-size:0.75rem;transition:color var(--transition-fast) var(--ease-standard)}
+    .features__card__learn:hover{color:var(--text-error)}
+    /* ---------- how it works ---------- */
+    .howworks{padding:4rem 0}
+    .howworks__header{display:flex;flex-direction:column;gap:0.5rem;margin-bottom:2rem}
+    .howworks__eyebrow,.howworks__h2,.howworks__intro{font-size:0.6875rem;text-transform:uppercase;letter-spacing:0.08em}
+    .howworks__eyebrow{color:var(--secondary)}
+    .howworks__h2{font-family:var(--font-display),sans-serif;font-weight:700;letter-spacing:-0.02em}
+    .howworks__intro{color:var(--text-secondary)}
+    .howworks__steps{display:flex;gap:1.5rem;position:relative}
+    .howworks__steps::after{
+      content:'';position:absolute;left:1.5rem;right:1.5rem;height:1px;background:var(--border-default);
+      top:1.5rem;margin-top:-0.5px}
+    .howworks__step{flex:1;text-align:center;position:relative}
+    .howworks__step__num{
+      font-family:var(--font-mono),monospace;font-weight:500;font-size:1.5rem;color:var(--secondary);
+      min-width:1.2rem;margin:0 auto 0.75rem}
+    .howworks__step__title{font-family:var(--font-display),sans-serif;font-weight:700;font-size:1.125rem;letter-spacing:-0.02em;margin:0 0 0.5rem}
+    .howworks__step__desc{color:var(--text-secondary);font-size:0.875rem}
+    /* ---------- testimonials ---------- */
+    .testimonials{padding:4rem 0;background:var(--bg-tertiary)}
+    .testimonials__grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--spacing-gap)}
+    .testimonials__card{background:var(--bg-secondary);border:1px solid var(--border-default);
+      border-radius:var(--radius-lg);padding:1.5rem;position:relative}
+    .testimonials__card__quote{
+      font-family:var(--font-body),serif;font-style:italic;font-size:1rem;color:var(--text-primary);
+      margin:0 0 1rem;line-height:1.5}
+    .testimonials__card__quote .swash{font-family:var(--font-body),serif;font-style:italic;font-feature-settings:"swsh" 1}
+    .testimonials__card__attribution{display:flex;align-items:center;gap:0.75rem}
+    .testimonials__card__avatar{
+      width:32px;height:32px;border:2px solid var(--secondary);border-radius:var(--radius-pill);
+      display:flex;align-items:center;justify-content:center;font-family:var(--font-mono),monospace;
+      font-weight:500;color:var(--secondary);font-size:0.75rem}
+    .testimonials__card__name{font-family:var(--font-display),sans-serif;font-weight:500;margin-left:0.5rem}
+    .testimonials__card__role{font-family:var(--font-mono),monospace;font-size:0.75rem;color:var(--text-secondary)}
+    /* ---------- pricing ---------- */
+    .pricing{padding:4rem 0}
+    .pricing__grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--spacing-gap)}
+    .pricing__card{background:var(--bg-secondary);border:1px solid var(--border-default);
+      border-radius:var(--radius-lg);padding:1.5rem;position:relative;transition:transform var(--transition-fast) var(--ease-standard),
+        box-shadow var(--transition-fast) var(--ease-standard)}
+    .pricing__card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+    .pricing__card--featured{border-color:var(--primary);box-shadow:0 6px 20px rgba(245,78,0,.15)}
+    .pricing__card--featured .pricing__tag{background:var(--primary);color:#fefefe}
+    .pricing__tag{
+      position:absolute;top:-0.5rem;right:1.5rem;background:var(--primary);color:#fefefe;
+      padding:0.2rem 0.5rem;border-radius:var(--radius-pill);font-family:var(--font-mono),monospace;
+      font-size:0.6875rem;text-transform:uppercase;letter-spacing:0.04em}
+    .pricing__eyebrow{font-family:var(--font-mono),monospace;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.04em;color:var(--secondary);margin-bottom:0.25rem}
+    .pricing__price{font-family:var(--font-display),sans-serif;font-weight:700;font-size:1.5rem;margin:0.25rem 0}
+    .pricing__period{font-family:var(--font-mono),monospace;font-size:0.875rem;color:var(--text-secondary)}
+    .pricing__list{margin:1rem 0;padding-left:1.25rem}
+    .pricing__list__item{font-family:var(--font-mono),monospace;font-size:0.8125rem;color:var(--text-secondary);margin:0.35rem 0;display:flex;align-items:center;gap:0.4rem}
+    .pricing__list__item .material-symbols-outlined{color:var(--text-success);width:1em;height:1em}
+    .pricing__cta .btn-base{width:100%}
+    /* ---------- faq ---------- */
+    .faq{padding:4rem 0;max-width:760px;margin:0 auto}
+    .faq__header{display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1.5rem}
+    .faq__eyebrow,.faq__h2{font-size:0.6875rem;text-transform:uppercase;letter-spacing:0.08em}
+    .faq__eyebrow{color:var(--secondary)}
+    .faq__h2{font-family:var(--font-display),sans-serif;font-weight:700;letter-spacing:-0.02em}
+    .faq__item{margin-bottom:0.75rem}
+    .faq__trigger{
+      width:100%;text-align:left;font-family:var(--font-display),sans-serif;font-weight:500;
+      color:var(--text-primary);padding:0.875rem 1.5rem;border:none;background:transparent;
+      display:flex;justify-content:space-between;align-items:center;gap:0.5rem;
+      cursor:pointer;transition:background var(--transition-fast) var(--ease-standard)}
+    .faq__trigger:hover{background:var(--bg-tertiary)}
+    .faq__trigger .material-symbols-outlined{color:var(--secondary);font-variant:opsz 48}
+    .faq__trigger[data-open="true"] .material-symbols-outlined{transform:rotate(180deg)}
+    .faq__panel{
+      max-height:0;overflow:hidden;transition:max-height var(--transition-normal) var(--ease-standard);
+      font-family:var(--font-body),serif;color:var(--text-secondary);font-size:0.875rem;line-height:1.6}
+    .faq__panel[aria-expanded="true"]{max-height:1000px}
+    .faq__panel .swash{font-family:var(--font-body),serif;font-style:italic;font-feature-settings:"swsh" 1}
+    /* ---------- final cta ---------- */
+    .cta{padding:3rem 0;background:var(--bg-secondary);border-top:1px solid var(--border-default);
+      border-bottom:1px solid var(--border-default)}
+    .cta__inner{flex-direction:column;align-items:center;gap:1rem}
+    .cta__h2{font-family:var(--font-display),sans-serif;font-weight:700;font-size:clamp(2.5rem,5vw,3.5rem);
+      letter-spacing:-0.03em;color:var(--text-primary);margin:0}
+    .cta__lede{font-family:var(--font-body),serif;font-style:italic;font-size:1.25rem;color:var(--text-secondary);
+      line-height:1.5;max-width:60ch}
+    .cta__lede .swash{font-family:var(--font-body),serif;font-style:italic;font-feature-settings:"swsh" 1}
+    .cta__btn{width:auto}
+    /* ---------- footer ---------- */
+    .footer{padding:3rem 0 1rem}
+    .footer__top{display:flex;flex-wrap:wrap;gap:2rem;border-bottom:1px solid var(--border-default);
+      padding-bottom:1.5rem;margin-bottom:1.5rem}
+    .footer__brand{flex:1 min-width:0}
+    .footer__wordmark{font-family:var(--font-display),sans-serif;font-weight:700;font-size:1.25rem;margin-bottom0.25rem}
+    .footer__tagline{font-family:var(--font-body),serif;font-size:0.8125rem;color:var(--text-secondary)}
+    .footer__social{display:flex;gap:0.5rem}
+    .footer__social__link{font-family:var(--font-mono),monospace;font-size:0.75rem;color:var(--text-secondary);
+      transition:color var(--transition-fast) var(--ease-standard)}
+    .footer__social__link:hover{color:var(--text-error)}
+    .footer__columns{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;margin-top:2rem}
+    .footer__column h4{font-family:var(--font-mono),monospace;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;
+      color:var(--text-secondary);margin-bottom1rem}
+    .footer__column ul{flex-direction:column;gap:0.5rem}
+    .footer__column li{font-family:var(--font-mono),monospace;font-size:0.75rem;color:var(--text-secondary);
+      transition:color var(--transition-fast) var(--ease-standard)}
+    .footer__column li:hover{color:var(--text-error)}
+    .footer__bottom{display:flex;justify-content:space-between;align-items:center;padding-top:1rem;
+      font-family:var(--font-mono),monospace;font-size:0.75rem;color:var(--text-secondary);border-top:1px solid var(--border-default)}
+    /* ---------- form ---------- */
+    .footer__form{display:flex;flex-direction:column;width:100%;max-width:360px}
+    .footer__form__label{font-family:var(--font-mono),monospace;font-size:0.6875rem;text-transform:uppercase;letter-spacing:0.08em;
+      color:var(--text-secondary);margin-bottom0.25rem}
+    .footer__form__input{
+      width:100%;padding0.75rem 1rem;border:1px solid var(--border-default);
+      border-radius:var(--radius-md);background:var(--bg-tertiary);color:var(--text-primary);
+      font-family:var(--font-mono),monospace;font-size:0.875rem;transition:border-color var(--transition-fast)}
+    .footer__form__input:focus{border-color:var(--primary);outline:none}
+    .footer__form__error{font-family:var(--font-mono),monospace;font-size:0.6875rem;color:var(--text-error);
+      margin-top0.5rem;min-height:1.2rem}
+    .footer__form__btn{align-self:flex-start;margin-top0.75rem}
+    /* reduced motion tweaks */
+    @media (prefers-reduced-motion:reduce){
+      .faq__trigger,.faq__panel{transition:none!important}
+      .pricing__card:hover{transform:none!important;box-shadow:none!important}
+      .features__card:hover .features__card__learn{color:var(--text-error)!important}
+    }
+  </style>
+</head>
+<body data-reduced-motion="false">
+  /* ---------- header ---------- -->
+  <header class="header" aria-label="Main navigation">
+    <div class="header__inner container flex row">
+      <h1 class="header__brand">Grimoire</h1>
+      <nav class="header__nav" aria-label="Primary navigation">
+        <ul class="header__list">
+          <li><a class="header__link" href="#features">Features</a></li>
+          <li><a class="header__link" href="#how-it-works">How It Works</a></li>
+          <li><a class="header__link" href="#testimonials">Testimonials</a></li>
+          <li><a class="header__link" href="#pricing">Pricing</a></li>
+        </ul>
+      </nav>
+      <div class="header__actions flex row gap-2">
+        <button class="header__toggle material-symbols-outlined" aria-label="Switch to light mode"
+                aria-pressed="false" id="themeToggle" role="button">
+          light_mode
+        </button>
+        <a class="btn btn--primary" href="#download">Download</a>
+      </div>
+    </div>
+  </header>
+
+  /* ---------- mobile menu (hidden by default, toggled by JS) ---------- -->
+  <button class="menu-btn" aria-label="Open navigation" aria-controls="mobileMenu" aria-expanded="false" role="button">
+    menu
+  </button>
+  <aside class="mobile-menu" id="mobileMenu" aria-label="Secondary navigation" role="navigation">
+    <ul class="mobile-menu__list">
+      <li><a class="mobile-menu__link" href="#features">Features</a></li>
+      <li><a class="mobile-menu__link" href="#how-it-works">How It Works</a></li>
+      <li><a class="mobile-menu__link" href="#testimonials">Testimonials</a></li>
+      <li><a class="mobile-menu__link" href="#pricing">Pricing</a></li>
+    </ul>
+  </aside>
+
+  <!-- ==== HERO ==== -->
+  <section class="hero" id="hero">
+    <div class="hero__inner container flex row">
+      <div class="hero__copy flex-1">
+        <span class="hero__eyebrow">v2.0 · Agent mode is live</span>
+        <h1 class="hero__h1">The AI editor that feels like <span class="swash">magic</span>.</h1>
+        <p class="hero__lede">A code‑first, AI‑native editor that understands your whole project, offers inline edits, and runs agents to refactor across files.</p>
+        <div class="hero__buttons">
+          <a class="btn btn--primary" href="#download">Download free</a>
+          <a class="btn btn--secondary" href="#docs">Read the docs</a>
+        </div>
+        <p class="hero__mono">macOS · Windows · Linux — free for personal use</p>
+      </div>
+      <div class="hero__mock">
+        <article class="hero__card">
+          <div class="hero__tab-bar">
+            <div class="hero__tab active">spellbook.ts</div>
+            <div class="hero__tab">components.jsx</div>
+            <div class="hero__tab">styles.css</div>
+          </div>
+          <div class="hero__dot">
+            <span></span><span></span>
+          </div>
+          <pre class="hero__code"><span class="keyword">function</span> castSpell(target) {
+  <span class="string">"</span>abracadabra<span class="string">"</span>
+  <span class="comment">// invoke the spell</span>
+}</pre>
+          <span class="hero__caret" aria-hidden="true"></span>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==== FEATURES ==== -->
+  <section class="features" id="features">
+    <div class="container">
+      <div class="features__header flex col gap-2">
+        <span class="features__eyebrow">grounded in your codebase</span>
+        <h2 class="features__h2">Everything you need to code faster</h2>
+        <p class="features__intro">Chat with your codebase, edit inline, and let agents handle multi‑file refactors.</p>
+      </div>
+      <div class="features__grid">
+        <article class="features__card">
+          <span class="features__card__symbol"><span class="material-symbols-outlined">forum</span></span>
+          <h3 class="features__card__title">Chat‑grounded answers</h3>
+          <p class="features__card__desc">Ask questions about your entire codebase and get accurate, context‑aware responses.</p>
+          <a class="features__card__learn" href="#">Learn more <span class="material-symbols-outlined">arrow_forward</span></a>
+        </article>
+        <article class="features__card">
+          <span class="features__card__symbol"><span class="material-symbols-outlined">edit_note</span></span>
+          <h3 class="features__card__title">Inline AI edits</h3>
+          <p class="features__card__desc">Select code and let the editor suggest or apply edits right in place.</p>
+          <a class="features__card__learn" href="#">Learn more <span class="material-symbols-outlined">arrow_forward</span></a>
+        </article>
+        <article class="features__card">
+          <span class="features__card__symbol"><span class="material-symbols-outlined">bolt</span></span>
+          <h3 class="features__card__title">Agent mode</h3>
+          <p class="features__card__desc">Send agents to refactor, migrate, or generate code across multiple files.</p>
+          <a class="features__card__learn" href="#">Learn more <span class="material-symbols-outlined">arrow_forward</span></a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==== HOW IT WORKS ==== -->
+  <section class="howworks" id="how-it-works">
+    <div class="container">
+      <div class="howworks__header flex col gap-2">
+        <span class="howworks__eyebrow">step‑by‑step</span>
+        <h2 class="howworks__h2">How Grimoire works</h2>
+        <p class="howworks__intro">Open your project, ask or select code, review the diff.</p>
+      </div>
+      <div class="howworks__steps flex row gap-3" aria-label="Step guide">
+        <div class="howworks__step">
+          <span class="howworks__step__num">01</span>
+          <h3 class="howworks__step__title">Open your project</h3>
+          <p class="howworks__step__desc">Load any codebase; Grimoire indexes it instantly.</p>
+        </div>
+        <div class="howworks__step">
+          <span class="howworks__step__num">02</span>
+          <h3 class="howworks__step__title">Ask or select code</h3>
+          <p class="howworks__step__desc">Chat with the editor or highlight the snippet you want to change.</p>
+        </div>
+        <div class="howworks__step">
+          <span class="howworks__step__num">03</span>
+          <h3 class="howworks__step__title">Review the diff</h3>
+          <p class="howworks__step__desc">Accept, reject, or refine the AI‑generated changes.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==== TESTIMONIALS ==== -->
+  <section class="testimonials" id="testimonials">
+    <div class="container">
+      <div class="testimonials__grid">
+        <article class="testimonials__card">
+          <blockquote class="testimonials__card__quote">“Grimoire turned a 3‑day migration into a 30‑minute edit. The inline edits are absurdly accurate.”<span class="swash">‑</span> Alex, backend engineer</blockquote>
+          <div class="testimonials__card__attribution">
+            <div class="testimonials__card__avatar">JD</div>
+            <div>
+              <div class="testimonials__card__name">Alex Chen</div>
+              <div class="testimonials__card__role">Backend Engineer · OpenSource Inc.</div>
+            </div>
+          </div>
+        </article>
+        <article class="testimonials__card">
+          <blockquote class="testimonials__card__quote">“The agent mode refactored 12 files without breaking a single import. Unbelievable.”<span class="swash">‑</span> Maya, full‑stack</blockquote>
+          <div class="testimonials__card__attribution">
+            <div class="testimonials__card__avatar">MC</div>
+            <div>
+              <div class="testimonials__card__name">Maya Patel</div>
+              <div class="testimonials__card__role">Full‑stack Developer · Nova Labs</div>
+            </div>
+          </div>
+        </article>
+        <article class="testimonials__card">
+          <blockquote class="testimonials__card__quote">“Finally an editor that understands the whole project, not just the open file.”<span class="swash">‑</span> Sam, DevOps</blockquote>
+          <div class="testimonials__card__attribution">
+            <div class="testimonials__card__avatar">SS</div>
+            <div>
+              <div class="testimonials__card__name">Sam Torres</div>
+              <div class="testimonials__card__role">DevOps Lead · Cloudify</div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==== PRICING ==== -->
+  <section class="pricing" id="pricing">
+    <div class="container">
+      <div class="pricing__grid">
+        <article class="pricing__card pricing__card--featured">
+          <span class="pricing__tag">Most popular</span>
+          <p class="pricing__eyebrow">Pro</p>
+          <p class="pricing__price">$20</p>
+          <p class="pricing__period">/ month per user</p>
+          <ul class="pricing__list">
+            <li class="pricing__list__item"><span class="material-symbols-outlined">check</span> Unlimited chat</li>
+            <li class="pricing__list__item"><span class="material-symbols-outlined">check</span> Inline edits</li>
+            <li class="pricing__list__item"><span class="material-symbols-outlined">check</span> Agent mode</li>
+            <li class="pricing__list__item"><span class="material-symbols-outlined">check</span> Priority support</li>
+          </ul>
+          <a class="btn btn--primary btn--full-width" href="#signup">Start free trial</a>
+        </article>
+        <article class="pricing__card">
+          <span class="pricing__tag">Standard</span>
+          <p class="pricing__eyebrow">Starter</p>
+          <p class="pricing__price">$0</p>
+          <p class="pricing__period">/ month per user</p>
+          <ul class="pricing__list">
+            <li class="pricing__list__item"><span class="material-symbols-outlined">check</span> Basic chat</li>
+            <li class="pricing__list__item"><span class="material-symbols-outlined">check</span> Limited edits</li>
+          </ul>
+          <a class="btn btn--secondary btn--full-width" href="#features">Get started</a>
+        </article>
+        <article class="pricing__card">
+          <span class="pricing__tag">Enterprise</span>
+          <p class="pricing__eyebrow">Team</p>
+          <p class="pricing__price">$40</p>
+          <p class="pricing__period">/ month per user</p>
+          <ul class="pricing__list">
+            <li class="pricing__list__item"><span class="material-symbols-outlined">check</span> Everything in Pro</li>
+            <li class="pricing__list__item"><span class="material-symbols-outlined">check</span> SSO + admin</li>
+            <li class="pricing__list__item"><span class="material-symbols-outlined">check</span> Dedicated agent</li>
+          </ul>
+          <a class="btn btn--secondary btn--full-width" href="#contact">Contact sales</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==== FAQ ==== -->
+  <section class="faq" id="faq">
+    <div class="container">
+      <div class="faq__header flex col gap-2">
+        <span class="faq__eyebrow">frequently asked</span>
+        <h2 class="faq__h2">Have a question?</h2>
+      </div>
+      <div class="faq__item">
+        <button class="faq__trigger" aria-expanded="false" aria-controls="faq1">
+          <span>Can I use Grimoire offline?</span><span class="material-symbols-outlined">expand_more</span>
+        </button>
+        <div class="faq__panel" id="faq1" aria-expanded="false">
+          <p>Yes — the editor caches your project locally and AI features work without an active connection. Some cloud‑only features (agent sync, model updates) require internet.</p>
+        </div>
+      </div>
+      <div class="faq__item">
+        <button class="faq__trigger" aria-expanded="false" aria-controls="faq2">
+          <span>How is my code used for training?</span><span class="material-symbols-outlined">expand_more</span>
+        </button>
+        <div class="faq__panel" id="faq2" aria-expanded="false">
+          <p>We never use your code for model training without your opt‑in. You can disable telemetry in Settings.</p>
+        </div>
+      </div>
+      <div class="faq__item">
+        <button class="faq__trigger" aria-expanded="false" aria-controls="faq3">
+          <span>Does Grimoire support Vim keybindings?</span><span class="material-symbols-outlined">expand_more</span>
+        </button>
+        <div class="faq__panel" id="faq3" aria-expanded="false">
+          <p>Yes — Vim mode is available as an optional plugin. It maps common motions and operators to our AI commands.</p>
+        </div>
+      </div>
+      <div class="faq__item">
+        <button class="faq__trigger" aria-expanded="false" aria-controls="faq4">
+          <span>What platforms are supported?</span><span class="material-symbols-outlined">expand_more</span>
+        </button>
+        <div class="faq__panel" id="faq4" aria-expanded="false">
+          <p>Grimoire runs on macOS, Windows, and Linux. There’s also a web‑based preview for quick checks.</p>
+        </div>
+      </div>
+      <div class="faq__item">
+        <button class="faq__trigger" aria-expanded="false" aria-controls="faq5">
+          <span>Is there a refund policy?</span><span class="material-symbols-outlined">expand_more</span>
+        </button>
+        <div class="faq__panel" id="faq5" aria-expanded="false">
+          <p>Refunds are available within 14 days of purchase for paid tiers. The free tier can be cancelled anytime.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==== FINAL CTA ==== -->
+  <section class="cta" id="final-cta">
+    <div class="container">
+      <div class="cta__inner flex col align-items-center gap-2">
+        <h2 class="cta__h2">Ready to code magic?</h2>
+        <p class="cta__lede">Join thousands of developers who <span class="swash">magic</span> their workflow with Grimoire.</p>
+        <a class="btn btn--primary" href="#download">Download for free</a>
+        <p class="cta__mono">Free for personal use · No credit card required</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==== FOOTER ==== -->
+  <footer class="footer" role="contentinfo">
+    <div class="container">
+      <div class="footer__top flex row wrap gap-3">
+        <div class="footer__brand">
+          <h2 class="footer__wordmark">Grimoire</h2>
+          <p class="footer__tagline">An AI‑native code editor for the modern developer.</p>
+          <div class="footer__social">
+            <a class="footer__social__link" href="#" aria-label="GitHub">GitHub</a>
+            <a class="footer__social__link" href="#" aria-label="X">X</a>
+            <a class="footer__social__link" href="#" aria-label="Discord">Discord</a>
+            <a class="footer__social__link" href="#" aria-label="YouTube">YouTube</a>
+          </div>
+        </div>
+        <div class="footer__columns">
+          <div>
+            <h4>Product</h4>
+            <ul>
+              <li><a class="footer__column__link" href="#features">Features</a></li>
+              <li><a class="footer__column__link" href="#pricing">Pricing</a></li>
+              <li><a class="footer__column__link" href="#changelog">Changelog</a></li>
+              <li><a class="footer__column__link" href="#roadmap">Roadmap</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4>Resources</h4>
+            <ul>
+              <li><a class="footer__column__link" href="#docs">Docs</a></li>
+              <li><a class="footer__column__link" href="#blog">Blog</a></li>
+              <li><a class="footer__column__link" href="#community">Community</a></li>
+              <li><a class="footer__column__link" href="#status">Status</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4>Company</h4>
+            <ul>
+              <li><a class="footer__column__link" href="#about">About</a></li>
+              <li><a class="footer__column__link" href="#careers">Careers</a></li>
+              <li><a class="footer__column__link" href="#contact">Contact</a></li>
+              <li><a class="footer__column__link" href="#press">Press</a></li>
+            </ul>
+          </div>
+        </div>
+        <form class="footer__form" action="#" method="POST" aria-live="polite">
+          <label class="footer__form__label" for="newsletter">Newsletter</label>
+          <input class="footer__form__input" type="email" id="newsletter" placeholder="your@email.com" required>
+          <div class="footer__form__error" role="alert">Please enter a valid email address.</div>
+          <button class="btn btn--secondary footer__form__btn" type="submit">Subscribe</button>
+        </form>
+      </div>
+      <div class="footer__bottom flex row between">
+        <span>&copy; 2026 Grimoire, Inc.</span>
+        <nav>
+          <ul class="footer__legal">
+            <li><a class="footer__legal__link" href="#">Privacy</a></li>
+            <li><a class="footer__legal__link" href="#">Terms</a></li>
+            <li><a class="footer__legal__link" href="#">Security</a></li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==== script ==== -->
+  <script>
+    (function(){
+      const html = document.documentElement;
+      const prefers = window.matchMedia('(prefers-reduced-motion: reduce)');
+      if(prefers.matches) html.classList.add('reduced-motion');
+
+      const themeToggle = document.getElementById('themeToggle');
+      const htmlEl = document.documentElement;
+      const stored = localStorage.getItem('grimoire-theme');
+      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+      function setTheme(dark){
+        if(dark) htmlEl.classList.add('dark');
+        else htmlEl.classList.remove('dark');
+        htmlEl.setAttribute('data-theme', dark?'dark':'light');
+        localStorage.setItem('grimoire-theme', dark?'dark':'light');
+        const icon = themeToggle.querySelector('.material-symbols-outlined');
+        icon.textContent = dark ? 'light_mode' : 'dark_mode';
+        themeToggle.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+        themeToggle.setAttribute('aria-pressed', dark);
+      }
+
+      if(stored === 'dark' || (!stored && systemDark)) setTheme(true);
+
+      themeToggle.addEventListener('click',()=> setTheme(htmlEl.classList.contains('dark')));
+
+      // mobile menu
+      const menuBtn = document.querySelector('.menu-btn');
+      const mobileMenu = document.getElementById('mobileMenu');
+      if(menuBtn && mobileMenu){
+        menuBtn.addEventListener('click',()=> {
+          const open = mobileMenu.classList.toggle('open');
+          menuBtn.setAttribute('aria-expanded', open);
+          menuBtn.setAttribute('aria-controls', 'mobileMenu');
+        });
+        mobileMenu.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{mobileMenu.classList.remove('open');menuBtn.setAttribute('aria-expanded','false')}));
+      }
+
+      // FAQ accordion
+      document.querySelectorAll('.faq__trigger').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          const open = btn.getAttribute('aria-expanded') === 'true';
+          btn.setAttribute('aria-expanded', !open);
+          const panel = document.getElementById(btn.getAttribute('aria-controls'));
+          if(open){
+            panel.setAttribute('aria-expanded','false');
+            panel.style.maxHeight = '0';
+          }else{
+            panel.setAttribute('aria-expanded','true');
+            panel.style.maxHeight = panel.scrollHeight + 'px';
+          }
+        });
+      });
+
+      // smooth scroll + header padding
+      document.querySelectorAll('a[href^="#"]').forEach(anchor=>{
+        anchor.addEventListener('click',function(e){
+          if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute('href'));
+          if(target){
+            const headerOffset = document.querySelector('.header')?.offsetHeight || 0;
+            const elementPosition = target.getBoundingClientRect().top + window.pageYOffset;
+            const offsetPosition = elementPosition - headerOffset;
+            window.scrollTo({top: offsetPosition, behavior: 'smooth'});
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

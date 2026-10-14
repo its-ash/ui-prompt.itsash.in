@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en" class="light" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<title>MAGMA — Lava Lamp Instrument</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+<style>
+:root{
+  --font-display:'Space Grotesk',sans-serif;
+  --font-base:'Inter',sans-serif;
+  /* Light mode */
+  --bg-primary:#e8d8e8;
+  --bg-secondary:#d8c9d8;
+  --text-primary:#0e0a10;
+  --text-secondary:#3a2c34;
+  --primary:#ff6a2e;
+  --secondary:#3a2c34;
+  --text-success:#2ecc71;
+  --text-error:#e74c3c;
+  --border-default:#b9a9b9;
+  --border-error:#e74c3c;
+  --border-success:#2ecc71;
+  --shadow-out:0 2px 4px rgba(0,0,0,0.1), -2px -2px 4px rgba(255,255,255,0.7);
+  --shadow-in:inset 0 2px 4px rgba(0,0,0,0.1), inset -2px -2px 4px rgba(255,255,255,0.7);
+  --radius-sm:8px;
+  --radius-md:16px;
+  --radius-lg:24px;
+  --spacing-gap:1rem;
+  --transition-fast:150ms;
+  --transition-normal:300ms;
+  --ease-standard:cubic-bezier(0.4,0,0.2,1);
+  --z-dropdown:1000;
+  --z-modal:1050;
+  --z-toast:1100;
+  --lava-a:#ff6a2e;
+  --lava-b:#d8c9d8;
+  --glow:0 0 40px rgba(255,106,46,0.35);
+}
+.dark{
+  --bg-primary:#0e0a10;
+  --bg-secondary:#241a20;
+  --text-primary:#e8d8e8;
+  --text-secondary:#d8c9d8;
+  --primary:#ff6a2e;
+  --secondary:#d8c9d8;
+  --text-success:#8bc34a;
+  --text-error:#ff8a80;
+  --border-default:rgba(255,255,255,0.1);
+  --border-error:#ff8a80;
+  --border-success:#8bc34a;
+  --shadow-out:0 2px 4px rgba(255,255,255,0.1), -2px -2px 4px rgba(0,0,0,0.7);
+  --shadow-in:inset 0 2px 4px rgba(255,255,255,0.1), inset -2px -2px 4px rgba(0,0,0,0.7);
+  --lava-b:#3a2c34;
+  --glow:0 0 40px rgba(255,106,46,0.5);
+}
+*, *::before, *::after{box-sizing:border-body}
+html{font-size:100%;}
+body{
+  margin:0;
+  font-family:var(--font-base);
+  background:var(--bg-primary);
+  color:var(--text-primary);
+  line-height:1.5;
+}
+a{color:inherit;text-decoration:none}
+button, input{font:inherit;}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+/* Utility classes */
+.container{width:90%;max-width:1200px;margin:0auto;}
+.flex{display:flex;align-items:center;gap:var(--spacing-gap);}
+.flex-col{flex-direction:column;}
+.jc-center{justify-content:center;}
+.jc-between{justify-content:space-between;}
+.fw-600{font-weight:600;}
+.text-center{text-align:center;}
+/* Button */
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:0.5rem;
+  padding:0.75rem 1.5rem;
+  font-family:var(--font-base);
+  font-weight:600;
+  border:none;
+  border-radius:var(--radius-md);
+  cursor:pointer;
+  transition:var(--transition-fast);
+}
+.btn-primary{
+  background:linear-gradient(135deg,var(--lava-a),var(--lava-b));
+  color:#fff;
+  box-shadow:var(--glow);
+}
+.btn{
+  background:var(--bg-secondary);
+  color:var(--text-primary);
+  box-shadow:var(--shadow-out);
+}
+.btn:hover{transform:translateY(-2px);}
+.btn:active{transform:scale(0.97);box-shadow:var(--shadow-in);}
+.btn[aria-busy="true"]{pointer-events:none;opacity:0.7;}
+.btn-success{background:#2ecc71;box-shadow:none;}
+/* Card */
+.card{
+  flex:1 1 280px;
+  background:var(--bg-secondary);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-out);
+  padding:2rem;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:1rem;
+  transition:var(--transition-normal);
+}
+.card:hover{transform:translateY(-4px);box-shadow:var(--shadow-out)0 8px 16px rgba(0,0,0,0.15);}
+.card:focus-within{border:2px solid var(--primary);}
+.card__icon{font-size:2.5rem;color:var(--primary);}
+.card__title{font-family:var(--font-display);font-size:1.25rem;color:var(--text-primary);margin:0;}
+.card__desc{font-family:var(--font-base);font-size:0.95rem;color:var(--text-secondary);text-align:center;line-height:1.4;}
+/* Steps */
+.steps{display:flex;flex-wrap:gap:var(--spacing-gap);justify-content:center;padding:4rem 1rem;}
+.step{
+  flex:1 1 200px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:0.5rem;
+  position:relative;
+}
+.step-number{
+  font-family:var(--font-display);
+  font-size:2rem;
+  color:var(--primary);
+  width:2.5rem;height:2.5rem;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--bg-secondary);
+  border-radius:50%;
+  box-shadow:var(--shadow-out);
+}
+.step-title{font-family:var(--font-display);font-size:1.125rem;color:var(--text-primary);}
+.step-desc{font-family:var(--font-base);font-size:0.9rem;color:var(--text-secondary);text-align:center;line-height:1.4;}
+/* Testimonials */
+.testimonials{display:flex;flex-wrap:gap:var(--spacing-gap);justify-content:center;padding:4rem 1rem;}
+.testimonial{
+  flex:1 1 280px;
+  background:var(--bg-secondary);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-in);
+  padding:2rem;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:1rem;
+}
+.testimonial__quote{
+  font-family:var(--font-base);
+  font-style:italic;
+  color:var(--text-secondary);
+  text-align:center;
+}
+.testimonial__author{display:flex;align-items:center;gap:0.5rem;margin-top:1rem;}
+.testimonial__avatar{
+  width:2.5rem;height:2.5rem;
+  background:var(--bg-primary);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:600;color:var(--text-primary);
+}
+.testimonial__name{font-weight:600;color:var(--text-primary);}
+.testimonial__rating{color:var(--primary);}
+ /* Pricing */
+.pricing{display:flex;flex-wrap:gap:var(--spacing-gap);justify-content:center;padding:4rem 1rem;}
+.tier{
+  flex:1 1 260px;
+  background:var(--bg-secondary);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-out);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:1rem;
+  padding:2rem;
+  position:relative;
+}
+.tier--featured{
+  border:2px solid var(--primary);
+  box-shadow:0 0 0 2px var(--primary),var(--glow);
+}
+.tier__name{font-family:var(--font-display);font-size:1.5rem;color:var(--text-primary);}
+.tier__price{font-family:var(--font-display);font-size:2rem;color:var(--primary);margin:0.5rem 0;}
+.tier__features{
+  list-style:none;padding:0;margin:0;width:100%;text-align:left;
+}
+.tier__features li{
+  display:flex;align-items:center;gap:0.5rem;margin:0.5rem 0;
+  font-family:var(--font-base);color:var(--text-secondary);
+}
+.tier__features li::before{
+  content:"";display:inline-block;width:0.8rem;height:0.8rem;background:var(--primary);border-radius:50%;
+}
+.tier__cta{align-self:stretch;text-align:center;}
+/* FAQ */
+.faq{padding:4rem 1rem;}
+.faq-item{border-top:1px solid var(--border-default);}
+.faq-item:first-child{border-top:none;}
+.faq-question{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:1.5rem;cursor:pointer;background:none;border:none;
+  font-family:var(--font-display);font-size:1.125rem;color:var(--text-primary);
+  width:100%;text-align:left;
+}
+.faq-question::after{
+  content:"";transition:transform var(--transition-fast);
+  display:inline-block;width:0;height:0;
+  border-left:5px solid transparent;border-right:5px solid transparent;
+  border-top:5px solid var(--text-secondary);margin-left:0.5rem;
+}
+.faq-item[aria-expanded="true"] .faq-question::after{transform:rotate(180deg);}
+.faq-answer{
+  max-height:0;overflow:hidden;transition:max-height var(--transition-normal) ease;
+  padding:0 1.5rem;background:var(--bg-secondary);color:var(--text-secondary);
+  font-family:var(--font-base);line-height:1.5;
+}
+.faq-item[aria-expanded="true"] .faq-answer{
+  max-height:200px;padding:1rem 1.5rem;
+}
+/* Final CTA */
+.final-cta{
+  background:var(--bg-secondary);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-out);
+  padding:3rem 1rem;
+  text-align:center;
+}
+.final-cta__title{
+  font-family:var(--font-display);
+  font-size:clamp(1.5rem,5vw,2.5rem);
+  color:var(--text-primary);
+  margin-bottom:1rem;
+}
+.final-cta__form{
+  display:flex;flex-wrap:gap:1rem;justify-content:center;align-items:stretch;
+}
+.input-group{
+  display:flex;flex-direction:column;
+}
+.input-group label{
+  font-family:var(--font-base);margin-bottom:0.25rem;color:var(--text-secondary);
+}
+.input-group input{
+  padding:0.75rem 1rem;border:1px solid var(--border-default);
+  border-radius:var(--radius-md);background:var(--bg-primary);
+  color:var(--text-primary);font-family:var(--font-base);
+  transition:border-color var(--transition-fast);
+}
+.input-group input:focus{
+  outline:none;border-color:var(--primary);
+  box-shadow:0 0 0 2px rgba(255,106,46,0.25);
+}
+.input-group .status{
+  margin-top:0.25rem;font-size:0.875rem;min-height:1.2em;
+}
+.input-group .status.success{color:var(--text-success);}
+.input-group .status.error{color:var(--text-error);}
+#form-status{margin-top:1rem;font-size:0.875rem;min-height:1.2em;}
+/* Footer */
+.site-footer{
+  display:flex;flex-wrap:gap:var(--spacing-gap);justify-content:center;align-items:center;
+  padding:2rem 1rem;background:var(--bg-secondary);border-top:1px solid var(--border-default);
+}
+.footer__logo{font-family:var(--font-display);font-size:1.5rem;color:var(--text-primary);}
+.footer__links{display:flex;gap:1.5rem;flex-wrap:wrap;}
+.footer__link{font-family:var(--font-base);color:var(--text-secondary);}
+.footer__link:hover{text-decoration:underline;}
+.footer__copyright{
+  margin-top:1rem;font-size:0.875rem;color:var(--text-secondary);
+  width:100%;text-align:center;
+}
+/* Hero */
+.hero{
+  display:flex;flex-wrap:wrap;align-items:center;gap:var(--spacing-gap);
+  padding:4rem 1rem;background:var(--bg-primary);
+}
+.hero__content{flex:1 1 300px;}
+.hero__title{
+  font-family:var(--font-display);
+  font-size:clamp(2.5rem,8vw,4rem);
+  color:var(--text-primary);margin:0;
+}
+.hero__subtitle{
+  font-family:var(--font-base);
+  font-size:clamp(1rem,3vw,1.25rem);
+  color:var(--text-secondary);margin-top:0.5rem;
+}
+.hero__ctas{
+  display:flex;gap:1rem;margin-top:1.5rem;flex-wrap:wrap;
+}
+.hero__lamp{
+  flex:1 1 300px;min-width:200px;aspect-ratio:1;
+  position:relative;background:var(--bg-secondary);
+  border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-out);
+}
+.blob{
+  position:absolute;width:60%;height:60%;left:50%;top:50%;
+  transform:translate(-50%,-50%);border-radius:50%;
+  background:radial-gradient(circle at 30% 30%,var(--lava-a),transparent 70%);
+  filter:blur(8px);
+  animation:blobMove 8s ease-in-out infinite;
+}
+@keyframes blobMove{
+  0%{transform:translate(-50%,-50%)scale(1);}
+  30%{transform:translate(-45%,-55%)scale(1.1);}
+  60%{transform:translate(-55%,-40%)scale(0.9);}
+  100%{transform:translate(-50%,-50%)scale(1);}
+}
+@media (prefers-reduced-motion:reduce){
+  .blob{animation:none;}
+}
+/* Nav */
+.site-header{
+  position:sticky;top:0;z-index:var(--z-dropdown);
+  background:var(--bg-secondary);box-shadow:var(--shadow-out);
+  padding:0.75rem 1rem;
+}
+.site-header__wrapper{
+  display:flex;justify-content:space-between;align-items:center;
+}
+.site-header__logo{
+  font-family:var(--font-display);font-size:1.25rem;color:var(--text-primary);
+}
+.site-header__nav{
+  display:flex;gap:1.5rem;
+}
+.site-header__nav a{
+  font-family:var(--font-base);font-weight:500;color:var(--text-primary);
+  padding:0.25rem 0;position:relative;
+}
+.site-header__nav a::after{
+  content:"";position:absolute;left:0;bottom:-2px;width:0;height:2px;
+  background:var(--primary);transition:width var(--transition-fast);
+}
+.site-header__nav a:hover::after{width:100%;}
+.site-header__toggle{
+  background:none;border:none;cursor:pointer;font-size:1.5rem;color:var(--text-primary);
+  padding:0.25rem;
+}
+.site-header__menu-btn{
+  display:none;background:none;border:none;cursor:pointer;font-size:1.5rem;color:var(--text-primary);
+  padding:0.25rem;
+}
+@media (max-width:768px){
+  .site-header__nav{
+    position:absolute;top:100%;left:0;right:0;background:var(--bg-secondary);
+    box-shadow:var(--shadow-out);flex-direction:column;gap:0;
+    max-height:0;overflow:hidden;transition:max-height var(--transition-normal);
+  }
+  .site-header__nav.open{max-height:200px;}
+  .site-header__nav a{padding:1rem;}
+  .site-header__menu-btn{display:block;}
+}
+/* Animations for reduced motion */
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:0.001ms !important;transition-duration:0.001ms !important;}
+}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="site-header__wrapper container flex jc-between">
+    <div class="site-header__logo">MAGMA</div>
+    <nav class="site-header__nav" id="siteNav">
+      <a href="#hero">Home</a>
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="#testimonials">Testimonials</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a href="#final-cta">Contact</a>
+    </nav>
+    <button class="site-header__menu-btn" id="menuBtn" aria-label="Open menu" aria-controls="siteNav" aria-expanded="false">
+      <span class="material-icons-round">menu</span>
+    </button>
+    <button class="site-header__toggle" id="themeToggle" aria-label="Toggle dark mode" aria-pressed="false">
+      <span class="material-icons-round" id="themeIcon">dark_mode</span>
+    </button>
+  </div>
+</header>
+
+<main>
+  <!-- Hero -->
+  <section class="hero" id="hero">
+    <div class="container flex jc-between">
+      <div class="hero__content">
+        <h1 class="hero__title">Play the Flow of Light</h1>
+        <p class="hero__subtitle">MAGMA turns molten wax motion into ambient sound — a playable lava‑lamp instrument.</p>
+        <div class="hero__ctas">
+          <button class="btn btn-primary" id="preorderBtn">Pre‑order</button>
+          <button class="btn" id="watchBtn">Watch it flow</button>
+        </div>
+      </div>
+      <div class="hero__lamp" aria-label="Lava lamp visualization">
+        <div class="blob"></div>
+        <div class="blob" style="animation-delay:-2s;"></div>
+        <div class="blob" style="animation-delay:-4s;"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features" id="features">
+    <div class="container">
+      <h2 class="text-center fw-600" style="margin-bottom:2rem;font-family:var(--font-display);font-size:clamp(1.5rem,5vw,2rem);color:var(--text-primary);">What Makes MAGMA Unique</h2>
+      <div class="flex jc-center">
+        <div class="card">
+          <span class="material-icons-round card__icon">wave</span>
+          <h3 class="card__title">Heat‑Reactive Sound Engine</h3>
+          <p class="card__desc">Every temperature shift modulates pitch and timbre, turning wax flow into evolving drones.</p>
+        </div>
+        <div class="card">
+          <span class="material-icons-round card__icon">glass</span>
+          <h3 class="card__title">Hand‑Blown Glass Chamber</h3>
+          <p class="card__desc">Artisan‑crafted borosilicate vessel showcases the lava while isolating acoustics.</p>
+        </div>
+        <div class="card">
+          <span class="material-icons-round card__icon">tune</span>
+          <h3 class="card__title">Analog‑Digital Hybrid Controls</h3>
+          <p class="card__desc">Touch‑sensitive rings blend CV output with built‑in synth voice for limitless patches.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section class="how-it-works" id="how-it-works">
+    <div class="container">
+      <h2 class="text-center fw-600" style="margin-bottom:2rem;font-family:var(--font-display);font-size:clamp(1.5rem,5vw,2rem);color:var(--text-primary);">How It Works</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">01</div>
+          <h3 class="step-title">Warm the wax</h3>
+          <p class="step-desc">Apply gentle heat; the wax liquefies and begins to rise and fall in rhythmic blobs.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">02</div>
+          <h3 class="step-title">Play the flow</h3>
+          <p class="step-desc">Your hand’s capacitance alters the electric field, modulating the synth voice in real time.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">03</div>
+          <h3 class="step-title">Shape the drone</h3>
+          <p class="step-desc">Move the blobs, shape the waveform, and capture evolving ambient textures.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="testimonials" id="testimonials">
+    <div class="container">
+      <h2 class="text-center fw-600" style="margin-bottom:2rem;font-family:var(--font-display);font-size:clamp(1.5rem,5vw,2rem);color:var(--text-primary);">What Artists Say</h2>
+      <div class="flex jc-center">
+        <div class="testimonial">
+          <p class="testimonial__quote">“MAGMA feels like conducting a lava‑lit orchestra — each pulse a new color.”</p>
+          <div class="testimonial__author">
+            <div class="testimonial__avatar">L</div>
+            <div>
+              <div class="testimonial__name">Lena Ortiz</div>
+              <div class="testimonial__rating">⭐⭐⭐⭐⭐</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial">
+          <p class="testimonial__quote">“The tactile response is uncanny — like shaping sound with molten glass.”</p>
+          <div class="testimonial__author">
+            <div class="testimonial__avatar">J</div>
+            <div>
+              <div class="testimonial__name">Jiro Tanaka</div>
+              <div class="testimonial__rating">⭐⭐⭐⭐⭐</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial">
+          <p class="testimonial__quote">“I’ve never seen an instrument that glows while it sings.”</p>
+          <div class="testimonial__author">
+            <div class="testimonial__avatar">M</div>
+            <div>
+              <div class="testimonial__name">Mikael Reed</div>
+              <div class="testimonial__rating">⭐⭐⭐⭐⭐</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section class="pricing" id="pricing">
+    <div class="container">
+      <h2 class="text-center fw-600" style="margin-bottom:2rem;font-family:var(--font-display);font-size:clamp(1.5rem,5vw,2rem);color:var(--text-primary);">Choose Your MAGMA</h2>
+      <div class="flex jc-center">
+        <div class="tier">
+          <h3 class="tier__name">Ember</h3>
+          <div class="tier__price">$199</div>
+          <ul class="tier__features">
+            <li>Basic heat engine</li>
+            <li>Single‑zone control</li>
+            <li>USB‑C power</li>
+            <li>Community patches</li>
+          </ul>
+          <button class="btn btn-primary">Order</button>
+        </div>
+        <div class="tier tier--featured">
+          <h3 class="tier__name">MAGMA Classic</h3>
+          <div class="tier__price">$349</div>
+          <ul class="tier__features">
+            <li>Dual‑zone heat engine</li>
+            <li>Analog‑digital hybrid</li>
+            <li>MIDI & CV I/O</li>
+            <li>Hand‑blown chamber</li>
+            <li>Premium patches</li>
+          </ul>
+          <button class="btn btn-primary">Order</button>
+        </div>
+        <div class="tier">
+          <h3 class="tier__name">Inferno Studio</h3>
+          <h3 class="tier__price">$699</h3>
+          <ul class="tier__features">
+            <li>Triple‑zone engine</li>
+            <li>External audio input</li>
+            <li>Custom glass colors</li>
+            <li>Studio‑grade synth</li>
+            <li>Priority support</li>
+          </ul>
+          <button class="btn btn-primary">Order</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="faq" id="faq">
+    <div class="container">
+      <h2 class="text-center fw-600" style="margin-bottom:2rem;font-family:var(--font-display);font-size:clamp(1.5rem,5vw,2rem);color:var(--text-primary);">Frequently Asked Questions</h2>
+      <div class="faq">
+        <div class="faq-item" aria-expanded="false">
+          <button class="faq-question">How does the lava produce sound?</button>
+          <div class="faq-answer">The wax’s temperature changes alter its density and motion. Sensors map this movement to voltage‑controlled oscillator parameters, turning thermal flow into audible waveforms.</div>
+        </div>
+        <div class="faq-item" aria-expanded="false">
+          <button class="faq-question">Is the glass chamber replaceable?</button>
+          <div class="faq-answer">Yes. The chamber is a standard 150 mm borosilicate tube that can be swapped for different colors or diameters without tools.</div>
+        </div>
+        <div class="faq-item" aria-expanded="false">
+          <button class="faq-question">What power supply does it need?</button>
+          <div class="faq-answer">MAGMA runs on 12 V DC via USB‑C. A 2 A adapter is included; it draws ~5 W during typical use.</div>
+        </div>
+        <div class="faq-item" aria-expanded="false">
+          <button class="faq-question">Can I use it with my DAW?</button>
+          <div class="faq-answer">Absolutely. The unit outputs MIDI note and CV signals, and also sends audio over USB as a class‑compliant audio interface.</div>
+        </div>
+        <div class="faq-item" aria-expanded="false">
+          <button class="faq-question">Is there a warranty?</button>
+          <div class="faq-answer">Two‑year limited warranty covering defects in materials and workmanship. Glass breakage from impact is excluded.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="final-cta" id="final-cta">
+    <div class="container">
+      <h2 class="final-cta__title">Stay in the Flow</h2>
+      <form id="ctaForm" class="final-cta__form flex jc-center">
+        <div class="input-group">
+          <label for="ctaEmail">Email address</label>
+          <input type="email" id="ctaEmail" name="email" placeholder="you@example.com" required>
+          <div class="status" aria-hidden="true"></div>
+        </div>
+        <button type="submit" class="btn btn-primary">Subscribe</button>
+      </form>
+      <div id="form-status" aria-live="polite"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container flex jc-between flex-wrap">
+    <div class="footer__logo">MAGMA</div>
+    <div class="footer__links">
+      <a href="#features">Product</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">Support</a>
+      <a href="https://example.com">Blog</a>
+      <a href="https://example.com">GitHub</a>
+    </div>
+    <div class="footer__copyright">© 2026 MAGMA Instruments. All rights reserved.</div>
+  </div>
+</footer>
+
+<script>
+/* Theme handling */
+const htmlEl = document.documentElement;
+const themeToggle = document.getElementById('themeToggle');
+const themeIcon = document.getElementById('themeIcon');
+const STORAGE_KEY = 'magma-theme';
+
+function setTheme(theme) {
+  if (theme === 'dark') {
+    htmlEl.classList.add('dark');
+    htmlEl.classList.remove('light');
+    themeToggle.setAttribute('aria-pressed', 'true');
+    themeIcon.textContent = 'light_mode';
+  } else {
+    htmlEl.classList.remove('dark');
+    htmlEl.classList.add('light');
+    themeToggle.setAttribute('aria-pressed', 'false');
+    themeIcon.textContent = 'dark_mode';
+  }
+  localStorage.setItem(STORAGE_KEY, theme);
+}
+function initTheme() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    setTheme(saved);
+  } else {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    setTheme(prefersDark ? 'dark' : 'light');
+  }
+}
+themeToggle.addEventListener('click', () => {
+  const isDark = htmlEl.classList.contains('dark');
+  setTheme(isDark ? 'light' : 'dark');
+});
+initTheme();
+
+/* Mobile menu */
+const menuBtn = document.getElementById('menuBtn');
+const siteNav = document.getElementById('siteNav');
+menuBtn.addEventListener('click', () => {
+  const open = siteNav.classList.contains('open');
+  siteNav.classList.toggle('open', !open);
+  menuBtn.setAttribute('aria-expanded', String(!open));
+  if (!open) {
+    menuBtn.querySelector('.material-icons-round').textContent = 'close';
+  } else {
+    menuBtn.querySelector('.material-icons-round').textContent = 'menu';
+  }
+});
+
+/* FAQ accordion */
+document.querySelectorAll('.faq-question').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const item = btn.parentElement;
+    const expanded = item.getAttribute('aria-expanded') === 'true';
+    item.setAttribute('aria-expanded', String(!expanded));
+  });
+});
+
+/* Form handling */
+const form = document.getElementById('ctaForm');
+const statusDiv = document.getElementById('form-status');
+form.addEventListener('submit', e => {
+  e.preventSubmit ? e.preventDefault() : null; // fallback
+  const submitBtn = form.querySelector('button[type="submit"]');
+  submitBtn.setAttribute('aria-busy', 'true');
+  const originalLabel = submitBtn.innerHTML;
+  submitBtn.innerHTML = '<span class="material-icons-round">refresh</span> Sending…';
+  statusDiv.textContent = '';
+  statusDiv.setAttribute('aria-hidden', 'true');
+  // Simulate async
+  setTimeout(() => {
+    const success = Math.random() > 0.2; // 80% success
+    if (success) {
+      submitBtn.innerHTML = '<span class="material-icons-round">check_circle</span> Subscribed!';
+      submitBtn.classList.add('btn-success');
+      statusDiv.textContent = 'Thank you! We’ll keep you updated.';
+      statusDiv.removeAttribute('aria-hidden');
+      statusDiv.classList.add('status');
+      statusDiv.classList.remove('status-error');
+      statusDiv.classList.add('status-success');
+    } else {
+      submitBtn.innerHTML = originalLabel;
+      submitBtn.removeAttribute('aria-busy');
+      statusDiv.textContent = 'Oops, something went wrong. Please try again.';
+      statusDiv.removeAttribute('aria-hidden');
+      statusDiv.classList.add('status');
+      statusDiv.classList.remove('status-success');
+      statusDiv.classList.add('status-error');
+    }
+  }, 1500);
+});
+
+/* Close mobile menu when a link is clicked */
+document.querySelectorAll('.site-header__nav a').forEach(link => {
+  link.addEventListener('click', () => {
+    if (siteNav.classList.contains('open')) {
+      siteNav.classList.remove('open');
+      menuBtn.setAttribute('aria-expanded', 'false');
+      menuBtn.querySelector('.material-icons-round').textContent = 'menu';
+    }
+  });
+});
+</script>
+</body>
+</html>

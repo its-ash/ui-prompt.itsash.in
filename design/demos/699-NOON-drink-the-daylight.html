@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NOON — drink the daylight</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Unbounded:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Rounded" rel="stylesheet">
+<style>
+@layer tokens, base, layout, components, utilities;
+
+/* Design Tokens */
+@layer tokens {
+  :root {
+    --primary: #FFB23E;
+    --secondary: #B892FF;
+    --accent: #5EEAD4;
+    --bg-primary: #FFF9F0;
+    --bg-secondary: #F6EEDF;
+    --text-primary: #1B1230;
+    --text-secondary: #4A3B66;
+    --text-success: #0E8F6B;
+    --text-error: #D93A3A;
+    --border-default: rgba(27,18,48,0.10);
+    --glass-bg: rgba(255,255,255,0.55);
+    --glass-border: rgba(255,255,255,0.65);
+    --glass-blur: 18px;
+    --radius-sm: 10px;
+    --radius-md: 18px;
+    --radius-lg: 28px;
+    --radius-full: 999px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+    --spacing-gap: clamp(1.25rem, 3vw, 2rem);
+    --transition-fast: 150ms;
+    --transition-normal: 300ms;
+    --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
+    --z-dropdown: 100;
+    --z-modal: 200;
+    --z-toast: 300;
+    --font-base: 'Inter', sans-serif;
+    --font-display: 'Unbounded', sans-serif;
+  }
+  .dark, @media (prefers-color-scheme: dark) {
+    --bg-primary: #1B1230;
+    --bg-secondary: #221533;
+    --text-primary: #FFF9F0;
+    --text-secondary: rgba(255,249,240,0.72);
+    --text-error: #FF6B6B;
+    --text-success: #34D399;
+    --border-default: rgba(255,255,255,0.12);
+    --glass-bg: rgba(34,21,51,0.50);
+    --glass-border: rgba(255,255,255,0.14);
+  }
+}
+
+/* Base Styles */
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+  html { font-size: 16px; scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: var(--font-base);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+  img, picture, video, canvas, svg { display: block; max-width: 100%; }
+  button, input, textarea, select { font: inherit; }
+  a { color: inherit; text-decoration: none; }
+  h1, h2, h3, h4, h5, h6 { font-family: var(--font-display); line-height: 1.2; margin: 0 0 0.5rem 0; }
+  h1 { font-size: clamp(2.5rem, 8vw, 4rem); }
+  h2 { font-size: clamp(2rem, 5vw, 3rem); }
+  h3 { font-size: clamp(1.5rem, 4vw, 2rem); }
+  p { margin: 0 0 1rem 0; }
+  :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+    .orb, .glass-chip, .step-connector, .parallax-layer { animation: none !important; transform: none !important; }
+  }
+}
+
+/* Layout */
+@layer layout {
+  .container {
+    width: 90%;
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 0 var(--spacing-gap);
+  }
+  .grid-3 { display: grid; gap: var(--spacing-gap); }
+  @media (min-width: 640px) { .grid-3 { grid-template-columns: repeat(3, 1fr); } }
+  .flex { display: flex; }
+  .flex-col { flex-direction: column; }
+  .items-center { align-items: center; }
+  .justify-between { justify-content: space-between; }
+  .justify-center { justify-content: center; }
+  .gap-4 { gap: 1rem; }
+  .gap-6 { gap: 1.5rem; }
+  .scroll-margin { scroll-margin-top: 96px; }
+}
+
+/* Components */
+@layer components {
+  /* Glass Effect */
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,0.35);
+    position: relative;
+    overflow: hidden;
+  }
+  .glass::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.15), transparent);
+    pointer-events: none;
+  }
+  .glass-card { @apply glass; padding: 1.5rem; }
+  
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    height: 3rem;
+    padding: 0 1.5rem;
+    border-radius: var(--radius-full);
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: var(--transition-normal) var(--ease-standard);
+    border: none;
+    overflow: hidden;
+    position: relative;
+  }
+  .btn--primary {
+    background: linear-gradient(120deg, var(--primary), var(--secondary) 45%, var(--accent));
+    color: var(--text-primary);
+  }
+  .btn--primary:hover { filter: brightness(1.05); }
+  .btn--primary:active { transform: scale(0.97); }
+  .btn--ghost {
+    background: var(--glass-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--glass-border);
+  }
+  .btn--ghost:hover { background: rgba(255,255,255,0.15); }
+  .btn--success {
+    background: var(--text-success);
+    color: white;
+  }
+  .btn--loading {
+    pointer-events: none;
+    opacity: 0.7;
+  }
+  .btn--loading::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23fff"><path d="M12 4v1m0 16v1m6-4h1m-16 0h1m15-9a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>') center/contain no-repeat;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  
+  /* Icon Tiles */
+  .icon-tile {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: var(--radius-lg);
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    transition: var(--transition-normal) var(--ease-standard);
+  }
+  .icon-tile:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+  
+  /* Stat Chip */
+  .stat-chip {
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-md);
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  /* FAQ Accordion */
+  .faq-item {
+    border-bottom: 1px solid var(--border-default);
+  }
+  .faq-question {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 0;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height var(--transition-normal) var(--ease-standard);
+    padding: 0 0 1.5rem 0;
+    color: var(--text-secondary);
+  }
+  .faq-item[open] .faq-answer { max-height: 20rem; }
+  .faq-item[open] .faq-question .material-symbols-rounded { transform: rotate(180deg); }
+  
+  /* Form Styles */
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .form-label {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+  }
+  .form-input {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    background: var(--glass-bg);
+    color: var(--text-primary);
+    font: inherit;
+    transition: var(--transition-normal) var(--ease-standard);
+  }
+  .form-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(255,178,62,0.25);
+  }
+  .form-input.invalid {
+    border-color: var(--text-error);
+    color: var(--text-error);
+  }
+  .form-input.valid {
+    border-color: var(--text-success);
+  }
+  .form-feedback {
+    font-size: 0.875rem;
+    min-height: 1.5rem;
+  }
+  .form-feedback.error { color: var(--text-error); }
+  .form-feedback.success { color: var(--text-success); }
+  
+  /* Pricing Badge */
+  .popular-badge {
+    position: absolute;
+    top: -0.5rem;
+    right: -0.5rem;
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    border-radius: var-radius-full);
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  
+  /* Avatar */
+  .avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--radius-full);
+    background: linear-gradient(120deg, var(--primary), var(--secondary) 45%, var(--accent));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 0.875rem;
+  }
+  
+  /* Star Rating */
+  .star-rating {
+    display: flex;
+    gap: 0.25rem;
+  }
+  .star-rating .material-symbols-rounded {
+    color: var(--primary);
+    font-variation-settings: 'FILL' 1;
+    font-size: 1.25rem;
+  }
+  
+  /* CTA Band */
+  .cta-band {
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-band::before, .cta-band::after {
+    content: '';
+    position: absolute;
+    inset: -20%;
+    background: radial-gradient(circle at 30% 30%, var(--secondary), transparent 70%),
+                radial-gradient(circle at 70% 70%, var(--primary), transparent 70%);
+    opacity: 0.15;
+    pointer-events: none;
+    animation: drift 20s ease-in-out infinite alternate;
+  }
+  @keyframes drift {
+    from { transform: translate(0,0) rotate(0deg); }
+    to { transform: translate(30px, -30px) rotate(5deg); }
+  }
+}
+
+/* Utilities */
+@layer utilities {
+  .visually-hidden { 
+    position: absolute; 
+    width: 1px; 
+    height: 1px; 
+    padding: 0; 
+    margin: -1px; 
+    overflow: hidden; 
+    clip: rect(0, 0, 0, 0); 
+    white-space: nowrap; 
+    border: 0; 
+  }
+  .no-scroll { overflow: hidden; }
+  .scroll-lock { overflow: hidden; }
+  .hidden { display: none; }
+  .block { display: block; }
+  .flex { display: flex; }
+  .grid { display: grid; }
+  .items-center { align-items: center; }
+  .justify-center { justify-content: center; }
+  .justify-between { justify-content: space-between; }
+  .gap-4 { gap: 1rem; }
+  .gap-6 { gap: 1.5rem; }
+  .mt-4 { margin-top: 1rem; }
+  .mt-6 { margin-top: 1.5rem; }
+  .mb-4 { margin-bottom: 1rem; }
+  .mb-6 { margin-bottom: 1.5rem; }
+}
+
+/* Animations */
+@layer utilities {
+  .orb {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    filter: blur(60px);
+    mix-blend-mode: screen;
+    animation: float var(--duration) ease-in-out infinite alternate;
+  }
+  .orb--amber { background: radial-gradient(circle, var(--primary) 0%, transparent 70%); --duration: 22s; }
+  .orb--violet { background: radial-gradient(circle, var(--secondary) 0%, transparent 70%); --duration: 26s; }
+  .orb--teal { background: radial-gradient(circle, var(--accent) 0%, transparent 70%); --duration: 30s; }
+  @keyframes float {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(100px, -100px) scale(1.1); }
+  }
+  
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity var(--transition-normal) var(--ease-standard), transform var(--transition-normal) var(--ease-standard);
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  .parallax-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    will-change: transform;
+  }
+}
+
+/* Dark Mode Overrides for Glass */
+.dark .glass,
+@media (prefers-color-scheme: dark) .glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,0.15);
+}
+</style>
+</head>
+<body>
+  <!-- Skip Link -->
+  <a href="#main-content" class="visually-hidden focus-visible:not-visually-hidden">Skip to content</a>
+
+  <!-- Navbar -->
+  <nav class="navbar glass fixed top-0 left-0 right-0 z-[var(--z-dropdown)]">
+    <div class="container flex items-center justify-between px-4 py-3">
+      <div class="flex items-center gap-3">
+        <span class="material-symbols-rounded text-[var(--primary)]">wb_sunny</span>
+        <h1 class="text-[var(--primary)] text-[var(--font-display)] text-2xl">NOON</h1>
+      </div>
+      <ul class="nav-menu flex gap-6 hidden md:flex">
+        <li><a href="#features" class="nav-link hover:text-[var(--primary)] transition-colors">Features</a></li>
+        <li><a href="#how-it-works" class="nav-link hover:text-[var(--primary)] transition-colors">How It Works</a></li>
+        <li><a href="#pricing" class="nav-link hover:text-[var(--primary)] transition-colors">Pricing</a></li>
+        <li><a href="#faq" class="nav-link hover:text-[var(--primary)] transition-colors">FAQ</a></li>
+      </ul>
+      <div class="flex items-center gap-3">
+        <button id="theme-toggle" class="btn btn--ghost nav-item" aria-label="Toggle dark mode" aria-pressed="false">
+          <span class="material-symbols-rounded theme-icon">light_mode</span>
+        </button>
+        <a href="#pricing" class="btn btn--primary nav-item">Shop NOON</a>
+        <button id="mobile-menu-btn" class="nav-item md:hidden" aria-label="Open menu">
+          <span class="material-symbols-rounded">menu</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Menu Overlay -->
+  <div id="mobile-menu" class="mobile-menu glass fixed inset-0 z-[var(--z-modal)] flex items-center justify-center hidden">
+    <div class="flex-col gap-6 text-center">
+      <a href="#features" class="block text-xl font-bold hover:text-[var(--primary)] transition-colors">Features</a>
+      <a href="#how-it-works" class="block text-xl font-bold hover:text-[var(--primary)] transition-colors">How It Works</a>
+      <a href="#pricing" class="block text-xl font-bold hover:text-[var(--primary)] transition-colors">Pricing</a>
+      <a href="#faq" class="block text-xl font-bold hover:text-[var(--primary)] transition-colors">FAQ</a>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main id="main-content">
+    <!-- Hero -->
+    <section class="hero relative scroll-margin" id="hero">
+      <div class="orbs">
+        <div class="orb orb--amber" aria-hidden="true"></div>
+        <div class="orb orb--violet" aria-hidden="true"></div>
+        <div class="orb orb--teal" aria-hidden="true"></div>
+      </div>
+      <div class="container grid grid-3 items-center py-20">
+        <div class="flex-col gap-6">
+          <div class="glass-chip flex items-center gap-2 px-3 py-1 bg-[var(--glass-bg)] backdrop-filter-blur-[var(--glass-blur)] border-[1px] border-[var(--glass-border)] rounded-[var(--radius-md)]">
+            <span class="material-symbols-rounded text-[var(--primary)]">wb_sunny</span>
+            <span class="text-[var(--text-secondary)]">Sun-Brewed Sparkling</span>
+          </div>
+          <h1 class="text-[var(--font-display)] text-[var(--primary)]">Drink the <span class="chrome-text">daylight</span>.</h1>
+          <p class="text-[var(--text-secondary)]">Our sparkling beverage is crafted at solar noon, capturing peak sunlight for natural vitamin D and steady golden energy—without the crash.</p>
+          <div class="flex gap-4 flex-wrap">
+            <a href="#pricing" class="btn btn--primary">Shop Now</a>
+            <a href="#how-it-works" class="btn btn--ghost">Learn How</a>
+          </div>
+          <div class="flex gap-3 mt-6">
+            <div class="stat-chip"><span class="material-symbols-rounded text-[var(--primary)]">local_drink</span>0 sugar crash</div>
+            <div class="stat-chip"><span class="material-symbols-rounded text-[var(--primary)]">wb_sunny</span>100% DV vitamin D</div>
+            <div class="stat-chip"><span class="material-symbols-rounded text-[var(--primary)]">glass</span>Glass-bottled</div>
+          </div>
+        </div>
+        <div class="relative w-full max-w-[300px]">
+          <div class="glass h-[350px] w-full rounded-[var(--radius-lg)] overflow-hidden relative">
+            <div class="parallax-layer" style="background: linear-gradient(135deg, rgba(255,178,62,0.3), rgba(184,146,255,0.2));"></div>
+            <div class="parallax-layer" style="background: linear-gradient(135deg, rgba(94,234,212,0.25), rgba(255,178,62,0.15));"></div>
+            <div class="absolute inset-0 flex items-center justify-center">
+              <div class="glass w-[80%] h-[80%] rounded-[var(--radius-lg)] border-[1px] border-[var(--glass-border)] backdrop-filter-blur-[var(--glass-blur)] flex items-center justify-center">
+                <span class="material-symbols-rounded text-[var(--primary)] text-4xl">local_drink</span>
+              </div>
+            </div>
+            <div class="absolute bottom-0 left-0 right-0 flex justify-center px-4 pb-4">
+              <div class="glass-chip flex items-center gap-2 px-3 py-1 bg-[var(--glass-bg)] backdrop-filter-blur-[var(--glass-blur)] border-[1px] border-[var(--glass-border)] rounded-[var(--radius-md)]">
+                <span class="material-symbols-rounded text-[var(--primary)]">wb_sunny</span>
+                <span class="text-[var(--text-secondary)]">Solar Noon Brewed</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features py-20 scroll-margin" id="features">
+      <div class="container">
+        <h2 class="text-center mb-12">Features</h2>
+        <div class="grid-3">
+          <div class="glass-card">
+            <div class="icon-tile"><span class="material-symbols-rounded text-[var(--primary)]">wb_sunny</span></div>
+            <h3 class="mt-4">Solar-Brewed</h3>
+            <p class="text-[var(--text-secondary)]">Crafted at peak sunlight for maximum vitamin D absorption and natural energy.</p>
+          </div>
+          <div class="glass-card">
+            <div class="icon-tile"><span class="material-symbols-rounded text-[var(--primary)]">water_drop</span></div>
+            <h3 class="mt-4">Liquid Hydration</h3>
+            <p class="text-[var(--text-secondary)]">Electrolyte-balanced formula for sustained hydration without sugar crashes.</p>
+          </div>
+          <div class="glass-card">
+            <div class="icon-tile"><span class="material-symbols-rounded text-[var(--primary)]">bolt</span></div>
+            <h3 class="mt-4">Steady Golden Energy</h3>
+            <p class="text-[var(--text-secondary)]">Slow-release energy from natural sunlight, keeping you bright all day.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works py-20 scroll-margin" id="how-it-works">
+      <div class="container">
+        <h2 class="text-center mb-12">How It Works</h2>
+        <div class="flex-col gap-8">
+          <div class="step flex items-center gap-6">
+            <div class="step-number glass w-[3rem] h-[3rem] flex items-center justify-center rounded-[var(--radius-lg)] font-bold text-[var(--primary)]">01</div>
+            <div class="flex-col gap-2">
+              <div class="icon-tile"><span class="material-symbols-rounded text-[var(--primary)]">wb_sunny</span></div>
+              <h3>Brewed at solar noon</h3>
+              <p class="text-[var(--text-secondary)]">We harness peak sunlight to infuse our brew with natural vitamin D.</p>
+            </div>
+          </div>
+          <div class="step flex items-center gap-6">
+            <div class="step-number glass w-[3rem] h-[3rem] flex items-center justify-center rounded-[var(--radius-lg)] font-bold text-[var(--primary)]">02</div>
+            <div class="flex-col gap-2">
+              <div class="icon-tile"><span class="material-symbols-rounded text-[var(--primary)]">glass</span></div>
+              <h3>Bottled in liquid glass</h3>
+              <p class="text-[var(--text-secondary)]">Each bottle is filled with our sparkling elixir and sealed for freshness.</p>
+            </div>
+          </div>
+          <div class="step flex items-center gap-6">
+            <div class="step-number glass w-[3rem] h-[3rem] flex items-center justify-center rounded-[var(--radius-lg)] font-bold text-[var(--primary)]">03</div>
+            <div class="flex-col gap-2">
+              <div class="icon-tile"><span class="material-symbols-rounded text-[var(--primary)]">local_drink</span></div>
+              <h3>Drink the daylight</h3>
+              <p class="text-[var(--text-secondary)]">Enjoy crisp, refreshing sparkle with steady energy and zero crash.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="testimonials py-20 scroll-margin" id="testimonials">
+      <div class="container">
+        <h2 class="text-center mb-12">What People Are Saying</h2>
+        <div class="grid-3">
+          <div class="glass-card">
+            <div class="star-rating">
+              <span class="material-symbols-rounded">star</span>
+              <span class="material-symbols-rounded">star</span>
+              <span class="material-symbols-rounded">star</span>
+              <span class="material-symbols-rounded">star</span>
+              <span class="material-symbols-rounded">star</span>
+            </div>
+            <p class="text-[var(--text-secondary)] mt-4">"NOON gives me clean energy for my morning runs without the jitters. The vitamin D boost is noticeable!"</p>
+            <div class="flex items-center gap-3 mt-6">
+              <div class="avatar">AL</div>
+              <div class="flex-col">
+                <strong>Alex Lopez</strong>
+                <span class="text-[var(--text-secondary)] text-sm">Marathon runner, Lisbon</span>
+              </div>
+            </div>
+          </div>
+          <div class="glass-card">
+            <div class="star-rating">
+              <span class="material-symbols-rounded">star</span>
+              <span class="material-symbols-rounded">star</span>
+              <span class="material-symbols-rounded">star</span>
+              <span class="material-symbols-rounded">star</span>
+              <span class="material-symbols-rounded">star</span>
+            </div>
+            <p class="text-[var(--text-secondary)] mt-4">"Finally, a sparkling drink that doesn't leave me crashing. Perfect for my afternoon work slump."</p>
+            <div class="flex items-center gap-3 mt-6">
+              <div class="avatar">MS</div>
+              <div class="flex-col">
+                <strong>Maria Santos</strong>
+                <span class="text-[var(--text-secondary)] text-sm">UX Designer, Barcelona</span>
+              </div>
+            </div>
+          </div>
+          <div class="glass-card">
+            <div class="star-rating">
+              <span class="material-symbols-rounded">star</span>
+              <span class="material-symbols-rounded">star</span>
+              <span class="material-symbols-rounded">star</span>
+              <span class="material-symbols-rounded">star</span>
+              <span class="material-symbols-rounded">star</span>
+            </div>
+            <p class="text-[var(--text-secondary)] mt-4">"Love that it's glass-bottled and actually tastes like sunshine. My new go-to for post-yoga hydration."</p>
+            <div class="flex items-center gap-3 mt-6">
+              <div class="avatar">JK</div>
+              <div class="flex-col">
+                <strong>Jordan Kim</strong>
+                <span class="text-[var(--text-secondary)] text-sm">Yoga Instructor, Seattle</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pricing -->
+    <section class="pricing py-20 scroll-margin" id="pricing">
+      <div class="container">
+        <h2 class="text-center mb-12">Choose Your Light</h2>
+        <div class="grid-3">
+          <div class="glass-card relative">
+            <h3 class="mt-4">Dawn</h3>
+            <p class="text-[var(--text-secondary)] mb-4">Single bottle</p>
+            <div class="flex items-baseline gap-2 mb-6">
+              <span class="text-[var(--primary)] text-[var(--font-display)] text-3xl">$4</span>
+              <span class="text-[var(--text-secondary)]">/bottle</span>
+            </div>
+            <ul class="list-none space-y-3">
+              <li class="flex items-center gap-2"><span class="material-symbols-rounded text-[var(--text-success)]">check</span>12oz glass bottle</li>
+              <li class="flex items-center gap-2"><span class="material-symbols-rounded text-[var(--text-success)]">check</span>100% DV vitamin D</li>
+              <li class="flex items-center gap-2"><span class="material-symbols-rounded text-[var(--text-success)]">check</span>Zero sugar</li>
+              <li class="flex items-center gap-2"><span class="material-symbols-rounded text-[var(--text-success)]">check</span>Natural flavors</li>
+            </ul>
+            <a href="#final-cta" class="btn btn--ghost w-full">Select</a>
+          </div>
+          <div class="glass-card relative transform hover:-translate-[2px] transition-transform">
+            <div class="popular-badge">Most Popular</div>
+            <h3 class="mt-4">High Noon</h3>
+            <p class="text-[var(--text-secondary)] mb-4">12-pack</p>
+            <div class="flex items-baseline gap-2 mb-6">
+              <span class="text-[var(--primary)] text-[var(--font-display)] text-3xl">$42</span>
+              <span class="text-[var(--text-secondary)]">/pack</span>
+            </div>
+            <ul class="list-none space-y-3">
+              <li class="flex items-center gap-2"><span class="material-symbols-rounded text-[var(--text-success)]">check</span>12 bottles (12oz each)</li>
+              <li class="flex items-center gap-2"><span class="material-symbols-rounded text-[var(--text-success)]">check</span>Free shipping</li>
+              <li class="flex items-center gap-2"><span class="material-symbols-rounded text-[var(--text-success)]">check</span>Bonus bottle</li>
+              <li class="flex items-center gap-2"><span class="material-symbols-rounded text-[var(--text-success)]">check</span>Recyclable packaging</li>
+            </ul>
+            <a href="#final-cta" class="btn btn--primary w-full">Select</a>
+          </div>
+          <div class="glass-card relative">
+            <h3 class="mt-4">Golden Hour</h3>
+            <p class="text-[var(--text-secondary)] mb-4">Subscription</p>
+            <div class="flex items-baseline gap-2 mb-6">
+              <span class="text-[var(--primary)] text-[var(--font-display)] text-3xl">$35</span>
+              <span class="text-[var(--text-secondary)]">/month</span>
+            </div>
+            <ul class="list-none space-y-3">
+              <li class="flex items-center gap-2"><span class="material-symbols-rounded text-[var(--text-success)]">check</span>12 bottles monthly</li>
+              <li class="flex items-center gap-2"><span class="material-symbols-rounded text-[var(--text-success)]">check</span>Free shipping</li>
+              <li class="flex items-center gap-2"><span class="material-symbols-rounded text-[var(--text-success)]">check</span>Pause anytime</li>
+              <li class="flex items-center gap-2"><span class="material-symbols-rounded text-[var(--text-success)]">check</span>Exclusive flavors</li>
+            </ul>
+            <a href="#final-cta" class="btn btn--ghost w-full">Select</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq py-20 scroll-margin" id="faq">
+      <div class="container">
+        <h2 class="text-center mb-12">Frequently Asked Questions</h2>
+        <div class="accordion">
+          <div class="faq-item">
+            <button class="faq-question" aria-controls="faq1" aria-expanded="false">
+              What ingredients are in NOON?
+              <span class="material-symbols-rounded">expand_more</span>
+            </button>
+            <div class="faq-answer" id="faq1" hidden>
+              NOON is made with carbonated water, natural fruit extracts, vitamin D3, electrolytes, and a touch of organic cane sugar for balance. No artificial flavors, colors, or preservatives.
+            </div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question" aria-controls="faq2" aria-expanded="false">
+              How much caffeine does NOON contain?
+              <span class="material-symbols-rounded">expand_more</span>
+            </button>
+            <div class="faq-answer" id="faq2" hidden>
+              NOON contains zero caffeine. Our energy comes from natural sunlight-infused vitamin D and electrolytes, providing steady alertness without jitters or crashes.
+            </div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question" aria-controls="faq3" aria-expanded="false">
+              Is NOON vegan and gluten-free?
+              <span class="material-symbols-rounded">expand_more</span>
+            </button>
+            <div class="faq-answer" id="faq3" hidden>
+              Yes! NOON is 100% vegan, gluten-free, and made in a facility free from common allergens. We use plant-based vitamin D3 sourced from lichen.
+            </div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question" aria-controls="faq4" aria-expanded="false">
+              How do you ship and what's your return policy?
+              <span class="material-symbols-rounded">expand_more</span>
+            </button>
+            <div class="faq-answer" id="faq4" hidden>
+              We ship via eco-friendly packaging with carbon-neutral options. Returns accepted within 30 days for unopened items. Contact us at hello@noon-drink.com for assistance.
+            </div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question" aria-controls="faq5" aria-expanded="false">
+              Can I cancel my subscription anytime?
+              <span class="material-symbols-rounded">expand_more</span>
+            </button>
+            <div class="faq-answer" id="faq5" hidden>
+              Absolutely. Pause, modify, or cancel your subscription with one click in your account. No contracts or hidden fees.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="final-cta relative scroll-margin" id="final-cta">
+      <div class="cta-band">
+        <div class="container grid grid-3 items-center py-16">
+          <div class="flex-col gap-4">
+            <h2 class="text-[var(--font-display)] text-[var(--primary)] text-center">Your golden hour is waiting.</h2>
+            <p class="text-[var(--text-secondary)] text-center max-w-xl">Join our community of daylight drinkers and get early access to new flavors, limited editions, and wellness tips.</p>
+          </div>
+          <div class="flex-col items-center gap-4">
+            <form id="email-form" class="flex-col w-full max-w-md">
+              <div class="form-group">
+                <label for="email-input" class="form-label">Your email address</label>
+                <input type="email" id="email-input" class="form-input" placeholder="you@example.com" required>
+                <div class="form-feedback" id="email-feedback" aria-live="polite"></div>
+              </div>
+              <button type="submit" class="btn btn--primary w-full" id="submit-btn">
+                Join the Noon List
+                <span class="material-symbols-rounded ml-2" id="submit-icon">send</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer py-12">
+    <div class="container grid grid-3 gap-8 text-[var(--text-secondary)]">
+      <div class="flex-col gap-3">
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-rounded text-[var(--primary)]">wb_sunny</span>
+          <h1 class="text-[var(--primary)] text-[var(--font-display)] text-xl">NOON</h1>
+        </div>
+        <p class="text-sm">Drink the daylight. Sparkling beverage brewed at solar noon for natural vitamin D and steady energy.</p>
+        <div class="flex gap-3 mt-4">
+          <a href="#" class="text-[var(--text-secondary)] hover:text-[var(--primary)] transition-colors material-symbols-rounded">facebook</a>
+          <a href="#" class="text-[var(--text-secondary)] hover:text-[var(--primary)] transition-colors material-symbols-rounded">instagram</a>
+          <a href="#" class="text-[var(--text-secondary)] hover:text-[var(--primary)] transition-colors material-symbols-rounded">twitter</a>
+          <a href="#" class="text-[var(--text-secondary)] hover:text-[var(--primary)] transition-colors material-symbols-rounded">tiktok</a>
+        </div>
+      </div>
+      <div class="flex-col space-y-2">
+        <h3 class="text-[var(--font-display)] text-[var(--primary)] mb-2">Explore</h3>
+        <a href="#features" class="hover:text-[var(--primary)] transition-colors">Features</a>
+        <a href="#how-it-works" class="hover:text-[var(--primary)] transition-colors">How It Works</a>
+        <a href="#pricing" class="hover:text-[var(--primary)] transition-colors">Pricing</a>
+        <a href="#faq" class="hover:text-[var(--primary)] transition-colors">FAQ</a>
+      </div>
+      <div class="flex-col space-y-2">
+        <h3 class="text-[var(--font-display)] text-[var(--primary)] mb-2">Company</h3>
+        <a href="#" class="hover:text-[var(--primary)] transition-colors">About</a>
+        <a href="#" class="hover:text-[var(--primary)] transition-colors">Careers</a>
+        <a href="#" class="hover:text-[var(--primary)] transition-colors">Press</a>
+      </div>
+      <div class="flex-col space-y-2">
+        <h3 class="text-[var(--font-display)] text-[var(--primary)] mb-2">Support</h3>
+        <a href="#" class="hover:text-[var(--primary)] transition-colors">Contact</a>
+        <a href="#" class="hover:text-[var(--primary)] transition-colors">Shipping</a>
+        <a href="#" class="hover:text-[var(--primary)] transition-colors">Returns</a>
+      </div>
+    </div>
+    <div class="border-t border-[var(--border-default)] mt-12 pt-8 text-center text-sm text-[var(--text-secondary)]">
+      © <span id="copyright-year">2026</span> NOON. All rights reserved. <a href="#" class="text-[var(--primary)] hover:text-[var(--secondary)] transition-colors">Privacy</a> | <a href="#" class="text-[var(--primary)] hover:text-[var(--secondary)] transition-colors">Terms</a>
+    </div>
+  </footer>
+
+<script>
+  // Theme Management
+  const htmlEl = document.documentElement;
+  const themeToggle = document.getElementById('theme-toggle');
+  const themeIcon = themeToggle.querySelector('.material-symbols-rounded');
+
+  function setTheme(isDark) {
+    if (isDark) {
+      htmlEl.classList.add('dark');
+      themeToggle.setAttribute('aria-pressed', 'true');
+      themeIcon.textContent = 'dark_mode';
+    } else {
+      htmlEl.classList.remove('dark');
+      themeToggle.setAttribute('aria-pressed', 'false');
+      themeIcon.textContent = 'light_mode';
+    }
+    localStorage.setItem('noon-theme', isDark ? 'dark' : 'light');
+  }
+
+  // Initialize theme
+  const savedTheme = localStorage.getItem('noon-theme');
+  if (savedTheme === 'dark') {
+    setTheme(true);
+  } else {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    setTheme(prefersDark);
+  }
+
+  // Theme toggle handler
+  themeToggle.addEventListener('click', () => {
+    const isDark = htmlEl.classList.toggle('dark');
+    setTheme(isDark);
+  });
+
+  // Navbar scrolled state
+  const navbar = document.querySelector('.navbar');
+  let lastScroll = 0;
+  window.addEventListener('scroll', () => {
+    const currentScroll = window.pageYOffset;
+    if (currentScroll <= 0) {
+      navbar.classList.remove('is-scrolled');
+    } else if (currentScroll > lastScroll && !navbar.classList.contains('is-scrolled')) {
+      navbar.classList.add('is-scrolled');
+    } else if (currentScroll < lastScroll && navbar.classList.contains('is-scrolled')) {
+      navbar.classList.remove('is-scrolled');
+    }
+    lastScroll = currentScroll;
+  });
+
+  // Mobile menu
+  const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+  const mobileMenu = document.getElementById('mobile-menu');
+  mobileMenuBtn.addEventListener('click', () => {
+    mobileMenu.classList.toggle('hidden');
+    document.body.classList.toggle('scroll-lock');
+  });
+  // Close mobile menu when clicking a link
+  mobileMenu.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      mobileMenu.classList.add('hidden');
+      document.body.classList.remove('scroll-lock');
+    });
+  });
+
+  // FAQ accordion
+  document.querySelectorAll('.faq-question').forEach(button => {
+    button.addEventListener('click', () => {
+      const item = button.parentElement;
+      const isOpen = item.hasAttribute('open');
+      item.toggleAttribute('open', !isOpen);
+      button.setAttribute('aria-expanded', String(!isOpen));
+    });
+  });
+
+  // Smooth scrolling for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+      const href = this.getAttribute('href');
+      if (href !== '#') {
+        e.preventDefault();
+        const target = document.querySelector(href);
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth' });
+          // Close mobile menu if open
+          if (!mobileMenu.classList.contains('hidden')) {
+            mobileMenu.classList.add('hidden');
+            document.body.classList.remove('scroll-lock');
+          }
+        }
+      }
+    });
+  });
+
+  // Reveal on scroll
+  const revealElements = document.querySelectorAll('.reveal');
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+  revealElements.forEach(el => revealObserver.observe(el));
+
+  // Hero parallax (pointer: fine and no reduced motion)
+  const hero = document.getElementById('hero');
+  const parallaxLayers = hero.querySelectorAll('.parallax-layer');
+  if (window.matchMedia('(pointer: fine)').matches && 
+      !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    hero.addEventListener('mousemove', (e) => {
+      const x = e.clientX / window.innerWidth - 0.5;
+      const y = e.clientY / window.innerHeight - 0.5;
+      parallaxLayers.forEach(layer => {
+        const speed = layer.getAttribute('data-speed') || 0.05;
+        layer.style.transform = `translate(${x * speed * 100}px, ${y * speed * 100}px)`;
+      });
+    });
+  }
+
+  // Email form handling
+  const emailForm = document.getElementById('email-form');
+  const emailInput = document.getElementById('email-input');
+  const emailFeedback = document.getElementById('email-feedback');
+  const submitBtn = document.getElementById('submit-btn');
+  const submitIcon = document.getElementById('submit-icon');
+
+  emailForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = emailInput.value.trim();
+    
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      emailInput.classList.add('invalid');
+      emailInput.classList.remove('valid');
+      emailFeedback.textContent = 'Please enter a valid email address.';
+      emailFeedback.className = 'form-feedback error';
+      return;
+    }
+
+    // Valid email
+    emailInput.classList.remove('invalid');
+    emailInput.classList.add('valid');
+    emailFeedback.textContent = '';
+    submitBtn.classList.add('btn--loading');
+    submitIcon.textContent = 'cached';
+
+    // Simulate API call
+    setTimeout(() => {
+      submitBtn.classList.remove('btn--loading');
+      submitIcon.textContent = 'check';
+      emailFeedback.textContent = 'Thanks for joining! Check your inbox.';
+      emailFeedback.className = 'form-feedback success';
+      emailInput.value = '';
+      // Reset after 3 seconds
+      setTimeout(() => {
+        emailInput.classList.remove('valid');
+        emailFeedback.textContent = '';
+        submitIcon.textContent = 'send';
+      }, 3000);
+    }, 1200);
+  });
+
+  // Dynamic copyright year
+  document.getElementById('copyright-year').textContent = new Date().getFullYear();
+
+  // Add JS class to HTML for no-js fallback
+  document.documentElement.classList.remove('no-js');
+</script>
+</body>
+</html>

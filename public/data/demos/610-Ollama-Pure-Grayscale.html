@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ollama Pure Grayscale - Run LLMs Locally</title>
+<meta name="description" content="Run large language models locally with Ollama. Privacy-first, one-command simplicity, open-source models.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Rounded" rel="stylesheet">
+<style>
+:root{
+--primary:#000000;--secondary:#262626;--bg-primary:#fafafa;--bg-secondary:#ffffff;--bg-inverse:#090909;
+--text-primary:#000000;--text-secondary:#737373;--text-inverse:#fafafa;--text-success:#000000;--text-error:#000000;
+--border-default:#e5e5e5;--border-strong:#000000;--border-success:#000000;--border-error:#000000;
+--radius-sm:12px;--radius-md:12px;--radius-lg:12px;--radius-pill:9999px;
+--shadow-sm:none;--shadow-md:none;
+--spacing-gap:1.5rem;--transition-fast:150ms;--transition-normal:250ms;--ease-standard:cubic-bezier(0.4,0,0.2,1);
+--z-dropdown:100;--z-modal:200;--z-toast:300;
+--font-base:'SF Pro Rounded','Nunito',system-ui,sans-serif;
+--font-mono:'JetBrains Mono',monospace
+}
+@media(prefers-color-scheme:dark){
+:root{
+--bg-primary:#090909;--bg-secondary:#262626;--bg-inverse:#fafafa;
+--text-primary:#fefefe;--text-secondary:#a3a3a3;--border-default:#262626;--border-strong:#fefefe;
+--primary:#fefefe;--secondary:#e5e5e5
+}
+}
+.dark{
+--bg-primary:#090909;--bg-secondary:#262626;--bg-inverse:#fafafa;
+--text-primary:#fefefe;--text-secondary:#a3a3a3;--border-default:#262626;--border-strong:#fefefe;
+--primary:#fefefe;--secondary:#e5e5e5
+}
+html{box-sizing:border-box;font-size:16px}
+*,*:before,*:after{box-sizing:inherit}
+body{margin:0;font-family:var(--font-base);background-color:var(--bg-primary);color:var(--text-primary);line-height:1.6}
+.skip-link{position:absolute;left:-999px;top:auto;width:1px;height:1px;overflow:hidden}
+.skip-link:focus{left:0;top:0;width:auto;height:auto;overflow:visible;background:#000;color:#fff;padding:1rem;z-index:1000}
+header{position:sticky;top:0;z-index:var(--z-dropdown);background-color:var(--bg-primary);border-bottom:1px solid var(--border-default);display:flex;align-items:center;justify-content:space-between;padding:0.75rem 1.5rem}
+.header__logo{font-weight:500;font-size:1.125rem;text-decoration:none;color:var(--text-primary)}
+.header__nav{display:flex;gap:1.5rem}
+.header__nav a{font-weight:500;text-decoration:none;color:var(--text-secondary);padding:0.25rem 0;border-bottom:2px solid transparent}
+.header__nav a:hover{color:var(--text-primary)}
+.header__nav a.active{color:var(--text-primary);border-bottom-color:var(--text-primary)}
+.theme-toggle{background:none;border:none;cursor:pointer;padding:0.5rem;display:flex;align-items:center;justify-content:center}
+.theme-toggle .material-symbols-rounded{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
+.header__cta{display:flex;gap:0.5rem}
+.hero{display:flex;flex-direction:column;align-items:center;text-align:center;padding:4rem 1.5rem;min-height:calc(100vh - 4.5rem)}
+.hero__tag{display:inline-flex;align-items:center;gap:0.25rem;border:1px solid var(--border-default);border-radius:var(--radius-pill);padding:0.25rem 0.75rem;font-size:0.875rem;font-weight:500;color:var(--text-secondary)}
+.hero__title{font-size:clamp(2.25rem,5vw,3rem);font-weight:500;margin:1.5rem 0;line-height:1.2}
+.hero__subtitle{font-size:1.125rem;color:var(--text-secondary);max-width:38ch;margin:0 auto 2rem}
+.hero__ctas{display:flex;gap:0.75rem;flex-wrap:wrap;justify-content:center}
+.terminal-card{background-color:#090909;border:1px solid #262626;border-radius:var(--radius-md);font-family:var(--font-mono);color:#a3a3a3;padding:1.5rem;overflow:hidden;position:relative;max-width:28ch}
+.terminal-card code{display:block;font-size:0.875rem;line-height:1.4;white-space:pre}
+.terminal-card .cursor{display:inline-block;width:0.75em;height:1em;background-color:#a3a3a3;animation:blink 1s steps(2,start) infinite}
+@keyframes blink{to{visibility:hidden}}
+@media(prefers-reduced-motion:reduce){.terminal-card .cursor{animation:none;visibility:visible}}
+.features{padding:4rem 1.5rem;background-color:var(--bg-secondary)}
+.features__heading{text-align:center;margin-bottom:3rem;font-size:2rem;font-weight:500}
+.features__grid{display:grid;gap:var(--spacing-gap);grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.feature{display:flex;flex-direction:column;align-items:center;text-align:center;padding:2rem;border:1px solid var(--border-default);border-radius:var(--radius-md)}
+.feature__badge{display:inline-flex;align-items:center;justify-content:center;width:2.5rem;height:2.5rem;border-radius:var(--radius-pill);border:1px solid var(--border-default);margin-bottom:1.5rem}
+.feature__badge .material-symbols-rounded{font-size:1.5rem}
+.feature__title{font-weight:500;margin:0.5rem 0;font-size:1.25rem}
+.feature__text{color:var(--text-secondary);font-size:1rem;line-height:1.5}
+.how-it-works{padding:4rem 1.5rem;background-color:var(--bg-primary)}
+.how-it-works__heading{text-align:center;margin-bottom:3rem;font-size:2rem;font-weight:500}
+.how-it-works__grid{display:grid;gap:var(--spacing-gap);grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.step{display:flex;flex-direction:column;align-items:center;text-align:center;padding:2rem}
+.step__number{display:inline-flex;align-items:center;justify-content:center;width:2.5rem;height:2.5rem;border-radius:var(--radius-pill);background-color:var(--primary);color:var(--text-inverse);font-weight:500;margin-bottom:1.5rem}
+.step__title{font-weight:500;margin:0.5rem 0;font-size:1.25rem}
+.step__text{color:var(--text-secondary);font-size:1rem;line-height:1.5}
+.testimonials{padding:4rem 1.5rem;background-color:var(--bg-secondary)}
+.testimonials__heading{text-align:center;margin-bottom:3rem;font-size:2rem;font-weight:500}
+.testimonials__grid{display:grid;gap:var(--spacing-gap);grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.testimonial{display:flex;flex-direction:column;align-items:center;text-align:center;padding:2rem;border:1px solid var(--border-default);border-radius:var(--radius-md)}
+.testimonial__avatar{display:inline-flex;align-items:center;justify-content:center;width:2.5rem;height:2.5rem;border-radius:50%;background-color:var(--primary);color:var(--text-inverse);font-weight:500;margin-bottom:1.5rem}
+.testimonial__quote{font-style:italic;color:var(--text-secondary);margin:0.5rem 0;font-size:1rem;line-height:1.5}
+.testimonial__name{font-weight:500;margin:0.25rem 0;font-size:1.125rem}
+.testimonial__role{color:var(--text-secondary);font-size:0.875rem}
+.pricing{padding:4rem 1.5rem;background-color:var(--bg-primary)}
+.pricing__heading{text-align:center;margin-bottom:3rem;font-size:2rem;font-weight:500}
+.pricing__grid{display:grid;gap:var(--spacing-gap);grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.tier{display:flex;flex-direction:column;border:1px solid var(--border-default);border-radius:var(--radius-md);overflow:hidden}
+.tier--featured{background-color:#000000;color:#fafafa;border-color:#000000}
+.tier--featured .tier__name,.tier--featured .tier__price,.tier--featured .tier__feature{color:#fafafa}
+.tier--featured .tier__cta{background-color:#fafafa;color:#000000}
+.tier__header{padding:1.5rem;border-bottom:1px solid var(--border-default);text-align:center}
+.tier__name{font-weight:500;font-size:1.25rem;margin:0}
+.tier__price{font-weight:500;font-size:2.25rem;margin:0.5rem 0}
+.tier__features{padding:1.5rem;flex-grow:1}
+.tier__feature{display:flex;align-items:center;gap:0.5rem;color:var(--text-secondary);margin:0.5rem 0;font-size:1rem}
+.tier__feature .material-symbols-rounded{font-size:1rem;color:var(--text-success)}
+.tier__cta{padding:1.5rem;text-align:center}
+.faq{padding:4rem 1.5rem;background-color:var(--bg-secondary)}
+.faq__heading{text-align:center;margin-bottom:3rem;font-size:2rem;font-weight:500}
+.faq__container{max-width:720px;margin:0 auto}
+.faq__item{border:1px solid var(--border-default);border-radius:var(--radius-md);margin-bottom:0.5rem}
+.faq__button{width:100%;text-align:left;padding:1.5rem;background:none;border:none;font-weight:500;font-size:1.125rem;color:var(--text-primary);display:flex;align-items:center;justify-content:between;position:relative}
+.faq__button .material-symbols-rounded{transition:transform var(--transition-normal) var(--ease-standard)}
+.faq__button[aria-expanded="true"] .material-symbols-rounded{transform:rotate(180deg)}
+.faq__panel{padding:0 1.5rem;max-height:0;overflow:hidden;transition:max-height var(--transition-normal) var(--ease-standard);background-color:var(--bg-secondary)}
+.faq__panel[aria-hidden="false"]{max-height:200px}
+.faq__text{color:var(--text-secondary);font-size:1rem;line-height:1.5;margin:1rem 0}
+.final-cta{background-color:var(--bg-inverse);color:var(--text-inverse);text-align:center;padding:4rem 1.5rem}
+.final-cta__heading{font-size:clamp(2.25rem,5vw,3rem);font-weight:500;margin:0 0 1rem}
+.final-cta__copy{font-size:1.125rem;color:var(--text-inverse);max-width:38ch;margin:0 auto 2rem}
+.input-group{display:flex;gap:0.5rem;max-width:480px;margin:0 auto}
+.input-group input{flex:1;border:1px solid var(--border-default);border-radius:var(--radius-pill);background-color:var(--bg-secondary);color:var(--text-primary);padding:0 1.25rem;font-size:1rem;height:44px}
+.input-group input:focus{outline:none;border-color:var(--border-strong);border-width:2px}
+.input-group input::placeholder{color:var(--text-secondary)}
+.input-group .btn{flex-shrink:0}
+.footer{padding:2rem 1.5rem;border-top:1px solid var(--border-default);font-size:0.875rem;color:var(--text-secondary)}
+.footer__links{display:flex;flex-wrap:wrap;gap:1.5rem;margin-bottom:1rem}
+.footer__links a{color:var(--text-secondary);text-decoration:none}
+.footer__links a:hover{color:var(--text-primary)}
+.footer__copyright{margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--border-default);text-align:center}
+@media(max-width:600px){
+.header__nav{display:none}
+.hero__ctas{flex-direction:column}
+.input-group{flex-direction:column}
+.input-group input{width:100%}
+}
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<header>
+<a href="#" class="header__logo">Ollama</a>
+<nav class="header__nav">
+<a href="#features" class="active">Features</a>
+<a href="#how-it-works">How It Works</a>
+<a href="#pricing">Pricing</a>
+<a href="#faq">FAQ</a>
+</nav>
+<button class="theme-toggle" aria-label="Toggle dark mode" aria-pressed="false">
+<span class="material-symbols-rounded">dark_mode</span>
+</button>
+<div class="hero__cta">
+<button class="btn btn--primary" id="download-btn">Download</button>
+<a href="#" class="btn btn--secondary">Read the docs</a>
+</div>
+</header>
+<main id="main-content">
+<section class="hero">
+<div class="hero__tag"><span class="material-symbols-rounded">security</span> Open source · Local-first</div>
+<h1 class="hero__title">Run large language models locally</h1>
+<p class="hero__subtitle">Privacy-first, one-command simplicity, access to thousands of open-source models. No data leaves your machine.</p>
+<div class="hero__ctas">
+<button class="btn btn--primary" id="modal-trigger">Download</button>
+<a href="#" class="btn btn--secondary">Read the docs</a>
+</div>
+<div class="terminal-card">
+<code>$ ollama run llama3</code>
+<span class="cursor"></span>
+</code>
+</div>
+</section>
+<section id="features" class="features">
+<h2 class="features__heading">Why developers choose Ollama</h2>
+<div class="features__grid">
+<div class="feature">
+<div class="feature__badge"><span class="material-symbols-rounded">shield</span></div>
+<h3 class="feature__title">Privacy by design</h3>
+<p class="feature__text">All processing happens locally. Your data never leaves your machine, ensuring complete confidentiality for sensitive workloads.</p>
+</div>
+<div class="feature">
+<div class="feature__badge"><span class="material-symbols-rounded">terminal</span></div>
+<h3 class="feature__title">One-command simplicity</h3>
+<p class="feature__text">Download, run, and manage models with a single intuitive command. No complex setup or infrastructure required.</p>
+</div>
+<div class="feature">
+<div class="feature__badge"><span class="material-symbols-rounded">folder</span></div>
+<h3 class="feature__text">Open model library</h3>
+<p class="feature__text">Access thousands of community-shared models or bring your own. The model ecosystem grows daily.</p>
+</div>
+</div>
+</section>
+<section id="how-it-works" class="how-it-works">
+<h2 class="how-it-works__heading">How it works</h2>
+<div class="how-it-works__grid">
+<div class="step">
+<div class="step__number">1</div>
+<h3 class="step__title">Install</h3>
+<p class="step__text">A single binary gets you running in seconds. Available for all major platforms.</p>
+</div>
+<div class="step">
+<div class="step__number">2</div>
+<h3 class="step__title">Pull</h3>
+<p class="step__text">Download any model with <code>ollama pull</code>. Choose from Llama, Mistral, Phi, and more.</p>
+</div>
+<div class="step">
+<div class="step__number">3</div>
+<h3 class="step__title">Run</h3>
+<p class="step__text">Start chatting instantly with <code>ollama run</code>. GPU acceleration when available.</p>
+</div>
+</div>
+</section>
+<section id="testimonials" class="testimonials">
+<h2 class="testimonials__heading">What developers say</h2>
+<div class="testimonials__grid">
+<div class="testimonial">
+<div class="testimonial__avatar">JD</div>
+<p class="testimonial__quote">“Ollama transformed my local AI workflow. The simplicity is unmatched—no Docker, no complex configs, just pure model power.”</p>
+<p class="testimonial__name">Jordan Davis</p>
+<p class="testimonial__role">ML Engineer</p>
+</div>
+<div class="testimonial">
+<div class="testimonial__avatar">SM</div>
+<p class="testimonial__quote">“Finally, a way to run LLMs locally that doesn’t require a PhD in infrastructure. The CLI is intuitive and fast.”</p>
+<p class="testimonial__name">Sam Martinez</p>
+<p class="testimonial__role">Backend Developer</p>
+</div>
+</div>
+</section>
+<section id="pricing" class="pricing">
+<h2 class="pricing__heading">Simple, transparent pricing</h2>
+<div class="pricing__grid">
+<div class="tier">
+<div class="tier__header">
+<h3 class="tier__name">Community</h3>
+<p class="tier__price">$0</p>
+</div>
+<div class="tier__features">
+<div class="tier__feature"><span class="material-symbols-rounded">check</span> Personal use</div>
+<div class="tier__feature"><span class="material-symbols-rounded">check</span> All public models</div>
+<div class="tier__feature"><span class="material-symbols-rounded">check</span> CLI access</div>
+</div>
+<div class="tier__cta">
+<button class="btn btn--secondary">Get started</button>
+</div>
+</div>
+<div class="tier tier--featured">
+<div class="tier__header">
+<h3 class="tier__name">Professional</h3>
+<p class="tier__price">$19/mo</p>
+</div>
+<div class="tier__features">
+<div class="tier__feature"><span class="material-symbols-rounded">check</span> Commercial use</div>
+<div class="tier__feature"><span class="material-symbols-rounded">check</span> Priority support</div>
+<div class="tier__feature"><span class="material-symbols-rounded">check</span> Model training tools</div>
+</div>
+<div class="tier__cta">
+<button class="btn btn--primary">Choose plan</button>
+</div>
+</div>
+<div class="tier">
+<div class="tier__header">
+<h3 class="tier__name">Enterprise</h3>
+<p class="tier__price">Custom</p>
+</div>
+<div class="tier__features">
+<div class="tier__feature"><span class="material-symbols-rounded">check</span> Self-hosted</div>
+<div class="tier__feature"><span class="material-symbols-rounded">check</span> SSO & LDAP</div>
+<div class="tier__feature"><span class="material-symbols-rounded">check</span> Dedicated SLAs</div>
+</div>
+<div class="tier__cta">
+<button class="btn btn--secondary">Contact sales</button>
+</div>
+</div>
+</div>
+</section>
+<section id="faq" class="faq">
+<h2 class="faq__heading">Frequently asked questions</h2>
+<div class="faq__container">
+<div class="faq__item">
+<button class="faq__button" aria-expanded="false" aria-controls="faq-1">
+Is Ollama completely free to use?
+<span class="material-symbols-rounded">expand_more</span>
+</button>
+<div id="faq-1" class="faq__panel" aria-hidden="true">
+<p class="faq__text">Yes! Ollama is 100% free and open-source under the MIT license. No hidden costs, no usage limits, and no telemetry.</p>
+</div>
+</div>
+<div class="faq__item">
+<button class="faq__button" aria-expanded="false" aria-controls="faq-2">
+Do I need a powerful GPU to run models?
+<span class="material-symbols-rounded">expand_more</span>
+</button>
+<div id="faq-2" class="faq__panel" aria-hidden="true">
+<p class="faq__text">No. While GPUs accelerate inference, Ollama works efficiently on CPU-only machines. Quantized models run smoothly on modern laptops.</p>
+</div>
+</div>
+<div class="faq__item">
+<button class="faq__button" aria-expanded="false" aria-controls="faq-3">
+How do I update Ollama?
+<span class="material-symbols-rounded">expand_more</span>
+</button>
+<div id="faq-3" class="faq__panel" aria-hidden="true">
+<p class="faq__text">Updates are as simple as re-downloading the binary. The CLI includes an <code>ollama update</code> command for seamless version management.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="final-cta" class="final-cta">
+<h2 class="final-cta__heading">Stay updated on new releases</h2>
+<p class="final-cta__copy">Get notified when we release new features, model updates, and security patches. We respect your inbox—no spam, ever.</p>
+<form class="input-group" id="email-form">
+<input type="email" placeholder="your@email.com" required aria-label="Email address">
+<button type="submit" class="btn btn--primary">Subscribe</button>
+</form>
+</section>
+</main>
+<footer class="footer">
+<div class="footer__links">
+<a href="#">Product</a>
+<a href="#">Resources</a>
+<a href="#">Company</a>
+<a href="#">Blog</a>
+<a href="#">GitHub</a>
+</div>
+<div class="footer__copyright">&copy; 2026 Ollama. All rights reserved.</div>
+</footer>
+<div id="modal" class="modal" aria-hidden="true">
+<div class="modal__backdrop"></div>
+<div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+<button class="modal__close" aria-label="Close">
+<span class="material-symbols-rounded">close</span>
+</button>
+<h2 id="modal-title" class="modal__title">Download Ollama</h2>
+<div class="modal__content">
+<p class="modal__text">Choose your platform:</p>
+<div class="modal__platforms">
+<button class="btn btn--secondary modal__platform">macOS (Apple Silicon)</button>
+<button class="btn btn--secondary modal__platform">macOS (Intel)</button>
+<button class="btn btn--secondary modal__platform">Windows</button>
+<button class="btn btn--secondary modal__platform">Linux</button>
+</div>
+<p class="modal__text modal__note">Checksums verified. Automatic updates available.</p>
+</div>
+</div>
+</div>
+<script>
+document.documentElement.classList.toggle('dark', localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches));
+const themeToggle = document.querySelector('.theme-toggle');
+themeToggle.addEventListener('click', () => {
+const isDark = document.documentElement.classList.toggle('dark');
+themeToggle.setAttribute('aria-pressed', isDark);
+themeToggle.querySelector('.material-symbols-rounded').textContent = isDark ? 'light_mode' : 'dark_mode';
+localStorage.setItem('theme', isDark ? 'dark' : 'light');
+});
+const faqButtons = document.querySelectorAll('.faq__button');
+faqButtons.forEach(btn => {
+btn.addEventListener('click', () => {
+const expanded = btn.getAttribute('aria-expanded') === 'true' || false;
+btn.setAttribute('aria-expanded', !expanded);
+const panel = document.getElementById(btn.getAttribute('aria-controls'));
+panel.setAttribute('aria-hidden', expanded);
+});
+});
+const modalTrigger = document.getElementById('modal-trigger');
+const modal = document.getElementById('modal');
+const modalClose = modal.querySelector('.modal__close');
+const modalBackdrop = modal.querySelector('.modal__backdrop');
+const openModal = () => {
+modal.setAttribute('aria-hidden', 'false');
+modal.classList.add('modal--open');
+document.body.style.overflow = 'hidden';
+};
+const closeModal = () => {
+modal.setAttribute('aria-hidden', 'true');
+modal.classList.remove('modal--open');
+document.body.style.overflow = '';
+};
+modalTrigger.addEventListener('click', openModal);
+modalClose.addEventListener('click', closeModal);
+modalBackdrop.addEventListener('click', closeModal);
+document.addEventListener('keydown', e => {
+if (e.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') closeModal();
+});
+const emailForm = document.getElementById('email-form');
+emailForm.addEventListener('submit', e => {
+e.preventedly();
+const input = emailForm.querySelector('input');
+const button = emailForm.querySelector('button');
+if (!input.value.trim()) return;
+button.disabled = true;
+button.setAttribute('aria-busy', 'true');
+button.innerHTML = '<span class="material-symbols-rounded">hourglass_top</span> Submitting...';
+setTimeout(() => {
+button.innerHTML = '<span class="material-symbols-rounded">check</span> Done';
+button.setAttribute('aria-busy', 'false');
+input.value = '';
+}, 1500);
+});
+</script>
+</body>
+</html>

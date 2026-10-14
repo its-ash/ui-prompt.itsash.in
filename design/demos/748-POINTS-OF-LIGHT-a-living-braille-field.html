@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<title>Points of Light — A Living Braille Field</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<style>
+/*--- Tokens ---*/
+:root{
+  --primary:#ffb347; --primary-ink:#232830;
+  --secondary:#8a92a0;
+  --bg-primary:#dfe3ea; --bg-secondary:#eaeef4;
+  --text-primary:#232830; --text-secondary:#5c6472;
+  --border-default:rgba(35,40,48,.14);
+  --radius-sm:4px; --radius-md:8px; --radius-lg:12px;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.05);
+  --shadow-md:0 4px 12px rgba(0,0,0,.1);
+  --transition-normal:.2s ease; --transition-fast:.15s ease;
+  --z-dropdown:10; --z-modal:100; --spacing-gap:1.5rem;
+  --font-base:'Inter',sans-serif; --font-display:'Archivo',sans-serif; --font-mono:'IBM Plex Mono',monospace;
+}
+.dark{
+  --bg-primary:#1e222a; --bg-secondary:#2a303a;
+  --text-primary:#e6eaf1; --text-secondary:#a9b1bd;
+  --primary-ink:#e6eaf1; --border-default:rgba(30,34,42,.14);
+}
+@media (prefers-color-scheme:dark){.dark{--bg-primary:#1e222a;--bg-secondary:#2a303a;--text-primary:#e6eaf1;--text-secondary:#a9b1bd;--primary-ink:#e6eaf1;--border-default:rgba(30,34,42,.14)}}
+
+/*--- Base ---*/
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:var(--font-base);
+  background:var(--bg-primary);
+  color:var(--text-primary);
+  line-height:1.6;
+  overflow-x:hidden;
+}
+a{text-decoration:none;color:inherit;}
+img{max-width:100%;display:block;}
+.skip-link{
+  position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;
+}
+.skip-link:focus{left:0;top:0;width:auto;height:auto;color:#232830;background:#ffb347;padding:0.5rem;z-index:9999;}
+
+html.dark .skip-link:focus{color:#e6eaf1;background:#232830;}
+
+/*--- Layout ---*/
+.header{
+  position:sticky;top:0;background:var(--bg-primary);z-index:var(--z-dropdown);
+  padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;
+}
+.header__nav{display:flex;gap:2rem;}
+.header__list{display:flex;gap:1.5rem;}
+.header__link{font-weight:500;color:var(--text-primary);font-size:0.875rem;}
+.header__cta{margin-left:1rem;}
+.header__theme-toggle{
+  display:flex;gap:0.5rem;padding:0.5rem;background:transparent;border:none;
+  cursor:pointer;color:var(--text-primary);
+}
+.header__theme-toggle[aria-pressed="true"] .sun{display:none;}
+.header__theme-toggle[aria-pressed="false"] .moon{display:none;}
+.material-icons{font-variant:normal;font-size:1.2rem;}
+
+/*--- Hero ---*/
+.hero{
+  padding:4rem 1.5rem;max-width:1200px;margin:0 auto;
+}
+.hero__content{display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:center;}
+.hero__eyebrow{
+  font-family:var(--font-mono);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.2em;color:var(--primary);margin-bottom:0.5rem;
+}
+.hero__h1{font-family:var(--font-display);font-size:2.5rem;line-height:1.2;margin-bottom:1rem;}
+.hero__sub{font-size:1rem;color:var(--text-secondary);margin-bottom:1.5rem;}
+.hero__ctas{display:flex;gap:0.75rem;}
+.hero__stats{display:flex;gap:2rem;font-family:var(--font-mono);color:var(--text-secondary);font-size:0.875rem;}
+.hero__field{
+  position:relative;width:260px;height:260px;aspect-ratio:1;
+  background:radial-gradient(circle at 30% 20%,rgba(255,179,71,.25),transparent 50%),
+               radial-gradient(circle at 70% 80%,rgba(255,179,71,.2),transparent 50%);
+}
+.dot{
+  width:24px;height:24px;border-radius:50%;background:var(--bg-secondary);
+  margin:2px;position:absolute;transition:transform var(--transition-fast),background var(--transition-fast);
+}
+.dot--lit{background:var(--primary);color:var(--primary-ink);}/* decorative, no text */
+.dot:hover{transform:translateY(-4px);background:#ffd880;}
+@media (prefers-reduced-motion:reduce){
+  .dot{transition:none!important;animation:none!important;}
+}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,179,71,.4);}100%{box-shadow:0 0 8px 4px rgba(255,179,71,0);}}
+.dot--lit{animation:pulse 2s infinite;}
+
+/*--- Sections ---*/
+.section{
+  padding:3rem 1.5rem;max-width:1200px;margin:0 auto;
+}
+.section__title{
+  display:flex;align-items:center;gap:0.5rem;margin-bottom:2rem;
+}
+.section__number{
+  font-family:var(--font-mono);font-size:0.75rem;color:var(--primary);background:var(--bg-secondary);
+  padding:0.25rem 0.5rem;border-radius:var(--radius-sm);
+}
+.section__title-text{font-family:var(--font-display);font-size:1.75rem;}
+
+.features__grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;}
+.card--feature{
+  background:var(--bg-secondary);border-radius:var(--radius-lg);
+  padding:1.5rem;border:1px solid var(--border-default);
+  transition:transform var(--transition-normal),box-shadow var(--transition-normal);
+}
+.card--feature:hover{transform:translateY(-4px);box-shadow:var(--shadow-md);}
+.card__icon{width:48px;height:48px;display:flex;align-items:center;justify-content:center;margin-bottom:0.75rem;}
+.card__icon .material-icons{font-size:1.5rem;}
+.card__title{font-size:1rem;font-weight:600;margin-bottom0.25rem;}
+.card__body{color:var(--text-secondary);font-size:0.875rem;}
+
+.steps__grid{display:flex;gap:1rem;flex-wrap:wrap;align-items:center;}
+.step{
+  flex:1;min-width:150px;display:flex;flex-direction:column;align-items:center;gap:0.5rem;
+}
+.step__num{
+  font-family:var(--font-mono);font-size:1.5rem;color:var(--primary);
+}
+.step__content{text-align:center;}
+.step__content h3{font-size:1rem;margin-bottom0.25rem;}
+.step__content p{color:var(--text-secondary);font-size:0.875rem;}
+
+.testimonials__grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1.5rem;margin-top:2rem;}
+.testimonial__card{
+  background:var(--bg-secondary);border-radius:var(--radius-lg);
+  padding:1.5rem;border:1px solid var(--border-default);
+  transition:transform var(--transition-normal);
+}
+.testimonial__card:hover{transform:translateY(-2px);}
+.testimonial__card blockquote{font-size:0.9375rem;color:var(--text-primary);margin-bottom1rem;display:block;}
+.testimonial__author{font-weight:500;margin-bottom0.25rem;}
+.testimonial__role{color:var(--text-secondary);font-size:0.875rem;}
+
+.pricing__grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;margin-top:2rem;}
+.pricing__tier{
+  background:var(--bg-secondary);border-radius:var(--radius-lg);
+  padding:1.5rem;border:1px solid var(--border-default);transition:border-color var(--transition-normal);
+}
+.pricing__tier:hover{border-color:var(--primary);}
+.pricing__tier.pricing__tier--highlighted{border-color:var(--primary);position:relative;}
+.pricing__tier.pricing__tier--highlighted::after{
+  content:'RECOMMENDED';font-family:var(--font-mono);font-size:0.6875rem;text-transform:uppercase;
+  color:var(--primary);background:var(--bg-primary);padding:0.2rem 0.5rem;border-radius:var(--radius-sm);
+  position:absolute;top:-0.75rem;right:1rem;
+}
+.pricing__name{font-size:0.9375rem;margin-bottom0.5rem;}
+.pricing__price{font-family:var(--font-mono);font-size:1.25rem;color:var(--primary);margin-bottom1rem;}
+.pricing__features{list-style:none;padding-left1.5rem;}
+.pricing__features li{
+  display:flex;align-items:center;gap0.3rem;margin0.5rem 0;
+  font-size:0.875rem;color:var(--text-secondary);
+}
+.pricing__features .material-icons{color:var(--primary);}
+
+/*--- FAQ ---*/
+.faq__list{max-width:800px;margin:0 auto;}
+.faq__item{
+  border:1px solid var(--border-default);border-radius:var(--radius-lg);
+  margin-bottom0.75rem;overflow:hidden;
+}
+.faq__summary{
+  width:100%;padding:1rem;background:var(--bg-primary);
+  font-size:1rem;display:flex;justify-content:space-between;align-items:center;
+  cursor:pointer;user-select:none;
+}
+.faq__summary .material-icons{font-size:1rem;transition:transform var(--transition-fast);}
+.faq__item[aria-expanded="true"] .material-icons{transform:rotate(180deg);}
+.faq__answer{
+  padding:0 1rem 1rem;color:var(--text-secondary);font-size:0.875rem;
+  transition:max-height 0.3s ease-out;
+}
+.faq__item[aria-expanded="true"] .faq__answer{max-height:200px;}
+
+/*--- CTA ---*/
+.cta{
+  background:var(--bg-primary);background:radial-gradient(circle at 30% 20%,rgba(255,179,71,.15),transparent 50%),
+               linear-gradient(135deg,#ffb347 0%,#f0a030 100%);
+  color:var(--primary-ink);padding:3rem 1.5rem;max-width:1200px;margin:0 auto;text-align:center;
+}
+.cta h2{font-family:var(--font-display);font-size:2rem;margin-bottom1rem;}
+.cta__microcopy{color:var(--text-secondary);margin-top0.5rem;font-size:0.875rem;}
+
+/*--- Form ---*/
+.input-group{
+  max-width:400px;margin:0 auto;display:flex;flex-direction:column;gap0.75rem;
+}
+.input-group__label{font-size:0.875rem;color:var(--text-secondary);}
+.input-group__input{
+  padding:0.75rem 1rem;border:1px solid var(--border-default);
+  border-radius:var(--radius-md);font-family:var(--font-mono);font-size:1rem;background:var(--bg-primary);
+  color:var(--text-primary);transition:border-color var(--transition-fast);
+}
+.input-group__input:focus{border-color:var(--primary);outline:none;}
+.input-group__input:invalid{border-color:#b3261e;}
+.input-group__error{
+  font-size:0.75rem;color:#b3261e;margin-top-0.5rem;display:none;
+}
+.input-group__error[role="alert"]{display:block;}
+.input-group__submit{
+  padding:0.75rem 1.5rem;font-family:var(--font-base);font-size:0.9375rem;
+  background:var(--primary);color:var(--primary-ink);border:none;border-radius:var(--radius-md);
+  cursor:pointer;transition:transform var(--transition-fast);
+  min-height:44px;/* ensures touch target */
+}
+.input-group__submit:hover{transform:scale(0.98);}
+.input-group__submit.is-loading{
+  pointer-events:none;background:#a0a0a0;color:#fff;
+}
+.input-group__submit.is-loading .material-icons{animation:spin 1s linear infinite;}
+@keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+
+.cta__cta{margin-top1rem;align-self:center;}
+
+/*--- Footer ---*/
+.footer{
+  background:var(--bg-secondary);color:var(--text-primary);padding:2rem 1.5rem;
+  max-width:1200px;margin:0 auto;display:flex;flex-wrap:wrap;justify-content:space-between;
+}
+.footer__top{display:flex;align-items:center;gap0.5rem;margin-bottom1.5rem;}
+.footer__logo{display:flex;align-items:center;gap0.5rem;}
+.footer__logo .material-icons{font-size:1.2rem;}
+.footer__description{font-size:0.875rem;color:var(--text-secondary);}
+.footer__links{display:flex;gap2rem;margin-bottom1.5rem;}
+.footer__links ul{list-style:none;}
+.footer__links a{font-size:0.875rem;color:var(--text-secondary);}
+.footer__links a:hover{color:var(--primary);}
+.footer__social{display:flex;gap1rem;}
+.footer__social-link{
+  width:32px;height:32px;display:flex;align-items:center;justify-content:center;
+  background:var(--bg-primary);border-radius:50%;color:var(--text-primary);
+  font-size:1rem;transition:background var(--transition-fast);
+}
+.footer__social-link:hover{background:var(--primary);color:#232830;}
+.footer__copyright{font-size:0.75rem;margin-top1rem;color:var(--text-secondary);}
+.footer__back-to-top{
+  width:32px;height:32px;display:flex;align-items:center;justify-content:center;
+  background:var(--primary);color:#232830;border-radius:50%;font-size:0.875rem;
+  position:fixed;bottom2rem;right2rem;opacity:0;visibility:hidden;transition:opacity var(--transition-fast);
+}
+.footer__back-to-top:visible{opacity:1;visibility:visible;}
+.footer__back-to-top:hover{background:#232830;color:#ffb347;}
+
+/*--- Header scrolled ---*/
+.header.header--scrolled{box-shadow:var(--shadow-md);}
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to main content</a>
+
+<header class="header" aria-label="Main navigation" role="banner">
+  <nav class="header__nav">
+    <ul class="header__list">
+      <li><a href="#features" class="header__link">Features</a></li>
+      <li><a href="#how-it-works" class="header__link">How It Works</a></li>
+      <li><a href="#testimonials" class="header__link">Testimonials</a></li>
+      <li><a href="#pricing" class="header__link">Pricing</a></li>
+    </ul>
+  </nav>
+  <button class="header__theme-toggle" aria-pressed="false" aria-label="Toggle dark mode">
+    <span class="material-icons sun">wb_sunny</span>
+    <span class="material-icons moon">nightlight</span>
+  </button>
+  <a href="#cta" class="header__cta btn btn--primary">Experience the field</a>
+</header>
+
+<main id="main" role="main">
+
+  <!-- Hero -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero__content">
+      <p class="hero__eyebrow">A LIVING BRAILLE FIELD</p>
+      <h1 id="hero-title" class="hero__h1">Information you can feel.</h1>
+      <p class="hero__sub">POINTS OF LIGHT renders interfaces as grids of luminous, tactile points — readable by eye and by fingertip.</p>
+      <div class="hero__ctas">
+        <a href="#features" class="btn btn--primary">Experience the field</a>
+        <a href="#how-it-works" class="btn btn--ghost">See how it works</a>
+      </div>
+      <p class="hero__stats">
+        <span class="stat">10k+</span>
+        <span class="stat-label">users</span>
+        <span class="stat">24/7</span>
+        <span class="stat-label">availability</span>
+      </p>
+    </div>
+    <div class="hero__field" aria-hidden="true">
+      <!-- 20 dots, some lit -->
+      <div class="dot dot--lit"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" class="section section--features">
+    <div class="section__title">
+      <span class="section__number">01</span>
+      <h2 class="section__title-text">Features</h2>
+    </div>
+    <div class="features__grid">
+      <article class="card card--feature">
+        <div class="card__icon"><span class="material-icons">grid_on</span></div>
+        <h3 class="card__title">Tactile Grid</h3>
+        <p class="card__body">Interfaces rendered as grids of raised points, readable by fingertip.</p>
+      </article>
+      <article class="card card--feature">
+        <div class="card__icon"><span class="material-icons">visibility</span></div>
+        <h3 class="card__title">Dual Reading</h3>
+        <p class="card__body">Readable visually and through touch, expanding audience reach.</p>
+      </article>
+      <article class="card card--feature">
+        <div class="card__icon"><span class="material-icons">settings_remote</span></div>
+        <h3 class="card__title">Customizable</h3>
+        <p class="card__body">Adjust grid density, point size, and pulse speed to suit any context.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section id="how-it-works" class="section">
+    <div class="section__title">
+      <span class="section__number">02</span>
+      <h2 class="section__title-text">How It Works</h2>
+    </div>
+    <div class="steps__grid">
+      <div class="step">
+        <span class="step__num">01</span>
+        <div class="step__content">
+          <h3>Setup</h3>
+          <p>Configure the grid layout and point density.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step__num">02</span>
+        <div class="step__content">
+          <h3>Render</h3>
+          <p>Convert interface elements into tactile point grids.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step__num">03</span>
+        <div class="step__content">
+          <h3>Feel</h3>
+          <p>Run fingertips over the field; points pulse to guide attention.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section id="testimonials" class="section">
+    <div class="section__title">
+      <span class="section__number">03</span>
+      <h2 class="section__title-text">Testimonials</h2>
+    </div>
+    <div class="testimonials__grid">
+      <article class="testimonial__card">
+        <blockquote><p>“I can finally read interfaces without sight.”</p></blockquote>
+        <p class="testimonial__author">Alex J.</p>
+        <p class="testimonial__role">Product Designer</p>
+      </article>
+      <article class="testimonial__card">
+        <blockquote><p>“The tactile feedback feels natural and intuitive.”</p></blockquote>
+        <p class="testimonial__author">Rina S.</p>
+        <p class="testimonial__role">UX Researcher</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section id="pricing" class="section">
+    <div class="section__title">
+      <span class="section__number">04</span>
+      <h2 class="section__title-text">Pricing</h2>
+    </div>
+    <div class="pricing__grid">
+      <article class="pricing__tier">
+        <span class="pricing__name">Dot</span>
+        <span class="pricing__price">$19 <small>/ month</small></span>
+        <ul class="pricing__features">
+          <li><span class="material-icons">check_circle</span>Basic grid</li>
+          <li><span class="material-icons">check_circle</span>Standard density</li>
+        </ul>
+        <a href="#" class="btn btn--ghost">Start Free</a>
+      </article>
+      <article class="pricing__tier pricing__tier--highlighted">
+        <span class="pricing__name">Field</span>
+        <span class="pricing__price">$49 <small>/ month</small></span>
+        <ul class="pricing__features">
+          <li><span class="material-icons">check_circle</span>Advanced grid</li>
+          <li><span class="material-icons">check_circle</span>High density</li>
+          <li><span class="material-icons">check_circle</span>Priority support</li>
+        </ul>
+        <a href="#" class="btn btn--primary">Start Now</a>
+      </article>
+      <article class="pricing__tier">
+        <span class="pricing__name">Constellation</span>
+        <span class="pricing__price">$99 <small>/ month</small></span>
+        <ul class="pricing__features">
+          <li><span class="material-icons">check_circle</span>Full grid</li>
+          <li><span class="material-icons">check_circle</span>Unlimited density</li>
+          <li><span class="material-icons">check_circle</span>Dedicated support</li>
+        </ul>
+        <a href="#" class="btn btn--ghost">Start Free</a>
+      </article>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="section">
+    <div class="section__title">
+      <span class="section__number">05</span>
+      <h2 class="section__title-text">FAQ</h2>
+    </div>
+    <div class="faq__list">
+      <details class="faq__item" aria-label="Frequently asked question 1">
+        <summary class="faq__summary">How does the braille field work?</summary>
+        <p class="faq__answer">The system converts visual interfaces into tactile point grids that can be read by fingertip.</p>
+      </details>
+      <details class="faq__item" aria-label="Frequently asked question 2">
+        <summary class="faq__summary">Is it compatible with screen readers?</summary>
+        <p class="faq__answer">Yes; the point grid is announced as structured text, and the UI is fully keyboard operable.</p>
+      </details>
+      <details class="faq__item" aria-label="Frequently asked question 3">
+        <summary class="faq__summary">What browsers are supported?</summary>
+        <p class="faq__answer">Chrome, Edge, Firefox, and Safari on desktop and mobile.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section id="cta" class="cta">
+    <div class="cta__content">
+      <h2>Ready to feel the difference?</h2>
+      <form class="input-group" aria-live="polite" novalidate>
+        <label for="email" class="input-group__label">Email address</label>
+        <input type="email" id="email" name="email" class="input-group__input" required>
+        <span class="input-group__error" role="alert">Please enter a valid email address.</span>
+        <button type="submit" class="btn btn--primary input-group__submit">Send me a sample</button>
+      </form>
+      <p class="cta__microcopy">We’ll send you a tactile demo and occasional updates. No spam.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer" role="contentinfo">
+  <div class="footer__top">
+    <div class="footer__logo"><span class="material-icons">grid_on</span><span>Nimbus</span></div>
+    <p class="footer__description">A tactile light interface for the visually aware.</p>
+  </div>
+  <nav class="footer__links">
+    <ul>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+    <ul>
+      <li><a href="#about">About</a></li>
+      <li><a href="#careers">Careers</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <ul>
+      <li><a href="#docs">Documentation</a></li>
+      <li><a href="#support">Support</a></li>
+    </ul>
+  </nav>
+  <div class="footer__social">
+    <a href="#" class="footer__social-link" aria-label="Twitter"><span class="material-icons">share</span></a>
+    <a href="#" class="footer__social-link" aria-label="LinkedIn"><span class="material-icons">business</span></a>
+  </div>
+  <p class="footer__copyright">© 2026 Nimbus. All rights reserved.</p>
+  <a href="#top" class="footer__back-to-top" title="Back to top"><span class="material-icons">arrow_upward</span></a>
+</footer>
+
+<script>
+(function(){
+  // Theme toggle
+  const toggle = document.querySelector('.header__theme-toggle');
+  const html = document.documentElement;
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  let isDark = false;
+  if (localStorage.getItem('theme') === 'dark') isDark = true;
+  else if (prefersDark && !localStorage.getItem('theme')) isDark = true;
+  html.classList.toggle('dark', isDark);
+  toggle.setAttribute('aria-pressed', isDark);
+  toggle.querySelector('.sun').style.display = isDark ? 'none' : 'inline';
+  toggle.querySelector('.moon').style.display = isDark ? 'inline' : 'none';
+
+  toggle.addEventListener('click', function(){
+    isDark = !isDark;
+    html.classList.toggle('dark', isDark);
+    this.setAttribute('aria-pressed', isDark);
+    this.querySelector('.sun').style.display = isDark ? 'none' : 'inline';
+    this.querySelector('.moon').style.display = isDark ? 'inline' : 'none';
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  });
+})();
+
+(function(){
+  // FAQ accordion
+  document.querySelectorAll('.faq__item').forEach(item=>{
+    const summary = item.querySelector('.faq__summary');
+    summary.addEventListener('click',()=>{
+      const expanded = item.getAttribute('aria-expanded') === 'true';
+      item.setAttribute('aria-expanded', !expanded);
+    });
+  });
+})();
+
+(function(){
+  // Header scrolled class
+  const header = document.querySelector('.header');
+  let lastScroll = 0;
+  window.addEventListener('scroll',()=>{
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const current = window.pageYOffset;
+    if (current > lastScroll && current > 100) header.classList.add('header--scrolled');
+    else header.classList.remove('header--scrolled');
+    lastScroll = current <= 0 ? 0 : current;
+  }, {passive:true});
+})();
+
+(function(){
+  // Form submission demo
+  const form = document.querySelector('.input-group');
+  form.addEventListener('submit', e=>{
+    e.preventDefault();
+    const input = form.querySelector('.input-group__input');
+    const error = form.querySelector('.input-group__error');
+    if (input.validity.valid){
+      const btn = form.querySelector('.input-group__submit');
+      btn.classList.add('is-loading');
+      setTimeout(()=>{
+        btn.classList.remove('is-loading');
+        btn.textContent = 'Sent';
+        setTimeout(()=>{ btn.textContent = 'Send me a sample'; }, 500);
+      }, 2000);
+    }else{
+      error.style.display = 'block';
+    }
+  });
+})();
+</script>
+</body>
+</html>

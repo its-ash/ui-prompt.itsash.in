@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>RALLY – Pong, Reconsidered</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,0..1,-25..0" rel="stylesheet">
+<style>
+:root{--primary:#191713;--secondary:#a39d8f;--bg-primary:#f4f1ea;--bg-secondary:#fdfcf8;--text-primary:#191713;--text-secondary:#6f6a5c;--shadow-out:6px 6px 14px rgba(25,23,19,.14),-6px -6px 14px rgba(255,255,255,.9);--shadow-in:-6px -6px 14px rgba(255,255,255,.9),6px 6px 14px rgba(25,23,19,.14);--radius-lg:16px;--gap:1rem;--transition:250ms;--ease:cubic-bezier(.4,0,.2,1);--font-display:'Space Grotesk',sans-serif;--font-base:'Inter',sans-serif;color-scheme:light;}
+.dark{--bg-primary:#191713;--bg-secondary:#211e18;--text-primary:#fdfcf8;--text-secondary:#b3ac9d;--shadow-out:8px 8px 18px rgba(0,0,0,.55),-8px -8px 18px rgba(255,255,255,.04);--shadow-in:-8px -8px 18px rgba(255,255,255,.04),8px 8px 18px rgba(0,0,0,.55);}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:100%;}
+body{font-family:var(--font-base);color:var(--text-primary);background:var(--bg-primary);line-height:1.6;min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden;}
+a{color:inherit;text-decoration:none;}
+button{font:inherit;border:none;background:none;cursor:pointer;}
+header{position:sticky;top:0;display:flex;justify-content:space-between;align-items:center;background:var(--bg-secondary);box-shadow:var(--shadow-out);padding:var(--gap);z-index:10;}
+header.scrolled{box-shadow:var(--shadow-out);filter:brightness(1.02);}
+.nav{display:flex;gap:1rem;align-items:center;}
+.nav a{font-weight:600;transition:color var(--transition);}
+.nav a:hover{color:var(--primary);}
+.btn{display:flex;align-items:center;justify-content:center;gap:.5rem;padding:.75rem 1.5rem;font-weight:600;border-radius:var(--radius-lg);min-height:44px;transition:transform var(--transition),box-shadow var(--transition);}
+.btn--primary{background:var(--primary);color:var(--bg-secondary);box-shadow:var(--shadow-out);}
+.btn--primary:hover{box-shadow:var(--shadow-out-lg);}
+.btn--secondary{background:var(--bg-secondary);color:var(--primary);box-shadow:var(--shadow-out);}
+.btn--secondary:hover{box-shadow:var(--shadow-out-lg);}
+.btn--secondary:active{transform:scale(.97);box-shadow:var(--shadow-in);}
+.btn--ghost{background:transparent;color:var(--primary);border:1px solid var(--primary);border-radius:var(--radius-lg);}
+.btn--ghost:hover{background:var(--primary);color:var(--bg-secondary);}
+.card{background:var(--bg-secondary);padding:1.5rem;border-radius:var(--radius-lg);box-shadow:var(--shadow-out);display:flex;flex-direction:column;gap:.75rem;transition:transform var(--transition),box-shadow var(--transition);}
+.card:hover{transform:translateY(-4px);box-shadow:var(--shadow-out-lg);}
+.card__icon{font-size:2rem;color:var(--secondary);}
+.hero{display:flex;gap:2rem;padding:2rem 1rem;align-items:center;flex-wrap:wrap;}
+.hero__text{flex:1 1 300px;}
+.hero__court{flex:1 1 300px;background:var(--bg-secondary);border-radius:var(--radius-lg);box-shadow:var(--shadow-out);aspect-ratio:16/9;position:relative;overflow:hidden;}
+.court{position:absolute;inset:0;background:var(--bg-secondary);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.court__line{position:absolute;top:0;bottom:0;width:2px;background:repeating-linear-gradient(180deg,transparent,transparent 9px,var(--secondary) 10px,var(--secondary) 12px);animation:line 2s linear infinite;}
+.court__paddle{width:4px;height:80px;background:var(--primary);border-radius:2px;}
+.court__paddle--left{position:absolute;left:10px;}
+.court__paddle--right{position:absolute;right:10px;}
+.court__ball{width:12px;height:12px;border-radius:50%;background:var(--primary);position:absolute;animation:ball 3s linear infinite;}
+@keyframes ball{0%{transform:translate(0,0);}50%{transform:translate(80%,0);}100%{transform:translate(0,0);}}
+@keyframes line{0%{transform:translateY(0);}100%{transform:translateY(-10px);}}
+.features{display:flex;gap:1rem;padding:2rem 1rem;flex-wrap:wrap;}
+.features .card{flex:1 1 250px;}
+.features__icon{font-size:2.5rem;color:var(--secondary);}
+.steps{display:flex;gap:1rem;padding:2rem 1rem;flex-wrap:wrap;}
+.step{flex:1 1 250px;display:flex;flex-direction:column;align-items:center;gap:.5rem;}
+.step__num{font-family:var(--font-display);font-size:2rem;color:var(--secondary);padding:.5rem;background:var(--bg-secondary);border-radius:50%;box-shadow:var(--shadow-out);}
+.testimonials{display:flex;gap:1rem;padding:2rem 1rem;flex-wrap:wrap;}
+.testimonial{flex:1 1 250px;display:flex;flex-direction:column;gap:.5rem;}
+.testimonial__avatar{width:48px;height:48px;border-radius:50%;background:var(--bg-secondary);box-shadow:var(--shadow-out);display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:var(--secondary);}
+.pricing{display:flex;gap:1rem;padding:2rem 1rem;flex-wrap:wrap;}
+.pricing__tier{flex:1 1 250px;background:var(--bg-secondary);border-radius:var(--radius-lg);box-shadow:var(--shadow-out);padding:1.5rem;display:flex;flex-direction:column;gap:.75rem;}
+.pricing__tier--featured{box-shadow:var(--shadow-out-lg);}
+.pricing__tier__badge{background:var(--secondary);color:var(--bg-secondary);padding:.25rem .5rem;border-radius:4px;align-self:flex-start;font-size:.75rem;}
+.faq{padding:2rem 1rem;}
+.faq__item{border-bottom:1px solid var(--border-default);padding:.5rem 0;}
+.faq__button{width:100%;text-align:left;font-weight:600;display:flex;justify-content:space-between;align-items:center;}
+.faq__panel{max-height:0;overflow:hidden;transition:max-height var(--transition);}
+.faq__panel[aria-hidden="false"]{max-height:200px;}
+.faq__panel p{margin-top:.5rem;}
+.cta{background:var(--bg-secondary);padding:2rem 1rem;border-radius:var(--radius-lg);box-shadow:var(--shadow-out);display:flex;flex-direction:column;align-items:center;gap:.5rem;}
+.cta__form{display:flex;gap:.5rem;flex-wrap:wrap;}
+.cta__input{padding:.75rem 1rem;border-radius:var(--radius-lg);border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);flex:1 1 200px;}
+.cta__btn{flex-shrink:0;}
+.footer{background:var(--bg-secondary);padding:1rem;display:flex;flex-wrap:wrap;gap:.5rem;font-size:.875rem;}
+.footer__link{color:var(--primary);border-bottom:1px solid transparent;}
+.footer__link:hover{border-color:var(--primary);}
+@media (prefers-reduced-motion){.court__ball,.court__line{animation:none;}}
+</style>
+</head>
+<body>
+<header id="header">
+<div class="nav">
+<span class="material-symbols-rounded" aria-hidden="true">rally</span>
+<a href="#features">Features</a>
+<a href="#steps">How It Works</a>
+<a href="#pricing">Pricing</a>
+<a href="#faq">FAQ</a>
+</div>
+<div class="nav">
+<button id="themeToggle" aria-label="Toggle theme" aria-pressed="false"><span class="material-symbols-rounded" aria-hidden="true">light_mode</span></button>
+<button class="btn btn--primary">Play now</button>
+</div>
+</header>
+<main>
+<section class="hero">
+<div class="hero__text">
+<span class="material-symbols-rounded" aria-hidden="true">sports_esports</span>
+<h1>Every rally tells a story.</h1>
+<p>Minimalist physics-driven pong that feels like paper under your fingertips.</p>
+<div style="display:flex;gap:.5rem;margin-top:1rem;">
+<button class="btn btn--primary">Play the rally</button>
+<button class="btn btn--secondary">See how it works</button>
+</div>
+</div>
+<div class="hero__court" aria-hidden="true">
+<div class="court">
+<div class="court__line"></div>
+<div class="court__paddle court__paddle--left"></div>
+<div class="court__paddle court__paddle--right"></div>
+<div class="court__ball"></div>
+</div>
+</div>
+</section>
+<section id="features" class="features">
+<div class="card">
+<div class="features__icon"><span class="material-symbols-rounded" aria-hidden="true">sports_esports</span></div>
+<h3>True-feel physics</h3>
+<p>Spin, momentum, weight—every bounce feels real.</p>
+</div>
+<div class="card">
+<div class="features__icon"><span class="material-symbols-rounded" aria-hidden="true">devices</span></div>
+<h3>Play anywhere</h3>
+<p>Single-hand controls fit any screen, any device.</p>
+</div>
+<div class="card">
+<div class="features__icon"><span class="material-symbols-rounded" aria-hidden="true">self_improvement</span></div>
+<h3>Quiet by design</h3>
+<p>Soft paper canvas, no distracting noise.</p>
+</div>
+</section>
+<section id="steps" class="steps">
+<div class="step">
+<div class="step__num">01</div>
+<h4>Pick your paddle</h4>
+<p>Select a feel that suits your style.</p>
+</div>
+<div class="step">
+<div class="step__num">02</div>
+<h4>Enter the rally</h4>
+<p>Start the game and feel the momentum.</p>
+</div>
+<div class="step">
+<div class="step__num">03</div>
+<h4>Master the spin</h4>
+<p>Control the ball’s trajectory.</p>
+</div>
+</section>
+<section id="testimonials" class="testimonials">
+<div class="testimonial card">
+<div class="testimonial__avatar"><span class="material-symbols-rounded" aria-hidden="true">person</span></div>
+<blockquote>"RALLY turned a simple game into an art form."</blockquote>
+<p>— Alex, Game Designer</p>
+</div>
+<div class="testimonial card">
+<div class="testimonial__avatar"><span class="material-symbols-rounded" aria-hidden="true">person</span></div>
+<blockquote>"The physics feel so natural, I could play for hours."</blockquote>
+<p>— Maya, Indie Developer</p>
+</div>
+<div class="testimonial card">
+<div class="testimonial__avatar"><span class="material-symbols-rounded" aria-hidden="true">person</span></div>
+<blockquote>"A quiet, tactile experience that’s surprisingly deep."</blockquote>
+<p>— Sam, UX Researcher</p>
+</div>
+</section>
+<section id="pricing" class="pricing">
+<div class="pricing__tier">
+<h4>Rookie</h4>
+<p>$0 / month</p>
+<ul>
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span> Unlimited games</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span> Basic paddle</li>
+</ul>
+<button class="btn btn--secondary">Get Started</button>
+</div>
+<div class="pricing__tier pricing__tier--featured">
+<h4>Rally</h4>
+<span class="pricing__tier__badge">Most popular</span>
+<p>$9 / month</p>
+<ul>
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span> Unlimited games</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span> Custom paddles</li>
+</ul>
+<button class="btn btn--primary">Join Rally</button>
+</div>
+<div class="pricing__tier">
+<h4>Legend</h4>
+<p>$19 / month</p>
+<ul>
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span> Unlimited games</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span> Premium paddles</li>
+</ul>
+<button class="btn btn--secondary">Get Started</button>
+</div>
+</section>
+<section id="faq" class="faq">
+<h2>Frequently Asked Questions</h2>
+<div class="faq__item">
+<button class="faq__button" aria-expanded="false" aria-controls="q1"><span>Is it really just Pong?</span><span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button>
+<div id="q1" class="faq__panel" aria-hidden="true"><p>Yes, but with physics that feel like real paper.</p></div>
+</div>
+<div class="faq__item">
+<button class="faq__button" aria-expanded="false" aria-controls="q2"><span>Can I play offline?</span><span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button>
+<div id="q2" class="faq__panel" aria-hidden="true"><p>Absolutely. All assets load locally.</p></div>
+</div>
+<div class="faq__item">
+<button class="faq__button" aria-expanded="false" aria-controls="q3"><span>Does it support controllers?</span><span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button>
+<div id="q3" class="faq__panel" aria-hidden="true"><p>Yes, gamepads are fully supported.</p></div>
+</div>
+<div class="faq__item">
+<button class="faq__button" aria-expanded="false" aria-controls="q4"><span>Is it accessible?</span><span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button>
+<div id="q4" class="faq__panel" aria-hidden="true"><p>Keyboard navigation and screen-reader labels are included.</p></div>
+</div>
+</section>
+<section class="cta">
+<h2>Your serve.</h2>
+<form id="ctaForm" class="cta__form" novalidate>
+<input type="email" class="cta__input" placeholder="Your email" required aria-label="Email address">
+<button type="submit" class="btn btn--primary">Join the rally</button>
+</form>
+<p class="small">We respect your privacy. No spam.</p>
+</section>
+</main>
+<footer class="footer">
+<div>RALLY – Pong, Reconsidered</div>
+<div><a href="#" class="footer__link">Game</a></div>
+<div><a href="#" class="footer__link">Company</a></div>
+<div><a href="#" class="footer__link">Support</a></div>
+<div style="flex-basis:100%;margin-top:.5rem;">© 2026 RALLY. All rights reserved.</div>
+</footer>
+<script>
+(function(){
+const themeBtn=document.getElementById('themeToggle');
+const root=document.documentElement;
+const setTheme=t=>{root.classList.toggle('dark',t);themeBtn.setAttribute('aria-pressed',t);themeBtn.querySelector('span').textContent=t?'dark_mode':'light_mode';};
+const initTheme=()=>{const stored=localStorage.getItem('theme');if(stored){setTheme(stored==='dark');}else{setTheme(window.matchMedia('(prefers-color-scheme:dark)').matches);}};
+themeBtn.addEventListener('click',()=>{const dark=!root.classList.contains('dark');setTheme(dark);localStorage.setItem('theme',dark?'dark':'light');});
+const header=document.getElementById('header');
+window.addEventListener('scroll',()=>{header.classList.toggle('scrolled',window.scrollY>50);});
+const accButtons=document.querySelectorAll('.faq__button');
+accButtons.forEach(b=>{b.addEventListener('click',()=>{const expanded=b.getAttribute('aria-expanded')==='true';b.setAttribute('aria-expanded',!expanded);b.nextElementSibling.setAttribute('aria-hidden',!expanded);});});
+const form=document.getElementById('ctaForm');
+form.addEventListener('submit',e=>{e.preventDefault();const email=form.querySelector('input').value;const ok=/.+@.+\..+/.test(email);if(ok){form.reset();alert('Thanks!');}else{alert('Enter a valid email.');}});
+})();
+</script>
+</body>
+</html>

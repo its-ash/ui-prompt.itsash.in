@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nimbus - Retro Website Builder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;700&family=VT323&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,GRAD,opsz@20..48,100..700&display=swap">
+  <style>
+    :root{
+      --primary:#000080;--secondary:#FFFFFF;--bg-primary:#C0C0C0;--text-primary:#000000;--border-default:#808080;
+      --bevel-highlight:#FFFFFF;--bevel-light:#DFDFDF;--bevel-shadow:#808080;--bevel-dark:#0A0A0A;
+      --radius-sm:0;--radius-md:0;--radius-lg:0;--shadow-sm:1px 1px 0 var(--bevel-dark);
+      --shadow-md:2px 2px 0 var(--bevel-dark);--spacing-gap:8px;--transition-fast:60ms;--transition-normal:120ms;
+      --ease-standard:ease-out;--font-base:"Pixelify Sans","MS Sans Serif",Tahoma,system-ui,sans-serif;
+      --font-mono:"VT323","Courier New",monospace;--terminal-green:#00FF00;--dos-cyan:#00FFFF;
+      --retro-magenta:#FF00FF;--alert-yellow:#FFFF00;
+    }
+    html{scroll-behavior:smooth;}
+    body{
+      font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);
+      margin:0;min-height:100vh;letter-spacing:0;-webkit-tap-highlight-color:transparent;
+    }
+    img,audio,video{display:none;}
+    a{color:var(--primary);text-decoration:none;}
+    a:hover{text-decoration:underline;}
+    /* Reduced motion */
+    @media (prefers-reduced-motion:reduce){
+      *,*:before,*:after{animation-duration:0ms!important;transition-duration:0ms!important}
+    }
+    /* Nav */
+    .nav{
+      position:sticky;top:0;background:var(--bg-primary);z-index:1000;border-bottom:2px outset var(--bevel-light);
+      padding:4px var(--spacing-gap);display:flex;align-items:center;gap:12px;
+    }
+    .nav__list{display:flex;gap:12px;list-style:none;margin:0;padding:0;}
+    .nav__link{
+      font-family:var(--font-base);font-weight:700;color:var(--primary);padding:6px 10px;
+      border:2px outset var(--bevel-light);background:var(--bg-primary);min-width:60px;
+    }
+    .nav__link:focus-visible{outline:1px dotted var(--primary);outline-offset:-4px;}
+    /* Window */
+    .window{
+      position:relative;margin:var(--spacing-gap);background:var(--bg-secondary);
+      border:2px outset var(--bevel-light);box-shadow:inset -1px -1px var(--bevel-dark),inset 1px 1px var(--bevel-highlight);
+    }
+    .window:active{border:2px inset var(--border-default);box-shadow:inset -1px -1px var(--bevel-highlight),inset 1px 1px var(--bevel-shadow);}
+    .window__title-bar{
+      background:var(--title-bar-bg);color:var(--title-bar-text);font-weight:bold;
+      display:flex;align-items:center;padding:0 var(--spacing-gap);height:24px;font-size:12px;
+    }
+    .window__title{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .window__controls{display:flex;gap:2px;}
+    .window__controls button{
+      width:16px;height:16px;background:transparent;border:none;color:var(--title-bar-text);
+      font-size:12px;cursor:pointer;-webkit-appearance:none;
+    }
+    .window__content{padding:var(--spacing-gap);}
+    /* Buttons */
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;
+      font-family:var(--font-base);font-weight:700;letter-spacing:0;
+      min-width:80px;padding:6px 12px;border:2px outset var(--bevel-light);
+      background:var(--bg-primary);color:var(--primary);cursor:pointer;min-height:44px;
+      transition:var(--transition-normal);
+    }
+    .btn:focus-visible{outline:1px dotted var(--primary);outline-offset:-4px;}
+    .btn:active{transform:translate(1px,1px);}
+    .btn--primary{background:var(--primary);color:#FFFFFF;}
+    .btn--primary:active{border-style:inset;}
+    .btn--secondary{
+      background:var(--bg-primary);color:var(--primary);border:2px outset var(--bevel-light);
+    }
+    .btn--danger{color:var(--text-error);border-color:var(--border-error);}
+    .btn--tiny{padding:2px 6px;font-size:10px;}
+    /* Marquee */
+    .marquee{
+      overflow:hidden;white-space:nowrap;background:var(--bg-primary);padding:4px 0;
+    }
+    .marquee span{display:inline-block;animation:marquee var(--transition-fast) linear infinite;}
+    @keyframes marquee{0%{transform:translateX(100%);}100%{transform:translateX(-100%);}}
+    /* Blinking badge */
+    .badge--blink{display:inline-block;animation:blink var(--transition-fast) step-end infinite;}
+    @keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+    /* Dial-up dialog */
+    .dialup-dialog{
+      position:relative;margin:var(--spacing-gap);padding:var(--spacing-gap);
+      border:2px outset var(--bevel-light);background:var(--bg-secondary);
+      box-shadow:inset -1px -1px var(--bevel-dark),inset 1px 1px var(--bevel-highlight);
+    }
+    .dialup-progress{
+      width:100%;height:8px;background:var(--bevel-shadow);margin-top:var(--spacing-gap);overflow:hidden;
+    }
+    .dialup-progress-fill{
+      height:100%;background:var(--primary);width:0%;animation:progress var(--transition-fast) linear infinite;
+    }
+    @keyframes progress{0%{width:0%;}100%{width:100%;}}
+    /* Under construction barrier */
+    .under-construction{
+      background:var(--alert-yellow);color:var(--primary);padding:var(--spacing-gap);
+      border:2px outset var(--bevel-light);font-family:var(--font-mono);font-size:12px;
+      letter-spacing:2px;text-transform:uppercase;
+    }
+    /* Features cards */
+    .cards{display:flex;flex-wrap:wrap;gap:var(--spacing-gap);justify-content:center;}
+    .card .window{margin:0;}
+    /* Steps */
+    .steps{display:flex;flex-direction:column;gap:var(--spacing-gap);max-width:600px;margin:0 auto;}
+    .step{display:flex;align-items:center;gap:var(--spacing-gap);}
+    .step-number{
+      width:24px;height:24px;background:var(--primary);color:#FFFFFF;font-family:var(--font-mono);
+      font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;
+      border:2px outset var(--bevel-light);min-width:24px;
+    }
+    /* Testimonials */
+    .guestbook .under-construction{margin-bottom:var(--spacing-gap);}
+    .guestbook-entry{
+      background:var(--bg-secondary);border:2px outset var(--bevel-light);
+      box-shadow:inset -1px -1px var(--bevel-dark),inset 1px 1px var(--bevel-highlight);
+      padding:var(--spacing-gap);margin-bottom:var(--spacing-gap);
+    }
+    .guestbook-author{font-weight:700;margin-bottom:2px;}
+    .guestbook-date{color:#808080;font-size:10px;margin-bottom:4px;}
+    .guestbook-rating{display:flex;gap:1px;margin-bottom:4px;}
+    .material-icons.star{color:#FFD700;font-variation-settings:'FILL' 1;}
+    /* Pricing */
+    .pricing .tier{flex:1;margin:0 var(--spacing-gap);}
+    .tier.highlighted .window__title-bar .label--best-value{
+      background:var(--retro-magenta);color:#FFFFFF;padding:2px 6px;font-size:10px;margin-left:10px;
+    }
+    .features-list{list-style:none;padding:0;margin:var(--spacing-gap) 0;}
+    .features-list li{margin:4px 0;display:flex;align-items:center;gap:4px;}
+    .features-list .material-icons{color:var(--terminal-green);}
+    /* FAQ */
+    .faq details{border:2px outset var(--bevel-light);margin:var(--spacing-gap) 0;}
+    .faq details summary{
+      list-style:none;background:var(--title-bar-bg);color:var(--title-bar-text);
+      font-weight:bold;padding:var(--spacing-gap);cursor:default;
+    }
+    .faq details[open] summary{background:var(--bevel-shadow);color:var(--primary);}
+    .faq details summary::after{content:'';width;0;height;0;display:none;}
+    .faq details[open] summary::after{content:'';width:12px;height:12px;background:url("data:...") no-repeat;display:inline-block;margin-left:8px;}
+    .faq details .faq-answer{padding:var(--spacing-gap);background:var(--bg-secondary);border-top:2px inset var(--bevel-shadow);}
+    /* CTA */
+    .cta-window .window__title-bar{background:var(--primary);color:#FFFFFF;}
+    .cta-window .window__content{
+      display:flex;flex-direction:column;align-items:center;gap:var(--spacing-gap);
+      max-width:400px;margin:0 auto;
+    }
+    .email-form{display:flex;flex-direction:column;width:100%;max-width:300px;}
+    .input-group{display:flex;gap:var(--spacing-gap);margin-bottom:var(--spacing-gap);}
+    .input-group__input{
+      flex:1;padding:6px 8px;border:2px inset var(--bevel-shadow);background:#FFFFFF;
+      font-family:var(--font-base);font-size:12px;color:var(--text-primary);
+    }
+    .input-group__error{
+      color:var(--text-error);font-size:10px;margin-top:2px;display:none;
+    }
+    .input-group__input:valid+.input-group__error{display:block;}
+    .input-group__input:invalid:not(:focus){border-color:var(--border-error);}
+    .success-state{text-align:center;padding:var(--spacing-gap);display:none;}
+    .success-state .material-icons{color:var(--terminal-green);}
+    /* Footer */
+    .footer{background:var(--bg-primary);padding:var(--spacing-gap) 0;}
+    .taskbar{
+      display:flex;justify-content:center;gap:6px;flex-wrap:wrap;background:var(--bg-primary);
+      padding:4px var(--spacing-gap);font-family:var(--font-base);font-size:12px;
+    }
+    .taskbar-btn{
+      background:var(--bg-primary);border:2px outset var(--bevel-light);padding:4px 8px;
+      min-width:60px;cursor:pointer;-webkit-appearance:none;
+    }
+    .taskbar-btn:focus-visible{outline:1px dotted var(--primary);outline-offset:-4px;}
+    .clock{color:#808080;margin:0 12px;}
+    .visitor-counter{color:#808080;margin:0 12px;}
+    .badges{display:flex;gap:4px;margin-top:var(--spacing-gap);}
+    .badge{
+      background:var(--retro-magenta);color:#FFFFFF;padding:2px 6px;font-size:10px;
+      border:1px outset var(--bevel-light);text-decoration:none;
+    }
+    .copyright{
+      margin-top:var(--spacing-gap);text-align:center;font-size:10px;color:#808080;
+    }
+    /* Responsive */
+    @media(max-width:768px){
+      .nav__list,.cards,.steps .step,.pricing .tier,.taskbar .taskbar-btns{flex-direction:column;align-items:center;}
+      .nav__link{min-width:auto;padding:6px;}
+      .taskbar-btn{min-width:auto;padding:4px 6px;}
+    }
+  </style>
+</head>
+<body>
+  <!-- Sticky Nav -->
+  <nav class="nav" aria-label="Main navigation">
+    <ul class="nav__list">
+      <li><a href="#hero" class="nav__link">Home</a></li>
+      <li><a href="#features" class="nav__link">Features</a></li>
+      <li><a href="#pricing" class="nav__link">Pricing</a></li>
+      <li><a href="#testimonials" class="nav__link">Testimonials</a></li>
+    </ul>
+  </nav>
+
+  <!-- Hero -->
+  <section id="hero" class="window hero-window">
+    <div class="window__title-bar">
+      <span class="window__title">Nimbus</span>
+      <div class="window__controls">
+        <button aria-label="Minimize" class="btn--tiny" hidden>_</button>
+        <button aria-label="Maximize" class="btn--tiny" hidden>□</button>
+        <button aria-label="Close" class="btn--tiny" hidden>×</button>
+      </div>
+    </div>
+    <div class="window__content">
+      <!-- ASCII art logo -->
+      <pre class="logo-ascii" aria-hidden="true" style="font-family:var(--font-mono);font-size:18px;color:var(--primary);margin-bottom:var(--spacing-gap);">
+_      _           _     _
+| |    | |__   ___ | |__ | |__   ___  _ __  ___
+| |    | '_ \ / _ \| '_ \| '_ \ / _ \| '_ \/ __|
+| |____| | | | (_) | | | | | | | (_) | | | \__ \
+ \____/|_| |_|\___/|_| |_|_| |_|\___/|_| |_|___/
+      </pre>
+      <h1 class="heading--large" style="font-size:24px;margin:var(--spacing-gap) 0;">Build Your <span class="highlight" style="color:var(--retro-magenta);">80s</span> Homepage</h1>
+      <p class="heading--sub" style="color:var(--text-secondary);font-size:14px;">Welcome to your personal GeoCities revival. Under construction.</p>
+      <!-- CTAs -->
+      <div class="ctas" style="display:flex;gap:8px;margin-top:var(--spacing-gap);">
+        <button class="btn btn--primary">Get Started</button>
+        <a href="#features" class="btn btn--secondary">Learn More</a>
+      </div>
+      <!-- Marquee welcome line -->
+      <div class="marquee" aria-hidden="true"><span>Welcome to Nimbus! Welcome to Nimbus! Welcome to Nimbus!</span></div>
+      <!-- Blinking NEW! badge -->
+      <span class="badge--blink" style="font-size:12px;color:var(--alert-yellow);">NEW!</span>
+      <!-- Dial-up connecting dialog with segmented progress bar -->
+      <div class="dialup-dialog">
+        <span style="color:var(--primary);font-size:12px;display:block;margin-bottom:var(--spacing-gap);">Dial-up connecting…</span>
+        <div class="dialup-progress"><div class="dialup-progress-fill"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features (3 cards) -->
+  <section id="features" class="features">
+    <div class="cards">
+      <div class="card">
+        <div class="window">
+          <div class="window__title-bar"><span class="window__title">Design</span>
+            <div class="window__controls" aria-hidden><button>−</button><button>□</button><button>×</button></div>
+          </div>
+          <div class="window__content">
+            <span class="material-icons" style="font-variation-settings:'FILL' 0;color:var(--primary);">flash_on</span>
+            <h3 style="margin:var(--spacing-gap) 0;">Drag-and-drop elements</h3>
+            <p style="margin:0;color:var(--text-secondary);font-size:13px;">Place text, images, and ASCII art anywhere on your page.</p>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="window">
+          <div class="window__title-bar"><span class="window__title">Publish</span>
+            <div class="window__controls" aria-hidden><button>−</button><button>□</button><button>×</button></div>
+          </div>
+          <div class="window__content">
+            <span class="material-icons" style="font-variation-settings:'FILL' 0;color:var(--primary);">cloud_upload</span>
+            <h3 style="margin:var(--spacing-gap) 0;">One-click publish</h3>
+            <p style="margin:0;color:var(--text-secondary);font-size:13px;">Publish your retro site with a single click.</p>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="window">
+          <div class="window__title-bar"><span class="window__title">Community</span>
+            <div class="window__controls" aria-hidden><button>−</button><button>□</button><button>×</button></div>
+          </div>
+          <div class="window__content">
+            <span class="material-icons" style="font-variation-settings:'FILL' 0;color:var(--primary);">people</span>
+            <h3 style="margin:var(--spacing-gap) 0;">Guestbook & webring</h3>
+            <p style="margin:0;color:var(--text-secondary);font-size:13px;">Connect with other retro enthusiasts.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works (3 steps) -->
+  <section id="how-it-works" class="steps">
+    <div class="step">
+      <span class="step-number">1</span>
+      <div class="window" style="min-width:180px;">
+        <div class="window__title-bar"><span class="window__title">Setup</span>
+          <div class="window__controls" aria-hidden><button>−</button><button>□</button><button>×</button></div>
+        </div>
+        <div class="window__content">
+          <span class="material-icons" style="font-variation-settings:'FILL' 0;color:var(--primary);">settings</span>
+          <h3 style="margin:var(--spacing-gap) 0;">Choose your template</h3>
+          <p style="margin:0;color:var(--text-secondary);font-size:13px;">Pick a pre-built ’90s layout or start from a blank canvas.</p>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-number">2</span>
+      <div class="window" style="min-width:180px;">
+        <div class="window__title-bar"><span class="window__title">Customize</span>
+          <div class="window__controls" aria-hidden><button>−</button><button>□</button><button>×</button></div>
+        </div>
+        <div class="window__content">
+          <span class="material-icons" style="font-variation-settings:'FILL' 0;color:var(--primary);">palette</span>
+          <h3 style="margin:var(--spacing-gap) 0;">Personalize colors</h3>
+          <p style="margin:0;color:var(--text-secondary);font-size:13px;">Swap title bars, window frames, and accent colors.</p>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-number">3</span>
+      <div class="window" style="min-width:180px;">
+        <div class="window__title-bar"><span class="window__title">Launch</span>
+          <div class="window__controls" aria-hidden><button>−</button><button>□</button><button>×</button></div>
+        </div>
+        <div class="window__content">
+          <span class="material-icons" style="font-variation-settings:'FILL' 0;color:var(--primary);">launch</span>
+          <h3 style="margin:var(--spacing-gap) 0;">Go live</h3>
+          <p style="margin:0;color:var(--text-secondary);font-size:13px;">Publish and share your ’90s homepage.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section id="testimonials" class="guestbook">
+    <div class="under-construction">Under Construction — Sign the Guestbook</div>
+    <div class="guestbook-entries">
+      <div class="guestbook-entry">
+        <div class="guestbook-author">Alex J.</div>
+        <div class="guestbook-date">March 15, 1998</div>
+        <div class="guestbook-rating">
+          <span class="material-icons star" style="font-variation-settings:'FILL' 1;">star</span>
+          <span class="material-icons star" style="font-variation-settings:'FILL' 1;">star</span>
+          <span class="material-icons star" style="font-variation-settings:'FILL' 1;">star</span>
+          <span class="material-icons star" style="font-variation-settings:'FILL' 1;">star</span>
+          <span class="material-icons star" style="font-variation-settings:'FILL' 1;">star</span>
+        </div>
+        <blockquote>"Nimbus brought my childhood homepage back to life!"</blockquote>
+      </div>
+      <div class="guestbook-entry">
+        <div class="guestbook-author">Sam T.</div>
+        <div class="guestbook-date">March 20, 1998</div>
+        <div class="guestbook-rating">
+          <span class="material-icons star" style="font-variation-settings:'FILL' 1;">star</span>
+          <span class="material-icons star" style="font-variation-settings:'FILL' 1;">star</span>
+          <span class="material-icons star" style="font-variation-settings:'FILL' 1;">star</span>
+          <span class="material-icons star" style="font-variation-settings:'FILL' 1;">star</span>
+          <span class="material-icons star" style="font-variation-settings:'FILL' 1;">star</span>
+        </div>
+        <blockquote>"Finally, a builder that gets the aesthetic right."</blockquote>
+      </div>
+      <div class="guestbook-entry">
+        <div class="guestbook-author">Casey R.</div>
+        <div class="guestbook-date">April 2, 1998</div>
+        <div class="guestbook-rating">
+          <span class="material-icons star" style="font-variation-settings:'FILL' 1;">star</span>
+          <span class="material-icons star" style="font-variation-settings:'FILL' 1;">star</span>
+          <span class="material-icons star" style="font-variation-settings:'FILL' 1;">star</span>
+          <span class="material-icons star" style="font-variation-settings:'FILL' 1;">star</span>
+          <span class="material-icons star" style="font-variation-settings:'FILL' 1;">star</span>
+        </div>
+        <blockquote>"Under construction" never looked so good.</blockquote>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing (3 tiers) -->
+  <section id="pricing" class="pricing">
+    <div class="tier" data-tier="basic">
+      <div class="window">
+        <div class="window__title-bar"><span class="window__title">Basic</span>
+          <div class="window__controls" aria-hidden><button>−</button><button>□</button><button>×</button></div>
+        </div>
+        <div class="window__content">
+          <span class="material-icons" style="font-variation-settings:'FILL' 0;color:var(--terminal-green);">check</span>
+          <p class="price" style="color:var(--primary);font-size:18px;margin:var(--spacing-gap) 0;">$0/mo</p>
+          <ul class="features-list">
+            <li><span class="material-icons" style="color:var(--terminal-green);">check</span> 5 pages</li>
+            <li><span class="material-icons" style="color:var(--terminal-green);">check</span> 10MB storage</li>
+          </ul>
+          <button class="btn btn--primary">Select Plan</button>
+        </div>
+      </div>
+    </div>
+    <div class="tier highlighted" data-tier="pro">
+      <div class="window">
+        <div class="window__title-bar"><span class="window__title">Pro</span>
+          <span class="label--best-value">Best Value</span>
+        </div>
+        <div class="window__content">
+          <span class="material-icons" style="font-variation-settings:'FILL' 0;color:var(--terminal-green);">check</span>
+          <p class="price" style="color:var(--primary);font-size:18px;margin:var(--spacing-gap) 0;">$9.99/mo</p>
+          <ul class="features-list">
+            <li><span class="material-icons" style="color:var(--terminal-green);">check</span> Unlimited pages</li>
+            <li><span class="material-icons" style="color:var(--terminal-green);">check</span> 100MB storage</li>
+            <li><span class="material-icons" style="color:var(--terminal-green);">check</span> Custom domain</li>
+          </ul>
+          <button class="btn btn--primary">Select Plan</button>
+        </div>
+      </div>
+    </div>
+    <div class="tier" data-tier="premium">
+      <div class="window">
+        <div class="window__title-bar"><span class="window__title">Premium</span>
+          <div class="window__controls" aria-hidden><button>−</button><button>□</button><button>×</button></div>
+        </div>
+        <div class="window__content">
+          <span class="material-icons" style="font-variation-settings:'FILL' 0;color:var(--terminal-green);">check</span>
+          <p class="price" style="color:var(--primary);font-size:18px;margin:var(--spacing-gap) 0;">$19.99/mo</p>
+          <ul class="features-list">
+            <li><span class="material-icons" style="color:var(--terminal-green);">check</span> Everything + priority support</li>
+          </ul>
+          <button class="btn btn--primary">Select Plan</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="faq">
+    <details>
+      <summary>How do I customize my page?</summary>
+      <div class="faq-answer">You can change colors, fonts, and layout using the built-in editor. No coding required.</div>
+    </details>
+    <details>
+      <summary>Can I use my own domain?</summary>
+      <div class="faq-answer">Yes! Upgrade to Pro or Premium to connect your own domain name.</div>
+    </details>
+    <details>
+      <summary>Is my homepage really viewable on modern browsers?</summary>
+      <div class="faq-answer">Yes, Nimbus generates standards-compliant HTML that works on all modern browsers while maintaining the retro aesthetic.</div>
+    </details>
+  </section>
+
+  <!-- Final CTA -->
+  <section id="cta" class="cta-window">
+    <div class="window">
+      <div class="window__title-bar">
+        <span class="window__title">Confirm</span>
+        <div class="window__controls" aria-hidden><button>−</button><button>□</button><button>×</button></div>
+      </div>
+      <div class="window__content">
+        <span class="material-icons" style="font-variation-settings:'FILL' 1;color:var(--alert-yellow);">error</span>
+        <h2 style="margin:var(--spacing-gap) 0;">Ready to build your homepage?</h2>
+        <p style="margin:var(--spacing-gap) 0;color:var(--text-secondary);">Enter your email to get started and receive exclusive ’90s design tips.</p>
+        <form class="email-form" novalidate>
+          <div class="input-group">
+            <label for="email" class="input-group__label" style="font-size:12px;">Email address</label>
+            <input type="email" id="email" name="email" class="input-group__input" required>
+            <span class="input-group__error" role="alert">Please enter a valid email address.</span>
+          </div>
+          <button type="submit" class="btn btn--primary">Sign Me Up</button>
+        </form>
+        <div class="success-state" hidden>
+          <span class="material-icons" style="color:var(--terminal-green);">check_circle</span>
+          <p>Thanks! We've sent a confirmation email to <span id="confirm-email"></span>.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="taskbar">
+      <button class="taskbar-btn" aria-label="Scroll to top">Start</button>
+      <div class="taskbar-btns">
+        <button class="taskbar-btn">Guestbook</button>
+        <button class="taskbar-btn">Webring</button>
+        <button class="taskbar-btn">Awards</button>
+        <button class="taskbar-btn">About</button>
+        <button class="taskbar-btn">Contact</button>
+        <button class="taskbar-btn">Privacy</button>
+      </div>
+      <span class="clock" id="clock"></span>
+      <span class="visitor-counter" id="counter">0 visitors</span>
+      <div class="badges">
+        <a href="#" class="badge">88×31</a>
+        <a href="#" class="badge">88×31</a>
+      </div>
+      <p class="copyright">Best viewed at 800×600. © 1999 Nimbus.</p>
+    </div>
+  </footer>
+
+  <script>
+    (function(){
+      // Live clock
+      function updateClock(){
+        var now=new Date();var h=now.getHours()<10?'0'+now.getHours():now.getHours();
+        var m=now.getMinutes()<10?'0'+now.getMinutes():now.getMinutes();
+        var s=now.getSeconds()<10?'0'+now.getSeconds():now.getSeconds();
+        document.getElementById('clock').textContent=h+':'+m+':'+s;
+      }
+      setInterval(updateClock,1000);
+      updateClock();
+
+      // Visitor counter animation
+      var counterEl=document.getElementById('counter');
+      var start=0;
+      function animateCounter(){
+        var target=Math.floor(Math.random()*1000)+500;
+        var duration=1500;
+        var startTime=Date.now();
+        function frame(){
+          var now=Date.now()-startTime;
+          var progress=Math.min(now/duration,1);
+          var ease=1-Math.pow(1-progress,3);
+          var current=start+((target-start)*ease);
+          counterEl.textContent=Math.floor(current)+' visitors';
+          if(progress<1){requestAnimationFrame(frame);}
+        }
+        requestAnimationFrame(frame);
+      }
+      animateCounter();
+
+      // CTA form validation
+      var form=document.querySelector('.email-form');
+      var input=form.querySelector('.input-group__input');
+      var error=form.querySelector('.input-group__error');
+      var success=document.querySelector('.success-state');
+      var confirmSpan=document.getElementById('confirm-email');
+
+      form.addEventListener('submit',function(e){
+        e.preventDefault();
+        if(input.validity.valid){
+          var email=input.value;
+          confirmSpan.textContent=email;
+          success.hidden=false;
+          form.hidden=true;
+        }else{
+          error.style.display='block';
+          input.focus();
+        }
+      });
+
+      // Input validation feedback
+      input.addEventListener('input',function(){
+        if(input.validity.valid){error.style.display='none';}
+      });
+
+      // FAQ accordion keyboard support
+      var details=document.querySelectorAll('.faq details');
+      details.forEach(function(d){
+        d.addEventListener('keydown',function(e){
+          if(e.key==='Enter'||e.key===' '){
+            e.preventDefault();
+            d.open=!d.open;
+          }
+        });
+      });
+
+      // Tier button confirm modals
+      var tiers=document.querySelectorAll('.tier .btn');
+      tiers.forEach(function(btn){
+        btn.addEventListener('click',function(){
+          var tier=btn.closest('.tier').dataset.tier;
+          var msg='You are selecting the '+tier+' plan. Are you sure?';
+          if(confirm(msg)){
+            // proceed
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

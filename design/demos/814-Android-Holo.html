@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NIMBUS – Android Holo Companion</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;700&family=Roboto+Mono:wght@400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=swap" rel="stylesheet">
+<style>
+/* Android Holo — design tokens */
+/* 2011–2014 | Pre-Material Android: near-black chrome, single glowing cyan accent */
+:root {
+  /* color */
+  --color-bg: #000000;
+  --color-surface: #0c0f10;
+  --color-surface-2: #171b1c;
+  --color-text: #e8f7fa;
+  --color-text-muted: #8a9a9d;
+  --color-primary: #33b5e5;
+  --color-primary-bright: #8fdce8;
+  --color-divider: #2a2f30;
+  --color-danger: #ff4444;
+  /* radius */
+  --radius-sm: 0px; --radius-md: 2px; --radius-lg: 2px; --radius-pill: 999px;
+  /* shadow (glow substitutes for elevation) */
+  --shadow-glow: 0 0 8px rgba(51,181,229,0.55), 0 0 1px rgba(51,181,229,0.9);
+  --shadow-glow-strong: 0 0 16px rgba(51,181,229,0.75), 0 0 2px rgba(143,220,232,0.9);
+  /* blur */
+  --blur-none: 0px;
+  /* font */
+  --font-sans: 'Roboto Condensed', 'Droid Sans', 'Helvetica Neue', Arial, sans-serif;
+  --font-display: 'Roboto Condensed', 'Droid Sans', sans-serif;
+  --font-mono: 'Roboto Mono', ui-monospace, monospace;
+  /* text scale */
+  --text-xs: 0.6875rem; --text-sm: 0.8125rem; --text-base: 0.9375rem; --text-lg: 1.0625rem;
+  --text-xl: 1.25rem; --text-2xl: 1.5rem; --text-3xl: 2rem; --text-4xl: 2.75rem; --text-5xl: 3.5rem;
+  /* space */
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-6: 24px;
+  --space-8: 32px; --space-12: 48px; --space-16: 64px; --space-24: 96px;
+  /* ease */
+  --ease-standard: linear;
+  /* extra: holo underline + focus glow */
+  --holo-underline: linear-gradient(90deg, transparent, var(--color-primary), transparent);
+  --bg-image: none;
+}
+/* semantic aliases */
+:root{
+  --color-success:#99cc00;
+  --primary:var(--color-primary);
+  --secondary:var(--color-primary-bright);
+  --bg-primary:var(--color-bg);
+  --bg-secondary:var(--color-surface);
+  --text-primary:var(--color-text);
+  --text-secondary:var(--color-text-muted);
+  --text-success:var(--color-success);
+  --text-error:var(--color-danger);
+  --border-default:var(--color-divider);
+  --border-error:var(--color-danger);
+  --border-success:var(--color-success);
+  --spacing-gap:var(--space-4);
+  --transition-fast:0.1s;
+  --transition-normal:0.2s;
+  --shadow-sm:0 0 1px rgba(51,181,229,0.35);
+  --shadow-md:var(--shadow-glow);
+  --z-nav:90;--z-dropdown:100;--z-modal:200;--z-toast:300;
+}
+/* Holo Light overrides */
+@media (prefers-color-scheme: light), (prefers-color-scheme: light) {
+  :root{
+    --color-bg:#f3f3f3;
+    --color-surface:#fefefe;
+    --color-surface-2:#e5e5e5;
+    --color-text:#171b1c;
+    --color-text-muted:#5f6b6d;
+    --color-primary:#0077aa;
+    --color-primary-bright:#005f82;
+    --color-divider:#d1d1d1;
+    --color-danger:#cc0000;
+    --color-success:#4d7c0f;
+    --shadow-glow:0 0 8px rgba(0,119,170,0.35), 0 0 1px rgba(0,119,170,0.6);
+    --shadow-glow-strong:0 0 16px rgba(0,119,170,0.55), 0 0 2px rgba(0,119,170,0.8);
+  }
+}
+.theme-light{
+  --color-bg:#f3f3f3;
+  --color-surface:#fefefe;
+  --color-surface-2:#e5e5e5;
+  --color-text:#171b1c;
+  --color-text-muted:#5f6b6d;
+  --color-primary:#0077aa;
+  --color-primary-bright:#005f82;
+  --color-divider:#d1d1d1;
+  --color-danger:#cc0000;
+  --color-success:#4d7c0f;
+  --shadow-glow:0 0 8px rgba(0,119,170,0.35), 0 0 1px rgba(0,119,170,0.6);
+  --shadow-glow-strong:0 0 16px rgba(0,119,170,0.55), 0 0 2px rgba(0,119,170,0.8);
+}
+body{margin:0;font-family:var(--font-sans);background:var(--bg-primary);color:var(--text-primary);overflow-x:hidden;}
+.container{max-width:1120px;margin:auto;padding:0 var(--space-4);}
+.nav{position:sticky;top:0;background:var(--bg-primary);display:flex;align-items:center;justify-content:space-between;padding:var(--space-4) var(--space-8);z-index:var(--z-nav);box-shadow:var(--shadow-sm);scroll-margin-top:var(--space-8);}
+.nav__brand{font-weight:700;font-size:var(--text-lg);color:var(--text-primary);text-transform:uppercase;letter-spacing:.05em;}
+.nav__links{display:flex;gap:var(--space-4);align-items:center;}
+.nav__link{color:var(--text-primary);font-size:var(--text-sm);text-decoration:none;position:relative;transition:color var(--transition-fast) var(--ease-standard);}
+.nav__link:hover{color:var(--color-primary-bright);background-image:var(--holo-underline);background-size:100% 1px;background-position:0 100%;background-repeat:no-repeat;}
+.nav__toggle{display:none;background:none;border:none;color:var(--text-primary);font-size:var(--text-2xl);cursor:pointer;}
+.nav__menu{display:none;flex-direction:column;background:var(--bg-primary);position:absolute;top:100%;left:0;right:0;}
+.nav__menu.open{display:flex;}
+.nav__menu .nav__link{padding:var(--space-2) var(--space-4);}
+@media(max-width:768px){
+  .nav__links{display:none;}
+  .nav__toggle{display:block;}
+}
+.hero{background:var(--bg-primary);color:var(--text-primary);padding:var(--space-12) var(--space-4);position:relative;text-align:center;}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at center,rgba(51,181,229,.1)0%,transparent70%);z-index:-1;}
+.hero__container{display:flex;flex-direction:column;align-items:center;gap:var(--space-4);}
+.badge{display:inline-block;background:var(--color-primary);color:var(--text-primary);padding:var(--space-1) var(--space-2);border-radius:var(--radius-pill);font-size:var(--text-sm);text-transform:uppercase;letter-spacing:.05em;margin-bottom:var(--space-2);}
+.hero__title{font-size:var(--text-5xl);font-weight:700;line-height:1.2;margin:0;text-shadow:0 0 8px var(--color-primary);}
+.hero__accent{color:var(--color-primary);}
+.hero__copy{font-size:var(--text-lg);margin-top:var(--space-2);max-width:600px;}
+.hero__buttons{display:flex;gap:var(--space-4);flex-wrap:wrap;justify-content:center;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:.75rem 1rem;border:none;font-weight:700;text-transform:uppercase;letter-spacing:.05em;border-radius:var(--radius-sm);background:var(--primary);color:var(--text-primary);transition:background var(--transition-fast) var(--ease-standard),transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard);}
+.btn:hover{background:var(--color-primary-bright);box-shadow:var(--shadow-glow-strong);color:var(--color-primary-bright);}
+.btn:focus-visible{box-shadow:var(--shadow-glow);}
+.btn:active{background:rgba(51,181,229,.12);transform:scale(.97);}
+.btn--secondary{background:transparent;border:1px solid var(--border-default);color:var(--text-primary);}
+.btn--secondary:hover{border-color:var(--color-primary);color:var(--color-primary-bright);}
+.btn__spinner{display:none;width:1rem;height:1rem;border:2px solid var(--color-primary);border-top-color:transparent;border-radius:50%;animation:rotate 1s linear infinite;margin-left:.5rem;}
+.btn.is-loading .btn__spinner{display:inline-block;}
+@keyframes rotate{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+.features{padding:var(--space-12) var(--space-4);background:var(--bg-secondary);}
+.features__grid{display:flex;gap:var(--space-4);flex-wrap:wrap;justify-content:center;}
+.card{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:var(--space-4);flex:1 1 260px;display:flex;flex-direction:column;align-items:center;gap:var(--space-2);transition:border var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard);}
+.card:hover{border-color:var(--color-primary);box-shadow:var(--shadow-glow);}
+.card__icon{font-size:2rem;color:var(--color-primary);}
+.card__title{font-size:var(--text-lg);font-weight:700;text-transform:uppercase;margin:0;}
+.card__copy{font-size:var(--text-sm);text-align:center;color:var(--text-muted);}
+.card--step{align-items:flex-start;}
+.card__number{font-size:var(--text-4xl);color:var(--color-primary);font-family:var(--font-mono);font-weight:700;margin-bottom:var(--space-2);}
+.card--testimonial{position:relative;padding-top:1rem;}
+.card__quote{font-style:italic;font-size:var(--text-base);text-align:center;}
+.card__author{margin-top:var(--space-2);font-size:var(--text-sm);color:var(--text-muted);}
+.card__avatar{width:48px;height:48px;border:1px solid var(--border-default);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--color-primary);margin-bottom:var(--space-2);}
+.card--pricing{position:relative;}
+.card__tier{font-size:var(--text-lg);text-transform:uppercase;font-weight:700;margin-bottom:var(--space-2);}
+.card__price{font-size:var(--text-5xl);font-weight:700;margin-bottom:var(--space-2);}
+.card__features{list-style:none;padding:0;margin:0;}
+.card__features li{display:flex;align-items:center;gap:.5rem;font-size:var(--text-sm);}
+.card__features li::before{content:"check";font-family:"Material Symbols Outlined";font-weight:400;color:var(--color-primary);}
+.card--featured{border:2px solid var(--color-primary);box-shadow:var(--shadow-glow-strong);}
+.card__badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--color-primary);color:var(--text-primary);padding:.25rem .5rem;border-radius:var(--radius-pill);font-size:var(--text-sm);text-transform:uppercase;font-weight:700;letter-spacing:.05em;}
+.faq{padding:var(--space-12) var(--space-4);background:var(--bg-secondary);}
+.faq__item{border-bottom:1px solid var(--border-default);padding:var(--space-4) 0;display:flex;flex-direction:column;}
+.faq__question{background:none;border:none;width:100%;text-align:left;font-size:var(--text-lg);font-weight:700;text-transform:uppercase;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:0;color:var(--text-primary);position:relative;}
+.faq__question::after{content:"chevron_right";font-family:"Material Symbols Outlined";font-weight:400;font-size:var(--text-lg);transition:transform var(--transition-normal) var(--ease-standard);}
+.faq__question[aria-expanded="true"]::after{transform:rotate(90deg);}
+.faq__answer{max-height:0;opacity:0;overflow:hidden;transition:max-height var(--transition-normal) var(--ease-standard),opacity var(--transition-normal) var(--ease-standard);}
+.faq__answer.open{max-height:500px;opacity:1;}
+.cta{padding:var(--space-12) var(--space-4);background:var(--bg-secondary);text-align:center;}
+.cta__form{display:flex;flex-direction:column;align-items:center;gap:var(--space-2);margin-top:var(--space-4);}
+.input-group{display:flex;flex-direction:column;gap:var(--space-2);width:100%;max-width:400px;}
+.input-group__label{font-size:var(--text-sm);text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);}
+.input-group__input{border:none;border-bottom:1px solid var(--border-default);background:transparent;padding:.5rem 0;font-size:var(--text-base);color:var(--text-primary);transition:border-bottom var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard);}
+.input-group__input:focus{border-bottom:2px solid var(--color-primary);box-shadow:var(--shadow-glow);}
+.input-group__error{color:var(--text-error);font-size:var(--text-xs);}
+.input-group__success{color:var(--text-success);font-size:var(--text-xs);}
+.input-group__spinner{display:none;width:1rem;height:1rem;border:2px solid var(--color-primary);border-top-color:transparent;border-radius:50%;animation:rotate 1s linear infinite;margin-left:.5rem;}
+.input-group.is-loading .input-group__spinner{display:inline-block;}
+.footer{background:var(--bg-secondary);color:var(--text-muted);padding:var(--space-8) var(--space-4);}
+.footer__divider{border-top:1px solid var(--border-default);margin:var(--space-4) 0;}
+.footer__columns{display:flex;flex-wrap:wrap;gap:var(--space-4);}
+.footer__column{flex:1 1 200px;min-width:150px;margin-bottom:var(--space-4);}
+.footer__column h4{font-size:var(--text-md);font-weight:700;text-transform:uppercase;margin-bottom:var(--space-2);}
+.footer__column a{color:var(--text-muted);text-decoration:none;display:block;margin-bottom:var(--space-2);transition:color var(--transition-fast) var(--ease-standard);}
+.footer__column a:hover{color:var(--color-primary-bright);}
+.footer__brand{font-size:var(--text-lg);font-weight:700;color:var(--text-primary);margin-bottom:var(--space-2);}
+.footer__copy{font-size:var(--text-xs);color:var(--text-muted);}
+@media(prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important;}.btn__spinner{animation:none !important;}}
+</style>
+</head>
+<body>
+<header class="nav" role="navigation">
+  <div class="nav__brand">NIMBUS</div>
+  <nav class="nav__links">
+    <a href="#hero" class="nav__link">Home</a>
+    <a href="#features" class="nav__link">Features</a>
+    <a href="#pricing" class="nav__link">Pricing</a>
+    <a href="#cta" class="nav__link">Contact</a>
+    <a href="#cta" class="btn btn--primary">Get Started</a>
+  </nav>
+  <button class="nav__toggle" aria-label="Toggle menu" aria-expanded="false"><span class="material-symbols-outlined">menu</span></button>
+  <nav class="nav__menu">
+    <a href="#hero" class="nav__link">Home</a>
+    <a href="#features" class="nav__link">Features</a>
+    <a href="#pricing" class="nav__link">Pricing</a>
+    <a href="#cta" class="nav__link">Contact</a>
+    <a href="#cta" class="btn btn--primary">Get Started</a>
+  </nav>
+  <button class="nav__theme-toggle" aria-pressed="false" aria-label="Toggle dark mode"><span class="material-symbols-outlined">dark_mode</span></button>
+</header>
+
+<section id="hero" class="hero">
+  <div class="hero__container container">
+    <span class="badge">NEW</span>
+    <h1 class="hero__title">Experience <span class="hero__accent">Holo Power</span> like never before</h1>
+    <p class="hero__copy">Unlock the full potential of your device with Nimbus, the ultimate Android companion.</p>
+    <div class="hero__buttons">
+      <a href="#cta" class="btn btn--primary">Get Started</a>
+      <a href="#features" class="btn btn--secondary">Learn More</a>
+    </div>
+  </div>
+</section>
+
+<section id="features" class="features">
+  <div class="container">
+    <h2 class="section__title">Features</h2>
+    <div class="features__grid">
+      <div class="card card--feature">
+        <span class="material-symbols-outlined card__icon">speed</span>
+        <h3 class="card__title">Fast Performance</h3>
+        <p class="card__copy">Lightning‑fast operations that keep you ahead.</p>
+      </div>
+      <div class="card card--feature">
+        <span class="material-symbols-outlined card__icon">integration_instructions</span>
+        <h3 class="card__title">Seamless Integration</h3>
+        <p class="card__copy">Plug into your existing apps with zero friction.</p>
+      </div>
+      <div class="card card--feature">
+        <span class="material-symbols-outlined card__icon">palette</span>
+        <h3 class="card__title">Customizable UI</h3>
+        <p class="card__copy">Tailor the look and feel to match your style.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="works" class="features">
+  <div class="container">
+    <h2 class="section__title">How It Works</h2>
+    <div class="features__grid">
+      <div class="card card--step">
+        <div class="card__number">01</div>
+        <h3 class="card__title">Install</h3>
+        <p class="card__copy">Download and run the installer.</p>
+      </div>
+      <div class="card card--step">
+        <div class="card__number">02</div>
+        <h3 class="card__title">Configure</h3>
+        <p class="card__copy">Set preferences via the easy wizard.</p>
+      </div>
+      <div class="card card--step">
+        <div class="card__number">03</div>
+        <h3 class="card__title">Enjoy</h3>
+        <p class="card__copy">Use Nimbus daily for a smoother experience.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="testimonials" class="features">
+  <div class="container">
+    <h2 class="section__title">Testimonials</h2>
+    <div class="features__grid">
+      <div class="card card--testimonial">
+        <p class="card__quote">"Nimbus transformed my workflow. I can't imagine going back."</p>
+        <div class="card__avatar"><span class="material-symbols-outlined">person</span></div>
+        <p class="card__author">Alex, Developer</p>
+      </div>
+      <div class="card card--testimonial">
+        <p class="card__quote">"The UI feels like a breath of fresh air on my old device."</p>
+        <div class="card__avatar"><span class="material-symbols-outlined">person</span></div>
+        <p class="card__author">Maya, Designer</p>
+      </div>
+      <div class="card card--testimonial">
+        <p class="card__quote">"Simple, powerful, and it keeps my phone running fast."</p>
+        <div class="card__avatar"><span class="material-symbols-outlined">person</span></div>
+        <p class="card__author">Jordan, Analyst</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="pricing" class="features">
+  <div class="container">
+    <h2 class="section__title">Pricing</h2>
+    <div class="features__grid">
+      <div class="card card--pricing">
+        <h3 class="card__tier">Basic</h3>
+        <p class="card__price">$0</p>
+        <ul class="card__features">
+          <li>Core Features</li>
+          <li>Limited Support</li>
+        </ul>
+        <a href="#cta" class="btn btn--secondary">Choose</a>
+      </div>
+      <div class="card card--pricing card--featured">
+        <div class="card__badge">MOST POPULAR</div>
+        <h3 class="card__tier">Pro</h3>
+        <p class="card__price">$9.99 / mo</p>
+        <ul class="card__features">
+          <li>All Basic</li>
+          <li>Advanced Analytics</li>
+          <li>Priority Support</li>
+        </ul>
+        <a href="#cta" class="btn btn--primary">Choose</a>
+      </div>
+      <div class="card card--pricing">
+        <h3 class="card__tier">Enterprise</h3>
+        <p class="card__price">$29.99 / mo</p>
+        <ul class="card__features">
+          <li>All Pro</li>
+          <li>Enterprise APIs</li>
+          <li>Dedicated Account Manager</li>
+        </ul>
+        <a href="#cta" class="btn btn--secondary">Choose</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="faq" class="faq">
+  <div class="container">
+    <h2 class="section__title">FAQ</h2>
+    <div class="faq__item">
+      <button class="faq__question" aria-expanded="false">What devices does Nimbus support?</button>
+      <div class="faq__answer">Nimbus works on Android 4.4 and newer, across phones and tablets.</div>
+    </div>
+    <div class="faq__item">
+      <button class="faq__question" aria-expanded="false">Is it free to use?</button>
+      <div class="faq__answer">Basic tier is free; Pro and Enterprise are subscription-based.</div>
+    </div>
+    <div class="faq__item">
+      <button class="faq__question" aria-expanded="false">How do I uninstall?</button>
+      <div class="faq__answer">Simply remove the app via Settings > Apps.</div>
+    </div>
+  </div>
+</section>
+
+<section id="cta" class="cta">
+  <div class="container">
+    <h2 class="section__title">Stay Ahead with Nimbus</h2>
+    <p class="hero__copy">Join thousands of users who keep their devices at peak performance.</p>
+    <form class="cta__form" novalidate>
+      <div class="input-group" id="email-group">
+        <label class="input-group__label" for="email">Email</label>
+        <input class="input-group__input" type="email" id="email" name="email" placeholder="you@example.com" required>
+        <span class="input-group__spinner" aria-hidden="true"></span>
+        <div class="input-group__live" aria-live="polite"></div>
+      </div>
+      <button type="submit" class="btn btn--primary">Subscribe</button>
+    </form>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container footer__columns">
+    <div class="footer__column">
+      <h4>Product</h4>
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#">Docs</a>
+    </div>
+    <div class="footer__column">
+      <h4>Company</h4>
+      <a href="#">About</a>
+      <a href="#">Careers</a>
+      <a href="#">Blog</a>
+    </div>
+    <div class="footer__column">
+      <h4>Resources</h4>
+      <a href="#">Support</a>
+      <a href="#">Community</a>
+    </div>
+    <div class="footer__column">
+      <h4>Legal</h4>
+      <a href="#">Terms</a>
+      <a href="#">Privacy</a>
+    </div>
+  </div>
+  <hr class="footer__divider">
+  <p class="footer__copy">© 2026 Nimbus. All rights reserved.</p>
+</footer>
+
+<script defer>
+document.addEventListener('DOMContentLoaded',function(){
+  const themeToggle=document.querySelector('.nav__theme-toggle');
+  const applyTheme=function(t){document.documentElement.classList.toggle('theme-light',t==='light');themeToggle.setAttribute('aria-pressed',t!=='dark');themeToggle.innerHTML='<span class="material-symbols-outlined">'+(t==='dark'?'dark_mode':'light_mode')+'</span>'};
+  const stored=localStorage.getItem('theme');
+  const init=stored|| (window.matchMedia('(prefers-color-scheme:light)').matches?'light':'dark');
+  applyTheme(init);
+  themeToggle.addEventListener('click',()=>{const newT=document.documentElement.classList.contains('theme-light')?'dark':'light';applyTheme(newT);localStorage.setItem('theme',newT);});
+  const menuToggle=document.querySelector('.nav__toggle');
+  const navMenu=document.querySelector('.nav__menu');
+  menuToggle.addEventListener('click',()=>{const exp=menuToggle.getAttribute('aria-expanded')==='true';menuToggle.setAttribute('aria-expanded',!exp);navMenu.classList.toggle('open');});
+  document.querySelectorAll('.faq__question').forEach(btn=>{
+    btn.addEventListener('click',()=>{const exp=btn.getAttribute('aria-expanded')==='true';btn.setAttribute('aria-expanded',!exp);const ans=btn.nextElementSibling;ans.classList.toggle('open');});
+  });
+  const form=document.querySelector('#cta form');
+  const emailInput=form.querySelector('input[type="email"]');
+  const live=form.querySelector('.input-group__live');
+  form.addEventListener('submit',e=>{
+    e.preventDefault();form.classList.add('is-loading');emailInput.disabled=true;
+    setTimeout(()=>{form.classList.remove('is-loading');emailInput.disabled=false;emailInput.value='';live.textContent='Thank you! Your email has been recorded.';},1000);
+  });
+  document.querySelectorAll('a[href^="#"]').forEach(a=>{
+    a.addEventListener('click',e=>{
+      const tgt=document.querySelector(a.hash);if(tgt){e.preventDefault();tgt.scrollIntoView({behavior:'smooth',block:'start'});}
+    });
+  });
+});
+</script>
+</body>
+</html>

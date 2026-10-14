@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="en" class="js">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nimbus - Simplify Your Workflow</title>
+<meta name="description" content="Nimbus streamlines your workflow with intuitive bento-grid organization.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Rounded" rel="stylesheet">
+<style>
+@layer tokens, base, layout, components, utilities;
+
+/* Design Tokens */
+@layer tokens {
+  :root {
+    --font-base: 'Inter', -apple-system, system-ui, sans-serif;
+    --primary: #0071E3;
+    --secondary: #2997FF;
+    --bg-primary: #F5F5F7;
+    --bg-secondary: #FFFFFF;
+    --text-primary: #1D1D1F;
+    --text-secondary: #6E6E73;
+    --text-success: #1D7A3E;
+    --text-error: #D70015;
+    --border-default: rgba(0,0,0,0.08);
+    --border-success: #1D7A3E;
+    --border-error: #D70015;
+    --radius-sm: 10px;
+    --radius-md: 16px;
+    --radius-lg: 20px;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06);
+    --shadow-md: 0 8px 28px rgba(0,0,0,0.12);
+    --spacing-gap: 1rem;
+    --transition-fast: 150ms;
+    --transition-normal: 300ms;
+    --ease-standard: cubic-bezier(0.25, 0.1, 0.25, 1);
+    --z-dropdown: 100;
+    --z-modal: 1000;
+    --z-toast: 1100;
+    --header-bg: rgba(245,245,247,0.72);
+  }
+  .dark {
+    --primary: #0A84FF;
+    --secondary: #64D2FF;
+    --bg-primary: #0B0B0F;
+    --bg-secondary: #1C1C22;
+    --text-primary: #F5F5F7;
+    --text-secondary: #A1A1A6;
+    --text-success: #30D158;
+    --text-error: #FF453A;
+    --border-default: rgba(255,255,255,0.12);
+    --border-success: #30D158;
+    --border-error: #FF453A;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.15), 0 4px 16px rgba(0,0,0,0.25);
+    --shadow-md: 0 8px 28px rgba(0,0,0,0.35);
+    --header-bg: rgba(11,11,15,0.72);
+  }
+}
+
+/* Base Styles */
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+  html { font-size: 16px; scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: var(--font-base);
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+  }
+  h1, h2, h3, h4, h5, h6 { margin: 0 0 0.5rem; font-weight: 600; line-height: 1.2; }
+  h1 { font-size: clamp(2.5rem, 5vw + 1rem, 4rem); letter-spacing: -0.03em; }
+  h2 { font-size: clamp(1.8rem, 4vw + 0.5rem, 2.5rem); letter-spacing: -0.02em; }
+  h3 { font-size: clamp(1.25rem, 2.5vw + 0.5rem, 1.75rem); letter-spacing: -0.01em; }
+  p { margin: 0 0 1rem; }
+  a { color: var(--primary); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  img { max-width: 100%; height: auto; display: block; }
+  button { cursor: pointer; font-family: inherit; }
+  :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: var(--bg-primary); }
+  ::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+}
+
+/* Layout */
+@layer layout {
+  .container {
+    width: 100%;
+    max-width: 1200px;
+    margin-inline: auto;
+    padding-inline: clamp(1rem, 4vw, 2rem);
+  }
+  .bento-grid {
+    display: grid;
+    gap: var(--spacing-gap);
+  }
+  @media (min-width: 640px) {
+    .bento-card--wide { grid-column: span 2; }
+    .bento-card--tall { grid-row: span 2; }
+  }
+  section { padding-block: clamp(4rem, 8vw, 6.5rem); }
+  .section-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .section-header h2 { position: relative; display: inline-block; }
+  .section-header h2::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -0.5rem;
+    height: 3px;
+    width: 50px;
+    background: var(--primary);
+    border-radius: 3px;
+  }
+  .section-header p { max-width: 600px; margin-inline: auto; color: var(--text-secondary); }
+}
+
+/* Components */
+@layer components {
+  /* Button System */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    height: 3rem;
+    min-height: 3rem;
+    min-width: 3rem;
+    padding: 0 1.5rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 999px;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-sm);
+    transition: background-color var(--transition-fast) var(--ease-standard),
+                transform var(--transition-fast) var(--ease-standard),
+                box-shadow var(--transition-fast) var(--ease-standard);
+  }
+  .btn:hover { background-color: var(--secondary); box-shadow: var(--shadow-sm); }
+  .btn:active { transform: scale(0.97); }
+  .btn--primary { background-color: var(--primary); color: white; }
+  .btn--primary:hover { background-color: var(--secondary); }
+  .btn--secondary { background-color: rgba(0,0,0,0.04); color: var(--text-primary); }
+  .btn--secondary:hover { background-color: rgba(0,0,0,0.08); }
+  .btn--danger { background-color: var(--text-error); color: white; }
+  .btn--danger:hover { background-color: #ff5252; }
+  .btn:focus-visible { box-shadow: 0 0 0 3px rgba(0,113,227,0.3); }
+  .btn.is-loading { position: relative; pointer-events: none; opacity: 0.9; }
+  .btn.is-loading::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .btn.is-success { background-color: var(--text-success); color: white; }
+  .btn.is-error { background-color: var(--text-error); color: white; }
+
+  /* Bento Card */
+  .bento-card {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition-normal) var(--ease-standard),
+                box-shadow var(--transition-normal) var(--ease-standard);
+  }
+  .bento-card:hover { transform: scale(1.02); box-shadow: var(--shadow-md); }
+  .bento-card:focus-within { border-color: var(--primary); box-shadow: var(--shadow-md); }
+  .bento-card__icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0,113,227,0.08);
+    border-radius: var(--radius-md);
+    color: var(--primary);
+  }
+  .bento-card__title { font-size: 1.25rem; font-weight: 600; }
+  .bento-card__meta { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--text-secondary); }
+  .bento-card__meta .material-symbols-rounded { font-variation-settings: 'FILL' 0; }
+
+  /* Input Group */
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .input-group label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+  .input-group input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    transition: border-color var(--transition-fast) var(--ease-standard),
+                box-shadow var(--transition-fast) var(--ease-standard);
+  }
+  .input-group input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(0,113,227,0.2);
+  }
+  .input-group input.is-valid { border-color: var(--border-success); }
+  .input-group input.is-invalid { border-color: var(--border-error); }
+  .input-group__error {
+    min-height: 1.25rem;
+    font-size: 0.75rem;
+    color: var(--text-error);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  .input-group__error .material-symbols-rounded { font-variation-settings: 'FILL' 1; }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0,0,0,0.5);
+    backdrop-filter: blur(8px);
+    z-index: var(--z-modal);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-normal) var(--ease-standard);
+  }
+  .modal-overlay.is-open { opacity: 1; pointer-events: all; }
+  .modal {
+    background-color: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    width: 90%;
+    max-width: 500px;
+    max-height: 85vh;
+    overflow-y: auto;
+    position: relative;
+    transform: scale(0.95);
+    opacity: 0;
+    transition: transform var(--transition-normal) var(--ease-standard),
+                opacity var(--transition-normal) var(--ease-standard);
+  }
+  .modal-overlay.is-open .modal { transform: scale(1); opacity: 1; }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-default);
+  }
+  .modal-title { font-size: 1.5rem; font-weight: 600; }
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    line-height: 1;
+    color: var(--text-secondary);
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+  .modal-close:hover { background-color: rgba(0,0,0,0.04); color: var(--text-primary); }
+  .modal-body { padding: 1.5rem; }
+  .skeleton {
+    background: linear-gradient(90deg, var(--bg-secondary) 25%, rgba(255,255,255,0.1) 50%, var(--bg-secondary) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: var(--radius-md);
+  }
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  .skeleton-text { height: 1.25rem; margin-bottom: 0.75rem; }
+  .skeleton-title { width: 60%; height: 2rem; }
+  .skeleton-subtitle { width: 80%; height: 1.5rem; }
+  .skeleton-button { width: 40%; height: 2.5rem; }
+
+  /* Toast */
+  .toast-container {
+    position: fixed;
+    inset-block-start 1rem;
+    inset-inline-end 1rem;
+    z-index: var(--z-toast);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    pointer-events: none;
+  }
+  .toast {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    padding: 1rem 1.5rem;
+    box-shadow: var(--shadow-md);
+    max-width: 350px;
+    animation: slide-in 0.3s var(--ease-standard) forwards,
+                fade-out 0.3s var(--ease-standard) 3.7s forwards;
+  }
+  @keyframes slide-in {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes fade-out {
+    to { opacity: 0; }
+  }
+  .toast-icon { flex-shrink: 0; width: 1.5rem; height: 1.5rem; display: flex; align-items: center; justify-content: center; }
+  .toast-success .toast-icon { background-color: rgba(29,122,62,0.1); color: var(--text-success); }
+  .toast-error .toast-icon { background-color: rgba(215,0,21,0.1); color: var(--text-error); }
+  .toast-message { flex: 1; }
+  .toast-close {
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    line-height: 1;
+    color: var(--text-secondary);
+    width: 1.5rem;
+    height: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+  .toast-close:hover { background-color: rgba(0,0,0,0.04); color: var(--text-primary); }
+
+  /* FAQ Accordion */
+  .faq-item { border-bottom: 1px solid var(--border-default); }
+  .faq-trigger {
+    width: 100%;
+    text-align: left;
+    padding: 1.25rem 0;
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    background: none;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+  }
+  .faq-trigger[aria-expanded="true"] { color: var(--primary); }
+  .faq-trigger .material-symbols-rounded {
+    transition: transform var(--transition-normal) var(--ease-standard);
+  }
+  .faq-trigger[aria-expanded="true"] .material-symbols-rounded { transform: rotate(180deg); }
+  .faq-panel {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height var(--transition-normal) var(--ease-standard);
+    background-color: var(--bg-secondary);
+  }
+  .faq-panel[role="region"] { padding: 0 0 1.25rem; }
+  .faq-panel p { margin: 0; }
+
+  /* Pricing */
+  .pricing-card {
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    position: relative;
+    transition: transform var(--transition-normal) var(--ease-standard),
+                box-shadow var(--transition-normal) var(--ease-standard);
+  }
+  .pricing-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+  .pricing-card.featured {
+    border-color: var(--primary);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-4px);
+  }
+  .pricing-badge {
+    position: absolute;
+    top: -0.75rem;
+    right: -0.75rem;
+    background-color: var(--primary);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-sm);
+  }
+  .pricing-price { font-size: 2.25rem; font-weight: 700; margin: 0.5rem 0; }
+  .pricing-price span { font-size: 1rem; opacity: 0.7; }
+  .pricing-features { list-style: none; padding: 0; margin: 1.5rem 0; }
+  .pricing-features li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    color: var(--text-primary);
+  }
+  .pricing-features .material-symbols-rounded { font-variation-settings: 'FILL' 1; color: var(--text-success); }
+
+  /* Testimonials */
+  .testimonial-card {
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    background-color: var(--bg-secondary);
+  }
+  .testimonial-card blockquote {
+    margin: 0 0 1rem;
+    font-style: italic;
+    color: var(--text-primary);
+  }
+  .testimonial-card .rating {
+    display: flex;
+    gap: 0.25rem;
+    margin-bottom: 1rem;
+  }
+  .testimonial-card .rating .material-symbols-rounded {
+    font-variation-settings: 'FILL' 1;
+    color: var(--primary);
+  }
+  .testimonial-card .author {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .testimonial-card .avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    background-color: var(--primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    border-radius: 50%;
+  }
+  .testimonial-card .author-info { flex: 1; }
+  .testimonial-card .author-info h4 { margin: 0; font-size: 1rem; font-weight: 600; }
+  .testimonial-card .author-info p { margin: 0; font-size: 0.875rem; color: var(--text-secondary); }
+
+  /* Header */
+  .header {
+    position: sticky;
+    inset-block-start 0;
+    z-index: var(--z-dropdown);
+    background-color: var(--header-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border-default);
+    padding-block: 0.75rem;
+  }
+  .header .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .logo .material-symbols-rounded { font-variation-settings: 'FILL' 1; color: var(--primary); font-size: 1.75rem; }
+  .logo-text { font-weight: 800; font-size: 1.25rem; }
+  .nav {
+    display: flex;
+    gap: 1.5rem;
+  }
+  .nav-link {
+    font-weight: 500;
+    color: var(--text-primary);
+    position: relative;
+    padding-block: 0.25rem;
+  }
+  .nav-link:hover { color: var(--primary); }
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 2px;
+    width: 0;
+    background: var(--primary);
+    transition: width var(--transition-normal) var(--ease-standard);
+  }
+  .nav-link:hover::after { width: 100%; }
+  .theme-toggle {
+    background: none;
+    border: none;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: var(--text-primary);
+  }
+  .theme-toggle:hover { background-color: rgba(0,0,0,0.04); }
+  .menu-btn {
+    display: none;
+    background: none;
+    border: none;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: var(--text-primary);
+  }
+  .menu-btn:hover { background-color: rgba(0,0,0,0.04); }
+  .mobile-nav {
+    position: absolute;
+    inset-block-start 100%;
+    inset-inline-end 0;
+    background-color: var(--header-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid var(--border-default);
+    z-index: var(--z-dropdown);
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height var(--transition-normal) var(--ease-standard);
+  }
+  .mobile-nav.is-open { max-height: 20rem; }
+  .mobile-nav .nav {
+    flex-direction: column;
+    gap: 0;
+    padding-block: 1rem;
+  }
+  .mobile-nav .nav-link { padding: 0.75rem 1.5rem; }
+
+  /* Hero */
+  .hero {
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 20% 30%, rgba(0,113,227,0.08), transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .hero .container {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: var(--spacing-gap);
+  }
+  @media (min-width: 640px) {
+    .hero .container {
+      grid-template-columns: repeat(2, 1fr);
+      align-items: start;
+    }
+  }
+  .hero-content { display: flex; flex-direction: column; gap: 1.5rem; }
+  .hero-stats {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .hero-stat {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-lg);
+    padding: 1rem;
+    text-align: center;
+    min-width: 80px;
+  }
+  .hero-stat-number { font-size: 1.75rem; font-weight: 700; }
+  .hero-stat-label { font-size: 0.875rem; color: var(--text-secondary); }
+  .hero-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .btn--secondary { color: var(--text-primary); }
+  .btn--secondary:hover { background-color: rgba(0,0,0,0.08); }
+
+  /* Features */
+  .features .bento-grid { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+  .features .bento-card { text-align: left; }
+
+  /* How It Works */
+  .how-it-works .bento-grid { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+  .step-number {
+    width: 2rem;
+    height: 2rem;
+    background-color: rgba(0,113,227,0.08);
+    color: var(--primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.875rem;
+  }
+  .step-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    background-color: rgba(0,113,227,0.08);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary);
+    margin-bottom: 1rem;
+  }
+
+  /* Final CTA */
+  .final-cta {
+    position: relative;
+    overflow: hidden;
+  }
+  .final-cta::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 80% 20%, rgba(0,113,227,0.08), transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .final-cta .container {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .final-cta-form {
+    display: flex;
+    gap: 0.5rem;
+    width: 100%;
+    max-width: 500px;
+    margin-top: 1.5rem;
+  }
+  .final-cta-form .input-group { flex: 1; }
+  .final-cta-form .btn { min-width: 100px; }
+
+  /* Footer */
+  .footer {
+    border-top: 1px solid var(--border-default);
+    padding-block: 2rem;
+  }
+  .footer-content {
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+  .footer-brand { display: flex; flex-direction: column; gap: 0.5rem; }
+  .footer-brand p { color: var(--text-secondary); font-size: 0.875rem; }
+  .footer-links h4 { font-size: 1rem; margin-bottom: 1rem; color: var(--text-primary); }
+  .footer-links ul { list-style: none; padding: 0; margin: 0; }
+  .footer-links li { margin-bottom: 0.5rem; }
+  .footer-links a { color: var(--text-secondary); }
+  .footer-links a:hover { color: var(--text-primary); }
+  .footer-bottom {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-default);
+    text-align: center;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+  }
+  .footer-bottom a { color: var(--text-secondary); margin-inline: 0.5rem; }
+  .footer-bottom a:hover { text-decoration: underline; }
+}
+
+/* Utilities */
+@layer utilities {
+  .is-visible { opacity: 1; transform: translateY(0); }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    padding: 8px;
+    z-index: 1000;
+    transition: top var(--transition-fast);
+  }
+  .skip-link:focus { top: 0; }
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+    .btn.is-loading::after { animation: none; }
+    .skeleton { animation: none; }
+  }
+}
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link sr-only">Skip to content</a>
+
+<header class="header">
+  <div class="container">
+    <div class="logo">
+      <span class="material-symbols-rounded">grid_view</span>
+      <span class="logo-text">Nimbus</span>
+    </div>
+    <button class="menu-btn" aria-controls="mobile-nav" aria-expanded="false" aria-label="Open menu">
+      <span class="material-symbols-rounded">menu</span>
+    </button>
+    <nav class="nav" id="main-nav">
+      <a href="#features" class="nav-link">Features</a>
+      <a href="#how-it-works" class="nav-link">How it works</a>
+      <a href="#pricing" class="nav-link">Pricing</a>
+      <a href="#faq" class="nav-link">FAQ</a>
+    </nav>
+    <div>
+      <button class="theme-toggle" aria-pressed="false" aria-label="Switch to dark theme">
+        <span class="material-symbols-rounded" id="theme-icon">dark_mode</span>
+      </button>
+      <a href="#final-cta" class="btn btn--primary">Get started</a>
+    </div>
+  </div>
+  <nav class="mobile-nav" id="mobile-nav">
+    <div class="nav">
+      <a href="#features" class="nav-link">Features</a>
+      <a href="#how-it-works" class="nav-link">How it works</a>
+      <a href="#pricing" class="nav-link">Pricing</a>
+      <a href="#faq" class="nav-link">FAQ</a>
+    </div>
+  </nav>
+</header>
+
+<main id="main-content">
+  <section class="hero" id="hero">
+    <div class="container">
+      <div class="hero-content">
+        <h1>Simplify Your Workflow</h1>
+        <p>Organize tasks, projects, and ideas in a clean, modular interface that adapts to your work style.</p>
+        <div class="hero-actions">
+          <button class="btn btn--primary" id="watch-demo">Watch demo</button>
+          <button class="btn btn--secondary" id="get-started">Get started</button>
+        </div>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="hero-stat-number">2,400+</div>
+          <div class="hero-stat-label">Teams</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-number">98%</div>
+          <div class="hero-stat-label">Retention</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-number">50%</div>
+          <div class="hero-stat-label">Faster</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="features" id="features">
+    <div class="container">
+      <header class="section-header">
+        <h2>Features</h2>
+        <p>Powerful tools designed to keep you focused and productive.</p>
+      </header>
+      <div class="bento-grid">
+        <article class="bento-card bento-card--wide">
+          <div class="bento-card__icon">
+            <span class="material-symbols-rounded">auto_awesome</span>
+          </div>
+          <h3 class="bento-card__title">Smart Organization</h3>
+          <p>Automatically categorize and prioritize your work with intelligent bento grids that adapt to your workflow.</p>
+        </article>
+        <article class="bento-card">
+          <div class="bento-card__icon">
+            <span class="material-symbols-rounded">speed</span>
+          </div>
+          <h3 class="bento-card__title">Lightning Fast</h3>
+          <p>Optimized for speed with minimal load times and instant responsiveness across all devices.</p>
+        </article>
+        <article class="bento-card">
+          <div class="bento-card__icon">
+            <span class="material-symbols-rounded">security</span>
+          </div>
+          <h3 class="bento-card__title">Secure & Private</h3>
+          <p>End-to-end encryption and zero-knowledge architecture keep your data safe and private.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="how-it-works" id="how-it-works">
+    <div class="container">
+      <header class="section-header">
+        <h2>How it works</h2>
+        <p>Three simple steps to transform your workflow.</p>
+      </header>
+      <div class="bento-grid">
+        <article class="bento-card">
+          <div class="step-number">01</div>
+          <div class="step-icon">
+            <span class="material-symbols-rounded">upload_file</span>
+          </div>
+          <h3>Import</h3>
+          <p>Bring in your existing tasks, notes, and projects from other tools or start fresh.</p>
+        </article>
+        <article class="bento-card">
+          <div class="step-number">02</div>
+          <div class="step-icon">
+            <span class="material-symbols-rounded">psychology</span>
+          </div>
+          <h3>Organize</h3>
+          <p>Arrange your work into intuitive bento grids that visualize priorities and dependencies.</p>
+        </article>
+        <article class="bento-card">
+          <div class="step-number">03</div>
+          <div class="step-icon">
+            <span class="material-symbols-rounded">rocket_launch</span>
+          </div>
+          <h3>Execute</h3>
+          <p>Focus on what matters with clear views and seamless execution tools.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="testimonials" id="testimonials">
+    <div class="container">
+      <header class="section-header">
+        <h2>Testimonials</h2>
+        <p>What teams are saying about Nimbus.</p>
+      </header>
+      <div class="bento-grid">
+        <article class="bento-card bento-card--wide">
+          <blockquote>
+            “Nimbus transformed how our team collaborates. The bento grid layout makes complex projects feel simple.”
+          </blockquote>
+          <div class="rating">
+            <span class="material-symbols-rounded">star</span>
+            <span class="material-symbols-rounded">star</span>
+            <span class="material-symbols-rounded">star</span>
+            <span class="material-symbols-rounded">star</span>
+            <span class="material-symbols-rounded">star</span>
+          </div>
+          <p><strong>Alex Morgan</strong>, Product Lead at TechFlow</p>
+        </article>
+        <article class="bento-card">
+          <blockquote>
+            “Finally, a tool that adapts to how we work instead of forcing us into rigid structures.”
+          </blockquote>
+          <div class="rating">
+            <span class="material-symbols-rounded">star</span>
+            <span class="material-symbols-rounded">star</span>
+            <span class="material-symbols-rounded">star</span>
+            <span class="material-symbols-rounded">star</span>
+            <span class="material-symbols-rounded">star</span>
+          </div>
+          <p><strong>Sam Chen</strong>, Designer at PixelForge</p>
+        </article>
+        <article class="bento-card">
+          <blockquote>
+            “Our project delivery time decreased by 40% after switching to Nimbus.”
+          </blockquote>
+          <div class="rating">
+            <span class="material-symbols-rounded">star</span>
+            <span class="material-symbols-rounded">star</span>
+            <span class="material-symbols-rounded">star</span>
+            <span class="material-symbols-rounded">star</span>
+            <span class="material-symbols-rounded">star</span>
+          </div>
+          <p><strong>Taylor Jones</strong>, Operations Manager at BuildIt</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="pricing" id="pricing">
+    <div class="container">
+      <header class="section-header">
+        <h2>Pricing</h2>
+        <p>Simple, transparent pricing for teams of all sizes.</p>
+      </header>
+      <div class="bento-grid">
+        <article class="pricing-card">
+          <h3>Basic</h3>
+          <div class="pricing-price"><span>$</span>8<span>/mo per user</span></div>
+          <ul class="pricing-features">
+            <li><span class="material-symbols-rounded">check_circle</span>Unlimited bento grids</li>
+            <li><span class="material-symbols-rounded">check_circle</span>Basic integrations</li>
+            <li><span class="material-symbols-rounded">check_circle</span>Community support</li>
+          </ul>
+          <button class="btn btn--secondary">Choose Basic</button>
+        </article>
+        <article class="pricing-card featured">
+          <div class="pricing-badge">Most popular</div>
+          <h3>Pro</h3>
+          <div class="pricing-price"><span>$</span>15<span>/mo per user</span></div>
+          <ul class="pricing-features">
+            <li><span class="material-symbols-rounded">check_circle</span>Everything in Basic</li>
+            <li><span class="material-symbols-rounded">check_circle</span>Advanced automations</li>
+            <li><span class="material-symbols-rounded">check_circle</span>Priority support</li>
+            <li><span class="material-symbols-rounded">check_circle</span>Custom branding</li>
+          </ul>
+          <button class="btn btn--primary">Choose Pro</button>
+        </article>
+        <article class="pricing-card">
+          <h3>Enterprise</h3>
+          <div class="pricing-price"><span>$</span>25<span>/mo per user</span></div>
+          <ul class="pricing-features">
+            <li><span class="material-symbols-rounded">check_circle</span>Everything in Pro</li>
+            <li><span class="material-symbols-rounded">check_circle</span>Dedicated account manager</li>
+            <li><span class="material-symbols-rounded">check_circle</span>Advanced security</li>
+            <li><span class="material-symbols-rounded">check_circle</span>On-premise deployment</li>
+          </ul>
+          <button class="btn btn--secondary">Contact Sales</button>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="faq" id="faq">
+    <div class="container">
+      <header class="section-header">
+        <h2>Frequently Asked Questions</h2>
+        <p>Find answers to common questions about Nimbus.</p>
+      </header>
+      <div class="bento-grid">
+        <div class="faq-item">
+          <button class="faq-trigger" aria-controls="faq-1" aria-expanded="false">
+            Is there a free trial available?
+            <span class="material-symbols-rounded">expand_more</span>
+          </button>
+          <div class="faq-panel" id="faq-1" role="region">
+            <p>Yes! We offer a 14-day free trial for all paid plans. No credit card required to start.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-trigger" aria-controls="faq-2" aria-expanded="false">
+            Can I import data from other tools?
+            <span class="material-symbols-rounded">expand_more</span>
+          </button>
+          <div class="faq-panel" id="faq-2" role="region">
+            <p>Absolutely. Nimbus supports imports from Trello, Asana, Notion, and CSV files.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-trigger" aria-controls="faq-3" aria-expanded="false">
+            Is my data secure and private?
+            <span class="material-symbols-rounded">expand_more</span>
+          </button>
+          <div class="faq-panel" id="faq-3" role="region">
+            <p>Yes. We use end-to-end encryption and follow SOC 2 Type II compliance standards.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-trigger" aria-controls="faq-4" aria-expanded="false">
+            What platforms does Nimbus support?
+            <span class="material-symbols-rounded">expand_more</span>
+          </button>
+          <div class="faq-panel" id="faq-4" role="region">
+            <p>Nimbus is available as a web app, desktop app (Mac/Windows), and mobile apps (iOS/Android).</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-trigger" aria-controls="faq-5" aria-expanded="false">
+            How does customer support work?
+            <span class="material-symbols-rounded">expand_more</span>
+          </button>
+          <div class="faq-panel" id="faq-5" role="region">
+            <p>All plans include email support. Pro and Enterprise plans get priority support with faster response times.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="final-cta" id="final-cta">
+    <div class="container">
+      <h2>Ready to simplify your workflow?</h2>
+      <p>Join thousands of teams who trust Nimbus to organize their work.</p>
+      <form class="final-cta-form" id="newsletter-form">
+        <div class="input-group">
+          <label for="newsletter-email">Email address</label>
+          <input type="email" id="newsletter-email" placeholder="you@company.com" required>
+          <div class="input-group__error" aria-live="polite">
+            <span class="material-symbols-rounded">error</span>
+            <span id="email-error-message"></span>
+          </div>
+        </div>
+        <button type="submit" class="btn btn--primary" id="newsletter-submit">Get started</button>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-content">
+      <div class="footer-brand">
+        <div class="logo">
+          <span class="material-symbols-rounded">grid_view</span>
+          <span class="logo-text">Nimbus</span>
+        </div>
+        <p>Streamline your workflow with intuitive bento-grid organization.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Product</h4>
+        <ul>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#how-it-works">How it works</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+      </div>
+      <div class="footer-links">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#">About us</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Press</a></li>
+        </ul>
+      </div>
+      <div class="footer-links">
+        <h4>Support</h4>
+        <ul>
+          <li><a href="#">Documentation</a></li>
+          <li><a href="#">Contact us</a></li>
+          <li><a href="#">Status</a></li>
+          <li><a href="#">Privacy policy</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 Nimbus. All rights reserved.</p>
+      <a href="#">Privacy</a> · <a href="#">Terms</a>
+    </div>
+  </div>
+</footer>
+
+<!-- Modal -->
+<div class="modal-overlay" id="demo-modal" role="dialog" aria-modal="true" aria-labelledby="demo-modal-title">
+  <div class="modal">
+    <header class="modal-header">
+      <h2 class="modal-title" id="demo-modal-title">See Nimbus in action</h2>
+      <button class="modal-close" aria-label="Close dialog">
+        <span class="material-symbols-rounded">close</span>
+      </button>
+    </header>
+    <div class="modal-body">
+      <div class="skeleton">
+        <div class="skeleton-title"></div>
+        <div class="skeleton-subtitle"></div>
+        <div class="skeleton-subtitle"></div>
+        <div class="skeleton-button"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" aria-live="polite" aria-atomic="true" id="toast-container"></div>
+
+<script>
+(() => {
+  const html = document.documentElement;
+  const themeToggle = document.querySelector('.theme-toggle');
+  const themeIcon = document.getElementById('theme-icon');
+  const menuBtn = document.querySelector('.menu-btn');
+  const mobileNav = document.getElementById('mobile-nav');
+  const navLinks = document.querySelectorAll('.nav-link');
+  const watchDemoBtn = document.getElementById('watch-demo');
+  const demoModal = document.getElementById('demo-modal');
+  const modalClose = demoModal.querySelector('.modal-close');
+  const newsletterForm = document.getElementById('newsletter-form');
+  const newsletterSubmit = document.getElementById('newsletter-submit');
+  const newsletterEmail = document.getElementById('newsletter-email');
+  const emailErrorMessage = document.getElementById('email-error-message');
+  const toastContainer = document.getElementById('toast-container');
+  const faqTriggers = document.querySelectorAll('.faq-trigger');
+  const skipLink = document.querySelector('.skip-link');
+
+  // Theme management
+  const setTheme = (theme) => {
+    html.classList.toggle('dark', theme === 'dark');
+    themeToggle.setAttribute('aria-pressed', theme === 'dark');
+    themeToggle.setAttribute('aria-label', theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
+    themeIcon.textContent = theme === 'dark' ? 'light_mode' : 'dark_mode';
+    localStorage.setItem('theme', theme);
+  };
+
+  const initTheme = () => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      setTheme(savedTheme);
+    } else {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setTheme(prefersDark ? 'dark' : 'light');
+    }
+  };
+
+  themeToggle.addEventListener('click', () => {
+    const isDark = html.classList.toggle('dark');
+    setTheme(isDark ? 'dark' : 'light');
+  });
+
+  // Mobile navigation
+  menuBtn.addEventListener('click', () => {
+    const isOpen = mobileNav.classList.toggle('is-open');
+    menuBtn.setAttribute('aria-expanded', isOpen);
+    if (isOpen) {
+      menuBtn.setAttribute('aria-label', 'Close menu');
+      menuBtn.innerHTML = '<span class="material-symbols-rounded">close</span>';
+    } else {
+      menuBtn.setAttribute('aria-label', 'Open menu');
+      menuBtn.innerHTML = '<span class="material-symbols-rounded">menu</span>';
+    }
+  });
+
+  navLinks.forEach(link => {
+    link.addEventListener('click', () => {
+      if (mobileNav.classList.contains('is-open')) {
+        mobileNav.classList.remove('is-open');
+        menuBtn.setAttribute('aria-expanded', 'false');
+        menuBtn.setAttribute('aria-label', 'Open menu');
+        menuBtn.innerHTML = '<span class="material-symbols-rounded">menu</span>';
+      }
+    });
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && mobileNav.classList.contains('is-open')) {
+      mobileNav.classList.remove('is-open');
+      menuBtn.setAttribute('aria-expanded', 'false');
+      menuBtn.setAttribute('aria-label', 'Open menu');
+      menuBtn.innerHTML = '<span class="material-symbols-rounded">menu</span>';
+    }
+  });
+
+  // Reveal on scroll
+  const initReveal = () => {
+    if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1 });
+
+      document.querySelectorAll('section:not(.hero) > .container > *').forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(el);
+      });
+    } else {
+      document.querySelectorAll('section:not(.hero) > .container > *').forEach(el => {
+        el.classList.add('is-visible');
+      });
+    }
+  };
+
+  // Modal
+  const openModal = () => {
+    demoModal.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => {
+      demoModal.querySelector('.modal-close').focus();
+    }, 300);
+  };
+
+  const closeModal = () => {
+    demoModal.classList.remove('is-open');
+    document.body.style.overflow = '';
+    watchDemoBtn.focus();
+  };
+
+  watchDemoBtn.addEventListener('click', openModal);
+  modalClose.addEventListener('click', closeModal);
+  demoModal.querySelector('.modal-overlay').addEventListener('click', (e) => {
+    if (e.target === demoModal) closeModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && demoModal.classList.contains('is-open')) closeModal();
+  });
+
+  // Form validation and submission
+  const validateEmail = (email) => {
+    const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(String(email).toLowerCase());
+  };
+
+  newsletterForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = newsletterEmail.value.trim();
+    if (!validateEmail(email)) {
+      newsletterEmail.classList.add('is-invalid');
+      emailErrorMessage.textContent = 'Please enter a valid email address';
+      return;
+    }
+    newsletterEmail.classList.remove('is-invalid');
+    emailErrorMessage.textContent = '';
+    newsletterSubmit.classList.add('is-loading');
+    newsletterSubmit.setAttribute('aria-busy', 'true');
+    
+    // Simulate API call
+    setTimeout(() => {
+      newsletterSubmit.classList.remove('is-loading');
+      newsletterSubmit.classList.add('is-success');
+      newsletterSubmit.textContent = 'Success!';
+      newsletterForm.reset();
+      
+      // Show toast
+      const toast = document.createElement('div');
+      toast.className = 'toast toast-success';
+      toast.innerHTML = `
+        <div class="toast-icon">
+          <span class="material-symbols-rounded">check_circle</span>
+        </div>
+        <div class="toast-message">Thanks for subscribing! We'll be in touch.</div>
+        <button class="toast-close" aria-label="Dismiss toast">
+          <span class="material-symbols-rounded">close</span>
+        </button>
+      `;
+      toastContainer.appendChild(toast);
+      
+      const dismissToast = () => {
+        toast.remove();
+        if (toastContainer.children.length === 0) {
+          toastContainer.style.display = 'none';
+        }
+      };
+      
+      toast.querySelector('.toast-close').addEventListener('click', dismissToast);
+      setTimeout(dismissToast, 4000);
+      
+      // Reset button after delay
+      setTimeout(() => {
+        newsletterSubmit.classList.remove('is-success');
+        newsletterSubmit.textContent = 'Get started';
+        newsletterSubmit.removeAttribute('aria-busy');
+      }, 2000);
+    }, 1500);
+  });
+
+  // FAQ accordion
+  faqTriggers.forEach(trigger => {
+    trigger.addEventListener('click', () => {
+      const isOpen = trigger.getAttribute('aria-expanded') === 'true';
+      trigger.setAttribute('aria-expanded', !isOpen);
+      const panel = document.getElementById(trigger.getAttribute('aria-controls'));
+      if (panel) {
+        panel.style.maxHeight = isOpen ? '0' : panel.scrollHeight + 'px';
+      }
+    });
+  });
+
+  // Skip link
+  skipLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    document.getElementById('main-content').scrollIntoView({ behavior: 'smooth' });
+  });
+
+  // Initialize
+  initTheme();
+  initReveal();
+})();
+</script>
+</body>
+</html>

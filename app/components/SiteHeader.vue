@@ -53,7 +53,6 @@ function onSearch() {
         </label>
       </form>
       <div class="hd__right">
-        <NuxtLink to="/demo" class="hd__demo">Demo site</NuxtLink>
         <button
           class="hd__mode"
           type="button"

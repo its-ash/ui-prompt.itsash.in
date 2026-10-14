@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>WILDLINE – Generative Vector Art</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,GRAD@24,400,0&display=swap">
+
+<style>
+/* --- CSS Variables (light) --- */
+:root{
+  --primary:#4a3a28; --secondary:#6a5a44; --accent:#a08c6a;
+  --bg-primary:#f2e8d4; --bg-secondary:#c9b896;
+  --text-primary:#4a3a28; --text-secondary:#5a4a32;
+  --text-success:#2f6b45; --text-error:#a23e2a;
+  --border-default:rgba(90,74,50,0.18); --border-success:rgba(47,107,69,0.5); --border-error:rgba(162,62,42,0.5);
+  --glass-bg:rgba(242,232,212,0.55); --glass-border:rgba(255,255,255,0.45); --glass-blur:16px;
+  --font-display:"Fraunces",serif; --font-base:"Inter",sans-serif;
+  --radius-sm:8px; --radius-md:14px; --radius-lg:24px;
+  --shadow-sm:0 2px 10px rgba(74,58,40,0.10); --shadow-md:0 12px 32px rgba(74,58,40,0.16);
+  --spacing-gap:1.5rem; --transition-fast:150ms; --transition-normal:300ms;
+  --ease-standard:cubic-bezier(0.4,0,0.2,1); --z-dropdown:100; --z-modal:200; --z-toast:300;
+}
+.dark{
+  --primary:#c9b896; --secondary:#a08c6a; --accent:#c9b896;
+  --bg-primary:#241c13; --bg-secondary:#33291d;
+  --text-primary:#f2e8d4; --text-secondary:#c9b896;
+  --text-success:#7ec99b; --text-error:#e8947c;
+  --border-default:rgba(242,232,212,0.16); --border-success:rgba(126,201,155,0.5); --border-error:rgba(232,148,112,0.5);
+  --glass-bg:rgba(42,33,23,0.55); --glass-border:rgba(242,232,212,0.14);
+}
+@media (prefers-reduced-motion:reduce){
+  :root{--transition-fast:0ms;--transition-normal:0ms;}
+}
+
+/* --- Base --- */
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:instant;}
+}
+body{
+  font-family:var(--font-base); font-size:clamp(1rem,2.5vw,1.125rem); line-height:1.6;
+  background:var(--bg-primary); color:var(--text-primary); min-height:100vh;
+}
+
+/* --- Focus visible --- */
+*:focus-visible{outline:2px solid var(--primary); outline-offset:4px;}
+
+/* --- Skip link --- */
+.skip-link{
+  position:absolute;left:-9999px;top:0;z-index:9999;
+  background:var(--primary);color:#fff;padding:0.75rem;
+}
+.skip-link:focus{left:0;}
+
+/* --- Sticky Header --- */
+.header{
+  position:sticky;top:0;z-index:var(--z-dropdown);
+  background:var(--glass-bg);backdrop-filter:blur(var(--glass-blur));
+  border-bottom:1px solid var(--glass-border);padding:0.75rem 1rem;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.header__nav{display:flex;gap:1.5rem;}
+.header__link{
+  font-family:var(--font-display);font-size:0.875rem;color:var(--text-primary);
+  text-decoration:none;position:relative;
+}
+.header__link::after{content:'';position:absolute;bottom:-4px;width:0;height:2px;background:var(--primary);transition:width var(--transition-fast) var(--ease-standard);}
+.header__link:hover::after{width:100%;}
+.header__toggle{display:flex;align-items:center;gap:0.5rem;}
+.material-symbols-outlined{
+  font-variation-settings:'opsz' 24,'wght' 400;'GRAD' 0;color:var(--primary);width:1em;height:1em;
+}
+
+/* --- Hero --- */
+.hero{
+  position:relative;height:100vh;min-height:600px;overflow:hidden;
+  display:flex;align-items:flex-end;justify-content:center;
+}
+.hero__bg{
+  position:absolute;inset:0;
+  background:
+    linear-gradient(180deg,var(--bg-primary) 0%,var(--bg-secondary) 100%),
+    radial-gradient(ellipse at 30% 20%,rgba(255,255,255,0.15) 0%,transparent 50%),
+    radial-gradient(ellipse at 70% 70%,#c9b896 0%,transparent 50%);
+}
+.hero__sun{
+  position:absolute;right:12%;top:8%;width:180px;height:180px;
+  border-radius:50%;background:rgba(255,200,100,0.45);filter:blur(60px);
+}
+.hero__horizon{
+  position:absolute;bottom:0;left:0;width:100%;height:30%;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='300' viewBox='0 0 1200 300'%3E%3Cpath fill='%235a4a44' fill-opacity='0.6' d='M0,200 C300,100 600,100 900,200 C1100,300 1200,300 1200,200 L1200,200 Z'/%3E%3C/svg%3E") no-repeat;background-size:cover;
+}
+.hero__clouds{
+  position:absolute;top:-40px;left:50%;transform:translateX(-50%);
+  display:flex;gap:2rem;animation:cloudDrift 20s linear infinite;
+}
+@keyframes cloudDrift{0%{transform:translateX(-50%) translateX(0);}100%{transform:translateX(-50%) translateX(-200%);}}
+.hero__cloud{
+  width:80px;height:40px;background:#fff;border-radius:50px;opacity:0.6;
+}
+.hero__content{
+  position:relative;z-index:1;text-align:center;padding:2rem;
+  max-width:720px;
+}
+.hero__eyebrow{
+  display:inline-block;background:var(--accent);color:var(--bg-primary);
+  padding:0.2rem 0.5rem;border-radius:9999px;font-size:0.625rem;text-transform:uppercase;letter-spacing:0.2em;margin-bottom:1rem;
+}
+.hero__h1{
+  font-family:var(--font-display);font-size:clamp(2.5rem,8vw,5rem);line-height:1.1;margin-bottom:1rem;
+  background:linear-gradient(135deg,var(--text-primary),var(--secondary));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero__sub{
+  font-size:1.125rem;color:var(--text-secondary);margin-bottom:2rem;
+}
+.hero__cta{display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;}
+.hero__scroll-cue{
+  position:absolute;bottom:2rem;color:var(--text-secondary);font-size:0.75rem;
+  animation:scrollPulse 2s ease-in-out infinite;
+}
+@keyframes scrollPulse{0%,100%{opacity:1;transform:translateY(0);}50%{opacity:0.5;transform:translateY(0.5rem);}}
+
+.hero__draw-btn{margin-top:1.5rem;}
+
+/* --- Features --- */
+.features{padding:4rem 1rem;background:var(--bg-secondary);;}
+.features__grid{
+  display:flex;flex-wrap:wrap;gap:var(--spacing-gap);justify-content:center;
+  max-width:1200px;margin:0 auto;
+}
+.features__card{
+  flex:1 1 260px;max-width:300px;background:var(--glass-bg);
+  backdrop-filter:blur(var(--glass-blur));border:1px solid var(--glass-border);
+  border-radius:var(--radius-lg);padding:1.5rem;transition:transform var(--transition-normal) var(--ease-standard),
+    box-shadow var(--transition-normal) var(--ease-standard);
+}
+.features__card:hover{transform:translateY(-4px);box-shadow:var(--shadow-md);}
+.features__icon{
+  width:3rem;height:3rem;font-size:1.5rem;color:var(--accent);
+  margin-bottom:0.75rem;display:flex;align-items:center;justify-content:center;
+}
+.features__h3{font-family:var(--font-display);font-size:1.25rem;margin-bottom0.5rem;}
+.features__p{color:var(--text-secondary);font-size:0.875rem;}
+
+@media(min-width:768px){
+  .features__grid{grid-template-columns:repeat(3,1fr);}
+}
+
+/* --- How It Works --- */
+.howitworks{padding:4rem 1rem;background:var(--bg-primary);;}
+.howitworks__section{
+  max-width:1200px;margin:0 auto;position:relative;
+}
+.howitworks__steps{
+  display:flex;flex-direction:column;gap:1rem;margin-top:2rem;
+  counter-reset:step;
+}
+.howitworks__step{
+  counter-increment:step;
+  display:flex;align-items:flex-start;gap:1rem;
+}
+.howitworks__num{
+  width:2rem;height:2rem;flex-shrink:0;
+  background:var(--glass-bg);border:1px solid var(--glass-border);
+  border-radius:50%;counter-increment:step;color:var(--primary);
+  font-family:var(--font-display);font-size:0.875rem;display:flex;align-items:center;justify-content:center;
+}
+.howitworks__num::before{content:counter(step);display:block;}
+.howitworks__badge{flex:1;}
+.howitworks__connector{
+  flex:1;height:1px;background:var(--border-default);
+  transition:scaleX var(--transition-normal) var(--ease-standard);
+  transform-origin:left;
+}
+.howitworks__step.in-view .howitworks__connector{scaleX:1;}
+@media(prefers-reduced-motion:reduce){
+  .howitworks__connector{transition:none;scaleX:1;}
+}
+
+/* --- Testimonials --- */
+.testimonials{padding:4rem 1rem;background:var(--bg-secondary);;}
+.testimonials__grid{
+  display:flex;flex-wrap:wrap;gap:var(--spacing-gap);justify-content:center;
+  max-width:1200px;margin:0 auto;
+}
+.testimonials__card{
+  flex:1 1 300px;max-width:360px;background:var(--glass-bg);
+  backdrop-filter:blur(var(--glass-blur));border:1px solid var(--glass-border);
+  border-radius:var(--radius-lg);padding:1.5rem;display:flex;flex-direction:column;gap:0.75rem;
+}
+.testimonials__avatar{
+  width:3rem;height:3rem;border-radius:50%;background:var(--primary);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:bold;
+}
+.testimonials__quote{font style:italic;font-size:0.875rem;color:var(--text-secondary);flex:1;}
+.testimonials__name{font-family:var(--font-display);font-size:0.875rem;}
+
+/* --- Pricing --- */
+.pricing{padding:4rem 1rem;background:var(--bg-primary);;}
+.pricing__grid{
+  display:flex;flex-wrap:wrap;gap:var(--spacing-gap);justify-content:center;
+  max-width:1200px;margin:0 auto;
+}
+.pricing__card{
+  flex:1 1 280px;max-width:340px;background:var(--glass-bg);
+  backdrop-filter:blur(var(--glass-blur));border:1px solid var(--glass-border);
+  border-radius:var(--radius-lg);padding:1.5rem;transition:transform var(--transition-normal) var(--ease-standard),
+    box-shadow var(--transition-normal) var(--ease-standard);
+}
+.pricing__card:hover{transform:translateY(-4px);box-shadow:var(--shadow-md);}
+.pricing__tag{display:inline-block;background:var(--primary);color:#fff;padding:0.2rem 0.5rem;border-radius:4px;font-size:0.625rem;text-transform:uppercase;letter-spacing:0.1em;margin-bottom1rem;}
+.pricing__name{font-family:var(--font-display);font-size:1.25rem;margin-bottom0.25rem;}
+.pricing__price{font-size:2rem;color:var(--primary);margin-bottom0.5rem;}
+.pricing__tagline{color:var(--text-secondary);font-size:0.875rem;margin-bottom1.5rem;}
+.pricing__list{list-style:none;margin-bottom1.5rem;padding-left1.5rem;}
+.pricing__list li{margin-bottom0.5rem;font-size:0.875rem;color:var(--text-primary);}
+.pricing__list li::before{content:'✓';color:var(--text-success);margin-right0.3rem;}
+.pricing__cta{width:100%;}
+.pricing__popular{border-color:var(--primary);box-shadow:0 0 0 3px rgba(74,58,40,0.15);}
+.pricing__popular .pricing__tag{background:var(--primary);}
+
+@media(prefers-reduced-motion:reduce){
+  .pricing__card{transition:none;}
+}
+
+/* --- FAQ --- */
+.faq{padding:4rem 1rem;background:var(--bg-secondary);;}
+.faq__list{max-width:1200px;margin:0 auto;}
+.faq__item{
+  margin-bottom0.75rem;background:var(--glass-bg);border:1px solid var(--glass-border);
+  border-radius:var(--radius-lg);overflow:hidden;
+}
+.faq__summary{
+  display:flex;justify-content:space-between;align-items:center;padding:1rem 1.25rem;
+  font-family:var(--font-display);font-size:1rem;cursor:pointer;
+  user-select:none;color:var(--text-primary);
+}
+.faq__summary::after{
+  content:'var(--material-symbols-outlined:expand_more)';margin-left0.5rem;
+  transition:transform var(--transition-fast) var(--ease-standard);
+}
+.faq__item[open] .faq__summary::after{transform:rotate(180deg);}
+.faq__answer{
+  padding:0 1.25rem 1rem;color:var(--text-secondary);font-size:0.875rem;
+  max-height:0;overflow:hidden;transition:max-height var(--transition-normal) var(--ease-standard);
+}
+.faq__item[open] .faq__answer{max-height:200px;}
+
+/* --- Final CTA --- */
+.cta{
+  position:relative;padding:4rem 1rem;text-align:center;color:#fff;
+  background:
+    linear-gradient(135deg,rgba(74,58,40,0.7),rgba(42,33,23,0.8)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23c9b896'/%3E%3C/svg%3D");
+  background-size:cover;background-position:center;
+}
+.cta__inner{max-width:600px;margin:0 auto;}
+.cta__h2{font-family:var(--font-display);font-size:clamp(2rem,6vw,3rem);margin-bottom0.5rem;}
+.cta__sub{font-size:1.125rem;margin-bottom2rem;opacity:0.9;}
+.cta__form{display:flex;gap0.5rem;justify-content:center;flex-wrap:wrap;}
+.cta__input{
+  flex:1;padding0.75rem 1rem;border:none;border-radiusvar(--radius-md);font-size:1rem;
+  background:#fff;color:#000;width:300px;max-width:100%;
+}
+.cta__submit{flex:0 0 auto;padding0.75rem 1.5rem;}
+.cta__msg{margin-top1rem;font-size0.875rem;}
+
+/* --- Footer --- */
+.footer{
+  padding:2rem 1rem;background:var(--bg-secondary);color:var(--text-secondary);
+  font-size:0.875rem;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;
+}
+.footer__brand{font-family:var(--font-display);font-size1rem;color:var(--primary);}
+.footer__links{display:flex;gap2rem;}
+.footer__link{color:var(--text-secondary);text-decoration:none;}
+.footer__link:hover{text-decoration:underline;}
+.footer__social{display:flex;gap1rem;}
+.footer__social .material-symbols-outlined{cursor:pointer;}
+.footer__copyright{font-size0.75rem;}
+</style>
+</head>
+<body>
+
+<!-- Skip link -->
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<!-- Sticky Header -->
+<header class="header" aria-label="Main navigation">
+  <div class="header__logo">
+    <span class="material-symbols-outlined">gesture</span> WILDLINE
+  </div>
+  <nav class="header__nav" aria-label="Primary navigation">
+    <a class="header__link" href="#features">Features</a>
+    <a class="header__link" href="#how-it-works">How It Works</a>
+    <a class="header__link" href="#pricing">Pricing</a>
+    <a class="header__link" href="#faq">FAQ</a>
+  </nav>
+  <div class="header__toggle">
+    <button class="theme-toggle" aria-pressed="false" aria-label="Switch to dark mode" id="themeToggle">
+      <span class="material-symbols-outlined" id="themeSun">wb_sunny</span>
+      <span class="material-symbols-outlined" id="themeMoon" style="display:none;">nightlight</span>
+    </button>
+  </div>
+</header>
+
+<main id="main" role="main">
+
+  <!-- Hero -->
+  <section class="hero" aria-label="Hero section">
+    <div class="hero__bg"></div>
+    <div class="hero__sun"></div>
+    <div class="hero__horizon"></div>
+    <div class="hero__clouds">
+      <div class="hero__cloud"></div><div class="hero__cloud"></div><div class="hero__cloud"></div>
+    </div>
+    <div class="hero__content">
+      <span class="hero__eyebrow">Generative Vector Art</span>
+      <h1 class="hero__h1">Draw Your Own Savanna</h1>
+      <p class="hero__sub">Pick a horizon and watch the sun, grass and wildlife outlines sketch themselves into being, line by line, ready to frame and export.</p>
+      <div class="hero__cta">
+        <button class="btn--primary">Start drawing</button>
+        <button class="btn--glass hero__draw-btn">Watch it draw</button>
+      </div>
+      <p class="hero__scroll-cue">Scroll down <span class="material-symbols-outlined">arrow_drop_down</span></p>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" class="features" aria-label="Features section">
+    <div class="features__grid">
+      <article class="features__card">
+        <div class="features__icon"><span class="material-symbols-outlined">vector_line</span></div>
+        <h3 class="features__h3">Self-Drawing Vectors</h3>
+        <p class="features__p">Every element animates onto the canvas as if drawn by hand, line by line.</p>
+      </article>
+      <article class="features__card">
+        <div class="features__icon"><span class="material-symbols-outlined">transparency</span></div>
+        <h3 class="features__h3">Glass Layering</h3>
+        <p class="features__p">Frosted surfaces and overlapping gradients create depth without clutter.</p>
+      </article>
+      <article class="features__card">
+        <div class="features__icon"><span class="material-symbols-outlined">grass</span></div>
+        <h3 class="features__h3">Living Scenes</h3>
+        <p class="features__p">Wildlife outlines rise from the horizon with staggered delays.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section id="how-it-works" class="howitworks" aria-label="How it works section">
+    <div class="howitworks__section">
+      <div class="howitworks__steps">
+        <div class="howitworks__step">
+          <div class="howitworks__num"><span class="material-symbols-outlined">tune</span></div>
+          <div class="howitworks__badge">
+            <h4>Choose your horizon</h4>
+            <p>Select a sky line; the scene’s foundation sets the mood.</p>
+          </div>
+        </div>
+        <span class="howitworks__connector"></span>
+        <div class="howitworks__step">
+          <div class="howitworks__num"><span class="material-symbols-outlined">play_arrow</span></div>
+          <div class="howitworks__badge">
+            <h4>Watch it draw</h4>
+            <p>Lines and grass grow in staggered sequence — a pure‑CSS animation.</p>
+          </div>
+        </div>
+        <span class="howitworks__connector"></span>
+        <div class="howitworks__step">
+          <div class="howitworks__num"><span class="material-symbols-outlined">frame</span></div>
+          <div class="howitworks__badge">
+            <h4>Frame &amp; export</h4>
+            <p>Download your vector savanna as SVG or PNG.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section id="testimonials" class="testimonials" aria-label="Testimonials section">
+    <div class="testimonials__grid">
+      <article class="testimonials__card">
+        <div class="testimonials__avatar">JD</div>
+        <p class="testimonials__quote">“The vector savanna feels alive — every blade of grass animates perfectly.”</p>
+        <div class="testimonials__name">Jordan D.</div>
+        <div class="testimonials__role">Creative Director</div>
+      </article>
+      <article class="testimonials__card">
+        <div class="testimonials__avatar">AS</div>
+        <p class="testimonials__quote">“Glass layering without the usual performance hit. Impressive.”</p>
+        <div class="testimonials__name">Avery S.</div>
+        <div class="testimonials__role">UI Designer</div>
+      </article>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section id="pricing" class="pricing" aria-label="Pricing section">
+    <div class="pricing__grid">
+      <article class="pricing__card">
+        <span class="pricing__tag">Wanderer</span>
+        <h3 class="pricing__name">Free tier</h3>
+        <p class="pricing__price">$0 <span>/ month</span></p>
+        <p class="pricing__tagline">Start creating without commitment.</p>
+        <ul class="pricing__list">
+          <li>5 scenes/month</li>
+          <li>Export PNG only</li>
+          <li>Community gallery</li>
+        </ul>
+        <button class="btn--ghost pricing__cta">Get started</button>
+      </article>
+      <article class="pricing__card pricing__popular">
+        <span class="pricing__tag">Explorer</span>
+        <h3 class="pricing__name">Most popular</h3>
+        <p class="pricing__price">$9 <span>/ month</span></p>
+        <p class="pricing__tagline">Unlock the full savanna.</p>
+        <ul class="pricing__list">
+          <li>Unlimited scenes</li>
+          <li>SVG export</li>
+          <li>High‑res PNG</li>
+        </ul>
+        <button class="btn--primary pricing__cta">Subscribe</button>
+      </article>
+      <article class="pricing__card">
+        <span class="pricing__tag">Cartographer</span>
+        <h3 class="pricing__name">Pro</h3>
+        <p class="pricing__price">$29 <span>/ month</span></p>
+        <p class="pricing__tagline">Professional workflow tools.</p>
+        <ul class="pricing__list">
+          <li>Commercial license</li>
+          <li>Batch export</li>
+          <li>Priority support</li>
+        </ul>
+        <button class="btn--ghost pricing__cta">Get started</button>
+      </article>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="faq" aria-label="FAQ section">
+    <div class="faq__list">
+      <div class="faq__item" open>
+        <summary class="faq__summary">How does the drawing animation work?</summary>
+        <p class="faq__answer">The scene is built with CSS keyframes that stroke‑reveal each vector path in sequence. No canvas or JS rendering is involved — pure stylesheet choreography.</p>
+      </div>
+      <div class="faq__item">
+        <summary class="faq__summary">Can I export the scene as SVG?</summary>
+        <p class="faq__answer">Yes. The entire savanna is constructed from vector‑compatible CSS shapes and gradients, so the final markup can be exported as clean SVG.</p>
+      </div>
+      <div class="faq__item">
+        <summary class="faq__summary">Is my data stored?</summary>
+        <p class="faq__answer">No. WILDLINE runs entirely client‑side. No scene data leaves your browser.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="cta" aria-label="Final CTA section">
+    <div class="cta__inner">
+      <h2 class="cta__h2">Join the herd</h2>
+      <p class="cta__sub">Enter your email and we’ll notify you when the savanna goes live.</p>
+      <form class="cta__form" novalidate>
+        <input class="cta__input" type="email" placeholder="you@email.com" required>
+        <button class="btn--primary cta__submit" type="submit">Join now</button>
+      </form>
+      <p class="cta__msg">No spam. Unsubscribe anytime.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer" role="contentinfo" aria-label="Footer">
+  <div class="footer__brand">WILDLINE</div>
+  <div class="footer__links">
+    <a class="footer__link" href="#features">Features</a>
+    <a class="footer__link" href="#how-it-works">How It Works</a>
+    <a class="footer__link" href="#pricing">Pricing</a>
+    <a class="footer__link" href="#faq">FAQ</a>
+  </div>
+  <div class="footer__social">
+    <span class="material-symbols-outlined" aria-label="Mail">mail</span>
+    <span class="material-symbols-outlined" aria-label="Share">share</span>
+    <span class="material-symbols-outlined" aria-label="RSS">rss_feed</span>
+    <span class="material-symbols-outlined" aria-label="Language">language</span>
+  </div>
+  <div class="footer__copyright">© 2026 WILDLINE. All rights reserved.</div>
+</footer>
+
+<script>
+/* --- Theme toggle with localStorage + prefers-color-scheme --- */
+(function(){
+  const html = document.documentElement;
+  const toggle = document.getElementById('themeToggle');
+  const sun = document.getElementById('themeSun');
+  const moon = document.getElementById('themeMoon');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+
+  function setTheme(isDark){
+    html.classList.toggle('dark', isDark);
+    toggle.setAttribute('aria-pressed', isDark);
+    toggle.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+    sun.style.display = isDark ? 'none' : 'inline';
+    moon.style.display = isDark ? 'inline' : 'none';
+    localStorage.setItem('wildline-theme', isDark ? 'dark' : 'light');
+  }
+
+  const stored = localStorage.getItem('wildline-theme');
+  if(stored) setTheme(stored === 'dark');
+  else setTheme(prefersDark.matches);
+
+  toggle.addEventListener('click',()=> setTheme(!html.classList.contains('dark')));
+})();
+
+/* --- IntersectionObserver for scroll choreography --- */
+(function(){
+  const observer = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting) entry.target.classList.add('in-view');
+    });
+  }, {threshold:0.2, rootMargin:'-20% 0px -20% 0px'});
+
+  document.querySelectorAll('.reveal,.howitworks__step,.pricing__card,.faq__item').forEach(el=> observer.observe(el));
+})();
+
+/* --- Simple form feedback for CTA --- */
+(()=>{
+  const form = document.querySelector('.cta__form');
+  if(!form) return;
+  const input = form.querySelector('.cta__input');
+  const submit = form.querySelector('.cta__submit');
+  const msg = document.querySelector('.cta__msg');
+  form.addEventListener('submit', e=>{
+    e.preventDefault();
+    const val = input.value.trim();
+    if(!val) return;
+    // simulate success
+    msg.textContent = 'Welcome to the herd — check your inbox.';
+    msg.style.color = 'var(--text-success)';
+    form.reset();
+  });
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nimbus - The Unpolished Tool</title>
+<link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Rounded" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans&family=Permanent+Marker&family=VT323&display=swap" rel="stylesheet">
+<style>
+/* Anti-Design — design tokens */
+/* 2016–present | Reaction against polished 'design-by-committee' minimalism */
+/* Reference specification: references/00-flagship-implementation-specs/anti-design.md */
+:root {
+  /* color */
+  --color-bg: #ffe600;
+  --color-surface: #ff00ff;
+  --color-surface-strong: #00ffff;
+  --color-border: #000000;
+  --color-text: #000000;
+  --color-text-muted: #1a1a1a;
+  --color-primary: #0000ff;
+  --color-accent: #ff0000;
+
+  /* mandatory canonical aliases */
+  --primary: var(--color-primary);
+  --secondary: var(--color-accent);
+  --bg-primary: var(--color-bg);
+  --bg-secondary: var(--color-surface);
+  --text-primary: var(--color-text);
+  --text-secondary: var(--color-text-muted);
+  --text-success: #006400;   /* must validate ≥4.5:1 on every surface it renders on */
+  --text-error: #b30000;     /* decorative #ff0000 is reserved for borders/shadows/large display text only */
+  --border-default: var(--color-border);
+  --border-error: #b30000;
+  --border-success: #006400;
+  --focus-color: #0000ff;    /* redefined in dark mode — see 1.3 */
+
+  /* radius: none, deliberately harsh defaults */
+  --radius-sm: 0px; --radius-md: 0px; --radius-lg: 0px; --radius-pill: 0px;
+
+  /* shadow: clashing double offset, mimicking mis-registered print */
+  --shadow-sm: 3px 3px 0 #ff0000;
+  --shadow-md: 5px 5px 0 #0000ff, -3px -3px 0 #00ffff;
+  --shadow-lg: 8px 8px 0 #ff0000, -5px -5px 0 #0000ff;
+
+  /* font: deliberately clashing default-browser choices */
+  --font-sans: 'Times New Roman', Times, serif, 'Open Sans', sans-serif;
+  --font-display: 'Comic Sans MS', 'Chalkboard SE', cursive, 'Permanent Marker', cursive;
+  --font-mono: 'Courier New', monospace, 'VT323', monospace;
+  --font-base: var(--font-sans);
+
+  /* text: default browser sizes exaggerated */
+  --text-xs: 0.7rem; --text-sm: 0.9rem; --text-base: 1rem; --text-lg: 1.2rem;
+  --text-xl: 1.6rem; --text-2xl: 2.1rem; --text-3xl: 2.8rem;
+  --text-4xl: 3.6rem; --text-5xl: 4.8rem;
+
+  /* space */
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-6: 24px; --space-8: 32px; --space-12: 48px; --space-16: 64px; --space-24: 96px;
+  --spacing-gap: var(--space-4);
+
+  /* transitions: abrupt, no easing — but durations exist so state changes are perceivable */
+  --transition-fast: 60ms; --transition-normal: 120ms; --ease-standard: steps(1);
+
+  /* elevation/stacking */
+  --z-dropdown: 1000; --z-modal: 1100; --z-toast: 1200;
+
+  /* intentional misregistration rotation */
+  --tilt-a: rotate(-1.6deg);
+  --tilt-b: rotate(1.1deg);
+
+  /* color-scheme for light mode */
+  color-scheme: light;
+}
+
+/* Dark mode overrides */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #1a1a1a;
+    --color-text: #ffffff;
+    --color-text-muted: #d9d9d9;
+    --color-border: #fefefe;
+    --focus-color: #ffff00;
+    --text-success: #00ff00;
+    --text-error: #ff4d4d;
+    --border-error: #ff4d4d;
+    --border-success: #00ff00;
+    /* Neon surfaces keep black text for contrast */
+    --color-surface: #ff00ff;
+    --color-surface-strong: #00ffff;
+    color-scheme: dark;
+  }
+}
+.dark {
+  --color-bg: #1a1a1a;
+  --color-text: #ffffff;
+  --color-text-muted: #d9d9d9;
+  --color-border: #fefefe;
+  --focus-color: #ffff00;
+  --text-success: #00ff00;
+  --text-error: #ff4d4d;
+  --border-error: #ff4d4d;
+  --border-success: #00ff00;
+  /* Neon surfaces keep black text for contrast */
+  --color-surface: #ff00ff;
+  --color-surface-strong: #00ffff;
+  color-scheme: dark;
+}
+
+/* Base styles */
+* {
+  box-sizing: border-box;
+}
+html {
+  font-size: 100%;
+}
+body {
+  margin: 0;
+  font-family: var(--font-base);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.5;
+  overflow-x: clip;
+}
+a {
+  color: var(--text-primary);
+  text-decoration: underline;
+}
+h1, h2, h3, h4, h5, h6 {
+  margin: 0 0 var(--space-2) 0;
+  font-weight: bold;
+  font-family: var(--font-display);
+}
+p {
+  margin: 0 0 var(--space-4) 0;
+}
+.material-symbols-rounded {
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 400,
+  'GRAD' 0,
+  'opsz' 24;
+}
+
+/* Nav */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-dropdown);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-6);
+  background-color: var(--bg-secondary);
+  border: 3px solid var(--border-default);
+  box-shadow: var(--shadow-md);
+  transform: var(--tilt-a);
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+.nav__brand {
+  font-size: var(--text-3xl);
+  font-family: var(--font-display);
+  text-decoration: none;
+}
+.nav__links {
+  display: flex;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+.nav__link {
+  padding: var(--space-2) var(--space-4);
+  text-decoration: none;
+  font-family: var(--font-display);
+}
+.nav__toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: none;
+  border: 3px solid var(--border-default);
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  cursor: pointer;
+  transform: var(--tilt-b);
+  transition: transform var(--transition-normal) var(--ease-standard);
+}
+.nav__toggle:hover {
+  transform: rotate(0deg);
+}
+.nav__toggle:focus-visible {
+  outline: 4px dashed var(--focus-color);
+  outline-offset: 4px;
+}
+.nav__toggle[aria-pressed="true"] .dark-mode-icon,
+.nav__toggle[aria-pressed="false"] .light-mode-icon {
+  display: none;
+}
+.nav__toggle[aria-pressed="true"] .light-mode-icon,
+.nav__toggle[aria-pressed="false"] .dark-mode-icon {
+  display: inline-block;
+}
+
+/* Hero */
+.hero {
+  padding: var(--space-24) var(--space-6);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: var(--bg-secondary);
+  border: 3px solid var(--border-default);
+  box-shadow: var(--shadow-lg);
+  transform: var(--tilt-a);
+  z-index: -1;
+}
+.hero__title {
+  font-size: clamp(var(--text-3xl), 8vw, var(--text-5xl));
+  margin-bottom: var(--space-4);
+  line-height: 1.1;
+}
+.hero__subtitle {
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  margin-bottom: var(--space-6);
+  color: var(--text-muted);
+}
+.hero__ctas {
+  display: flex;
+  gap: var(--space-4);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.hero__badge {
+  display: inline-block;
+  padding: var(--space-2) var(--space-4);
+  background-color: var(--color-surface);
+  border: 3px solid var(--border-default);
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  transform: var(--tilt-b);
+  margin: var(--space-4) 0;
+}
+.hero__marquee {
+  display: flex;
+  gap: var(--space-8);
+  overflow: hidden;
+  margin-top: var(--space-8);
+  font-family: var(--font-mono);
+  font-size: var(--text-xl);
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+.hero__marquee span {
+  display: inline-block;
+  padding: 0 var(--space-4);
+  animation: marquee 10s linear infinite;
+}
+@keyframes marquee {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero__marquee span {
+    animation: none;
+  }
+}
+
+/* Buttons */
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  font-family: var(--font-display);
+  font-weight: bold;
+  border: 3px solid var(--border-default);
+  background-color: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  min-height: 44px;
+  min-width: 44px;
+  transform: var(--tilt-b);
+  box-shadow: var(--shadow-sm);
+  transition: background-color var(--transition-fast) var(--ease-standard),
+              transform var(--transition-normal) var(--ease-standard);
+}
+.btn:hover {
+  background-color: #d0d0d0;
+  transform: rotate(0deg);
+}
+.btn:focus-visible {
+  outline: 4px dashed var(--focus-color);
+  outline-offset: 4px;
+}
+.btn:active {
+  box-shadow: none;
+  transform: translate(3px, 3px);
+}
+.btn--loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+.btn--loading .btn__loading-icon {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+}
+.btn--loading .btn__label {
+  visibility: hidden;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn--loading .btn__loading-icon {
+    animation: none;
+  }
+  .btn--loading .btn__label {
+    visibility: visible;
+  }
+}
+.btn--primary {
+  --btn-bg: var(--color-primary);
+  --btn-text: #ffffff;
+}
+.btn--primary:hover {
+  background-color: var(--btn-bg);
+  color: var(--btn-text);
+}
+.btn {
+  background-color: var(--btn-bg, transparent);
+  color: var(--btn-text, var(--text-primary));
+}
+.btn--success {
+  --btn-bg: var(--color-surface);
+  --btn-text: var(--text-success);
+  border-color: var(--border-success);
+}
+.btn--success:hover {
+  background-color: var(--btn-bg);
+  color: var(--btn-text);
+}
+.btn--error {
+  --btn-bg: var(--color-surface);
+  --btn-text: var(--text-error);
+  border-color: var(--border-error);
+}
+.btn--error:hover {
+  background-color: var(--btn-bg);
+  color: var(--btn-text);
+}
+.btn--danger {
+  --btn-bg: var(--color-surface);
+  --btn-text: #b30000;
+  border-color: var(--border-error);
+}
+.btn--danger:hover {
+  background-color: var(--btn-bg);
+  color: var(--btn-text);
+}
+.btn__loading-icon,
+.btn__success-icon,
+.btn__error-icon {
+  display: none;
+}
+.btn--loading .btn__loading-icon,
+.btn--success .btn__success-icon,
+.btn--error .btn__error-icon {
+  display: inline-block;
+}
+.btn--loading .btn__label,
+.btn--success .btn__label,
+.btn--error .btn__label {
+  display: none;
+}
+
+/* Cards */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  background-color: var(--bg-secondary);
+  border: 3px solid var(--border-default);
+  box-shadow: var(--shadow-lg);
+  transform: var(--tilt-a);
+  transition: transform var(--transition-normal) var(--ease-standard),
+              box-shadow var(--transition-normal) var(--ease-standard);
+}
+.card:hover {
+  transform: var(--tilt-b);
+  box-shadow: 9px 9px 0 #ff0000, -6px -6px 0 #0000ff;
+}
+.card:focus-within {
+  border-color: var(--focus-color);
+  outline: 4px dashed var(--focus-color);
+  outline-offset: 4px;
+}
+.card--feature {
+  text-align: center;
+}
+.card--feature .material-symbols-rounded {
+  font-size: var(--text-3xl);
+}
+.card--testimonial {
+  background-color: var(--bg-secondary);
+}
+.card--testimonial blockquote {
+  margin: 0;
+  font-style: italic;
+}
+.card--testimonial cite {
+  display: block;
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  font-family: var(--font-display);
+}
+.card--pricing {
+  text-align: center;
+}
+.card--pricing .price {
+  font-size: var(--text-4xl);
+  font-family: var(--font-display);
+  margin: var(--space-4) 0;
+}
+.card--pricing .badge {
+  align-self: center;
+}
+.card--skeleton {
+  background: repeating-linear-gradient(
+    90deg,
+    var(--bg-secondary) 0px,
+    var(--bg-secondary) 40px,
+    #f0f0f0 40px,
+    #f0f0f0 80px
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s linear infinite;
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card--skeleton {
+    animation: none;
+    background: var(--bg-secondary);
+  }
+}
+
+/* Inputs */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: 100%;
+}
+.input-group label {
+  font-weight: bold;
+  font-family: var(--font-display);
+}
+.input {
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-base);
+  font-size: var(--text-base);
+  border: 3px solid var(--border-default);
+  background-color: #fefefe;
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--transition-fast) var(--ease-standard);
+}
+.input:focus {
+  outline: 4px dashed var(--focus-color);
+  outline-offset: 4px;
+  border-color: var(--focus-color);
+}
+.input--valid {
+  border-color: var(--border-success);
+}
+.input--invalid {
+  border-color: var(--border-error);
+}
+.input-error {
+  min-height: 1.5em;
+  font-size: var(--text-sm);
+  font-family: var(--font-mono);
+  color: var(--text-error);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.input-error .material-symbols-rounded {
+  font-size: var(--text-xl);
+}
+
+/* Badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  border: 3px solid var(--border-default);
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  transform: var(--tilt-b);
+}
+.badge--accent {
+  background-color: var(--color-accent);
+  color: #ffffff;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: var(--space-6);
+  right: var(--space-6);
+  z-index: var(--z-toast);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-6);
+  border: 3px solid var(--border-default);
+  box-shadow: var(--shadow-lg);
+  transform: var(--tilt-a);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-fast) var(--ease-standard);
+}
+.toast--visible {
+  opacity: 1;
+  pointer-events: all;
+}
+.toast--success {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-success);
+}
+.toast--error {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-error);
+}
+.toast__icon {
+  font-size: var(--text-xl);
+}
+.toast__message {
+  font-family: var(--font-base);
+}
+
+/* Features */
+.features {
+  display: flex;
+  gap: var(--space-6);
+  padding: var(--space-24) var(--space-6);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.features::-webkit-scrollbar {
+  display: none;
+}
+.features .card {
+  flex: 0 0 280px;
+}
+
+/* How It Works */
+.how-it-works {
+  padding: var(--space-24) var(--space-6);
+}
+.how-it-works ol {
+  counter-reset: step;
+  list-style: none;
+  padding: 0;
+  display: flex;
+  gap: var(--space-6);
+}
+.how-it-works li {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.how-it-works li::before {
+  counter-increment: step;
+  content: counter(step);
+  font-family: var(--font-display);
+  font-size: var(--text-5xl);
+  color: var(--text-primary);
+  transform: var(--tilt-a);
+  margin-bottom: var(--space-4);
+}
+.how-it-works .step-title {
+  font-family: var(--font-mono);
+  font-weight: bold;
+  margin: var(--space-2) 0;
+}
+
+/* Testimonials */
+.testimonials {
+  display: flex;
+  gap: var(--space-6);
+  padding: var(--space-24) var(--space-6);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.testimonials::-webkit-scrollbar {
+  display: none;
+}
+.testimonials .card {
+  flex: 0 0 300px;
+}
+
+/* Pricing */
+.pricing {
+  display: flex;
+  gap: var(--space-6);
+  padding: var(--space-24) var(--space-6);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.pricing::-webkit-scrollbar {
+  display: none;
+}
+.pricing .card {
+  flex: 0 0 280px;
+}
+.pricing .card--highlighted {
+  background-color: var(--color-surface-strong);
+  transform: var(--tilt-b);
+}
+.pricing .card--highlighted:hover {
+  transform: var(--tilt-a);
+  box-shadow: 9px 9px 0 #ff0000, -6px -6px 0 #0000ff;
+}
+.pricing .features-list {
+  list-style: none;
+  padding: 0;
+  margin: var(--space-4) 0;
+  text-align: left;
+}
+.pricing .features-list li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: var(--space-2) 0;
+  font-family: var(--font-mono);
+}
+.pricing .features-list li .material-symbols-rounded {
+  font-size: var(--text-lg);
+}
+
+/* FAQ */
+.faq {
+  padding: var(--space-24) var(--space-6);
+}
+.faq details {
+  border: 3px solid var(--border-default);
+  margin: var(--space-4) 0;
+  padding: var(--space-4);
+  background-color: var(--bg-secondary);
+}
+.faq summary {
+  font-family: var(--font-display);
+  font-weight: bold;
+  list-style: none;
+  padding: var(--space-2) 0;
+  cursor: pointer;
+}
+.faq summary::-webkit-details-marker {
+  display: none;
+}
+.faq summary::after {
+  content: "+";
+  float: right;
+  font-size: var(--text-xl);
+  transform: var(--tilt-b);
+}
+.faq details[open] summary::after {
+  content: "−";
+  transform: rotate(90deg) var(--tilt-b);
+}
+.faq summary:focus-visible {
+  outline: 4px dashed var(--focus-color);
+  outline-offset: 4px;
+}
+.faq .faq-panel {
+  margin-top: var(--space-4);
+  font-family: var(--font-base);
+}
+
+/* Final CTA */
+.final-cta {
+  padding: var(--space-24) var(--space-6);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.final-cta::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: var(--bg-secondary);
+  border: 3px solid var(--border-default);
+  box-shadow: var(--shadow-lg);
+  transform: var(--tilt-a);
+  z-index: -1;
+}
+.final-cta__title {
+  font-size: clamp(var(--text-3xl), 10vw, var(--text-5xl));
+  margin-bottom: var(--space-8);
+  line-height: 1.1;
+}
+.final-cta__form {
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.final-cta__submit {
+  align-self: center;
+}
+
+/* Footer */
+.footer {
+  padding: var(--space-24) var(--space-6);
+  background-color: var(--bg-secondary);
+  border-top: 3px solid var(--border-default);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+  justify-content: space-between;
+}
+.footer__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.footer__title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  margin-bottom: var(--space-4);
+}
+.footer__link {
+  text-decoration: none;
+  font-family: var(--font-mono);
+}
+.footer__link:focus-visible {
+  text-decoration: underline;
+  text-decoration-style: dashed;
+  text-decoration-color: var(--focus-color);
+}
+.footer__copyright {
+  margin-top: var(--space-16);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  text-align: center;
+  width: 100%;
+}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="#hero" class="nav__brand">Nimbus</a>
+  <div class="nav__links">
+    <a href="#features" class="nav__link">Features</a>
+    <a href="#how-it-works" class="nav__link">How It Works</a>
+    <a href="#testimonials" class="nav__link">Testimonials</a>
+    <a href="#pricing" class="nav__link">Pricing</a>
+    <a href="#faq" class="nav__link">FAQ</a>
+    <a href="#final-cta" class="nav__link">Contact</a>
+  </div>
+  <button class="nav__toggle" id="theme-toggle" aria-pressed="false" aria-label="Toggle dark mode">
+    <span class="light-mode-icon material-symbols-rounded">dark_mode</span>
+    <span class="dark-mode-icon material-symbols-rounded">light_mode</span>
+  </button>
+</nav>
+
+<section class="hero" id="hero" aria-labelledby="hero-title">
+  <h1 class="hero__title" id="hero-title">Embrace the Glitch</h1>
+  <p class="hero__subtitle">A tool so raw it laughs at your Figma prototypes.</p>
+  <div class="hero__ctas">
+    <button class="btn btn--primary">Get Started</button>
+    <button class="btn">Learn More</button>
+  </div>
+  <div class="hero__badge">Anti-Design Certified</div>
+  <div class="hero__marquee" aria-hidden="true">
+    <span>GLITCH</span><span>GLITCH</span><span>GLITCH</span><span>GLITCH</span><span>GLITCH</span>
+  </div>
+</section>
+
+<section class="features" id="features">
+  <div class="card card--feature">
+    <span class="material-symbols-rounded">bolt</span>
+    <h3>Instant Chaos</h3>
+    <p>Zero setup. Maximum disruption. Your workflow, now with 200% more entropy.</p>
+  </div>
+  <div class="card card--feature">
+    <span class="material-symbols-rounded">palette</span>
+    <h3>Clash Mode</h3>
+    <p>Intentionally ugly palettes that make your boss question your life choices.</p>
+  </div>
+  <div class="card card--feature">
+    <span class="material-symbols-rounded">code</span>
+    <h3>Broken by Design</h3>
+    <p>Semantic HTML? We prefer tables for layout and Comic Sans for headers.</p>
+  </div>
+</section>
+
+<section class="how-it-works" id="how-it-works">
+  <h2>How It Works</h2>
+  <ol>
+    <li>
+      <div class="step-title">Install</div>
+      <p>Copy-paste one line. Ignore the warnings. Feel the power.</p>
+    </li>
+    <li>
+      <div class="step-title">Configure</div>
+      <p>Edit the config file with Notepad. Yes, really.</p>
+    </li>
+    <li>
+      <div class="step-title">Glitch</div>
+      <p>Watch as your UI transforms into a beautiful disaster.</p>
+    </li>
+  </ol>
+</section>
+
+<section class="testimonials" id="testimonials">
+  <h2>What People Are Saying</h2>
+  <div class="card card--testimonial">
+    <blockquote>"Finally, a tool that understands my aesthetic vision of controlled chaos."</blockquote>
+    <cite>— Alex, Digital Anarchist</cite>
+  </div>
+  <div class="card card--testimonial">
+    <blockquote>"My design team quit. My users are confused. I've never been happier."</blockquote>
+    <cite>— Sam, Startup Founder</cite>
+  </div>
+  <div class="card card--testimonial">
+    <blockquote>"It's like if Geocities and Brutalism had a baby raised by wolves."</blockquote>
+    <cite>— Taylor, UI Rebel</cite>
+  </div>
+</section>
+
+<section class="pricing" id="pricing">
+  <h2>Pricing Tiers</h2>
+  <div class="card card--pricing">
+    <h3>Hobbyist</h3>
+    <div class="price">$0</div>
+    <p>For the brave souls who enjoy pain.</p>
+    <ul class="features-list">
+      <li><span class="material-symbols-rounded">check_circle</span> Basic glitching</li>
+      <li><span class="material-symbols-rounded">check_circle</span> Community support</li>
+      <li><span class="material-symbols-rounded">close</span> No updates</li>
+    </ul>
+    <button class="btn">Choose Free</button>
+  </div>
+  <div class="card card--pricing card--highlighted">
+    <h3>Professional</h3>
+    <div class="price">$19<span class="text-xs">/mo</span></div>
+    <div class="badge">MOST POPULAR</div>
+    <p>For when you need to impress your art school friends.</p>
+    <ul class="features-list">
+      <li><span class="material-symbols-rounded">check_circle</span> Advanced clashing</li>
+      <li><span class="material-symbols-rounded">check_circle</span> Priority chaos</li>
+      <li><span class="material-symbols-rounded">check_circle</span> 24/7 scream support</li>
+    </ul>
+    <button class="btn btn--primary">Get Professional</button>
+  </div>
+  <div class="card card--pricing">
+    <h3>Enterprise</h3>
+    <div class="price">$99<span class="text-xs">/mo</span></div>
+    <p>For corporations that want to look intentionally terrible.</p>
+    <ul class="features-list">
+      <li><span class="material-symbols-rounded">check_circle</span> Custom entropy levels</li>
+      <li><span class="material-symbols-rounded">check_circle</span> Dedicated glitch engineer</li>
+      <li><span class="material-symbols-rounded">check_circle</span> SLA: 99.9% ugliness</li>
+    </ul>
+    <button class="btn">Contact Sales</button>
+  </div>
+</section>
+
+<section class="faq" id="faq">
+  <h2>Frequently Questioned Answers</h2>
+  <details class="faq__item">
+    <summary>Why does it look like this?</summary>
+    <div class="faq-panel">
+      <p>Because polished design is soulless. We embrace the raw, the unrefined, the beautifully broken.</p>
+    </div>
+  </details>
+  <details class="faq__item">
+    <summary>Is this accessible?</summary>
+    <div class="faq-panel">
+      <p>Yes! We prioritize usable chaos: proper contrast, keyboard navigation, and screen reader friendliness.</p>
+    </div>
+  </details>
+  <details class="faq__item">
+    <summary>Can I use this for my bank?</summary>
+    <div class="faq-panel">
+      <p>Only if you want your customers to question their life choices. We recommend against it.</p>
+    </div>
+  </details>
+  <details class="faq__item">
+    <summary>Do you offer refunds?</summary>
+    <div class="faq-panel">
+      <p>Refunds are for people who regret their decisions. We sell enlightenment through discomfort.</p>
+    </div>
+  </details>
+  <details class="faq__item">
+    <summary>How do I report a bug?</summary>
+    <div class="faq-panel">
+      <p>If it's ugly, it's working. If it's beautiful, that's the bug. Email us at chaos@nimbus.example.</p>
+    </div>
+  </details>
+</section>
+
+<section class="final-cta" id="final-cta">
+  <h2 class="final-cta__title" id="final-cta-title">Ready to Embrace the Ugly?</h2>
+  <form class="final-cta__form" id="cta-form">
+    <label for="email-input" class="visually-hidden">Email Address</label>
+    <div class="input-group">
+      <label for="email-input">Email Address</label>
+      <input type="email" id="email-input" class="input" placeholder="your@email.com" required>
+      <div class="input-error" aria-live="polite" aria-atomic="true">
+        <span class="material-symbols-rounded">error</span>
+        <span id="email-error">Please enter a valid email address</span>
+      </div>
+    </div>
+    <button type="submit" class="btn btn--primary" id="cta-submit">
+      <span class="btn__label">Subscribe</span>
+      <span class="btn__loading-icon material-symbols-rounded">progress_activity</span>
+    </button>
+  </form>
+</section>
+
+<footer class="footer">
+  <div class="footer__section">
+    <div class="footer__title">Product</div>
+    <a href="#features" class="footer__link">Features</a>
+    <a href="#how-it-works" class="footer__link">How It Works</a>
+    <a href="#pricing" class="footer__link">Pricing</a>
+  </div>
+  <div class="footer__section">
+    <div class="footer__title">Company</div>
+    <a href="#final-cta" class="footer__link">Contact</a>
+    <a href="#" class="footer__link">About</a>
+    <a href="#" class="footer__link">Blog</a>
+  </div>
+  <div class="footer__section">
+    <div class="footer__title">Legal</div>
+    <a href="#" class="footer__link">Privacy</a>
+    <a href="#" class="footer__link">Terms</a>
+  </div>
+  <div class="footer__copyright">© 2026 Nimbus. All rights reserved.</div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span class="toast__icon material-symbols-rounded">check_circle</span>
+  <span class="toast__message">Subscribed successfully!</span>
+</div>
+
+<script>
+// Theme management
+const htmlEl = document.documentElement;
+const themeToggle = document.getElementById('theme-toggle');
+const STORAGE_KEY = 'nimbus-theme';
+
+function setTheme(isDark) {
+  if (isDark) {
+    htmlEl.classList.add('dark');
+    htmlEl.classList.remove('light');
+    themeToggle.setAttribute('aria-pressed', 'true');
+  } else {
+    htmlEl.classList.add('light');
+    htmlEl.classList.remove('dark');
+    themeToggle.setAttribute('aria-pressed', 'false');
+  }
+  localStorage.setItem(STORAGE_KEY, isDark ? 'dark' : 'light');
+}
+
+function initTheme() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved === 'dark') {
+    setTheme(true);
+  } else if (saved === 'light') {
+    setTheme(false);
+  } else {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    setTheme(prefersDark);
+  }
+}
+
+themeToggle.addEventListener('click', () => {
+  const isDark = !htmlEl.classList.contains('dark');
+  setTheme(isDark);
+});
+
+// Form handling
+const form = document.getElementById('cta-form');
+const emailInput = document.getElementById('email-input');
+const submitBtn = document.getElementById('cta-submit');
+const errorEl = document.getElementById('email-error');
+const toast = document.getElementById('toast');
+
+function showToast(message, type = 'success') {
+  toast.querySelector('.toast__message').textContent = message;
+  toast.className = `toast toast--${type}`;
+  toast.classList.add('toast--visible');
+  setTimeout(() => {
+    toast.classList.remove('toast--visible');
+  }, 4000);
+}
+
+function validateEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const email = emailInput.value.trim();
+  
+  if (!validateEmail(email)) {
+    emailInput.classList.add('input--invalid');
+    emailInput.classList.remove('input--valid');
+    errorEl.textContent = 'Please enter a valid email address';
+    return;
+  }
+  
+  emailInput.classList.add('input--valid');
+  emailInput.classList.remove('input--invalid');
+  errorEl.textContent = '';
+  
+  // Simulate loading
+  submitBtn.classList.add('btn--loading');
+  submitBtn.disabled = true;
+  
+  setTimeout(() => {
+    submitBtn.classList.remove('btn--loading');
+    submitBtn.disabled = false;
+    showToast('Thanks for subscribing! Get ready for glorious ugliness.', 'success');
+    form.reset();
+    emailInput.classList.remove('input--valid');
+  }, 1500);
+});
+
+// FAQ accordion (native details/summary needs no JS for basic functionality)
+// Enhanced for focus styles
+document.querySelectorAll('details').forEach(detail => {
+  detail.addEventListener('toggle', () => {
+    if (detail.open) {
+      detail.firstElementChild.focus();
+    }
+  });
+});
+
+// Prevent double submission on rapid clicks
+let isSubmitting = false;
+form.addEventListener('submit', (e) => {
+  if (isSubmitting) {
+    e.preventDefault();
+    return;
+  }
+  isSubmitting = true;
+  setTimeout(() => { isSubmitting = false; }, 2000);
+});
+
+// Initialize theme on load
+initTheme();
+</script>
+</body>
+</html>

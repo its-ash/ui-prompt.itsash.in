@@ -1,9 +1,12 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
+import { readModes } from './lib/modes.mjs';
 
-const DEMO_DIR = path.resolve('design/demos');
-const STATE_FILE = path.resolve('.demo-state.json');
+const DARK = process.env.DEMO_VARIANT === 'dark';
+const DEMO_DIR = path.resolve(DARK ? 'design/demos-dark' : 'design/demos');
+const STATE_FILE = path.resolve(DARK ? '.demo-dark-state.json' : '.demo-state.json');
+const DARK_OVERRIDE = `\nDARK VARIANT: Render this theme in its dark mode by default. Use dark backgrounds, light text, and accents adjusted for contrast on dark surfaces, while keeping the theme's identity (typography, layout, motifs). Do not include a light/dark toggle.`;
 const CONCURRENCY = Number(process.env.DEMO_CONCURRENCY ?? 6);
 const NVIDIA_URL = 'https://integrate.api.nvidia.com/v1/chat/completions';
 const NVIDIA_KEY = process.env.NVIDIA_API_KEY ?? '';
@@ -99,7 +102,14 @@ function cleanHtml(text) {
 }
 
 function looksLikeHtml(out) {
-  return /<!DOCTYPE html/i.test(out) && /<\/html>/i.test(out) && out.length > 3000;
+  return (
+    /<!DOCTYPE html/i.test(out) &&
+    /<\/html>/i.test(out) &&
+    /<title>[^<]*<\/title>/i.test(out) &&
+    /<style[\s>]/i.test(out) &&
+    !/<link[^>]+href=["'](?!https?:)[^"']+\.css/i.test(out) &&
+    out.length > 3000
+  );
 }
 
 async function buildDemo(file) {
@@ -113,7 +123,9 @@ async function buildDemo(file) {
   if (!fs.existsSync(promptPath)) throw new Error('prompt missing');
   const spec = fs.readFileSync(promptPath, 'utf8');
 
-  const out = await callModel(spec);
+  const out = await callModel(
+    `${spec}\n\n---\nDELIVERY OVERRIDE: Output one self-contained HTML file. Put every CSS rule the spec assigns to style.css inside a single <style> tag in <head>, and every script inside an inline <script>. No local <link rel="stylesheet">, no <script src> to local files. Close the <title> tag.${DARK ? DARK_OVERRIDE : ''}`
+  );
   if (!looksLikeHtml(out)) throw new Error(`not html (len ${out.length})`);
   fs.writeFileSync(outPath, out + '\n');
   state.done[id] = { at: new Date().toISOString(), bytes: out.length };
@@ -121,16 +133,18 @@ async function buildDemo(file) {
   console.log(`ok    ${id} (${Math.round(out.length / 1024)} KB)`);
 }
 
+const modes = DARK ? readModes() : {};
 const prompts = fs
   .readdirSync(path.resolve('design/prompts'))
   .filter((f) => f.endsWith('.md'))
   .filter((f) => {
     const id = path.basename(f, '.md');
     const out = path.join(DEMO_DIR, `${id}.html`);
+    if (DARK && !(modes[id]?.method === 'none' && modes[id]?.base === 'light')) return false;
     return !(fs.existsSync(out) && looksLikeHtml(fs.readFileSync(out, 'utf8')));
   });
 if (process.env.DEMO_REVERSE === '1') prompts.reverse();
-console.log(`[build-demos] ${prompts.length} pending, models=${MODELS.join('|')}, concurrency=${CONCURRENCY}`);
+console.log(`[build-demos] ${DARK ? 'dark ' : ''}${prompts.length} pending, models=${MODELS.join('|')}, concurrency=${CONCURRENCY}`);
 let idx = 0;
 
 async function worker() {

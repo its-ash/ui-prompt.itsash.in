@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aurora Evolved – Gradient Mesh Design Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<style>
+@layer tokens, base, layout, components, utilities;
+
+/* ----- Tokens ----- */
+@layer tokens {
+  :root {
+    --primary: #0066FF;
+    --secondary: #FF00FF;
+    --bg-primary: #f4f6fc;
+    --bg-secondary: #eef2ff;
+    --text-primary: #0a0b16;
+    --text-secondary: #555;
+    --text-success: #00c853;
+    --text-error: #ff3d00;
+    --border-default: #ccc;
+    --border-error: var(--text-error);
+    --border-success: var(--text-success);
+    --aurora-cyan: #00FFFF;
+    --aurora-magenta: #FF00FF;
+    --aurora-yellow: #FFFF00;
+    --aurora-blue: #0066FF;
+    --aurora-green: #00FF66;
+    --gradient-aurora: linear-gradient(135deg, var(--aurora-cyan) 0%, var(--aurora-magenta) 20%, var(--aurora-yellow) 40%, var(--aurora-blue) 60%, var(--aurora-green) 80%);
+    --gradient-accent: linear-gradient(45deg, var(--aurora-cyan), var(--aurora-magenta));
+    --gradient-holo: conic-gradient(from 0deg, var(--aurora-cyan), var(--aurora-magenta), var(--aurora-yellow), var(--aurora-blue), var(--aurora-green));
+    --text-on-gradient: #0a0b16;
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 22px;
+    --shadow-sm: 0 2px 6px rgba(0,0,0,0.08);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.15);
+    --glow: 0 0 12px rgba(0,255,255,0.4);
+    --spacing-gap: 1.5rem;
+    --transition-fast: 150ms;
+    --transition-normal: 300ms;
+    --ease-standard: cubic-bezier(0.4,0,0.2,1);
+    --aurora-duration: 20s;
+    --font-display: 'Space Grotesk', system-ui, sans-serif;
+    --font-base: 'Inter', system-ui, sans-serif;
+    --glass-bg: rgba(255,255,255,0.6);
+    --glass-border: rgba(255,255,255,0.3);
+    --z-dropdown: 1000;
+    --z-modal: 1500;
+    --z-toast: 2000;
+  }
+  .dark {
+    --bg-primary: #0a0b16;
+    --bg-secondary: #111827;
+    --text-primary: #e5e7eb;
+    --text-secondary: #9ca3af;
+    --text-success: #6ee7b7;
+    --text-error: #f87171;
+    --border-default: #374151;
+    --border-error: var(--text-error);
+    --border-success: var(--text-success);
+    --text-on-gradient: #e5e7eb;
+    --glass-bg: rgba(17,24,39,0.6);
+    --glass-border: rgba(255,255,255,0.2);
+    --glow: 0 0 16px rgba(255,0,255,0.5);
+  }
+}
+
+/* ----- Base ----- */
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
+  html { font-size: 100%; scroll-behavior: smooth; }
+  body {
+    font-family: var(--font-base);
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+  a { color: var(--primary); text-decoration: none; }
+  a:hover { color: var(--secondary); }
+  img { max-width: 100%; height: auto; }
+  button, input, textarea { font: inherit; }
+  :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  }
+}
+
+/* ----- Layout ----- */
+@layer layout {
+  .container { width: 90%; max-width: 1200px; margin-inline: auto; }
+  .section { padding: 4rem 0; }
+  .header {
+    position: sticky; top: 0; z-index: var(--z-dropdown);
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--glass-border);
+    transition: background var(--transition-normal);
+  }
+  .header.is-scrolled { background: rgba(255,255,255,0.8); backdrop-filter: blur(8px); }
+  .header__container { display: flex; align-items: center; justify-content: space-between; height: 4.5rem; }
+  .header__brand { font-family: var(--font-display); font-weight: 700; font-size: 1.25rem; color: var(--text-primary); }
+  .header__nav { display: gap; gap: 2rem; }
+  .header__nav a { font-weight: 500; position: relative; }
+  .header__nav a::after { content:""; position:absolute; left:0; bottom:-2px; width:0; height:2px; background:var(--gradient-aurora); transition:width var(--transition-normal); }
+  .header__nav a:hover::after { width:100%; }
+  .header__cta { display:none; }
+  .header__menu-btn, .header__theme-toggle { background:none; border:none; cursor:pointer; font-size:1.5rem; color:var(--text-primary); padding:0.25rem; }
+  .header__menu-btn { display:none; }
+  .header__mobile-nav {
+    position:absolute; top:100%; left:0; right:0; background:var(--glass-bg);
+    backdrop-filter:blur(12px); border-top:1px solid var(--glass-border);
+    transform:scaleY(0); transform-origin:top; transition:transform var(--transition-normal) ease;
+    overflow:hidden; z-index:var(--z-dropdown);
+  }
+  .header__mobile-nav.open { transform:scaleY(1); }
+  .header__mobile-nav a { display:block; padding:1rem 1.5rem; border-bottom:1px solid var(--glass-border); }
+  .hero { position:relative; text-align:center; padding:6rem 1rem; color:var(--text-on-gradient); overflow:hidden; }
+  .hero::before { content:""; position:absolute; inset:0; background:var(--gradient-aurora); background-size:200% 200%; animation: auroraMove var(--aurora-duration) ease infinite; z-index:-2; }
+  .hero__badge { display:inline-block; font-size:0.875rem; font-weight:600; padding:0.3rem 0.8rem; border-radius:var(--radius-sm); background:rgba(255,255,255,0.2); backdrop-filter:blur(4px); margin-bottom:1rem; }
+  .hero__title { font-family:var(--font-display); font-size:clamp(2rem,5vw,3.5rem); margin-bottom:1rem; line-height:1.2; }
+  .hero__subtitle { font-size:1.125rem; margin-bottom:2rem; max-width:32ch; margin-inline:auto; }
+  .hero__ctas { display:flex; flex-wrap:wrap; gap:1rem; justify-content:center; }
+  .features { background:var(--bg-secondary); }
+  .features__row { display:flex; flex-wrap:wrap; gap:var(--spacing-gap); justify-content:center; }
+  .steps { display:flex; flex-wrap:wrap; gap:var(--spacing-gap); justify-content:center; align-items:stretch; }
+  .step { flex:1 1 260px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:1rem; }
+  .step__number { width:2.5rem; height:2.5rem; border-radius:50%; background:var(--gradient-aurora); color:var(--text-on-gradient); display:flex; align-items:center; justify-content:center; font-weight:600; font-size:1.25rem; }
+  .testimonials { background:var(--bg-secondary); }
+  .testimonials__row { display:flex; flex-wrap:wrap; gap:var(--spacing-gap); justify-content:center; }
+  .pricing { background:var(--bg-secondary); }
+  .pricing__row { display:flex; flex-wrap:wrap; gap:var(--spacing-gap); justify-content:center; }
+  .pricing__card { flex:1 1 260px; display:flex; flex-direction:column; align-items:stretch; gap:1rem; }
+  .pricing__card--highlighted { position:relative; }
+  .pricing__badge { position:absolute; top:-0.5rem; right:-0.5rem; background:var(--gradient-aurora); color:var(--text-on-gradient); padding:0.2rem 0.6rem; border-radius:var(--radius-sm); font-size:0.75rem; font-weight:600; }
+  .faq { max-width:760px; margin-inline:auto; }
+  .faq-item { margin-bottom:1rem; border:1px solid var(--border-default); border-radius:var(--radius-md); overflow:hidden; }
+  .faq-item summary { display:flex; align-items:center; justify-content:space-between; padding:1rem; cursor:pointer; list-style:none; background:var(--bg-secondary); }
+  .faq-item summary::-webkit-details-marker { display:none; }
+  .faq-item summary .material-symbols-rounded { transition:transform var(--transition-normal); }
+  .faq-item[open] summary .material-symbols-rounded { transform:rotate(180deg); }
+  .faq-item[pseudo] { /* placeholder */ }
+  .faq-item[open] > div { animation: fadeDown var(--transition-normal) ease; }
+  @keyframes fadeDown { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+  .cta-band { position:relative; text-align:center; padding:4rem 1rem; color:var(--text-on-gradient); overflow:hidden; }
+  .cta-band::before { content:""; position:absolute; inset:0; background:var(--gradient-aurora); background-size:200% 200%; animation: auroraMove var(--aurora-duration) ease infinite; z-index:-2; }
+  .cta-band__inner { position:relative; z-index:1; }
+  .cta-band__title { font-family:var(--font-display); font-size:clamp(1.5rem,4vw,2.5rem); margin-bottom:1rem; }
+  .cta-band__desc { margin-bottom:2rem; max-width:28ch; margin-inline:auto; }
+  .input-group { display:flex; flex-wrap:wrap; gap:0.5rem; align-items:center; justify-content:center; max-width:480px; margin:0 auto; }
+  .input-group label { flex:1 1 100%; font-weight:500; }
+  .input-group input { flex:2 1 200px; padding:0.75rem 1rem; border:1px solid var(--border-default); border-radius:var(--radius-md); font:inherit; }
+  .input-group input:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 2px rgba(0,102,255,0.2); }
+  .input-group__error { margin-top:0.25rem; font-size:0.875rem; color:var(--text-error); display:flex; align-items:center; gap:0.25rem; }
+  .footer { background:var(--bg-secondary); border-top:1px solid var(--border-default); padding:2rem 0; font-size:0.875rem; }
+  .footer__top { display:flex; flex-wrap:wrap; gap:2rem; justify-content:center; }
+  .footer__col { flex:1 1 180px; }
+  .footer__logo { font-family:var(--font-display); font-weight:700; font-size:1.25rem; margin-bottom:0.5rem; }
+  .footer__links { list-style:none; display:flex; flex-direction:column; gap:0.5rem; }
+  .footer__links a { color:var(--text-secondary); }
+  .footer__links a:hover { color:var(--text-primary); }
+  .footer__bottom { display:flex; flex-wrap:wrap; justify-content:center; gap:1.5rem; margin-top:2rem; color:var(--text-secondary); font-size:0.75rem; }
+}
+
+/* ----- Components ----- */
+@layer components {
+  .btn {
+    display:inline-flex; align-items:center; justify-content:center; gap:0.5rem;
+    padding:0.75rem 1.5rem; border:none; border-radius:var(--radius-md);
+    font-weight:600; cursor:pointer; transition:background var(--transition-normal), transform var(--transition-fast);
+    position:relative; overflow:hidden; min-height:44px;
+  }
+  .btn--primary {
+    background:var(--gradient-aurora);
+    color:var(--text-on-gradient);
+    position:relative;
+  }
+  .btn--primary::after {
+    content:""; position:absolute; inset:0; background:rgba(0,0,0,0.15); opacity:0; transition:opacity var(--transition-fast);
+  }
+  .btn--primary:hover::after { opacity:0.4; }
+  .btn--primary:active { transform:scale(0.97); }
+  .btn--secondary {
+    background:var(--glass-bg);
+    backdrop-filter:blur(6px);
+    border:1px solid var(--glass-border);
+    color:var(--text-primary);
+  }
+  .btn--secondary:hover { background:rgba(255,255,255,0.3); }
+  .btn--ghost { background:none; color:var(--text-primary); }
+  .btn--ghost:hover { text-decoration:underline; }
+  .btn--danger {
+    background:var(--text-error);
+    color:#fff;
+  }
+  .btn--danger:hover { opacity:0.9; }
+  .btn.is-loading { pointer-events:none; opacity:0.7; }
+  .btn.is-loading::after { content:""; position:absolute; inset:0; background:var(--gradient-aurora); animation:spin 1s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .btn.is-success { background:var(--text-success); color:#fff; }
+  .btn.is-error { background:var(--text-error); color:#fff; }
+  .card {
+    background:var(--glass-bg);
+    backdrop-filter:blur(12px);
+    border:1px solid var(--glass-border);
+    border-radius:var(--radius-lg);
+    padding:1.5rem;
+    transition:transform var(--transition-normal), box-shadow var(--transition-normal);
+    display:flex; flex-direction:column; gap:1rem;
+  }
+  .card:hover { transform:translateY(-4px); box-shadow:var(--shadow-md); }
+  .card--glass { /* same as .card */ }
+  .card__icon { width:3rem; height:3rem; border-radius:50%; background:var(--gradient-aurora); display:flex; align-items:center; justify-content:center; color:var(--text-on-gradient); font-size:1.25rem; }
+  .card__title { font-family:var(--font-display); font-size:1.25rem; font-weight:600; }
+  .card__link { color:var(--primary); font-weight:500; display:inline-flex; align-items:center; gap:0.25rem; }
+  .card__link:hover { text-decoration:underline; }
+  .holo-border {
+    position:relative;
+  }
+  .holo-border::after {
+    content:""; position:absolute; inset:-1px; background:var(--gradient-holo);
+    -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite:destination-out;
+    mask-composite:exclude;
+    pointer-events:none;
+    border-radius:inherit;
+  }
+  .text-gradient {
+    background:var(--gradient-aurora);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    background-size:200% 200%;
+    animation: auroraMove var(--aurora-duration) ease infinite;
+  }
+  .aurora-bg {
+    position:fixed; inset:0; z-index:-3;
+    pointer-events:none;
+    background:
+      radial-gradient(600px 400px at 20% 30%, var(--aurora-cyan) 0%, transparent 40%),
+      radial-gradient(500px 300px at 80% 20%, var(--aurora-magenta) 0%, transparent 40%),
+      radial-gradient(400px 600px at 40% 80%, var(--aurora-yellow) 0%, transparent 40%),
+      radial-gradient(300px 500px at 70% 70%, var(--aurora-blue) 0%, transparent 40%);
+    background-size:200% 200%;
+    animation: auroraMove var(--aurora-duration) ease infinite;
+  }
+  @keyframes auroraMove {
+    0% { background-position:0% 0%; }
+    50% { background-position:100% 100%; }
+    100% { background-position:0% 0%; }
+  }
+  .skeleton {
+    background:linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size:200% 100%;
+    animation:shimmer 1.5s infinite linear;
+    border-radius:var(--radius-lg);
+  }
+  @keyframes shimmer {
+    0% { background-position:-200% 0; }
+    100% { background-position:200% 0; }
+  }
+}
+
+/* ----- Utilities ----- */
+@layer utilities {
+  .visually-hidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0; }
+  .sr-only { @extend .visually-hidden; }
+  .hide { display:none !important; }
+}
+
+/* Dark mode media query fallback (class wins) */
+@media (prefers-color-scheme: dark) {
+  html:not(.dark) { --bg-primary:#0a0b16; --bg-secondary:#111827; --text-primary:#e5e7eb; --text-secondary:#9ca3af; --text-success:#6ee7b7; --text-error:#f87171; --border-default:#374151; --glass-bg:rgba(17,24,39,0.6); --glass-border:rgba(255,255,255,0.2); --glow:0 0 16px rgba(255,0,255,0.5); }
+}
+</style>
+</head>
+<body>
+<a href="#main" class="visually-hidden">Skip to content</a>
+<div class="aurora-bg" aria-hidden="true"></div>
+
+<header class="header" id="site-header">
+  <div class="container header__container">
+    <a href="#" class="header__brand">Aurora</a>
+    <nav class="header__nav" id="header-nav">
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="#testimonials">Testimonials</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <button class="header__cta btn btn--primary hide" id="header-cta">Start free</button>
+    <button class="header__menu-btn material-symbols-rounded" id="menu-btn" aria-label="Open menu" aria-controls="mobile-nav" aria-expanded="false">menu</button>
+    <button class="header__theme-toggle material-symbols-rounded" id="theme-toggle" aria-pressed="false" aria-label="Switch to dark theme">dark_mode</button>
+  </div>
+  <nav class="header__mobile-nav" id="mobile-nav">
+    <a href="#features">Features</a>
+    <a href="#how-it-works">How It Works</a>
+    <a href="#testimonials">Testimonials</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#faq">FAQ</a>
+  </nav>
+</header>
+
+<main id="main">
+  <section class="hero section">
+    <div class="container">
+      <span class="hero__badge text-gradient">Aurora Evolved</span>
+      <h1 class="hero__title">Create living gradients that breathe with your design.</h1>
+      <p class="hero__subtitle">A real‑time mesh engine for teams who need color that flows, morphs, and inspires.</p>
+      <div class="hero__ctas">
+        <a href="#cta-band" class="btn btn--primary">Start free</a>
+        <a href="#how-it-works" class="btn btn--secondary">See how it works</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="features section" id="features">
+    <div class="container">
+      <header class="section__header">
+        <p class="section__eyebrow text-gradient">What you get</p>
+        <h2 class="section__title">Powerful features, instantly usable</h2>
+        <p class="section__intro">All tools are built on the same aurora‑driven core, so you stay in the flow.</p>
+      </header>
+      <div class="features__row">
+        <article class="card card--glass">
+          <div class="card__icon material-symbols-rounded">gradient</div>
+          <h3 class="card__title">Live Mesh Generator</h3>
+          <p>Paint with aurora layers, adjust stops, and export CSS or SVG in one click.</p>
+          <a href="#" class="card__link">Learn more <span class="material-symbols-rounded">arrow_forward</span></a>
+        </article>
+        <article class="card card--glass">
+          <div class="card__icon material-symbols-rounded">blur_on</div>
+          <h3 class="card__title">Smart Blending</h3>
+          <p>Auto‑match hues across assets; the engine suggests harmonic transitions.</p>
+          <a href="#" class="card__link">Learn more <span class="material-symbols-rounded">arrow_forward</span></a>
+        </article>
+        <article class="card card--glass">
+          <div class="card__icon material-symbols-rounded">auto_awesome</h3>
+          <h3 class="card__title">Preset Library</h3>
+          <p>Start from curated aurora palettes or save your own as reusable themes.</p>
+          <a href="#" class="card__link">Learn more <span class="material-symbols-rounded">arrow_forward</span></a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="steps section" id="how-it-works">
+    <div class="container">
+      <header class="section__header">
+        <p class="section__eyebrow text-gradient">How it works</p>
+        <h2 class="section__title">From idea to export in three steps</h2>
+      </header>
+      <div class="steps">
+        <div class="step">
+          <div class="step__number">1</div>
+          <h3 class="step__title">Pick a base</h3>
+          <p>Choose a canvas size and a starting hue. The mesh begins to flow.</p>
+        </div>
+        <div class="step">
+          <div class="step__number">2</div>
+          <h3 class="step__title">Shape the flow</h3>
+          <p>Add stops, tweak angles, and watch the aurora react in real time.</p>
+        </div>
+        <div class="step">
+          <div class="step__number">3</div>
+          <h3 class="step__title">Export & use</h3>
+          <p>Generate CSS, SVG, or image assets ready for your project.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="testimonials section" id="testimonials">
+    <div class="container">
+      <header class="section__header">
+        <p class="section__eyebrow text-gradient">What people say</p>
+        <h2 class="section__title">Real feedback from designers</h2>
+      </header>
+      <div class="testimonials__row">
+        <article class="card card--glass">
+          <div class="card__icon material-symbols-rounded">format_quote</div>
+          <p>The mesh engine feels like painting with light. Our prototypes are now 3× faster.</p>
+          <div class="testimonial__footer">
+            <div class="avatar" style="width:2.5rem;height:2.5rem;border-radius:50%;background:var(--gradient-aurora);display:flex;align-items:center;justify-content:center;color:var(--text-on-gradient);font-weight:600;">AD</div>
+            <div>
+              <p class="testimonial__name">Alex Diaz</p>
+              <p class="testimonial__role">Product Designer</p>
+            </div>
+          </div>
+        </article>
+        <article class="card card--glass">
+          <div class="card__icon material-symbols-rounded">format_quote</div>
+          <p>Finally a tool that lets us experiment with aurora gradients without leaving the design file.</p>
+          <div class="testimonial__footer">
+            <div class="avatar" style="width:2.5rem;height:2.5rem;border-radius:50%;background:var(--gradient-aurora);display:flex;align-items:center;justify-content:center;color:var(--text-on-gradient);font-weight:600;">MS</div>
+            <div>
+              <p class="testimonial__name">Maya Singh</p>
+              <p class="testimonial__role">UI Lead</p>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="pricing section" id="pricing">
+    <div class="container">
+      <header class="section__header">
+        <p class="section__eyebrow text-gradient">Simple plans</p>
+        <h2 class="section__title">Choose what fits your team</h2>
+      </header>
+      <div class="pricing__row">
+        <div class="pricing__card">
+          <header class="pricing__header">
+            <h3 class="pricing__tier">Free</h3>
+            <p class="pricing__price"><span class="pricing__amount">0</span><span class="pricing__period">/month</span></p>
+          </header>
+          <ul class="pricing__features">
+            <li><span class="material-symbols-rounded">check</span> Basic mesh generator</li>
+            <li><span class="material-symbols-rounded">check</span> Up to 3 active projects</li>
+            <li><span class="material-symbols-rounded">check</span> Community support</li>
+          </ul>
+          <footer class="pricing__footer">
+            <a href="#cta-band" class="btn btn--secondary">Get started</a>
+          </footer>
+        </div>
+        <div class="pricing__card pricing__card--highlighted">
+          <header class="pricing__header">
+            <h3 class="pricing__tier">Pro</h3>
+            <p class="pricing__price"><span class="pricing__amount">19</span><span class="pricing__period">/month</span></p>
+            <span class="pricing__badge">Most popular</span>
+          </header>
+          <ul class="pricing__features">
+            <li><span class="material-symbols-rounded">check</span> Advanced mesh controls</li>
+            <li><span class="material-symbols-rounded">check</span> Unlimited projects</li>
+            <li><span class="material-symbols-rounded">check</span> Export to CSS/SVG/PNG</li>
+            <li><span class="material-symbols-rounded">check</span> Priority support</li>
+          </ul>
+          <footer class="pricing__footer">
+            <a href="#cta-band" class="btn btn--primary">Start free trial</a>
+          </footer>
+        </div>
+        <div class="pricing__card">
+          <header class="pricing__header">
+            <h3 class="pricing__tier">Studio</h3>
+            <p class="pricing__price"><span class="pricing__amount">49</span><span class="pricing__period">/month</span></p>
+          </header>
+          <ul class="pricing__features">
+            <li><span class="material-symbols-rounded">check</span> Team libraries</li>
+            <li><span class="material-symbols-rounded">check</span> SSO & audit logs</li>
+            <li><span class="material-symbols-rounded">check</span> Dedicated account manager</li>
+          </ul>
+          <footer class="pricing__footer">
+            <a href="#cta-band" class="btn btn--secondary">Contact sales</a>
+          </footer>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="faq section" id="faq">
+    <div class="container">
+      <header class="section__header">
+        <p class="section__eyebrow text-gradient">Common questions</p>
+        <h2 class="section__title">Find answers fast</h2>
+      </header>
+      <div class="faq">
+        <details class="faq-item">
+          <summary>Is there a free trial for the Pro plan? <span class="material-symbols-rounded">expand_more</span></summary>
+          <div class="faq-item__content">Yes. Click “Start free trial” on the Pro card to begin a 14‑day trial with no credit card required.</div>
+        </details>
+        <details class="faq-item">
+          <summary>Can I export my gradients as CSS variables? <span class="material-symbols-rounded">expand_more</span></summary>
+          <div class="faq-item__content">Absolutely. The export panel lets you copy CSS variables, gradients, or JSON for design‑token systems.</div>
+        </details>
+        <details class="faq-item">
+          <summary>Does the engine work offline? <span class="material-symbols-rounded">expand_more</span></summary>
+          <div class="faq-item__content">The core editor runs in the browser and caches assets, so you can continue working without an internet connection.</div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-band section" id="cta-band">
+    <div class="container cta-band__inner">
+      <h2 class="cta-band__title text-gradient">Ready to bring your designs to life?</h2>
+      <p class="cta-band__desc">Join thousands of creators who use Aurora Evolved to generate living gradients in seconds.</p>
+      <form class="input-group" id="cta-form" novalidate>
+        <label for="cta-email">Your email address</label>
+        <input type="email" id="cta-email" name="email" placeholder="you@example.com" required aria-required="true">
+        <button type="submit" class="btn btn--primary" id="cta-submit">Subscribe</button>
+        <div class="input-group__error" id="cta-error" aria-live="polite"></div>
+      </form>
+      <div class="cta-band__success" id="cta-success" aria-live="polite" style="display:none;margin-top:1rem;color:var(--text-success);font-weight:500;">You’re on the list!</div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__top">
+      <div class="footer__col">
+        <div class="footer__logo">Aurora</div>
+        <p>Gradient mesh studio for modern design teams.</p>
+        <div class="footer__swatches" style="display:flex;gap:0.4rem;margin-top:0.5rem;">
+          <span style="width:0.8rem;height:0.8rem;border-radius:50%;background:var(--aurora-cyan);"></span>
+          <span style="width:0.8rem;height:0.8rem;border-radius:50%;background:var(--aurora-magenta);"></span>
+          <span style="width:0.8rem;height:0.8rem;border-radius:50%;background:var(--aurora-yellow);"></span>
+          <span style="width:0.8rem;height:0.8rem;border-radius:50%;background:var(--aurora-blue);"></span>
+          <span style="width:0.8rem;height:0.8rem;border-radius:50%;background:var(--aurora-green);"></span>
+        </div>
+      </div>
+      <div class="footer__col">
+        <h4 class="footer__heading">Product</h4>
+        <ul class="footer__links">
+          <li><a href="#">Features</a></li>
+          <li><a href="#">Docs</a></li>
+          <li><a href="#">Changelog</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h4 class="footer__heading">Resources</h4>
+        <ul class="footer__links">
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Templates</a></li>
+          <li><a href="#">Webinars</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h4 class="footer__heading">Company</h4>
+        <ul class="footer__links">
+          <li><a href="#">About</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span>© 2026 Aurora Evolved. All rights reserved.</span>
+      <nav>
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+      </nav>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* Theme toggle & persistence */
+const htmlEl = document.documentElement;
+const themeToggle = document.getElementById('theme-toggle');
+const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+
+function setTheme(dark) {
+  if (dark) {
+    htmlEl.classList.add('dark');
+    htmlEl.classList.remove('light');
+    themeToggle.setAttribute('aria-pressed', 'true');
+    themeToggle.setAttribute('aria-label', 'Switch to light theme');
+    themeToggle.innerHTML = 'light_mode';
+  } else {
+    htmlEl.classList.add('light');
+    htmlEl.classList.remove('dark');
+    themeToggle.setAttribute('aria-pressed', 'false');
+    themeToggle.setAttribute('aria-label', 'Switch to dark theme');
+    themeToggle.innerHTML = 'dark_mode';
+  }
+  localStorage.setItem('theme', dark ? 'dark' : 'light');
+}
+
+function initTheme() {
+  const stored = localStorage.getItem('theme');
+  if (stored === 'dark' || stored === 'light') {
+    setTheme(stored === 'dark');
+  } else {
+    setTheme(prefersDark.matches);
+  }
+}
+initTheme();
+themeToggle.addEventListener('click', () => {
+  setTheme(!htmlEl.classList.contains('dark'));
+});
+
+/* Mobile menu */
+const menuBtn = document.getElementById('menu-btn');
+const mobileNav = document.getElementById('mobile-nav');
+menuBtn.addEventListener('click', () => {
+  const expanded = menuBtn.getAttribute('aria-expanded') === 'true' || false;
+  menuBtn.setAttribute('aria-expanded', String(!expanded));
+  mobileNav.classList.toggle('open', !expanded);
+});
+/* Close on Escape */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && mobileNav.classList.contains('open')) {
+    menuBtn.setAttribute('aria-expanded', 'false');
+    mobileNav.classList.remove('open');
+  }
+});
+
+/* Header scroll effect */
+const header = document.getElementById('site-header');
+let ticking = false;
+function onScroll() {
+  if (!ticking) {
+    window.requestAnimationFrame(() => {
+      header.classList.toggle('is-scrolled', window.scrollY > 10);
+      ticking = false;
+    });
+    ticking = true;
+  }
+}
+window.addEventListener('scroll', onScroll);
+
+/* CTA form handling */
+const ctaForm = document.getElementById('cta-form');
+const ctaSubmit = document.getElementById('cta-submit');
+const ctaError = document.getElementById('cta-error');
+const ctaSuccess = document.getElementById('cta-success');
+
+function showError(msg) {
+  ctaError.textContent = msg;
+  ctaSubmit.classList.add('is-error');
+  ctaSubmit.disabled = true;
+}
+function clearError() {
+  ctaError.textContent = '';
+  ctaSubmit.classList.remove('is-error');
+  ctaSubmit.disabled = false;
+}
+function setLoading(isLoading) {
+  if (isLoading) {
+    ctaSubmit.classList.add('is-loading');
+    ctaSubmit.disabled = true;
+  } else {
+    ctaSubmit.classList.remove('is-loading');
+    ctaSubmit.disabled = false;
+  }
+}
+function showSuccess() {
+  ctaForm.reset();
+  ctaForm.style.display = 'none';
+  ctaSuccess.style.display = 'block';
+}
+
+ctaForm.addEventListener('submit', e => {
+  e.preventDefault();
+  clearError();
+  const email = ctaForm.email.value.trim();
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!email) {
+    showError('Please enter your email address.');
+    return;
+  }
+  if (!emailRegex.test(email)) {
+    showError('Please enter a valid email address.');
+    return;
+  }
+  setLoading(true);
+  // Simulate async request
+  setTimeout(() => {
+    setLoading(false);
+    showSuccess();
+  }, 1500);
+});
+
+/* FAQ single-open optional */
+const faqItems = document.querySelectorAll('.faq-item');
+faqItems.forEach(item => {
+  item.addEventListener('toggle', () => {
+    if (item.hasAttribute('open')) {
+      faqItems.forEach(other => {
+        if (other !== item && other.hasAttribute('open')) {
+          other.removeAttribute('open');
+        }
+      });
+    }
+  });
+});
+
+/* Reduce motion observer (optional) */
+if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+      }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.section').forEach(sec => observer.observe(sec));
+}
+</script>
+</body>
+</html>

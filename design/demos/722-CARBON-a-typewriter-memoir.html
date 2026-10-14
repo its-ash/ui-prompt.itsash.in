@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+  <meta charset="UTF-8">
+  <title>CARBON — a typewriter memoir</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Symbols+Rounded">
+  <style>
+    /* ---- Reset & Base ---- */
+    *,::before,::after{box-sizing:border-box;margin:0;padding:0;border:none;}
+    html{font-family:system-ui,Arial,sans-serif;scroll-behavior:smooth;}
+    body{margin:0;background:var(--bg-primary);color:var(--text-primary);line-height:1.5;-webkit-tap-highlight-color:transparent;}
+    a{color:inherit;text-decoration:none;}
+    button{background:none;padding:0;cursor:pointer;}
+    img{max-width:100%;display:block;}
+    button:focus-visible,input:focus-visible{outline:2px solid var(--primary);outline-offset:3px;}
+    @media (prefers-reduced-motion:reduce){*{-webkit-animation-duration:0s;animation-duration:0s;-webkit-transition-duration:0s;transition-duration:0s;}}
+    .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:clip;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+    /* ---- Tokens ---- */
+    :root{
+      --primary:#b2452e;--primary-strong:#9e3a24;
+      --secondary:#5b4632;
+      --bg-primary:#f6f0e2;--bg-secondary:#efe8d8;--bg-inset:#e4dbc6;
+      --text-primary:#2e2a26;--text-secondary:#5b4632;
+      --text-success:#43603f;--text-error:#9c2b1c;
+      --border-default:#2e2a26;
+      --radius-sm:2px;--radius-md:10px;--radius-lg:18px;
+      --shadow-sm:0 1px 3px rgba(46,42,38,.18);
+      --shadow-md:0 8px 24px rgba(46,42,38,.22);
+      --shadow-neu:8px 8px 18px rgba(46,42,38,.20),-8px -8px 18px rgba(255,252,244,.85);
+      --glow-primary:0 0 24px rgba(178,69,46,.35);
+      --gradient-paper:linear-gradient(135deg,#f6f0e2,#efe8d8,#e4dbc6);
+      --gradient-ink:linear-gradient(135deg,#b2452e,#5b4632);
+      --spacing-gap:clamp(1.25rem,3vw,2rem);
+      --transition-fast:140ms;--transition-normal:280ms;
+      --ease-standard:cubic-bezier(.4,0,.2,1);
+      --z-dropdown:100;--z-modal:200;--z-toast:300;--z-header:90;--z-grain:4000;
+      --font-display:'Special Elite';
+      --font-base:'Courier Prime';
+      --font-stamp:'Archivo Black';
+    }
+    @media (prefers-color-scheme:dark){
+      :root[data-theme="dark"]{
+        --primary:#e07a5c;--primary-strong:#f0937a;
+        --secondary:#d8b98a;
+        --bg-primary:#2e2a26;--bg-secondary:#3a342d;--bg-inset:#262220;
+        --text-primary:#efe8d8;--text-secondary:#cfc4ab;
+        --text-success:#9dc08b;--text-error:#ff9b85;
+        --border-default:#efe8d8;--border-error:#ff9b85;--border-success:#9dc08b;
+      }
+    }
+    .dark{
+      --primary:#e07a5c;--primary-strong:#f0937a;
+      --secondary:#d8b98a;
+      --bg-primary:#2e2a26;--bg-secondary:#3a342d;--bg-inset:#262220;
+      --text-primary:#efe8d8;--text-secondary:#cfc4ab;
+      --text-success:#9dc08b;--text-error:#ff9b85;
+      --border-default:#efe8d8;--border-error:#ff9b85;--border-success:#9dc08b;
+    }
+    /* ---- Grain overlay ---- */
+    .grain-overlay{
+      position:fixed;inset:0;pointer-events:none;z-index:var(--z-grain);
+      background:
+        repeating-linear-gradient(45deg,transparent,transparent 1px,#fefefe 1px,#fefefe 2px),
+        repeating-linear-gradient(135deg,transparent,transparent 1px,#fefefe 1px,#fefefe 2px);
+      opacity:.05;mix-blend-mode:multiply;
+    }
+    @media (prefers-color-scheme:dark){.grain-overlay{mix-blend-mode:overlay;}}
+    /* ---- Layout ---- */
+    .container{max-width:72rem;margin:0 auto;padding:0 var(--spacing-gap);}
+    header,.section{position:relative;}
+    .site-header{
+      position:sticky;top:0;background:var(--bg-primary);border-bottom:2px solid var(--border-default);z-index:var(--z-header);
+      display:grid;grid-template-columns:auto 1fr auto auto;gap:var(--spacing-gap);align-items:center;padding:0.75rem var(--spacing-gap);}
+    .nav{display:flex;gap:1rem;align-items:center;}
+    .nav a{font-family:var(--font-display);font-size:0.875rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-primary);}
+    .nav a:hover{color:var(--primary);}
+    .theme-toggle{position:relative;display:flex;align-items:center;gap:0.5rem;}
+    .theme-toggle .material-symbols-rounded{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;}
+    .cta-btn{font-family:var(--font-base);font-weight:700;padding:0.6rem 1.2rem;background:var(--gradient-ink);color:#fff;border:2px solid var(--primary);border-radius:var(--radius-sm);font-size:0.875rem;}
+    .cta-btn:hover{background:#9e3a24;--shadow-md}
+    .hamburger{display:none;width:1.8rem;height:1.8rem;flex-direction:column;gap:2px;background:none;}
+    .hamburger span{display:block;width:100%;height:2px;background:var(--text-primary);transition:transform .3s ease,opacity .3s ease;}
+    .hamburger.active span:nth-child(1){transform:rotate(45deg) translate(5px,5px);}
+    .hamburger.active span:nth-child(2){opacity:0;}
+    .hamburger.active span:nth-child(3){transform:rotate(-45deg) translate(7px,-6px);}
+    /* ---- Hero ---- */
+    .hero{
+      display:grid;grid-template-columns:1fr 1fr;gap:var(--spacing-gap);align-items:center;padding:3rem var(--spacing-gap);background:var(--gradient-paper);
+    }
+    .hero .eyebrow{
+      font-family:var(--font-stamp);font-size:0.75rem;text-transform:uppercase;letter-spacing:.2em;color:var(--primary);background:#fff2e6;padding:0.2rem 0.5rem;border-radius:var(--radius-sm);margin-bottom:1rem;
+    }
+    .hero h1{
+      font-family:var(--font-display);font-size:3.5rem;line-height:1.1;color:var(--text-primary);
+      background:var(--gradient-ink);-webkit-background-clip:text;background-clip:text;color:transparent;
+    }
+    .tagline{font-family:var(--font-base);font-size:1.25rem;margin:1.5rem 0;}
+    .tagline span{display:block;animation:typing 4s infinite;overflow:hidden;color:var(--text-primary);}
+    @keyframes typing{
+      0%,100%{width:0;}
+      33%{width:100%;}
+      66%{width:100%;}
+    }
+    .tagline .line1{animation-delay:0s;}
+    .tagline .line2{animation-delay:1.5s;}
+    .tagline .line3{animation-delay:3s;}
+    .cta-group{display:flex;gap:0.75rem;margin-top:1.5rem;}
+    .secondary-cta{font-family:var(--font-base);padding:0.6rem 1.2rem;background:transparent;color:var(--primary);border:2px solid var(--primary);border-radius:var(--radius-sm);}
+    .right{position:relative;align-self:end;}
+    .right::after{
+      content:"";position:absolute;inset:0;background:var(--gradient-ink);border-radius:var(--radius-lg);z-index:-1;opacity:.2;
+    }
+    .typewriter-vignette{
+      background:var(--bg-secondary);border:2px solid var(--border-default);border-radius:var(--radius-lg);padding:2rem;position:relative;
+    }
+    .vignette-stamp{
+      width:8rem;height:8rem;background:var(--primary);border-radius:50%;position:relative;top:-3rem;margin:0 auto -2rem;
+      display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-stamp);font-size:3rem;
+    }
+    .vignette-stamp::after{content:"CARBON";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:1.2rem;letter-spacing:.1em;}
+    .ruled-lines{
+      height:12rem;margin-top:1rem;background:repeating-linear-gradient(90deg,transparent,transparent 4px,#b2452e 4px,#b2452e 8px);
+    }
+    .key-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:1rem;background:#2e2a26;padding:2px;border-radius:var(--radius-sm);color:#666;font-size:0.6rem;}
+    .ticker{
+      overflow:hidden;white-space:nowrap;margin-top:2rem;
+    }
+    .ticker span{
+      display:inline-block;animation:ticker 20s linear infinite;
+    }
+    .ticker span.dup{position:absolute;left:100%;animation-direction:reverse;}
+    @keyframes ticker{to{transform:translateX(-50%);}}
+    /* ---- Features ---- */
+    .section{padding:3rem var(--spacing-gap);}
+    .section-header{text-align:center;margin-bottom:2rem;}
+    .section-header .kicker{font-family:var(--font-stamp);font-size:0.75rem;text-transform:uppercase;letter-spacing:.2em;color:var(--primary);margin-bottom:0.5rem;}
+    .section-header h2{font-family:var(--font-stamp);font-size:2rem;}
+    .features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));gap:1.5rem;}
+    .card{
+      background:var(--bg-secondary);border:2px solid var(--border-default);border-radius:var(--radius-sm);padding:1.5rem;display:flex;flex-direction:column;gap:0.75rem;
+    }
+    .card .icon{font-size:1.5rem;color:var(--primary);}
+    .card h3{font-family:var(--font-stamp);font-size:1rem;}
+    .card p{font-size:0.875rem;color:var(--text-secondary);}
+    .card .read-more{margin-top:auto;font-size:0.75rem;color:var(--primary);align-self:flex-start;}
+    /* ---- How it works ---- */
+    .steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;align-items:center;}
+    .step{text-align:center;}
+    .step .numeral{
+      font-family:var(--font-stamp);font-size:3rem;opacity:.2;position:relative;z-index:-1;color:var(--primary);
+    }
+    .step .icon{font-size:2rem;color:var(--primary);margin:.5rem 0;}
+    .step h3{font-size:1rem;margin:.5rem 0;}
+    .connector{position:relative;margin:0 auto;}
+    .connector::before{
+      content:"";position:absolute;right:0;top:1.5rem;height:2px;background:var(--border-default);width:40%;transform:rotate(45deg);
+    }
+    @media (max-width:1023px){.steps-grid,.features-grid{grid-template-columns:1fr;}}
+    /* ---- Testimonials ---- */
+    .testimonials{display:grid;grid-template-columns:repeat(auto-fit,minmax(18rem,1fr));gap:1.5rem;padding:3rem var(--spacing-gap);}
+    .memo-card{
+      background:var(--bg-secondary);border:2px solid var(--border-default);border-radius:var(--radius-sm);padding:1.5rem;position:relative;display:flex;flex-direction:column;gap:0.75rem;
+    }
+    .memo-card .quote{font-family:var(--font-base);font-style:italic;margin:-0.5rem 0 1rem;}
+    .memo-card .avatar{
+      width:4rem;height:4rem;border:4px solid var(--bg-primary);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-base);font-weight:700;color:var(--primary);
+    }
+    .memo-card .name{font-family:var(--font-stamp);font-size:0.875rem;}
+    .memo-card .role{font-size:0.75rem;color:var(--text-secondary);}
+    .memo-card .verified{position:absolute;right:1rem;top:1rem;font-size:1rem;color:var(--text-success);}
+    /* ---- Pricing ---- */
+    .pricing{padding:3rem var(--spacing-gap);background:var(--gradient-paper);}
+    .pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;align-items:center;}
+    .card--featured{position:relative;border-color:var(--primary);background:var(--gradient-ink);color:#fff;}
+    .card--featured::before{content:"MOST INKED";font-family:var(--font-stamp);font-size:0.65rem;text-transform:uppercase;letter-spacing:.1em;color:#fff;background:#9e3a24;padding:0.2rem 0.5rem;border-radius:var(--radius-sm);position:absolute;top:-1rem;left:1.5rem;}
+    .card--featured .price{font-size:2rem;margin:1rem 0;}
+    .card--featured .list{color:#eaddd5;}
+    .card--featured .list .icon{color:#ffe;}
+    .card--featured .btn{background:#fff;color:#9e3a24;border-color:#fff;}
+    .card--featured .btn:hover{background:#f0937a;color:#fff;}
+    .card{background:var(--bg-secondary);border:2px solid var(--border-default);color:var(--text-primary);}
+    .card .price{font-size:1.5rem;margin:1rem 0;}
+    .card .list{color:var(--text-secondary);}
+    .card .list .icon{color:var(--primary);}
+    .card .btn{background:none;border:2px solid var(--border-default);color:var(--text-primary);padding:0.6rem 1rem;border-radius:var(--radius-sm);}
+    .card .btn--secondary{background:none;border:2px solid var(--border-default);color:var(--text-primary);}
+    .card .btn--secondary:hover{border-color:var(--primary);color:var(--primary);}
+    @media (max-width:1023px){.pricing-grid{grid-template-columns:1fr;}}
+    /* ---- FAQ ---- */
+    .faq{padding:3rem var(--spacing-gap);}
+    .faq-item{margin-bottom:1rem;}
+    .faq-btn{
+      width:100%;text-align:left;font-family:var(--font-base);font-size:1rem;background:none;border:none;color:var(--text-primary);padding:1rem 0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;
+    }
+    .faq-btn .material-symbols-rounded{transition:transform .28s ease;}
+    .faq-btn[aria-expanded="true"] .material-symbols-rounded{transform:rotate(180deg);}
+    .faq-panel{
+      max-height:0;overflow:hidden;transition:max-height .28s ease-out;font-size:0.875rem;color:var(--text-secondary);line-height:1.5;
+    }
+    .faq-panel[aria-hidden="false"]{max-height:10000px;}
+    /* ---- Final CTA ---- */
+    .final-cta{
+      position:relative;background:var(--gradient-ink);color:#fff;padding:3rem var(--spacing-gap);margin:3rem 0;
+    }
+    .final-cta .h2{font-family:var(--font-stamp);font-size:2rem;margin-bottom:1rem;}
+    .email-form{display:flex;gap:1rem;align-items:center;margin-top:1rem;}
+    .email-form input{
+      flex:1;padding:0.75rem 1rem;border:2px solid rgba(255,255,255,.3);border-radius:var(--radius-sm);background:rgba(255,255,255,.1);color:#fff;font-family:var(--font-base);
+    }
+    .email-form input:focus{outline:none;border-color:var(--primary);}
+    .email-form button{padding:0 1.5rem;}
+    .toast{
+      position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--bg-primary);color:var(--text-primary);padding:0.75rem 1.25rem;border-radius:var(--radius-md);border:2px solid var(--primary);z-index:var(--z-toast);min-width:20rem;opacity:0;transition:opacity .3s;
+    }
+    .toast.show{opacity:1;}
+    /* ---- Footer ---- */
+    footer{
+      background:var(--text-primary);color:var(--bg-primary);padding:2rem var(--spacing-gap);margin-top:3rem;
+    }
+    .footer-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:2rem;margin-bottom:2rem;}
+    .footer-cols h4{font-family:var(--font-stamp);font-size:0.85rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:1rem;}
+    .footer-cols ul{list-style:none;padding:0;}
+    .footer-cols li{margin-bottom:0.5rem;}
+    .footer-bottom{
+      border-top:1px solid rgba(255,255,255,.2);padding-top:1rem;display:flex;justify-content:space-between;align-items:center;font-size:0.75rem;
+    }
+    .back-to-top .material-symbols-rounded{cursor:pointer;}
+    /* ---- Reduced motion ---- */
+    @media (prefers-reduced-motion:reduce){
+      .tagline span{animation:none;width:auto;}
+      .ticker span{animation:none;}
+      .faq-panel{max-height:10000px;transition:none;}
+      .faq-btn[aria-expanded="true"] .material-symbols-rounded{transform:none;}
+    }
+  </style>
+</head>
+<body>
+  <!-- Grain overlay -->
+  <div class="grain-overlay"></div>
+
+  <!-- Skip link -->
+  <a href="#main" class="visually-hidden">Skip to main content</a>
+
+  <!-- Site header -->
+  <header class="site-header" id="header">
+    <div class="container">
+      <div class="brand">CARBON</div>
+      <nav class="nav" aria-label="Main navigation">
+        <a href="#features">Features</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="#testimonials">Testimonials</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+      <div class="actions">
+        <button class="theme-toggle" aria-pressed="false" aria-label="Switch to dark mode" id="themeToggle">
+          <span class="material-symbols-rounded" id="themeIcon">light_mode</span>
+        </button>
+        <button class="cta-btn" aria-label="Begin your memoir">Begin your memoir</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main content -->
+  <main id="main">
+
+    <!-- Hero -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div>
+        <div class="eyebrow">Manuscript No. 001 — Est. 2010s</div>
+        <h1 id="hero-title">CARBON — a typewriter memoir</h1>
+        <p class="tagline">
+          <span class="line1">Write your story.</span>
+          <span class="line2">Ink it forever.</span>
+          <span class="line3">Share it once.</span>
+        </p>
+        <div class="cta-group">
+          <button class="cta-btn" aria-label="Begin your memoir">Begin your memoir</button>
+          <button class="secondary-cta" aria-label="See how it works">See how it works</button>
+        </div>
+        <p class="proof">12,842 memoirs in progress</p>
+      </div>
+      <div class="right">
+        <div class="typewriter-vignette">
+          <div class="vignette-stamp"><span class="material-symbols-rounded">stamp</span></div>
+          <div class="ruled-lines"></div>
+          <div class="key-grid">
+            <span>Q</span><span>W</span><span>E</span><span>R</span><span>T</span>
+          </div>
+        </div>
+        <div class="ticker" aria-live="polite" aria-atomic="true">
+          <span>distraction‑free</span>
+          <span>autosave</span>
+          <span>prompts</span>
+          <span class="dup">distraction‑free</span>
+          <span class="dup">autosave</span>
+          <span class="dup">prompts</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section class="section" id="features">
+      <div class="container">
+        <div class="section-header">
+          <div class="kicker">Distraction‑free drafting</div>
+          <h2>Features</h2>
+        </div>
+        <div class="features-grid">
+          <article class="card">
+            <div class="icon material-symbols-rounded">edit_note</div>
+            <h3>Focus mode</h3>
+            <p>Eliminate digital noise and write in a calm, monospaced environment designed for deep work.</p>
+            <a href="#" class="read-more">Read more</a>
+          </article>
+          <article class="card">
+            <div class="icon material-symbols-rounded">cloud_sync</div>
+            <h3>Carbon‑copy autosave</h3>
+            <p>Every keystroke is mirrored to a secure cloud, so your words are never lost.</p>
+            <a href="#" class="read-more">Read more</a>
+          </article>
+          <article class="card">
+            <div class="icon material-symbols-rounded">auto_stories</div>
+            <h3>Guided prompts</h3>
+            <p>Structured memoir questions that help you uncover memories you forgot you had.</p>
+            <a href="#" class="read-more">Read more</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="section" id="how-it-works">
+      <div class="container">
+        <div class="section-header">
+          <div class="kicker">Load the ribbon</div>
+          <h2>How It Works</h2>
+        </div>
+        <div class="steps-grid">
+          <div class="step">
+            <div class="numeral">01</div>
+            <div class="icon material-symbols-rounded">cloud_sync</div>
+            <h3>Load the ribbon</h3>
+            <p>Insert your chosen paper ribbon and the machine powers on.</p>
+          </div>
+          <div class="step">
+            <div class="numeral">02</div>
+            <div class="icon material-symbols-rounded">format_quote</div>
+            <h3>Type your truth</h3>
+            <p>Write freely; each keystroke is recorded on the carbon sheet beneath.</p>
+          </div>
+          <div class="step">
+            <div class="numeral">03</div>
+            <div class="icon material-symbols-rounded">verified</div>
+            <h3>Seal the carbon copy</h3>
+            <p>Press “Seal” and your memoir is saved as a permanent, shareable file.</p>
+          </div>
+          <div class="connector"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="section" id="testimonials">
+      <div class="container">
+        <div class="testimonials">
+          <article class="memo-card">
+            <p class="quote">“CARBON turned my fragmented notes into a finished manuscript in weeks.”</p>
+            <div class="avatar">JD</div>
+            <div>
+              <div class="name">Jordan D.</div>
+              <div class="role">Memoirist</div>
+            </div>
+            <span class="material-symbols-rounded verified">check</span>
+          </article>
+          <article class="memo-card">
+            <p class="quote">“The guided prompts unlocked memories I thought were lost forever.”</p>
+            <div class="avatar">MK</div>
+            <div>
+              <div class="name">Mia K.</div>
+              <div class="role">Writer</div>
+            </div>
+            <span class="material-symbols-rounded verified">check</span>
+          </article>
+          <article class="memo-card">
+            <p class="quote">“Never lose a sentence again — autosave works every time.”</p>
+            <div class="avatar">TL</div>
+            <div>
+              <div class="name">Tom L.</div>
+              <div class="role">Author</div>
+            </div>
+            <span class="material-symbols-rounded verified">check</span>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pricing -->
+    <section class="section" id="pricing" aria-labelledby="pricing-title">
+      <div class="container">
+        <div class="section-header">
+          <div class="kicker">Choose your path</div>
+          <h2>Pricing</h2>
+        </div>
+        <div class="pricing-grid">
+          <article class="card">
+            <div class="price">Free</div>
+            <div class="list">
+              <span class="material-symbols-rounded">check</span> Basic ribbon
+              <span class="material-symbols-rounded">close</span> Autosave disabled
+              <span class="material-symbols-rounded">close</span> No prompts
+            </div>
+            <button class="btn--secondary" aria-label="Start free draft">Start free draft</button>
+          </article>
+          <article class="card card--featured" aria-labelledby="featured-plan">
+            <div class="price" id="featured-plan">Carriage Return</div>
+            <div class="list">
+              <span class="material-symbols-rounded">check</span> Full ribbon set
+              <span class="material-symbols-rounded">check</span> Autosave enabled
+              <span class="material-symbols-rounded">check</span> Daily prompts
+            </div>
+            <button class="btn btn--primary" aria-label="Subscribe to Carriage Return">Subscribe</button>
+          </article>
+          <article class="card">
+            <div class="price">Archive</div>
+            <div class="list">
+              <span class="material-symbols-rounded">check</span> Unlimited storage
+              <span class="material-symbols-rounded">check</span> Export formats
+              <span class="material-symbols-rounded">close</span> Premium prompts
+            </div>
+            <button class="btn--secondary" aria-label="Buy Archive plan">Buy Archive</button>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section" id="faq" aria-labelledby="faq-title">
+      <div class="container">
+        <h2 id="faq-title">Frequently asked questions</h2>
+        <div class="faq-item">
+          <button class="faq-btn" aria-controls="q1" aria-expanded="true">
+            <span>How do I export my memoir?</span>
+            <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
+          </button>
+          <div class="faq-panel" aria-hidden="false">
+            You can export your memoir as PDF, TXT, or CARBON project file from the Account > Export menu.
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-btn" aria-controls="q2" aria-expanded="false">
+            <span>Is my data private?</span>
+            <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
+          </button>
+          <div class="faq-panel" aria-hidden="true">
+            Yes. All writing stays on your device unless you choose iCloud sync. We never read your content.
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-btn" aria-controls="q3" aria-expanded="false">
+            <span>Can I use CARBON on a tablet?</span>
+            <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
+          </button>
+          <div class="faq-panel" aria-hidden="true">
+            The interface scales from 320px to 1920px. Touch devices work with the on‑screen keyboard.
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-btn" aria-controls="q4" aria-expanded="false">
+            <span>What if I lose my ribbon?</span>
+            <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
+          </button>
+          <div class="faq-panel" aria-hidden="true">
+            Replacement ribbons are available in our shop. Your saved carbon copies remain in the cloud.
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-btn" aria-controls="q5" aria-expanded="false">
+            <span>Does it work offline?</span>
+            <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
+          </button>
+          <div class="faq-panel" aria-hidden="true">
+            Yes. All core functions work without an internet connection. Sync occurs when you reconnect.
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-btn" aria-controls="q6" aria-expanded="false">
+            <span>How do I cancel my subscription?</span>
+            <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
+          </button>
+          <div class="faq-panel" aria-hidden="true">
+            Cancel anytime from the Billing page. Access to Carriage Return features ends at the end of the billing cycle.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="final-cta" aria-label="Start your memoir">
+      <h2>Start your memoir today</h2>
+      <p>Join thousands of writers who are preserving their stories with CARBON.</p>
+      <form class="email-form" id="ctaForm" novalidate>
+        <input type="email" placeholder="you@email.com" required>
+        <button type="submit" class="btn btn--primary">Send me a ribbon</button>
+      </form>
+      <div class="toast" role="status" aria-live="polite" aria-atomic="true" id="toast"></div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-cols">
+        <div>
+          <div class="brand">CARBON</div>
+          <div class="mission">We build tools that help writers preserve their stories for generations.</div>
+        </div>
+        <div>
+          <h4>Company</h4>
+          <ul>
+            <li><a href="#">About</a></li>
+            <li><a href="#">Manifesto</a></li>
+            <li><a href="#">Contact</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Support</h4>
+          <ul>
+            <li><a href="#faq">FAQ</a></li>
+            <li><a href="#">Care Guide</a></li>
+            <li><a href="#">Status</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="#">Privacy</a></li>
+            <li><a href="#">Terms</a></li>
+            <li><a href="#">Cookies</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2025 CARBON</span>
+        <a href="#header" class="back-to-top" aria-label="Back to top">
+          <span class="material-symbols-rounded">arrow_upward</span>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast template -->
+  <div class="toast" role="status" aria-live="polite" aria-atomic="true" id="toast" style="display:none;"></div>
+
+  <script>
+    // Theme toggle
+    const html = document.documentElement;
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    function setTheme(dark){
+      if(dark){ html.classList.add('dark'); html.setAttribute('data-theme','dark'); }
+      else{ html.classList.remove('dark'); html.removeAttribute('data-theme'); }
+      localStorage.carbonTheme = dark ? 'dark' : 'light';
+      themeIcon.textContent = dark ? 'light_mode' : 'dark_mode';
+      themeToggle.setAttribute('aria-pressed', dark);
+      themeToggle.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+    }
+
+    // Persistence
+    const stored = localStorage.carbonTheme;
+    if(stored === 'dark') setTheme(true);
+    else if(stored === 'light') setTheme(false);
+    else{
+      // fallback to system preference
+      setTheme(window.matchMedia('(prefers-color-scheme: dark)').matches);
+    }
+
+    themeToggle.addEventListener('click',()=>{
+      const isDark = html.classList.contains('dark');
+      setTheme(!isDark);
+    });
+
+    // Reduced motion handling
+    prefersReduced.addEventListener('change',()=>{
+      if(prefersReduced.matches){
+        document.querySelectorAll('.tagline span,.ticker span').forEach(el=>{el.style.animation='none';el.style.width='auto';});
+        document.querySelectorAll('.faq-panel').forEach(el=>{el.style.maxHeight='10000px';el.style.transition='none';});
+        document.querySelectorAll('.faq-btn .material-symbols-rounded').forEach(el=>{el.style.transform='none';});
+      }
+    });
+
+    // FAQ accordion
+    document.querySelectorAll('.faq-btn').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        const expanded = btn.getAttribute('aria-expanded') === 'true';
+        btn.setAttribute('aria-expanded', !expanded);
+        const panel = document.getElementById('q' + btn.getAttribute('aria-controls').replace('q',''));
+        if(!expanded){
+          panel.setAttribute('aria-hidden','false');
+          panel.style.maxHeight = panel.scrollHeight + 'px';
+        }else{
+          panel.style.maxHeight = '0';
+          setTimeout(()=>{panel.setAttribute('aria-hidden','true');},280);
+        }
+      });
+    });
+
+    // Close FAQ panels on window click outside
+    document.addEventListener('click',e=>{
+      if(!e.target.closest('.faq-item')){ document.querySelectorAll('.faq-panel[aria-hidden="false"]').forEach(p=>{p.setAttribute('aria-hidden','true');p.style.maxHeight='0';});}
+    });
+
+    // Form submission simulation
+    const ctaForm = document.getElementById('ctaForm');
+    const toastEl = document.getElementById('toast');
+    ctaForm.addEventListener('submit',e=>{
+      e.preventDefault();
+      const btn = ctaForm.querySelector('button');
+      const input = ctaForm.querySelector('input');
+      btn.setAttribute('disabled','');
+      btn.textContent = 'Sending…';
+      setTimeout(()=>{
+        btn.removeAttribute('disabled');
+        btn.textContent = 'Send me a ribbon';
+        input.value = '';
+        showToast('Thanks! We\'ll send your ribbon shortly.');
+      },900);
+    });
+
+    function showToast(msg){
+      toastEl.textContent = msg;
+      toastEl.classList.add('show');
+      setTimeout(()=>{toastEl.classList.remove('show');},4000);
+    }
+
+    // Hamburger menu for mobile (simple)
+    const header = document.querySelector('.site-header');
+    const nav = document.querySelector('.nav');
+    const hamburger = document.querySelector('.hamburger');
+    if(hamburger){
+      hamburger.addEventListener('click',()=>{
+        const open = nav.getAttribute('aria-expanded') === 'true';
+        nav.setAttribute('aria-expanded', !open);
+        hamburger.classList.toggle('active',!open);
+        // simple toggle: in real impl add mobile nav markup
+      });
+    }
+
+    // Skip link focus
+    document.querySelector('.visually-hidden').addEventListener('focus',()=>{nav.focus();});
+  </script>
+</body>
+</html>

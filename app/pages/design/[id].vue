@@ -7,7 +7,8 @@ const meta = computed(() => library.value.index.find((i) => i.id === id.value));
 const { data: promptData } = await useAsyncData(`prompt-${id.value}`, () => usePromptFetch(id.value));
 const prompt = computed(() => promptData.value ?? '');
 const notFound = computed(() => library.value.index.length > 0 && !meta.value);
-const demoSrc = computed(() => `/data/demos/${id.value}.html`);
+const mode = useDemoMode();
+const demoSrc = computed(() => `/data/demos/${id.value}${mode.value === 'dark' && meta.value?.hasDark ? '.dark' : ''}.html`);
 const hasDemo = computed(() => meta.value?.hasDemo ?? false);
 
 const pane = ref<'demo' | 'prompt'>('demo');
