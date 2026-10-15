@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marginalia - a quiet reading journal</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet">
+<style>
+:root{
+  --primary:#E1A4C2;--secondary:#7A9A7A;
+  --bg-primary:#F5F0E5;--bg-secondary:#F2EEDF;
+  --text-primary:#2A241B;--text-secondary:#6B5F4E;
+  --text-success:#4C6B4C;--text-error:#9C3D2E;
+  --border-default:#DCD4C2;--border-error:#9C3D2E;--border-success:#4C6B4C;
+  --sage:#7A9A7A;--blush:#E8B0A8;--lemon:#E8D870;--pink:#E1A4C2;
+  --wash-sage:color-mix(in srgb,var(--sage) 16%,transparent);
+  --wash-blush:color-mix(in srgb,var(--blush) 18%,transparent);
+  --wash-lemon:color-mix(in srgb,var(--lemon) 16%,transparent);
+  --on-ink:#F5F0E5;
+  --font-display:'Cormorant Garamond',Georgia,serif;
+  --font-base:'Inter',system-ui,sans-serif;
+  --radius-sm:2px;--radius-md:4px;--radius-lg:8px;
+  --shadow-sm:0 1px 2px rgba(42,36,27,.06);
+  --shadow-md:0 6px 18px rgba(42,36,27,.10);
+  --spacing-gap:clamp(4rem,8vw,8rem);
+  --transition-fast:200ms;--transition-normal:350ms;
+  --ease-standard:cubic-bezier(.4,0,.2,1);
+  --z-dropdown:10;--z-modal:100;--z-toast:200;
+}
+:root[data-theme="dark"]{
+  --bg-primary:#211B13;--bg-secondary:#2B241A;
+  --text-primary:#F2EEDF;--text-secondary:#CFC5AD;
+  --primary:#E1A4C2;--secondary:#9DBE9D;
+  --sage:#9DBE9D;--blush:#EFBFB6;--lemon:#EFE28A;
+  --text-success:#A9C9A9;--text-error:#E8A18C;
+  --border-default:rgba(242,238,223,.16);
+  --border-error:#E8A18C;--border-success:#A9C9A9;
+  --on-ink:#211B13;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+  --shadow-md:0 6px 18px rgba(0,0,0,.45);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font-base);font-size:1.125rem;line-height:1.7;
+  background:var(--bg-primary);color:var(--text-primary);
+  transition:background-color var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard);
+  overflow-x:hidden;
+}
+h1,h2,h3,.price,.step__num{font-family:var(--font-display);font-weight:600;line-height:1.1;letter-spacing:-0.02em;color:var(--text-primary)}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+.container{max-width:1200px;margin-inline:auto;padding-inline:1.25rem}
+@media(min-width:768px){.container{padding-inline:2rem}}
+section{padding-block:var(--spacing-gap)}
+.material-symbols-rounded{font-size:1.35em;line-height:1;vertical-align:-0.2em}
+
+/* Skip link */
+.skip-link{position:absolute;left:-9999px;top:0;background:var(--text-primary);color:var(--on-ink);padding:.75rem 1.25rem;z-index:var(--z-toast);border-radius:var(--radius-md)}
+.skip-link:focus{left:1rem;top:1rem}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;min-width:44px;padding:.7rem 1.6rem;font-family:var(--font-base);font-size:1rem;font-weight:500;border-radius:var(--radius-md);border:1px solid transparent;cursor:pointer;transition:opacity var(--transition-fast) var(--ease-standard),transform var(--transition-fast) var(--ease-standard),background-color var(--transition-fast)}
+.btn:active{transform:scale(.97)}
+.btn:focus-visible{outline:2px solid var(--secondary);outline-offset:3px}
+.btn[disabled]{opacity:.5;filter:grayscale(1);cursor:not-allowed;pointer-events:none}
+.btn--loading{pointer-events:none}
+.btn--loading .material-symbols-rounded{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.btn-primary{background:var(--text-primary);color:var(--on-ink)}
+.btn-secondary{background:transparent;color:var(--text-primary);border-color:var(--text-primary)}
+.btn-ghost{background:transparent;color:var(--text-primary);padding-inline:.5rem}
+.btn-danger{background:var(--text-error);color:var(--bg-primary)}
+@media(hover:hover) and (pointer:fine){
+  .btn:hover{opacity:.8}
+  a:hover{opacity:.8}
+}
+.btn,a{transition:opacity var(--transition-fast) var(--ease-standard),transform var(--transition-fast) var(--ease-standard)}
+
+/* Header */
+.site-header{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--bg-primary);border-bottom:1px solid var(--border-default)}
+.site-header__inner{display:flex;align-items:center;justify-content:space-between;height:68px}
+.wordmark{font-family:var(--font-display);font-size:1.6rem;font-weight:600;letter-spacing:-0.01em}
+.nav{display:flex;align-items:center;gap:1.75rem}
+.nav a{font-size:.95rem;color:var(--text-secondary)}
+.nav__toggle{display:none;align-items:center;justify-content:center;width:44px;height:44px;background:none;border:none;color:var(--text-primary);cursor:pointer;border-radius:var(--radius-md)}
+#theme-toggle{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;background:none;border:1px solid var(--border-default);border-radius:var(--radius-md);color:var(--text-primary);cursor:pointer;transition:opacity var(--transition-fast)}
+#theme-toggle .icon-sun{display:none}
+:root[data-theme="dark"] #theme-toggle .icon-sun{display:inline}
+:root[data-theme="dark"] #theme-toggle .icon-moon{display:none}
+@media(max-width:767px){
+  .nav{position:absolute;top:68px;left:0;right:0;flex-direction:column;align-items:flex-start;gap:0;background:var(--bg-primary);border-bottom:1px solid var(--border-default);padding:.5rem 1.25rem 1rem;display:none}
+  .nav--open{display:flex}
+  .nav a{display:block;padding:.6rem 0;font-size:1.05rem}
+  .nav__toggle{display:inline-flex}
+}
+
+/* Hero */
+.hero{padding-top:clamp(3rem,6vw,6rem);padding-bottom:var(--spacing-gap)}
+.hero__grid{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(2rem,5vw,4.5rem);align-items:center}
+.hero h1{font-size:clamp(2.75rem,6vw,5rem);margin-bottom:1.25rem}
+.hero__sub{color:var(--text-secondary);max-width:34rem;margin-bottom:2rem}
+.hero__ctas{display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap}
+.hero__visual{position:relative;min-height:22rem}
+.hero__block{position:absolute;border-radius:var(--radius-lg)}
+.hero__block--sage{background:var(--wash-sage);inset:0 18% 32% 0}
+.hero__block--blush{background:var(--wash-blush);inset:38% 0 0 30%}
+.hero__block--lemon{background:var(--wash-lemon);width:38%;height:26%;right:6%;top:8%}
+.hero__card{position:absolute;left:8%;right:14%;top:26%;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);padding:1.75rem 2rem}
+.hero__card q{font-family:var(--font-display);font-style:italic;font-size:1.35rem;line-height:1.35;quotes:"\201C" "\201D"}
+.hero__card figcaption{margin-top:.85rem;font-size:.85rem;color:var(--text-secondary)}
+@media(max-width:900px){
+  .hero__grid{grid-template-columns:1fr}
+  .hero__visual{min-height:17rem}
+}
+
+/* Section headers */
+.section-head{max-width:44rem;margin-bottom:clamp(2.5rem,5vw,4rem)}
+.section-head h2{font-size:clamp(2rem,4vw,3rem);margin-bottom:.9rem}
+.section-head p{color:var(--text-secondary);max-width:36rem}
+
+/* Cards */
+.card{display:flex;flex-direction:column;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard),border-color var(--transition-fast)}
+@media(hover:hover) and (pointer:fine){.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}}
+.card:focus-within{border-color:var(--secondary)}
+.features__row{display:flex;gap:1.5rem;align-items:stretch /* exception: equal-height cards */}
+.features__row .card{flex:1;padding:1.75rem}
+.card__accent{display:flex;align-items:center;justify-content:center;width:3.25rem;height:3.25rem;border-radius:var(--radius-md);margin-bottom:1.25rem;color:var(--text-primary)}
+.card__accent--sage{background:var(--wash-sage)}
+.card__accent--blush{background:var(--wash-blush)}
+.card__accent--lemon{background:var(--wash-lemon)}
+.card h3{font-size:1.55rem;margin-bottom:.6rem}
+.card p{color:var(--text-secondary);font-size:1rem}
+@media(max-width:767px){.features__row{flex-direction:column}}
+
+/* Steps */
+.steps{display:flex;gap:2.5rem;align-items:flex-start /* exception: editorial top alignment */}
+.step{flex:1;position:relative;padding-top:1rem;border-top:1px solid var(--border-default)}
+.step__num{display:block;font-size:clamp(3rem,5vw,4.25rem);font-weight:500;color:var(--secondary);line-height:1;margin-bottom:.75rem}
+.step h3{font-size:1.5rem;margin-bottom:.5rem}
+.step p{color:var(--text-secondary);font-size:1rem}
+@media(max-width:767px){.steps{flex-direction:column}}
+
+/* Testimonials */
+.quotes{display:flex;flex-direction:column}
+.quote{padding-block:clamp(2rem,4vw,3.25rem);border-top:1px solid var(--border-default);position:relative}
+.quote blockquote{font-family:var(--font-display);font-style:italic;font-size:clamp(1.5rem,2.6vw,2.1rem);line-height:1.35;max-width:46rem;position:relative}
+.quote blockquote::before{content:"\201C";position:absolute;left:-.15em;top:-.55em;font-size:3.2em;font-style:normal;color:var(--primary);opacity:.45;z-index:-0}
+.quote figcaption{margin-top:1.1rem;color:var(--text-secondary);font-size:.95rem}
+.quote figcaption strong{color:var(--text-primary);font-weight:600}
+
+/* Pricing */
+.pricing__row{display:flex;gap:1.5rem;align-items:stretch /* exception: equal-height tiers */}
+.pricing-card{flex:1;display:flex;flex-direction:column;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:2rem;transition:transform var(--transition-fast),box-shadow var(--transition-fast)}
+@media(hover:hover) and (pointer:fine){.pricing-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}}
+.pricing-card--featured{border:1px solid var(--secondary);box-shadow:var(--shadow-md)}
+:root[data-theme="dark"] .pricing-card--featured{border-color:var(--secondary)}
+.pricing-card__tag{align-self:flex-start;font-size:.78rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-success);border:1px solid var(--border-success);border-radius:var(--radius-sm);padding:.2rem .6rem;margin-bottom:1rem}
+.pricing-card h3{font-size:1.5rem}
+.price{font-size:clamp(2.5rem,4vw,3.25rem);margin:.5rem 0 .25rem}
+.price small{font-family:var(--font-base);font-size:.9rem;font-weight:400;color:var(--text-secondary);letter-spacing:0}
+.pricing-card__desc{color:var(--text-secondary);font-size:.95rem;margin-bottom:1.25rem}
+.pricing-card ul{list-style:none;display:flex;flex-direction:column;gap:.6rem;margin-bottom:1.75rem;font-size:.98rem}
+.pricing-card li{display:flex;align-items:center;gap:.55rem}
+.pricing-card li .material-symbols-rounded{color:var(--text-success);font-size:1.15em}
+.pricing-card .btn{margin-top:auto}
+@media(max-width:767px){.pricing__row{flex-direction:column}}
+
+/* FAQ */
+.faq{max-width:46rem}
+.faq-item{border-top:1px solid var(--border-default)}
+.faq-item:last-child{border-bottom:1px solid var(--border-default)}
+.faq-item summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;cursor:pointer;list-style:none;padding:1.35rem .25rem;font-family:var(--font-display);font-size:1.4rem;font-weight:600;min-height:44px}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-item summary:focus-visible{outline:2px solid var(--secondary);outline-offset:3px;border-radius:var(--radius-sm)}
+.faq-item summary .material-symbols-rounded{transition:transform var(--transition-normal) var(--ease-standard);color:var(--text-secondary)}
+.faq-item[open] summary .material-symbols-rounded{transform:rotate(180deg)}
+.faq-item__body{padding:0 .25rem 1.5rem;color:var(--text-secondary);max-width:40rem}
+
+/* Final CTA */
+.cta-panel{background:var(--wash-blush);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:clamp(2.5rem,6vw,4.5rem);display:flex;flex-direction:column;align-items:center;text-align:center}
+.cta-panel h2{font-size:clamp(2rem,4vw,3rem);margin-bottom:.9rem}
+.cta-panel>p{color:var(--text-secondary);max-width:32rem;margin-bottom:2rem}
+.input-group{display:flex;flex-direction:column;gap:.4rem;width:100%;max-width:26rem;text-align:left}
+.input-group label{font-size:.9rem;font-weight:500}
+.input-group__row{display:flex;gap:.6rem;align-items:stretch /* exception: input and button share height */}
+.input-group input{flex:1;min-height:44px;padding:.65rem .9rem;font:inherit;font-size:1rem;color:var(--text-primary);background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);transition:border-color var(--transition-fast),box-shadow var(--transition-fast)}
+.input-group input:focus{outline:none;border-color:var(--secondary);box-shadow:0 0 0 3px var(--wash-sage)}
+.input-group input[aria-invalid="true"]{border-color:var(--border-error)}
+.input-group--valid input{border-color:var(--border-success)}
+.input-group__hint{font-size:.85rem;color:var(--text-secondary)}
+.input-group__error{font-size:.85rem;color:var(--text-error);display:flex;align-items:center;gap:.35rem}
+.form-status{margin-top:1rem;font-size:.95rem;color:var(--text-success);display:flex;align-items:center;gap:.4rem}
+@media(max-width:520px){.input-group__row{flex-direction:column}}
+
+/* Footer */
+.site-footer{border-top:1px solid var(--border-default);padding-block:2.5rem}
+.site-footer__inner{display:flex;align-items:center;justify-content:space-between;gap:1.5rem;flex-wrap:wrap}
+.site-footer__links{display:flex;gap:1.5rem;flex-wrap:wrap}
+.site-footer__links a{font-size:.92rem;color:var(--text-secondary)}
+.site-footer small{color:var(--text-secondary);font-size:.85rem}
+@media(max-width:640px){.site-footer__inner{flex-direction:column;align-items:flex-start}}
+
+/* Reveal */
+.reveal{opacity:0;transform:translateY(14px);transition:opacity 500ms var(--ease-standard),transform 500ms var(--ease-standard)}
+.reveal--in{opacity:1;transform:none}
+
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition-duration:150ms!important}
+  .reveal{transform:none;transition:opacity 200ms ease}
+}
+@media (prefers-reduced-transparency: reduce){
+  .hero__block,.cta-panel,.card__accent{background:var(--bg-secondary)}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a class="wordmark" href="#">Marginalia</a>
+    <nav class="nav" id="site-nav" aria-label="Primary">
+      <a href="#features">Features</a>
+      <a href="#how">How It Works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div style="display:flex;align-items:center;gap:.5rem">
+      <button id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-rounded icon-moon" aria-hidden="true">dark_mode</span>
+        <span class="material-symbols-rounded icon-sun" aria-hidden="true">light_mode</span>
+      </button>
+      <button class="nav__toggle" id="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">
+        <span class="material-symbols-rounded" aria-hidden="true">menu</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <!-- Hero -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="container hero__grid">
+      <div>
+        <h1 id="hero-title">A quiet journal for the books you love</h1>
+        <p class="hero__sub">Marginalia keeps your reading notes, passages, and small thoughts in one calm, paper-soft place.</p>
+        <div class="hero__ctas">
+          <a class="btn btn-primary" href="#cta">Begin your journal</a>
+          <a class="btn btn-ghost" href="#how">See how it works</a>
+        </div>
+      </div>
+      <div class="hero__visual" aria-hidden="true">
+        <div class="hero__block hero__block--sage"></div>
+        <div class="hero__block hero__block--blush"></div>
+        <div class="hero__block hero__block--lemon"></div>
+        <figure class="hero__card">
+          <q>Some books are read once. The good ones are read slowly, with a pencil nearby.</q>
+          <figcaption>From the journal of E. Hartley, March entry</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" aria-labelledby="features-title">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2 id="features-title">Made for slow, attentive reading</h2>
+        <p>Everything in Marginalia serves the page in front of you, and nothing competes with it.</p>
+      </div>
+      <div class="features__row">
+        <article class="card reveal">
+          <div class="card__accent card__accent--sage"><span class="material-symbols-rounded" aria-hidden="true">edit_note</span></div>
+          <h3>Notes in the margin</h3>
+          <p>Jot a thought beside any passage. Your notes stay anchored to the page that prompted them, ready when you return.</p>
+        </article>
+        <article class="card reveal">
+          <div class="card__accent card__accent--blush"><span class="material-symbols-rounded" aria-hidden="true">bookmark</span></div>
+          <h3>Passages worth keeping</h3>
+          <p>Save the sentences that stopped you. Marginalia gathers them into a personal commonplace book, quietly indexed by theme.</p>
+        </article>
+        <article class="card reveal">
+          <div class="card__accent card__accent--lemon"><span class="material-symbols-rounded" aria-hidden="true">calendar_month</span></div>
+          <h3>A gentle reading rhythm</h3>
+          <p>Set an unhurried pace for each book. A soft weekly letter reminds you where you left off, never how far behind you are.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section id="how" aria-labelledby="how-title">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2 id="how-title">Three quiet habits</h2>
+        <p>No setup ritual, no feeds to tune. Marginalia fits around the reading you already do.</p>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <span class="step__num" aria-hidden="true">01</span>
+          <h3>Shelve your book</h3>
+          <p>Add the title on your nightstand. Marginalia opens a fresh spread for it, dated and waiting.</p>
+        </div>
+        <div class="step reveal">
+          <span class="step__num" aria-hidden="true">02</span>
+          <h3>Read and remark</h3>
+          <p>As you read, note a line, a question, a disagreement. Short entries are welcome; fragments count.</p>
+        </div>
+        <div class="step reveal">
+          <span class="step__num" aria-hidden="true">03</span>
+          <h3>Return and reread</h3>
+          <p>Months later, open the spread again. Your past self has left good company in the margins.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section aria-labelledby="quotes-title">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2 id="quotes-title">From our readers</h2>
+      </div>
+      <div class="quotes">
+        <figure class="quote reveal">
+          <blockquote>I kept meaning to write about what I read and never did. Marginalia made it feel like correspondence rather than homework.</blockquote>
+          <figcaption><strong>Priya Raman</strong>, literature teacher, Bristol</figcaption>
+        </figure>
+        <figure class="quote reveal">
+          <blockquote>My commonplace book finally survived the move to digital. It is the only app on my phone that feels like a quiet room.</blockquote>
+          <figcaption><strong>Tom&aacute;s Herrera</strong>, editor at Fieldgate Press</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section id="pricing" aria-labelledby="pricing-title">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2 id="pricing-title">Choose your shelf</h2>
+        <p>Every plan begins with a month of unhurried reading, free of charge.</p>
+      </div>
+      <div class="pricing__row">
+        <article class="pricing-card reveal">
+          <h3>Reader</h3>
+          <p class="price">$0 <small>forever</small></p>
+          <p class="pricing-card__desc">For the occasional essayist with one book on the go.</p>
+          <ul>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Three active books</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Unlimited margin notes</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Monthly reading letter</li>
+          </ul>
+          <a class="btn btn-secondary" href="#cta">Start reading</a>
+        </article>
+        <article class="pricing-card pricing-card--featured reveal">
+          <span class="pricing-card__tag">Most loved</span>
+          <h3>Annotator</h3>
+          <p class="price">$6 <small>per month</small></p>
+          <p class="pricing-card__desc">For readers who keep a pencil in every jacket pocket.</p>
+          <ul>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Unlimited books and passages</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Commonplace book with themes</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Weekly reading letter</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Export to print-ready PDF</li>
+          </ul>
+          <a class="btn btn-primary" href="#cta">Start reading</a>
+        </article>
+        <article class="pricing-card reveal">
+          <h3>Book Club</h3>
+          <p class="price">$14 <small>per month</small></p>
+          <p class="pricing-card__desc">For circles that read together and argue kindly.</p>
+          <ul>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Everything in Annotator</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Shared shelves for ten readers</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Discussion threads per passage</li>
+          </ul>
+          <a class="btn btn-secondary" href="#cta">Start reading</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" aria-labelledby="faq-title">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2 id="faq-title">Questions from the reading room</h2>
+      </div>
+      <div class="faq reveal">
+        <details class="faq-item">
+          <summary>Do I need to finish a book before starting another?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <div class="faq-item__body"><p>Not at all. Marginalia assumes most readers keep several books in rotation. Each one holds its place, its notes, and its passages until you wander back.</p></div>
+        </details>
+        <details class="faq-item">
+          <summary>Can I bring in notes I have already written elsewhere?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <div class="faq-item__body"><p>Yes. Paste plain text or import a Markdown file and Marginalia will sort entries under the right book. Highlights from most e-readers import cleanly as well.</p></div>
+        </details>
+        <details class="faq-item">
+          <summary>What happens to my journal if I cancel?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <div class="faq-item__body"><p>Your writing is yours. Export everything as a print-ready PDF or plain text at any time, and your account returns to the free Reader shelf rather than disappearing.</p></div>
+        </details>
+        <details class="faq-item">
+          <summary>Is there a mobile app for reading on the train?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <div class="faq-item__body"><p>Marginalia runs beautifully in any mobile browser, and dedicated iOS and Android editions are in the works. Your journal syncs the moment you are back online.</p></div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section id="cta" aria-labelledby="cta-title">
+    <div class="container">
+      <div class="cta-panel reveal">
+        <h2 id="cta-title">Open your first page</h2>
+        <p>Leave an address and we will send a quiet invitation when your journal is ready.</p>
+        <form class="input-group" id="cta-form" novalidate>
+          <label for="cta-email">Email address</label>
+          <div class="input-group__row">
+            <input id="cta-email" name="email" type="email" autocomplete="email" placeholder="reader@example.com" required>
+            <button class="btn btn-primary" id="cta-submit" type="submit">Request invite</button>
+          </div>
+          <p class="input-group__hint" id="cta-hint">One letter, no noise. Unsubscribe whenever you like.</p>
+          <p class="input-group__error" id="cta-error" hidden><span class="material-symbols-rounded" aria-hidden="true">error</span><span id="cta-error-text"></span></p>
+          <p class="form-status" id="cta-status" role="status" aria-live="polite" hidden><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Thank you. Your invitation is on its way.</p>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container site-footer__inner">
+    <a class="wordmark" href="#">Marginalia</a>
+    <nav class="site-footer__links" aria-label="Secondary">
+      <a href="#">About</a><a href="#">Journal</a><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Contact</a>
+    </nav>
+    <small>&copy; 2026 Marginalia Press. Read slowly.</small>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  /* Theme toggle */
+  var toggle=document.getElementById("theme-toggle");
+  function syncToggle(){
+    var dark=document.documentElement.dataset.theme==="dark";
+    toggle.setAttribute("aria-pressed",String(dark));
+    toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+  }
+  toggle.addEventListener("click",function(){
+    var next=document.documentElement.dataset.theme==="dark"?"light":"dark";
+    document.documentElement.dataset.theme=next;
+    localStorage.setItem("theme",next);
+    syncToggle();
+  });
+  syncToggle();
+
+  /* Mobile nav */
+  var navToggle=document.getElementById("nav-toggle");
+  var nav=document.getElementById("site-nav");
+  function closeNav(){nav.classList.remove("nav--open");navToggle.setAttribute("aria-expanded","false");navToggle.setAttribute("aria-label","Open menu");}
+  navToggle.addEventListener("click",function(){
+    var open=nav.classList.toggle("nav--open");
+    navToggle.setAttribute("aria-expanded",String(open));
+    navToggle.setAttribute("aria-label",open?"Close menu":"Open menu");
+  });
+  nav.addEventListener("click",function(e){if(e.target.tagName==="A")closeNav();});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape")closeNav();});
+
+  /* Reveal on scroll */
+  var reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var items=document.querySelectorAll(".reveal");
+  if(reduce||!("IntersectionObserver" in window)){
+    items.forEach(function(el){el.classList.add("reveal--in");});
+  }else{
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(en,i){
+        if(en.isIntersecting){
+          var el=en.target;
+          setTimeout(function(){el.classList.add("reveal--in");},(i%3)*70);
+          io.unobserve(el);
+        }
+      });
+    },{threshold:.12});
+    items.forEach(function(el){io.observe(el);});
+  }
+
+  /* Email capture */
+  var form=document.getElementById("cta-form");
+  var input=document.getElementById("cta-email");
+  var btn=document.getElementById("cta-submit");
+  var err=document.getElementById("cta-error");
+  var errText=document.getElementById("cta-error-text");
+  var status=document.getElementById("cta-status");
+  var group=form;
+  form.addEventListener("submit",function(e){
+    e.preventDefault();
+    var val=input.value.trim();
+    var ok=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val);
+    if(!ok){
+      input.setAttribute("aria-invalid","true");
+      errText.textContent=val?"That address looks incomplete. Please check it and try again.":"Please enter your email address.";
+      err.hidden=false;status.hidden=true;
+      group.classList.remove("input-group--valid");
+      input.focus();
+      return;
+    }
+    input.removeAttribute("aria-invalid");
+    err.hidden=true;
+    btn.classList.add("btn--loading");
+    btn.setAttribute("aria-busy","true");
+    btn.innerHTML='<span class="material-symbols-rounded" aria-hidden="true">progress_activity</span>Sending';
+    setTimeout(function(){
+      btn.classList.remove("btn--loading");
+      btn.removeAttribute("aria-busy");
+      btn.innerHTML='<span class="material-symbols-rounded" aria-hidden="true">check</span>Requested';
+      btn.disabled=true;
+      group.classList.add("input-group--valid");
+      status.hidden=false;
+    },900);
+  });
+  input.addEventListener("input",function(){
+    if(!err.hidden){err.hidden=true;input.removeAttribute("aria-invalid");}
+  });
+})();
+</script>
+</body>
+</html>

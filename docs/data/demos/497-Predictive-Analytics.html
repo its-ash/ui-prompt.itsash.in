@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nimbus Forecast - Predictive Analytics for Confident Decisions</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet">
+<style>
+:root{
+--primary:#2f5fe0;--secondary:#5b6b85;
+--bg-primary:#f4f7fb;--bg-secondary:#fefefe;--bg-tertiary:#e9eef7;
+--text-primary:#1a2333;--text-secondary:#4d5b73;
+--text-success:#0e7a3d;--text-error:#c22f2f;
+--border-default:#d8e0ec;--border-error:#c22f2f;--border-success:#0e7a3d;
+--actual-line:#1a2333;--forecast-line:#2f5fe0;
+--confidence-band:#2f5fe0;--confidence-high:#2f5fe0;--confidence-low:#8fb0f2;
+--anomaly:#d64545;--trend-positive:#0e7a3d;--trend-negative:#c25a1f;
+--probability-gradient:linear-gradient(90deg,#8fb0f2,#2f5fe0);
+--on-accent:#ffffff;
+--radius-sm:8px;--radius-md:14px;--radius-lg:22px;
+--shadow-sm:0 1px 3px rgba(26,45,80,.08);--shadow-md:0 12px 32px rgba(26,45,80,.14);
+--spacing-gap:1.5rem;
+--transition-fast:140ms ease-out;--transition-normal:240ms ease-out;--ease-standard:cubic-bezier(.2,.7,.3,1);
+--z-dropdown:50;--z-modal:100;--z-toast:200;
+--font-base:"Inter",system-ui,sans-serif;--font-heading:"Space Grotesk",sans-serif;--font-mono:"JetBrains Mono",monospace;
+--band-opacity:.14;
+}
+:root[data-theme="dark"]{
+--primary:#7ba0f7;--secondary:#93a3c0;
+--bg-primary:#0b1220;--bg-secondary:#131c30;--bg-tertiary:#1a2540;
+--text-primary:#e8edf7;--text-secondary:#a3b1c9;
+--text-success:#4fd08a;--text-error:#ff7a7a;
+--border-default:#263453;--border-error:#ff7a7a;--border-success:#4fd08a;
+--actual-line:#e8edf7;--forecast-line:#7ba0f7;
+--confidence-band:#7ba0f7;--confidence-high:#7ba0f7;--confidence-low:#3a5a9e;
+--anomaly:#ff7a7a;--trend-positive:#4fd08a;--trend-negative:#ff9a5c;
+--probability-gradient:linear-gradient(90deg,#3a5a9e,#7ba0f7);
+--on-accent:#0b1220;
+--shadow-sm:0 1px 3px rgba(0,0,0,.4);--shadow-md:0 12px 32px rgba(0,0,0,.5);
+--band-opacity:.2;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;font-size:1rem;overflow-x:hidden;transition:background var(--transition-normal),color var(--transition-normal)}
+h1,h2,h3{font-family:var(--font-heading);letter-spacing:-.02em;line-height:1.12}
+h2{font-size:clamp(1.75rem,3.5vw,2.5rem);letter-spacing:-.025em}
+p{color:var(--text-secondary);max-width:65ch}
+a{color:var(--primary);text-decoration:none}
+img,svg{max-width:100%}
+.material-symbols-rounded{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;font-size:1.25rem;line-height:1}
+.wrap{max-width:1200px;margin:0 auto;padding:0 1.25rem}
+@media(min-width:768px){.wrap{padding:0 2rem}}
+section{padding:clamp(4rem,8vw,6.5rem) 0}
+.skip-link{position:absolute;left:-9999px;top:0;background:var(--primary);color:var(--on-accent);padding:.75rem 1.25rem;z-index:var(--z-toast);border-radius:0 0 var(--radius-sm) 0}
+.skip-link:focus{left:0}
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* Buttons */
+.btn{display:flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:.7rem 1.5rem;border-radius:var(--radius-sm);font:600 .95rem var(--font-base);border:1px solid transparent;cursor:pointer;transition:transform var(--transition-fast),box-shadow var(--transition-fast),background var(--transition-fast),border-color var(--transition-fast);white-space:nowrap}
+.btn--primary{background:var(--primary);color:var(--on-accent)}
+.btn--secondary{background:transparent;color:var(--primary);border-color:var(--border-default)}
+.btn--danger{background:var(--text-error);color:#fff}
+@media(hover:hover) and (pointer:fine){
+.btn--primary:hover{filter:brightness(1.08);box-shadow:var(--shadow-md)}
+.btn--secondary:hover{border-color:var(--primary);background:var(--bg-tertiary)}
+}
+.btn:active{transform:scale(.97)}
+.btn:focus-visible{outline:3px solid var(--primary);outline-offset:2px}
+.btn:disabled,.btn--disabled{opacity:.5;filter:grayscale(.6);cursor:not-allowed}
+.btn .spinner{width:1.1rem;height:1.1rem;border:2.5px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 700ms linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* Nav */
+.nav{position:sticky;top:0;z-index:var(--z-dropdown);background:color-mix(in srgb,var(--bg-primary) 88%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-default)}
+.nav__inner{display:flex;align-items:center;gap:1.5rem;height:68px}
+.brand{display:flex;align-items:center;gap:.55rem;font:700 1.15rem var(--font-heading);color:var(--text-primary);letter-spacing:-.02em}
+.brand .material-symbols-rounded{color:var(--primary);font-size:1.6rem}
+.nav__links{display:flex;align-items:center;gap:1.4rem;list-style:none;margin-left:auto}
+.nav__links a{color:var(--text-secondary);font-weight:500;font-size:.92rem;transition:color var(--transition-fast)}
+@media(hover:hover) and (pointer:fine){.nav__links a:hover{color:var(--primary)}}
+.nav__actions{display:flex;align-items:center;gap:.6rem}
+.icon-btn{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-sm);border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);cursor:pointer;transition:background var(--transition-fast),transform var(--transition-fast)}
+.icon-btn:active{transform:scale(.95)}
+.icon-btn:focus-visible{outline:3px solid var(--primary);outline-offset:2px}
+.menu-btn{display:none}
+@media(max-width:860px){
+.nav__links{position:absolute;top:68px;left:0;right:0;flex-direction:column;align-items:flex-start;background:var(--bg-secondary);border-bottom:1px solid var(--border-default);padding:1rem 1.25rem;gap:.9rem;display:none}
+.nav__links--open{display:flex}
+.menu-btn{display:flex}
+.nav__cta{display:none}
+}
+/* Hero */
+.hero{padding:clamp(3rem,6vw,5rem) 0 clamp(4rem,7vw,6rem)}
+.hero__grid{display:flex;align-items:center;gap:clamp(2rem,4vw,4rem)}
+.hero__copy{flex:1 1 46%;display:flex;flex-direction:column;align-items:flex-start;gap:1.2rem}
+.hero__visual{flex:1 1 54%;min-width:0}
+.badge{display:inline-flex;align-items:center;gap:.45rem;font:600 .78rem var(--font-base);letter-spacing:.06em;text-transform:uppercase;color:var(--primary);background:var(--bg-tertiary);border:1px solid var(--border-default);padding:.4rem .85rem;border-radius:999px}
+.hero h1{font-size:clamp(2.25rem,5vw,3.6rem);letter-spacing:-.03em}
+.hero h1 em{font-style:italic;color:var(--primary)}
+.hero__ctas{display:flex;gap:.8rem;flex-wrap:wrap}
+.trust-row{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.4rem}
+.chip{display:inline-flex;align-items:center;gap:.4rem;font:500 .8rem var(--font-mono);color:var(--text-secondary);background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:999px;padding:.35rem .8rem}
+.chip .material-symbols-rounded{font-size:1rem;color:var(--trend-positive)}
+/* Chart panel */
+.panel{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:1.25rem;display:flex;flex-direction:column;gap:1rem;position:relative}
+.panel__head{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.panel__title{font:600 .95rem var(--font-heading)}
+.panel__meta{font:500 .75rem var(--font-mono);color:var(--text-secondary)}
+.chart-wrap{position:relative}
+.chart{width:100%;height:auto;display:block}
+.grid-line{stroke:var(--border-default);stroke-width:1}
+.axis-label{font:500 .62rem var(--font-mono);fill:var(--text-secondary)}
+.actual-path{stroke:var(--actual-line);stroke-width:2.4;fill:none}
+.forecast-path{stroke:var(--forecast-line);stroke-width:2.4;fill:none;stroke-dasharray:7 5}
+.band{fill:var(--confidence-band);fill-opacity:0;transition:fill-opacity 800ms ease-out 400ms}
+.chart--drawn .band{fill-opacity:var(--band-opacity)}
+.chart--drawn .band--off{fill-opacity:0}
+.forecast-path{stroke-dashoffset:0}
+.draw-anim{stroke-dasharray:600;stroke-dashoffset:600}
+.chart--drawn .draw-anim{animation:draw 1.4s var(--ease-standard) forwards;stroke-dasharray:7 5}
+@keyframes draw{to{stroke-dashoffset:0}}
+.anomaly-dot{fill:var(--anomaly)}
+.anomaly-ring{fill:none;stroke:var(--anomaly);stroke-width:1.5;opacity:.7;animation:pulse 2.2s ease-out infinite;transform-origin:center;transform-box:fill-box}
+@keyframes pulse{0%{transform:scale(.6);opacity:.8}100%{transform:scale(2.4);opacity:0}}
+.datapoint{fill:var(--bg-secondary);stroke:var(--forecast-line);stroke-width:2;cursor:pointer}
+.datapoint:focus-visible{outline:none;stroke:var(--text-primary);stroke-width:3}
+.legend{display:flex;flex-wrap:wrap;gap:.9rem;font:500 .74rem var(--font-base);color:var(--text-secondary)}
+.legend__item{display:flex;align-items:center;gap:.4rem}
+.swatch{width:22px;height:0;border-top:2.5px solid var(--actual-line)}
+.swatch--dash{border-top-style:dashed;border-top-color:var(--forecast-line)}
+.swatch--band{width:16px;height:10px;border:none;border-radius:3px;background:var(--confidence-band);opacity:.35}
+.swatch--dot{width:9px;height:9px;border:none;border-radius:50%;background:var(--anomaly)}
+/* Tooltip */
+.tip-anchor{position:relative}
+.tip{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%) translateY(4px);background:var(--bg-secondary);border:1px solid var(--border-default);box-shadow:var(--shadow-md);border-radius:var(--radius-sm);padding:.45rem .7rem;font:500 .72rem var(--font-mono);color:var(--text-primary);white-space:nowrap;opacity:0;pointer-events:none;transition:opacity var(--transition-fast),transform var(--transition-fast);z-index:var(--z-dropdown)}
+.tip-anchor:hover .tip,.tip-anchor:focus-within .tip{opacity:1;transform:translateX(-50%) translateY(0)}
+/* Scenario control */
+.scenario{display:flex;align-items:center;gap:.9rem;flex-wrap:wrap;justify-content:space-between}
+.seg{display:flex;border:1px solid var(--border-default);border-radius:999px;overflow:hidden;background:var(--bg-tertiary)}
+.seg__btn{display:flex;align-items:center;gap:.35rem;padding:.5rem .95rem;min-height:44px;border:none;background:transparent;color:var(--text-secondary);font:500 .82rem var(--font-base);cursor:pointer;transition:background var(--transition-fast),color var(--transition-fast)}
+.seg__btn[aria-pressed="true"]{background:var(--primary);color:var(--on-accent);font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.seg__btn:focus-visible{outline:3px solid var(--primary);outline-offset:-3px}
+.switch-row{display:flex;align-items:center;gap:.6rem;font:500 .82rem var(--font-base);color:var(--text-secondary)}
+.toggle-switch{position:relative;width:46px;height:26px;border-radius:999px;border:1px solid var(--border-default);background:var(--bg-tertiary);cursor:pointer;transition:background var(--transition-normal);flex:none}
+.toggle-switch::after{content:"";position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:var(--bg-secondary);box-shadow:var(--shadow-sm);transition:transform var(--transition-normal)}
+.toggle-switch[aria-checked="true"]{background:var(--primary)}
+.toggle-switch[aria-checked="true"]::after{transform:translateX(20px)}
+.toggle-switch:focus-visible{outline:3px solid var(--primary);outline-offset:2px}
+/* Insight card */
+.insight{position:absolute;top:-1.4rem;right:-.6rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-md);padding:.9rem 1rem;width:min(240px,72%);display:flex;flex-direction:column;gap:.5rem;z-index:2}
+.insight__label{display:flex;align-items:center;gap:.4rem;font:600 .72rem var(--font-base);letter-spacing:.05em;text-transform:uppercase;color:var(--primary)}
+.insight__value{font:600 1.05rem var(--font-mono);color:var(--text-primary)}
+.insight__value .up{color:var(--trend-positive)}
+.prob{height:8px;border-radius:999px;background:var(--bg-tertiary);overflow:hidden}
+.prob__bar{height:100%;width:0;border-radius:999px;background:var(--probability-gradient);transition:width 1s var(--ease-standard)}
+.prob__text{font:600 .72rem var(--font-mono);color:var(--text-secondary)}
+/* Cards */
+.section-head{display:flex;flex-direction:column;gap:.7rem;margin-bottom:2.6rem;max-width:640px}
+.card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--spacing-gap)}
+@media(max-width:860px){.card-grid{grid-template-columns:1fr}}
+.card{display:flex;flex-direction:column;align-items:flex-start;gap:.9rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:1.6rem;box-shadow:var(--shadow-sm);transition:transform var(--transition-normal),box-shadow var(--transition-normal),border-color var(--transition-normal)}
+@media(hover:hover) and (pointer:fine){.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}}
+.card:focus-within{border-color:var(--primary)}
+.card__icon{display:flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:var(--radius-sm);background:var(--bg-tertiary);color:var(--primary);position:relative}
+.card__icon .material-symbols-rounded{font-size:1.5rem}
+.card h3{font-size:1.15rem}
+.card p{font-size:.92rem}
+.card__link{display:inline-flex;align-items:center;gap:.3rem;font-weight:600;font-size:.88rem;margin-top:auto}
+.card__link:focus-visible{outline:3px solid var(--primary);outline-offset:2px;border-radius:4px}
+.pulse-dot{position:absolute;top:-4px;right:-4px;width:11px;height:11px;border-radius:50%;background:var(--anomaly)}
+.pulse-dot::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid var(--anomaly);animation:pulse 2s ease-out infinite}
+/* Steps */
+.steps{display:flex;gap:var(--spacing-gap);position:relative}
+.steps::before{content:"";position:absolute;top:34px;left:8%;right:8%;border-top:2px dashed var(--forecast-line);opacity:.5}
+.step{flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:.8rem;position:relative;background:transparent}
+.step__num{display:flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;background:var(--bg-secondary);border:2px solid var(--forecast-line);color:var(--primary);font:600 1.1rem var(--font-mono);z-index:1}
+.step h3{font-size:1.1rem;display:flex;align-items:center;gap:.5rem}
+.step h3 .material-symbols-rounded{color:var(--primary)}
+.step p{font-size:.9rem}
+@media(max-width:768px){.steps{flex-direction:column}.steps::before{top:8%;bottom:8%;left:27px;right:auto;border-top:none;border-left:2px dashed var(--forecast-line)}}
+/* Testimonials */
+.tcard blockquote{font-size:.98rem;color:var(--text-primary);line-height:1.55}
+.stars{display:flex;gap:2px;color:#e8a13a}
+.stars .material-symbols-rounded{font-size:1.05rem;font-variation-settings:'FILL' 1}
+.tperson{display:flex;align-items:center;gap:.75rem;margin-top:auto}
+.avatar{display:flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:50%;background:var(--primary);color:var(--on-accent);font:600 .85rem var(--font-heading);flex:none}
+.tperson strong{display:block;font-size:.88rem;color:var(--text-primary)}
+.tperson span{font-size:.78rem;color:var(--text-secondary)}
+/* Pricing */
+.tier{align-items:stretch}
+.tier--featured{border:2px solid var(--primary);position:relative;box-shadow:var(--shadow-md)}
+.tier__badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--primary);color:var(--on-accent);font:600 .72rem var(--font-base);letter-spacing:.05em;text-transform:uppercase;padding:.3rem .9rem;border-radius:999px;white-space:nowrap}
+.tier__price{font:600 2.2rem var(--font-mono);color:var(--text-primary);letter-spacing:-.02em}
+.tier__price small{font:500 .85rem var(--font-base);color:var(--text-secondary);letter-spacing:0}
+.tier ul{list-style:none;display:flex;flex-direction:column;gap:.6rem;width:100%}
+.tier li{display:flex;align-items:flex-start;gap:.55rem;font-size:.9rem;color:var(--text-secondary)}
+.tier li .material-symbols-rounded{color:var(--trend-positive);font-size:1.1rem;margin-top:2px}
+.tier .btn{width:100%;margin-top:auto}
+/* FAQ */
+.faq{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:.7rem}
+.accordion__item{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);overflow:hidden}
+.accordion__header{width:100%;display:flex;align-items:center;justify-content:space-between;gap:1rem;background:none;border:none;padding:1.05rem 1.25rem;min-height:44px;font:600 .98rem var(--font-base);color:var(--text-primary);cursor:pointer;text-align:left}
+.accordion__header .material-symbols-rounded{transition:transform var(--transition-normal);color:var(--text-secondary);flex:none}
+.accordion__header[aria-expanded="true"] .material-symbols-rounded{transform:rotate(180deg)}
+.accordion__header:focus-visible{outline:3px solid var(--primary);outline-offset:-3px}
+.accordion__panel{max-height:0;overflow:hidden;transition:max-height 300ms var(--ease-standard)}
+.accordion__panel p{padding:0 1.25rem 1.15rem;font-size:.92rem}
+/* CTA band */
+.cta-band{background:linear-gradient(135deg,var(--bg-tertiary),var(--bg-secondary));border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:clamp(2.5rem,5vw,4rem);display:flex;flex-direction:column;align-items:center;gap:1.4rem;text-align:center}
+.cta-form{display:flex;gap:.7rem;width:min(520px,100%);align-items:flex-start}
+.input-group{display:flex;flex-direction:column;gap:.35rem;flex:1;text-align:left}
+.input-group label{font:600 .82rem var(--font-base);color:var(--text-primary)}
+.input-wrap{position:relative;display:flex;align-items:center}
+.input-wrap input{width:100%;min-height:48px;padding:.7rem 2.4rem .7rem .9rem;border:1px solid var(--border-default);border-radius:var(--radius-sm);background:var(--bg-secondary);color:var(--text-primary);font:400 .95rem var(--font-base);transition:border-color var(--transition-fast),box-shadow var(--transition-fast)}
+.input-wrap input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 25%,transparent)}
+.input-wrap input[aria-invalid="true"]{border-color:var(--border-error)}
+.input-wrap input.is-valid{border-color:var(--border-success)}
+.input-wrap .state-icon{position:absolute;right:.7rem;font-size:1.15rem;display:none}
+.input-wrap input.is-valid~.state-icon--ok{display:block;color:var(--text-success)}
+.input-wrap input[aria-invalid="true"]~.state-icon--err{display:block;color:var(--text-error)}
+.input-error{font:500 .78rem var(--font-base);color:var(--text-error);min-height:1.1em}
+.form-success{display:flex;align-items:center;gap:.5rem;font:600 .95rem var(--font-base);color:var(--text-success)}
+@media(max-width:560px){.cta-form{flex-direction:column}.cta-form .btn{width:100%}}
+/* Modal */
+.modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:1.25rem;z-index:var(--z-modal);visibility:hidden;opacity:0;transition:opacity var(--transition-normal),visibility var(--transition-normal)}
+.modal--open{visibility:visible;opacity:1}
+.modal__backdrop{position:absolute;inset:0;background:rgba(8,14,28,.55)}
+.modal__dialog{position:relative;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);width:min(460px,100%);padding:1.8rem;display:flex;flex-direction:column;gap:1.1rem;transform:scale(.95);opacity:0;transition:transform var(--transition-normal),opacity var(--transition-normal)}
+.modal--open .modal__dialog{transform:scale(1);opacity:1}
+.modal__close{position:absolute;top:.8rem;right:.8rem}
+.modal h2{font-size:1.4rem}
+.modal form{display:flex;flex-direction:column;gap:1rem}
+body.modal-open{overflow:hidden}
+/* Footer */
+footer{border-top:1px solid var(--border-default);padding:3.5rem 0 2rem;background:var(--bg-secondary)}
+.footer-grid{display:flex;gap:3rem;flex-wrap:wrap;justify-content:space-between}
+.footer-brand{max-width:280px;display:flex;flex-direction:column;gap:.8rem}
+.footer-cols{display:flex;gap:3rem;flex-wrap:wrap}
+.fcol h4{font:600 .82rem var(--font-base);letter-spacing:.05em;text-transform:uppercase;color:var(--text-primary);margin-bottom:.8rem}
+.fcol ul{list-style:none;display:flex;flex-direction:column;gap:.55rem}
+.fcol a{color:var(--text-secondary);font-size:.88rem}
+@media(hover:hover) and (pointer:fine){.fcol a:hover{color:var(--primary)}}
+.copyright{margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid var(--border-default);font-size:.82rem;color:var(--text-secondary)}
+/* Skeleton */
+.card--skeleton{position:relative;overflow:hidden;min-height:220px}
+.card--skeleton::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,color-mix(in srgb,var(--text-primary) 7%,transparent) 50%,transparent 70%);animation:shimmer 1.4s linear infinite}
+@keyframes shimmer{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+/* Reveal */
+.reveal{opacity:0;transform:translateY(14px);transition:opacity 500ms ease-out,transform 500ms ease-out}
+.reveal--in{opacity:1;transform:none}
+@media(max-width:768px){
+.hero__grid{flex-direction:column;align-items:stretch}
+.insight{position:static;width:100%;order:2}
+.hero__visual{display:flex;flex-direction:column}
+}
+@media(max-width:640px){.insight{position:static;width:100%}}
+@media(prefers-reduced-motion:reduce){
+*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:150ms!important}
+.draw-anim{stroke-dasharray:7 5;stroke-dashoffset:0}
+.chart--drawn .draw-anim{animation:none}
+.anomaly-ring,.pulse-dot::after{animation:none;opacity:0}
+.reveal{opacity:1;transform:none}
+.prob__bar{transition:none}
+html{scroll-behavior:auto}
+}
+@media(prefers-reduced-transparency:reduce){.nav{background:var(--bg-primary);backdrop-filter:none}}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="nav">
+  <div class="wrap nav__inner">
+    <a class="brand" href="#top" aria-label="Nimbus Forecast home">
+      <span class="material-symbols-rounded" aria-hidden="true">query_stats</span>Nimbus Forecast
+    </a>
+    <nav aria-label="Primary">
+      <ul class="nav__links" id="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how">How It Works</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+    </nav>
+    <div class="nav__actions">
+      <button class="icon-btn" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-rounded" id="theme-icon" aria-hidden="true">dark_mode</span>
+      </button>
+      <button class="icon-btn menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">
+        <span class="material-symbols-rounded" aria-hidden="true">menu</span>
+      </button>
+      <a class="btn btn--primary nav__cta" href="#cta">Start Free Trial</a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="wrap hero__grid">
+    <div class="hero__copy">
+      <span class="badge"><span class="material-symbols-rounded" aria-hidden="true">auto_awesome</span>AI-Driven Forecasting</span>
+      <h1>See what your revenue does <em>next quarter</em>, today.</h1>
+      <p>Nimbus turns your historical data into probabilistic forecasts with confidence intervals, anomaly alerts, and scenario modeling your whole team can read.</p>
+      <div class="hero__ctas">
+        <a class="btn btn--primary" href="#cta">Start Forecasting Free</a>
+        <button class="btn btn--secondary" type="button" data-open-modal>Book a Demo</button>
+      </div>
+      <div class="trust-row" aria-label="Product statistics">
+        <span class="chip"><span class="material-symbols-rounded" aria-hidden="true">trending_up</span>94% forecast accuracy</span>
+        <span class="chip"><span class="material-symbols-rounded" aria-hidden="true">bolt</span>12M+ predictions daily</span>
+        <span class="chip"><span class="material-symbols-rounded" aria-hidden="true">schedule</span>Live in under 1 hour</span>
+      </div>
+    </div>
+
+    <div class="hero__visual">
+      <div class="insight" aria-live="polite" id="insight-card">
+        <span class="insight__label"><span class="material-symbols-rounded" aria-hidden="true">insights</span>AI Insight</span>
+        <span class="insight__value">Q3 Revenue <span class="up" id="insight-delta">+18.4%</span></span>
+        <div class="prob" role="img" aria-label="Forecast confidence probability bar">
+          <div class="prob__bar" id="prob-bar"></div>
+        </div>
+        <span class="prob__text">Confidence <span id="prob-text">87%</span></span>
+      </div>
+
+      <div class="panel" id="chart-panel">
+        <div class="panel__head">
+          <span class="panel__title">Revenue Forecast</span>
+          <span class="panel__meta" id="chart-meta">USD, monthly · Base scenario</span>
+        </div>
+        <div class="chart-wrap">
+          <svg class="chart" id="forecast-chart" viewBox="0 0 560 260" role="img" aria-label="Line chart of monthly revenue. Solid line shows actuals from January to June. Dashed line shows forecast from July to December with a shaded confidence interval. One anomaly is flagged in March.">
+            <line class="grid-line" x1="40" y1="40" x2="540" y2="40"/><line class="grid-line" x1="40" y1="100" x2="540" y2="100"/><line class="grid-line" x1="40" y1="160" x2="540" y2="160"/><line class="grid-line" x1="40" y1="220" x2="540" y2="220"/>
+            <text class="axis-label" x="8" y="44">$600K</text><text class="axis-label" x="8" y="104">$450K</text><text class="axis-label" x="8" y="164">$300K</text><text class="axis-label" x="8" y="224">$150K</text>
+            <text class="axis-label" x="40" y="248">Jan</text><text class="axis-label" x="123" y="248">Mar</text><text class="axis-label" x="206" y="248">May</text><text class="axis-label" x="290" y="248">Jul</text><text class="axis-label" x="373" y="248">Sep</text><text class="axis-label" x="456" y="248">Nov</text>
+            <!-- confidence bands per scenario -->
+            <path class="band" data-band="base" d="M290 120 L332 108 L373 96 L415 84 L456 72 L498 60 L498 120 L456 132 L415 144 L373 156 L332 168 L290 180 Z"/>
+            <path class="band" data-band="optimistic" d="M290 120 L332 100 L373 82 L415 64 L456 48 L498 34 L498 96 L456 110 L415 124 L373 138 L332 152 L290 180 Z" hidden/>
+            <path class="band" data-band="pessimistic" d="M290 120 L332 122 L373 124 L415 126 L456 128 L498 130 L498 176 L456 172 L415 168 L373 164 L332 160 L290 180 Z" hidden/>
+            <!-- actual line -->
+            <path class="actual-path" d="M40 170 L82 158 L123 188 L165 150 L206 142 L248 132 L290 120"/>
+            <!-- forecast variants -->
+            <path class="forecast-path draw-anim" data-line="base" d="M290 120 L332 138 L373 126 L415 114 L456 102 L498 90"/>
+            <path class="forecast-path" data-line="optimistic" d="M290 120 L332 126 L373 110 L415 94 L456 79 L498 65" hidden/>
+            <path class="forecast-path" data-line="pessimistic" d="M290 120 L332 141 L373 144 L415 147 L456 150 L498 153" hidden/>
+            <!-- anomaly -->
+            <circle class="anomaly-ring" cx="123" cy="188" r="7"/>
+            <circle class="anomaly-dot" cx="123" cy="188" r="5"/>
+            <!-- focusable data points -->
+            <g class="tip-anchor">
+              <circle class="datapoint" cx="123" cy="188" r="6" tabindex="0" aria-label="March: $298K actual. Anomaly detected, 22% below expected range."/>
+              <foreignObject x="0" y="0" width="1" height="1" class="visually-hidden"><span></span></foreignObject>
+            </g>
+            <g class="tip-anchor"><circle class="datapoint" cx="332" cy="138" r="6" tabindex="0" data-tip="Jul · $412K · 87% conf" aria-label="July forecast: $412K, forecast confidence 87%"/></g>
+            <g class="tip-anchor"><circle class="datapoint" cx="415" cy="114" r="6" tabindex="0" data-tip="Sep · $468K · 82% conf" aria-label="September forecast: $468K, forecast confidence 82%"/></g>
+            <g class="tip-anchor"><circle class="datapoint" cx="498" cy="90" r="6" tabindex="0" data-tip="Nov · $531K · 76% conf" aria-label="November forecast: $531K, forecast confidence 76%"/></g>
+          </svg>
+          <div class="tip" id="chart-tip" role="tooltip" hidden></div>
+        </div>
+        <div class="legend" aria-label="Chart legend">
+          <span class="legend__item"><span class="swatch"></span>Actual</span>
+          <span class="legend__item"><span class="swatch swatch--dash"></span>Forecast</span>
+          <span class="legend__item"><span class="swatch swatch--band"></span>Confidence interval</span>
+          <span class="legend__item"><span class="swatch swatch--dot"></span><span class="material-symbols-rounded" style="font-size:.95rem;color:var(--anomaly)" aria-hidden="true">warning</span>Anomaly detected</span>
+        </div>
+        <div class="scenario">
+          <div class="seg" role="group" aria-label="Forecast scenario">
+            <button class="seg__btn" type="button" aria-pressed="true" data-scenario="base"><span class="material-symbols-rounded" aria-hidden="true">remove</span>Base</button>
+            <button class="seg__btn" type="button" aria-pressed="false" data-scenario="optimistic"><span class="material-symbols-rounded" aria-hidden="true">arrow_upward</span>Optimistic</button>
+            <button class="seg__btn" type="button" aria-pressed="false" data-scenario="pessimistic"><span class="material-symbols-rounded" aria-hidden="true">arrow_downward</span>Pessimistic</button>
+          </div>
+          <div class="switch-row">
+            <button class="toggle-switch" id="band-toggle" type="button" role="switch" aria-checked="true" aria-label="Show confidence interval"></button>
+            <span>Show confidence interval</span>
+          </div>
+        </div>
+        <p class="visually-hidden" aria-live="polite" id="scenario-live"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Forecasts your team can actually use</h2>
+      <p>Three capabilities that turn raw history into decisions, without a data science team in the loop.</p>
+    </div>
+    <div class="card-grid">
+      <article class="card reveal">
+        <span class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">insights</span></span>
+        <h3>AI-Driven Insights</h3>
+        <p>Nimbus reads every forecast it produces and writes the takeaway in plain language. Revenue shifts, seasonal turns, and growth inflections surface as ranked insight cards, each with a confidence score.</p>
+        <a class="card__link" href="#how">Learn more<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+      </article>
+      <article class="card reveal">
+        <span class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">warning</span><span class="pulse-dot" aria-hidden="true"></span></span>
+        <h3>Anomaly Detection</h3>
+        <p>When a metric leaves its expected range, you know within minutes, not at month end. Every alert includes the deviation size, probable causes, and the affected segments so you can act fast.</p>
+        <a class="card__link" href="#how">Learn more<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+      </article>
+      <article class="card reveal">
+        <span class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">tune</span></span>
+        <h3>Scenario Modeling</h3>
+        <p>Compare base, optimistic, and pessimistic paths side by side. Adjust assumptions like churn or ad spend and watch every downstream forecast recalculate in seconds.</p>
+        <a class="card__link" href="#how">Learn more<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" style="background:var(--bg-secondary);border-top:1px solid var(--border-default);border-bottom:1px solid var(--border-default)">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>From raw data to forecast in three steps</h2>
+      <p>No pipelines to build, no models to tune by hand. Most teams see their first forecast the same day.</p>
+    </div>
+    <div class="steps">
+      <div class="step reveal">
+        <span class="step__num">01</span>
+        <h3><span class="material-symbols-rounded" aria-hidden="true">storage</span>Connect Your Data</h3>
+        <p>Link your warehouse, CRM, or billing system with one-click connectors. Nimbus maps your metrics automatically.</p>
+      </div>
+      <div class="step reveal">
+        <span class="step__num">02</span>
+        <h3><span class="material-symbols-rounded" aria-hidden="true">model_training</span>Train and Forecast</h3>
+        <p>Ensemble models train on your history, backtest against held-out periods, and publish forecasts with confidence intervals.</p>
+      </div>
+      <div class="step reveal">
+        <span class="step__num">03</span>
+        <h3><span class="material-symbols-rounded" aria-hidden="true">bolt</span>Act on AI Insights</h3>
+        <p>Insights, anomaly alerts, and scenario comparisons land in your dashboard, Slack, or inbox on the cadence you choose.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testimonials">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Teams that plan with Nimbus</h2>
+      <p>Operators and finance leaders who replaced gut feel with calibrated forecasts.</p>
+    </div>
+    <div class="card-grid">
+      <article class="card tcard reveal">
+        <div class="stars" role="img" aria-label="Rated 5 out of 5"><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span></div>
+        <blockquote>&ldquo;We caught a demand drop three weeks before it hit revenue. That single anomaly alert paid for the year.&rdquo;</blockquote>
+        <div class="tperson"><span class="avatar" aria-hidden="true">MR</span><div><strong>Maya Reyes</strong><span>VP of Data, Clearline Logistics</span></div></div>
+      </article>
+      <article class="card tcard reveal">
+        <div class="stars" role="img" aria-label="Rated 5 out of 5"><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span></div>
+        <blockquote>&ldquo;Scenario modeling turned our board planning from a week of spreadsheets into a twenty minute review.&rdquo;</blockquote>
+        <div class="tperson"><span class="avatar" aria-hidden="true">DK</span><div><strong>Daniel Kwon</strong><span>CFO, Harbor &amp; Finch Retail</span></div></div>
+      </article>
+      <article class="card tcard reveal">
+        <div class="stars" role="img" aria-label="Rated 5 out of 5"><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span></div>
+        <blockquote>&ldquo;The confidence intervals changed how we staff warehouses. We plan for the range, not a single number.&rdquo;</blockquote>
+        <div class="tperson"><span class="avatar" aria-hidden="true">AO</span><div><strong>Amara Osei</strong><span>Head of Operations, Northwind Supply</span></div></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" style="background:var(--bg-secondary);border-top:1px solid var(--border-default);border-bottom:1px solid var(--border-default)">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Pricing that scales with your data</h2>
+      <p>Every plan includes unlimited viewers, all connectors, and a 14 day free trial.</p>
+    </div>
+    <div class="card-grid">
+      <article class="card tier reveal">
+        <h3>Starter</h3>
+        <p class="tier__price">$49<small>/mo</small></p>
+        <ul>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>3 forecast metrics</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Daily forecast refresh</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Email anomaly alerts</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>12 month history</li>
+        </ul>
+        <a class="btn btn--secondary" href="#cta">Start Free Trial</a>
+      </article>
+      <article class="card tier tier--featured reveal">
+        <span class="tier__badge">Most Popular</span>
+        <h3>Growth</h3>
+        <p class="tier__price">$189<small>/mo</small></p>
+        <ul>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>25 forecast metrics</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Hourly refresh and scenarios</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Slack and webhook alerts</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>AI insight cards</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Unlimited history</li>
+        </ul>
+        <a class="btn btn--primary" href="#cta">Start Free Trial</a>
+      </article>
+      <article class="card tier reveal">
+        <h3>Enterprise</h3>
+        <p class="tier__price">Custom</p>
+        <ul>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Unlimited metrics and seats</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Real-time streaming forecasts</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>SSO, audit logs, VPC deploy</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Dedicated success engineer</li>
+        </ul>
+        <button class="btn btn--secondary" type="button" data-open-modal>Contact Sales</button>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="wrap">
+    <div class="section-head" style="margin-left:auto;margin-right:auto;text-align:center;align-items:center">
+      <h2>Questions, answered</h2>
+    </div>
+    <div class="faq">
+      <div class="accordion__item">
+        <h3 style="font-size:1rem"><button class="accordion__header" type="button" aria-expanded="false" aria-controls="faq-p1" id="faq-h1">How accurate are the forecasts?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button></h3>
+        <div class="accordion__panel" id="faq-p1" role="region" aria-labelledby="faq-h1"><p>Across customer benchmarks, Nimbus averages 94% accuracy on 30 day revenue forecasts. Every published forecast is backtested against held-out history, and the accuracy report for your own data is visible in the dashboard at all times.</p></div>
+      </div>
+      <div class="accordion__item">
+        <h3 style="font-size:1rem"><button class="accordion__header" type="button" aria-expanded="false" aria-controls="faq-p2" id="faq-h2">What does a confidence interval mean here?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button></h3>
+        <div class="accordion__panel" id="faq-p2" role="region" aria-labelledby="faq-h2"><p>The shaded band around a forecast shows the range where the actual value is expected to land 80% of the time, based on your data's historical volatility. A wider band means more uncertainty, so you can plan for the range instead of a single number.</p></div>
+      </div>
+      <div class="accordion__item">
+        <h3 style="font-size:1rem"><button class="accordion__header" type="button" aria-expanded="false" aria-controls="faq-p3" id="faq-h3">How is my data secured?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button></h3>
+        <div class="accordion__panel" id="faq-p3" role="region" aria-labelledby="faq-h3"><p>All data is encrypted in transit and at rest. Nimbus is SOC 2 Type II certified, supports SSO and role-based access, and never trains shared models on your private data. Enterprise plans can deploy inside your own VPC.</p></div>
+      </div>
+      <div class="accordion__item">
+        <h3 style="font-size:1rem"><button class="accordion__header" type="button" aria-expanded="false" aria-controls="faq-p4" id="faq-h4">Which tools does Nimbus integrate with?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button></h3>
+        <div class="accordion__panel" id="faq-p4" role="region" aria-labelledby="faq-h4"><p>Native connectors cover Snowflake, BigQuery, Postgres, Salesforce, HubSpot, Stripe, and Shopify, plus a REST API and CSV import for anything else. Alerts and insights deliver to Slack, email, Teams, and webhooks.</p></div>
+      </div>
+      <div class="accordion__item">
+        <h3 style="font-size:1rem"><button class="accordion__header" type="button" aria-expanded="false" aria-controls="faq-p5" id="faq-h5">Can I change plans later?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button></h3>
+        <div class="accordion__panel" id="faq-p5" role="region" aria-labelledby="faq-h5"><p>Yes. Upgrades apply immediately with prorated billing, and downgrades take effect at the next cycle. The 14 day trial includes full Growth features with no credit card required.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section id="cta" style="padding-top:0">
+  <div class="wrap">
+    <div class="cta-band">
+      <h2>Start forecasting in the next hour</h2>
+      <p style="text-align:center">Connect a data source and see your first AI forecast today. Free for 14 days.</p>
+      <form class="cta-form" id="cta-form" novalidate>
+        <div class="input-group">
+          <label for="cta-email">Work email</label>
+          <div class="input-wrap">
+            <input type="email" id="cta-email" name="email" autocomplete="email" placeholder="you@company.com" required>
+            <span class="material-symbols-rounded state-icon state-icon--ok" aria-hidden="true">check_circle</span>
+            <span class="material-symbols-rounded state-icon state-icon--err" aria-hidden="true">error</span>
+          </div>
+          <span class="input-error" id="cta-error" aria-live="polite"></span>
+        </div>
+        <button class="btn btn--primary" type="submit" id="cta-submit">Start Free Trial</button>
+      </form>
+      <p class="form-success" id="cta-success" hidden><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>You're in. Check your inbox for setup instructions.</p>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- MODAL -->
+<div class="modal" id="demo-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+  <div class="modal__backdrop" data-close-modal></div>
+  <div class="modal__dialog">
+    <button class="icon-btn modal__close" type="button" data-close-modal aria-label="Close dialog"><span class="material-symbols-rounded" aria-hidden="true">close</span></button>
+    <h2 id="modal-title">Book a demo</h2>
+    <p>Thirty minutes with a product specialist, tailored to your data stack.</p>
+    <form id="demo-form" novalidate>
+      <div class="input-group">
+        <label for="demo-name">Full name</label>
+        <div class="input-wrap"><input type="text" id="demo-name" name="name" autocomplete="name" required>
+          <span class="material-symbols-rounded state-icon state-icon--ok" aria-hidden="true">check_circle</span>
+          <span class="material-symbols-rounded state-icon state-icon--err" aria-hidden="true">error</span></div>
+        <span class="input-error" id="demo-name-error" aria-live="polite"></span>
+      </div>
+      <div class="input-group">
+        <label for="demo-email">Work email</label>
+        <div class="input-wrap"><input type="email" id="demo-email" name="email" autocomplete="email" required>
+          <span class="material-symbols-rounded state-icon state-icon--ok" aria-hidden="true">check_circle</span>
+          <span class="material-symbols-rounded state-icon state-icon--err" aria-hidden="true">error</span></div>
+        <span class="input-error" id="demo-email-error" aria-live="polite"></span>
+      </div>
+      <div class="input-group">
+        <label for="demo-company">Company</label>
+        <div class="input-wrap"><input type="text" id="demo-company" name="company" autocomplete="organization" required>
+          <span class="material-symbols-rounded state-icon state-icon--ok" aria-hidden="true">check_circle</span>
+          <span class="material-symbols-rounded state-icon state-icon--err" aria-hidden="true">error</span></div>
+        <span class="input-error" id="demo-company-error" aria-live="polite"></span>
+      </div>
+      <button class="btn btn--primary" type="submit" id="demo-submit">Request Demo</button>
+      <p class="form-success" id="demo-success" hidden><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Request received. We will reply within one business day.</p>
+    </form>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="#top"><span class="material-symbols-rounded" aria-hidden="true">query_stats</span>Nimbus Forecast</a>
+        <p>Probabilistic forecasting, anomaly detection, and scenario modeling for teams that plan ahead.</p>
+      </div>
+      <div class="footer-cols">
+        <div class="fcol"><h4>Product</h4><ul><li><a href="#features">Features</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#">Integrations</a></li><li><a href="#">Changelog</a></li></ul></div>
+        <div class="fcol"><h4>Company</h4><ul><li><a href="#">About</a></li><li><a href="#">Careers</a></li><li><a href="#">Blog</a></li></ul></div>
+        <div class="fcol"><h4>Resources</h4><ul><li><a href="#">Documentation</a></li><li><a href="#">API Reference</a></li><li><a href="#">Forecasting Guide</a></li></ul></div>
+        <div class="fcol"><h4>Legal</h4><ul><li><a href="#">Privacy</a></li><li><a href="#">Terms</a></li><li><a href="#">Security</a></li></ul></div>
+      </div>
+    </div>
+    <p class="copyright">&copy; <span id="year">2026</span> Nimbus Forecast, Inc. All rights reserved.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+var $=function(s,c){return (c||document).querySelector(s)};
+var $$=function(s,c){return Array.prototype.slice.call((c||document).querySelectorAll(s))};
+
+/* Theme toggle */
+var root=document.documentElement,toggle=$("#theme-toggle"),icon=$("#theme-icon");
+function applyTheme(t){root.dataset.theme=t;var d=t==="dark";
+toggle.setAttribute("aria-pressed",String(d));
+toggle.setAttribute("aria-label",d?"Switch to light mode":"Switch to dark mode");
+icon.textContent=d?"light_mode":"dark_mode";}
+applyTheme(root.dataset.theme==="dark"?"dark":"light");
+toggle.addEventListener("click",function(){var t=root.dataset.theme==="dark"?"light":"dark";localStorage.setItem("theme",t);applyTheme(t);});
+
+/* Mobile menu */
+var menuBtn=$("#menu-btn"),navLinks=$("#nav-links");
+function closeMenu(){navLinks.classList.remove("nav__links--open");menuBtn.setAttribute("aria-expanded","false");menuBtn.setAttribute("aria-label","Open menu");}
+menuBtn.addEventListener("click",function(){var open=navLinks.classList.toggle("nav__links--open");menuBtn.setAttribute("aria-expanded",String(open));menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");});
+$$("a",navLinks).forEach(function(a){a.addEventListener("click",closeMenu);});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")closeMenu();});
+
+/* Reveal + chart draw + probability bar via IntersectionObserver */
+var chart=$("#forecast-chart"),probBar=$("#prob-bar");
+var io=new IntersectionObserver(function(entries){entries.forEach(function(en){if(!en.isIntersecting)return;
+en.target.classList.add("reveal--in");
+if(en.target.id==="chart-panel"){chart.classList.add("chart--drawn");probBar.style.width=$("#prob-text").textContent;}
+io.unobserve(en.target);});},{threshold:.2});
+$$(".reveal").forEach(function(el,i){el.style.transitionDelay=(i%3)*70+"ms";io.observe(el);});
+io.observe($("#chart-panel"));
+
+/* Chart tooltips (CSS-positioned JS text) */
+var tip=$("#chart-tip");
+$$(".datapoint[data-tip]").forEach(function(pt){
+function show(){var svg=chart.getBoundingClientRect(),r=pt.getBoundingClientRect();
+tip.textContent=pt.getAttribute("data-tip");tip.hidden=false;
+tip.style.left=((r.left+r.width/2-svg.left)/svg.width*100)+"%";
+tip.style.top=((r.top-svg.top)/svg.height*100)+"%";}
+function hide(){tip.hidden=true;}
+pt.addEventListener("mouseenter",show);pt.addEventListener("mouseleave",hide);
+pt.addEventListener("focus",show);pt.addEventListener("blur",hide);});
+
+/* Scenario switching */
+var scenarioData={
+base:{delta:"+18.4%",conf:"87%",meta:"USD, monthly · Base scenario"},
+optimistic:{delta:"+26.1%",conf:"74%",meta:"USD, monthly · Optimistic scenario"},
+pessimistic:{delta:"+6.2%",conf:"81%",meta:"USD, monthly · Pessimistic scenario"}};
+var live=$("#scenario-live");
+$$(".seg__btn").forEach(function(btn){btn.addEventListener("click",function(){
+$$(".seg__btn").forEach(function(b){b.setAttribute("aria-pressed","false");});
+btn.setAttribute("aria-pressed","true");
+var s=btn.getAttribute("data-scenario"),d=scenarioData[s];
+$$("[data-line]").forEach(function(p){p.hidden=p.getAttribute("data-line")!==s;});
+$$("[data-band]").forEach(function(p){p.hidden=p.getAttribute("data-band")!==s;});
+$("#insight-delta").textContent=d.delta;
+$("#prob-text").textContent=d.conf;
+probBar.style.width=d.conf;
+$("#chart-meta").textContent=d.meta;
+live.textContent="Scenario changed to "+s+". Q3 revenue projection "+d.delta+" with "+d.conf+" confidence.";});});
+
+/* Confidence band toggle */
+var bandToggle=$("#band-toggle");
+bandToggle.addEventListener("click",function(){
+var on=bandToggle.getAttribute("aria-checked")==="true";
+bandToggle.setAttribute("aria-checked",String(!on));
+$$("[data-band]").forEach(function(p){p.classList.toggle("band--off",on);});
+live.textContent=on?"Confidence interval hidden.":"Confidence interval shown.";});
+
+/* FAQ accordion */
+var headers=$$(".accordion__header");
+headers.forEach(function(h){h.addEventListener("click",function(){
+var open=h.getAttribute("aria-expanded")==="true";
+headers.forEach(function(o){o.setAttribute("aria-expanded","false");$("#"+o.getAttribute("aria-controls")).style.maxHeight="0";});
+if(!open){h.setAttribute("aria-expanded","true");var p=$("#"+h.getAttribute("aria-controls"));p.style.maxHeight=p.scrollHeight+"px";}});});
+
+/* Validation helpers */
+var emailRe=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+function setState(input,errEl,valid,msg){
+input.classList.toggle("is-valid",valid);
+input.setAttribute("aria-invalid",String(!valid));
+errEl.textContent=valid?"":msg;}
+function loading(btn,on){btn.disabled=on;
+if(on){btn.dataset.label=btn.innerHTML;btn.innerHTML='<span class="spinner" aria-hidden="true"></span>Working';}
+else{btn.innerHTML=btn.dataset.label;}}
+
+/* CTA form */
+var ctaForm=$("#cta-form"),ctaEmail=$("#cta-email"),ctaErr=$("#cta-error"),ctaBtn=$("#cta-submit"),ctaOk=$("#cta-success");
+ctaForm.addEventListener("submit",function(e){e.preventDefault();
+var v=ctaEmail.value.trim();
+if(!emailRe.test(v)){setState(ctaEmail,ctaErr,false,"Enter a valid work email, for example you@company.com.");ctaEmail.focus();return;}
+setState(ctaEmail,ctaErr,true,"");
+loading(ctaBtn,true);
+setTimeout(function(){loading(ctaBtn,false);ctaForm.hidden=true;ctaOk.hidden=false;},1100);});
+
+/* Modal */
+var modal=$("#demo-modal"),lastFocus=null;
+function focusables(){return $$("button,input,a[href]",modal).filter(function(el){return !el.disabled&&el.offsetParent!==null;});}
+function openModal(){lastFocus=document.activeElement;modal.hidden=false;
+requestAnimationFrame(function(){modal.classList.add("modal--open");});
+document.body.classList.add("modal-open");
+var f=focusables();if(f.length)f[0].focus();}
+function closeModal(){modal.classList.remove("modal--open");
+document.body.classList.remove("modal-open");
+setTimeout(function(){modal.hidden=true;},260);
+if(lastFocus)lastFocus.focus();}
+$$("[data-open-modal]").forEach(function(b){b.addEventListener("click",openModal);});
+$$("[data-close-modal]").forEach(function(b){b.addEventListener("click",closeModal);});
+document.addEventListener("keydown",function(e){
+if(modal.hidden)return;
+if(e.key==="Escape"){closeModal();return;}
+if(e.key==="Tab"){var f=focusables();if(!f.length)return;
+var first=f[0],last=f[f.length-1];
+if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}});
+
+/* Demo form */
+var demoForm=$("#demo-form"),demoBtn=$("#demo-submit"),demoOk=$("#demo-success");
+demoForm.addEventListener("submit",function(e){e.preventDefault();
+var name=$("#demo-name"),email=$("#demo-email"),co=$("#demo-company"),ok=true;
+function check(input,errId,valid,msg){setState(input,$("#"+errId),valid,msg);if(!valid)ok=false;}
+check(name,"demo-name-error",name.value.trim().length>1,"Enter your full name.");
+check(email,"demo-email-error",emailRe.test(email.value.trim()),"Enter a valid work email.");
+check(co,"demo-company-error",co.value.trim().length>1,"Enter your company name.");
+if(!ok)return;
+loading(demoBtn,true);
+setTimeout(function(){loading(demoBtn,false);demoOk.hidden=false;
+setTimeout(closeModal,1600);},1100);});
+
+/* Footer year */
+$("#year").textContent=new Date().getFullYear()<2026?"2026":new Date().getFullYear();
+})();
+</script>
+</body>
+</html>

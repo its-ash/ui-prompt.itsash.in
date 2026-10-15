@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark light">
+<meta name="description" content="crankshaft — a terminal-first deploy tool. Ship from the shell, roll back in one keystroke, zero dashboards.">
+<title>crankshaft - deploys from the shell</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";}document.documentElement.dataset.theme=t;})();
+</script>
+<style>
+:root{
+  --bg-primary:#0a0e0a;--bg-secondary:#0f150f;
+  --text-primary:#33ff66;--text-secondary:#2fbf5f;
+  --primary:#33ff66;--secondary:#ffb000;--accent:#ffb000;
+  --text-on-primary:#111111;
+  --text-success:#33ff66;--text-error:#ff4d4d;
+  --border-default:#33ff66;--border-error:#ff4d4d;--border-success:#33ff66;
+  --radius-sm:0px;--radius-md:0px;--radius-lg:0px;
+  --shadow-sm:0 0 2px rgba(51,255,102,.35);--shadow-md:0 0 4px rgba(51,255,102,.7);
+  --space-1:.5ch;--space-2:1ch;--space-3:1.5ch;--space-4:2ch;--space-6:3ch;--space-8:4ch;--space-12:6ch;
+  --transition-fast:120ms;--transition-normal:240ms;--ease-standard:steps(1,end);
+  --z-dropdown:1000;--z-modal:2000;--z-toast:3000;
+  --font-base:'IBM Plex Mono','Courier New',monospace;
+  --text-xs:.75rem;--text-sm:.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:2rem;--text-4xl:2.5rem;
+  --scanline:repeating-linear-gradient(0deg,rgba(51,255,102,.06) 0 1px,transparent 1px 3px);
+  --glow-text:0 0 4px rgba(51,255,102,.7),0 0 14px rgba(51,255,102,.35);
+  --nav-bg:rgba(15,21,15,.85);
+}
+:root[data-theme="light"]{
+  --bg-primary:#eef2ec;--bg-secondary:#fefefe;
+  --text-primary:#0a3d1a;--text-secondary:#2f6b3f;
+  --primary:#0a7a33;--secondary:#8a5a00;--accent:#8a5a00;
+  --text-on-primary:#fefefe;
+  --text-success:#0a7a33;--text-error:#b3001b;
+  --border-default:#0a3d1a;--border-error:#b3001b;--border-success:#0a7a33;
+  --shadow-sm:0 1px 3px rgba(10,61,26,.12);--shadow-md:0 2px 8px rgba(10,61,26,.18);
+  --scanline:repeating-linear-gradient(0deg,rgba(10,61,26,.04) 0 1px,transparent 1px 3px);
+  --glow-text:none;
+  --nav-bg:rgba(254,254,254,.88);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);
+  font-size:var(--text-base);line-height:1.6;overflow-x:hidden;
+  transition:background var(--transition-normal),color var(--transition-normal);
+}
+body::after{
+  content:"";position:fixed;inset:0;background:var(--scanline);
+  pointer-events:none;z-index:var(--z-toast);
+}
+::selection{background:var(--primary);color:var(--text-on-primary)}
+h1,h2,h3{line-height:1.15;letter-spacing:-.01em;font-weight:700}
+a{color:var(--primary)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:72rem;margin:0 auto;padding-left:1.25rem;padding-right:1.25rem}
+section{padding-top:clamp(4rem,8vw,6.5rem);padding-bottom:clamp(4rem,8vw,6.5rem)}
+.material-symbols-outlined{font-size:1.25em;line-height:1;vertical-align:-.2em}
+.skip{position:absolute;left:-9999px;top:0;background:var(--primary);color:var(--text-on-primary);padding:.5rem 1rem;z-index:var(--z-toast)}
+.skip:focus{left:0}
+
+/* ---------- nav ---------- */
+.nav{
+  position:sticky;top:0;z-index:var(--z-dropdown);
+  background:var(--nav-bg);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  border-bottom:2px solid var(--border-default);
+}
+.nav__inner{display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);min-height:64px;flex-wrap:nowrap}
+.nav__brand{font-weight:700;text-decoration:none;color:var(--text-primary);text-shadow:var(--glow-text);white-space:nowrap}
+.nav__links{display:flex;align-items:center;gap:var(--space-6);list-style:none}
+.nav__link{color:var(--text-secondary);text-decoration:none;font-size:var(--text-sm);transition:color var(--transition-fast)}
+.nav__link:hover{color:var(--text-primary);text-shadow:var(--glow-text)}
+.nav__actions{display:flex;align-items:center;gap:var(--space-3)}
+.nav__toggle{
+  display:flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;
+  background:transparent;border:2px solid var(--border-default);color:var(--text-primary);cursor:pointer;
+  transition:transform var(--transition-fast),box-shadow var(--transition-fast);
+}
+.nav__toggle:hover{box-shadow:var(--shadow-md)}
+.nav__toggle:active{transform:scale(.97)}
+.nav__menu-btn{display:none;align-items:center;justify-content:center;min-width:44px;min-height:44px;background:transparent;border:2px solid var(--border-default);color:var(--text-primary);cursor:pointer}
+
+/* ---------- buttons ---------- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
+  min-height:44px;padding:.6rem 1.4rem;font-family:var(--font-base);font-size:var(--text-sm);font-weight:600;
+  background:var(--bg-secondary);color:var(--text-primary);border:2px solid var(--border-default);
+  box-shadow:var(--shadow-sm);cursor:pointer;text-decoration:none;white-space:nowrap;
+  transition:transform var(--transition-fast),box-shadow var(--transition-fast),filter var(--transition-fast);
+}
+@media (hover:hover) and (pointer:fine){
+  .btn:hover{transform:translateY(-1px);filter:brightness(1.15);box-shadow:var(--shadow-md)}
+}
+.btn:active{transform:scale(.97)}
+.btn--primary{background:var(--primary);color:var(--text-on-primary)}
+.btn--ghost{background:transparent;border-color:transparent;box-shadow:none;color:var(--text-secondary)}
+.btn--ghost:hover{color:var(--text-primary)}
+.btn--danger{border-color:var(--border-error);color:var(--text-error)}
+.btn[disabled]{opacity:.5;filter:grayscale(1);cursor:not-allowed;transform:none!important;box-shadow:none}
+.btn.is-loading{pointer-events:none}
+.btn.is-loading .btn__icon{animation:spin 1s linear infinite}
+.btn.is-success{border-color:var(--border-success);color:var(--text-success)}
+.btn.is-error{border-color:var(--border-error);color:var(--text-error)}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---------- cards ---------- */
+.card{
+  display:flex;flex-direction:column;gap:var(--space-3);
+  background:var(--bg-secondary);border:2px solid var(--border-default);
+  border-radius:var(--radius-md);box-shadow:var(--shadow-md);padding:var(--space-6);
+}
+.card:focus-within{border-color:var(--accent)}
+.card--featured{border-color:var(--accent);position:relative}
+.card--skeleton{overflow:hidden;position:relative}
+.card--skeleton::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(51,255,102,.12) 50%,transparent 70%);animation:shimmer 1.6s linear infinite}
+@keyframes shimmer{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+.card--empty{align-items:center;text-align:center;color:var(--text-secondary)}
+.badge{
+  display:inline-flex;align-items:center;gap:.4ch;background:var(--secondary);color:var(--text-on-primary);
+  font-size:var(--text-xs);font-weight:700;padding:.2rem .6rem;letter-spacing:.08em;
+}
+.card--featured .badge{position:absolute;top:-.9rem;left:var(--space-6)}
+
+/* ---------- hero ---------- */
+.hero{padding-top:clamp(2.5rem,5vw,4.5rem)}
+.hero__grid{display:flex;align-items:center;gap:var(--space-8);flex-wrap:wrap}
+.hero__copy{flex:1 1 22rem;display:flex;flex-direction:column;gap:var(--space-4);align-items:flex-start}
+.hero__art{font-size:clamp(.32rem,1.1vw,.62rem);line-height:1.15;color:var(--text-secondary);overflow:hidden;max-width:100%}
+.hero__title{font-size:clamp(1.9rem,4.5vw,3rem);text-shadow:var(--glow-text)}
+.hero__sub{color:var(--text-secondary);max-width:52ch}
+.hero__ctas{display:flex;gap:var(--space-4);flex-wrap:wrap}
+.hero__term{flex:1 1 24rem;min-width:0}
+.term__bar{display:flex;align-items:center;gap:var(--space-2);border-bottom:2px solid var(--border-default);padding-bottom:var(--space-2);color:var(--text-secondary);font-size:var(--text-sm)}
+.term__body{font-size:var(--text-sm);line-height:1.7;white-space:pre-wrap;word-break:break-word}
+.term__out{color:var(--text-secondary)}
+.term__amber{color:var(--secondary)}
+.cursor{display:inline-block;animation:blink 1s steps(1,end) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* ---------- sections ---------- */
+.section__cmd{color:var(--text-secondary);font-size:var(--text-sm);margin-bottom:var(--space-2)}
+.section__title{font-size:clamp(1.6rem,3.5vw,2.4rem);text-shadow:var(--glow-text);margin-bottom:var(--space-3)}
+.section__sub{color:var(--text-secondary);max-width:60ch;margin-bottom:var(--space-8)}
+
+/* features */
+.features__row{display:flex;gap:var(--space-6);flex-wrap:wrap;align-items:stretch}/* stretch: equal-height cards */
+.features__card{flex:1 1 16rem}
+.features__icon{color:var(--secondary);font-size:1.75rem}
+.features__flag{color:var(--text-secondary);font-size:var(--text-sm);border-top:1px dashed var(--border-default);padding-top:var(--space-2);margin-top:auto}
+
+/* steps */
+.steps{list-style:none;display:flex;flex-direction:column;gap:0;counter-reset:step}
+.steps__item{display:flex;gap:var(--space-4);align-items:flex-start;border-left:2px solid var(--border-default);padding:var(--space-4) var(--space-4) var(--space-8);position:relative}
+.steps__item:last-child{padding-bottom:var(--space-4)}
+.steps__item::before{content:"├─";position:absolute;left:-.55ch;top:var(--space-4);color:var(--secondary);background:var(--bg-primary)}
+.steps__item:last-child::before{content:"└─"}
+.steps__label{color:var(--secondary);font-size:var(--text-sm);white-space:nowrap;padding-top:.15em}
+.steps__title{font-size:var(--text-xl);margin-bottom:var(--space-1)}
+.steps__copy{color:var(--text-secondary);max-width:60ch}
+
+/* testimonials */
+.quotes{display:flex;gap:var(--space-6);flex-wrap:wrap;align-items:stretch}
+.quotes__card{flex:1 1 18rem}
+.quotes__head{color:var(--text-secondary);font-size:var(--text-xs);border-bottom:1px dashed var(--border-default);padding-bottom:var(--space-2)}
+.quotes__quote{font-size:var(--text-base);line-height:1.55}
+.quotes__quote::before{content:"“"}.quotes__quote::after{content:"”"}
+.quotes__author{color:var(--text-secondary);font-size:var(--text-sm);margin-top:auto}
+
+/* pricing */
+.pricing__row{display:flex;gap:var(--space-6);flex-wrap:wrap;align-items:stretch}
+.pricing__card{flex:1 1 16rem;transition:transform var(--transition-fast),box-shadow var(--transition-fast)}
+@media (hover:hover) and (pointer:fine){
+  .pricing__card:hover{transform:translateY(-2px);box-shadow:0 0 10px rgba(51,255,102,.5)}
+}
+:root[data-theme="light"] .pricing__card:hover{box-shadow:0 4px 16px rgba(10,61,26,.25)}
+.pricing__price{font-size:var(--text-3xl);font-weight:700;text-shadow:var(--glow-text)}
+.pricing__per{color:var(--text-secondary);font-size:var(--text-sm)}
+.pricing__list{list-style:none;display:flex;flex-direction:column;gap:var(--space-1);font-size:var(--text-sm);color:var(--text-secondary);flex:1}
+.pricing__list b{color:var(--text-primary);font-weight:400}
+
+/* faq */
+.faq__list{display:flex;flex-direction:column;gap:var(--space-3);max-width:52rem}
+.faq__item{border:2px solid var(--border-default);background:var(--bg-secondary)}
+.faq__item summary{
+  display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);
+  padding:var(--space-3) var(--space-4);cursor:pointer;font-weight:600;min-height:44px;list-style:none;
+}
+.faq__item summary::-webkit-details-marker{display:none}
+.faq__item summary .material-symbols-outlined{transition:transform var(--transition-normal)}
+.faq__item[open] summary .material-symbols-outlined{transform:rotate(180deg)}
+.faq__body{padding:0 var(--space-4) var(--space-4);color:var(--text-secondary);font-size:var(--text-sm)}
+
+/* final cta */
+.cta__panel{
+  border:2px solid var(--border-default);box-shadow:var(--shadow-md);background:var(--bg-secondary);
+  padding:clamp(2rem,5vw,4rem);display:flex;flex-direction:column;gap:var(--space-4);align-items:flex-start;
+  position:relative;overflow:hidden;
+}
+.cta__panel::before{content:"";position:absolute;inset:0;background:var(--scanline);pointer-events:none}
+.cta__title{font-size:clamp(1.7rem,4vw,2.6rem);text-shadow:var(--glow-text)}
+.cta__sub{color:var(--text-secondary);max-width:55ch}
+.cta__form{display:flex;gap:var(--space-3);flex-wrap:wrap;align-items:flex-start;width:100%;max-width:36rem;position:relative}
+.input-group{display:flex;flex-direction:column;gap:var(--space-1);flex:1 1 16rem;align-items:stretch}/* stretch: input fills column */
+.input-group__label{font-size:var(--text-sm);font-weight:600}
+.input-group__row{position:relative;display:flex}
+.input{
+  width:100%;min-height:44px;padding:.6rem 2.4rem .6rem .8rem;font-family:var(--font-base);font-size:var(--text-base);
+  background:var(--bg-primary);color:var(--text-primary);border:2px solid var(--border-default);
+}
+.input::placeholder{color:var(--text-secondary);opacity:.8}
+.input:focus{outline:2px solid var(--accent);outline-offset:2px}
+.input[disabled]{opacity:.5;cursor:not-allowed}
+.input[readonly]{border-style:dashed}
+.input-group.is-valid .input{border-color:var(--border-success)}
+.input-group.is-invalid .input{border-color:var(--border-error)}
+.input-group__state{position:absolute;right:.6rem;top:50%;transform:translateY(-50%);display:none}
+.input-group.is-valid .input-group__state{display:block;color:var(--text-success)}
+.input-group.is-invalid .input-group__state{display:block;color:var(--text-error)}
+.input-group__error{font-size:var(--text-sm);color:var(--text-error);min-height:1.4em}
+.cta__status{font-size:var(--text-sm);color:var(--text-success)}
+
+/* footer */
+.footer{border-top:2px solid var(--border-default);padding:var(--space-8) 0;background:var(--bg-secondary)}
+.footer__grid{display:flex;gap:var(--space-8);flex-wrap:wrap;align-items:flex-start}
+.footer__brand{flex:1 1 16rem;display:flex;flex-direction:column;gap:var(--space-2)}
+.footer__mark{font-size:.55rem;line-height:1.2;color:var(--text-secondary)}
+.footer__col{display:flex;flex-direction:column;gap:var(--space-2);min-width:9rem}
+.footer__col h3{font-size:var(--text-sm);color:var(--text-secondary);text-transform:uppercase;letter-spacing:.1em}
+.footer__link{color:var(--text-primary);text-decoration:none;font-size:var(--text-sm)}
+.footer__link:hover{text-shadow:var(--glow-text);text-decoration:underline}
+.footer__meta{display:flex;justify-content:space-between;gap:var(--space-4);flex-wrap:wrap;border-top:1px dashed var(--border-default);margin-top:var(--space-8);padding-top:var(--space-4);font-size:var(--text-sm);color:var(--text-secondary)}
+.footer__ok{color:var(--text-success)}
+
+@media (max-width:767px){
+  .nav__menu-btn{display:flex}
+  .nav__links{
+    display:none;position:absolute;top:100%;left:0;right:0;flex-direction:column;align-items:flex-start;
+    background:var(--bg-secondary);border-bottom:2px solid var(--border-default);padding:var(--space-4);gap:var(--space-4);
+  }
+  .nav__links.is-open{display:flex}
+  .nav__cta{display:none}
+  .hero__art{display:none}
+  .hero__grid{flex-direction:column;align-items:stretch}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition-duration:1ms!important}
+  .cursor{animation:none;opacity:1}
+  .btn:hover,.pricing__card:hover{transform:none}
+}
+@media (prefers-reduced-transparency:reduce){
+  .nav{background:var(--bg-secondary);backdrop-filter:none}
+}
+@media (prefers-contrast:more){
+  body::after{display:none}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">skip to content</a>
+
+<header class="nav">
+  <div class="wrap nav__inner">
+    <a class="nav__brand" href="#top">~/crankshaft</a>
+    <button class="nav__menu-btn" id="menu-btn" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">
+      <span class="material-symbols-outlined" aria-hidden="true">menu</span>
+    </button>
+    <nav aria-label="Primary">
+      <ul class="nav__links" id="nav-links">
+        <li><a class="nav__link" href="#features">features</a></li>
+        <li><a class="nav__link" href="#how">how it works</a></li>
+        <li><a class="nav__link" href="#pricing">pricing</a></li>
+        <li><a class="nav__link" href="#faq">faq</a></li>
+      </ul>
+    </nav>
+    <div class="nav__actions">
+      <button class="nav__toggle" id="theme-toggle" type="button" aria-pressed="true" aria-label="Switch to light mode">
+        <span class="material-symbols-outlined" id="theme-icon" aria-hidden="true">light_mode</span>
+      </button>
+      <a class="btn btn--primary nav__cta" href="#cta">install</a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+<!-- HERO -->
+<section class="hero" id="top" aria-labelledby="hero-title">
+  <div class="wrap hero__grid">
+    <div class="hero__copy">
+      <pre class="hero__art" aria-hidden="true">
+ ██████╗██████╗  █████╗ ███╗   ██╗██╗  ██╗
+██╔════╝██╔══██╗██╔══██╗████╗  ██║██║ ██╔╝
+██║     ██████╔╝███████║██╔██╗ ██║█████╔╝
+██║     ██╔══██╗██╔══██║██║╚██╗██║██╔═██╗
+╚██████╗██║  ██║██║  ██║██║ ╚████║██║  ██╗
+ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝</pre>
+      <h1 class="hero__title" id="hero-title">Ship from the shell.<br>Roll back in one keystroke.<span class="cursor" aria-hidden="true">▌</span></h1>
+      <p class="hero__sub">crankshaft is a deploy tool that lives in your terminal. No dashboards, no YAML archaeology, no waiting on a web UI to load.</p>
+      <div class="hero__ctas">
+        <a class="btn btn--primary" href="#cta"><span class="material-symbols-outlined" aria-hidden="true">download</span>install now</a>
+        <a class="btn btn--ghost" href="#pricing">see pricing →</a>
+      </div>
+    </div>
+    <div class="card hero__term" aria-label="Example crankshaft terminal session">
+      <div class="term__bar"><span class="material-symbols-outlined" aria-hidden="true">terminal</span>crankshaft, session</div>
+      <div class="term__body"><span class="term__amber">$</span> crank deploy --prod
+<span class="term__out">├─ building... done (4.2s)
+├─ uploading 312 objects
+├─ edge cache purged
+└─ live at api.example.com</span>
+<span class="term__amber">$</span> crank status
+<span class="term__out">[ ok ] deploy #482 healthy
+[ ok ] 0 errors in last 24h</span>
+<span class="term__amber">$</span> <span class="cursor" aria-hidden="true">▌</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features" aria-labelledby="features-title">
+  <div class="wrap">
+    <p class="section__cmd">$ ls ./features</p>
+    <h2 class="section__title" id="features-title">Three flags, zero ceremony</h2>
+    <p class="section__sub">Everything crankshaft does fits on one man page. That is the point.</p>
+    <div class="features__row">
+      <article class="card features__card">
+        <span class="material-symbols-outlined features__icon" aria-hidden="true">bolt</span>
+        <h3>Atomic deploys</h3>
+        <p>Every push is all-or-nothing. Assets land on the edge as a single unit, so users never see a half-updated site.</p>
+        <p class="features__flag">--atomic: enabled</p>
+      </article>
+      <article class="card features__card">
+        <span class="material-symbols-outlined features__icon" aria-hidden="true">history</span>
+        <h3>Instant rollback</h3>
+        <p>Point traffic at any previous deploy with one command. No rebuild, no redeploy, no incident call.</p>
+        <p class="features__flag">--rollback: &lt;1s</p>
+      </article>
+      <article class="card features__card">
+        <span class="material-symbols-outlined features__icon" aria-hidden="true">visibility</span>
+        <h3>Diff before ship</h3>
+        <p>crankshaft shows exactly which files change before anything goes live. Review in the pager you already use.</p>
+        <p class="features__flag">--dry-run: default</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" aria-labelledby="how-title">
+  <div class="wrap">
+    <p class="section__cmd">$ man crankshaft</p>
+    <h2 class="section__title" id="how-title">Up and running in three commands</h2>
+    <p class="section__sub">From a cold repo to a production deploy in under two minutes.</p>
+    <ol class="steps">
+      <li class="steps__item">
+        <span class="steps__label">step-01</span>
+        <div>
+          <h3 class="steps__title">$ crank init</h3>
+          <p class="steps__copy">Detects your stack, writes a 6-line config, and links the project to your account. Nothing is deployed yet.</p>
+        </div>
+      </li>
+      <li class="steps__item">
+        <span class="steps__label">step-02</span>
+        <div>
+          <h3 class="steps__title">$ crank deploy --dry-run</h3>
+          <p class="steps__copy">Prints the full diff of what would ship: files added, removed, and changed. Pipe it to less if you like reading.</p>
+        </div>
+      </li>
+      <li class="steps__item">
+        <span class="steps__label">step-03</span>
+        <div>
+          <h3 class="steps__title">$ crank deploy --prod</h3>
+          <p class="steps__copy">Builds, uploads, and cuts over atomically. The old deploy stays warm for instant rollback.</p>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="reviews" aria-labelledby="reviews-title">
+  <div class="wrap">
+    <p class="section__cmd">$ cat ./reviews/*.txt</p>
+    <h2 class="section__title" id="reviews-title">Read from people who ship daily</h2>
+    <p class="section__sub">Unedited output from the teams running crankshaft in production.</p>
+    <div class="quotes">
+      <article class="card quotes__card">
+        <p class="quotes__head">priya@helios:~$ cat reviews/01.txt</p>
+        <blockquote class="quotes__quote">We deleted our deploy dashboard bookmark the same week. The dry-run diff alone caught two bad releases.</blockquote>
+        <p class="quotes__author">, Priya Raman, Platform Lead, Helios Grid</p>
+      </article>
+      <article class="card quotes__card">
+        <p class="quotes__head">marcus@fernline:~$ cat reviews/02.txt</p>
+        <blockquote class="quotes__quote">Rollback went from a 20-minute ritual to a single command. Our on-call rotation got noticeably quieter.</blockquote>
+        <p class="quotes__author">, Marcus Bell, SRE, Fernline Systems</p>
+      </article>
+      <article class="card quotes__card">
+        <p class="quotes__head">ana@quarry:~$ cat reviews/03.txt</p>
+        <blockquote class="quotes__quote">It reads like a tool written by someone who actually deploys things. The config file fits in a tweet.</blockquote>
+        <p class="quotes__author">, Ana Duarte, CTO, Quarry Analytics</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" aria-labelledby="pricing-title">
+  <div class="wrap">
+    <p class="section__cmd">$ crank pricing --list</p>
+    <h2 class="section__title" id="pricing-title">Pay for deploys, not seats in a dashboard</h2>
+    <p class="section__sub">Every tier includes atomic deploys, dry-run diffs, and instant rollback.</p>
+    <div class="pricing__row">
+      <article class="card pricing__card">
+        <h3>Free</h3>
+        <p class="pricing__price">$0<span class="pricing__per"> / forever</span></p>
+        <ul class="pricing__list">
+          <li>├─ <b>3 projects</b></li>
+          <li>├─ <b>100 deploys / month</b></li>
+          <li>├─ <b>7-day deploy history</b></li>
+          <li>└─ <b>community support</b></li>
+        </ul>
+        <a class="btn" href="#cta">start free</a>
+      </article>
+      <article class="card card--featured pricing__card">
+        <span class="badge">RECOMMENDED</span>
+        <h3>Pro</h3>
+        <p class="pricing__price">$12<span class="pricing__per"> / month</span></p>
+        <ul class="pricing__list">
+          <li>├─ <b>unlimited projects</b></li>
+          <li>├─ <b>2,000 deploys / month</b></li>
+          <li>├─ <b>90-day deploy history</b></li>
+          <li>├─ <b>preview environments</b></li>
+          <li>└─ <b>email support</b></li>
+        </ul>
+        <a class="btn btn--primary" href="#cta">go pro</a>
+      </article>
+      <article class="card pricing__card">
+        <h3>Team</h3>
+        <p class="pricing__price">$49<span class="pricing__per"> / month</span></p>
+        <ul class="pricing__list">
+          <li>├─ <b>everything in Pro</b></li>
+          <li>├─ <b>unlimited deploys</b></li>
+          <li>├─ <b>SSO and audit log</b></li>
+          <li>└─ <b>priority support</b></li>
+        </ul>
+        <a class="btn" href="#cta">contact sales</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" aria-labelledby="faq-title">
+  <div class="wrap">
+    <p class="section__cmd">$ man crankshaft-faq</p>
+    <h2 class="section__title" id="faq-title">Frequently asked questions</h2>
+    <p class="section__sub">Short answers. Longer ones live in the docs.</p>
+    <div class="faq__list">
+      <details class="faq__item">
+        <summary>Does crankshaft work with my CI pipeline?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></summary>
+        <p class="faq__body">Yes. It is a plain binary, so it runs anywhere a shell runs: GitHub Actions, GitLab CI, Buildkite, or a cron job on a forgotten VPS.</p>
+      </details>
+      <details class="faq__item">
+        <summary>What happens if a deploy fails halfway?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></summary>
+        <p class="faq__body">Nothing changes for your users. Deploys are atomic, so a failed upload never touches live traffic. The previous version keeps serving.</p>
+      </details>
+      <details class="faq__item">
+        <summary>Can I self-host the control plane?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></summary>
+        <p class="faq__body">Team tier includes a self-hosted option with the same CLI. Your artifacts and audit logs stay on your own hardware.</p>
+      </details>
+      <details class="faq__item">
+        <summary>How do I delete my account and all data?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></summary>
+        <p class="faq__body">Run <b>crank account delete</b> and confirm. Everything is purged within 24 hours. Prefer a button? <button class="btn btn--danger" type="button"><span class="material-symbols-outlined" aria-hidden="true">delete_forever</span>delete account</button></p>
+      </details>
+      <details class="faq__item">
+        <summary>Is there a GUI for the less terminal-inclined?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></summary>
+        <p class="faq__body">A read-only web view exists for sharing deploy status with stakeholders. All writes stay in the CLI, on purpose.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section id="cta" aria-labelledby="cta-title">
+  <div class="wrap">
+    <div class="cta__panel">
+      <h2 class="cta__title" id="cta-title">Stop clicking deploy buttons.<span class="cursor" aria-hidden="true">▌</span></h2>
+      <p class="cta__sub">Get the install script and release notes in your inbox. One email per release, no noise.</p>
+      <form class="cta__form" id="cta-form" novalidate>
+        <div class="input-group" id="email-group">
+          <label class="input-group__label" for="email">email address</label>
+          <div class="input-group__row">
+            <input class="input" id="email" name="email" type="email" autocomplete="email" placeholder="you@company.com" aria-describedby="email-error" required>
+            <span class="material-symbols-outlined input-group__state" id="email-state" aria-hidden="true">check_circle</span>
+          </div>
+          <p class="input-group__error" id="email-error" aria-live="polite"></p>
+        </div>
+        <button class="btn btn--primary" id="cta-submit" type="submit">
+          <span class="material-symbols-outlined btn__icon" id="cta-icon" aria-hidden="true">send</span>
+          <span id="cta-label">get access</span>
+        </button>
+      </form>
+      <p class="cta__status" id="cta-status" aria-live="polite"></p>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <pre class="footer__mark" aria-hidden="true">┌─┐┬─┐┌─┐┌┐┌┬┌─
+│  ├┬┘├─┤│││├┴┐
+└─┘┴└─┴ ┴┘└┘┴ ┴</pre>
+        <p class="footer__meta" style="border:none;margin:0;padding:0">crankshaft, deploys from the shell, for people who live there.</p>
+      </div>
+      <div class="footer__col">
+        <h3>Product</h3>
+        <a class="footer__link" href="#features">Features</a>
+        <a class="footer__link" href="#pricing">Pricing</a>
+        <a class="footer__link" href="#how">How it works</a>
+      </div>
+      <div class="footer__col">
+        <h3>Resources</h3>
+        <a class="footer__link" href="#faq">FAQ</a>
+        <a class="footer__link" href="#reviews">Reviews</a>
+        <a class="footer__link" href="#cta">Release notes</a>
+      </div>
+      <div class="footer__col">
+        <h3>Legal</h3>
+        <a class="footer__link" href="#cta">Privacy</a>
+        <a class="footer__link" href="#cta">Terms</a>
+      </div>
+    </div>
+    <div class="footer__meta">
+      <span class="footer__ok">[ ok ] all systems operational</span>
+      <span>© 2026 crankshaft systems</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var root=document.documentElement;
+  var toggle=document.getElementById("theme-toggle");
+  var icon=document.getElementById("theme-icon");
+  var live=document.createElement("div");
+  live.setAttribute("aria-live","polite");
+  live.className="skip";
+  document.body.appendChild(live);
+
+  function applyTheme(t){
+    root.dataset.theme=t;
+    var dark=t==="dark";
+    toggle.setAttribute("aria-pressed",String(dark));
+    toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+    icon.textContent=dark?"light_mode":"dark_mode";
+  }
+  applyTheme(root.dataset.theme==="light"?"light":"dark");
+  toggle.addEventListener("click",function(){
+    var next=root.dataset.theme==="dark"?"light":"dark";
+    localStorage.setItem("theme",next);
+    applyTheme(next);
+    live.textContent=next==="dark"?"Dark mode enabled":"Light mode enabled";
+  });
+
+  /* mobile menu */
+  var menuBtn=document.getElementById("menu-btn");
+  var navLinks=document.getElementById("nav-links");
+  menuBtn.addEventListener("click",function(){
+    var open=navLinks.classList.toggle("is-open");
+    menuBtn.setAttribute("aria-expanded",String(open));
+    menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");
+  });
+  navLinks.addEventListener("click",function(e){
+    if(e.target.closest("a")){navLinks.classList.remove("is-open");menuBtn.setAttribute("aria-expanded","false");}
+  });
+  document.addEventListener("keydown",function(e){
+    if(e.key==="Escape"){navLinks.classList.remove("is-open");menuBtn.setAttribute("aria-expanded","false");}
+  });
+
+  /* email capture */
+  var form=document.getElementById("cta-form");
+  var group=document.getElementById("email-group");
+  var email=document.getElementById("email");
+  var err=document.getElementById("email-error");
+  var state=document.getElementById("email-state");
+  var btn=document.getElementById("cta-submit");
+  var btnIcon=document.getElementById("cta-icon");
+  var btnLabel=document.getElementById("cta-label");
+  var status=document.getElementById("cta-status");
+
+  form.addEventListener("submit",function(e){
+    e.preventDefault();
+    var val=email.value.trim();
+    var ok=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val);
+    group.classList.remove("is-valid","is-invalid");
+    if(!ok){
+      group.classList.add("is-invalid");
+      state.textContent="error";
+      err.textContent="error: invalid address, expected user@host.tld";
+      btn.classList.add("is-error");
+      btnIcon.textContent="error";
+      btnLabel.textContent="fix email";
+      status.textContent="";
+      email.focus();
+      return;
+    }
+    group.classList.add("is-valid");
+    state.textContent="check_circle";
+    err.textContent="";
+    btn.classList.remove("is-error");
+    btn.classList.add("is-loading");
+    btn.disabled=true;
+    btn.setAttribute("aria-busy","true");
+    btnIcon.textContent="progress_activity";
+    btnLabel.textContent="sending";
+    setTimeout(function(){
+      btn.classList.remove("is-loading");
+      btn.classList.add("is-success");
+      btn.disabled=false;
+      btn.removeAttribute("aria-busy");
+      btnIcon.textContent="check_circle";
+      btnLabel.textContent="confirmed";
+      status.textContent="[ ok ] install script queued for "+val;
+      email.value="";
+      group.classList.remove("is-valid");
+    },1200);
+  });
+})();
+</script>
+</body>
+</html>

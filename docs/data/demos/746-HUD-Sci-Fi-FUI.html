@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="VANTA-9 mission control telemetry platform. Real-time node monitoring, threat triage and uplink orchestration.">
+<meta name="theme-color" content="#030608" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#EEF3F6" media="(prefers-color-scheme: light)">
+<title>VANTA-9 // Mission Control Telemetry</title>
+<script>
+(function(){var t=localStorage.getItem("hud-theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet">
+<style>
+/* ============ TOKENS ============ */
+:root{
+color-scheme:dark;
+--primary:#00FFFF;--secondary:#0080FF;--alert:#FF0000;
+--bg-primary:#030608;--bg-secondary:#0A1118;--panel-bg:rgba(0,0,0,0.8);
+--text-primary:#DFF7FF;--text-secondary:#8FB8C6;
+--text-success:#00FF9C;--text-error:#FF5C5C;
+--on-primary:#030608;
+--border-default:rgba(0,255,255,0.5);--border-subtle:rgba(0,255,255,0.25);
+--border-error:rgba(255,0,0,0.7);--border-success:rgba(0,255,156,0.6);
+--grid-line:#333333;
+--glow-cyan:0 0 5px rgba(0,255,255,0.8);--glow-blue:0 0 8px rgba(0,128,255,0.6);
+--radius-sm:2px;--radius-md:2px;--radius-lg:4px;
+--shadow-sm:0 0 8px rgba(0,255,255,0.15);--shadow-md:0 0 20px rgba(0,255,255,0.3);
+--spacing-gap:1.5rem;
+--transition-fast:120ms;--transition-normal:250ms;
+--ease-standard:cubic-bezier(0.2,0.8,0.2,1);
+--z-header:900;--z-modal:2000;
+--font-display:'Orbitron','Share Tech Mono',monospace;
+--font-base:'Share Tech Mono','Courier New',monospace;
+--header-h:64px;
+}
+:root[data-theme="light"]{
+color-scheme:light;
+--primary:#0066CC;--secondary:#004C99;--alert:#C40000;
+--bg-primary:#EEF3F6;--bg-secondary:#E3EBF0;--panel-bg:#E3EBF0;
+--text-primary:#0A141B;--text-secondary:#3E5A68;
+--text-success:#007A4D;--text-error:#C40000;
+--on-primary:#FFFFFF;
+--border-default:rgba(0,102,204,0.45);--border-subtle:rgba(0,102,204,0.22);
+--border-error:rgba(196,0,0,0.6);--border-success:rgba(0,122,77,0.55);
+--grid-line:#C9D4DA;
+--glow-cyan:none;--glow-blue:none;
+--shadow-sm:0 2px 6px rgba(10,30,50,0.15);--shadow-md:0 6px 18px rgba(10,30,50,0.15);
+}
+@media (prefers-color-scheme: light){
+:root:not([data-theme]){
+color-scheme:light;
+--primary:#0066CC;--secondary:#004C99;--alert:#C40000;
+--bg-primary:#EEF3F6;--bg-secondary:#E3EBF0;--panel-bg:#E3EBF0;
+--text-primary:#0A141B;--text-secondary:#3E5A68;
+--text-success:#007A4D;--text-error:#C40000;
+--on-primary:#FFFFFF;
+--border-default:rgba(0,102,204,0.45);--border-subtle:rgba(0,102,204,0.22);
+--border-error:rgba(196,0,0,0.6);--border-success:rgba(0,122,77,0.55);
+--grid-line:#C9D4DA;
+--glow-cyan:none;--glow-blue:none;
+--shadow-sm:0 2px 6px rgba(10,30,50,0.15);--shadow-md:0 6px 18px rgba(10,30,50,0.15);
+}
+}
+/* ============ BASE ============ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{
+font-family:var(--font-base);font-size:1rem;line-height:1.6;
+color:var(--text-primary);background:var(--bg-primary);
+overflow-x:hidden;min-height:100dvh;
+}
+body::before{
+content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+background:
+repeating-linear-gradient(0deg,var(--grid-line) 0 1px,transparent 1px 64px),
+repeating-linear-gradient(90deg,var(--grid-line) 0 1px,transparent 1px 64px);
+opacity:0.35;
+}
+body::after{
+content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+background:radial-gradient(ellipse at 50% 30%,transparent 40%,var(--bg-primary) 100%);
+opacity:0.7;
+}
+h1,h2,h3{font-family:var(--font-display);letter-spacing:-0.01em;line-height:1.1;font-weight:700}
+h1{font-size:clamp(2rem,5vw,3.5rem)}
+h2{font-size:clamp(1.5rem,3.5vw,2.25rem)}
+h3{font-size:1.05rem}
+a{color:inherit;text-decoration:none}
+img{max-width:100%}
+button{font-family:inherit;font-size:inherit;color:inherit;background:none;border:none;cursor:pointer}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+::selection{background:var(--primary);color:var(--on-primary)}
+.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;font-size:1.25rem;line-height:1;user-select:none}
+.skip-link{position:fixed;top:-100%;left:1rem;z-index:3000;background:var(--primary);color:var(--on-primary);padding:0.75rem 1.25rem;transition:top var(--transition-fast) var(--ease-standard)}
+.skip-link:focus{top:1rem}
+.container{max-width:1200px;margin-inline:auto;padding-inline:1.25rem;position:relative;z-index:1}
+@media(min-width:768px){.container{padding-inline:2rem}}
+section{padding-block:clamp(4rem,8vw,7rem);position:relative}
+.section-head{margin-bottom:2.5rem;max-width:65ch}
+.section-head p{color:var(--text-secondary);margin-top:0.75rem}
+.eyebrow{font-size:0.8rem;letter-spacing:0.15em;color:var(--primary);text-shadow:var(--glow-cyan);display:flex;align-items:center;gap:0.6rem;margin-bottom:0.75rem}
+/* blinking marker */
+.marker{display:inline-block;width:8px;height:8px;background:var(--primary);box-shadow:var(--glow-cyan);animation:blink 1.2s steps(2) infinite;flex:none}
+.marker--success{background:var(--text-success)}
+@keyframes blink{50%{opacity:0.15}}
+/* crosshair decorations */
+.crosshair{position:relative}
+.crosshair::before,.crosshair::after{content:"+";position:absolute;color:var(--border-default);font-size:1rem;line-height:1;pointer-events:none}
+.crosshair::before{top:0.5rem;left:0.25rem}
+.crosshair::after{bottom:0.5rem;right:0.25rem}
+/* viewport frame */
+.hud-frame{position:fixed;inset:0;pointer-events:none;z-index:800}
+.hud-frame span{position:absolute;width:24px;height:24px;border:1px solid var(--border-default)}
+.hud-frame span:nth-child(1){top:10px;left:10px;border-right:none;border-bottom:none}
+.hud-frame span:nth-child(2){top:10px;right:10px;border-left:none;border-bottom:none}
+.hud-frame span:nth-child(3){bottom:10px;left:10px;border-right:none;border-top:none}
+.hud-frame span:nth-child(4){bottom:10px;right:10px;border-left:none;border-top:none}
+@media(max-width:479px){.hud-frame{display:none}}
+/* ============ BUTTONS ============ */
+.btn{
+position:relative;display:flex;align-items:center;justify-content:center;gap:0.5rem;
+min-height:44px;min-width:44px;padding:0.7rem 1.5rem;
+font-family:var(--font-base);font-size:0.9rem;letter-spacing:0.08em;text-transform:uppercase;
+border:1px solid var(--border-default);background:transparent;color:var(--primary);
+border-radius:var(--radius-sm);overflow:hidden;
+transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),background var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard),border-color var(--transition-normal) var(--ease-standard);
+}
+.btn::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(105deg,transparent,rgba(255,255,255,0.25),transparent);transform:skewX(-20deg);pointer-events:none}
+@media(hover:hover) and (pointer:fine){
+.btn:hover{box-shadow:var(--shadow-md);border-color:var(--primary)}
+.btn:hover::after{animation:sweep 500ms var(--ease-standard)}
+}
+@keyframes sweep{to{left:120%}}
+.btn:active{transform:scale(0.97)}
+.btn--primary{background:var(--primary);color:var(--on-primary);border-color:var(--primary);font-weight:700}
+.btn--danger{border-color:var(--border-error);color:var(--text-error)}
+.btn--danger:hover{box-shadow:0 0 16px rgba(255,0,0,0.35)}
+.btn[disabled]{opacity:0.5;filter:grayscale(0.8);cursor:not-allowed;pointer-events:none}
+.btn.is-loading{pointer-events:none}
+.btn.is-loading .btn__label{visibility:hidden}
+.btn.is-loading::before{
+content:"";position:absolute;width:20px;height:20px;border-radius:50%;
+background:conic-gradient(var(--on-primary) 0 25%,transparent 25% 100%);
+-webkit-mask:radial-gradient(farthest-side,transparent 60%,#000 61%);mask:radial-gradient(farthest-side,transparent 60%,#000 61%);
+animation:spin 700ms linear infinite;
+}
+.btn--ghost.is-loading::before{background:conic-gradient(var(--primary) 0 25%,transparent 25% 100%)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.btn.is-success{border-color:var(--border-success);color:var(--text-success);background:transparent}
+.btn.is-error{border-color:var(--border-error);color:var(--text-error);background:transparent}
+/* ============ HUD PANEL ============ */
+.hud-panel{
+position:relative;display:flex;flex-direction:column;gap:1rem;
+background:var(--panel-bg);border:1px solid var(--border-subtle);
+border-radius:var(--radius-md);padding:1.5rem;
+transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),border-color var(--transition-normal) var(--ease-standard);
+overflow:hidden;
+}
+.hud-panel::before,.hud-panel::after{content:"";position:absolute;width:14px;height:14px;pointer-events:none;transition:border-color var(--transition-normal)}
+.hud-panel::before{top:-1px;left:-1px;border-top:1px solid var(--primary);border-left:1px solid var(--primary)}
+.hud-panel::after{bottom:-1px;right:-1px;border-bottom:1px solid var(--primary);border-right:1px solid var(--primary)}
+.hud-panel__index{font-size:0.72rem;letter-spacing:0.15em;color:var(--text-secondary);display:flex;align-items:center;gap:0.5rem}
+@media(hover:hover) and (pointer:fine){
+.hud-panel--interactive:hover{border-color:var(--border-default);box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.hud-panel--interactive:hover .hud-panel__scan{animation:panelscan 900ms var(--ease-standard)}
+}
+.hud-panel:focus-within{border-color:var(--border-default)}
+.hud-panel__scan{position:absolute;top:-10%;left:0;width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--primary),transparent);opacity:0;pointer-events:none}
+@keyframes panelscan{0%{top:-1%;opacity:1}100%{top:101%;opacity:1}}
+/* ============ HEADER ============ */
+.nav{
+position:fixed;top:0;left:0;right:0;z-index:var(--z-header);height:var(--header-h);
+display:flex;align-items:center;gap:var(--spacing-gap);
+background:rgba(3,6,8,0.8);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+border-bottom:1px solid var(--border-subtle);padding-inline:1.25rem;
+}
+:root[data-theme="light"] .nav{background:rgba(238,243,246,0.85)}
+@media(prefers-reduced-transparency:reduce){.nav{background:var(--bg-primary);backdrop-filter:none}}
+.nav__brand{font-family:var(--font-display);font-weight:700;letter-spacing:0.12em;font-size:1rem;display:flex;align-items:center;gap:0.4rem;text-shadow:var(--glow-cyan)}
+.nav__brand::before{content:"[";color:var(--primary)}
+.nav__brand::after{content:"]";color:var(--primary)}
+.nav__links{display:none;align-items:center;gap:1.5rem;margin-left:auto}
+.nav__link{position:relative;font-size:0.85rem;letter-spacing:0.08em;color:var(--text-secondary);padding:0.4rem 0;transition:color var(--transition-fast)}
+.nav__link::after{content:"";position:absolute;left:0;bottom:0;width:100%;height:1px;background:var(--primary);transform:scaleX(0);transform-origin:left;transition:transform var(--transition-normal) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.nav__link:hover{color:var(--primary)}.nav__link:hover::after{transform:scaleX(1)}}
+.nav__link:focus-visible{color:var(--primary)}
+.nav__link:focus-visible::after{transform:scaleX(1)}
+.nav__actions{display:flex;align-items:center;gap:0.75rem;margin-left:auto}
+.nav__toggle,.nav__menu-btn{
+display:flex;align-items:center;justify-content:center;width:44px;height:44px;
+border:1px solid var(--border-subtle);border-radius:var(--radius-sm);color:var(--primary);
+transition:border-color var(--transition-fast),box-shadow var(--transition-fast);
+}
+@media(hover:hover) and (pointer:fine){.nav__toggle:hover,.nav__menu-btn:hover{border-color:var(--primary);box-shadow:var(--shadow-sm)}}
+.nav__toggle .icon-sun{display:none}
+:root[data-theme="light"] .nav__toggle .icon-sun{display:block}
+:root[data-theme="light"] .nav__toggle .icon-moon{display:none}
+@media(min-width:768px){
+.nav__links{display:flex}
+.nav__actions{margin-left:0}
+.nav__menu-btn{display:none}
+}
+@media(max-width:767px){
+.nav__links{
+position:fixed;top:var(--header-h);left:0;right:0;z-index:var(--z-header);
+flex-direction:column;align-items:stretch;gap:0;padding:1rem 1.25rem 1.5rem;
+background:var(--bg-secondary);border-bottom:1px solid var(--border-default);
+}
+.nav__links.is-open{display:flex}
+.nav__link{padding:0.85rem 0;border-bottom:1px solid var(--border-subtle)}
+}
+/* ============ HERO ============ */
+.hero{min-height:calc(100svh - var(--header-h));padding-top:calc(var(--header-h) + 2rem);display:flex;align-items:center}
+.hero__inner{display:flex;flex-direction:column;gap:2.5rem;width:100%}
+@media(min-width:1024px){.hero__inner{flex-direction:row;align-items:center;gap:3rem}.hero__copy{flex:1}.hero__visual{flex:1}}
+.hero__copy{display:flex;flex-direction:column;gap:1.25rem;align-items:flex-start}
+.hero__title .glow{color:var(--primary);text-shadow:var(--glow-cyan)}
+.hero__sub{color:var(--text-secondary);max-width:46ch}
+.hero__ctas{display:flex;flex-wrap:wrap;gap:1rem}
+/* telemetry panel */
+.telemetry{gap:1.25rem}
+.telemetry__scan{position:absolute;left:0;top:0;width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--primary),transparent);animation:heroscan 5s linear infinite;pointer-events:none;opacity:0.8}
+@keyframes heroscan{0%{top:0}100%{top:100%}}
+.telemetry__grid{display:flex;gap:1rem;flex-wrap:wrap}
+.telemetry__stat{flex:1;min-width:90px;border:1px solid var(--border-subtle);padding:0.75rem;display:flex;flex-direction:column;gap:0.25rem}
+.telemetry__label{font-size:0.68rem;letter-spacing:0.12em;color:var(--text-secondary)}
+.telemetry__value{font-family:var(--font-display);font-size:1.4rem;color:var(--primary);text-shadow:var(--glow-cyan)}
+.telemetry__wave{height:72px;border:1px solid var(--border-subtle);position:relative;overflow:hidden;
+background:
+linear-gradient(90deg,transparent 49%,var(--border-subtle) 50%,transparent 51%) 0 0/24px 100%,
+linear-gradient(0deg,transparent 49%,var(--border-subtle) 50%,transparent 51%) 0 0/100% 18px;
+}
+.telemetry__wave::before{
+content:"";position:absolute;inset:0;
+background:linear-gradient(90deg,var(--secondary),var(--primary),var(--secondary),var(--primary));
+-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 72' preserveAspectRatio='none'%3E%3Cpath d='M0 50 L30 50 L40 20 L55 60 L70 38 L100 44 L130 44 L140 12 L155 58 L170 40 L210 46 L240 46 L250 22 L265 62 L280 36 L320 42 L350 42 L360 18 L375 56 L400 44 L400 72 L0 72 Z' fill='black'/%3E%3C/svg%3E") 0 0/200% 100% repeat-x;
+mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 72' preserveAspectRatio='none'%3E%3Cpath d='M0 50 L30 50 L40 20 L55 60 L70 38 L100 44 L130 44 L140 12 L155 58 L170 40 L210 46 L240 46 L250 22 L265 62 L280 36 L320 42 L350 42 L360 18 L375 56 L400 44 L400 72 L0 72 Z' fill='black'/%3E%3C/svg%3E") 0 0/200% 100% repeat-x;
+opacity:0.55;animation:wave 6s linear infinite;
+}
+@keyframes wave{to{background-position:0 0;transform:translateX(0)}from{transform:translateX(0)}}
+.telemetry__wave::before{animation:wavemove 8s linear infinite}
+@keyframes wavemove{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.telemetry__foot{display:flex;align-items:center;gap:0.5rem;font-size:0.72rem;letter-spacing:0.12em;color:var(--text-secondary)}
+/* ============ TICKER ============ */
+.ticker{border-block:1px solid var(--border-subtle);background:var(--bg-secondary);overflow:hidden;padding-block:0.6rem;position:relative;z-index:1}
+.ticker__track{display:flex;gap:0;width:max-content;animation:ticker 28s linear infinite}
+.ticker:hover .ticker__track,.ticker:focus-within .ticker__track{animation-play-state:paused}
+.ticker__seg{display:flex;gap:2.5rem;padding-right:2.5rem;white-space:nowrap;font-size:0.8rem;letter-spacing:0.12em;color:var(--text-secondary)}
+.ticker__seg b{color:var(--primary);font-weight:400}
+@keyframes ticker{to{transform:translateX(-50%)}}
+/* ============ FEATURES ============ */
+.features__row{display:flex;flex-wrap:wrap;gap:var(--spacing-gap)}
+.feature-card{flex:1 1 280px;min-height:240px}
+.feature-card__icon{display:flex;align-items:center;justify-content:center;width:48px;height:48px;border:1px solid var(--border-default);color:var(--primary);box-shadow:var(--shadow-sm)}
+.feature-card__icon .material-symbols-outlined{font-size:1.5rem}
+.feature-card p{color:var(--text-secondary);font-size:0.92rem}
+.databar{display:flex;gap:3px;height:8px;margin-top:auto}
+.databar i{flex:1;background:var(--border-subtle)}
+.databar i:nth-child(-n+4){background:var(--primary);opacity:0.7}
+.feature-card:nth-child(2) .databar i:nth-child(-n+6){background:var(--primary);opacity:0.7}
+.feature-card:nth-child(2) .databar i:nth-child(n+5){background:var(--border-subtle)}
+.feature-card:nth-child(3) .databar i:nth-child(-n+3){background:var(--primary);opacity:0.7}
+.feature-card:nth-child(3) .databar i:nth-child(n+4){background:var(--border-subtle)}
+/* ============ STEPS ============ */
+.steps{display:flex;flex-direction:column;gap:2rem;position:relative}
+.steps__line{position:absolute;background:var(--border-default);transform-origin:top;transform:scaleY(0);transition:transform 1.2s var(--ease-standard) 200ms;left:23px;top:24px;bottom:24px;width:1px}
+.steps.is-visible .steps__line{transform:scaleY(1)}
+.step{display:flex;gap:1.25rem;align-items:flex-start;position:relative}
+.step__num{
+flex:none;display:flex;align-items:center;justify-content:center;width:48px;height:48px;
+font-family:var(--font-display);color:var(--primary);border:1px solid var(--border-default);
+background:var(--bg-primary);box-shadow:var(--shadow-sm);text-shadow:var(--glow-cyan);position:relative;z-index:1;
+}
+.step__body{display:flex;flex-direction:column;gap:0.35rem}
+.step__label{font-size:0.72rem;letter-spacing:0.15em;color:var(--text-secondary)}
+.step__body p{color:var(--text-secondary);font-size:0.92rem;max-width:52ch}
+@media(min-width:768px){
+.steps{flex-direction:row;gap:var(--spacing-gap)}
+.steps__line{left:24px;right:24px;top:24px;bottom:auto;width:auto;height:1px;transform:scaleX(0);transform-origin:left}
+.steps.is-visible .steps__line{transform:scaleX(1)}
+.step{flex-direction:column;flex:1}
+}
+/* ============ TESTIMONIALS ============ */
+.quotes{display:flex;flex-wrap:wrap;gap:var(--spacing-gap)}
+.quote{flex:1 1 300px}
+.quote__text{font-size:0.95rem;line-height:1.6}
+.quote__text::before{content:"\201C";color:var(--primary)}
+.quote__text::after{content:"\201D";color:var(--primary)}
+.quote__meta{display:flex;align-items:center;gap:0.85rem;margin-top:auto}
+.quote__avatar{flex:none;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border-default);font-family:var(--font-display);font-size:0.85rem;color:var(--primary);position:relative}
+.quote__avatar::before{content:"";position:absolute;inset:-4px;border:1px solid var(--border-subtle);clip-path:polygon(0 0,30% 0,30% 2px,2px 2px,2px 30%,0 30%,0 0,100% 100%,100% 70%,98% 70%,98% 98%,70% 98%,70% 100%,100% 100%)}
+.quote__who{display:flex;flex-direction:column}
+.quote__name{font-size:0.9rem}
+.quote__role{font-size:0.72rem;letter-spacing:0.1em;color:var(--text-secondary)}
+.quote__rating{display:flex;gap:4px}
+.quote__rating i{width:10px;height:4px;background:var(--primary);box-shadow:var(--glow-cyan)}
+/* ============ PRICING ============ */
+.pricing__row{display:flex;flex-wrap:wrap;gap:var(--spacing-gap);align-items:stretch}
+.tier{flex:1 1 280px}
+.tier__name{font-size:0.8rem;letter-spacing:0.15em;color:var(--text-secondary)}
+.tier__price{font-family:var(--font-display);font-size:2.5rem;color:var(--primary);text-shadow:var(--glow-cyan);display:flex;align-items:baseline;gap:0.5rem}
+.tier__per{font-family:var(--font-base);font-size:0.8rem;color:var(--text-secondary);text-shadow:none}
+.tier__list{list-style:none;display:flex;flex-direction:column;gap:0.6rem;font-size:0.88rem}
+.tier__list li{display:flex;align-items:center;gap:0.6rem}
+.tier__list .yes{color:var(--text-success)}
+.tier__list .no{color:var(--text-error)}
+.tier__list li.off{color:var(--text-secondary);opacity:0.7}
+.tier .btn{margin-top:auto;width:100%}
+:root .hud-panel--featured,:root[data-theme="dark"] .hud-panel--featured{border-color:var(--border-default);box-shadow:var(--shadow-md)}
+:root[data-theme="light"] .hud-panel--featured{border-color:var(--border-default);box-shadow:var(--shadow-md)}
+.tier__tag{position:absolute;top:-1px;right:1.25rem;display:flex;align-items:center;gap:0.45rem;background:var(--primary);color:var(--on-primary);font-size:0.68rem;letter-spacing:0.12em;padding:0.3rem 0.7rem;font-weight:700}
+.tier__tag .marker{background:var(--on-primary);box-shadow:none;width:6px;height:6px}
+/* ============ FAQ ============ */
+.faq{display:flex;flex-direction:column;gap:0.75rem;max-width:800px}
+.faq-item{border:1px solid var(--border-subtle);background:var(--panel-bg);border-radius:var(--radius-md);transition:border-color var(--transition-normal)}
+.faq-item:focus-within,.faq-item.is-open{border-color:var(--border-default)}
+.faq-item__q{width:100%;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1rem 1.25rem;min-height:44px;text-align:left;font-size:0.95rem;letter-spacing:0.04em}
+.faq-item__q .material-symbols-outlined{color:var(--primary);transition:transform var(--transition-normal) var(--ease-standard);flex:none}
+.faq-item.is-open .faq-item__q .material-symbols-outlined{transform:rotate(180deg)}
+.faq-item__a{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--transition-normal) var(--ease-standard)}
+.faq-item.is-open .faq-item__a{grid-template-rows:1fr}
+.faq-item__a-inner{overflow:hidden}
+.faq-item__a p{padding:0 1.25rem 1.1rem;color:var(--text-secondary);font-size:0.9rem;max-width:65ch}
+/* ============ FINAL CTA ============ */
+.cta-panel{align-items:center;text-align:center;padding:clamp(2rem,6vw,4rem);box-shadow:var(--shadow-md);border-color:var(--border-default)}
+.cta-panel h2{text-shadow:var(--glow-cyan)}
+.cta-panel>p{color:var(--text-secondary);max-width:52ch}
+.cta-form{display:flex;flex-direction:column;gap:1rem;width:100%;max-width:460px;margin-top:0.5rem}
+.input-group{display:flex;flex-direction:column;gap:0.4rem;align-items:stretch;text-align:left}/* exception: form column stretch */
+.input-group label{font-size:0.75rem;letter-spacing:0.12em;color:var(--text-secondary);text-transform:uppercase}
+.input-group__wrap{position:relative;display:flex;align-items:center}
+.input-group input{
+width:100%;min-height:48px;padding:0.75rem 2.75rem 0.75rem 1rem;
+background:var(--bg-primary);border:1px solid var(--border-subtle);color:var(--text-primary);
+font-family:var(--font-base);font-size:0.95rem;border-radius:var(--radius-sm);
+transition:border-color var(--transition-fast),box-shadow var(--transition-fast);
+}
+.input-group input::placeholder{color:var(--text-secondary);opacity:0.7}
+.input-group input:focus{outline:none;border-color:var(--primary);box-shadow:var(--shadow-sm)}
+.input-group__icon{position:absolute;right:0.85rem;display:none;pointer-events:none}
+.input-group.is-valid input{border-color:var(--border-success)}
+.input-group.is-valid .input-group__icon--ok{display:block;color:var(--text-success)}
+.input-group.is-error input{border-color:var(--border-error)}
+.input-group.is-error .input-group__icon--err{display:block;color:var(--text-error)}
+.input-group__msg{font-size:0.78rem;min-height:1.1em;color:var(--text-secondary)}
+.input-group.is-error .input-group__msg{color:var(--text-error)}
+.cta-status{font-size:0.85rem;letter-spacing:0.1em;color:var(--text-success);display:flex;align-items:center;gap:0.5rem;min-height:1.4em}
+/* ============ FOOTER ============ */
+.footer{border-top:1px solid var(--border-subtle);background:var(--bg-secondary);position:relative;z-index:1;padding-top:3rem}
+.footer__cols{display:flex;flex-wrap:wrap;gap:2.5rem;padding-bottom:2.5rem}
+.footer__col{display:flex;flex-direction:column;gap:0.6rem;flex:1 1 140px;align-items:flex-start}
+.footer__col h4{font-size:0.75rem;letter-spacing:0.15em;color:var(--primary);text-transform:uppercase;font-weight:400;margin-bottom:0.25rem}
+.footer__link{position:relative;font-size:0.85rem;color:var(--text-secondary);padding:0.15rem 0;transition:color var(--transition-fast)}
+.footer__link::after{content:"";position:absolute;left:0;bottom:0;width:100%;height:1px;background:var(--primary);transform:scaleX(0);transform-origin:left;transition:transform var(--transition-normal) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.footer__link:hover{color:var(--primary)}.footer__link:hover::after{transform:scaleX(1)}}
+.footer__social{display:flex;gap:0.6rem}
+.footer__social a{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border:1px solid var(--border-subtle);color:var(--text-secondary);transition:color var(--transition-fast),border-color var(--transition-fast)}
+@media(hover:hover) and (pointer:fine){.footer__social a:hover{color:var(--primary);border-color:var(--primary)}}
+.footer__status{display:flex;align-items:center;gap:0.5rem;font-size:0.75rem;letter-spacing:0.12em;color:var(--text-secondary);padding-bottom:1.5rem}
+.footer__bar{border-top:1px solid var(--border-subtle);padding-block:1.25rem;display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between;font-size:0.78rem;color:var(--text-secondary)}
+.footer__bar nav{display:flex;gap:1.25rem;align-items:center}
+/* ============ REVEAL ============ */
+.reveal{opacity:0;transform:translateY(16px);transition:opacity 500ms var(--ease-standard),transform 500ms var(--ease-standard)}
+.reveal.is-visible{opacity:1;transform:none}
+/* ============ REDUCED MOTION ============ */
+@media(prefers-reduced-motion:reduce){
+html{scroll-behavior:auto}
+*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}
+.ticker__track{animation:none;transform:none}
+.telemetry__scan,.telemetry__wave::before{animation:none}
+.marker{animation:none}
+.reveal{opacity:1;transform:none}
+.steps__line{transform:none!important}
+}
+@media(prefers-reduced-transparency:reduce){
+.hud-panel{background:var(--bg-secondary)}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="hud-frame" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+
+<header class="nav">
+  <a class="nav__brand" href="#top">VANTA-9</a>
+  <nav class="nav__links" id="nav-links" aria-label="Primary">
+    <a class="nav__link" href="#features">Features</a>
+    <a class="nav__link" href="#protocol">How It Works</a>
+    <a class="nav__link" href="#pricing">Pricing</a>
+    <a class="nav__link" href="#faq">FAQ</a>
+  </nav>
+  <div class="nav__actions">
+    <button class="nav__toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to light mode">
+      <span class="material-symbols-outlined icon-moon" aria-hidden="true">dark_mode</span>
+      <span class="material-symbols-outlined icon-sun" aria-hidden="true">light_mode</span>
+    </button>
+    <button class="nav__menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">
+      <span class="material-symbols-outlined" aria-hidden="true">menu</span>
+    </button>
+  </div>
+</header>
+
+<main id="main">
+<!-- HERO -->
+<section class="hero" id="top" aria-labelledby="hero-title">
+  <div class="container hero__inner">
+    <div class="hero__copy">
+      <p class="eyebrow"><span class="marker" aria-hidden="true"></span>SYSTEM v4.2 // ONLINE</p>
+      <h1 class="hero__title" id="hero-title">Total telemetry. <span class="glow">Zero blind spots.</span></h1>
+      <p class="hero__sub">VANTA-9 streams live diagnostics from every node in your fleet into one mission control interface.</p>
+      <div class="hero__ctas">
+        <a class="btn btn--primary" href="#initialize"><span class="btn__label">Initialize System</span></a>
+        <a class="btn btn--ghost" href="#features"><span class="btn__label">View Specifications</span></a>
+      </div>
+    </div>
+    <div class="hero__visual">
+      <div class="hud-panel telemetry" aria-label="Live telemetry preview">
+        <span class="telemetry__scan" aria-hidden="true"></span>
+        <p class="hud-panel__index"><span class="marker" aria-hidden="true"></span>MODULE // TELEMETRY-01</p>
+        <div class="telemetry__grid">
+          <div class="telemetry__stat"><span class="telemetry__label">NODES</span><span class="telemetry__value" id="stat-nodes">12,804</span></div>
+          <div class="telemetry__stat"><span class="telemetry__label">UPTIME</span><span class="telemetry__value" id="stat-uptime">99.98%</span></div>
+          <div class="telemetry__stat"><span class="telemetry__label">LATENCY</span><span class="telemetry__value" id="stat-latency">14ms</span></div>
+        </div>
+        <div class="telemetry__wave" aria-hidden="true"></div>
+        <p class="telemetry__foot"><span class="marker marker--success" aria-hidden="true"></span>UPLINK STABLE // CHANNEL 7</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker" aria-label="System status ticker">
+  <div class="ticker__track">
+    <div class="ticker__seg"><span>ALL SYSTEMS <b>NOMINAL</b></span><span>12,804 NODES <b>ACTIVE</b></span><span>UPLINK <b>STABLE</b></span><span>THREAT LEVEL <b>LOW</b></span><span>GRID SYNC <b>100%</b></span><span>NEXT DIAGNOSTIC <b>T-04:00</b></span></div>
+    <div class="ticker__seg" aria-hidden="true"><span>ALL SYSTEMS <b>NOMINAL</b></span><span>12,804 NODES <b>ACTIVE</b></span><span>UPLINK <b>STABLE</b></span><span>THREAT LEVEL <b>LOW</b></span><span>GRID SYNC <b>100%</b></span><span>NEXT DIAGNOSTIC <b>T-04:00</b></span></div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section id="features" aria-labelledby="features-title">
+  <div class="container">
+    <div class="section-head reveal">
+      <p class="eyebrow">SEC.01 // CAPABILITIES</p>
+      <h2 id="features-title">Built for the control room</h2>
+      <p>Three core systems keep your fleet visible, responsive, and hardened around the clock.</p>
+    </div>
+    <div class="features__row">
+      <article class="hud-panel hud-panel--interactive feature-card reveal">
+        <span class="hud-panel__scan" aria-hidden="true"></span>
+        <p class="hud-panel__index">FEAT_01</p>
+        <span class="feature-card__icon" aria-hidden="true"><span class="material-symbols-outlined">radar</span></span>
+        <h3>Deep Sweep Monitoring</h3>
+        <p>Continuous sensor sweeps across every node surface anomalies in under 200 milliseconds, before they cascade.</p>
+        <div class="databar" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      </article>
+      <article class="hud-panel hud-panel--interactive feature-card reveal">
+        <span class="hud-panel__scan" aria-hidden="true"></span>
+        <p class="hud-panel__index">FEAT_02</p>
+        <span class="feature-card__icon" aria-hidden="true"><span class="material-symbols-outlined">crisis_alert</span></span>
+        <h3>Threat Triage Engine</h3>
+        <p>Incoming alerts are ranked by blast radius and routed to the right operator with full context attached.</p>
+        <div class="databar" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      </article>
+      <article class="hud-panel hud-panel--interactive feature-card reveal">
+        <span class="hud-panel__scan" aria-hidden="true"></span>
+        <p class="hud-panel__index">FEAT_03</p>
+        <span class="feature-card__icon" aria-hidden="true"><span class="material-symbols-outlined">satellite_alt</span></span>
+        <h3>Uplink Orchestration</h3>
+        <p>Batch commands, firmware pushes, and rollbacks ship to thousands of endpoints through one verified channel.</p>
+        <div class="databar" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="protocol" aria-labelledby="protocol-title">
+  <div class="container">
+    <div class="section-head reveal">
+      <p class="eyebrow">SEC.02 // PROTOCOL</p>
+      <h2 id="protocol-title">Online in three moves</h2>
+      <p>From first handshake to full coverage in under an hour.</p>
+    </div>
+    <div class="steps reveal" id="steps">
+      <span class="steps__line" aria-hidden="true"></span>
+      <div class="step">
+        <span class="step__num" aria-hidden="true">01</span>
+        <div class="step__body">
+          <span class="step__label">PHASE // LINK</span>
+          <h3>Register your fleet</h3>
+          <p>Point your nodes at the VANTA-9 relay with a single config line. Handshake and key exchange complete automatically.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step__num" aria-hidden="true">02</span>
+        <div class="step__body">
+          <span class="step__label">PHASE // MAP</span>
+          <h3>Chart the grid</h3>
+          <p>The mapper builds a live topology of your infrastructure and flags coverage gaps within the first sweep.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step__num" aria-hidden="true">03</span>
+        <div class="step__body">
+          <span class="step__label">PHASE // COMMAND</span>
+          <h3>Take the console</h3>
+          <p>Set alert thresholds, assign operator roles, and run your first orchestrated command from the dashboard.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="transmissions" aria-labelledby="transmissions-title">
+  <div class="container">
+    <div class="section-head reveal">
+      <p class="eyebrow">SEC.03 // TRANSMISSIONS</p>
+      <h2 id="transmissions-title">Signals from the field</h2>
+      <p>Operators running VANTA-9 in production, unedited.</p>
+    </div>
+    <div class="quotes">
+      <article class="hud-panel hud-panel--interactive quote reveal">
+        <span class="hud-panel__scan" aria-hidden="true"></span>
+        <p class="quote__text">We caught a failing relay cluster eleven minutes before it would have taken down regional coverage. That paid for the year.</p>
+        <div class="quote__meta">
+          <span class="quote__avatar" aria-hidden="true">MK</span>
+          <span class="quote__who"><span class="quote__name">Mara Kessler</span><span class="quote__role">OPS LEAD // HELIOTROPE GRID</span></span>
+        </div>
+        <div class="quote__rating" role="img" aria-label="Rated 5 out of 5"><i></i><i></i><i></i><i></i><i></i></div>
+      </article>
+      <article class="hud-panel hud-panel--interactive quote reveal">
+        <span class="hud-panel__scan" aria-hidden="true"></span>
+        <p class="quote__text">The triage engine cut our alert noise by two thirds. My team finally reads every alarm that lands on the board.</p>
+        <div class="quote__meta">
+          <span class="quote__avatar" aria-hidden="true">DO</span>
+          <span class="quote__who"><span class="quote__name">Dario Okafor</span><span class="quote__role">SRE DIRECTOR // CALDERA SYSTEMS</span></span>
+        </div>
+        <div class="quote__rating" role="img" aria-label="Rated 5 out of 5"><i></i><i></i><i></i><i></i><i></i></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" aria-labelledby="pricing-title">
+  <div class="container">
+    <div class="section-head reveal">
+      <p class="eyebrow">SEC.04 // ACCESS LEVELS</p>
+      <h2 id="pricing-title">Choose your clearance</h2>
+      <p>Every tier includes unlimited operators and the full telemetry console.</p>
+    </div>
+    <div class="pricing__row">
+      <article class="hud-panel tier reveal">
+        <p class="tier__name">RECON</p>
+        <p class="tier__price">$49<span class="tier__per">/mo</span></p>
+        <ul class="tier__list">
+          <li><span class="material-symbols-outlined yes" aria-hidden="true">check_circle</span>Up to 250 nodes</li>
+          <li><span class="material-symbols-outlined yes" aria-hidden="true">check_circle</span>Deep Sweep monitoring</li>
+          <li><span class="material-symbols-outlined yes" aria-hidden="true">check_circle</span>7-day signal history</li>
+          <li class="off"><span class="material-symbols-outlined no" aria-hidden="true">close</span>Threat Triage Engine</li>
+          <li class="off"><span class="material-symbols-outlined no" aria-hidden="true">close</span>Uplink Orchestration</li>
+        </ul>
+        <a class="btn btn--ghost" href="#initialize"><span class="btn__label">Request Access</span></a>
+      </article>
+      <article class="hud-panel hud-panel--featured tier reveal">
+        <span class="tier__tag"><span class="marker" aria-hidden="true"></span>RECOMMENDED</span>
+        <p class="tier__name">VANGUARD</p>
+        <p class="tier__price">$189<span class="tier__per">/mo</span></p>
+        <ul class="tier__list">
+          <li><span class="material-symbols-outlined yes" aria-hidden="true">check_circle</span>Up to 5,000 nodes</li>
+          <li><span class="material-symbols-outlined yes" aria-hidden="true">check_circle</span>Threat Triage Engine</li>
+          <li><span class="material-symbols-outlined yes" aria-hidden="true">check_circle</span>Uplink Orchestration</li>
+          <li><span class="material-symbols-outlined yes" aria-hidden="true">check_circle</span>90-day signal history</li>
+          <li class="off"><span class="material-symbols-outlined no" aria-hidden="true">close</span>Dedicated relay cluster</li>
+        </ul>
+        <a class="btn btn--primary" href="#initialize"><span class="btn__label">Request Access</span></a>
+      </article>
+      <article class="hud-panel tier reveal">
+        <p class="tier__name">OVERWATCH</p>
+        <p class="tier__price">$720<span class="tier__per">/mo</span></p>
+        <ul class="tier__list">
+          <li><span class="material-symbols-outlined yes" aria-hidden="true">check_circle</span>Unlimited nodes</li>
+          <li><span class="material-symbols-outlined yes" aria-hidden="true">check_circle</span>Everything in Vanguard</li>
+          <li><span class="material-symbols-outlined yes" aria-hidden="true">check_circle</span>Dedicated relay cluster</li>
+          <li><span class="material-symbols-outlined yes" aria-hidden="true">check_circle</span>Unlimited signal history</li>
+          <li><span class="material-symbols-outlined yes" aria-hidden="true">check_circle</span>24/7 response desk</li>
+        </ul>
+        <a class="btn btn--ghost" href="#initialize"><span class="btn__label">Request Access</span></a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" aria-labelledby="faq-title">
+  <div class="container">
+    <div class="section-head reveal">
+      <p class="eyebrow">SEC.05 // QUERIES</p>
+      <h2 id="faq-title">Frequently intercepted questions</h2>
+    </div>
+    <div class="faq reveal">
+      <div class="faq-item">
+        <button class="faq-item__q" type="button" aria-expanded="false" aria-controls="faq-a1" id="faq-q1">How long does deployment take?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button>
+        <div class="faq-item__a" id="faq-a1" role="region" aria-labelledby="faq-q1"><div class="faq-item__a-inner"><p>Most fleets complete the LINK phase in under an hour. The mapper finishes its first full topology sweep within 24 hours, and no downtime is required at any point.</p></div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-item__q" type="button" aria-expanded="false" aria-controls="faq-a2" id="faq-q2">Does VANTA-9 work with air-gapped networks?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button>
+        <div class="faq-item__a" id="faq-a2" role="region" aria-labelledby="faq-q2"><div class="faq-item__a-inner"><p>Yes. The Overwatch tier supports a fully on-premises relay cluster with signed offline update packages, so no traffic ever leaves your perimeter.</p></div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-item__q" type="button" aria-expanded="false" aria-controls="faq-a3" id="faq-q3">What happens when a node goes dark?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button>
+        <div class="faq-item__a" id="faq-a3" role="region" aria-labelledby="faq-q3"><div class="faq-item__a-inner"><p>The grid marks it within one sweep cycle, the triage engine scores the likely cause from its last telemetry burst, and the assigned operator gets a ranked alert with recovery steps.</p></div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-item__q" type="button" aria-expanded="false" aria-controls="faq-a4" id="faq-q4">Can I change tiers later?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button>
+        <div class="faq-item__a" id="faq-a4" role="region" aria-labelledby="faq-q4"><div class="faq-item__a-inner"><p>Upgrades apply instantly and downgrades take effect at the next billing cycle. Signal history and configurations carry over in both directions.</p></div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-item__q" type="button" aria-expanded="false" aria-controls="faq-a5" id="faq-q5">Is there a trial period?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button>
+        <div class="faq-item__a" id="faq-a5" role="region" aria-labelledby="faq-q5"><div class="faq-item__a-inner"><p>Every new account runs a 14-day Recon evaluation with full monitoring enabled. No payment credentials are required to start.</p></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section id="initialize" aria-labelledby="cta-title">
+  <div class="container">
+    <div class="hud-panel cta-panel crosshair reveal">
+      <p class="eyebrow"><span class="marker" aria-hidden="true"></span>SEC.06 // INITIALIZE</p>
+      <h2 id="cta-title">Bring your fleet online</h2>
+      <p>Request an access key and the relay will provision your console within one business day.</p>
+      <form class="cta-form" id="cta-form" novalidate>
+        <div class="input-group" id="email-group">
+          <label for="cta-email">Operator email</label>
+          <div class="input-group__wrap">
+            <input type="email" id="cta-email" name="email" placeholder="operator@yourgrid.io" autocomplete="email" aria-describedby="email-msg">
+            <span class="material-symbols-outlined input-group__icon input-group__icon--ok" aria-hidden="true">check_circle</span>
+            <span class="material-symbols-outlined input-group__icon input-group__icon--err" aria-hidden="true">error</span>
+          </div>
+          <p class="input-group__msg" id="email-msg" aria-live="polite">Used only for your access key transmission.</p>
+        </div>
+        <button class="btn btn--primary" id="cta-submit" type="submit"><span class="btn__label">Request Access</span></button>
+        <p class="cta-status" id="cta-status" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer__cols">
+      <div class="footer__col">
+        <h4>Product</h4>
+        <a class="footer__link" href="#features">Capabilities</a>
+        <a class="footer__link" href="#protocol">Protocol</a>
+        <a class="footer__link" href="#pricing">Access Levels</a>
+      </div>
+      <div class="footer__col">
+        <h4>Company</h4>
+        <a class="footer__link" href="#transmissions">Field Reports</a>
+        <a class="footer__link" href="#top">About VANTA</a>
+        <a class="footer__link" href="#initialize">Careers</a>
+      </div>
+      <div class="footer__col">
+        <h4>Resources</h4>
+        <a class="footer__link" href="#faq">Knowledge Base</a>
+        <a class="footer__link" href="#protocol">Integration Guide</a>
+        <a class="footer__link" href="#faq">Support Channel</a>
+      </div>
+      <div class="footer__col">
+        <h4>Legal</h4>
+        <a class="footer__link" href="#top">Privacy Charter</a>
+        <a class="footer__link" href="#top">Terms of Service</a>
+        <div class="footer__social">
+          <a href="#top" aria-label="VANTA-9 on X"><span class="material-symbols-outlined" aria-hidden="true">alternate_email</span></a>
+          <a href="#top" aria-label="VANTA-9 code repository"><span class="material-symbols-outlined" aria-hidden="true">code</span></a>
+          <a href="#top" aria-label="VANTA-9 broadcast feed"><span class="material-symbols-outlined" aria-hidden="true">rss_feed</span></a>
+        </div>
+      </div>
+    </div>
+    <p class="footer__status"><span class="marker marker--success" aria-hidden="true"></span>SYS.STATUS: ONLINE</p>
+    <div class="footer__bar">
+      <span>&copy; 2026 VANTA Dynamics. All rights reserved.</span>
+      <nav aria-label="Legal">
+        <a class="footer__link" href="#top">Privacy</a>
+        <a class="footer__link" href="#top">Terms</a>
+        <a class="footer__link" href="#top">Back to top</a>
+      </nav>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+var root=document.documentElement;
+
+/* ---- Theme toggle ---- */
+var toggle=document.getElementById("theme-toggle");
+function syncToggle(){
+  var light=root.dataset.theme==="light";
+  toggle.setAttribute("aria-pressed",String(light));
+  toggle.setAttribute("aria-label",light?"Switch to dark mode":"Switch to light mode");
+}
+syncToggle();
+toggle.addEventListener("click",function(){
+  root.dataset.theme=root.dataset.theme==="light"?"dark":"light";
+  localStorage.setItem("hud-theme",root.dataset.theme);
+  syncToggle();
+});
+
+/* ---- Mobile menu ---- */
+var menuBtn=document.getElementById("menu-btn");
+var navLinks=document.getElementById("nav-links");
+function closeMenu(){
+  navLinks.classList.remove("is-open");
+  menuBtn.setAttribute("aria-expanded","false");
+  menuBtn.setAttribute("aria-label","Open menu");
+  document.body.style.overflow="";
+}
+menuBtn.addEventListener("click",function(){
+  var open=navLinks.classList.toggle("is-open");
+  menuBtn.setAttribute("aria-expanded",String(open));
+  menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");
+  document.body.style.overflow=open?"hidden":"";
+});
+navLinks.addEventListener("click",function(e){if(e.target.closest(".nav__link"))closeMenu();});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")closeMenu();});
+
+/* ---- FAQ accordion ---- */
+var faqItems=document.querySelectorAll(".faq-item");
+faqItems.forEach(function(item){
+  var btn=item.querySelector(".faq-item__q");
+  btn.addEventListener("click",function(){
+    var open=item.classList.toggle("is-open");
+    btn.setAttribute("aria-expanded",String(open));
+  });
+});
+
+/* ---- Scroll reveals (content visible without JS) ---- */
+var revealEls=document.querySelectorAll(".reveal");
+if("IntersectionObserver" in window){
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){
+        var el=en.target;
+        setTimeout(function(){el.classList.add("is-visible");},(Array.prototype.indexOf.call(revealEls,el)%3)*80);
+        io.unobserve(el);
+      }
+    });
+  },{threshold:0.15});
+  revealEls.forEach(function(el){io.observe(el);});
+}else{
+  revealEls.forEach(function(el){el.classList.add("is-visible");});
+}
+var steps=document.getElementById("steps");
+if(steps&&"IntersectionObserver" in window){
+  var io2=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){if(en.isIntersecting){steps.classList.add("is-visible");io2.disconnect();}});
+  },{threshold:0.3});
+  io2.observe(steps);
+}else if(steps){steps.classList.add("is-visible");}
+
+/* ---- Telemetry counters (throttled ~1s) ---- */
+var nodesEl=document.getElementById("stat-nodes");
+var upEl=document.getElementById("stat-uptime");
+var latEl=document.getElementById("stat-latency");
+var nodes=12804;
+var reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+if(!reduced){
+  setInterval(function(){
+    nodes+=Math.floor(Math.random()*7)-2;
+    nodesEl.textContent=nodes.toLocaleString("en-US");
+    upEl.textContent=(99.95+Math.random()*0.04).toFixed(2)+"%";
+    latEl.textContent=(11+Math.floor(Math.random()*8))+"ms";
+  },1000);
+}
+
+/* ---- Email capture form ---- */
+var form=document.getElementById("cta-form");
+var group=document.getElementById("email-group");
+var input=document.getElementById("cta-email");
+var msg=document.getElementById("email-msg");
+var submitBtn=document.getElementById("cta-submit");
+var status=document.getElementById("cta-status");
+var emailRe=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+input.addEventListener("input",function(){
+  group.classList.remove("is-error");
+  if(emailRe.test(input.value.trim())){group.classList.add("is-valid");}
+  else{group.classList.remove("is-valid");}
+});
+form.addEventListener("submit",function(e){
+  e.preventDefault();
+  status.textContent="";
+  if(!emailRe.test(input.value.trim())){
+    group.classList.remove("is-valid");
+    group.classList.add("is-error");
+    msg.textContent="Invalid address. Enter a reachable operator email.";
+    input.focus();
+    return;
+  }
+  group.classList.remove("is-error");
+  group.classList.add("is-valid");
+  msg.textContent="Address verified.";
+  submitBtn.classList.add("is-loading");
+  submitBtn.setAttribute("aria-busy","true");
+  submitBtn.disabled=true;
+  setTimeout(function(){
+    submitBtn.classList.remove("is-loading");
+    submitBtn.removeAttribute("aria-busy");
+    submitBtn.classList.add("is-success");
+    submitBtn.querySelector(".btn__label").textContent="Transmitted";
+    var m=document.createElement("span");
+    m.className="marker marker--success";
+    m.setAttribute("aria-hidden","true");
+    status.textContent="ACCESS REQUEST TRANSMITTED";
+    status.prepend(m);
+    submitBtn.disabled=false;
+  },1400);
+});
+})();
+</script>
+</body>
+</html>

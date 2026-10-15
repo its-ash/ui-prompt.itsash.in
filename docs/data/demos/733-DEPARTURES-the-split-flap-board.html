@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DEPARTURES - The Split-Flap Board</title>
+<script>!function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t="light"}document.documentElement.dataset.theme=t}()</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet">
+<style>
+:root{
+  --primary:#ffb52e;--primary-hi:#ffc85c;--secondary:#8a7a58;
+  --bg-primary:#e8dcc0;--bg-secondary:#0d0b08;--bg-card:#efe4cc;--bg-tile:#1a1610;
+  --text-primary:#16130e;--text-secondary:#6b5d3d;--text-on-dark:#e8dcc0;
+  --text-success:#256b45;--text-error:#b3362b;
+  --border-default:rgba(22,19,14,.18);--border-error:rgba(179,54,43,.6);--border-success:rgba(37,107,69,.6);
+  --radius-sm:4px;--radius-md:12px;--radius-lg:22px;
+  --shadow-sm:0 2px 6px rgba(22,19,14,.10);--shadow-md:0 10px 30px rgba(22,19,14,.18);
+  --shadow-neu:8px 8px 18px rgba(22,19,14,.14),-8px -8px 18px rgba(255,252,240,.85);
+  --shadow-neu-inset:inset 4px 4px 10px rgba(22,19,14,.15),inset -4px -4px 10px rgba(255,252,240,.8);
+  --nav-bg:rgba(232,220,192,.82);
+  --glow:rgba(255,181,46,.35);
+  --spacing-gap:1.5rem;--transition-fast:150ms;--transition-normal:300ms;
+  --ease-standard:cubic-bezier(.4,0,.2,1);
+  --z-dropdown:100;--z-modal:1000;--z-toast:1100;
+  --font-display:'Bebas Neue',sans-serif;--font-mono:'IBM Plex Mono',monospace;--font-base:'Inter',sans-serif;
+}
+:root[data-theme="dark"]{
+  --bg-primary:#0a0806;--bg-secondary:#16130e;--bg-card:#14110c;--bg-tile:#1a1610;
+  --text-primary:#e8dcc0;--text-secondary:#b8a988;
+  --text-success:#6fce97;--text-error:#ff9a8a;
+  --border-default:rgba(232,220,192,.16);--border-error:rgba(255,154,138,.5);--border-success:rgba(111,206,151,.5);
+  --shadow-sm:0 2px 6px rgba(0,0,0,.4);--shadow-md:0 10px 30px rgba(0,0,0,.5);
+  --shadow-neu:8px 8px 18px rgba(0,0,0,.55),-8px -8px 18px rgba(255,240,210,.05);
+  --shadow-neu-inset:inset 4px 4px 10px rgba(0,0,0,.55),inset -4px -4px 10px rgba(255,240,210,.05);
+  --nav-bg:rgba(10,8,6,.82);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;font-size:1rem;overflow-x:hidden;transition:background var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard)}
+h1,h2,h3{font-family:var(--font-display);font-weight:400;letter-spacing:.01em;line-height:1.05;text-shadow:0 1px 0 rgba(255,252,240,.25)}
+img{max-width:100%}
+a{color:inherit}
+button{font:inherit}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.skip-link{position:absolute;left:1rem;top:-4rem;z-index:var(--z-toast);background:var(--primary);color:#16130e;padding:.75rem 1.25rem;border-radius:var(--radius-md);font-family:var(--font-mono);font-size:.8rem;text-transform:uppercase;transition:top var(--transition-fast) var(--ease-standard)}
+.skip-link:focus{top:1rem}
+.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;font-size:1.25em;line-height:1;vertical-align:middle}
+.container{max-width:1200px;margin:0 auto;padding-left:1.25rem;padding-right:1.25rem}
+@media(min-width:768px){.container{padding-left:2rem;padding-right:2rem}}
+section{padding-top:clamp(4rem,10vw,7rem);padding-bottom:clamp(4rem,10vw,7rem);scroll-margin-top:5rem}
+.section-head{max-width:65ch;margin-bottom:3rem}
+.section-head h2{font-size:clamp(2.25rem,5vw,3.5rem);margin-bottom:.75rem}
+.section-head p{color:var(--text-secondary);max-width:55ch}
+.eyebrow{font-family:var(--font-mono);font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--text-secondary);display:flex;align-items:center;gap:.5rem;margin-bottom:1rem}
+/* ---------- Buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;min-width:44px;padding:.7rem 1.5rem;border:1px solid transparent;border-radius:var(--radius-md);font-family:var(--font-mono);font-size:.82rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;text-decoration:none;cursor:pointer;transition:transform var(--transition-fast) var(--ease-standard),filter var(--transition-fast) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard)}
+.btn:active{transform:scale(.97)}
+.btn:disabled,.btn.is-disabled{opacity:.5;filter:grayscale(.6);cursor:not-allowed}
+.btn-primary{background:linear-gradient(180deg,var(--primary-hi),var(--primary));color:#16130e;text-shadow:0 1px 0 rgba(255,255,255,.3);box-shadow:var(--shadow-sm)}
+.btn-secondary{background:var(--bg-card);color:var(--text-primary);box-shadow:var(--shadow-neu);border-color:var(--border-default)}
+.btn-dark{background:var(--bg-secondary);color:var(--text-on-dark);box-shadow:var(--shadow-sm)}
+.btn-danger{background:transparent;color:var(--text-error);border-color:var(--border-error)}
+@media(hover:hover) and (pointer:fine){
+  .btn-primary:hover{filter:brightness(1.05);box-shadow:var(--shadow-md)}
+  .btn-secondary:hover,.btn-dark:hover{filter:brightness(1.05)}
+  .btn-danger:hover{background:var(--text-error);color:var(--bg-primary)}
+}
+.btn.is-loading{pointer-events:none}
+.btn.is-loading .material-symbols-outlined{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* ---------- Header ---------- */
+.site-header{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--nav-bg);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border-default)}
+.site-header__inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:1rem}
+.brand{display:flex;align-items:center;gap:.6rem;font-family:var(--font-display);font-size:1.5rem;letter-spacing:.06em;text-decoration:none;color:var(--text-primary)}
+.brand__flap{width:1.1rem;height:1.1rem;background:linear-gradient(180deg,var(--primary-hi),var(--primary));border-radius:var(--radius-sm);position:relative;box-shadow:inset 0 -1px 0 rgba(0,0,0,.35)}
+.brand__flap::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(0,0,0,.4)}
+.site-nav{display:flex;align-items:center;gap:1.5rem}
+.site-nav a{font-family:var(--font-mono);font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;color:var(--text-secondary);transition:color var(--transition-fast) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.site-nav a:hover{color:var(--text-primary)}}
+.header-actions{display:flex;align-items:center;gap:.75rem}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-card);color:var(--text-primary);cursor:pointer;transition:transform var(--transition-fast) var(--ease-standard),filter var(--transition-fast) var(--ease-standard)}
+.icon-btn:active{transform:scale(.97)}
+@media(hover:hover) and (pointer:fine){.icon-btn:hover{filter:brightness(1.05)}}
+#theme-toggle .icon-moon{display:none}
+:root[data-theme="dark"] #theme-toggle .icon-sun{display:none}
+:root[data-theme="dark"] #theme-toggle .icon-moon{display:inline}
+.menu-btn{display:none}
+@media(max-width:860px){
+  .site-nav{position:absolute;top:68px;left:0;right:0;flex-direction:column;align-items:flex-start;background:var(--bg-card);border-bottom:1px solid var(--border-default);padding:1.25rem 1.5rem;gap:1.1rem;box-shadow:var(--shadow-md);transform-origin:top;opacity:0;transform:scaleY(.95);pointer-events:none;transition:opacity 200ms var(--ease-standard),transform 200ms var(--ease-standard)}
+  .site-nav.is-open{opacity:1;transform:scaleY(1);pointer-events:auto}
+  .menu-btn{display:inline-flex}
+  .header-cta{display:none}
+}
+/* ---------- Hero ---------- */
+.hero{position:relative;padding-top:clamp(3rem,6vw,5rem);overflow:hidden}
+.hero__glow{position:absolute;top:-10%;right:-5%;width:min(60vw,700px);height:min(60vw,700px);background:radial-gradient(circle,var(--glow),transparent 65%);pointer-events:none;z-index:0}
+.hero__grid{position:relative;z-index:1;display:grid;grid-template-columns:1fr;gap:3rem;align-items:center}
+@media(min-width:960px){.hero__grid{grid-template-columns:1fr 1.1fr}}
+.hero h1{font-size:clamp(2.75rem,6vw,4.75rem);margin-bottom:1.25rem}
+.hero h1 em{font-style:normal;background:linear-gradient(180deg,var(--primary-hi),var(--primary));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero__sub{color:var(--text-secondary);max-width:46ch;margin-bottom:2rem;font-size:1.05rem}
+.hero__cta{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.75rem}
+.hero__trust{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-secondary)}
+/* ---------- Board ---------- */
+.board-wrap{perspective:1200px}
+.board{background:linear-gradient(180deg,rgba(255,255,255,.05),transparent 12%),var(--bg-secondary);border-radius:var(--radius-lg);padding:clamp(1rem,3vw,1.75rem);box-shadow:var(--shadow-md),inset 0 2px 12px rgba(0,0,0,.6);transform-style:preserve-3d;transition:transform 200ms ease-out;color:var(--text-on-dark)}
+.board__header{display:flex;align-items:center;justify-content:space-between;font-family:var(--font-mono);font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:var(--primary);border-bottom:1px solid rgba(232,220,192,.14);padding-bottom:.75rem;margin-bottom:.9rem}
+.board__cols,.board__row{display:grid;grid-template-columns:5.2em 1fr 3.6em 6.4em;gap:.4em;align-items:center}
+.board__cols{font-family:var(--font-mono);font-size:.6rem;letter-spacing:.18em;color:rgba(232,220,192,.45);text-transform:uppercase;padding:0 .1em .5em}
+.board__row{margin-bottom:.45em}
+.board__cell{display:flex;gap:2px}
+.board__tile{position:relative;display:inline-flex;align-items:center;justify-content:center;width:1.35em;height:1.7em;font-family:var(--font-mono);font-size:clamp(.62rem,1.6vw,.85rem);font-weight:500;background:var(--bg-tile);color:var(--text-on-dark);border-radius:var(--radius-sm);box-shadow:inset 0 2px 4px rgba(0,0,0,.7),inset 0 -1px 0 rgba(255,255,255,.05);text-shadow:0 0 6px var(--glow);transform:translateZ(6px)}
+.board__tile::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(0,0,0,.55)}
+.board__tile--amber{color:var(--primary)}
+.board__tile--flip{animation:flap-in 240ms var(--ease-standard)}
+@keyframes flap-in{0%{transform:translateZ(6px) rotateX(-92deg);opacity:.4}60%{transform:translateZ(6px) rotateX(12deg)}100%{transform:translateZ(6px) rotateX(0)}}
+.status{display:inline-flex;align-items:center;gap:.35em;font-family:var(--font-mono);font-size:.62rem;letter-spacing:.1em}
+.status--boarding{color:var(--primary)}
+.status--boarding .status__dot{width:.5em;height:.5em;border-radius:50%;background:var(--primary);animation:status-pulse 1.4s ease-in-out infinite}
+.status--ontime{color:#6fce97}
+.status--delayed{color:#ff9a8a}
+.status--departed{color:rgba(232,220,192,.5)}
+@keyframes status-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+/* ---------- Cards ---------- */
+.card{background:var(--bg-card);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:2rem;box-shadow:var(--shadow-neu);display:flex;flex-direction:column;align-items:stretch;gap:1rem;transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),border-color var(--transition-normal) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.card--lift:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}}
+.card:focus-within{border-color:var(--primary)}
+.card__chip{display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:var(--radius-md);background:linear-gradient(180deg,var(--primary-hi),var(--primary));color:#16130e;box-shadow:var(--shadow-sm)}
+.card h3{font-size:1.7rem}
+.card p{color:var(--text-secondary);font-size:.95rem}
+.card-grid{display:grid;grid-template-columns:1fr;gap:var(--spacing-gap)}
+@media(min-width:768px){.card-grid{grid-template-columns:repeat(3,1fr)}}
+.skeleton{background:linear-gradient(90deg,var(--bg-card) 25%,var(--bg-primary) 50%,var(--bg-card) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:var(--radius-md);min-height:1em}
+@keyframes shimmer{to{background-position:-200% 0}}
+.state-empty{display:flex;flex-direction:column;align-items:center;gap:.75rem;text-align:center;padding:2.5rem 1rem;color:var(--text-secondary)}
+.state-empty .material-symbols-outlined{font-size:2.5rem}
+/* ---------- Steps ---------- */
+.steps{display:grid;grid-template-columns:1fr;gap:var(--spacing-gap);position:relative}
+@media(min-width:768px){.steps{grid-template-columns:repeat(3,1fr)}}
+.step__num{font-family:var(--font-mono);font-size:2.6rem;font-weight:600;color:var(--secondary);line-height:1;opacity:.7}
+.step__line{display:none}
+@media(min-width:768px){
+  .steps::before{content:"";position:absolute;top:3.4rem;left:8%;right:8%;border-top:2px dashed var(--secondary);opacity:.5}
+}
+/* ---------- Boarding passes ---------- */
+.pass{position:relative;background:var(--bg-card);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-neu);padding:1.75rem 1.75rem 1.75rem 2.6rem;display:flex;flex-direction:column;align-items:stretch;gap:.9rem;transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard)}
+.pass::before{content:"";position:absolute;left:1.1rem;top:0;bottom:0;width:2px;background-image:radial-gradient(circle at 1px 6px,var(--bg-primary) 3px,transparent 3.5px);background-size:2px 14px;background-repeat:repeat-y}
+@media(hover:hover) and (pointer:fine){.pass:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}}
+.pass__route{font-family:var(--font-mono);font-size:.85rem;letter-spacing:.15em;color:var(--text-secondary);display:flex;align-items:center;gap:.5rem}
+.pass__route strong{color:var(--text-primary);font-size:1rem}
+.pass blockquote{font-size:.95rem;color:var(--text-primary)}
+.pass__who{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-secondary)}
+.pass__stars{color:var(--primary);display:flex;gap:2px}
+.pass__barcode{height:2.2rem;background:repeating-linear-gradient(90deg,var(--text-primary) 0 2px,transparent 2px 5px,var(--text-primary) 5px 6px,transparent 6px 10px);opacity:.75;border-radius:2px}
+/* ---------- Pricing ---------- */
+.fare-grid{display:grid;grid-template-columns:1fr;gap:var(--spacing-gap);align-items:stretch}
+@media(min-width:768px){.fare-grid{grid-template-columns:repeat(3,1fr)}}
+.card-fare__class{font-family:var(--font-mono);font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--text-secondary)}
+.card-fare__price{font-family:var(--font-display);font-size:3.2rem;line-height:1}
+.card-fare__price small{font-family:var(--font-mono);font-size:.75rem;color:var(--text-secondary);letter-spacing:.1em}
+.card-fare ul{list-style:none;display:flex;flex-direction:column;gap:.6rem;flex:1}
+.card-fare li{display:flex;align-items:center;gap:.6rem;font-size:.9rem;color:var(--text-secondary)}
+.card-fare li .material-symbols-outlined{color:var(--text-success);font-size:1.1rem}
+.card-fare__details{background:none;border:none;padding:.25rem 0;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-secondary);cursor:pointer;text-decoration:underline;text-underline-offset:3px;align-self:flex-start;min-height:44px;display:inline-flex;align-items:center}
+@media(hover:hover) and (pointer:fine){.card-fare__details:hover{color:var(--text-primary)}}
+.card-fare--featured{background:linear-gradient(180deg,rgba(255,255,255,.05),transparent 15%),var(--bg-secondary);color:var(--text-on-dark);box-shadow:var(--shadow-md);position:relative}
+:root[data-theme="dark"] .card-fare--featured{background:linear-gradient(180deg,rgba(255,255,255,.05),transparent 15%),#16130e}
+.card-fare--featured .card-fare__class,.card-fare--featured p,.card-fare--featured li{color:rgba(232,220,192,.75)}
+.card-fare--featured .card-fare__price small{color:rgba(232,220,192,.6)}
+.card-fare--featured .card-fare__details{color:var(--primary)}
+.card-fare__tag{position:absolute;top:-.8rem;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,var(--primary-hi),var(--primary));color:#16130e;font-family:var(--font-mono);font-size:.65rem;font-weight:600;letter-spacing:.2em;padding:.35rem .9rem;border-radius:99px;box-shadow:var(--shadow-sm)}
+@media(min-width:768px){.card-fare--featured{transform:translateY(-.75rem)}}
+/* ---------- FAQ ---------- */
+.faq{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:.9rem}
+.faq__item{background:var(--bg-card);border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);overflow:hidden}
+.faq__q{width:100%;display:flex;align-items:center;justify-content:space-between;gap:1rem;background:none;border:none;padding:1.1rem 1.4rem;min-height:44px;font-family:var(--font-mono);font-size:.9rem;font-weight:600;letter-spacing:.04em;color:var(--text-primary);cursor:pointer;text-align:left}
+.faq__q .material-symbols-outlined{transition:transform var(--transition-normal) var(--ease-standard);color:var(--text-secondary)}
+.faq__item--open .faq__q .material-symbols-outlined{transform:rotate(180deg)}
+.faq__a{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--transition-normal) var(--ease-standard)}
+.faq__item--open .faq__a{grid-template-rows:1fr}
+.faq__a-inner{overflow:hidden}
+.faq__a p{padding:0 1.4rem 1.2rem;color:var(--text-secondary);font-size:.92rem}
+/* ---------- Final CTA ---------- */
+.cta-band{background:linear-gradient(180deg,rgba(255,255,255,.04),transparent 20%),var(--bg-secondary);color:var(--text-on-dark);position:relative;overflow:hidden}
+.cta-band::before{content:"";position:absolute;top:-30%;left:50%;transform:translateX(-50%);width:min(80vw,800px);height:60%;background:radial-gradient(ellipse,var(--glow),transparent 70%);pointer-events:none}
+.cta-band .container{position:relative;text-align:center;display:flex;flex-direction:column;align-items:center;gap:1.25rem}
+.cta-band h2{font-size:clamp(2.5rem,6vw,4.5rem);color:var(--text-on-dark);text-shadow:0 0 24px var(--glow)}
+.cta-band p{color:rgba(232,220,192,.75);max-width:48ch}
+.cta-flaps{display:flex;gap:4px;justify-content:center;margin-bottom:.5rem}
+.signup{display:flex;flex-direction:column;gap:.5rem;width:100%;max-width:460px;text-align:left}
+.input-group{display:flex;flex-direction:column;gap:.4rem}
+.input-group label{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(232,220,192,.7)}
+.input-group__row{display:flex;gap:.6rem;flex-wrap:wrap}
+.input-group input{flex:1;min-width:200px;min-height:48px;padding:.75rem 1rem;border-radius:var(--radius-md);border:1px solid rgba(232,220,192,.2);background:#0a0806;color:var(--text-on-dark);font-family:var(--font-mono);font-size:.9rem;box-shadow:inset 3px 3px 8px rgba(0,0,0,.7);transition:border-color var(--transition-fast) var(--ease-standard)}
+.input-group input::placeholder{color:rgba(232,220,192,.4)}
+.input-group input:focus{outline:2px solid var(--primary);outline-offset:2px}
+.input-group--valid input{border-color:var(--border-success)}
+.input-group--invalid input{border-color:var(--border-error)}
+.input-group__msg{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.06em;min-height:1.2em;display:flex;align-items:center;gap:.4rem}
+.input-group__msg--error{color:#ff9a8a}
+.input-group__msg--ok{color:#6fce97}
+/* ---------- Footer ---------- */
+.site-footer{background:#0a0806;color:var(--text-on-dark);padding:3.5rem 0 2rem}
+.footer-grid{display:grid;grid-template-columns:1fr;gap:2.5rem}
+@media(min-width:768px){.footer-grid{grid-template-columns:2fr 1fr 1fr 1fr}}
+.site-footer .brand{color:var(--text-on-dark)}
+.footer-tag{color:rgba(232,220,192,.6);font-size:.9rem;margin-top:.75rem;max-width:32ch}
+.footer-social{display:flex;gap:.6rem;margin-top:1.25rem}
+.footer-social .icon-btn{background:#16130e;border-color:rgba(232,220,192,.16);color:var(--text-on-dark)}
+.site-footer h4{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--primary);margin-bottom:1rem}
+.site-footer ul{list-style:none;display:flex;flex-direction:column;gap:.6rem}
+.site-footer ul a{color:rgba(232,220,192,.7);text-decoration:none;font-size:.9rem;transition:color var(--transition-fast) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.site-footer ul a:hover{color:var(--text-on-dark)}}
+.footer-legal{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-top:3rem;padding-top:1.5rem;border-top:1px solid rgba(232,220,192,.14);font-family:var(--font-mono);font-size:.72rem;letter-spacing:.08em;color:rgba(232,220,192,.5)}
+.footer-legal nav{display:flex;gap:1.5rem}
+.footer-legal a{color:rgba(232,220,192,.6);text-decoration:none}
+/* ---------- Modal ---------- */
+.modal{position:fixed;inset:0;z-index:var(--z-modal);display:flex;align-items:center;justify-content:center;padding:1.25rem;visibility:hidden;opacity:0;transition:opacity var(--transition-normal) var(--ease-standard),visibility var(--transition-normal)}
+.modal.is-open{visibility:visible;opacity:1}
+.modal__backdrop{position:absolute;inset:0;background:rgba(10,8,6,.7);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.modal__panel{position:relative;background:var(--bg-card);color:var(--text-primary);border-radius:var(--radius-lg);border:1px solid var(--border-default);box-shadow:var(--shadow-md);max-width:480px;width:100%;padding:2rem;transform:scale(.96);opacity:0;transition:transform var(--transition-normal) var(--ease-standard),opacity var(--transition-normal) var(--ease-standard)}
+.modal.is-open .modal__panel{transform:scale(1);opacity:1}
+.modal__head{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1.25rem}
+.modal__head h3{font-size:1.9rem}
+.modal__body{display:flex;flex-direction:column;gap:.9rem;color:var(--text-secondary);font-size:.92rem}
+.modal__body ul{list-style:none;display:flex;flex-direction:column;gap:.55rem}
+.modal__body li{display:flex;align-items:center;gap:.6rem}
+.modal__body li .material-symbols-outlined{color:var(--text-success);font-size:1.1rem}
+.modal__loading{display:flex;align-items:center;justify-content:center;gap:.6rem;padding:2rem;font-family:var(--font-mono);font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-secondary)}
+.modal__loading .material-symbols-outlined{animation:spin 1s linear infinite}
+/* ---------- Reveal ---------- */
+.reveal{opacity:1}
+.js .reveal{opacity:0;transform:translateY(14px);transition:opacity 500ms var(--ease-standard),transform 500ms var(--ease-standard)}
+.js .reveal.is-visible{opacity:1;transform:none}
+/* ---------- Reduced motion ---------- */
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:200ms!important}
+  .board__tile--flip{animation:none}
+  .status--boarding .status__dot{animation:none}
+  .js .reveal{transform:none;transition:opacity 200ms ease}
+  .board{transform:none!important}
+}
+@media(prefers-reduced-transparency:reduce){
+  .site-header{backdrop-filter:none;background:var(--bg-primary)}
+  .modal__backdrop{backdrop-filter:none}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a class="brand" href="#top"><span class="brand__flap" aria-hidden="true"></span>DEPARTURES</a>
+    <nav class="site-nav" id="site-nav" aria-label="Primary">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#testimonials">Testimonials</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="header-actions">
+      <button id="theme-toggle" class="icon-btn" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-outlined icon-sun" aria-hidden="true">light_mode</span>
+        <span class="material-symbols-outlined icon-moon" aria-hidden="true">dark_mode</span>
+      </button>
+      <a class="btn btn-primary header-cta" href="#cta">Book a seat</a>
+      <button class="icon-btn menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">
+        <span class="material-symbols-outlined" aria-hidden="true">menu</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="hero__glow" aria-hidden="true"></div>
+  <div class="container hero__grid">
+    <div>
+      <p class="eyebrow"><span class="material-symbols-outlined" aria-hidden="true">flight_takeoff</span>Now boarding · Gate 26</p>
+      <h1>Now boarding: <em>ideas</em> worth launching</h1>
+      <p class="hero__sub">DEPARTURES is the creative launchpad that takes your ideas from runway to departure, with your whole crew on board.</p>
+      <div class="hero__cta">
+        <a class="btn btn-primary" href="#cta">Start boarding</a>
+        <a class="btn btn-secondary" href="#pricing">View flight classes</a>
+      </div>
+      <p class="hero__trust">12,409 ideas departed · 98% on-time launches</p>
+    </div>
+    <div class="board-wrap">
+      <div class="board" id="board" role="img" aria-label="Departure board listing flights to Tokyo, Lisbon, New York, Berlin and São Paulo with their gates and statuses.">
+        <div class="board__header"><span>Departures</span><span id="board-clock">--:--</span></div>
+        <div class="board__cols" aria-hidden="true"><span>Flight</span><span>Destination</span><span>Gate</span><span>Status</span></div>
+        <div id="board-rows"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="container">
+    <div class="section-head">
+      <h2>Everything on board</h2>
+      <p>Three cabins of tooling, one ticket. Plan the route, seat the crew, and watch the tower as you climb.</p>
+    </div>
+    <div class="card-grid">
+      <article class="card card--lift reveal">
+        <span class="card__chip"><span class="material-symbols-outlined" aria-hidden="true">alt_route</span></span>
+        <p class="eyebrow">Amenity 01</p>
+        <h3>Runway</h3>
+        <p>Plot every idea on a visual runway. Break the flight plan into milestones, set a departure date, and see exactly what stands between you and takeoff.</p>
+      </article>
+      <article class="card card--lift reveal">
+        <span class="card__chip"><span class="material-symbols-outlined" aria-hidden="true">groups</span></span>
+        <p class="eyebrow">Amenity 02</p>
+        <h3>Crew</h3>
+        <p>Assign roles like a real flight crew. Pilots steer, navigators scope, and everyone sees the same manifest, so nobody boards the wrong plane.</p>
+      </article>
+      <article class="card card--lift reveal">
+        <span class="card__chip"><span class="material-symbols-outlined" aria-hidden="true">insights</span></span>
+        <p class="eyebrow">Amenity 03</p>
+        <h3>Tower</h3>
+        <p>Live launch analytics from the control tower. Track altitude after departure, spot turbulence early, and reroute before it costs you passengers.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="container">
+    <div class="section-head">
+      <h2>Boarding in three calls</h2>
+      <p>From first spark to wheels up, the sequence never changes. Check in, board, depart.</p>
+    </div>
+    <div class="steps">
+      <article class="card reveal">
+        <span class="step__num" aria-hidden="true">01</span>
+        <span class="card__chip"><span class="material-symbols-outlined" aria-hidden="true">confirmation_number</span></span>
+        <h3>Check in</h3>
+        <p>Capture the idea in under a minute. Name the flight, pick a destination, and drop in everything you already have.</p>
+      </article>
+      <article class="card reveal">
+        <span class="step__num" aria-hidden="true">02</span>
+        <span class="card__chip"><span class="material-symbols-outlined" aria-hidden="true">airline_seat_recline_normal</span></span>
+        <h3>Board</h3>
+        <p>Seat your crew and split the manifest into tasks. Everyone gets a boarding pass with their gate and their job.</p>
+      </article>
+      <article class="card reveal">
+        <span class="step__num" aria-hidden="true">03</span>
+        <span class="card__chip"><span class="material-symbols-outlined" aria-hidden="true">flight_takeoff</span></span>
+        <h3>Depart</h3>
+        <p>Push back from the gate and launch. The tower tracks every signal from the moment you leave the ground.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testimonials">
+  <div class="container">
+    <div class="section-head">
+      <h2>Passenger manifest</h2>
+      <p>Frequent flyers on what it feels like when an idea actually leaves the ground.</p>
+    </div>
+    <div class="card-grid">
+      <article class="pass card--lift reveal">
+        <p class="pass__route"><strong>LIS</strong><span class="material-symbols-outlined" aria-hidden="true">flight</span><strong>BER</strong></p>
+        <div class="pass__stars" role="img" aria-label="Rated 5 out of 5 stars"><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span></div>
+        <blockquote>&ldquo;We shipped our studio's first product in six weeks. The runway view made the whole plan obvious to everyone.&rdquo;</blockquote>
+        <p class="pass__who">Marta Vieira · Founder, Gatehouse Studio</p>
+        <div class="pass__barcode" aria-hidden="true"></div>
+      </article>
+      <article class="pass card--lift reveal">
+        <p class="pass__route"><strong>TYO</strong><span class="material-symbols-outlined" aria-hidden="true">flight</span><strong>JFK</strong></p>
+        <div class="pass__stars" role="img" aria-label="Rated 5 out of 5 stars"><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span></div>
+        <blockquote>&ldquo;Crew assignments ended our launch-week chaos. For the first time, marketing and engineering boarded the same flight.&rdquo;</blockquote>
+        <p class="pass__who">Daniel Okafor · Product Lead, Northwind Labs</p>
+        <div class="pass__barcode" aria-hidden="true"></div>
+      </article>
+      <article class="pass card--lift reveal">
+        <p class="pass__route"><strong>GRU</strong><span class="material-symbols-outlined" aria-hidden="true">flight</span><strong>CDG</strong></p>
+        <div class="pass__stars" role="img" aria-label="Rated 4 out of 5 stars"><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star_outline</span></div>
+        <blockquote>&ldquo;The tower dashboard caught a pricing problem two days after launch. That one alert paid for the year.&rdquo;</blockquote>
+        <p class="pass__who">Ingrid Halvorsen · Indie Maker, Fjord &amp; Co</p>
+        <div class="pass__barcode" aria-hidden="true"></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="container">
+    <div class="section-head">
+      <h2>Pick your fare class</h2>
+      <p>Every fare includes the full boarding sequence. Upgrade when your route network grows.</p>
+    </div>
+    <div class="fare-grid">
+      <article class="card card-fare card--lift reveal">
+        <p class="card-fare__class">Economy</p>
+        <p class="card-fare__price">$0 <small>/ forever</small></p>
+        <ul>
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>3 active flights</li>
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Runway planning board</li>
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>2 crew seats</li>
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Community airspace</li>
+        </ul>
+        <a class="btn btn-secondary" href="#cta">Start boarding</a>
+        <button class="card-fare__details" type="button" data-fare="economy">Fare details</button>
+      </article>
+      <article class="card card-fare card-fare--featured reveal">
+        <span class="card-fare__tag">Most popular</span>
+        <p class="card-fare__class">Business</p>
+        <p class="card-fare__price">$24 <small>/ month</small></p>
+        <ul>
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Unlimited flights</li>
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Tower launch analytics</li>
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>12 crew seats</li>
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Priority boarding support</li>
+        </ul>
+        <a class="btn btn-primary" href="#cta">Start boarding</a>
+        <button class="card-fare__details" type="button" data-fare="business">Fare details</button>
+      </article>
+      <article class="card card-fare card--lift reveal">
+        <p class="card-fare__class">First class</p>
+        <p class="card-fare__price">$59 <small>/ month</small></p>
+        <ul>
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Everything in Business</li>
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Unlimited crew seats</li>
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Dedicated flight controller</li>
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Custom airspace (SSO)</li>
+        </ul>
+        <a class="btn btn-dark" href="#cta">Start boarding</a>
+        <button class="card-fare__details" type="button" data-fare="first">Fare details</button>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="container">
+    <div class="section-head">
+      <h2>Before you board</h2>
+      <p>Answers from the information desk, no queue required.</p>
+    </div>
+    <div class="faq">
+      <div class="faq__item">
+        <button class="faq__q" type="button" aria-expanded="false" aria-controls="faq-a1" id="faq-q1">Can I change my flight plan mid-journey?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button>
+        <div class="faq__a" id="faq-a1" role="region" aria-labelledby="faq-q1"><div class="faq__a-inner"><p>Yes. Reroute any milestone at any time and the whole crew sees the updated manifest instantly. Your departure history is always preserved.</p></div></div>
+      </div>
+      <div class="faq__item">
+        <button class="faq__q" type="button" aria-expanded="false" aria-controls="faq-a2" id="faq-q2">What happens if a launch gets delayed?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button>
+        <div class="faq__a" id="faq-a2" role="region" aria-labelledby="faq-q2"><div class="faq__a-inner"><p>Nothing breaks. Shift the departure date and DEPARTURES recalculates every dependent task, then notifies the crew at their gates.</p></div></div>
+      </div>
+      <div class="faq__item">
+        <button class="faq__q" type="button" aria-expanded="false" aria-controls="faq-a3" id="faq-q3">Do I need a credit card for the Economy fare?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button>
+        <div class="faq__a" id="faq-a3" role="region" aria-labelledby="faq-q3"><div class="faq__a-inner"><p>No. Economy is free forever with no card required. Upgrade only when your route network outgrows three active flights.</p></div></div>
+      </div>
+      <div class="faq__item">
+        <button class="faq__q" type="button" aria-expanded="false" aria-controls="faq-a4" id="faq-q4">Can my crew board from different time zones?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button>
+        <div class="faq__a" id="faq-a4" role="region" aria-labelledby="faq-q4"><div class="faq__a-inner"><p>Absolutely. Every departure time is shown in each crew member's local zone, and async check-ins keep night owls and early birds in formation.</p></div></div>
+      </div>
+      <div class="faq__item">
+        <button class="faq__q" type="button" aria-expanded="false" aria-controls="faq-a5" id="faq-q5">How do I cancel or downgrade my fare?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button>
+        <div class="faq__a" id="faq-a5" role="region" aria-labelledby="faq-q5"><div class="faq__a-inner"><p>One click in settings, effective at the end of your billing cycle. Your flights stay readable in Economy so nothing is left on the tarmac.</p></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="cta-band" id="cta">
+  <div class="container">
+    <div class="cta-flaps" id="cta-flaps" aria-hidden="true"></div>
+    <h2>Cleared for departure</h2>
+    <p>Leave your email and we will issue your boarding pass. First flight is on us.</p>
+    <form class="signup" id="signup-form" novalidate>
+      <div class="input-group" id="email-group">
+        <label for="email">Email address</label>
+        <div class="input-group__row">
+          <input type="email" id="email" name="email" autocomplete="email" placeholder="you@studio.com" aria-describedby="email-msg" required>
+          <button class="btn btn-primary" id="signup-btn" type="submit">Get my boarding pass</button>
+        </div>
+        <p class="input-group__msg" id="email-msg" aria-live="polite">We send one boarding pass, never spam.</p>
+      </div>
+    </form>
+  </div>
+</section>
+</main>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <a class="brand" href="#top"><span class="brand__flap" aria-hidden="true"></span>DEPARTURES</a>
+        <p class="footer-tag">The creative launchpad for ideas worth boarding.</p>
+        <div class="footer-social">
+          <a class="icon-btn" href="#" aria-label="DEPARTURES on X"><span class="material-symbols-outlined" aria-hidden="true">public</span></a>
+          <a class="icon-btn" href="#" aria-label="DEPARTURES on YouTube"><span class="material-symbols-outlined" aria-hidden="true">play_circle</span></a>
+          <a class="icon-btn" href="#" aria-label="DEPARTURES RSS feed"><span class="material-symbols-outlined" aria-hidden="true">rss_feed</span></a>
+        </div>
+      </div>
+      <nav aria-label="Product">
+        <h4>Product</h4>
+        <ul><li><a href="#features">Features</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#faq">FAQ</a></li></ul>
+      </nav>
+      <nav aria-label="Company">
+        <h4>Company</h4>
+        <ul><li><a href="#">About</a></li><li><a href="#">Careers</a></li><li><a href="#">Contact</a></li></ul>
+      </nav>
+      <nav aria-label="Support">
+        <h4>Support</h4>
+        <ul><li><a href="#">Help Center</a></li><li><a href="#">Status</a></li><li><a href="#" class="btn-danger-link">Delete account</a></li></ul>
+      </nav>
+    </div>
+    <div class="footer-legal">
+      <p>© 2026 Departures Airways, Inc. All rights reserved.</p>
+      <nav aria-label="Legal"><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Cookies</a></nav>
+    </div>
+  </div>
+</footer>
+
+<!-- MODAL -->
+<div class="modal" id="fare-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+  <div class="modal__backdrop" data-close></div>
+  <div class="modal__panel">
+    <div class="modal__head">
+      <h3 id="modal-title">Fare details</h3>
+      <button class="icon-btn" type="button" data-close aria-label="Close dialog"><span class="material-symbols-outlined" aria-hidden="true">close</span></button>
+    </div>
+    <div class="modal__loading" id="modal-loading"><span class="material-symbols-outlined" aria-hidden="true">sync</span>Fetching fare rules</div>
+    <div class="modal__body" id="modal-body" hidden></div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+document.documentElement.classList.add("js");
+var reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* Theme toggle */
+var tgl=document.getElementById("theme-toggle");
+function syncToggle(){
+  var dark=document.documentElement.dataset.theme==="dark";
+  tgl.setAttribute("aria-pressed",String(dark));
+  tgl.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+}
+syncToggle();
+tgl.addEventListener("click",function(){
+  var next=document.documentElement.dataset.theme==="dark"?"light":"dark";
+  document.documentElement.dataset.theme=next;
+  localStorage.setItem("theme",next);
+  syncToggle();
+});
+
+/* Mobile menu */
+var menuBtn=document.getElementById("menu-btn"),nav=document.getElementById("site-nav");
+function closeMenu(){nav.classList.remove("is-open");menuBtn.setAttribute("aria-expanded","false");menuBtn.setAttribute("aria-label","Open menu");}
+menuBtn.addEventListener("click",function(){
+  var open=nav.classList.toggle("is-open");
+  menuBtn.setAttribute("aria-expanded",String(open));
+  menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");
+});
+nav.addEventListener("click",function(e){if(e.target.tagName==="A")closeMenu();});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")closeMenu();});
+
+/* Split-flap board */
+var ROWS=[
+  {f:"DP-204",d:"TOKYO",g:"B12",s:"BOARDING",c:"boarding"},
+  {f:"DP-117",d:"LISBON",g:"A04",s:"ON TIME",c:"ontime"},
+  {f:"DP-326",d:"NYC/JFK",g:"C07",s:"DELAYED",c:"delayed"},
+  {f:"DP-058",d:"BERLIN",g:"B02",s:"DEPARTED",c:"departed"},
+  {f:"DP-441",d:"SAO PAULO",g:"A11",s:"ON TIME",c:"ontime"}
+];
+var boardRows=document.getElementById("board-rows");
+function tiles(text,amber){
+  var h="";
+  for(var i=0;i<text.length;i++){
+    var ch=text[i]===" "?"\u00a0":text[i];
+    h+='<span class="board__tile'+(amber?' board__tile--amber':'')+'">'+ch+'</span>';
+  }
+  return h;
+}
+ROWS.forEach(function(r){
+  var row=document.createElement("div");
+  row.className="board__row";
+  row.innerHTML='<span class="board__cell">'+tiles(r.f,true)+'</span>'+
+    '<span class="board__cell board__cell--dest">'+tiles(r.d)+'</span>'+
+    '<span class="board__cell">'+tiles(r.g)+'</span>'+
+    '<span class="board__cell board__cell--status"><span class="status status--'+r.c+'">'+(r.c==="boarding"?'<span class="status__dot"></span>':"")+r.s+'</span></span>';
+  boardRows.appendChild(row);
+});
+/* Clock */
+var clock=document.getElementById("board-clock");
+function tick(){var n=new Date();clock.textContent=String(n.getHours()).padStart(2,"0")+":"+String(n.getMinutes()).padStart(2,"0");}
+tick();setInterval(tick,15000);
+/* Flip-in animation on load + periodic updates */
+if(!reduced){
+  var allTiles=boardRows.querySelectorAll(".board__tile");
+  allTiles.forEach(function(t,i){
+    t.classList.add("board__tile--flip");
+    t.style.animationDelay=(i*28)+"ms";
+  });
+  var DESTS=["TOKYO","LISBON","NYC/JFK","BERLIN","SAO PAULO","OSLO","SEOUL","MEXICO CITY"];
+  setInterval(function(){
+    var rows=boardRows.querySelectorAll(".board__row");
+    var row=rows[Math.floor(Math.random()*rows.length)];
+    var cell=row.querySelector(".board__cell--dest");
+    var cur=cell.textContent.trim();
+    var next=DESTS[Math.floor(Math.random()*DESTS.length)];
+    if(next===cur)return;
+    var spans=cell.querySelectorAll(".board__tile");
+    spans.forEach(function(sp,i){
+      setTimeout(function(){
+        sp.classList.remove("board__tile--flip");
+        void sp.offsetWidth;
+        sp.classList.add("board__tile--flip");
+        setTimeout(function(){sp.textContent=next[i]||"\u00a0";},110);
+      },i*70);
+    });
+  },6000);
+}
+/* CTA decorative flaps */
+var flaps=document.getElementById("cta-flaps");
+"DEPART".split("").forEach(function(ch){
+  var s=document.createElement("span");
+  s.className="board__tile board__tile--amber";
+  s.textContent=ch;
+  flaps.appendChild(s);
+});
+
+/* Hero tilt */
+var board=document.getElementById("board");
+if(!reduced&&window.matchMedia("(hover: hover) and (pointer: fine)").matches){
+  var wrap=board.parentElement,raf=null;
+  wrap.addEventListener("mousemove",function(e){
+    if(raf)return;
+    raf=requestAnimationFrame(function(){
+      var r=wrap.getBoundingClientRect();
+      var x=(e.clientX-r.left)/r.width-.5, y=(e.clientY-r.top)/r.height-.5;
+      board.style.transform="rotateY("+(x*8).toFixed(2)+"deg) rotateX("+(-y*8).toFixed(2)+"deg)";
+      raf=null;
+    });
+  });
+  wrap.addEventListener("mouseleave",function(){board.style.transform="rotateY(0) rotateX(0)";});
+}
+
+/* Reveal on scroll */
+var revealEls=document.querySelectorAll(".reveal");
+if("IntersectionObserver" in window&&!reduced){
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){
+        var el=en.target;
+        var idx=Array.prototype.indexOf.call(el.parentNode.children,el);
+        el.style.transitionDelay=(idx*70)+"ms";
+        el.classList.add("is-visible");
+        io.unobserve(el);
+      }
+    });
+  },{threshold:.15});
+  revealEls.forEach(function(el){io.observe(el);});
+}else{revealEls.forEach(function(el){el.classList.add("is-visible");});}
+
+/* FAQ accordion */
+document.querySelectorAll(".faq__q").forEach(function(btn){
+  btn.addEventListener("click",function(){
+    var item=btn.closest(".faq__item");
+    var open=item.classList.toggle("faq__item--open");
+    btn.setAttribute("aria-expanded",String(open));
+  });
+});
+
+/* Fare modal */
+var modal=document.getElementById("fare-modal"),
+    mTitle=document.getElementById("modal-title"),
+    mBody=document.getElementById("modal-body"),
+    mLoad=document.getElementById("modal-loading"),
+    lastFocus=null;
+var FARES={
+  economy:{t:"Economy fare rules",items:["Free forever, no card required","3 active flights at any time","Archive completed flights anytime","Community support within 48 hours"]},
+  business:{t:"Business fare rules",items:["Billed monthly, cancel anytime","Unlimited active and archived flights","Tower analytics with 12 months of history","Priority support within 4 hours"]},
+  first:{t:"First class fare rules",items:["Annual or monthly billing","Dedicated flight controller onboarding","SSO and custom airspace included","99.9% uptime service agreement"]}
+};
+function openModal(key){
+  var fare=FARES[key];if(!fare)return;
+  lastFocus=document.activeElement;
+  mTitle.textContent=fare.t;
+  mBody.hidden=true;mLoad.hidden=false;
+  modal.hidden=false;
+  requestAnimationFrame(function(){modal.classList.add("is-open");});
+  document.body.style.overflow="hidden";
+  setTimeout(function(){
+    mLoad.hidden=true;mBody.hidden=false;
+    mBody.innerHTML="<ul>"+fare.items.map(function(i){
+      return '<li><span class="material-symbols-outlined" aria-hidden="true">check</span>'+i+"</li>";
+    }).join("")+"</ul>";
+  },reduced?0:600);
+  modal.querySelector('[data-close]').focus();
+  document.addEventListener("keydown",trapKeys);
+}
+function closeModal(){
+  modal.classList.remove("is-open");
+  document.removeEventListener("keydown",trapKeys);
+  document.body.style.overflow="";
+  setTimeout(function(){modal.hidden=true;},reduced?0:300);
+  if(lastFocus)lastFocus.focus();
+}
+function trapKeys(e){
+  if(e.key==="Escape"){closeModal();return;}
+  if(e.key!=="Tab")return;
+  var f=modal.querySelectorAll("button,a[href],input,[tabindex]:not([tabindex='-1'])");
+  var first=f[0],last=f[f.length-1];
+  if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+  else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+}
+document.querySelectorAll(".card-fare__details").forEach(function(b){
+  b.addEventListener("click",function(){openModal(b.dataset.fare);});
+});
+modal.querySelectorAll("[data-close]").forEach(function(el){
+  el.addEventListener("click",closeModal);
+});
+
+/* Signup form */
+var form=document.getElementById("signup-form"),
+    email=document.getElementById("email"),
+    group=document.getElementById("email-group"),
+    msg=document.getElementById("email-msg"),
+    sBtn=document.getElementById("signup-btn");
+function setState(state,text){
+  group.classList.remove("input-group--valid","input-group--invalid");
+  msg.classList.remove("input-group__msg--error","input-group__msg--ok");
+  if(state==="error"){
+    group.classList.add("input-group--invalid");
+    msg.classList.add("input-group__msg--error");
+    msg.innerHTML='<span class="material-symbols-outlined" aria-hidden="true">error</span>'+text;
+    email.setAttribute("aria-invalid","true");
+  }else if(state==="ok"){
+    group.classList.add("input-group--valid");
+    msg.classList.add("input-group__msg--ok");
+    msg.innerHTML='<span class="material-symbols-outlined" aria-hidden="true">check</span>'+text;
+    email.removeAttribute("aria-invalid");
+  }else{
+    msg.textContent=text;email.removeAttribute("aria-invalid");
+  }
+}
+function validEmail(v){return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);}
+email.addEventListener("blur",function(){
+  if(!email.value){setState(null,"We send one boarding pass, never spam.");return;}
+  if(validEmail(email.value))setState("ok","Looks good. Ready when you are.");
+  else setState("error","That address does not look right. Check for typos.");
+});
+form.addEventListener("submit",function(e){
+  e.preventDefault();
+  if(!validEmail(email.value)){setState("error","Enter a valid email to receive your boarding pass.");email.focus();return;}
+  sBtn.classList.add("is-loading");
+  sBtn.setAttribute("aria-busy","true");
+  sBtn.innerHTML='<span class="material-symbols-outlined" aria-hidden="true">sync</span>Issuing';
+  setTimeout(function(){
+    sBtn.classList.remove("is-loading");
+    sBtn.removeAttribute("aria-busy");
+    sBtn.innerHTML='<span class="material-symbols-outlined" aria-hidden="true">check</span>Issued';
+    setState("ok","Boarding pass issued. Check your inbox, gate opens soon.");
+    form.reset();
+    setTimeout(function(){sBtn.textContent="Get my boarding pass";},3000);
+  },reduced?100:900);
+});
+})();
+</script>
+</body>
+</html>

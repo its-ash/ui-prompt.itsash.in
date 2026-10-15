@@ -1,1959 +1,699 @@
 <!DOCTYPE html>
-<html lang="en" class="js">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Morpho — Design that Grows Itself</title>
+<title>Morpho - Design that grows itself</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Rounded" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet">
 <style>
-/* ==== Reset & Base ==== */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 16px; scroll-behavior: smooth; }
-body { 
-  font-family: var(--font-base); 
-  line-height: 1.6; 
-  color: var(--text-primary); 
-  background-color: var(--bg-primary);
-  min-height: 100vh;
-  transition: background-color var(--transition-normal) var(--ease-standard),
-              color var(--transition-normal) var(--ease-standard);
+@layer reset{*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}[hidden]{display:none!important}}
+@layer tokens{
+:root{
+--primary:#FF9999;--secondary:#00FF41;--accent:#00E5FF;--warm:#FF7F50;
+--bg-primary:#F4F9F2;--bg-secondary:#FEFEFE;--text-primary:#001E3C;--text-secondary:#44606F;
+--text-success:#0B7A3B;--text-error:#D32F2F;
+--border-default:#D8E6DC;--border-error:#D32F2F;--border-success:#0B7A3B;
+--on-bright:#001E3C;
+--shadow-sm:0 2px 10px rgba(0,30,60,.08);--shadow-md:0 10px 30px rgba(0,30,60,.12);
+--glow-accent:0 0 24px rgba(0,229,255,.18);
+--radius-sm:10px;--radius-md:18px;--radius-lg:28px;--spacing-gap:1.5rem;
+--transition-fast:150ms;--transition-normal:300ms;
+--ease-standard:cubic-bezier(.4,0,.2,1);--ease-organic:cubic-bezier(.68,-.35,.27,1.2);
+--duration-breathe:6s;--duration-morph:14s;
+--z-header:1000;--z-toast:1200;
+--font-base:'Nunito Sans',sans-serif;--font-display:'Fraunces',serif;
+--gradient-bio:linear-gradient(135deg,#00E5FF 0%,#00FF41 50%,#FF9999 100%);
 }
-img, picture, video, canvas, svg { display: block; max-width: 100%; height: auto; }
-button, input, optgroup, select, textarea { font-family: inherit; font-size: 100%; }
-a { color: inherit; text-decoration: none; }
-ul, ol { list-style: none; }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-::selection { background: var(--accent); color: #001E3C; }
-
-/* ==== Tokens ==== */
-:root {
-  --primary: #FF9999;
-  --secondary: #00FF41;
-  --accent: #00E5FF;
-  --warm: #FF7F50;
-  --bg-primary: #F4F9F2;
-  --bg-secondary: #FEFEFE;
-  --text-primary: #001E3C;
-  --text-secondary: #44606F;
-  --text-success: #0B7A3B;
-  --text-error: #D32F2F;
-  --border-default: #D8E6DC;
-  --border-error: #D32F2F;
-  --border-success: #0B7A3B;
-  --shadow-sm: 0 2px 10px rgba(0,30,60,.08);
-  --shadow-md: 0 10px 30px rgba(0,30,60,.12);
-  --radius-sm: 10px;
-  --radius-md: 18px;
-  --radius-lg: 28px;
-  --spacing-gap: 1.5rem;
-  --transition-fast: 150ms;
-  --transition-normal: 300ms;
-  --ease-standard: cubic-bezier(.4,0,.2,1);
-  --ease-organic: cubic-bezier(.68,-.35,.27,1.2);
-  --duration-breathe: 6s;
-  --duration-morph: 14s;
-  --z-dropdown: 900;
-  --z-header: 1000;
-  --z-modal: 1100;
-  --z-toast: 1200;
-  --font-base: 'Nunito Sans', sans-serif;
-  --font-display: 'Fraunces', serif;
-  --gradient-bio: linear-gradient(135deg, #00E5FF 0%, #00FF41 50%, #FF9999 100%);
+:root[data-theme="dark"]{
+--bg-primary:#001E3C;--bg-secondary:#012B52;--text-primary:#EAF7F0;--text-secondary:#A3C6D6;
+--text-success:#3AE070;--text-error:#FF7A7A;
+--border-default:#17466B;--border-error:#FF7A7A;--border-success:#3AE070;
+--shadow-sm:0 2px 10px rgba(0,0,0,.4);--shadow-md:0 10px 30px rgba(0,0,0,.5);
+--glow-accent:0 0 32px rgba(0,229,255,.28);
 }
-html.dark, @media (prefers-color-scheme: dark) {
-  --bg-primary: #001E3C;
-  --bg-secondary: #012B52;
-  --text-primary: #EAF7F0;
-  --text-secondary: #A3C6D6;
-  --text-success: #3AE070;
-  --text-error: #FF7A7A;
-  --border-default: #17466B;
-  --border-error: #FF7A7A;
-  --border-success: #3AE070;
-  --shadow-sm: 0 2px 10px rgba(0,0,0,.4);
-  --shadow-md: 0 10px 30px rgba(0,0,0,.5);
 }
-
-/* ==== Utilities ==== */
-.container { width: 90%; max-width: 72rem; margin-inline: auto; padding-block: var(--spacing-gap); }
-.section-title { 
-  display: flex; 
-  flex-direction: column; 
-  align-items: center; 
-  gap: .5rem; 
-  text-align: center; 
+@layer base{
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;font-size:1rem;overflow-x:hidden;transition:background var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard)}
+h1,h2,h3{font-family:var(--font-display);line-height:1.1;letter-spacing:-.02em;font-weight:600}
+h1{font-size:clamp(2.25rem,5vw,3.75rem)}
+h2{font-size:clamp(1.75rem,3.5vw,2.5rem)}
+h3{font-size:1.25rem}
+img,svg,canvas{max-width:100%;display:block}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:var(--radius-sm)}
+.container{max-width:72rem;margin-inline:auto;padding-inline:1.25rem}
+section{padding-block:clamp(4rem,8vw,7rem)}
+.skip-link{position:absolute;left:1rem;top:-4rem;z-index:var(--z-toast);background:var(--accent);color:var(--on-bright);padding:.75rem 1.25rem;border-radius:var(--radius-md);font-weight:700;text-decoration:none;transition:top var(--transition-fast) var(--ease-standard)}
+.skip-link:focus{top:1rem}
+.material-symbols-rounded{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
 }
-.section-title__eyebrow {
-  font-size: .875rem;
-  font-weight: 600;
-  letter-spacing: .05em;
-  text-transform: uppercase;
-  color: var(--secondary);
-  position: relative;
-  padding-left: 1.5rem;
-}
-.section-title__eyebrow::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 50%;
-  width: 1rem;
-  height: 2px;
-  background: var(--secondary);
-  transform: translateY(-50%);
-}
-.section-title__heading {
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 5vw, 3rem);
-  font-weight: 700;
-  line-height: 1.2;
-  color: var(--text-primary);
-  background: var(--gradient-bio);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-.section-title__lead {
-  max-width: 38ch;
-  color: var(--text-secondary);
-  font-size: 1.125rem;
-}
-
-/* ==== Components ==== */
-.btn {
-  display: inline-flex;
-  height: 3rem;
-  padding: 0 1.5rem;
-  border-radius: var(--radius-md);
-  font-weight: 600;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: transform var(--transition-fast) var(--ease-standard),
-              background-color var(--transition-normal) var(--ease-standard),
-              box-shadow var(--transition-normal) var(--ease-standard),
-              border-color var(--transition-normal) var(--ease-standard);
-  border: none;
-  overflow: hidden;
-  position: relative;
-  isolation: isolate;
-}
-.btn::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: var(--gradient-bio);
-  opacity: 0;
-  transition: opacity var(--transition-normal) var(--ease-standard);
-}
-.btn--primary {
-  background: var(--gradient-bio);
-  color: #001E3C;
-}
-.btn--primary:hover::before { opacity: .15; }
-.btn--primary:active { transform: scale(0.97); }
-.btn--secondary {
-  background: transparent;
-  border: 1.5px solid var(--border-default);
-  color: var(--text-primary);
-}
-.btn--secondary:hover {
-  background: color-mix(in srgb, var(--accent) 5%, transparent);
-  border-color: var(--accent);
-  box-shadow: var(--shadow-md);
-}
-.btn--lg { height: 3.5rem; padding: 0 2rem; font-size: 1.125rem; }
-.btn[disabled], .btn.is-loading {
-  opacity: .5;
-  cursor: not-allowed;
-  pointer-events: none;
-}
-.btn.is-loading::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: color-mix(in srgb, var(--text-primary) 10%, transparent);
-  animation: spin 1s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-.btn.is-success { 
-  background: var(--text-success); 
-  color: #fff; 
-}
-.btn.is-error { 
-  background: var(--text-error); 
-  color: #fff; 
-}
-
-/* Card */
-.card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg);
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  transition: transform var(--transition-normal) var(--ease-organic),
-              box-shadow var(--transition-normal) var(--ease-organic),
-              border-color var(--transition-normal) var(--ease-organic);
-  position: relative;
-  isolation: isolate;
-}
-.card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity var(--transition-normal) var(--ease-standard);
-}
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--accent);
-}
-.card:hover::before {
-  background: color-mix(in srgb, var(--accent) 10%, transparent);
-  opacity: 1;
-}
-.card:focus-within {
-  border-color: var(--accent);
-  box-shadow: var(--shadow-md);
-}
-.card__icon {
-  width: 4rem;
-  height: 4rem;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--secondary) 15%, var(--bg-secondary));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  color: var(--secondary);
-  margin-bottom: 1rem;
-  animation: morph var(--duration-morph) var(--ease-standard) infinite alternate;
-}
-.card__title {
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
-}
-.card__text {
-  color: var(--text-secondary);
-  flex-grow: 1;
-}
-
-/* Form */
-.input-group {
-  display: flex;
-  gap: .5rem;
-  align-items: stretch;
-}
-.input-group label {
-  flex: 0 0 8rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  display: flex;
-  align-items: center;
-}
-.input-group input {
-  flex: 1;
-  padding: 0 1rem;
-  border: 1.5px solid var(--border-default);
-  border-radius: var(--radius-md);
-  font-size: 1rem;
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  transition: border-color var(--transition-normal) var(--ease-standard),
-              box-shadow var(--transition-normal) var(--ease-standard);
-}
-.input-group input:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
-}
-.input-group input[aria-invalid="true"] {
-  border-color: var(--border-error);
-  color: var(--text-error);
-}
-.input-group .error-icon,
-.input-group .success-icon {
-  display: none;
-  width: 1.5rem;
-  height: 1.5rem;
-  flex-shrink: 0;
-}
-.input-group input[aria-invalid="true"] + .error-icon { display: block; color: var(--text-error); }
-.input-group input:valid + .success-icon { display: block; color: var(--text-success); }
-.feedback-message {
-  margin-top: .5rem;
-  font-size: .875rem;
-  min-height: 1.5rem;
-}
-.feedback-message[aria-live="polite"] { 
-  height: 1.5rem; 
-}
-
-/* Toast */
-.toast-container {
-  position: fixed;
-  inset-block-end: 2rem;
-  inset-inline-end: 2rem;
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  z-index: var(--z-toast);
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(20px);
-  transition: opacity var(--transition-normal) var(--ease-standard),
-              transform var(--transition-normal) var(--ease-standard);
-}
-.toast-container.visible {
-  opacity: 1;
-  pointer-events: all;
-  transform: translateY(0);
-}
-.toast {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg);
-  padding: 1rem 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  box-shadow: var(--shadow-md);
-}
-.toast__icon {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--success) 15%, var(--bg-secondary));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-success);
-  font-size: 1.25rem;
-}
-.toast__message {
-  flex: 1;
-  color: var(--text-primary);
-}
-.toast__close {
-  background: transparent;
-  border: none;
-  font-size: 1.25rem;
-  color: var(--text-secondary);
-  cursor: pointer;
-  width: 2rem;
-  height: 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.toast__close:hover { color: var(--text-primary); }
-
-/* Theme Toggle */
-.theme-toggle {
-  background: transparent;
-  border: none;
-  font-size: 1.25rem;
-  color: var(--text-primary);
-  cursor: pointer;
-  width: 2.5rem;
-  height: 2.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: background-color var(--transition-normal) var(--ease-standard);
-}
-.theme-toggle:hover { 
-  background: color-mix(in srgb, var(--accent) 5%, transparent); 
-}
-.theme-toggle[aria-pressed="true"] { 
-  background: color-mix(in srgb, var(--accent) 10%, transparent); 
-}
-
+@layer components{
 /* Header */
-.header {
-  position: sticky;
-  inset-block-start: 0;
-  z-index: var(--z-header);
-  background: color-mix(in srgb, var(--bg-primary) 80%, transparent);
-  backdrop-filter: blur(10px);
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--border-default);
+.header{position:sticky;top:0;z-index:var(--z-header);background:color-mix(in srgb,var(--bg-primary) 82%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border-default)}
+.header__inner{display:flex;align-items:center;justify-content:space-between;height:4.25rem;gap:1rem}
+.header__logo{display:flex;align-items:center;gap:.5rem;text-decoration:none;font-family:var(--font-display);font-weight:700;font-size:1.375rem}
+.header__logo .material-symbols-rounded{color:var(--text-success);font-size:1.75rem}
+.header__nav{display:none}
+.header__links{display:flex;align-items:center;gap:1.75rem;list-style:none}
+.header__link{text-decoration:none;font-weight:600;font-size:.9375rem;position:relative;padding:.25rem 0}
+.header__link::after{content:"";position:absolute;left:0;bottom:-2px;width:100%;height:2px;background:var(--gradient-bio);border-radius:2px;transform:scaleX(0);transform-origin:left;transition:transform var(--transition-normal) var(--ease-organic)}
+@media(hover:hover) and (pointer:fine){.header__link:hover::after{transform:scaleX(1)}}
+.header__link:focus-visible::after{transform:scaleX(1)}
+.header__actions{display:flex;align-items:center;gap:.75rem}
+.header__cta{display:none}
+.menu-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border:1.5px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);border-radius:var(--radius-md);cursor:pointer;transition:border-color var(--transition-fast) var(--ease-standard)}
+.mobile-nav{display:none;flex-direction:column;gap:.25rem;padding:1rem 1.25rem 1.5rem;background:var(--bg-secondary);border-bottom:1px solid var(--border-default)}
+.mobile-nav.is-open{display:flex}
+.mobile-nav a{text-decoration:none;font-weight:600;padding:.75rem .5rem;border-radius:var(--radius-sm);min-height:44px;display:flex;align-items:center}
+@media(hover:hover) and (pointer:fine){.mobile-nav a:hover{background:var(--bg-primary)}}
+@media(min-width:48em){
+.header__nav{display:block}
+.header__cta{display:inline-flex}
+.menu-btn{display:none}
+.mobile-nav{display:none!important}
 }
-.header .container {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-.header__logo {
-  display: flex;
-  align-items: center;
-  gap: .5rem;
-}
-.header__logo .material-symbols-rounded {
-  font-size: 1.75rem;
-  color: var(--secondary);
-}
-.header__logo span {
-  font-family: var(--font-display);
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-.header__nav {
-  display: none;
-}
-@media (min-width: 48em) {
-  .header__nav {
-    display: flex;
-    gap: 2rem;
-  }
-}
-.header__nav-link {
-  font-weight: 600;
-  position: relative;
-  padding-block: .5rem;
-  color: var(--text-primary);
-  transition: color var(--transition-normal) var(--ease-standard);
-}
-.header__nav-link::after {
-  content: "";
-  position: absolute;
-  inset-block-end: 0;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background: var(--secondary);
-  transition: width var(--transition-normal) var(--ease-organic);
-}
-.header__nav-link:hover::after,
-.header__nav-link:focus-visible::after { width: 100%; }
-.header__actions {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-.mobile-menu-btn {
-  background: transparent;
-  border: none;
-  font-size: 1.5rem;
-  color: var(--text-primary);
-  cursor: pointer;
-  width: 2.5rem;
-  height: 2.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  display: none;
-}
-@media (max-width: 47.999em) {
-  .mobile-menu-btn { display: flex; }
-  .header__nav {
-    position: fixed;
-    inset: 0;
-    background: var(--bg-secondary);
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2rem;
-    z-index: var(--z-dropdown);
-    transform: translateX(100%);
-    transition: transform var(--transition-normal) var(--ease-standard);
-  }
-  .header__nav.open { transform: translateX(0); }
-  .header__nav-link { font-size: 1.25rem; }
-}
-
+/* Theme toggle */
+#theme-toggle{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;border:1.5px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);cursor:pointer;transition:transform var(--transition-fast) var(--ease-standard),border-color var(--transition-fast) var(--ease-standard)}
+#theme-toggle:active{transform:scale(.95)}
+#theme-toggle .icon-sun{display:none}
+:root[data-theme="dark"] #theme-toggle .icon-sun{display:block}
+:root[data-theme="dark"] #theme-toggle .icon-moon{display:none}
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:.7rem 1.5rem;border-radius:var(--radius-md);font-family:var(--font-base);font-weight:700;font-size:1rem;text-decoration:none;border:1.5px solid transparent;cursor:pointer;transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),filter var(--transition-fast) var(--ease-standard),background var(--transition-fast) var(--ease-standard)}
+.btn--primary{background:var(--gradient-bio);color:var(--on-bright)}
+.btn--secondary{background:transparent;border-color:var(--border-default);color:var(--text-primary)}
+.btn--lg{min-height:52px;padding:.9rem 2rem;font-size:1.0625rem}
+@media(hover:hover) and (pointer:fine){.btn:hover{filter:brightness(1.06);box-shadow:var(--shadow-md)}}
+.btn:active{transform:scale(.97)}
+.btn[disabled]{opacity:.5;filter:grayscale(.6);cursor:not-allowed}
+.btn.is-loading{pointer-events:none}
+.btn.is-loading .btn__label{opacity:.7}
+.btn.is-success{border-color:var(--border-success);color:var(--text-success);background:transparent}
+.btn.is-error{border-color:var(--border-error);color:var(--text-error);background:transparent}
+.spin{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 /* Hero */
-.hero {
-  display: flex;
-  flex-direction: column;
-  gap: 3rem;
-  align-items: center;
-  padding-block: 4rem 2rem;
-  position: relative;
-  overflow: hidden;
-}
-@media (min-width: 48em) {
-  .hero { flex-direction: row; }
-}
-.hero__content {
-  flex: 1 1 300px;
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  align-items: start;
-  text-align: left;
-}
-@media (min-width: 48em) {
-  .hero__content { align-items: start; text-align: left; }
-}
-.hero__eyebrow {
-  display: flex;
-  align-items: center;
-  gap: .5rem;
-  font-size: .875rem;
-  font-weight: 600;
-  color: var(--secondary);
-}
-.hero__eyebrow .material-symbols-rounded {
-  animation: pulse 2s var(--ease-standard) infinite;
-}
-@keyframes pulse {
-  0%, 100% { opacity: .6; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.1); }
-}
-.hero__title {
-  font-family: var(--font-display);
-  font-size: clamp(2.5rem, 8vw, 4rem);
-  font-weight: 700;
-  line-height: 1.1;
-  background: var(--gradient-bio);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  margin: 0;
-}
-.hero__copy {
-  max-width: 30ch;
-  color: var(--text-secondary);
-  font-size: 1.125rem;
-}
-.hero__cta {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-.hero__trust {
-  font-size: .875rem;
-  color: var(--text-secondary);
-  margin-top: 1rem;
-}
-.hero__visual {
-  flex: 1 1 300px;
-  max-width: 32rem;
-  aspect-ratio: 1;
-  position: relative;
-  overflow: hidden;
-  border-radius: 50%;
-}
-.hero__blob {
-  position: absolute;
-  inset: 0;
-  background: var(--gradient-bio);
-  opacity: .6;
-  filter: blur(40px);
-  animation: 
-    morph var(--duration-morph) var(--ease-standard) infinite alternate,
-    breathe var(--duration-breathe) var(--ease-standard) infinite alternate;
-}
-.hero__blob:nth-child(2) { animation-delay: calc(var(--duration-morph) * -1/3); }
-.hero__blob:nth-child(3) { animation-delay: calc(var(--duration-morph) * -2/3); }
-.hero__cell {
-  position: absolute;
-  inset: 20%;
-  background: color-mix(in srgb, var(--bg-primary) 70%, transparent);
-  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
-  border-radius: 40% 60% 70% 30% / 40% 50% 50% 60%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.hero__cell .material-symbols-rounded {
-  font-size: 3rem;
-  color: var(--accent);
-  animation: float 6s var(--ease-standard) infinite alternate;
-}
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-
-/* Features */
-.features {
-  display: grid;
-  gap: var(--spacing-gap);
-}
-@media (min-width: 48em) {
-  .features { grid-template-columns: repeat(2, 1fr); }
-}
-@media (min-width: 64em) {
-  .features { grid-template-columns: repeat(3, 1fr); }
-}
-
-/* How It Works */
-.how-it-works {
-  position: relative;
-  overflow: hidden;
-}
-.how-it-works::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at center, var(--secondary) 0%, transparent 70%);
-  opacity: .05;
-  pointer-events: none;
-}
-.steps {
-  display: flex;
-  flex-direction: column;
-  gap: 3rem;
-  align-items: center;
-}
-@media (min-width: 64em) {
-  .steps { flex-direction: row; }
-}
-.step {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.5rem;
-  max-width: 20ch;
-  text-align: center;
-  position: relative;
-}
-.step::before {
-  content: "";
-  position: absolute;
-  width: 1px;
-  height: 100%;
-  background: repeating-linear-gradient(
-    to bottom,
-    var(--border-default),
-    var(--border-default) 1px,
-    transparent 1px,
-    transparent 5px
-  );
-}
-@media (min-width: 64em) {
-  .step::before { 
-    left: 50%; 
-    transform: translateX(-50%); 
-    height: calc(100% + 2rem); 
-    top: -1rem; 
-  }
-}
-.step:first-child::before,
-.step:last-child::before { display: none; }
-.step__number {
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
-  background: var(--secondary);
-  color: #001E3C;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 1.25rem;
-}
-.step__icon {
-  width: 3rem;
-  height: 3rem;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--accent) 15%, var(--bg-secondary));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  color: var(--accent);
-}
-.step__title {
-  font-family: var(--font-display);
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-.step__text {
-  color: var(--text-secondary);
-  font-size: .95rem;
-}
-
+.hero{padding-top:clamp(3rem,6vw,5rem);position:relative;overflow:hidden}
+.hero__grid{display:flex;flex-direction:column;gap:3rem;align-items:center}
+@media(min-width:64em){.hero__grid{flex-direction:row;gap:4rem}.hero__text{flex:1 1 52%}.hero__visual{flex:1 1 48%}}
+.hero__text{display:flex;flex-direction:column;align-items:flex-start;gap:1.25rem}/* exception: left-aligned reading column */
+.hero__eyebrow{display:inline-flex;align-items:center;gap:.5rem;padding:.4rem 1rem;border-radius:999px;border:1px solid var(--border-default);background:var(--bg-secondary);font-size:.8125rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-secondary)}
+.hero__dot{width:.5rem;height:.5rem;border-radius:50%;background:var(--warm);animation:pulse-dot 2s var(--ease-standard) infinite}
+@keyframes pulse-dot{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.5}}
+.hero__title em{font-style:italic;font-weight:700;background:var(--gradient-bio);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero__sub{color:var(--text-secondary);font-size:1.125rem;max-width:32rem}
+.hero__ctas{display:flex;flex-wrap:wrap;gap:.875rem;align-items:center}
+.hero__trust{font-size:.875rem;color:var(--text-secondary);display:flex;align-items:center;gap:.4rem}
+.hero__trust .material-symbols-rounded{color:var(--text-success);font-size:1.1rem}
+.hero__visual{position:relative;width:100%;max-width:30rem;aspect-ratio:1;display:flex;align-items:center;justify-content:center}
+.hero__blob{position:absolute;border-radius:60% 40% 30% 70%/60% 30% 70% 40%;filter:blur(40px);animation:morph var(--duration-morph) var(--ease-standard) infinite alternate,breathe var(--duration-breathe) var(--ease-standard) infinite alternate}
+.hero__blob--1{inset:6% 12% 20% 4%;background:radial-gradient(circle,rgba(0,229,255,.55),transparent 70%)}
+.hero__blob--2{inset:22% 4% 6% 22%;background:radial-gradient(circle,rgba(0,255,65,.4),transparent 70%);animation-delay:-4s,-2s}
+.hero__blob--3{inset:34% 26% 10% 8%;background:radial-gradient(circle,rgba(255,153,153,.55),transparent 70%);animation-delay:-8s,-3s}
+@keyframes morph{0%{border-radius:60% 40% 30% 70%/60% 30% 70% 40%}50%{border-radius:35% 65% 60% 40%/45% 55% 40% 60%}100%{border-radius:55% 45% 40% 60%/40% 60% 45% 55%}}
+@keyframes breathe{from{transform:scale(1);opacity:.9}to{transform:scale(1.03);opacity:1;filter:blur(44px)}}
+.hero__cell{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;width:clamp(9rem,40%,12rem);aspect-ratio:1;background:color-mix(in srgb,var(--bg-secondary) 65%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1.5px solid var(--border-default);box-shadow:var(--shadow-md),var(--glow-accent);clip-path:polygon(50% 0%,93% 25%,93% 75%,50% 100%,7% 75%,7% 25%);animation:breathe var(--duration-breathe) var(--ease-standard) infinite alternate}
+.hero__cell .material-symbols-rounded{font-size:3.5rem;color:var(--text-success)}
+/* Section headers */
+.section-head{display:flex;flex-direction:column;align-items:flex-start;gap:.75rem;margin-bottom:3rem;max-width:42rem}/* exception: left-aligned reading column */
+.section-head__eyebrow{font-size:.8125rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-secondary)}
+.section-head__lead{color:var(--text-secondary);font-size:1.0625rem;max-width:36rem}
+/* Cards */
+.card-grid{display:grid;grid-template-columns:1fr;gap:var(--spacing-gap)}
+@media(min-width:48em){.card-grid{grid-template-columns:repeat(3,1fr)}}
+.card{display:flex;flex-direction:column;align-items:flex-start;gap:1rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:2rem;transition:transform var(--transition-normal) var(--ease-organic),box-shadow var(--transition-normal) var(--ease-standard),border-color var(--transition-normal) var(--ease-standard)}/* exception: left-aligned reading column */
+@media(hover:hover) and (pointer:fine){.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md),var(--glow-accent);border-color:var(--accent)}}
+.card:focus-within{border-color:var(--accent)}
+.card p{color:var(--text-secondary)}
+.card__icon{display:flex;align-items:center;justify-content:center;width:3.5rem;height:3.5rem;background:color-mix(in srgb,var(--accent) 16%,var(--bg-secondary));border-radius:60% 40% 30% 70%/60% 30% 70% 40%;animation:morph var(--duration-morph) var(--ease-standard) infinite alternate}
+.card__icon .material-symbols-rounded{font-size:1.75rem;color:var(--text-primary)}
+.card:nth-child(2) .card__icon{animation-delay:-5s;background:color-mix(in srgb,var(--primary) 24%,var(--bg-secondary))}
+.card:nth-child(3) .card__icon{animation-delay:-9s;background:color-mix(in srgb,var(--warm) 20%,var(--bg-secondary))}
+/* Steps */
+.steps{display:flex;flex-direction:column;gap:2.5rem;position:relative}
+@media(min-width:64em){.steps{flex-direction:row;align-items:stretch;gap:2rem}
+.steps::before{content:"";position:absolute;top:2.25rem;left:8%;right:8%;height:2px;background:var(--gradient-bio);opacity:.5}}
+.step{display:flex;flex-direction:column;align-items:flex-start;gap:.875rem;flex:1;position:relative}/* exception: left-aligned reading column */
+.step__num{display:flex;align-items:center;justify-content:center;width:4.5rem;height:4.5rem;font-family:var(--font-display);font-weight:700;font-size:1.5rem;color:var(--on-bright);background:var(--gradient-bio);border-radius:60% 40% 30% 70%/60% 30% 70% 40%;animation:morph var(--duration-morph) var(--ease-standard) infinite alternate;position:relative;z-index:1}
+.step:nth-child(2) .step__num{animation-delay:-5s}
+.step:nth-child(3) .step__num{animation-delay:-9s}
+.step__icon{color:var(--text-secondary);font-size:1.5rem}
+.step p{color:var(--text-secondary)}
 /* Testimonials */
-.testimonials {
-  display: grid;
-  gap: var(--spacing-gap);
-}
-@media (min-width: 48em) {
-  .testimonials { grid-template-columns: repeat(2, 1fr); }
-}
-@media (min-width: 64em) {
-  .testimonials { grid-template-columns: repeat(3, 1fr); }
-}
-.testimonial {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg);
-  padding: 2rem;
-  position: relative;
-}
-.testimonial__avatar {
-  width: 4rem;
-  height: 4rem;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--secondary) 15%, var(--bg-secondary));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  color: var(--secondary);
-  font-size: 1.25rem;
-  margin-bottom: 1.5rem;
-}
-.testimonial__quote {
-  font-style: italic;
-  color: var(--text-secondary);
-  margin-bottom: 1.5rem;
-  position: relative;
-  padding-left: 1rem;
-}
-.testimonial__quote::before {
-  content: "“";
-  position: absolute;
-  left: 0;
-  top: -.5rem;
-  font-size: 3rem;
-  color: color-mix(in srgb, var(--accent) 20%, transparent);
-  font-family: var(--font-display);
-}
-.testimonial__rating {
-  display: flex;
-  gap: .25rem;
-  margin-bottom: 1rem;
-}
-.testimonial__rating .material-symbols-rounded {
-  color: var(--warm);
-  font-size: 1.25rem;
-}
-.testimonial__author {
-  font-weight: 600;
-  color: var(--text-primary);
-}
-.testimonial__role {
-  font-size: .875rem;
-  color: var(--text-secondary);
-}
-
+.quote-card blockquote{font-size:1.0625rem;line-height:1.6}
+.quote-card blockquote p::before{content:"\201C "}
+.quote-card blockquote p::after{content:" \201D"}
+.quote-card__stars{display:flex;gap:.15rem;color:var(--warm)}
+.quote-card__meta{display:flex;align-items:center;gap:.875rem;margin-top:auto}
+.quote-card__avatar{display:flex;align-items:center;justify-content:center;width:3rem;height:3rem;font-weight:700;font-size:.875rem;color:var(--on-bright);background:var(--gradient-bio);border-radius:55% 45% 40% 60%/45% 55% 60% 40%}
+.quote-card figcaption{font-size:.875rem;color:var(--text-secondary)}
+.quote-card figcaption strong{display:block;color:var(--text-primary);font-size:.9375rem}
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 /* Pricing */
-.pricing {
-  display: grid;
-  gap: var(--spacing-gap);
-}
-@media (min-width: 48em) {
-  .pricing { grid-template-columns: repeat(2, 1fr); }
-}
-@media (min-width: 64em) {
-  .pricing { grid-template-columns: repeat(3, 1fr); }
-}
-.pricing-card {
-  background: var(--bg-secondary);
-  border: 2px solid var(--border-default);
-  border-radius: var(--radius-lg);
-  padding: 2.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  position: relative;
-  transition: transform var(--transition-normal) var(--ease-organic),
-              box-shadow var(--transition-normal) var(--ease-organic),
-              border-color var(--transition-normal) var(--ease-organic);
-}
-.pricing-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-.pricing-card--featured {
-  border: 2px solid;
-  background: var(--bg-secondary);
-  position: relative;
-  overflow: hidden;
-}
-.pricing-card--featured::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: var(--gradient-bio);
-  opacity: .15;
-  z-index: -1;
-}
-.pricing-card--featured:hover {
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 20%, transparent),
-              var(--shadow-md);
-}
-.pricing-badge {
-  position: absolute;
-  inset-inline-start: -1.5rem;
-  inset-block-start: -1.5rem;
-  background: var(--warm);
-  color: #001E3C;
-  padding: .25rem 1rem;
-  border-radius: var(--radius-sm);
-  font-size: .875rem;
-  font-weight: 600;
-  transform: rotate(-15deg);
-}
-.pricing-card--featured .pricing-badge { background: var(--warm); }
-.pricing__name {
-  font-family: var(--font-display);
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: .5rem;
-}
-.pricing__price {
-  font-size: 2.25rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 1.5rem;
-}
-.pricing__price sup {
-  font-size: .75em;
-  vertical-align: super;
-}
-.pricing__blurb {
-  color: var(--text-secondary);
-  margin-bottom: 2rem;
-}
-.pricing__features {
-  display: flex;
-  flex-direction: column;
-  gap: .75rem;
-  flex-grow: 1;
-}
-.pricing__feature {
-  display: flex;
-  align-items: center;
-  gap: .75rem;
-  font-size: .95rem;
-  color: var(--text-secondary);
-}
-.pricing__feature .material-symbols-rounded {
-  color: var(--text-success);
-  flex-shrink: 0;
-}
-.pricing__cta {
-  margin-top: 1.5rem;
-}
-
+.pricing-card{position:relative}
+.pricing-card__price{font-family:var(--font-display);font-size:2.5rem;font-weight:700;letter-spacing:-.02em}
+.pricing-card__price span{font-family:var(--font-base);font-size:.9375rem;font-weight:600;color:var(--text-secondary)}
+.pricing-card__features{list-style:none;display:flex;flex-direction:column;gap:.625rem;align-items:flex-start}/* exception: left-aligned list */
+.pricing-card__features li{display:flex;align-items:center;gap:.5rem;font-size:.9375rem}
+.pricing-card__features .material-symbols-rounded{color:var(--text-success);font-size:1.25rem}
+.pricing-card .btn{margin-top:auto;width:100%}
+.pricing-card--featured{border:2px solid transparent;background:linear-gradient(var(--bg-secondary),var(--bg-secondary)) padding-box,var(--gradient-bio) border-box;box-shadow:var(--shadow-md),var(--glow-accent)}
+.pricing-card--featured::before{content:"";position:absolute;inset:-1.5rem;border-radius:var(--radius-lg);background:radial-gradient(circle,rgba(0,255,65,.14),transparent 70%);filter:blur(30px);z-index:-1;animation:breathe var(--duration-breathe) var(--ease-standard) infinite alternate}
+.pricing-card__badge{align-self:flex-start;background:var(--warm);color:var(--on-bright);font-size:.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:.3rem .875rem;border-radius:999px}
 /* FAQ */
-.faq {
-  background: var(--bg-secondary);
-  border-radius: var(--radius-lg);
-  padding: 2rem;
-}
-.faq-item {
-  margin-bottom: 1.5rem;
-  border-bottom: 1px solid var(--border-default);
-}
-.faq-item:last-child { margin-bottom: 0; border-bottom: none; }
-.faq__summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding: 1rem 0;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 1.125rem;
-  color: var(--text-primary);
-  background: transparent;
-  border: none;
-  text-align: left;
-}
-.faq__summary::before {
-  content: "";
-  display: inline-block;
-  width: 1rem;
-  height: 1px;
-  background: var(--secondary);
-  margin-inline-end: .5rem;
-  transition: transform var(--transition-normal) var(--ease-standard);
-}
-.faq[open] .faq__summary::before { transform: rotate(90deg); }
-.faq__panel {
-  padding: 1rem 0;
-  color: var(--text-secondary);
-  font-size: .95rem;
-  line-height: 1.6;
-}
-
-/* Final CTA */
-#cta {
-  position: relative;
-  overflow: hidden;
-  padding: 4rem 0;
-  background: var(--bg-secondary);
-  clip-path: polygon(0 0, 100% 5%, 100% 95%, 0 100%);
-}
-#cta::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: var(--gradient-bio);
-  opacity: .15;
-  z-index: -1;
-}
-#cta::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: color-mix(in srgb, var(--accent) 10%, transparent);
-  animation: breathe var(--duration-breathe) var(--ease-standard) infinite alternate;
-  z-index: -2;
-}
-.cta__content {
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2rem;
-}
-.cta__title {
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 6vw, 2.75rem);
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0;
-}
-.cta__copy {
-  max-width: 36ch;
-  color: var(--text-secondary);
-  font-size: 1.125rem;
-}
-.cta__form {
-  max-width: 480px;
-  width: 100%;
-}
-.cta__print {
-  font-size: .875rem;
-  color: var(--text-secondary);
-  margin-top: 1.5rem;
-}
-
+.faq{max-width:44rem;display:flex;flex-direction:column;gap:.875rem}
+.faq details{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);overflow:hidden;transition:border-color var(--transition-fast) var(--ease-standard)}
+.faq details[open]{border-color:var(--accent)}
+.faq summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.125rem 1.375rem;cursor:pointer;font-weight:700;font-size:1rem;list-style:none;min-height:44px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary .material-symbols-rounded{transition:transform var(--transition-normal) var(--ease-standard);color:var(--text-secondary);flex-shrink:0}
+.faq details[open] summary .material-symbols-rounded{transform:rotate(180deg)}
+.faq__body{padding:0 1.375rem 1.25rem;color:var(--text-secondary)}
+/* CTA band */
+.cta-band{position:relative;overflow:hidden}
+.cta-band__aura{position:absolute;inset:10% 15%;background:var(--gradient-bio);opacity:.22;filter:blur(60px);animation:breathe var(--duration-breathe) var(--ease-standard) infinite alternate}
+.cta-band__panel{position:relative;background:var(--bg-secondary);border:1px solid var(--border-default);box-shadow:var(--shadow-md);padding:clamp(2.5rem,6vw,4.5rem) clamp(1.5rem,5vw,4rem);clip-path:polygon(3% 0,97% 2%,100% 50%,97% 98%,3% 100%,0 50%);display:flex;flex-direction:column;align-items:center;gap:1.25rem;text-align:center}
+.cta-band__panel p{color:var(--text-secondary);max-width:34rem}
+/* Form */
+.input-group{display:flex;flex-direction:column;align-items:stretch;gap:.5rem;width:100%;max-width:28rem;text-align:left}
+.input-group label{font-weight:700;font-size:.9375rem}
+.input-group__row{display:flex;gap:.625rem;flex-wrap:wrap}
+.input-group input{flex:1;min-width:12rem;min-height:52px;padding:.8rem 1.125rem;font-family:var(--font-base);font-size:1rem;color:var(--text-primary);background:var(--bg-primary);border:1.5px solid var(--border-default);border-radius:var(--radius-md);transition:border-color var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard)}
+.input-group input::placeholder{color:var(--text-secondary)}
+.input-group input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 30%,transparent)}
+.input-group input[aria-invalid="true"]{border-color:var(--border-error)}
+.input-group.is-valid input{border-color:var(--border-success)}
+.input-group__hint{font-size:.8125rem;color:var(--text-secondary)}
+.input-group__error{display:none;align-items:center;gap:.35rem;font-size:.875rem;font-weight:600;color:var(--text-error)}
+.input-group__error.is-visible{display:flex}
+.input-group__success{display:none;align-items:center;gap:.4rem;font-weight:700;color:var(--text-success)}
+.input-group__success.is-visible{display:flex}
+.cta-band__small{font-size:.8125rem;color:var(--text-secondary)}
+/* Toast */
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translate(-50%,150%);z-index:var(--z-toast);display:flex;align-items:center;gap:.75rem;background:var(--bg-secondary);border:1px solid var(--border-success);box-shadow:var(--shadow-md);border-radius:var(--radius-md);padding:.875rem 1.25rem;max-width:min(26rem,calc(100vw - 2rem));opacity:0;transition:transform var(--transition-normal) var(--ease-standard),opacity var(--transition-normal) var(--ease-standard)}
+.toast.is-visible{transform:translate(-50%,0);opacity:1}
+.toast .material-symbols-rounded{color:var(--text-success)}
+.toast__close{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border:none;background:transparent;color:var(--text-secondary);cursor:pointer;border-radius:50%}
 /* Footer */
-.footer {
-  background: var(--bg-secondary);
-  border-top: 1px solid var(--border-default);
-  padding: 3rem 0 1.5rem;
+.footer{border-top:1px solid var(--border-default);padding-block:3.5rem 2rem}
+.footer__grid{display:flex;flex-direction:column;gap:2.5rem}
+@media(min-width:48em){.footer__grid{flex-direction:row;justify-content:space-between;align-items:flex-start}}/* exception: top-aligned columns */
+.footer__brand{display:flex;flex-direction:column;align-items:flex-start;gap:.75rem;max-width:18rem}/* exception: left-aligned reading column */
+.footer__brand p{color:var(--text-secondary);font-size:.9375rem}
+.footer__col{display:flex;flex-direction:column;align-items:flex-start;gap:.625rem}/* exception: left-aligned link column */
+.footer__col h3{font-family:var(--font-base);font-size:.8125rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-secondary)}
+.footer__col a{text-decoration:none;font-size:.9375rem;color:var(--text-secondary);padding:.2rem 0;transition:color var(--transition-fast) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.footer__col a:hover{color:var(--text-primary)}}
+.footer__bottom{margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--border-default);font-size:.875rem;color:var(--text-secondary)}
+/* Reveal */
+.js .reveal{opacity:0;transform:translateY(1.25rem);transition:opacity .5s var(--ease-standard),transform .5s var(--ease-standard)}
+.js .reveal.is-revealed{opacity:1;transform:none}
 }
-.footer .container {
-  display: grid;
-  gap: 2rem;
+@layer utilities{
+@media (prefers-reduced-motion: reduce){
+html{scroll-behavior:auto}
+*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.15s!important}
+.hero__blob,.hero__cell,.card__icon,.step__num,.pricing-card--featured::before,.cta-band__aura{animation:none!important}
+.js .reveal{opacity:1;transform:none;transition:opacity .15s ease}
 }
-@media (min-width: 48em) {
-  .footer .container { grid-template-columns: 2fr repeat(4, 1fr); }
+@media (prefers-reduced-transparency: reduce){
+.header,.hero__cell{background:var(--bg-primary);backdrop-filter:none;-webkit-backdrop-filter:none}
 }
-.footer__logo {
-  display: flex;
-  align-items: center;
-  gap: .5rem;
-  margin-bottom: 1rem;
+@media (prefers-contrast: more){
+.card,.faq details,.pricing-card{border-width:2px}
 }
-.footer__logo .material-symbols-rounded {
-  font-size: 1.75rem;
-  color: var(--secondary);
 }
-.footer__logo span {
-  font-family: var(--font-display);
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-.footer__tagline {
-  color: var(--text-secondary);
-  max-width: 20ch;
-  line-height: 1.4;
-}
-.footer__heading {
-  font-family: var(--font-display);
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 1rem;
-}
-.footer__link {
-  display: block;
-  padding: .5rem 0;
-  color: var(--text-secondary);
-  transition: color var(--transition-normal) var(--ease-standard);
-}
-.footer__link:hover,
-.footer__link:focus-visible { color: var(--text-primary); }
-.footer__copyright {
-  text-align: center;
-  font-size: .875rem;
-  color: var(--text-secondary);
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--border-default);
-}
-
-/* Reduced Motion */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-    scroll-behavior: auto !important;
-  }
-  .hero__blob,
-  .hero__cell .material-symbols-rounded,
-  .card__icon,
-  .btn.is-loading::after,
-  #cta::after,
-  .toast-container { animation: none !important; }
-}
-
-/* Skip Link */
-.skip-link {
-  position: absolute;
-  left: -999px;
-  top: auto;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-}
-.skip-link:focus {
-  left: 1rem;
-  top: 1rem;
-  width: auto;
-  height: auto;
-  background: var(--bg-secondary);
-  border: 2px solid var(--accent);
-  border-radius: var-radius-sm;
-  padding: .5rem 1rem;
-  z-index: var(--z-modal);
-}
-</style>
-<script id="pd-theme-init">(()=>{try{const s=localStorage.getItem('theme');document.documentElement.dataset.theme=s==='dark'||s==='light'?s:(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}catch{document.documentElement.dataset.theme='light'}})();</script>
-<style id="pd-dark">
-html[data-theme="dark"] {
-  --primary: #FF8A8A;
-  --secondary: #4ADE80;
-  --accent: #4DD8F0;
-  --warm: #FFB37A;
-  --bg-primary: #0C1B2A;
-  --bg-secondary: #12263A;
-  --text-primary: #EAF4F0;
-  --text-secondary: #A8BFCB;
-  --text-success: #4ADE80;
-  --text-error: #FF8A8A;
-  --border-default: #24425C;
-  --border-error: #FF8A8A;
-  --border-success: #4ADE80;
-  --shadow-sm: 0 2px 10px rgba(0,0,0,.45);
-  --shadow-md: 0 10px 30px rgba(0,0,0,.55);
-  --gradient-bio: linear-gradient(135deg, #4DD8F0 0%, #4ADE80 50%, #FF8A8A 100%);
-}
-
-html[data-theme="dark"] body {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-}
-
-html[data-theme="dark"] ::selection {
-  background: var(--accent);
-  color: #0C1B2A;
-}
-
-html[data-theme="dark"] .btn--primary {
-  color: #0C1B2A;
-}
-
-html[data-theme="dark"] .btn.is-success,
-html[data-theme="dark"] .btn.is-error {
-  color: #0C1B2A;
-}
-
-html[data-theme="dark"] .step__number {
-  color: #0C1B2A;
-}
-
-html[data-theme="dark"] .pricing-badge {
-  color: #0C1B2A;
-}
-
-html[data-theme="dark"] .header {
-  background: color-mix(in srgb, var(--bg-primary) 80%, transparent);
-  border-bottom-color: var(--border-default);
-}
-
-html[data-theme="dark"] .header__nav-link:hover,
-html[data-theme="dark"] .header__nav-link:focus-visible {
-  color: var(--accent);
-}
-
-html[data-theme="dark"] .hero__cell {
-  background: color-mix(in srgb, var(--bg-primary) 70%, transparent);
-  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
-}
-
-html[data-theme="dark"] .hero__blob {
-  opacity: .35;
-}
-
-html[data-theme="dark"] .card {
-  background: var(--bg-secondary);
-  border-color: var(--border-default);
-}
-
-html[data-theme="dark"] .card:hover {
-  box-shadow: var(--shadow-md);
-  border-color: var(--accent);
-}
-
-html[data-theme="dark"] .card__icon {
-  background: color-mix(in srgb, var(--secondary) 15%, var(--bg-secondary));
-  color: var(--secondary);
-}
-
-html[data-theme="dark"] .input-group input {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  border-color: var(--border-default);
-}
-
-html[data-theme="dark"] .input-group input::placeholder {
-  color: color-mix(in srgb, var(--text-secondary) 70%, transparent);
-}
-
-html[data-theme="dark"] .input-group input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
-}
-
-html[data-theme="dark"] .toast {
-  background: var(--bg-secondary);
-  border-color: var(--border-default);
-  box-shadow: var(--shadow-md);
-}
-
-html[data-theme="dark"] .toast__close:hover {
-  color: var(--text-primary);
-}
-
-html[data-theme="dark"] .theme-toggle:hover {
-  background: color-mix(in srgb, var(--accent) 10%, transparent);
-}
-
-html[data-theme="dark"] .theme-toggle[aria-pressed="true"] {
-  background: color-mix(in srgb, var(--accent) 18%, transparent);
-}
-
-html[data-theme="dark"] .how-it-works::before {
-  opacity: .08;
-}
-
-html[data-theme="dark"] .step__icon {
-  background: color-mix(in srgb, var(--accent) 15%, var(--bg-secondary));
-  color: var(--accent);
-}
-
-html[data-theme="dark"] .testimonial {
-  background: var(--bg-secondary);
-  border-color: var(--border-default);
-}
-
-html[data-theme="dark"] .testimonial__avatar {
-  background: color-mix(in srgb, var(--secondary) 15%, var(--bg-secondary));
-  color: var(--secondary);
-}
-
-html[data-theme="dark"] .testimonial__quote::before {
-  color: color-mix(in srgb, var(--accent) 35%, transparent);
-}
-
-html[data-theme="dark"] .pricing-card {
-  background: var(--bg-secondary);
-  border-color: var(--border-default);
-}
-
-html[data-theme="dark"] .pricing-card--featured {
-  background: var(--bg-secondary);
-  border-color: var(--accent);
-}
-
-html[data-theme="dark"] .pricing-card--featured::before {
-  opacity: .12;
-}
-
-html[data-theme="dark"] .pricing-card--featured:hover {
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 20%, transparent),
-              var(--shadow-md);
-}
-
-html[data-theme="dark"] .faq {
-  background: var(--bg-secondary);
-}
-
-html[data-theme="dark"] .faq-item {
-  border-bottom-color: var(--border-default);
-}
-
-html[data-theme="dark"] #cta {
-  background: var(--bg-secondary);
-}
-
-html[data-theme="dark"] #cta::before {
-  opacity: .12;
-}
-
-html[data-theme="dark"] #cta::after {
-  background: color-mix(in srgb, var(--accent) 6%, transparent);
-}
-
-html[data-theme="dark"] .footer {
-  background: var(--bg-secondary);
-  border-top-color: var(--border-default);
-}
-
-html[data-theme="dark"] .footer__link:hover,
-html[data-theme="dark"] .footer__link:focus-visible {
-  color: var(--accent);
-}
-
-html[data-theme="dark"] .footer__copyright {
-  border-top-color: var(--border-default);
-}
-
-html[data-theme="dark"] .skip-link:focus {
-  background: var(--bg-secondary);
-  border-color: var(--accent);
-  color: var(--text-primary);
-}
-
-html[data-theme="dark"] .mobile-menu-panel {
-  background: var(--bg-secondary);
-}
-
-html[data-theme="dark"] :focus-visible {
-  outline-color: var(--accent);
-}
-.pd-theme-btn{display:inline-grid;place-items:center;width:44px;height:44px;margin-left:.5rem;border-radius:999px;border:1px solid currentColor;background:transparent;color:inherit;cursor:pointer;flex-shrink:0}
-.pd-theme-btn:focus-visible{outline:2px solid currentColor;outline-offset:2px}
-.pd-theme-btn--float{position:fixed;right:16px;bottom:16px;z-index:60;background:#fff;color:#16171b;border-color:#d5d7dc}
-html[data-theme="dark"] .pd-theme-btn--float{background:#1b1c21;color:#ededf0;border-color:#2d2f35}
 </style>
 </head>
 <body>
-<a href="#main-content" class="skip-link">Skip to content</a>
+<a class="skip-link" href="#main">Skip to content</a>
 
 <header class="header">
-  <div class="container">
-    <div class="header__logo">
-      <span class="material-symbols-rounded">spa</span>
-      <span>Morpho</span>
-    </div>
+  <div class="container header__inner">
+    <a class="header__logo" href="#top" aria-label="Morpho home">
+      <span class="material-symbols-rounded" aria-hidden="true">spa</span>Morpho
+    </a>
     <nav class="header__nav" aria-label="Primary">
-      <a href="#features" class="header__nav-link">Features</a>
-      <a href="#how-it-works" class="header__nav-link">How It Works</a>
-      <a href="#pricing" class="header__nav-link">Pricing</a>
-      <a href="#faq" class="header__nav-link">FAQ</a>
+      <ul class="header__links">
+        <li><a class="header__link" href="#features">Features</a></li>
+        <li><a class="header__link" href="#how-it-works">How It Works</a></li>
+        <li><a class="header__link" href="#pricing">Pricing</a></li>
+        <li><a class="header__link" href="#faq">FAQ</a></li>
+      </ul>
     </nav>
     <div class="header__actions">
-      <button class="theme-toggle" aria-label="Toggle dark mode" aria-pressed="false">
-        <span class="material-symbols-rounded">dark_mode</span>
+      <button id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-rounded icon-moon" aria-hidden="true">dark_mode</span>
+        <span class="material-symbols-rounded icon-sun" aria-hidden="true">light_mode</span>
       </button>
-      <button class="btn btn--primary btn--lg" id="mobile-menu-btn" aria-label="Open menu" aria-expanded="false">
-        <span class="material-symbols-rounded">menu</span>
-        Start Growing
+      <a class="btn btn--primary header__cta" href="#cta">Start Growing</a>
+      <button class="menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="mobile-nav" aria-label="Open menu">
+        <span class="material-symbols-rounded" aria-hidden="true">menu</span>
       </button>
     </div>
-    <button class="mobile-menu-btn" id="mobile-menu-toggle" aria-label="Open menu" aria-expanded="false">
-      <span class="material-symbols-rounded">menu</span>
-    </button>
   </div>
+  <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile">
+    <a href="#features">Features</a>
+    <a href="#how-it-works">How It Works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#faq">FAQ</a>
+    <a href="#cta">Start Growing</a>
+  </nav>
 </header>
 
-<nav class="mobile-menu-panel" id="mobile-menu-panel" aria-label="Mobile menu">
-  <div class="container">
-    <a href="#features" class="header__nav-link">Features</a>
-    <a href="#how-it-works" class="header__nav-link">How It Works</a>
-    <a href="#pricing" class="header__nav-link">Pricing</a>
-    <a href="#faq" class="header__nav-link">FAQ</a>
-  </div>
-</nav>
-
-<main id="main-content">
-  <section class="hero" aria-labelledby="hero-title">
-    <div class="container">
-      <div class="hero__content">
-        <div class="hero__eyebrow">
-          <span class="material-symbols-rounded">eco</span>
-          Biomimetic Design System
+<main id="main">
+  <!-- Hero -->
+  <section class="hero" id="top">
+    <div class="container hero__grid">
+      <div class="hero__text">
+        <span class="hero__eyebrow"><span class="hero__dot" aria-hidden="true"></span>Biomimetic Design System</span>
+        <h1 class="hero__title">Interfaces that <em>grow themselves.</em></h1>
+        <p class="hero__sub">Morpho applies nature's algorithms to your design tokens, branching them into living components that adapt to every screen.</p>
+        <div class="hero__ctas">
+          <a class="btn btn--primary btn--lg" href="#cta">Start Growing</a>
+          <a class="btn btn--secondary btn--lg" href="#how-it-works">Watch It Breathe</a>
         </div>
-        <h1 class="hero__title" id="hero-title">Interfaces that grow themselves.</h1>
-        <p class="hero__copy">Morpho uses nature’s algorithms to evolve living interfaces that adapt, breathe, and thrive with your design intent.</p>
-        <div class="hero__cta">
-          <a href="#cta" class="btn btn--primary btn--lg">Start Growing</a>
-          <a href="#how-it-works" class="btn btn--secondary">Watch It Breathe</a>
-        </div>
-        <p class="hero__trust">Grown by 12,000+ design teams</p>
+        <p class="hero__trust"><span class="material-symbols-rounded" aria-hidden="true">verified</span>Grown by 12,000+ design teams</p>
       </div>
       <div class="hero__visual" aria-hidden="true">
-        <div class="hero__blob"></div>
-        <div class="hero__blob"></div>
-        <div class="hero__blob"></div>
-        <div class="hero__cell" aria-hidden="true">
-          <span class="material-symbols-rounded">spa</span>
+        <div class="hero__blob hero__blob--1"></div>
+        <div class="hero__blob hero__blob--2"></div>
+        <div class="hero__blob hero__blob--3"></div>
+        <div class="hero__cell"><span class="material-symbols-rounded">spa</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-head__eyebrow">Features</span>
+        <h2>Built like an organism, not a template</h2>
+        <p class="section-head__lead">Three systems work together so your interface matures on its own while you stay in control.</p>
+      </div>
+      <div class="card-grid">
+        <article class="card reveal">
+          <div class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">forest</span></div>
+          <h3>Generative Growth</h3>
+          <p>Feed Morpho a handful of tokens and it branches them into a full component tree, pruned to your brand's shape.</p>
+        </article>
+        <article class="card reveal">
+          <div class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">waves</span></div>
+          <h3>Living Motion</h3>
+          <p>Every transition follows organic easing curves sampled from nature, so movement feels grown rather than scripted.</p>
+        </article>
+        <article class="card reveal">
+          <div class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">monitor_heart</span></div>
+          <h3>Bio-Feedback</h3>
+          <p>Morpho watches how people use your product and gently adapts spacing, density, and contrast in response.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section id="how-it-works">
+    <div class="container">
+      <div class="section-head">
+        <h2>From seed to canopy in three steps</h2>
+        <p class="section-head__lead">No migrations and no rewrites. Morpho grafts onto the stack you already have.</p>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <div class="step__num" aria-hidden="true">1</div>
+          <span class="material-symbols-rounded step__icon" aria-hidden="true">eco</span>
+          <h3>Plant</h3>
+          <p>Feed Morpho your design DNA: colors, type, and spacing tokens from your existing system.</p>
+        </div>
+        <div class="step reveal">
+          <div class="step__num" aria-hidden="true">2</div>
+          <span class="material-symbols-rounded step__icon" aria-hidden="true">account_tree</span>
+          <h3>Grow</h3>
+          <p>Growth algorithms branch your tokens into accessible, responsive components.</p>
+        </div>
+        <div class="step reveal">
+          <div class="step__num" aria-hidden="true">3</div>
+          <span class="material-symbols-rounded step__icon" aria-hidden="true">all_inclusive</span>
+          <h3>Adapt</h3>
+          <p>Deploy interfaces that keep breathing, refining themselves with every release cycle.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <section id="features" class="features container">
-    <div class="section-title">
-      <div class="section-title__eyebrow">Core Capabilities</div>
-      <h2 class="section-title__heading">Features</h2>
-      <p class="section-title__leading">Where generative design meets organic intelligence</p>
-    </div>
-    <div class="card">
-      <div class="card__icon">
-        <span class="material-symbols-rounded">forest</span>
+  <!-- Testimonials -->
+  <section id="testimonials">
+    <div class="container">
+      <div class="section-head">
+        <h2>Teams that let it grow</h2>
       </div>
-      <h3 class="card__title">Generative Growth</h3>
-      <p class="card__text">Input your design DNA and watch Morpho branch into infinite variations through evolutionary algorithms inspired by natural selection.</p>
-    </div>
-    <div class="card">
-      <div class="card__icon">
-        <span class="material-symbols-rounded">waves</span>
-      </div>
-      <h3 class="card__title">Living Motion</h3>
-      <p class="card__text">Interfaces that pulse, flow, and respond with lifelike kinetics—no keyframes needed. Emergent behavior from simple rules.</p>
-    </div>
-    <div class="card">
-      <div class="card__icon">
-        <span class="material-symbols-rounded">monitor_heart</span>
-      </div>
-      <h3 class="card__title">Bio-Feedback</h3>
-      <p class="card__text">Real-time adaptation to user interaction, environmental data, and performance metrics—designs that learn and optimize themselves.</p>
-    </div>
-  </section>
-
-  <section id="how-it-works" class="how-it-works container">
-    <div class="section-title">
-      <div class="section-title__eyebrow">Process</div>
-      <h2 class="section-title__heading">How It Works</h2>
-      <p class="section-title__leading">From seed to interface in three organic steps</p>
-    </div>
-    <div class="steps">
-      <div class="step">
-        <div class="step__number">1</div>
-        <div class="step__icon">
-          <span class="material-symbols-rounded">eco</span>
+      <div class="card-grid" style="grid-template-columns:1fr">
+        <div class="card-grid">
+          <figure class="card quote-card reveal">
+            <div class="quote-card__stars" aria-hidden="true">
+              <span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span>
+            </div>
+            <span class="visually-hidden">Rated 5 out of 5</span>
+            <blockquote><p>We planted our tokens on a Friday. By Monday the whole dashboard had grown a coherent component family we never could have hand-drawn.</p></blockquote>
+            <div class="quote-card__meta">
+              <span class="quote-card__avatar" aria-hidden="true">MK</span>
+              <figcaption><strong>Mara Kessler</strong>Design Lead, Fieldnote Labs</figcaption>
+            </div>
+          </figure>
+          <figure class="card quote-card reveal">
+            <div class="quote-card__stars" aria-hidden="true">
+              <span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span>
+            </div>
+            <span class="visually-hidden">Rated 5 out of 5</span>
+            <blockquote><p>The motion system is the quiet win. Everything moves like it belongs to the same organism, and our accessibility audit passed untouched.</p></blockquote>
+            <div class="quote-card__meta">
+              <span class="quote-card__avatar" aria-hidden="true">TO</span>
+              <figcaption><strong>Tunde Okafor</strong>Frontend Engineer, Coral &amp; Co</figcaption>
+            </div>
+          </figure>
         </div>
-        <h3 class="step__title">Plant</h3>
-        <p class="step__text">Feed Morpho your design DNA—constraints, goals, and inspiration—to initialize the generative seed.</p>
-      </div>
-      <div class="step">
-        <div class="step__number">2</div>
-        <div class="step__icon">
-          <span class="material-symbols-rounded">account_tree</span>
-        </div>
-        <h3 class="step__title">Grow</h3>
-        <p class="step__text">Algorithms branch tokens into components, evolving structures through selection, mutation, and environmental feedback.</p>
-      </div>
-      <div class="step">
-        <div class="step__number">3</div>
-        <div class="step__icon">
-          <span class="material-symbols-rounded">all_inclusive</span>
-        </div>
-        <h3 class="step__title">Adapt</h3>
-        <p class="step__text">Deploy interfaces that keep breathing—adapting to context, usage, and evolution long after launch.</p>
       </div>
     </div>
   </section>
 
-  <section id="testimonials" class="testimonials container">
-    <div class="section-title">
-      <div class="section-title__eyebrow">Voices</div>
-      <h2 class="section-title__heading">Testimonials</h2>
-      <p class="section-title__leading">What designers are growing</p>
-    </div>
-    <blockquote class="testimonial">
-      <div class="testimonial__avatar">JS</div>
-      <p class="testimonial__quote">“Morpho transformed our design system into a living entity. Components now evolve based on real usage patterns—we’ve cut maintenance by 40%.”</p>
-      <div class="testimonial__rating">
-        <span class="material-symbols-rounded">star</span>
-        <span class="material-symbols-rounded">star</span>
-        <span class="material-symbols-rounded">star</span>
-        <span class="material-symbols-rounded">star</span>
-        <span class="material-symbols-rounded">star</span>
+  <!-- Pricing -->
+  <section id="pricing">
+    <div class="container">
+      <div class="section-head">
+        <h2>Pick your plot</h2>
+        <p class="section-head__lead">Start free, then scale when your garden outgrows its pot.</p>
       </div>
-      <p class="testimonial__author">Jordan Smith</p>
-      <p class="testimonial__role">Lead Designer, Terraform Labs</p>
-    </blockquote>
-    <blockquote class="testimonial">
-      <div class="testimonial__avatar">AR</div>
-      <p class="testimonial__quote">“The breathing interfaces create an emotional connection users can’t articulate but definitely feel. Engagement metrics jumped 22% overnight.”</p>
-      <div class="testimonial__rating">
-        <span class="material-symbols-rounded">star</span>
-        <span class="material-symbols-rounded">star</span>
-        <span class="material-symbols-rounded">star</span>
-        <span class="material-symbols-rounded">star</span>
-        <span class="material-symbols-rounded">star</span>
+      <div class="card-grid">
+        <article class="card pricing-card reveal">
+          <h3>Seed</h3>
+          <p class="pricing-card__price">$0</p>
+          <p>For side projects and first sprouts.</p>
+          <ul class="pricing-card__features">
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>1 growing project</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Core component tree</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Organic motion presets</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Community greenhouse</li>
+          </ul>
+          <a class="btn btn--secondary" href="#cta">Start Growing</a>
+        </article>
+        <article class="card pricing-card pricing-card--featured reveal">
+          <span class="pricing-card__badge">Most Grown</span>
+          <h3>Bloom</h3>
+          <p class="pricing-card__price">$29<span>/mo</span></p>
+          <p>For product teams shipping every week.</p>
+          <ul class="pricing-card__features">
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Unlimited projects</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Bio-feedback adaptation</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Theme grafting and dark mode</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Priority pollination support</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Version history per branch</li>
+          </ul>
+          <a class="btn btn--primary" href="#cta">Start Growing</a>
+        </article>
+        <article class="card pricing-card reveal">
+          <h3>Canopy</h3>
+          <p class="pricing-card__price">Custom</p>
+          <p>For organizations with many gardens.</p>
+          <ul class="pricing-card__features">
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Everything in Bloom</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>SSO and audit trails</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Dedicated growth engineer</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Custom algorithm tuning</li>
+          </ul>
+          <a class="btn btn--secondary" href="#cta">Start Growing</a>
+        </article>
       </div>
-      <p class="testimonial__author">Alex Rivera</p>
-      <p class="testimonial__role">Product Director, Bloom Studios</p>
-    </blockquote>
-    <blockquote class="testimonial">
-      <div class="testimonial__avatar">TP</div>
-      <p class="testimonial__quote">“Finally, a design tool that understands complexity isn’t the enemy—it’s the raw material. Morpho turns constraints into creative fuel.”</p>
-      <div class="testimonial__rating">
-        <span class="material-symbols-rounded">star</span>
-        <span class="material-symbols-rounded">star</span>
-        <span class="material-symbols-rounded">star</span>
-        <span class="material-symbols-rounded">star</span>
-        <span class="material-symbols-rounded">star</span>
-      </div>
-      <p class="testimonial__author">Taylor Park</p>
-      <p class="testimonial__role">UX Architect, Verdant</p>
-    </blockquote>
-  </section>
-
-  <section id="pricing" class="pricing container">
-    <div class="section-title">
-      <div class="section-title__eyebrow">Plans</div>
-      <h2 class="section-title__heading">Pricing</h2>
-      <p class="section-title__leading">Choose your growth stage</p>
-    </div>
-    <div class="pricing-card">
-      <h3 class="pricing__name">Seed</h3>
-      <div class="pricing__price">$0<span>/mo</span></div>
-      <p class="pricing__blurb">Perfect for exploring generative design</p>
-      <div class="pricing__features">
-        <div class="pricing__feature">
-          <span class="material-symbols-rounded">check_circle</span>
-          Limited generations
-        </div>
-        <div class="pricing__feature">
-          <span class="material-symbols-rounded">check_circle</span>
-          Basic templates
-        </div>
-        <div class="pricing__feature">
-          <span class="material-symbols-rounded">check_circle</span>
-          Community support
-        </div>
-        <div class="pricing__feature">
-          <span class="material-symbols-rounded">check_circle</span>
-          Export to Figma
-        </div>
-      </div>
-      <a href="#cta" class="btn btn--secondary">Start Free</a>
-    </div>
-    <div class="pricing-card pricing-card--featured">
-      <div class="pricing-badge">Most Grown</div>
-      <h3 class="pricing__name">Bloom</h3>
-      <div class="pricing__price">$29<span>/mo</span></div>
-      <p class="pricing__blurb">For teams ready to scale living interfaces</p>
-      <div class="pricing__features">
-        <div class="pricing__feature">
-          <span class="material-symbols-rounded">check_circle</span>
-          Unlimited generations
-        </div>
-        <div class="pricing__feature">
-          <span class="material-symbols-rounded">check_circle</span>
-          Advanced templates
-        </div>
-        <div class="pricing__feature">
-          <span class="material-symbols-rounded">check_circle</span>
-          Team collaboration
-        </div>
-        <div class="pricing__feature">
-          <span class="material-symbols-rounded">check_circle</span>
-          Priority support
-        </div>
-        <div class="pricing__feature">
-          <span class="material-symbols-rounded">check_circle</span>
-          Custom exports
-        </div>
-      </div>
-      <a href="#cta" class="btn btn--primary btn--lg">Start Growing</a>
-    </div>
-    <div class="pricing-card">
-      <h3 class="pricing__name">Canopy</h3>
-      <div class="pricing__price">Custom<span>/mo</span></div>
-      <p class="pricing__blurb">Enterprise solutions for evolutionary design</p>
-      <div class="pricing__features">
-        <div class="pricing__feature">
-          <span class="material-symbols-rounded">check_circle</span>
-          Dedicated evolution engine
-        </div>
-        <div class="pricing__feature">
-          <span class="material-symbols-rounded">check_circle</span>
-          On-premise deployment
-        </div>
-        <div class="pricing__feature">
-          <span class="material-symbols-rounded">check_circle</span>
-          SLA-backed uptime
-        </div>
-        <div class="pricing__feature">
-          <span class="material-symbols-rounded">check_circle</span>
-          Custom integrations
-        </div>
-        <div class="pricing__feature">
-          <span class="material-symbols-rounded">check_circle</span>
-          24/7 expert support
-        </div>
-      </div>
-      <a href="#cta" class="btn btn--secondary">Contact Us</a>
     </div>
   </section>
 
-  <section id="faq" class="faq container">
-    <div class="section-title">
-      <div class="section-title__eyebrow">Questions</div>
-      <h2 class="section-title__heading">FAQ</h2>
-      <p class="section-title__leading">How we grow with nature’s intelligence</p>
+  <!-- FAQ -->
+  <section id="faq">
+    <div class="container">
+      <div class="section-head">
+        <h2>Questions from the greenhouse</h2>
+      </div>
+      <div class="faq">
+        <details class="reveal">
+          <summary>Do designers stay in control of the output?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <div class="faq__body"><p>Yes. Morpho proposes growth, you prune it. Every generated component is a suggestion you can edit, pin, or reject, and your tokens always remain the single source of truth.</p></div>
+        </details>
+        <details class="reveal">
+          <summary>How do the nature algorithms actually work?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <div class="faq__body"><p>Morpho models branching patterns found in leaves and corals. Your tokens act as nutrients, and the algorithm grows component variations along those patterns, keeping spacing and proportion biologically consistent.</p></div>
+        </details>
+        <details class="reveal">
+          <summary>What about animation performance and reduced motion?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <div class="faq__body"><p>All motion runs on transform and opacity only, so it stays on the compositor. When a visitor prefers reduced motion, Morpho swaps every animation for a short opacity fade automatically.</p></div>
+        </details>
+      </div>
     </div>
-    <details name="faq" class="faq-item">
-      <summary class="faq__summary">
-        How much control do I retain over the generative process?
-      </summary>
-      <p class="faq__panel">You define the DNA: constraints, goals, and inspiration. Morpho explores within those boundaries—you guide evolution through selection and feedback, not direct pixel manipulation.</p>
-    </details>
-    <details name="faq" class="faq-item">
-      <summary class="faq__summary">
-        How do the nature-inspired algorithms actually work?
-      </summary>
-      <p class="faq__panel">We use genetic algorithms with mutation, crossover, and selection inspired by biological evolution. Fitness functions evaluate designs against your goals, while environmental factors introduce adaptive pressures for real-world resilience.</p>
-    </details>
-    <details name="faq" class="faq-item">
-      <summary class="faq__summary">
-        Will animations impact performance or accessibility?
-      </summary>
-      <p class="faq__panel">All motion respects prefers-reduced-motion. Core animations use CSS with GPU acceleration. Interfaces adapt complexity based on device capability—simple on low-end, rich on high-end—while maintaining WCAG compliance.</p>
-    </details>
-    <details name="faq" class="faq-item">
-      <summary class="faq__summary">
-        Is Morpho accessible and compliant with reduced motion preferences?
-      </summary>
-      <p class="faq__panel">Yes. We honor system preferences, provide non-animated alternatives, ensure keyboard operability, maintain contrast ratios, and use semantic structure. Motion enhances but never conveys essential information.</p>
-    </details>
-    <details name="faq" class="faq-item">
-      <summary class="faq__summary">
-        Which browsers and devices are supported?
-      </summary>
-      <p class="faq__panel">Modern browsers: Chrome, Firefox, Safari, Edge (last 2 versions). Mobile: iOS Safari, Android Chrome. Degrades gracefully to static interfaces in older browsers while preserving functionality and accessibility.</p>
-    </details>
   </section>
 
-  <section id="cta" class="container">
-    <div class="section-title">
-      <div class="section-title__eyebrow">Ready</div>
-      <h2 class="section-title__heading">Ready to grow something alive?</h2>
-      <p class="section-title__leading">Join the ecosystem of designers growing interfaces that breathe, adapt, and evolve.</p>
-    </div>
-    <form class="cta__form" id="email-form" novalidate>
-      <div class="input-group">
-        <label for="email-input">Your email address</label>
-        <input type="email" id="email-input" placeholder="you@example.com" required aria-describedby="email-feedback">
-        <span class="material-symbols-rounded error-icon" aria-hidden="true">error</span>
-        <span class="material-symbols-rounded success-icon" aria-hidden="true">check_circle</span>
+  <!-- Final CTA -->
+  <section class="cta-band" id="cta">
+    <div class="container" style="position:relative">
+      <div class="cta-band__aura" aria-hidden="true"></div>
+      <div class="cta-band__panel">
+        <h2>Ready to grow something alive?</h2>
+        <p>Join the waitlist and be first to plant your design system in Morpho.</p>
+        <form class="input-group" id="cta-form" novalidate>
+          <label for="cta-email">Work email</label>
+          <div class="input-group__row">
+            <input type="email" id="cta-email" name="email" placeholder="you@studio.com" autocomplete="email" aria-describedby="cta-hint cta-error" required>
+            <button class="btn btn--primary" id="cta-submit" type="submit">
+              <span class="btn__label">Start Growing</span>
+            </button>
+          </div>
+          <p class="input-group__hint" id="cta-hint">We only need your email to reserve your plot.</p>
+          <p class="input-group__error" id="cta-error" aria-live="polite">
+            <span class="material-symbols-rounded" aria-hidden="true">error</span>
+            <span id="cta-error-text">Please enter a valid email address.</span>
+          </p>
+          <p class="input-group__success" id="cta-success" aria-live="polite">
+            <span class="material-symbols-rounded" aria-hidden="true">check_circle</span>You're on the list. Check your inbox for sunlight.
+          </p>
+        </form>
+        <p class="cta-band__small">No spam. Just sunlight and water.</p>
       </div>
-      <div class="feedback-message" id="email-feedback" aria-live="polite"></div>
-      <button type="submit" class="btn btn--primary btn--lg" id="submit-btn">
-        Start Growing
-      </button>
-    </form>
-    <p class="cta__print">No spam. Just sunlight and water.</p>
+    </div>
   </section>
 </main>
 
-<footer class="footer">
-  <div class="container">
-    <div class="footer__logo">
-      <span class="material-symbols-rounded">spa</span>
-      <span>Morpho</span>
-    </div>
-    <p class="footer__tagline">Design that grows itself.</p>
-    <div class="footer__heading">Product</div>
-    <a href="#features" class="footer__link">Features</a>
-    <a href="#how-it-works" class="footer__link">How It Works</a>
-    <a href="#pricing" class="footer__link">Pricing</a>
-    <a href="#faq" class="footer__link">FAQ</a>
-    <div class="footer__heading">Company</div>
-    <a href="#" class="footer__link">About</a>
-    <a href="#" class="footer__link">Careers</a>
-    <a href="#" class="footer__link">Press</a>
-    <a href="#" class="footer__link">Contact</a>
-    <div class="footer__heading">Resources</div>
-    <a href="#" class="footer__link">Blog</a>
-    <a href="#" class="footer__link">Docs</a>
-    <a href="#" class="footer__link">Templates</a>
-    <a href="#" class="footer__link">Community</a>
-    <div class="footer__heading">Legal</div>
-    <a href="#" class="footer__link">Privacy</a>
-    <a href="#" class="footer__link">Terms</a>
-    <a href="#" class="footer__link">Cookies</a>
-    <a href="#" class="footer__link">Security</a>
-  </div>
-  <p class="footer__copyright">&copy; <span id="copyright-year">2026</span> Morpho. All rights reserved.</p>
-</footer>
-
-<div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="true">
-  <div class="toast">
-    <span class="material-symbols-rounded toast__icon">check_circle</span>
-    <div class="toast__message">You're on the list — your garden awaits.</div>
-    <button class="toast__close" aria-label="Dismiss toast">
-      <span class="material-symbols-rounded">close</span>
-    </button>
-  </div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden>
+  <span class="material-symbols-rounded" aria-hidden="true">check_circle</span>
+  <span>You're on the list. Your garden awaits.</span>
+  <button class="toast__close" type="button" aria-label="Dismiss notification">
+    <span class="material-symbols-rounded" aria-hidden="true">close</span>
+  </button>
 </div>
 
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <a class="header__logo" href="#top" aria-label="Morpho home">
+          <span class="material-symbols-rounded" aria-hidden="true">spa</span>Morpho
+        </a>
+        <p>Design that grows itself, powered by nature's algorithms.</p>
+      </div>
+      <div class="footer__col">
+        <h3>Product</h3>
+        <a href="#features">Features</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+      </div>
+      <div class="footer__col">
+        <h3>Company</h3>
+        <a href="#">About</a>
+        <a href="#">Careers</a>
+        <a href="#">Press</a>
+      </div>
+      <div class="footer__col">
+        <h3>Resources</h3>
+        <a href="#">Documentation</a>
+        <a href="#">Field Guide</a>
+        <a href="#">Community</a>
+      </div>
+      <div class="footer__col">
+        <h3>Legal</h3>
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+      </div>
+    </div>
+    <p class="footer__bottom">&copy; <span id="year">2026</span> Morpho Systems. Grown with care.</p>
+  </div>
+</footer>
+
 <script>
-/* Theme Toggle & Persistence */
-const themeToggle = document.querySelector('.theme-toggle');
-const htmlEl = document.documentElement;
-const STORAGE_KEY = 'morpho-theme';
+(function(){
+"use strict";
+document.documentElement.classList.add("js");
+var reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-function setTheme(isDark) {
-  if (isDark) {
-    htmlEl.classList.add('dark');
-    themeToggle.setAttribute('aria-pressed', 'true');
-    themeToggle.innerHTML = '<span class="material-symbols-rounded">light_mode</span>';
-  } else {
-    htmlEl.classList.remove('dark');
-    themeToggle.setAttribute('aria-pressed', 'false');
-    themeToggle.innerHTML = '<span class="material-symbols-rounded">dark_mode</span>';
-  }
-  localStorage.setItem(STORAGE_KEY, isDark);
+/* Theme toggle */
+var toggle=document.getElementById("theme-toggle");
+function syncToggle(){
+  var dark=document.documentElement.dataset.theme==="dark";
+  toggle.setAttribute("aria-pressed",String(dark));
+  toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
 }
-
-function initTheme() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved !== null) {
-    setTheme(saved === 'true');
-  } else {
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    setTheme(prefersDark);
-  }
-}
-initTheme();
-
-themeToggle.addEventListener('click', () => {
-  const isDark = !htmlEl.classList.contains('dark');
-  setTheme(isDark);
+toggle.addEventListener("click",function(){
+  var next=document.documentElement.dataset.theme==="dark"?"light":"dark";
+  document.documentElement.dataset.theme=next;
+  try{localStorage.setItem("theme",next);}catch(e){}
+  syncToggle();
 });
+syncToggle();
 
-/* Mobile Menu */
-const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
-const mobileMenuPanel = document.getElementById('mobile-menu-panel');
-
-function toggleMobileMenu() {
-  const isOpen = mobileMenuPanel.classList.toggle('open');
-  mobileMenuBtn.setAttribute('aria-expanded', isOpen);
-  mobileMenuToggle.setAttribute('aria-expanded', isOpen);
-  if (!isOpen) {
-    mobileMenuBtn.focus();
-  }
+/* Mobile menu */
+var menuBtn=document.getElementById("menu-btn");
+var mobileNav=document.getElementById("mobile-nav");
+function setMenu(open){
+  menuBtn.setAttribute("aria-expanded",String(open));
+  menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");
+  menuBtn.querySelector(".material-symbols-rounded").textContent=open?"close":"menu";
+  mobileNav.classList.toggle("is-open",open);
+  if(open){var first=mobileNav.querySelector("a");if(first)first.focus();}
 }
-
-mobileMenuBtn.addEventListener('click', toggleMobileMenu);
-mobileMenuToggle.addEventListener('click', toggleMobileMenu);
-mobileMenuPanel.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && mobileMenuPanel.classList.contains('open')) {
-    toggleMobileMenu();
+menuBtn.addEventListener("click",function(){
+  setMenu(menuBtn.getAttribute("aria-expanded")!=="true");
+});
+mobileNav.addEventListener("click",function(e){
+  if(e.target.closest("a"))setMenu(false);
+});
+document.addEventListener("keydown",function(e){
+  if(e.key==="Escape"&&menuBtn.getAttribute("aria-expanded")==="true"){
+    setMenu(false);menuBtn.focus();
+  }
+});
+document.addEventListener("click",function(e){
+  if(menuBtn.getAttribute("aria-expanded")==="true"&&!e.target.closest("#mobile-nav")&&!e.target.closest("#menu-btn")){
+    setMenu(false);
   }
 });
 
-/* Smooth Scrolling & Focus Management */
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-  anchor.addEventListener('click', function (e) {
-    const target = document.querySelector(this.getAttribute('href'));
-    if (target) {
-      e.preventDefault();
-      target.scrollIntoView({ behavior: 'smooth' });
-      // Manage focus for accessibility
-      if (!target.hasAttribute('tabindex')) {
-        target.setAttribute('tabindex', '-1');
+/* Smooth anchor focus management */
+document.querySelectorAll('a[href^="#"]').forEach(function(a){
+  a.addEventListener("click",function(){
+    var id=a.getAttribute("href");
+    if(id.length<2)return;
+    var target=document.querySelector(id);
+    if(!target)return;
+    target.setAttribute("tabindex","-1");
+    setTimeout(function(){target.focus({preventScroll:true});},reduced?0:450);
+  });
+});
+
+/* Scroll reveal */
+var revealEls=document.querySelectorAll(".reveal");
+if("IntersectionObserver" in window&&!reduced){
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){
+        var el=entry.target;
+        var siblings=Array.prototype.slice.call(el.parentElement.children);
+        el.style.transitionDelay=(siblings.indexOf(el)*70)+"ms";
+        el.classList.add("is-revealed");
+        io.unobserve(el);
       }
-      target.focus();
-    }
-  });
-});
+    });
+  },{threshold:.15});
+  revealEls.forEach(function(el){io.observe(el);});
+}else{
+  revealEls.forEach(function(el){el.classList.add("is-revealed");});
+}
 
-/* FAQ Animation Enhancement */
-document.querySelectorAll('.faq-item').forEach(item => {
-  const summary = item.querySelector('.faq__summary');
-  const panel = item.querySelector('.faq__panel');
-  
-  summary.addEventListener('click', () => {
-    const isOpen = item.hasAttribute('open');
-    if (isOpen) {
-      item.removeAttribute('open');
-      panel.style.maxHeight = null;
-    } else {
-      item.setAttribute('open', '');
-      panel.style.maxHeight = panel.scrollHeight + 'px';
-    }
-  });
-  
-  // Initialize max-height for closed state
-  if (!item.hasAttribute('open')) {
-    panel.style.maxHeight = null;
+/* Email form */
+var form=document.getElementById("cta-form");
+var email=document.getElementById("cta-email");
+var errBox=document.getElementById("cta-error");
+var errText=document.getElementById("cta-error-text");
+var okBox=document.getElementById("cta-success");
+var submitBtn=document.getElementById("cta-submit");
+var toast=document.getElementById("toast");
+var toastTimer=null;
+
+function showError(msg){
+  errText.textContent=msg;
+  errBox.classList.add("is-visible");
+  email.setAttribute("aria-invalid","true");
+  form.classList.remove("is-valid");
+}
+function clearError(){
+  errBox.classList.remove("is-visible");
+  email.removeAttribute("aria-invalid");
+}
+function validEmail(v){return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);}
+
+email.addEventListener("blur",function(){
+  if(!email.value){clearError();return;}
+  if(validEmail(email.value)){clearError();form.classList.add("is-valid");}
+  else showError("Please enter a valid email address.");
+});
+email.addEventListener("input",function(){
+  if(email.getAttribute("aria-invalid")==="true"&&validEmail(email.value)){
+    clearError();form.classList.add("is-valid");
   }
 });
 
-/* Scroll Reveal */
-const observerOptions = {
-  root: null,
-  threshold: 0.1,
-  rootMargin: '0px'
-};
-
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('is-visible');
-      observer.unobserve(entry.target);
-    }
-  });
-}, observerOptions);
-
-document.addEventListener('DOMContentLoaded', () => {
-  const elementsToReveal = document.querySelectorAll(
-    '.section-title, .card, .step, .testimonial, .pricing-card, .faq-item, .cta__form'
-  );
-  elementsToReveal.forEach(el => {
-    el.classList.add('is-hidden');
-    observer.observe(el);
-  });
-});
-
-/* Email Form Simulation */
-const form = document.getElementById('email-form');
-const emailInput = document.getElementById('email-input');
-const feedback = document.getElementById('email-feedback');
-const submitBtn = document.getElementById('submit-btn');
-const toastContainer = document.getElementById('toast-container');
-
-function showError(message) {
-  emailInput.setAttribute('aria-invalid', 'true');
-  feedback.textContent = message;
-  feedback.setAttribute('aria-live', 'assertive');
+function showToast(){
+  toast.hidden=false;
+  requestAnimationFrame(function(){toast.classList.add("is-visible");});
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(hideToast,4000);
 }
-
-function clearError() {
-  emailInput.removeAttribute('aria-invalid');
-  feedback.textContent = '';
-  feedback.removeAttribute('aria-live');
+function hideToast(){
+  toast.classList.remove("is-visible");
+  setTimeout(function(){toast.hidden=true;},350);
 }
+toast.querySelector(".toast__close").addEventListener("click",hideToast);
 
-function showSuccess() {
-  submitBtn.classList.add('is-loading');
-  submitBtn.disabled = true;
-  
-  setTimeout(() => {
-    submitBtn.classList.remove('is-loading');
-    submitBtn.classList.add('is-success');
-    submitBtn.textContent = 'Growing...';
-    
-    setTimeout(() => {
-      submitBtn.classList.remove('is-success');
-      submitBtn.textContent = 'Start Growing';
-      submitBtn.disabled = false;
-      emailInput.value = '';
-      clearError();
-      
-      // Show toast
-      toastContainer.classList.add('visible');
-      setTimeout(() => {
-        toastContainer.classList.remove('visible');
-      }, 4000);
-    }, 1500);
-  }, 1000);
-}
-
-form.addEventListener('submit', (e) => {
+form.addEventListener("submit",function(e){
   e.preventDefault();
+  if(!validEmail(email.value)){
+    showError("Please enter a valid email address.");
+    submitBtn.classList.add("is-error");
+    setTimeout(function(){submitBtn.classList.remove("is-error");},1200);
+    email.focus();
+    return;
+  }
   clearError();
-  
-  const email = emailInput.value.trim();
-  if (!email) {
-    showError('Please enter your email address');
-    emailInput.focus();
-    return;
-  }
-  
-  // Basic email regex
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    showError('Please enter a valid email address');
-    emailInput.focus();
-    return;
-  }
-  
-  showSuccess();
+  submitBtn.classList.add("is-loading");
+  submitBtn.setAttribute("aria-busy","true");
+  submitBtn.disabled=true;
+  var label=submitBtn.querySelector(".btn__label");
+  var original=label.textContent;
+  label.innerHTML='<span class="material-symbols-rounded spin" aria-hidden="true" style="font-size:1.25rem">progress_activity</span>';
+  setTimeout(function(){
+    submitBtn.classList.remove("is-loading");
+    submitBtn.removeAttribute("aria-busy");
+    submitBtn.classList.add("is-success");
+    label.innerHTML='<span class="material-symbols-rounded" aria-hidden="true" style="font-size:1.25rem">check_circle</span> Planted';
+    form.classList.add("is-valid");
+    okBox.classList.add("is-visible");
+    showToast();
+    setTimeout(function(){
+      submitBtn.classList.remove("is-success");
+      submitBtn.disabled=false;
+      label.textContent=original;
+      form.reset();
+      form.classList.remove("is-valid");
+    },3500);
+  },900);
 });
 
-emailInput.addEventListener('input', clearError);
-emailInput.addEventListener('blur', () => {
-  if (emailInput.value.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value.trim())) {
-    showError('Please enter a valid email address');
-  }
-});
-
-/* Footer Year */
-document.getElementById('copyright-year').textContent = new Date().getFullYear();
-
-/* Hero Parallax (disabled on touch/reduced motion) */
-const heroVisual = document.querySelector('.hero__visual');
-if (heroVisual && !/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-  let mouseX = 0, mouseY = 0;
-  let posX = 0, posY = 0;
-  
-  const updatePosition = () => {
-    posX += (mouseX - posX) * 0.05;
-    posY += (mouseY - posY) * 0.05;
-    
-    const translateX = (posX - window.innerWidth / 2) / 20;
-    const translateY = (posY - window.innerHeight / 2) / 20;
-    
-    heroVisual.style.transform = `translate3d(${translateX}px, ${translateY}px, 0)`;
-    
-    requestAnimationFrame(updatePosition);
-  };
-  
-  document.addEventListener('mousemove', (e) => {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-  });
-  
-  updatePosition();
-}
-
-/* Optional Canvas for Hero (fallback to CSS blobs) */
-const heroCanvasContainer = document.querySelector('.hero__visual');
-if (heroCanvasContainer && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-  const canvas = document.createElement('canvas');
-  canvas.setAttribute('aria-hidden', 'true');
-  heroCanvasContainer.appendChild(canvas);
-  
-  const ctx = canvas.getContext('2d');
-  let cells = [];
-  let animationFrame;
-  
-  function resizeCanvas() {
-    canvas.width = heroCanvasContainer.clientWidth * window.devicePixelRatio;
-    canvas.height = heroCanvasContainer.clientHeight * window.devicePixelRatio;
-    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-    initCells();
-  }
-  
-  function initCells() {
-    cells = [];
-    const count = Math.floor((canvas.width * canvas.height) / 10000);
-    for (let i = 0; i < count; i++) {
-      cells.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        radius: Math.random() * 2 + 1,
-        dx: (Math.random() - 0.5) * 0.5,
-        dy: (Math.random() - 0.5) * 0.5,
-        alpha: Math.random() * 0.3 + 0.1
-      });
-    }
-  }
-  
-  function drawCells() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = `rgba(0, 229, 255, 0.05)`;
-    
-    cells.forEach(cell => {
-      ctx.beginPath();
-      ctx.arc(cell.x, cell.y, cell.radius, 0, Math.PI * 2);
-      ctx.fill();
-    });
-    
-    // Draw connections
-    ctx.strokeStyle = `rgba(0, 229, 255, 0.02)`;
-    ctx.lineWidth = 0.5;
-    for (let i = 0; i < cells.length; i++) {
-      for (let j = i + 1; j < cells.length; j++) {
-        const dx = cells[i].x - cells[j].x;
-        const dy = cells[i].y - cells[j].y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        if (distance < 100) {
-          ctx.beginPath();
-          ctx.moveTo(cells[i].x, cells[i].y);
-          ctx.lineTo(cells[j].x, cells[j].y);
-          ctx.stroke();
-        }
-      }
-    }
-  }
-  
-  function updateCells() {
-    cells.forEach(cell => {
-      cell.x += cell.dx;
-      cell.y += cell.dy;
-      
-      if (cell.x < 0 || cell.x > canvas.width) cell.dx = -cell.dx;
-      if (cell.y < 0 || cell.y > canvas.height) cell.dy = -cell.dy;
-    });
-  }
-  
-  function animate() {
-    updateCells();
-    drawCells();
-    animationFrame = requestAnimationFrame(animate);
-  }
-  
-  function handleVisibilityChange() {
-    if (document.hidden) {
-      cancelAnimationFrame(animationFrame);
-    } else {
-      animate();
-    }
-  }
-  
-  window.addEventListener('resize', resizeCanvas);
-  document.addEventListener('visibilitychange', handleVisibilityChange);
-  
-  resizeCanvas();
-  animate();
-  
-  // Fallback if canvas fails
-  canvas.onerror = () => {
-    canvas.remove();
-  };
-}
-
-/* Reduce Motion Check */
-const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-reduceMotion.addEventListener('change', (e) => {
-  if (e.matches) {
-    // Disable animations
-    document.documentElement.classList.add('reduce-motion');
-  } else {
-    document.documentElement.classList.remove('reduce-motion');
-  }
-});
+/* Footer year */
+document.getElementById("year").textContent=new Date().getFullYear();
+})();
 </script>
-<script id="pd-theme-toggle">(()=>{const r=document.documentElement,I={"sun":"<svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4\"/></svg>","moon":"<svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z\"/></svg>"};
-let s=null;try{s=localStorage.getItem('theme')}catch{}
-r.dataset.theme=s==='dark'||s==='light'?s:(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
-let b=[...document.querySelectorAll("#theme-toggle,#themeToggle,.theme-toggle,[data-theme-toggle],button[aria-label*=\"theme\" i],button[aria-label*=\"dark\" i],button[aria-label*=\"light\" i],button[aria-label*=\"mode\" i]")].find(e=>e.offsetParent!==null);
-const own=!b;
-if(own){b=document.createElement('button');b.type='button';b.className='pd-theme-btn';const h=document.querySelector('nav')||document.querySelector('header');h?h.appendChild(b):(b.classList.add('pd-theme-btn--float'),document.body.appendChild(b));}
-const sync=()=>{const d=r.dataset.theme==='dark';r.classList.toggle('dark',d);r.classList.toggle('light',!d);b.setAttribute('aria-pressed',String(d));b.setAttribute('aria-label',d?'Switch to light mode':'Switch to dark mode');
-if(own){b.innerHTML=d?I.sun:I.moon;return;}const g=b.querySelector('[class*="material-symbols"],[class*="material-icons"]');if(g)g.textContent=d?'light_mode':'dark_mode';else if(!b.querySelector('svg,img'))b.innerHTML=d?I.sun:I.moon;};
-b.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();r.dataset.theme=r.dataset.theme==='dark'?'light':'dark';try{localStorage.setItem('theme',r.dataset.theme)}catch{}sync();},true);
-sync();addEventListener('load',sync);})();</script>
 </body>
 </html>

@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pulseboard — Realtime analytics & workflow workspace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL@24,400,1&display=swap" rel="stylesheet">
+<style>
+@layer base,components,sections,utilities;
+@layer base{
+:root{
+--color-bg:#fefefe;--color-surface:#fff;--color-surface-strong:#f4f2fd;--color-border:#e4e1f5;--color-text:#211f33;--color-text-muted:#5a5775;--color-primary:#6d5bf6;--color-accent:#ff6fa5;--star:#b45309;
+--radius-md:12px;--radius-lg:16px;--radius-full:999px;
+--shadow-sm:0 2px 8px rgba(33,31,51,.06);--shadow-md:0 8px 24px rgba(33,31,51,.10);--shadow-lg:0 16px 40px rgba(33,31,51,.14);
+--font-sans:'Manrope',Inter,system-ui,sans-serif;--font-mono:'JetBrains Mono',monospace;
+--text-xs:.78rem;--text-sm:.9rem;--text-md:1rem;--text-lg:1.15rem;--text-xl:1.35rem;
+--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;
+--ease-standard:cubic-bezier(.4,0,.2,1);
+--btn-gradient:linear-gradient(120deg,#5b46e8,#c93070);
+--blob-o:.5;--blob-o2:.35;
+--primary:var(--color-primary);--secondary:var(--color-accent);--bg-primary:var(--color-bg);--bg-secondary:var(--color-surface-strong);--text-primary:var(--color-text);--text-secondary:var(--color-text-muted);--border-default:var(--color-border);
+--text-success:#12805c;--text-error:#d64550;--border-success:#12805c;--border-error:#d64550;
+--spacing-gap:var(--space-6);--transition-fast:150ms;--transition-normal:250ms;
+--z-dropdown:1000;--z-modal:1100;--z-toast:1200;
+--color-nav-bg:rgba(255,255,255,.75);--color-nav-bg:color-mix(in srgb,var(--color-surface) 75%,transparent);
+--ring:0 0 0 4px rgba(109,91,246,.25);--ring:0 0 0 4px color-mix(in srgb,var(--color-primary) 25%,transparent);
+}
+html.dark{
+--color-bg:#14121f;--color-surface:#1b1830;--color-surface-strong:#252047;--color-border:#34305c;--color-text:#f5f4ff;--color-text-muted:#aba6c9;--color-primary:#8b7bff;--color-accent:#ff8fb8;--star:#e8a33d;
+--shadow-sm:0 2px 8px rgba(0,0,0,.35);--shadow-md:0 8px 24px rgba(0,0,0,.45);--shadow-lg:0 16px 40px rgba(0,0,0,.55);
+--blob-o:.3;--blob-o2:.22;
+--color-nav-bg:rgba(27,24,48,.8);--color-nav-bg:color-mix(in srgb,var(--color-surface) 75%,transparent);
+--ring:0 0 0 4px rgba(139,123,255,.3);--ring:0 0 0 4px color-mix(in srgb,var(--color-primary) 30%,transparent);
+}
+@media(prefers-color-scheme:dark){
+html:not(.dark):not(.light){
+--color-bg:#14121f;--color-surface:#1b1830;--color-surface-strong:#252047;--color-border:#34305c;--color-text:#f5f4ff;--color-text-muted:#aba6c9;--color-primary:#8b7bff;--color-accent:#ff8fb8;--star:#e8a33d;
+--shadow-sm:0 2px 8px rgba(0,0,0,.35);--shadow-md:0 8px 24px rgba(0,0,0,.45);--shadow-lg:0 16px 40px rgba(0,0,0,.55);
+--blob-o:.3;--blob-o2:.22;--color-nav-bg:rgba(27,24,48,.8);--color-nav-bg:color-mix(in srgb,var(--color-surface) 75%,transparent);
+--ring:0 0 0 4px rgba(139,123,255,.3);--ring:0 0 0 4px color-mix(in srgb,var(--color-primary) 30%,transparent);}
+}
+*,*::before,*::after{box-sizing:border-box;margin:0}
+html,body{overflow-x:clip}
+body{font-family:var(--font-sans);background:var(--color-bg);color:var(--color-text);line-height:1.6;-webkit-font-smoothing:antialiased}
+h1,h2,h3{line-height:1.2;font-weight:800;letter-spacing:-.02em}
+a{color:inherit;text-decoration:none}
+img{max-width:100%}
+:focus-visible{outline:2px solid var(--color-primary);outline-offset:2px;border-radius:4px}
+}
+@layer components{
+.container{max-width:1200px;margin:0 auto;padding:0 var(--space-5)}
+.ms{font-family:'Material Symbols Rounded';font-weight:400;font-style:normal;font-size:24px;line-height:1;display:inline-block;user-select:none;-webkit-user-smoothing:antialiety;font-variation-settings:'FILL' 1,'wght' 400,'opsz' 24}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:var(--radius-full);border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text-muted);font-size:var(--text-xs);font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.badge .ms{font-size:16px;color:var(--color-primary)}
+.nav{position:sticky;top:12px;z-index:var(--z-dropdown);display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);max-width:1200px;margin:12px auto 0;padding:10px 14px 10px 20px;border:1px solid var(--color-border);border-radius:var(--radius-full);background:var(--color-nav-bg);backdrop-filter:blur(12px);box-shadow:var(--shadow-sm)}
+.nav__brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:var(--text-lg)}
+.nav__brand .ms{color:#fff;background:var(--btn-gradient);border-radius:10px;padding:6px;font-size:20px}
+.nav__links{display:none;align-items:center;gap:var(--space-5);font-weight:600;font-size:var(--text-sm)}
+.nav__links a{color:var(--color-text-muted);transition:color var(--transition-fast) var(--ease-standard)}
+.nav__links a:hover,.nav__links a:focus-visible{color:var(--color-primary)}
+.nav__actions{display:flex;align-items:center;gap:var(--space-2)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:10px 22px;border:1px solid var(--color-border);border-radius:var(--radius-full);background:var(--color-surface);color:var(--color-text);font:600 var(--text-sm)/1 var(--font-sans);cursor:pointer;transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),background var(--transition-fast) linear}
+.btn:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.btn:active{transform:scale(.97)}
+.btn--primary{border:none;background:var(--btn-gradient);color:#fff}
+.btn--sm{min-height:44px;padding:8px 16px}
+.btn--nav{display:none}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border:1px solid var(--color-border);border-radius:var(--radius-full);background:var(--color-surface);color:var(--color-text);cursor:pointer;transition:transform var(--transition-fast) var(--ease-standard)}
+.icon-btn:hover{transform:translateY(-2px)}
+.icon-btn .ms--dark{display:block}
+.icon-btn .ms--light{display:none}
+html.dark .icon-btn .ms--dark{display:none}
+html.dark .icon-btn .ms--light{display:block}
+.btn--loading{pointer-events:none;opacity:.85}
+.btn--loading .ms,.btn--loading span{visibility:hidden}
+.btn--loading::after{content:"";position:absolute;width:20px;height:20px;border-radius:50%;border:3px solid rgba(255,255,255,.4);border-top-color:#fff;animation:spin .8s linear infinite}
+.btn--success{background:var(--color-surface);color:var(--text-success);border-color:var(--border-success)}
+.btn[disabled],.btn--disabled{opacity:.5;filter:grayscale(1);cursor:not-allowed;transform:none;box-shadow:none}
+.btn-danger{border:none;background:#b3261e;color:#fff}
+.btn-danger:hover{background:#992019}
+@keyframes spin{to{transform:rotate(360deg)}}
+.card{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-3);padding:var(--space-6);border:1px solid var(--color-border);border-radius:var(--radius-lg);background:var(--color-surface);box-shadow:var(--shadow-md)}
+.card--hover{transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard)}
+.card--hover:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.card:focus-within{border-color:var(--color-primary)}
+.card__chip{display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:14px;background:color-mix(in srgb,var(--color-primary) 14%,var(--color-surface))}
+.card__chip .ms{color:var(--color-primary);font-size:26px}
+.card h3{font-size:var(--text-lg)}
+.card p{color:var(--color-text-muted);font-size:var(--text-sm)}
+.input-group{display:flex;flex-direction:column;align-items:stretch;gap:6px}
+.input-group label{font-size:var(--text-sm);font-weight:700}
+.input{min-height:44px;padding:10px 14px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface);color:var(--color-text);font:500 var(--text-sm) var(--font-sans);transition:border-color var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard)}
+.input::placeholder{color:var(--color-text-muted)}
+.input:focus{outline:none;border-color:var(--color-primary);box-shadow:var(--ring)}
+.input--valid{border-color:var(--border-success)}
+.input--invalid{border-color:var(--border-error);color:var(--text-error)}
+.input[disabled]{opacity:.5;cursor:not-allowed}
+.feedback{display:none;align-items:center;gap:6px;font-size:var(--text-xs);font-weight:600;min-height:18px}
+.feedback .ms{font-size:16px}
+.feedback--error{color:var(--text-error)}
+.feedback--success{color:var(--text-success)}
+.input-group.has-error .feedback--error,.input-group.has-success .feedback--success{display:flex}
+.faq-item{border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface);box-shadow:var(--shadow-sm);margin-bottom:var(--space-3)}
+.faq-item summary{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);min-height:44px;padding:var(--space-4) var(--space-5);font-weight:700;cursor:pointer;list-style:none}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-item summary .ms{transition:transform var(--transition-normal) var(--ease-standard);color:var(--color-primary)}
+.faq-item[open] summary .ms{transform:rotate(180deg)}
+.faq-item__body{padding:0 var(--space-5) var(--space-4);color:var(--color-text-muted);font-size:var(--text-sm);animation:reveal .25s var(--ease-standard)}
+@keyframes reveal{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.skip-link{position:absolute;left:-9999px;top:8px;z-index:var(--z-toast);padding:10px 18px;border-radius:var(--radius-full);background:var(--color-primary);color:#fff;font-weight:700}
+.skip-link:focus{left:8px}
+}
+@layer sections{
+.hero{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:var(--space-5);padding:72px var(--space-5) var(--space-6);overflow:clip}
+.blob-field{position:absolute;inset:0;z-index:-1;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.blob{position:absolute;border-radius:50%;filter:blur(70px);animation:drift 26s var(--ease-standard) infinite alternate}
+.blob--1{width:420px;height:420px;top:-120px;left:-80px;background:radial-gradient(circle,var(--color-primary),transparent 70%);opacity:var(--blob-o)}
+.blob--2{width:380px;height:380px;bottom:-100px;right:-60px;background:radial-gradient(circle,var(--color-accent),transparent 70%);opacity:var(--blob-o2);animation-delay:-8s}
+.blob--3{width:260px;height:260px;top:30%;right:20%;background:radial-gradient(circle,var(--color-primary),transparent 70%);opacity:var(--blob-o2);animation-delay:-15s}
+@keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(60px,40px) scale(1.15)}}
+.hero h1{font-size:clamp(2rem,5.4vw,3.5rem);max-width:16ch}
+.grad-text{background:var(--btn-gradient);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero__sub{max-width:52ch;color:var(--color-text-muted);font-size:var(--text-lg)}
+.hero__ctas{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:var(--space-3)}
+.trust{font-size:var(--text-xs);color:var(--color-text-muted);font-weight:600}
+.mock{width:100%;max-width:640px;border:1px solid transparent;border-radius:var(--radius-lg);background:linear-gradient(var(--color-surface),var(--color-surface)) padding-box,var(--btn-gradient) border-box;box-shadow:var(--shadow-lg);padding:var(--space-4);text-align:left;display:flex;flex-direction:column;align-items:stretch;gap:var(--space-4)}
+.mock__row{display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap}
+.chip{padding:8px 14px;border:1px solid var(--color-border);border-radius:var(--radius-full);background:var(--color-bg);font-size:var(--text-xs);font-weight:700;color:var(--color-text-muted)}
+.chip strong{font-family:var(--font-mono);color:var(--color-text);font-weight:500}
+.chip .ms{font-size:15px;color:var(--text-success);vertical-align:-3px}
+.mock__bars{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;height:120px;padding-top:var(--space-2)}
+.bar{border-radius:8px 8px 4px 4px;background:var(--btn-gradient)}
+.bar--1{height:38%}.bar--2{height:62%}.bar--3{height:46%}.bar--4{height:82%}.bar--5{height:95%}
+.social-proof{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:var(--space-2) var(--space-5);color:var(--color-text-muted);font-size:var(--text-sm);font-weight:700}
+.social-proof span{display:flex;align-items:center;gap:6px}
+.social-proof .ms{font-size:18px;color:var(--color-primary)}
+.section{padding:64px 0}
+.section__head{display:flex;flex-direction:column;align-items:center;text-align:center;gap:var(--space-3);margin-bottom:var(--space-6)}
+.eyebrow{font-size:var(--text-xs);font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--color-primary)}
+.section__head h2{font-size:clamp(1.6rem,3.6vw,2.3rem)}
+.section__head p{max-width:56ch;color:var(--color-text-muted)}
+.grid{display:flex;align-items:stretch;justify-content:center;flex-wrap:wrap;gap:var(--spacing-gap)}
+.grid>.card{flex:1 1 280px;max-width:400px}
+.steps{display:flex;align-items:stretch;justify-content:center;flex-wrap:wrap;gap:var(--spacing-gap);position:relative}
+.step{flex:1 1 260px;max-width:360px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:var(--space-2)}
+.step__num{display:flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:var(--radius-full);background:var(--btn-gradient);color:#fff;font-family:var(--font-mono);font-size:var(--text-md);font-weight:500;box-shadow:var(--shadow-md)}
+.step .ms{color:var(--color-primary);font-size:30px}
+.step h3{font-size:var(--text-md)}
+.step p{color:var(--color-text-muted);font-size:var(--text-sm)}
+.quote{background:var(--color-surface-strong)}
+.quote__stars{display:flex;align-items:center;gap:2px;color:var(--star)}
+.quote__stars .ms{font-size:18px}
+.quote blockquote{font-size:var(--text-sm);font-weight:600}
+.quote__who{display:flex;align-items:center;gap:var(--space-3);margin-top:var(--space-3)}
+.avatar{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;background:var(--btn-gradient);color:#fff;font-weight:800;font-size:var(--text-sm);flex:none}
+.quote__who strong{display:block;font-size:var(--text-sm)}
+.quote__who small{color:var(--color-text-muted)}
+.seg{display:inline-flex;align-items:center;gap:4px;padding:4px;border:1px solid var(--color-border);border-radius:var(--radius-full);background:var(--color-surface)}
+.seg__btn{min-height:40px;padding:8px 18px;border:none;border-radius:var(--radius-full);background:transparent;color:var(--color-text-muted);font:700 var(--text-sm) var(--font-sans);cursor:pointer;transition:background var(--transition-fast) var(--ease-standard),color var(--transition-fast) var(--ease-standard)}
+.seg__btn[aria-pressed="true"]{background:var(--btn-gradient);color:#fff}
+.seg .badge{margin-left:8px;border-color:var(--border-success);color:var(--text-success)}
+.price-card{flex:1 1 280px;max-width:380px}
+.price-card--featured{position:relative;border:2px solid transparent;background:linear-gradient(var(--color-surface),var(--color-surface)) padding-box,var(--btn-gradient) border-box;box-shadow:var(--shadow-lg)}
+.price-card--featured .card__tag{position:absolute;top:-14px;left:50%;transform:translateX(-50%);padding:4px 14px;border-radius:var(--radius-full);background:var(--btn-gradient);color:#fff;font-size:var(--text-xs);font-weight:800;white-space:nowrap}
+.price-card h3{font-size:var(--text-lg)}
+.price{display:flex;align-items:baseline;gap:6px;font-family:var(--font-mono);font-size:2rem;font-weight:500}
+.price small{font-family:var(--font-sans);font-size:var(--text-sm);color:var(--color-text-muted)}
+.price-card ul{display:flex;flex-direction:column;align-items:flex-start;gap:8px;list-style:none;padding:0;margin:var(--space-3) 0;width:100%}
+.price-card li{display:flex;align-items:center;gap:8px;font-size:var(--text-sm);color:var(--color-text-muted)}
+.price-card li .ms{font-size:18px;color:var(--text-success)}
+.cta-band{position:relative;overflow:clip;border-radius:var(--radius-lg);background:linear-gradient(color-mix(in srgb,var(--color-surface-strong) 88%,var(--color-primary)),var(--color-surface-strong));border:1px solid var(--color-border);padding:56px var(--space-5);display:flex;flex-direction:column;align-items:center;text-align:center;gap:var(--space-4)}
+.cta-band h2{font-size:clamp(1.6rem,3.6vw,2.2rem)}
+.cta-band p{color:var(--color-text-muted);max-width:48ch}
+.cta-form{display:flex;align-items:stretch;justify-content:center;flex-wrap:wrap;gap:var(--space-3);width:100%;max-width:520px;text-align:left}
+.cta-form .input{flex:1 1 240px}
+.footer{background:var(--color-surface-strong);border-top:1px solid var(--color-border);padding:56px 0 var(--space-6);margin-top:64px}
+.footer__grid{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:var(--space-6)}
+.footer__brand{max-width:300px;display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-3);color:var(--color-text-muted);font-size:var(--text-sm)}
+.footer__cols{display:flex;align-items:flex-start;justify-content:center;flex-wrap:wrap;gap:48px var(--space-6)}
+.footer__cols h4{font-size:var(--text-sm);margin-bottom:var(--space-3)}
+.footer__cols ul{list-style:none;padding:0;display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+.footer__cols a{color:var(--color-text-muted);font-size:var(--text-sm);transition:color var(--transition-fast) var(--ease-standard)}
+.footer__cols a:hover{color:var(--color-primary)}
+.footer__social{display:flex;align-items:center;gap:var(--space-2)}
+.pill{padding:8px 16px;border:1px solid var(--color-border);border-radius:var(--radius-full);background:var(--color-surface);font-size:var(--text-xs);font-weight:700;color:var(--color-text-muted)}
+.pill:hover{color:var(--color-primary);border-color:var(--color-primary)}
+.footer__bottom{margin-top:var(--space-6);padding-top:var(--space-4);border-top:1px solid var(--color-border);color:var(--color-text-muted);font-size:var(--text-xs);text-align:center}
+}
+@layer utilities{
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+html.js .reveal{opacity:0;transform:translateY(14px);transition:opacity .6s var(--ease-standard),transform .6s var(--ease-standard)}
+html.js .reveal.in{opacity:1;transform:none}
+@media(min-width:840px){
+.nav__links{display:flex}
+.btn--nav{display:inline-flex}
+#menuBtn{display:none}
+}
+@media(max-width:839px){
+.nav__links{position:absolute;top:calc(100% + 8px);left:0;right:0;flex-direction:column;align-items:stretch;gap:0;padding:var(--space-2);border:1px solid var(--color-border);border-radius:var(--radius-lg);background:var(--color-surface);box-shadow:var(--shadow-lg);max-height:0;opacity:0;overflow:hidden;pointer-events:none;transition:max-height var(--transition-normal) var(--ease-standard),opacity var(--transition-normal) var(--ease-standard)}
+.nav__links.open{max-height:320px;opacity:1;pointer-events:auto}
+.nav__links a{min-height:44px;display:flex;align-items:center;padding:var(--space-3)}
+}
+@media(prefers-reduced-motion:reduce){
+*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+.blob{animation:none}
+html.js .reveal{opacity:1;transform:none}
+.btn:hover,.card--hover:hover,.icon-btn:hover{transform:none}
+}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header>
+<nav class="nav" aria-label="Main">
+<a class="nav__brand" href="#"><span class="ms" aria-hidden="true">insights</span>Pulseboard</a>
+<ul class="nav__links" id="menu">
+<li><a href="#features">Features</a></li>
+<li><a href="#how">How it works</a></li>
+<li><a href="#pricing">Pricing</a></li>
+<li><a href="#faq">FAQ</a></li>
+</ul>
+<div class="nav__actions">
+<button class="icon-btn" id="themeBtn" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+<span class="ms ms--dark" aria-hidden="true">dark_mode</span>
+<span class="ms ms--light" aria-hidden="true">light_mode</span>
+</button>
+<a class="btn btn--primary btn--nav" href="#cta">Get started</a>
+<button class="icon-btn" id="menuBtn" type="button" aria-expanded="false" aria-controls="menu" aria-label="Open menu"><span class="ms" aria-hidden="true">menu</span></button>
+</div>
+</nav>
+</header>
+<main id="main">
+<section class="hero">
+<div class="blob-field" aria-hidden="true"><span class="blob blob--1"></span><span class="blob blob--2"></span><span class="blob blob--3"></span></div>
+<span class="badge"><span class="ms" aria-hidden="true">bolt</span>New · Realtime dashboards 2.0</span>
+<h1>Turn team chaos into <span class="grad-text">clear momentum</span></h1>
+<p class="hero__sub">Pulseboard unifies analytics, workflows, and reporting in one realtime workspace — so your team ships decisions, not spreadsheets.</p>
+<div class="hero__ctas">
+<a class="btn btn--primary" href="#pricing">Start free trial<span class="ms" aria-hidden="true">arrow_forward</span></a>
+<a class="btn" href="#how">See how it works</a>
+</div>
+<p class="trust">No credit card required · Free 14-day trial</p>
+<div class="mock" aria-hidden="true">
+<div class="mock__row">
+<span class="chip">Revenue <strong>$48.2k</strong> <span class="ms">trending_up</span> 12%</span>
+<span class="chip">Active users <strong>8,204</strong></span>
+<span class="chip">NPS <strong>61</strong></span>
+</div>
+<div class="mock__bars">
+<span class="bar bar--1"></span><span class="bar bar--2"></span><span class="bar bar--3"></span><span class="bar bar--4"></span><span class="bar bar--5"></span>
+</div>
+</div>
+<div class="social-proof">
+<span><span class="ms" aria-hidden="true">verified</span>SOC 2 Type II</span>
+<span><span class="ms" aria-hidden="true">lock</span>GDPR ready</span>
+<span><span class="ms" aria-hidden="true">favorite</span>4.9/5 on G2</span>
+</div>
+</section>
+<section class="section" id="features">
+<div class="container">
+<div class="section__head reveal">
+<span class="eyebrow">Features</span>
+<h2>Everything your team needs to move fast</h2>
+<p>One workspace for measuring, automating, and reporting — built for teams that would rather build than babysit dashboards.</p>
+</div>
+<div class="grid">
+<article class="card card--hover reveal"><span class="card__chip"><span class="ms" aria-hidden="true">monitoring</span></span><h3>Realtime analytics</h3><p>Live metrics stream in from your product, billing, and support tools the moment they change — no nightly syncs, no stale numbers.</p></article>
+<article class="card card--hover reveal"><span class="card__chip"><span class="ms" aria-hidden="true">account_tree</span></span><h3>No-code workflows</h3><p>Trigger alerts, approvals, and follow-ups from any metric threshold. Design the flow once; Pulseboard runs it around the clock.</p></article>
+<article class="card card--hover reveal"><span class="card__chip"><span class="ms" aria-hidden="true">shield_lock</span></span><h3>Enterprise-grade security</h3><p>SSO, granular roles, audit logs, and end-to-end encryption. Data residency options for US and EU from day one.</p></article>
+</div>
+</div>
+</section>
+<section class="section" id="how">
+<div class="container">
+<div class="section__head reveal">
+<span class="eyebrow">How it works</span>
+<h2>Up and running in three steps</h2>
+<p>Most teams see their first live dashboard within fifteen minutes of signing up.</p>
+</div>
+<div class="steps">
+<div class="step reveal"><span class="step__num">01</span><span class="ms" aria-hidden="true">cable</span><h3>Connect your stack</h3><p>Plug in Stripe, Segment, Postgres, or any API with guided, read-only connectors.</p></div>
+<div class="step reveal"><span class="step__num">02</span><span class="ms" aria-hidden="true">design_services</span><h3>Design your flow</h3><p>Drag metrics onto a canvas, set thresholds, and wire the automations that matter.</p></div>
+<div class="step reveal"><span class="step__num">03</span><span class="ms" aria-hidden="true">rocket_launch</span><h3>Ship &amp; measure</h3><p>Share dashboards with one link, then watch decisions compound in the activity feed.</p></div>
+</div>
+</div>
+</section>
+<section class="section" id="testimonials">
+<div class="container">
+<div class="section__head reveal">
+<span class="eyebrow">Testimonials</span>
+<h2>Teams that switched, stayed</h2>
+<p>Over 4,000 data-driven teams run their week on Pulseboard.</p>
+</div>
+<div class="grid">
+<article class="card quote card--hover reveal">
+<div class="quote__stars" role="img" aria-label="Rated 5 out of 5"><span class="ms" aria-hidden="true">star</span><span class="ms" aria-hidden="true">star</span><span class="ms" aria-hidden="true">star</span><span class="ms" aria-hidden="true">star</span><span class="ms" aria-hidden="true">star</span></div>
+<blockquote>"Pulseboard cut our weekly reporting from six hours to ten minutes. Monday meetings finally start with answers."</blockquote>
+<div class="quote__who"><span class="avatar" aria-hidden="true">MC</span><span><strong>Maya Chen</strong><small>Head of Data, Northwind</small></span></div>
+</article>
+<article class="card quote card--hover reveal">
+<div class="quote__stars" role="img" aria-label="Rated 5 out of 5"><span class="ms" aria-hidden="true">star</span><span class="ms" aria-hidden="true">star</span><span class="ms" aria-hidden="true">star</span><span class="ms" aria-hidden="true">star</span><span class="ms" aria-hidden="true">star</span></div>
+<blockquote>"It's the first analytics tool our whole team actually opens every day. The realtime alerts alone paid for the plan."</blockquote>
+<div class="quote__who"><span class="avatar" aria-hidden="true">DR</span><span><strong>Diego Ramírez</strong><small>Product Lead, Lumen Labs</small></span></div>
+</article>
+<article class="card quote card--hover reveal">
+<div class="quote__stars" role="img" aria-label="Rated 5 out of 5"><span class="ms" aria-hidden="true">star</span><span class="ms" aria-hidden="true">star</span><span class="ms" aria-hidden="true">star</span><span class="ms" aria-hidden="true">star</span><span class="ms" aria-hidden="true">star</span></div>
+<blockquote>"We replaced three separate tools with Pulseboard and still paid less than before. Setup genuinely took one afternoon."</blockquote>
+<div class="quote__who"><span class="avatar" aria-hidden="true">PN</span><span><strong>Priya Nair</strong><small>COO, Acme Corp</small></span></div>
+</article>
+</div>
+</div>
+</section>
+<section class="section" id="pricing">
+<div class="container">
+<div class="section__head reveal">
+<span class="eyebrow">Pricing</span>
+<h2>Simple plans that scale with you</h2>
+<div class="seg" role="group" aria-label="Billing period">
+<button class="seg__btn" type="button" id="btnMonthly" aria-pressed="true">Monthly</button>
+<button class="seg__btn" type="button" id="btnAnnual" aria-pressed="false">Annual</button>
+<span class="badge">Save 20%</span>
+</div>
+</div>
+<div class="grid" aria-live="polite">
+<article class="card price-card reveal">
+<h3>Starter</h3>
+<p class="price"><span data-m="19" data-a="15">$19</span><small>/ month</small></p>
+<p>For small teams getting their first dashboards live.</p>
+<ul>
+<li><span class="ms" aria-hidden="true">check</span>3 data sources</li>
+<li><span class="ms" aria-hidden="true">check</span>5 dashboards</li>
+<li><span class="ms" aria-hidden="true">check</span>Email alerts</li>
+<li><span class="ms" aria-hidden="true">check</span>2 team seats</li>
+</ul>
+<a class="btn" href="#cta">Choose Starter</a>
+</article>
+<article class="card card--hover price-card price-card--featured reveal">
+<span class="card__tag">Most popular</span>
+<h3>Growth</h3>
+<p class="price"><span data-m="49" data-a="39">$49</span><small>/ month</small></p>
+<p>For teams automating decisions across the whole product.</p>
+<ul>
+<li><span class="ms" aria-hidden="true">check</span>Unlimited sources</li>
+<li><span class="ms" aria-hidden="true">check</span>Unlimited dashboards</li>
+<li><span class="ms" aria-hidden="true">check</span>Workflow automations</li>
+<li><span class="ms" aria-hidden="true">check</span>15 team seats</li>
+<li><span class="ms" aria-hidden="true">check</span>Priority support</li>
+</ul>
+<a class="btn btn--primary" href="#cta">Choose Growth</a>
+</article>
+<article class="card price-card reveal">
+<h3>Scale</h3>
+<p class="price"><span data-m="99" data-a="79">$99</span><small>/ month</small></p>
+<p>For companies with compliance and volume requirements.</p>
+<ul>
+<li><span class="ms" aria-hidden="true">check</span>Everything in Growth</li>
+<li><span class="ms" aria-hidden="true">check</span>SSO &amp; audit logs</li>
+<li><span class="ms" aria-hidden="true">check</span>Unlimited seats</li>
+<li><span class="ms" aria-hidden="true">check</span>99.99% uptime SLA</li>
+</ul>
+<a class="btn" href="#cta">Choose Scale</a>
+</article>
+</div>
+</div>
+</section>
+<section class="section" id="faq">
+<div class="container">
+<div class="section__head reveal">
+<span class="eyebrow">FAQ</span>
+<h2>Frequently asked questions</h2>
+<p>Everything else, our team answers at support@pulseboard.io.</p>
+</div>
+<div class="reveal" style="max-width:720px;margin:0 auto">
+<details class="faq-item">
+<summary>How long does setup take?<span class="ms" aria-hidden="true">expand_more</span></summary>
+<div class="faq-item__body">Most teams connect their first data source in under five minutes and have a live dashboard within fifteen. Guided connectors handle authentication and schema detection for you.</div>
+</details>
+<details class="faq-item">
+<summary>Can I migrate data from my current tool?<span class="ms" aria-hidden="true">expand_more</span></summary>
+<div class="faq-item__body">Yes. Pulseboard imports dashboards and historical data from the major BI platforms, and our team assists free of charge on Growth and Scale plans.</div>
+</details>
+<details class="faq-item">
+<summary>Do you offer SSO and SOC 2?<span class="ms" aria-hidden="true">expand_more</span></summary>
+<div class="faq-item__body">SOC 2 Type II is certified and SSO via Google, Okta, and Azure AD is available on the Scale plan. Audit logs and role-based access are included.</div>
+</details>
+<details class="faq-item">
+<summary>What happens if I exceed my plan limits?<span class="ms" aria-hidden="true">expand_more</span></summary>
+<div class="faq-item__body">Nothing breaks. We notify you at 80% usage and keep everything running while you decide — we never throttle or drop your data mid-cycle.</div>
+</details>
+<details class="faq-item">
+<summary>Can I cancel anytime?<span class="ms" aria-hidden="true">expand_more</span></summary>
+<div class="faq-item__body">Yes, plans are month-to-month (annual billing is discounted 20%) and you can cancel from settings in two clicks. Your data stays exportable for 90 days.</div>
+</details>
+</div>
+</div>
+</section>
+<section class="section" id="cta">
+<div class="container">
+<div class="cta-band reveal">
+<h2>Ready to see your metrics move?</h2>
+<p>Join 4,000+ teams making faster decisions with Pulseboard. Start your free trial today.</p>
+<form class="cta-form" id="ctaForm" novalidate>
+<div class="input-group" id="emailGroup">
+<label for="email">Work email</label>
+<input class="input" id="email" name="email" type="email" placeholder="you@company.com" autocomplete="email" required aria-describedby="emailFeedback">
+<span class="feedback feedback--error" id="emailFeedback"><span class="ms" aria-hidden="true">error</span><span id="emailMsg">Enter a valid email address.</span></span>
+</div>
+<button class="btn btn--primary" id="ctaBtn" type="submit"><span class="ms" aria-hidden="true">send</span><span>Get started</span></button>
+</form>
+<p class="sr-only" role="status" aria-live="polite" id="liveRegion"></p>
+</div>
+</div>
+</section>
+</main>
+<footer class="footer">
+<div class="container">
+<div class="footer__grid">
+<div class="footer__brand">
+<a class="nav__brand" href="#"><span class="ms" aria-hidden="true">insights</span>Pulseboard</a>
+<p>The realtime analytics and workflow workspace for teams that ship.</p>
+<div class="footer__social">
+<a class="pill" href="#">X</a><a class="pill" href="#">LinkedIn</a><a class="pill" href="#">GitHub</a>
+</div>
+</div>
+<div class="footer__cols">
+<div><h4>Product</h4><ul><li><a href="#features">Features</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#">Integrations</a></li><li><a href="#">Changelog</a></li></ul></div>
+<div><h4>Company</h4><ul><li><a href="#">About</a></li><li><a href="#">Careers</a></li><li><a href="#">Blog</a></li><li><a href="#">Contact</a></li></ul></div>
+<div><h4>Resources</h4><ul><li><a href="#">Docs</a></li><li><a href="#">API reference</a></li><li><a href="#">Community</a></li><li><a href="#">Status</a></li></ul></div>
+</div>
+</div>
+<p class="footer__bottom">© 2026 Pulseboard, Inc. All rights reserved.</p>
+</div>
+</footer>
+<script>
+(function(){
+var d=document,root=d.documentElement;root.classList.add('js');
+var btn=d.getElementById('themeBtn');
+function apply(t){root.classList.remove('dark','light');root.classList.add(t);
+var dark=t==='dark';btn.setAttribute('aria-pressed',dark?'true':'false');
+btn.setAttribute('aria-label',dark?'Switch to light mode':'Switch to dark mode');}
+var saved=null;try{saved=localStorage.getItem('mgs-theme')}catch(e){}
+var mq=window.matchMedia('(prefers-color-scheme: dark)');
+apply(saved==='light'||saved==='dark'?saved:(mq.matches?'dark':'light'));
+btn.addEventListener('click',function(){
+var t=root.classList.contains('dark')?'light':'dark';apply(t);
+try{localStorage.setItem('mgs-theme',t)}catch(e){}});
+var menu=d.getElementById('menu'),mb=d.getElementById('menuBtn');
+function closeMenu(){menu.classList.remove('open');mb.setAttribute('aria-expanded','false');mb.setAttribute('aria-label','Open menu');mb.focus();}
+mb.addEventListener('click',function(){
+var open=!menu.classList.contains('open');menu.classList.toggle('open',open);
+mb.setAttribute('aria-expanded',open?'true':'false');
+mb.setAttribute('aria-label',open?'Close menu':'Open menu');
+if(open){var a=menu.querySelector('a');if(a)a.focus();}});
+menu.addEventListener('click',function(e){if(e.target.tagName==='A')closeMenu()});
+d.addEventListener('keydown',function(e){
+if(e.key==='Escape'&&menu.classList.contains('open'))closeMenu();
+var openItem=d.querySelector('details[open]');
+if(e.key==='Escape'&&openItem){openItem.removeAttribute('open');openItem.querySelector('summary').focus();}});
+var details=d.querySelectorAll('.faq-item');
+details.forEach(function(dt){dt.addEventListener('toggle',function(){
+if(dt.open)details.forEach(function(o){if(o!==dt)o.removeAttribute('open')});});});
+var io=new IntersectionObserver(function(es){es.forEach(function(en){if(en.isIntersecting){en.target.classList.add('in');io.unobserve(en.target)}})},{threshold:.15});
+d.querySelectorAll('.reveal').forEach(function(el){io.observe(el)});
+var m=d.getElementById('btnMonthly'),a=d.getElementById('btnAnnual');
+function setBilling(annual){
+m.setAttribute('aria-pressed',annual?'false':'true');
+a.setAttribute('aria-pressed',annual?'true':'false');
+d.querySelectorAll('.price [data-m]').forEach(function(p){
+p.textContent='$'+(annual?p.dataset.a:p.dataset.m);});}
+m.addEventListener('click',function(){setBilling(false)});
+a.addEventListener('click',function(){setBilling(true)});
+var form=d.getElementById('ctaForm'),email=d.getElementById('email'),
+group=d.getElementById('emailGroup'),cbtn=d.getElementById('ctaBtn'),
+msg=d.getElementById('emailMsg'),live=d.getElementById('liveRegion');
+form.addEventListener('submit',function(e){
+e.preventDefault();
+var ok=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.value.trim());
+group.classList.toggle('has-error',!ok);group.classList.remove('has-success');
+email.classList.toggle('input--invalid',!ok);
+email.setAttribute('aria-invalid',ok?'false':'true');
+email.setAttribute('aria-describedby',ok?null:'emailFeedback');
+if(!ok){live.textContent='Error: please enter a valid email address.';email.focus();return;}
+cbtn.classList.add('btn--loading');cbtn.setAttribute('aria-busy','true');
+live.textContent='Submitting, please wait…';
+setTimeout(function(){
+cbtn.classList.remove('btn--loading');cbtn.setAttribute('aria-busy','false');
+cbtn.classList.add('btn--success');
+cbtn.innerHTML='<span class="ms" aria-hidden="true">check_circle</span><span>You\'re in!</span>';
+email.disabled=true;email.classList.add('input--valid');
+group.classList.add('has-success');
+msg.textContent='Success! Check your inbox for the welcome email.';
+live.textContent='Success! Your free trial is ready — check your inbox.';},1000);});
+email.addEventListener('input',function(){
+group.classList.remove('has-error','has-success');
+email.classList.remove('input--invalid','input--valid');
+email.removeAttribute('aria-invalid');});
+})();
+</script>
+</body>
+</html>

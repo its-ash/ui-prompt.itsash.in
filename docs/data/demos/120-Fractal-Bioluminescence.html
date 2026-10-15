@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nimbus — Living Fractal Design Engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,0&display=swap" rel="stylesheet">
+<style>
+:root{--primary:#E040FB;--secondary:#00E676;--tertiary:#2979FF;--deep-purple:#4A148C;--bg-primary:#050005;--bg-secondary:#12031A;--bg-elevated:#1A0526;--text-primary:#FFFFFF;--text-secondary:rgba(255,255,255,.72);--text-success:#00E676;--text-error:#FF5252;--border-default:rgba(255,255,255,.12);--border-glow:rgba(224,64,251,.45);--border-success:rgba(0,230,118,.6);--border-error:rgba(255,82,82,.6);--glow-primary:0 0 20px rgba(224,64,251,.45),0 0 60px rgba(224,64,251,.15);--glow-secondary:0 0 20px rgba(0,230,118,.45),0 0 60px rgba(0,230,118,.15);--glow-tertiary:0 0 20px rgba(41,121,255,.45),0 0 60px rgba(41,121,255,.15);--radius-sm:8px;--radius-md:14px;--radius-lg:24px;--shadow-sm:0 4px 20px rgba(0,0,0,.55),0 0 1px rgba(74,20,140,.4);--shadow-md:0 16px 48px rgba(0,0,0,.6),0 0 32px rgba(74,20,140,.35);--spacing-gap:1.5rem;--transition-fast:150ms;--transition-normal:300ms;--ease-standard:cubic-bezier(.4,0,.2,1);--z-dropdown:1000;--z-modal:2000;--z-toast:3000;--font-base:'Montserrat',sans-serif}
+/* Dark-only theme (Light ✗ / Dark ✓): light scheme explicitly neutralized so the void can never render pale */
+@media(prefers-color-scheme:light){:root{--bg-primary:#050005;--text-primary:#FFFFFF;color-scheme:dark}}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background-color:var(--bg-primary);color:var(--text-primary);font-family:var(--font-base);font-weight:300;line-height:1.6;overflow-x:hidden}
+h1,h2,h3{line-height:1.15;font-weight:600}
+ul{list-style:none}
+button{font-family:var(--font-base)}
+.material-symbols-rounded{font-size:22px;line-height:1;flex:none}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+a:focus-visible,button:focus-visible{box-shadow:var(--glow-primary)}
+::placeholder{color:var(--text-secondary);opacity:.55}
+.skip-link{position:fixed;left:1rem;top:-100%;z-index:var(--z-toast);padding:.7rem 1.2rem;background:var(--bg-elevated);border:1px solid var(--border-glow);border-radius:var(--radius-sm);color:var(--text-primary);text-decoration:none;transition:top var(--transition-fast) var(--ease-standard)}
+.skip-link:focus{top:1rem}
+.container{width:min(1120px,92%);margin-inline:auto}
+.section{padding:clamp(3rem,8vw,5rem) 0;scroll-margin-top:5rem}
+.section__head{display:flex;flex-direction:column;align-items:center;text-align:center;gap:.8rem;margin-bottom:clamp(2rem,5vw,3.2rem)}
+.section__eyebrow{font-size:.72rem;font-weight:600;letter-spacing:.28em;text-transform:uppercase;color:var(--primary)}
+.section__title{font-size:clamp(1.7rem,3.5vw,2.4rem)}
+.section__sub{color:var(--text-secondary);max-width:58ch}
+/* Header */
+.header{position:sticky;top:0;z-index:var(--z-dropdown);background:rgba(5,0,5,.72);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-default)}
+.header__inner{display:flex;align-items:center;justify-content:space-between;gap:1rem;height:64px}
+.logo{display:flex;align-items:center;gap:.5rem;font-weight:800;letter-spacing:.16em;font-size:1rem;text-decoration:none;color:var(--text-primary)}
+.logo__icon{color:var(--primary);text-shadow:0 0 14px var(--border-glow)}
+.nav{display:none}
+.nav__link{position:relative;color:var(--text-secondary);text-decoration:none;font-size:.9rem;transition:color var(--transition-fast) var(--ease-standard)}
+.nav__link::after{content:"";position:absolute;left:0;bottom:-6px;width:100%;height:1px;background:linear-gradient(90deg,var(--primary),var(--secondary));transform:scaleX(0);transform-origin:left;transition:transform var(--transition-normal) var(--ease-standard);box-shadow:var(--glow-primary)}
+.nav__link:hover{color:var(--text-primary)}
+.nav__link:hover::after{transform:scaleX(1)}
+.nav-toggle{display:flex;align-items:center;justify-content:center;width:44px;height:44px;background:none;border:1px solid var(--border-default);border-radius:var(--radius-sm);color:var(--text-primary);cursor:pointer}
+.nav__panel{position:absolute;top:100%;left:0;right:0;z-index:var(--z-dropdown);display:flex;flex-direction:column;gap:.25rem;padding:1rem 4%;background:var(--bg-secondary);border-bottom:1px solid var(--border-default);opacity:0;transform:translateY(-8px);visibility:hidden;pointer-events:none;transition:opacity var(--transition-normal) var(--ease-standard),transform var(--transition-normal) var(--ease-standard),visibility var(--transition-normal)}
+.nav__panel.is-open{opacity:1;transform:none;visibility:visible;pointer-events:auto}
+.nav__panel .nav__link{display:flex;align-items:center;min-height:44px;padding:0 .5rem;border-radius:var(--radius-sm);font-size:1rem}
+/* Buttons */
+.btn{display:flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:.7rem 1.5rem;border-radius:var(--radius-md);font-weight:600;font-size:.95rem;text-decoration:none;cursor:pointer;border:1px solid transparent;background:transparent;color:var(--text-primary);transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-normal),filter var(--transition-fast),border-color var(--transition-normal),background var(--transition-normal)}
+.btn:hover{filter:brightness(1.15)}
+.btn:active{transform:scale(.97)}
+.btn--primary{background:linear-gradient(135deg,var(--primary),var(--tertiary));box-shadow:var(--glow-primary)}
+.btn--primary:hover{box-shadow:var(--glow-primary),var(--glow-primary)}
+.btn--secondary{border-color:var(--border-glow);color:var(--primary);text-shadow:0 0 12px var(--border-glow)}
+.btn--secondary:hover{box-shadow:0 0 20px var(--border-glow),inset 0 0 12px var(--border-glow)}
+.btn--danger{border-color:var(--border-error);color:var(--text-error)}
+.btn--danger:hover{box-shadow:0 0 20px var(--border-error)}
+.btn:disabled,.btn.is-disabled{opacity:.5;filter:grayscale(1);cursor:not-allowed}
+.btn.is-loading{pointer-events:none;position:relative}
+.btn.is-loading .btn__label{opacity:0}
+.btn.is-loading::after{content:"";position:absolute;top:0;bottom:0;left:0;right:0;margin:auto;width:18px;height:18px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite}
+.btn.is-success{background:transparent;border-color:var(--border-success);color:var(--text-success);box-shadow:var(--glow-secondary)}
+.btn.is-error{border-color:var(--border-error);color:var(--text-error);box-shadow:0 0 20px var(--border-error)}
+/* Hero */
+.hero{position:relative;isolation:isolate;overflow:hidden;min-height:calc(100vh - 64px);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:clamp(3rem,8vw,5rem) 4% 4.5rem}
+.hero::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.35;background:repeating-linear-gradient(90deg,var(--border-default) 0 1px,transparent 1px 64px),repeating-linear-gradient(0deg,var(--border-default) 0 1px,transparent 1px 64px)}
+.glow{position:absolute;z-index:0;border-radius:50%;pointer-events:none;opacity:.16;background:radial-gradient(circle,var(--primary) 0%,transparent 70%);animation:drift 14s ease-in-out infinite alternate}
+.glow--primary{width:55vmax;height:55vmax;top:-12vmax;left:-14vmax}
+.glow--secondary{width:45vmax;height:45vmax;bottom:-10vmax;right:-12vmax;opacity:.1;background:radial-gradient(circle,var(--secondary) 0%,transparent 70%);animation-delay:-5s}
+.glow--tertiary{width:38vmax;height:38vmax;top:32%;left:56%;opacity:.1;background:radial-gradient(circle,var(--tertiary) 0%,transparent 70%);animation-delay:-9s}
+.spiral{position:absolute;z-index:0;pointer-events:none;border-radius:50%;-webkit-mask:radial-gradient(circle,var(--text-primary) 0%,transparent 70%);mask:radial-gradient(circle,var(--text-primary) 0%,transparent 70%)}
+.spiral--a{width:64vmax;height:64vmax;top:50%;left:50%;translate:-50% -50%;opacity:.5;background:repeating-conic-gradient(from 0deg,var(--border-glow) 0 1.2deg,transparent 1.2deg 8deg);animation:spin 20s linear infinite}
+.spiral--b{width:34vmax;height:34vmax;top:5%;right:-9vmax;opacity:.45;background:repeating-conic-gradient(from 45deg,color-mix(in srgb,var(--secondary) 40%,transparent) 0 1deg,transparent 1deg 6deg);animation:spin 18s linear infinite reverse}
+.hero__inner{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:1.1rem}
+.hero__title{font-size:clamp(2.2rem,6vw,4.1rem);font-weight:800;max-width:16ch;background:linear-gradient(120deg,var(--primary),var(--tertiary),var(--secondary));background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 18px var(--border-glow));animation:flow 12s ease-in-out infinite alternate}
+.hero__sub{max-width:56ch;color:var(--text-secondary);font-size:clamp(1rem,1.5vw,1.15rem)}
+.hero__actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:1rem;margin-top:1rem}
+.hero__cue{position:absolute;z-index:1;bottom:1.2rem;left:50%;translate:-50% 0;display:flex;flex-direction:column;align-items:center;gap:.1rem;color:var(--text-secondary);font-size:.68rem;letter-spacing:.24em;text-transform:uppercase;text-decoration:none}
+.hero__cue .material-symbols-rounded{animation:cue 2.4s ease-in-out infinite}
+.badge{display:inline-flex;align-items:center;gap:.4rem;padding:.35rem .9rem;border-radius:999px;font-size:.72rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--secondary);border:1px solid var(--border-success);background:linear-gradient(135deg,var(--deep-purple),var(--bg-elevated))}
+.badge .material-symbols-rounded{font-size:15px}
+.badge--primary{color:var(--primary);border-color:var(--border-glow)}
+/* Cards */
+.grid-3{display:flex;flex-wrap:wrap;align-items:stretch;/* exception: equal-height cards */gap:var(--spacing-gap)}
+.grid-3>*{flex:1 1 300px;min-width:0}
+.card{display:flex;flex-direction:column;align-items:flex-start;/* exception: multi-line copy aligns flex-start */gap:.9rem;padding:1.8rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal),border-color var(--transition-normal)}
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md),var(--glow-primary);border-color:var(--border-glow)}
+.card:focus-within{border-color:var(--border-glow)}
+.card__icon{display:flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;background:radial-gradient(circle,var(--deep-purple) 0%,var(--bg-elevated) 70%);border:1px solid var(--border-glow);color:var(--primary);box-shadow:var(--glow-primary)}
+.card__icon .material-symbols-rounded{font-size:28px}
+.card__title{font-size:1.08rem}
+.card__text{color:var(--text-secondary);font-size:.95rem}
+.card .btn{margin-top:auto;align-self:stretch}
+.card--quote{gap:1rem}
+.card__quote{font-size:1rem;line-height:1.55}
+.stars{display:flex;align-items:center;gap:2px;color:var(--primary)}
+.stars .material-symbols-rounded{font-size:16px;font-variation-settings:'FILL' 1}
+.star--dim{font-variation-settings:'FILL' 0;color:var(--text-secondary)}
+.card__author{display:flex;align-items:center;gap:.8rem}
+.avatar{display:flex;align-items:center;justify-content:center;width:44px;height:44px;flex:none;border-radius:50%;background:conic-gradient(from 180deg,var(--primary),var(--tertiary),var(--secondary),var(--primary));color:var(--bg-primary);font-weight:800;font-size:.85rem;box-shadow:var(--glow-primary)}
+.card__who{display:flex;flex-direction:column;align-items:flex-start;gap:.1rem}
+.card__name{font-weight:600;font-size:.95rem}
+.card__role{color:var(--text-secondary);font-size:.82rem}
+.card--featured{position:relative;background:linear-gradient(var(--bg-elevated),var(--bg-elevated)) padding-box,linear-gradient(135deg,var(--primary),var(--tertiary),var(--secondary)) border-box;border:1px solid transparent;box-shadow:var(--shadow-md),var(--glow-primary);transform:scale(1.03)}
+.card--featured:hover{transform:scale(1.03) translateY(-2px)}
+.card--featured .badge{position:absolute;top:-13px;left:50%;translate:-50% 0}
+.price{display:flex;align-items:center;gap:.4rem}
+.price__amount{font-size:2rem;font-weight:800}
+.price__period{color:var(--text-secondary);font-size:.9rem}
+.card__list{display:flex;flex-direction:column;gap:.6rem}
+.card__list li{display:flex;align-items:center;gap:.55rem;color:var(--text-secondary);font-size:.93rem}
+.card__list .material-symbols-rounded{font-size:18px;color:var(--secondary)}
+/* Steps */
+.steps{position:relative;display:flex;flex-direction:column;align-items:center;gap:2.2rem;padding:1rem 0}
+.steps::before{content:"";position:absolute;top:48px;bottom:48px;left:24px;width:2px;background:repeating-linear-gradient(180deg,var(--border-glow) 0 10px,transparent 10px 20px);box-shadow:var(--glow-primary);opacity:.55}
+.step{display:flex;align-items:flex-start;/* exception: icon spine stays top-aligned along filament */gap:1rem;width:100%;max-width:480px}
+.step__icon{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;width:48px;height:48px;flex:none;border-radius:50%;background:radial-gradient(circle,var(--deep-purple) 0%,var(--bg-elevated) 70%);border:1px solid var(--border-glow);color:var(--primary)}
+.step__num{position:absolute;top:-8px;right:-10px;padding:.1rem .4rem;border-radius:999px;background:var(--bg-elevated);border:1px solid var(--border-glow);color:var(--tertiary);font-size:.72rem;font-weight:800}
+.step__body{display:flex;flex-direction:column;align-items:flex-start;gap:.35rem}
+.step__title{font-size:1.05rem}
+/* FAQ */
+.faq{display:flex;flex-direction:column;align-items:stretch;gap:.9rem;max-width:760px;margin-inline:auto}
+.faq__heading{font-size:1rem}
+.faq__item{border:1px solid var(--border-default);border-radius:var(--radius-md);background:var(--bg-secondary);transition:border-color var(--transition-normal),box-shadow var(--transition-normal)}
+.faq__item:hover{border-color:var(--border-glow)}
+.faq__item.is-open{border-color:var(--border-glow);box-shadow:var(--glow-primary)}
+.faq__question{display:flex;align-items:center;justify-content:space-between;gap:1rem;width:100%;min-height:44px;padding:1rem 1.2rem;background:none;border:0;color:var(--text-primary);font-weight:600;font-size:.98rem;text-align:left;cursor:pointer}
+.faq__chev{color:var(--primary);transition:transform var(--transition-normal) var(--ease-standard)}
+.faq__item.is-open .faq__chev{transform:rotate(180deg)}
+.faq__answer{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--transition-normal) var(--ease-standard)}
+.faq__item.is-open .faq__answer{grid-template-rows:1fr}
+.faq__answer-inner{overflow:hidden;min-height:0}
+.faq__answer p{padding:0 1.2rem 1.1rem;color:var(--text-secondary);font-size:.94rem}
+/* CTA band + form */
+.cta-band{padding:clamp(2.4rem,6vw,4rem);text-align:center;border-radius:var(--radius-lg);background:radial-gradient(circle at 50% 0%,var(--deep-purple) 0%,var(--bg-secondary) 70%) padding-box,linear-gradient(135deg,var(--primary),var(--tertiary),var(--secondary)) border-box;border:1px solid transparent;box-shadow:var(--shadow-md),var(--glow-primary)}
+.input-group{display:flex;flex-direction:column;align-items:stretch;/* exception: input must span full width */gap:.5rem;max-width:440px;margin:1.6rem auto 0;text-align:left}
+.input-group__label{font-size:.85rem;font-weight:600;color:var(--text-secondary)}
+.input-group__field{position:relative;display:flex;align-items:center}
+.input-group input{width:100%;min-height:44px;padding:.7rem 2.4rem .7rem 1rem;background:var(--bg-primary);border:1px solid var(--border-default);border-radius:var(--radius-md);color:var(--text-primary);font-family:var(--font-base);font-size:1rem;transition:border-color var(--transition-normal),box-shadow var(--transition-normal)}
+.input-group input:focus{outline:none;border-color:var(--primary);box-shadow:var(--glow-primary)}
+.input-group input:not(:placeholder-shown){border-color:var(--border-glow)}
+.input-group input:disabled{opacity:.5;cursor:not-allowed}
+.input-group input[readonly]{border-style:dashed}
+.input-group input:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.input-group__icon{position:absolute;right:.8rem;color:var(--text-success);opacity:0;transition:opacity var(--transition-fast) var(--ease-standard)}
+.input-group.is-valid input{border-color:var(--border-success);box-shadow:var(--glow-secondary)}
+.input-group.is-valid .input-group__icon{opacity:1}
+.input-group.is-invalid input{border-color:var(--border-error);box-shadow:0 0 20px var(--border-error)}
+.input-group__error{display:none;align-items:center;gap:.4rem;color:var(--text-error);font-size:.85rem}
+.input-group__error .material-symbols-rounded{font-size:18px}
+.input-group.is-invalid .input-group__error{display:flex}
+/* Footer */
+.footer{margin-top:clamp(3rem,8vw,5rem);padding:3rem 0 1.5rem;background:var(--bg-secondary);border-top:1px solid var(--border-default)}
+.footer__grid{display:flex;flex-wrap:wrap;align-items:flex-start;/* exception: columns of unequal content */gap:2.5rem}
+.footer__brand{flex:1 1 240px;display:flex;flex-direction:column;align-items:flex-start;gap:.7rem}
+.footer__tagline{color:var(--text-secondary);font-size:.9rem;max-width:26ch}
+.footer__social{display:flex;align-items:center;gap:1rem}
+.footer__social-link{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border:1px solid var(--border-default);border-radius:50%;color:var(--text-secondary);text-decoration:none;transition:color var(--transition-fast),border-color var(--transition-fast),box-shadow var(--transition-normal)}
+.footer__social-link:hover{color:var(--primary);border-color:var(--border-glow);box-shadow:var(--glow-primary)}
+.footer__col{flex:1 1 130px;display:flex;flex-direction:column;align-items:flex-start;/* exception: stacked link column reads left-aligned */gap:.5rem}
+.footer__col h3{font-size:.8rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text-primary)}
+.footer__link{color:var(--text-secondary);text-decoration:none;font-size:.9rem;transition:color var(--transition-fast)}
+.footer__link:hover{color:var(--primary)}
+.footer__bottom{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1rem;margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid var(--border-default);color:var(--text-secondary);font-size:.85rem}
+.footer__top{display:flex;align-items:center;gap:.3rem;color:var(--text-primary);text-decoration:none;font-weight:600}
+.footer__top:hover{color:var(--primary)}
+/* Skeleton / empty state / toast */
+.skeleton{position:relative;overflow:hidden;color:transparent!important;background:var(--bg-elevated);border-radius:var(--radius-sm)}
+.skeleton::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,var(--border-default) 50%,transparent 70%);transform:translateX(-100%);animation:shimmer 1.6s infinite}
+.empty-state{display:flex;flex-direction:column;align-items:center;text-align:center;gap:.6rem;padding:2.5rem;color:var(--text-secondary);border:1px dashed var(--border-default);border-radius:var(--radius-lg)}
+.empty-state .material-symbols-rounded{font-size:42px;color:var(--tertiary)}
+.toast{position:fixed;left:50%;bottom:1.5rem;z-index:var(--z-toast);display:flex;align-items:center;gap:.5rem;max-width:92%;padding:.8rem 1.2rem;background:var(--bg-elevated);border:1px solid var(--border-success);border-radius:var(--radius-md);color:var(--text-success);box-shadow:var(--glow-secondary),var(--shadow-md);opacity:0;transform:translate(-50%,8px);pointer-events:none;transition:opacity var(--transition-normal) var(--ease-standard),transform var(--transition-normal) var(--ease-standard)}
+.toast.is-visible{opacity:1;transform:translate(-50%,0)}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes drift{to{transform:translate(4vw,3vh) scale(1.08)}}
+@keyframes flow{to{background-position:100% 50%}}
+@keyframes shimmer{to{transform:translateX(100%)}}
+@keyframes cue{50%{transform:translateY(6px)}}
+@media(min-width:900px){.nav{display:flex;align-items:center;gap:1.75rem}.nav-toggle{display:none}.steps{flex-direction:row;align-items:flex-start;gap:var(--spacing-gap);padding:0}.steps::before{top:24px;left:8%;right:8%;bottom:auto;width:auto;height:2px;background:repeating-linear-gradient(90deg,var(--border-glow) 0 10px,transparent 10px 20px)}.step{flex-direction:column;align-items:center;text-align:center;width:auto;max-width:none;gap:.8rem}.step__body{align-items:center}}
+@media(max-width:520px){.header__cta{display:none}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition-duration:1ms!important}}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="header">
+  <div class="container header__inner">
+    <a class="logo" href="#main"><span class="material-symbols-rounded logo__icon" aria-hidden="true">blur_on</span>NIMBUS</a>
+    <nav class="nav" aria-label="Primary">
+      <a class="nav__link" href="#features">Features</a>
+      <a class="nav__link" href="#how">How It Works</a>
+      <a class="nav__link" href="#testimonials">Testimonials</a>
+      <a class="nav__link" href="#pricing">Pricing</a>
+      <a class="nav__link" href="#faq">FAQ</a>
+    </nav>
+    <a class="btn btn--primary header__cta" href="#pricing">Start free</a>
+    <button class="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation menu"><span class="material-symbols-rounded" aria-hidden="true">menu</span></button>
+  </div>
+  <nav class="nav__panel" id="site-nav" aria-label="Mobile">
+    <a class="nav__link" href="#features">Features</a>
+    <a class="nav__link" href="#how">How It Works</a>
+    <a class="nav__link" href="#testimonials">Testimonials</a>
+    <a class="nav__link" href="#pricing">Pricing</a>
+    <a class="nav__link" href="#faq">FAQ</a>
+  </nav>
+</header>
+<main id="main" tabindex="-1">
+  <section class="hero" aria-label="Introduction">
+    <div class="glow glow--primary" aria-hidden="true"></div>
+    <div class="glow glow--secondary" aria-hidden="true"></div>
+    <div class="glow glow--tertiary" aria-hidden="true"></div>
+    <div class="spiral spiral--a" aria-hidden="true"></div>
+    <div class="spiral spiral--b" aria-hidden="true"></div>
+    <div class="hero__inner">
+      <p class="badge"><span class="material-symbols-rounded" aria-hidden="true">science</span>Nimbus v3 · real-time fractal growth</p>
+      <h1 class="hero__title">Grow living light from a mathematical seed</h1>
+      <p class="hero__sub">Nimbus turns complex-number seeds into bioluminescent fractal worlds — spirals, corals and glowing filaments, rendered live in your browser at 120 frames per second.</p>
+      <div class="hero__actions">
+        <a class="btn btn--primary" href="#pricing"><span class="material-symbols-rounded" aria-hidden="true">play_arrow</span>Grow your first fractal</a>
+        <a class="btn btn--secondary" href="#how">Watch the algorithm</a>
+      </div>
+    </div>
+    <a class="hero__cue" href="#features" aria-label="Scroll down to features"><span class="material-symbols-rounded" aria-hidden="true">keyboard_double_arrow_down</span>Descend</a>
+  </section>
+  <section class="section" id="features">
+    <div class="container">
+      <div class="section__head">
+        <p class="section__eyebrow">Capabilities</p>
+        <h2 class="section__title">An engine tuned like an organism</h2>
+        <p class="section__sub">Three systems working as one metabolism — pure math, living pigment, and raw GPU growth.</p>
+      </div>
+      <div class="grid-3">
+        <article class="card">
+          <span class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">functions</span></span>
+          <h3 class="card__title">Recursive seed engine</h3>
+          <p class="card__text">Feed it a single z → z² + c constant and the escape-time field resolves into nautili, vortices and branching corals in under 8 milliseconds per frame.</p>
+        </article>
+        <article class="card">
+          <span class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">eco</span></span>
+          <h3 class="card__title">Bioluminescent materials</h3>
+          <p class="card__text">A metabolic shader layer breathes pigment into geometry — chlorophyll greens and abyssal violets that pulse in sync with your frame rate.</p>
+        </article>
+        <article class="card">
+          <span class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">bolt</span></span>
+          <h3 class="card__title">GPU colony growth</h3>
+          <p class="card__text">Every iteration runs on WebGPU compute. Ten million points of your Mandelbrot garden grow live — no baking, no overnight renders.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+  <section class="section" id="how">
+    <div class="container">
+      <div class="section__head">
+        <p class="section__eyebrow">Process</p>
+        <h2 class="section__title">From seed to organism in three moves</h2>
+        <p class="section__sub">No timelines, no keyframes — just a constant, a metabolism, and light.</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="step__icon"><span class="material-symbols-rounded" aria-hidden="true">scatter_plot</span><span class="step__num">01</span></div>
+          <div class="step__body"><h3 class="step__title">Plant a seed</h3><p class="card__text">Pick a complex constant and a lattice resolution. The Julia set morphs the instant you nudge a slider.</p></div>
+        </div>
+        <div class="step">
+          <div class="step__icon"><span class="material-symbols-rounded" aria-hidden="true">tune</span><span class="step__num">02</span></div>
+          <div class="step__body"><h3 class="step__title">Grow the colony</h3><p class="card__text">Dial recursion depth, glow decay and pigment metabolism while the structure branches in front of you.</p></div>
+        </div>
+        <div class="step">
+          <div class="step__icon"><span class="material-symbols-rounded" aria-hidden="true">share</span><span class="step__num">03</span></div>
+          <div class="step__body"><h3 class="step__title">Publish the organism</h3><p class="card__text">Export 4K loops and vector paths, or ship a live seed link that anyone can remix in their browser.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="section" id="testimonials">
+    <div class="container">
+      <div class="section__head">
+        <p class="section__eyebrow">Field notes</p>
+        <h2 class="section__title">Grown, not rendered</h2>
+        <p class="section__sub">What happens when studios trade keyframes for constants.</p>
+      </div>
+      <div class="grid-3">
+        <figure class="card card--quote">
+          <div class="stars" role="img" aria-label="Rated 5 out of 5"><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span></div>
+          <blockquote class="card__quote">“We replaced an entire motion-graphics pipeline with one seed. Our clients assume we hired a marine biologist.”</blockquote>
+          <figcaption class="card__author">
+            <span class="avatar" aria-hidden="true">ME</span>
+            <span class="card__who"><span class="card__name">Mara Ellison</span><span class="card__role">Creative Director, Halide Studio</span></span>
+          </figcaption>
+        </figure>
+        <figure class="card card--quote">
+          <div class="stars" role="img" aria-label="Rated 5 out of 5"><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span></div>
+          <blockquote class="card__quote">“The glow-decay shader alone is worth the subscription. Our album-launch visuals were grown, not rendered.”</blockquote>
+          <figcaption class="card__author">
+            <span class="avatar" aria-hidden="true">DO</span>
+            <span class="card__who"><span class="card__name">Dev Okafor</span><span class="card__role">Audiovisual Artist, Waveform Collective</span></span>
+          </figcaption>
+        </figure>
+        <figure class="card card--quote">
+          <div class="stars" role="img" aria-label="Rated 4 out of 5"><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded star--dim" aria-hidden="true">star</span></div>
+          <blockquote class="card__quote">“I typed four characters, got a coral reef of light, and put it on a 40-meter LED wall. Zero dropped frames.”</blockquote>
+          <figcaption class="card__author">
+            <span class="avatar" aria-hidden="true">LZ</span>
+            <span class="card__who"><span class="card__name">Lin Zhao</span><span class="card__role">Immersive Producer, Nocturne Labs</span></span>
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+  <section class="section" id="pricing">
+    <div class="container">
+      <div class="section__head">
+        <p class="section__eyebrow">Pricing</p>
+        <h2 class="section__title">Pick your habitat</h2>
+        <p class="section__sub">Every tier grows the same living math — the reef just gets bigger.</p>
+      </div>
+      <div class="grid-3">
+        <article class="card">
+          <h3 class="card__title">Spore</h3>
+          <p class="card__text">For curious organisms.</p>
+          <p class="price"><span class="price__amount">$0</span><span class="price__period">forever</span></p>
+          <ul class="card__list">
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>3 live seeds</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>1080p PNG & WebM export</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Community lattice gallery</li>
+          </ul>
+          <a class="btn btn--secondary" href="#cta">Sprout a seed</a>
+        </article>
+        <article class="card card--featured">
+          <p class="badge badge--primary">Most popular</p>
+          <h3 class="card__title">Colony</h3>
+          <p class="card__text">For daily growers and studios.</p>
+          <p class="price"><span class="price__amount">$24</span><span class="price__period">per month</span></p>
+          <ul class="card__list">
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Unlimited seeds & mutations</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>4K export with alpha channel</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>WebGPU colony presets</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Versioned seed lineage</li>
+          </ul>
+          <a class="btn btn--primary" href="#cta">Grow with Colony</a>
+        </article>
+        <article class="card">
+          <h3 class="card__title">Ecosystem</h3>
+          <p class="card__text">For teams tending shared reefs.</p>
+          <p class="price"><span class="price__amount">$79</span><span class="price__period">per month</span></p>
+          <ul class="card__list">
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Everything in Colony</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Real-time multiplayer reefs</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Custom pigment compilers</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Priority GPU pods</li>
+          </ul>
+          <a class="btn btn--secondary" href="#cta">Scale the reef</a>
+        </article>
+      </div>
+    </div>
+  </section>
+  <section class="section" id="faq">
+    <div class="container">
+      <div class="section__head">
+        <p class="section__eyebrow">Questions</p>
+        <h2 class="section__title">Before you descend</h2>
+        <p class="section__sub">Pricing, technology and access — answered.</p>
+      </div>
+      <div class="faq">
+        <div class="faq__item">
+          <h3 class="faq__heading"><button class="faq__question" id="q1" aria-expanded="false" aria-controls="a1">How is Nimbus different from a static fractal generator?<span class="material-symbols-rounded faq__chev" aria-hidden="true">expand_more</span></button></h3>
+          <div class="faq__answer" id="a1" role="region" aria-labelledby="q1"><div class="faq__answer-inner"><p>Nothing is pre-rendered. Every frame re-evaluates your seed on the GPU, so you can zoom fourteen orders of magnitude, mutate constants and relight the scene live.</p></div></div>
+        </div>
+        <div class="faq__item">
+          <h3 class="faq__heading"><button class="faq__question" id="q2" aria-expanded="false" aria-controls="a2">Do I need to know the math?<span class="material-symbols-rounded faq__chev" aria-hidden="true">expand_more</span></button></h3>
+          <div class="faq__answer" id="a2" role="region" aria-labelledby="q2"><div class="faq__answer-inner"><p>No — seeds are sliders and swatches. If you can tune a synthesizer, you can grow a reef. Raw complex expressions are there whenever you want them.</p></div></div>
+        </div>
+        <div class="faq__item">
+          <h3 class="faq__heading"><button class="faq__question" id="q3" aria-expanded="false" aria-controls="a3">Which plan should I choose?<span class="material-symbols-rounded faq__chev" aria-hidden="true">expand_more</span></button></h3>
+          <div class="faq__answer" id="a3" role="region" aria-labelledby="q3"><div class="faq__answer-inner"><p>Spore if you are exploring, Colony once you export daily, Ecosystem when a whole team grows on shared reefs. Switch at any time — your seeds travel with you.</p></div></div>
+        </div>
+        <div class="faq__item">
+          <h3 class="faq__heading"><button class="faq__question" id="q4" aria-expanded="false" aria-controls="a4">What hardware does it need?<span class="material-symbols-rounded faq__chev" aria-hidden="true">expand_more</span></button></h3>
+          <div class="faq__answer" id="a4" role="region" aria-labelledby="q4"><div class="faq__answer-inner"><p>Any WebGPU-capable browser from 2023 onward. On older machines we fall back to WebGL2 with lighter recursion depth — still live, just fewer filaments.</p></div></div>
+        </div>
+        <div class="faq__item">
+          <h3 class="faq__heading"><button class="faq__question" id="q5" aria-expanded="false" aria-controls="a5">Can I cancel, and is my work mine?<span class="material-symbols-rounded faq__chev" aria-hidden="true">expand_more</span></button></h3>
+          <div class="faq__answer" id="a5" role="region" aria-labelledby="q5"><div class="faq__answer-inner"><p>Cancel any time — no filament attached. Every seed, preset and export you have grown stays yours and downloadable forever.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="section" id="cta">
+    <div class="container">
+      <div class="cta-band">
+        <h2 class="section__title">Your reef is one seed away</h2>
+        <p class="section__sub">Join 12,000 designers growing bioluminescent systems. Early access opens this quarter.</p>
+        <form class="input-group" id="cta-form" novalidate>
+          <label class="input-group__label" for="email">Email address</label>
+          <span class="input-group__field">
+            <input id="email" name="email" type="email" placeholder="ada@reef.studio" autocomplete="email" required aria-describedby="email-error">
+            <span class="material-symbols-rounded input-group__icon" aria-hidden="true">check</span>
+          </span>
+          <p class="input-group__error" id="email-error" aria-live="polite"><span class="material-symbols-rounded" aria-hidden="true">error</span><span id="email-msg"></span></p>
+          <button class="btn btn--primary" id="cta-btn" type="submit"><span class="btn__label" id="cta-label">Claim early access</span></button>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <a class="logo" href="#main"><span class="material-symbols-rounded logo__icon" aria-hidden="true">blur_on</span>NIMBUS</a>
+        <p class="footer__tagline">Living geometry from mathematical seeds.</p>
+        <div class="footer__social">
+          <a class="footer__social-link" href="#cta" aria-label="Newsletter"><span class="material-symbols-rounded" aria-hidden="true">mail</span></a>
+          <a class="footer__social-link" href="#cta" aria-label="Community forum"><span class="material-symbols-rounded" aria-hidden="true">forum</span></a>
+          <a class="footer__social-link" href="#cta" aria-label="Public gallery"><span class="material-symbols-rounded" aria-hidden="true">public</span></a>
+        </div>
+      </div>
+      <nav class="footer__col" aria-label="Product">
+        <h3>Product</h3>
+        <a class="footer__link" href="#features">Features</a>
+        <a class="footer__link" href="#pricing">Pricing</a>
+        <a class="footer__link" href="#how">How it works</a>
+        <a class="footer__link" href="#cta">Changelog</a>
+      </nav>
+      <nav class="footer__col" aria-label="Company">
+        <h3>Company</h3>
+        <a class="footer__link" href="#main">About</a>
+        <a class="footer__link" href="#main">Careers</a>
+        <a class="footer__link" href="#main">Press</a>
+        <a class="footer__link" href="#main">Contact</a>
+      </nav>
+      <nav class="footer__col" aria-label="Resources">
+        <h3>Resources</h3>
+        <a class="footer__link" href="#faq">Documentation</a>
+        <a class="footer__link" href="#testimonials">Seed gallery</a>
+        <a class="footer__link" href="#main">Community</a>
+        <a class="footer__link" href="#main">API</a>
+      </nav>
+      <nav class="footer__col" aria-label="Legal">
+        <h3>Legal</h3>
+        <a class="footer__link" href="#main">Privacy</a>
+        <a class="footer__link" href="#main">Terms</a>
+        <a class="footer__link" href="#main">Licenses</a>
+        <a class="footer__link" href="#main">Security</a>
+      </nav>
+    </div>
+    <div class="footer__bottom">
+      <p>© <span id="year">2026</span> Nimbus Fractal Systems. Grown in the dark.</p>
+      <a class="footer__top" href="#main">Back to top<span class="material-symbols-rounded" aria-hidden="true">arrow_upward</span></a>
+    </div>
+  </div>
+</footer>
+<div class="toast" id="toast" role="status" aria-live="polite"><span class="material-symbols-rounded" aria-hidden="true">check_circle</span><span id="toast-msg"></span></div>
+<script>
+const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
+const navToggle=$('.nav-toggle'),navPanel=$('.nav__panel');
+const closeNav=()=>{navPanel.classList.remove('is-open');navToggle.setAttribute('aria-expanded','false')};
+navToggle.addEventListener('click',()=>{const o=navPanel.classList.toggle('is-open');navToggle.setAttribute('aria-expanded',o)});
+navPanel.addEventListener('click',e=>{if(e.target.closest('.nav__link'))closeNav()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeNav()});
+$$('.faq__question').forEach(b=>b.addEventListener('click',()=>{
+  const item=b.closest('.faq__item'),was=item.classList.contains('is-open');
+  $$('.faq__item').forEach(i=>{i.classList.remove('is-open');$('.faq__question',i).setAttribute('aria-expanded','false')});
+  if(!was){item.classList.add('is-open');b.setAttribute('aria-expanded','true')}
+}));
+$$('.avatar').forEach((a,i)=>{a.classList.add('skeleton');setTimeout(()=>a.classList.remove('skeleton'),700+i*350)});
+const form=$('#cta-form'),input=$('#email'),msg=$('#email-msg'),btn=$('#cta-btn'),label=$('#cta-label'),toast=$('#toast'),toastMsg=$('#toast-msg');
+const emailOK=()=>/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(input.value.trim());
+const mark=(state,text)=>{form.classList.remove('is-valid','is-invalid');msg.textContent=text||'';input.setAttribute('aria-invalid',state==='invalid');if(state)form.classList.add('is-'+state)};
+form.addEventListener('submit',e=>{
+  e.preventDefault();
+  if(btn.classList.contains('is-loading'))return;
+  if(!emailOK()){mark('invalid','That address will not parse — enter a valid email to receive your seed code.');btn.classList.add('is-error');setTimeout(()=>btn.classList.remove('is-error'),1800);return}
+  mark('valid');btn.classList.add('is-loading');btn.setAttribute('aria-busy','true');
+  setTimeout(()=>{
+    btn.classList.replace('is-loading','is-success');
+    label.innerHTML='<span class="material-symbols-rounded" aria-hidden="true">check</span>Seed claimed';
+    toastMsg.textContent='Welcome to the colony — your access code is germinating in your inbox.';
+    toast.classList.add('is-visible');
+    setTimeout(()=>{toast.classList.remove('is-visible');btn.classList.remove('is-success');btn.removeAttribute('aria-busy');label.textContent='Claim early access';input.value='';form.classList.remove('is-valid')},4200)
+  },1400)
+});
+input.addEventListener('blur',()=>{if(input.value)mark(emailOK()?'valid':'invalid',emailOK()?'':'That address will not parse — enter a valid email.')});
+$('#year').textContent=new Date().getFullYear();
+</script>
+</body>
+</html>

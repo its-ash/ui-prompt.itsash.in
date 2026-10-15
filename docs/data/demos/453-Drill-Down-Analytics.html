@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stratum - Drill-Down Analytics for Teams That Ask Why</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet">
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<style>
+:root{
+--primary:#1f5eff;--secondary:#eef2fb;
+--bg-primary:#f4f6fa;--bg-secondary:#fefefe;--bg-tertiary:#e9edf5;
+--text-primary:#1a2233;--text-secondary:#4a5568;--text-on-accent:#ffffff;
+--text-success:#0d7a4f;--text-error:#b42318;
+--border-default:#d7dde8;--border-error:#e5a49d;--border-success:#8fd4b6;
+--drill-level-1:#7fa8ff;--drill-level-2:#3d74f5;--drill-level-3:#173a9e;
+--breadcrumb-active:#173a9e;--path-indicator:#3d74f5;--level-highlight:#1f5eff;
+--accent-soft:#e3ebff;
+--radius-sm:8px;--radius-md:12px;--radius-lg:18px;
+--shadow-sm:0 1px 2px rgba(26,34,51,.06),0 2px 8px rgba(26,34,51,.05);
+--shadow-md:0 6px 20px rgba(23,58,158,.12),0 2px 6px rgba(26,34,51,.07);
+--spacing-gap:1.5rem;
+--transition-fast:140ms;--transition-normal:260ms;--ease-standard:cubic-bezier(.22,.8,.3,1);
+--z-dropdown:100;--z-modal:200;--z-toast:300;
+--font-base:"Inter",system-ui,sans-serif;--font-mono:"IBM Plex Mono",monospace;
+--bar-h:64px;
+}
+:root[data-theme="dark"]{
+--primary:#6f9bff;--secondary:#1a2130;
+--bg-primary:#0e1420;--bg-secondary:#161e2d;--bg-tertiary:#1e2839;
+--text-primary:#e8edf6;--text-secondary:#9aa8bf;--text-on-accent:#0b1220;
+--text-success:#4ade9c;--text-error:#ff8a7a;
+--border-default:#2a3648;--border-error:#7a3a32;--border-success:#2c6b4e;
+--drill-level-1:#5b7fd6;--drill-level-2:#3d74f5;--drill-level-3:#9db9ff;
+--breadcrumb-active:#9db9ff;--path-indicator:#6f9bff;--level-highlight:#6f9bff;
+--accent-soft:#1c2a4a;
+--shadow-sm:0 1px 2px rgba(0,0,0,.4),0 2px 8px rgba(0,0,0,.3);
+--shadow-md:0 6px 24px rgba(0,0,0,.5),0 2px 6px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth;scroll-padding-top:calc(var(--bar-h) + 12px)}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;font-size:1rem;overflow-x:hidden;transition:background var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard)}
+h1,h2,h3{line-height:1.12;letter-spacing:-0.025em;font-weight:800}
+h1{font-size:clamp(2.1rem,4.6vw,3.4rem)}
+h2{font-size:clamp(1.6rem,3.2vw,2.4rem)}
+p{max-width:65ch}
+a{color:var(--primary);text-decoration:none}
+section{padding:clamp(4rem,8vw,6.5rem) 0;scroll-margin-top:calc(var(--bar-h) + 12px)}
+.container{max-width:1180px;margin:0 auto;padding:0 1.25rem}
+@media(min-width:768px){.container{padding:0 2rem}}
+.material-symbols-rounded{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;font-size:1.25rem;line-height:1;user-select:none}
+/* ---------- Buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:.65rem 1.35rem;border-radius:var(--radius-sm);border:1px solid transparent;font:600 .95rem var(--font-base);cursor:pointer;transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast),background var(--transition-fast),filter var(--transition-fast);white-space:nowrap}
+.btn:active{transform:scale(.97)}
+.btn:focus-visible{outline:3px solid var(--level-highlight);outline-offset:2px}
+.btn--primary{background:var(--primary);color:var(--text-on-accent);box-shadow:var(--shadow-sm)}
+.btn--secondary{background:var(--bg-secondary);color:var(--text-primary);border-color:var(--border-default)}
+.btn--ghost{background:transparent;color:var(--primary)}
+.btn--danger{background:var(--text-error);color:#fff}
+.btn:disabled,.btn.is-loading{opacity:.55;cursor:not-allowed;filter:grayscale(.4)}
+@media(hover:hover) and (pointer:fine){
+.btn--primary:hover{filter:brightness(1.08);box-shadow:var(--shadow-md)}
+.btn--secondary:hover{border-color:var(--primary)}
+.btn--ghost:hover{background:var(--accent-soft)}
+}
+.btn.is-loading .btn__icon{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* ---------- Sticky breadcrumb bar ---------- */
+.bar{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--bg-primary);border-bottom:1px solid var(--border-default)}
+.bar__inner{display:flex;align-items:center;gap:.9rem;height:var(--bar-h);max-width:1180px;margin:0 auto;padding:0 1.25rem}
+@media(min-width:768px){.bar__inner{padding:0 2rem}}
+.bar__logo{display:flex;align-items:center;gap:.5rem;font-weight:800;font-size:1.05rem;color:var(--text-primary);letter-spacing:-0.02em;flex-shrink:0}
+.bar__logo .material-symbols-rounded{color:var(--primary);font-size:1.5rem}
+.crumbs{display:none;align-items:center;gap:.15rem;list-style:none;overflow:hidden}
+@media(min-width:768px){.crumbs{display:flex}}
+.crumbs__item{display:flex;align-items:center}
+.crumbs__link{display:flex;align-items:center;min-height:44px;padding:.25rem .5rem;border-radius:var(--radius-sm);color:var(--text-secondary);font-size:.85rem;font-weight:500;transition:color var(--transition-fast),background var(--transition-fast)}
+.crumbs__link:active{transform:scale(.96)}
+@media(hover:hover) and (pointer:fine){.crumbs__link:hover{color:var(--primary);background:var(--accent-soft)}}
+.crumbs__link[aria-current="page"]{color:var(--breadcrumb-active);font-weight:700}
+.crumbs__sep{color:var(--text-secondary);font-size:1rem;opacity:.6}
+.bar__mobile-crumb{display:flex;align-items:center;font-size:.85rem;font-weight:600;color:var(--breadcrumb-active);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(min-width:768px){.bar__mobile-crumb{display:none}}
+.bar__spacer{flex:1}
+.btn--back{display:inline-flex;align-items:center;gap:.4rem;min-height:44px;padding:.4rem .9rem;border-radius:var(--radius-sm);border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);font:600 .85rem var(--font-base);cursor:pointer;transition:transform var(--transition-fast),border-color var(--transition-fast)}
+.btn--back:active{transform:scale(.97)}
+@media(hover:hover) and (pointer:fine){.btn--back:hover{border-color:var(--primary);color:var(--primary)}}
+.btn--back .btn__label{display:none}
+@media(min-width:560px){.btn--back .btn__label{display:inline}}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-sm);border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);cursor:pointer;transition:transform var(--transition-fast),color var(--transition-fast),border-color var(--transition-fast)}
+.icon-btn:active{transform:scale(.94)}
+@media(hover:hover) and (pointer:fine){.icon-btn:hover{color:var(--primary);border-color:var(--primary)}}
+#theme-toggle .icon-sun{display:none}
+:root[data-theme="dark"] #theme-toggle .icon-sun{display:block}
+:root[data-theme="dark"] #theme-toggle .icon-moon{display:none}
+.menu-btn{display:inline-flex}
+@media(min-width:768px){.menu-btn{display:none}}
+.mobile-nav{border-top:1px solid var(--border-default);background:var(--bg-primary);padding:.5rem 1.25rem 1rem}
+.mobile-nav ul{list-style:none;display:flex;flex-direction:column}
+.mobile-nav a{display:flex;align-items:center;min-height:48px;padding:.5rem .75rem;border-radius:var(--radius-sm);color:var(--text-primary);font-weight:600}
+.mobile-nav a[aria-current="page"]{color:var(--breadcrumb-active);background:var(--accent-soft)}
+/* ---------- Hero ---------- */
+.hero{padding-top:clamp(2.5rem,5vw,4.5rem)}
+.hero__grid{display:flex;flex-direction:column;gap:2.5rem;align-items:center}
+@media(min-width:960px){.hero__grid{flex-direction:row;gap:3rem}.hero__copy{flex:1 1 46%}.hero__demo{flex:1 1 54%}}
+.hero__copy{display:flex;flex-direction:column;align-items:flex-start;gap:1.1rem}
+.hero__eyebrow{display:inline-flex;align-items:center;gap:.45rem;font:600 .75rem var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--breadcrumb-active);background:var(--accent-soft);padding:.35rem .7rem;border-radius:999px}
+.hero__sub{color:var(--text-secondary);font-size:1.08rem}
+.hero__ctas{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap}
+/* dashboard mock */
+.dash{width:100%;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);padding:1.1rem;display:flex;flex-direction:column;gap:1rem}
+.dash__crumbs{display:flex;align-items:center;gap:.2rem;font:500 .78rem var(--font-mono);color:var(--text-secondary);flex-wrap:wrap}
+.dash__crumbs b{color:var(--breadcrumb-active);font-weight:600}
+.dash__crumbs .material-symbols-rounded{font-size:.95rem;opacity:.55}
+.dash__kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem}
+.kpi{background:var(--bg-primary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:.7rem .75rem;display:flex;flex-direction:column;gap:.15rem;cursor:pointer;text-align:left;font-family:inherit;color:inherit;transition:transform var(--transition-fast),border-color var(--transition-fast)}
+.kpi:active{transform:scale(.97)}
+@media(hover:hover) and (pointer:fine){.kpi:hover{border-color:var(--primary);transform:translateY(-2px)}}
+.kpi:focus-visible{outline:3px solid var(--level-highlight);outline-offset:2px}
+.kpi__label{font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-secondary)}
+.kpi__value{font:600 1.15rem var(--font-mono);color:var(--text-primary)}
+.kpi__delta{font-size:.7rem;font-weight:600;color:var(--text-success)}
+.chart{display:grid;grid-template-columns:repeat(7,1fr);gap:.5rem;align-items:end;height:120px;padding:.4rem .2rem 0;border-bottom:2px solid var(--border-default)}
+.chart__bar{border-radius:5px 5px 0 0;background:linear-gradient(180deg,var(--drill-level-1),var(--drill-level-2));transition:height var(--transition-normal) var(--ease-standard);min-height:6px}
+.chart__bar--deep{background:linear-gradient(180deg,var(--drill-level-2),var(--drill-level-3))}
+.levels{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:.45rem;min-height:44px;padding:.45rem .85rem;border-radius:999px;border:1px solid var(--border-default);background:var(--bg-primary);color:var(--text-secondary);font:600 .78rem var(--font-base);cursor:pointer;transition:all var(--transition-fast)}
+.chip__dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.chip--1 .chip__dot{background:var(--drill-level-1)}
+.chip--2 .chip__dot{background:var(--drill-level-2)}
+.chip--3 .chip__dot{background:var(--drill-level-3)}
+.chip[aria-pressed="true"]{border-color:var(--level-highlight);color:var(--breadcrumb-active);background:var(--accent-soft);box-shadow:0 0 0 2px var(--accent-soft)}
+.chip:active{transform:scale(.96)}
+.dash.is-reloading .kpi__value,.dash.is-reloading .chart__bar{animation:pulse .55s var(--ease-standard)}
+@keyframes pulse{0%{opacity:.25}100%{opacity:1}}
+/* detail panel */
+.detail-panel{background:var(--bg-secondary);border:1px solid var(--border-default);border-left:4px solid var(--drill-level-3);border-radius:var(--radius-md);padding:1.4rem;display:flex;flex-direction:column;gap:.7rem;animation:reveal var(--transition-normal) var(--ease-standard)}
+@keyframes reveal{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+.detail-panel h3{font-size:1.05rem;display:flex;align-items:center;gap:.5rem}
+.detail-panel table{width:100%;border-collapse:collapse;font-size:.88rem}
+.detail-panel th{text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-secondary);padding:.45rem .5rem;border-bottom:1px solid var(--border-default)}
+.detail-panel td{padding:.5rem;font-family:var(--font-mono);font-size:.85rem;border-bottom:1px solid var(--border-default)}
+.detail-panel td:first-child{font-family:var(--font-base)}
+/* ---------- Sections shared ---------- */
+.section-head{display:flex;flex-direction:column;gap:.7rem;margin-bottom:2.6rem;max-width:640px}
+.section-head p{color:var(--text-secondary)}
+/* ---------- Features ---------- */
+.cards3{display:grid;grid-template-columns:1fr;gap:var(--spacing-gap)}
+@media(min-width:820px){.cards3{grid-template-columns:repeat(3,1fr)}}
+.card{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:1.6rem;display:flex;flex-direction:column;align-items:flex-start;gap:.9rem;box-shadow:var(--shadow-sm);transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal),border-color var(--transition-normal)}
+@media(hover:hover) and (pointer:fine){.card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}}
+.card:focus-within{border-color:var(--primary)}
+.card__icon{display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:var(--radius-md);background:var(--accent-soft);color:var(--breadcrumb-active)}
+.card__icon .material-symbols-rounded{font-size:1.5rem}
+.card h3{font-size:1.15rem}
+.card p{color:var(--text-secondary);font-size:.94rem}
+.drill{width:100%;border-top:1px solid var(--border-default);padding-top:.4rem}
+.drill summary{display:flex;align-items:center;gap:.4rem;min-height:44px;cursor:pointer;font-weight:600;font-size:.88rem;color:var(--primary);list-style:none;border-radius:var(--radius-sm)}
+.drill summary::-webkit-details-marker{display:none}
+.drill summary:focus-visible{outline:3px solid var(--level-highlight);outline-offset:2px}
+.drill summary .material-symbols-rounded{transition:transform var(--transition-normal) var(--ease-standard)}
+.drill[open] summary .material-symbols-rounded{transform:rotate(180deg)}
+.drill__body{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--transition-normal) var(--ease-standard)}
+.drill[open] .drill__body{grid-template-rows:1fr}
+.drill__inner{overflow:hidden}
+.drill__list{list-style:none;display:flex;flex-direction:column;gap:.55rem;padding:.6rem 0 .3rem}
+.drill__list li{display:flex;align-items:flex-start;gap:.6rem;font-size:.86rem;color:var(--text-secondary)}
+.lvl{flex-shrink:0;width:10px;height:10px;border-radius:3px;margin-top:.4rem}
+.lvl--1{background:var(--drill-level-1)}.lvl--2{background:var(--drill-level-2)}.lvl--3{background:var(--drill-level-3)}
+/* ---------- How it works ---------- */
+.how{background:var(--bg-secondary);border-top:1px solid var(--border-default);border-bottom:1px solid var(--border-default)}
+.steps{display:grid;grid-template-columns:1fr;gap:2rem;position:relative}
+@media(min-width:820px){.steps{grid-template-columns:repeat(3,1fr);gap:1.5rem}
+.steps::before{content:"";position:absolute;top:26px;left:12%;right:12%;height:3px;background:linear-gradient(90deg,var(--drill-level-1),var(--drill-level-2),var(--drill-level-3));border-radius:2px}}
+.step{display:flex;flex-direction:column;align-items:flex-start;gap:.8rem;position:relative}
+.step__num{display:flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:50%;font:600 1.05rem var(--font-mono);color:#fff;background:var(--drill-level-1);box-shadow:var(--shadow-sm);z-index:1}
+.step--2 .step__num{background:var(--drill-level-2)}
+.step--3 .step__num{background:var(--drill-level-3)}
+:root[data-theme="dark"] .step--3 .step__num{color:var(--text-on-accent)}
+.step h3{font-size:1.1rem}
+.step p{color:var(--text-secondary);font-size:.92rem}
+.step__cue{display:inline-flex;align-items:center;gap:.4rem;font:500 .78rem var(--font-mono);color:var(--text-secondary);background:var(--bg-primary);border:1px solid var(--border-default);border-radius:999px;padding:.3rem .7rem}
+/* ---------- Testimonials ---------- */
+.quote-card blockquote{font-size:.98rem;color:var(--text-primary)}
+.quote-card blockquote::before{content:"\201C";color:var(--primary);font-weight:800}
+.quote-card blockquote::after{content:"\201D";color:var(--primary);font-weight:800}
+.quote-card__who{display:flex;align-items:center;gap:.8rem;margin-top:auto}
+.avatar{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;background:var(--drill-level-2);color:#fff;font:600 .85rem var(--font-base);flex-shrink:0}
+.avatar--b{background:var(--drill-level-3)}
+:root[data-theme="dark"] .avatar--b{color:var(--text-on-accent)}
+.avatar--c{background:var(--drill-level-1)}
+:root[data-theme="dark"] .avatar--c{color:var(--text-on-accent)}
+.quote-card__name{font-weight:700;font-size:.9rem}
+.quote-card__role{font-size:.8rem;color:var(--text-secondary)}
+/* ---------- Pricing ---------- */
+.pricing-grid{display:grid;grid-template-columns:1fr;gap:var(--spacing-gap);align-items:stretch}
+@media(min-width:880px){.pricing-grid{grid-template-columns:repeat(3,1fr)}}
+.tier{display:flex;flex-direction:column;align-items:stretch;gap:1rem;position:relative}
+.tier--featured{border:2px solid var(--level-highlight);box-shadow:var(--shadow-md)}
+.tier__badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--level-highlight);color:var(--text-on-accent);font:700 .72rem var(--font-base);letter-spacing:.04em;text-transform:uppercase;padding:.3rem .8rem;border-radius:999px;white-space:nowrap}
+.tier__price{font:600 2rem var(--font-mono);letter-spacing:-0.02em}
+.tier__price span{font-size:.85rem;color:var(--text-secondary);font-family:var(--font-base);font-weight:500}
+.tier__list{list-style:none;display:flex;flex-direction:column;gap:.55rem;flex:1}
+.tier__list li{display:flex;align-items:center;gap:.55rem;font-size:.9rem;color:var(--text-secondary)}
+.tier__list .material-symbols-rounded{color:var(--text-success);font-size:1.1rem}
+/* ---------- FAQ ---------- */
+.faq-list{display:flex;flex-direction:column;gap:.8rem;max-width:760px}
+.faq{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md)}
+.faq summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:44px;padding:1rem 1.2rem;cursor:pointer;font-weight:600;font-size:.98rem;list-style:none;border-radius:var(--radius-md)}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary:focus-visible{outline:3px solid var(--level-highlight);outline-offset:2px}
+.faq summary .material-symbols-rounded{color:var(--primary);transition:transform var(--transition-normal) var(--ease-standard);flex-shrink:0}
+.faq[open] summary .material-symbols-rounded{transform:rotate(180deg)}
+.faq__body{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--transition-normal) var(--ease-standard)}
+.faq[open] .faq__body{grid-template-rows:1fr}
+.faq__inner{overflow:hidden}
+.faq__inner p{padding:0 1.2rem 1.1rem;color:var(--text-secondary);font-size:.92rem}
+/* ---------- CTA ---------- */
+.cta-panel{background:linear-gradient(135deg,var(--drill-level-2),var(--drill-level-3));border-radius:var(--radius-lg);padding:clamp(2.5rem,6vw,4rem) 1.5rem;display:flex;flex-direction:column;align-items:center;text-align:center;gap:1.1rem;color:#fff}
+:root[data-theme="dark"] .cta-panel{color:var(--text-primary)}
+.cta-panel p{opacity:.9;max-width:46ch}
+.cta-panel h2{color:inherit}
+.input-group{display:flex;flex-direction:column;gap:.4rem;width:100%;max-width:460px;text-align:left}
+.input-group label{font-weight:600;font-size:.85rem}
+.input-group__row{display:flex;align-items:stretch;gap:.6rem;flex-wrap:wrap}
+.input-group__row input{flex:1;min-width:200px;min-height:48px;padding:.7rem 1rem;border-radius:var(--radius-sm);border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);font:400 .95rem var(--font-base)}
+.input-group__row input:focus{outline:3px solid var(--level-highlight);outline-offset:1px}
+.input-group__row input.is-invalid{border-color:var(--border-error)}
+.input-group__row input.is-valid{border-color:var(--border-success)}
+.input-group__helper{font-size:.78rem;opacity:.85}
+.input-group__status{display:flex;align-items:center;gap:.4rem;font-size:.85rem;font-weight:600;min-height:1.4rem}
+.input-group__status--ok{color:#c8f7dd}
+:root[data-theme="dark"] .input-group__status--ok{color:var(--text-success)}
+.input-group__status--err{color:#ffd9d2}
+:root[data-theme="dark"] .input-group__status--err{color:var(--text-error)}
+/* ---------- Footer ---------- */
+footer{background:var(--bg-secondary);border-top:1px solid var(--border-default);padding:3.5rem 0 2rem}
+.footer-grid{display:flex;flex-direction:column;gap:2.5rem}
+@media(min-width:820px){.footer-grid{flex-direction:row;justify-content:space-between;align-items:flex-start}}
+.footer-brand{display:flex;flex-direction:column;align-items:flex-start;gap:.8rem;max-width:280px}
+.footer-brand p{font-size:.85rem;color:var(--text-secondary)}
+.footer-cols{display:flex;gap:3rem;flex-wrap:wrap}
+.footer-col{display:flex;flex-direction:column;align-items:flex-start;gap:.55rem}
+.footer-col h4{font-size:.8rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-secondary);margin-bottom:.3rem}
+.footer-col a{font-size:.88rem;color:var(--text-secondary);min-height:32px;display:flex;align-items:center}
+@media(hover:hover) and (pointer:fine){.footer-col a:hover{color:var(--primary)}}
+.footer-bottom{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--border-default);font-size:.82rem;color:var(--text-secondary)}
+.socials{display:flex;gap:.5rem}
+.here-crumb{display:flex;align-items:center;gap:.25rem;font-family:var(--font-mono);font-size:.78rem}
+.here-crumb b{color:var(--breadcrumb-active)}
+/* reveal on scroll */
+.reveal{opacity:0;transform:translateY(14px)}
+.reveal.is-in{opacity:1;transform:none;transition:opacity .5s var(--ease-standard),transform .5s var(--ease-standard)}
+@media (prefers-reduced-motion: reduce){
+html{scroll-behavior:auto}
+*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+.reveal{opacity:1;transform:none}
+.dash.is-reloading .kpi__value,.dash.is-reloading .chart__bar{animation:none}
+}
+@media (prefers-reduced-transparency: reduce){.bar{background:var(--bg-primary)}}
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <div class="bar__inner">
+    <a class="bar__logo" href="#top" aria-label="Stratum home">
+      <span class="material-symbols-rounded" aria-hidden="true">layers</span>Stratum
+    </a>
+    <nav aria-label="Breadcrumb">
+      <ol class="crumbs">
+        <li class="crumbs__item"><a class="crumbs__link" href="#top" data-crumb="top" aria-current="page">Overview</a><span class="material-symbols-rounded crumbs__sep" aria-hidden="true">chevron_right</span></li>
+        <li class="crumbs__item"><a class="crumbs__link" href="#features" data-crumb="features">Features</a><span class="material-symbols-rounded crumbs__sep" aria-hidden="true">chevron_right</span></li>
+        <li class="crumbs__item"><a class="crumbs__link" href="#how" data-crumb="how">How it works</a><span class="material-symbols-rounded crumbs__sep" aria-hidden="true">chevron_right</span></li>
+        <li class="crumbs__item"><a class="crumbs__link" href="#pricing" data-crumb="pricing">Pricing</a></li>
+      </ol>
+    </nav>
+    <span class="bar__mobile-crumb" id="mobile-crumb">Overview</span>
+    <span class="bar__spacer"></span>
+    <button class="btn--back" id="back-btn" type="button" aria-label="Back to previous section">
+      <span class="material-symbols-rounded" aria-hidden="true">arrow_back</span><span class="btn__label">Back</span>
+    </button>
+    <button class="icon-btn" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+      <span class="material-symbols-rounded icon-moon" aria-hidden="true">dark_mode</span>
+      <span class="material-symbols-rounded icon-sun" aria-hidden="true">light_mode</span>
+    </button>
+    <button class="icon-btn menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="mobile-nav" aria-label="Open navigation menu">
+      <span class="material-symbols-rounded" aria-hidden="true">menu</span>
+    </button>
+  </div>
+  <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation" hidden>
+    <ul>
+      <li><a href="#top" data-crumb="top">Overview</a></li>
+      <li><a href="#features" data-crumb="features">Features</a></li>
+      <li><a href="#how" data-crumb="how">How it works</a></li>
+      <li><a href="#pricing" data-crumb="pricing">Pricing</a></li>
+      <li><a href="#faq" data-crumb="faq">FAQ</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main id="top">
+
+<!-- HERO -->
+<section class="hero" aria-labelledby="hero-title">
+  <div class="container hero__grid">
+    <div class="hero__copy">
+      <span class="hero__eyebrow"><span class="material-symbols-rounded" aria-hidden="true">insights</span>Drill-down analytics</span>
+      <h1 id="hero-title">Every number answers its own why.</h1>
+      <p class="hero__sub">Stratum turns flat dashboards into explorable hierarchies, so your team moves from summary to root cause in three clicks.</p>
+      <div class="hero__ctas">
+        <a class="btn btn--primary" href="#cta">Start free<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+        <a class="btn btn--secondary" href="#how">See how it works</a>
+      </div>
+    </div>
+    <div class="hero__demo">
+      <div class="dash" id="dash" aria-label="Interactive drill-down demo">
+        <div class="dash__crumbs" aria-hidden="true">
+          <span id="dc-1">Overview</span><span class="material-symbols-rounded">chevron_right</span>
+          <span id="dc-2">Revenue</span><span class="material-symbols-rounded">chevron_right</span>
+          <b id="dc-3">Q4</b>
+        </div>
+        <div class="dash__kpis">
+          <button class="kpi" type="button" data-scroll="#revenue-detail">
+            <span class="kpi__label">Revenue</span>
+            <span class="kpi__value" data-kpi="rev">$1.24M</span>
+            <span class="kpi__delta">+12.4% QoQ</span>
+          </button>
+          <button class="kpi" type="button" data-scroll="#revenue-detail">
+            <span class="kpi__label">Active accounts</span>
+            <span class="kpi__value" data-kpi="acct">8,412</span>
+            <span class="kpi__delta">+6.1% QoQ</span>
+          </button>
+          <button class="kpi" type="button" data-scroll="#revenue-detail">
+            <span class="kpi__label">Churn</span>
+            <span class="kpi__value" data-kpi="churn">1.8%</span>
+            <span class="kpi__delta">-0.3 pts</span>
+          </button>
+        </div>
+        <div class="chart" id="chart" aria-hidden="true">
+          <div class="chart__bar"></div><div class="chart__bar"></div><div class="chart__bar"></div><div class="chart__bar"></div><div class="chart__bar"></div><div class="chart__bar"></div><div class="chart__bar"></div>
+        </div>
+        <div class="levels" role="group" aria-label="Drill level">
+          <button class="chip chip--1" type="button" data-level="1" aria-pressed="true"><span class="chip__dot" aria-hidden="true"></span>Level 1 · Summary</button>
+          <button class="chip chip--2" type="button" data-level="2" aria-pressed="false"><span class="chip__dot" aria-hidden="true"></span>Level 2 · Category</button>
+          <button class="chip chip--3" type="button" data-level="3" aria-pressed="false"><span class="chip__dot" aria-hidden="true"></span>Level 3 · Detail</button>
+        </div>
+      </div>
+      <p class="sr-only" role="status" aria-live="polite" id="level-status" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)"></p>
+    </div>
+  </div>
+</section>
+
+<!-- DETAIL PANEL (summary-to-detail target) -->
+<section id="revenue-detail" aria-labelledby="rd-title" style="padding-top:0">
+  <div class="container">
+    <div class="detail-panel">
+      <h3><span class="material-symbols-rounded" aria-hidden="true">table_view</span><span id="rd-title">Revenue detail: Q4 by region</span></h3>
+      <table>
+        <thead><tr><th scope="col">Region</th><th scope="col">Revenue</th><th scope="col">Accounts</th><th scope="col">Growth</th></tr></thead>
+        <tbody>
+          <tr><td>North America</td><td>$512K</td><td>3,204</td><td>+14.2%</td></tr>
+          <tr><td>Europe</td><td>$388K</td><td>2,611</td><td>+11.8%</td></tr>
+          <tr><td>Asia Pacific</td><td>$246K</td><td>1,842</td><td>+9.6%</td></tr>
+          <tr><td>Latin America</td><td>$94K</td><td>755</td><td>+16.1%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features" aria-labelledby="feat-title">
+  <div class="container">
+    <div class="section-head reveal">
+      <h2 id="feat-title">Built for hierarchical questions</h2>
+      <p>Each feature keeps your place in the data, so drilling down never means losing the plot.</p>
+    </div>
+    <div class="cards3">
+      <article class="card reveal">
+        <span class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">account_tree</span></span>
+        <h3>Live drill paths</h3>
+        <p>Click any metric to open the level beneath it. The path you took stays visible the whole way down.</p>
+        <details class="drill">
+          <summary>Drill deeper<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <div class="drill__body"><div class="drill__inner">
+            <ul class="drill__list">
+              <li><span class="lvl lvl--1" aria-hidden="true"></span>Summary: company-wide KPIs refresh in real time.</li>
+              <li><span class="lvl lvl--2" aria-hidden="true"></span>Category: segment by region, plan, or channel.</li>
+              <li><span class="lvl lvl--3" aria-hidden="true"></span>Detail: row-level records with full lineage.</li>
+            </ul>
+          </div></div>
+        </details>
+      </article>
+      <article class="card reveal">
+        <span class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">undo</span></span>
+        <h3>Context preservation</h3>
+        <p>Filters, date ranges, and comparisons follow you down every level and back up again.</p>
+        <details class="drill">
+          <summary>Drill deeper<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <div class="drill__body"><div class="drill__inner">
+            <ul class="drill__list">
+              <li><span class="lvl lvl--1" aria-hidden="true"></span>Breadcrumbs mirror your exact drill path.</li>
+              <li><span class="lvl lvl--2" aria-hidden="true"></span>One back step restores the previous view intact.</li>
+              <li><span class="lvl lvl--3" aria-hidden="true"></span>Shareable links encode the full context state.</li>
+            </ul>
+          </div></div>
+        </details>
+      </article>
+      <article class="card reveal">
+        <span class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">bolt</span></span>
+        <h3>Query-free exploration</h3>
+        <p>Analysts define the hierarchy once. Everyone else explores it without writing a line of SQL.</p>
+        <details class="drill">
+          <summary>Drill deeper<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <div class="drill__body"><div class="drill__inner">
+            <ul class="drill__list">
+              <li><span class="lvl lvl--1" aria-hidden="true"></span>Governed metrics keep definitions consistent.</li>
+              <li><span class="lvl lvl--2" aria-hidden="true"></span>Pre-aggregated levels load in under a second.</li>
+              <li><span class="lvl lvl--3" aria-hidden="true"></span>Row-level security applies at every depth.</li>
+            </ul>
+          </div></div>
+        </details>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" class="how" aria-labelledby="how-title">
+  <div class="container">
+    <div class="section-head reveal">
+      <h2 id="how-title">From summary to detail in three levels</h2>
+      <p>The drill path is the interface. Colors mark depth, and the breadcrumb always shows where you stand.</p>
+    </div>
+    <div class="steps">
+      <div class="step reveal">
+        <span class="step__num" aria-hidden="true">1</span>
+        <h3>Start at the summary</h3>
+        <p>Level 1 shows headline KPIs across the whole business. Spot the number that needs explaining.</p>
+        <span class="step__cue"><span class="material-symbols-rounded" aria-hidden="true">home</span>Overview crumb</span>
+      </div>
+      <div class="step step--2 reveal">
+        <span class="step__num" aria-hidden="true">2</span>
+        <h3>Drill into a category</h3>
+        <p>Level 2 breaks the metric into segments. The breadcrumb grows, and your filters come along.</p>
+        <span class="step__cue"><span class="material-symbols-rounded" aria-hidden="true">chevron_right</span>Path extends</span>
+      </div>
+      <div class="step step--3 reveal">
+        <span class="step__num" aria-hidden="true">3</span>
+        <h3>Land on the detail</h3>
+        <p>Level 3 shows the underlying rows behind the anomaly. Step back any time with one click.</p>
+        <span class="step__cue"><span class="material-symbols-rounded" aria-hidden="true">arrow_back</span>Back button</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testimonials" aria-labelledby="test-title">
+  <div class="container">
+    <div class="section-head reveal">
+      <h2 id="test-title">Teams that stopped guessing</h2>
+      <p>What happens when anyone can chase a number down to its source.</p>
+    </div>
+    <div class="cards3">
+      <article class="card quote-card reveal">
+        <blockquote>Our weekly review went from forty slides to one screen. We just drill into whatever moved.</blockquote>
+        <div class="quote-card__who">
+          <span class="avatar" aria-hidden="true">MR</span>
+          <div><div class="quote-card__name">Marta Reyes</div><div class="quote-card__role">VP Operations, Fieldline Logistics</div></div>
+        </div>
+      </article>
+      <article class="card quote-card reveal">
+        <blockquote>The breadcrumb trail sounds small until a director asks where a figure came from and you answer in one click.</blockquote>
+        <div class="quote-card__who">
+          <span class="avatar avatar--b" aria-hidden="true">DK</span>
+          <div><div class="quote-card__name">Daniel Kwan</div><div class="quote-card__role">Head of Data, Northbeam Retail</div></div>
+        </div>
+      </article>
+      <article class="card quote-card reveal">
+        <blockquote>Support, finance, and product all read the same hierarchy now. Arguments about definitions simply ended.</blockquote>
+        <div class="quote-card__who">
+          <span class="avatar avatar--c" aria-hidden="true">AS</span>
+          <div><div class="quote-card__name">Amara Sy</div><div class="quote-card__role">Analytics Lead, Corvus Health</div></div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" class="how" aria-labelledby="price-title">
+  <div class="container">
+    <div class="section-head reveal">
+      <h2 id="price-title">Pick your depth</h2>
+      <p>Every plan includes unlimited viewers. You only pay for the people who build hierarchies.</p>
+    </div>
+    <div class="pricing-grid">
+      <article class="card tier reveal">
+        <h3>Scout</h3>
+        <div class="tier__price">$29<span>/editor per month</span></div>
+        <ul class="tier__list">
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Two drill levels per metric</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>5 data sources</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>7-day context history</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Email support</li>
+        </ul>
+        <a class="btn btn--secondary" href="#cta">Start free</a>
+      </article>
+      <article class="card tier tier--featured reveal">
+        <span class="tier__badge">Most popular</span>
+        <h3>Analyst</h3>
+        <div class="tier__price">$79<span>/editor per month</span></div>
+        <ul class="tier__list">
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Unlimited drill depth</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>25 data sources</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Full context preservation</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Shareable drill links</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Priority support</li>
+        </ul>
+        <a class="btn btn--primary" href="#cta">Start free</a>
+      </article>
+      <article class="card tier reveal">
+        <h3>Enterprise</h3>
+        <div class="tier__price">Custom<span>annual agreement</span></div>
+        <ul class="tier__list">
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Row-level security at every level</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>SSO and audit logs</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Dedicated success engineer</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>99.9% uptime SLA</li>
+        </ul>
+        <a class="btn btn--secondary" href="#cta">Contact sales</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" aria-labelledby="faq-title">
+  <div class="container">
+    <div class="section-head reveal">
+      <h2 id="faq-title">Common questions</h2>
+      <p>Everything teams usually ask before their first drill-down.</p>
+    </div>
+    <div class="faq-list">
+      <details class="faq reveal">
+        <summary>How is Stratum different from a regular dashboard tool?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+        <div class="faq__body"><div class="faq__inner"><p>Dashboards show fixed slices. Stratum models your metrics as a hierarchy, so every number is an entry point to the level beneath it, with filters and context carried along automatically.</p></div></div>
+      </details>
+      <details class="faq reveal">
+        <summary>Do viewers need any training?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+        <div class="faq__body"><div class="faq__inner"><p>No. If someone can follow a breadcrumb trail, they can use Stratum. Clicking a metric drills down, and the back button returns to the previous level exactly as it was left.</p></div></div>
+      </details>
+      <details class="faq reveal">
+        <summary>Which data sources do you support?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+        <div class="faq__body"><div class="faq__inner"><p>Postgres, Snowflake, BigQuery, Redshift, and any REST API on all plans. Higher tiers add dbt semantic layer sync and warehouse-native pushdown for large datasets.</p></div></div>
+      </details>
+      <details class="faq reveal">
+        <summary>How does context preservation actually work?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+        <div class="faq__body"><div class="faq__inner"><p>Every drill step is recorded as a state snapshot: filters, date range, comparison, and level. Moving up or sharing a link restores that exact snapshot, so two people always see the same thing.</p></div></div>
+      </details>
+      <details class="faq reveal">
+        <summary>Can I control who sees row-level detail?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+        <div class="faq__body"><div class="faq__inner"><p>Yes. Permissions apply per level, so a regional manager can drill to detail within their region while seeing only summaries elsewhere. Row-level security rules are enforced at query time.</p></div></div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section id="cta" aria-labelledby="cta-title">
+  <div class="container">
+    <div class="cta-panel reveal">
+      <h2 id="cta-title">Start drilling in minutes</h2>
+      <p>Connect a source, define one hierarchy, and share your first explorable metric today.</p>
+      <form class="input-group" id="cta-form" novalidate>
+        <label for="cta-email">Work email</label>
+        <div class="input-group__row">
+          <input id="cta-email" name="email" type="email" autocomplete="email" placeholder="you@company.com" aria-describedby="cta-helper cta-status" required>
+          <button class="btn btn--primary" id="cta-submit" type="submit">
+            <span class="material-symbols-rounded btn__icon" id="cta-icon" aria-hidden="true" hidden>progress_activity</span>
+            <span id="cta-btn-text">Get started</span>
+          </button>
+        </div>
+        <span class="input-group__helper" id="cta-helper">Free for 14 days. No credit card required.</span>
+        <span class="input-group__status" id="cta-status" role="status" aria-live="polite"></span>
+      </form>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="bar__logo" href="#top"><span class="material-symbols-rounded" aria-hidden="true">layers</span>Stratum</a>
+        <p>Drill-down analytics for teams that ask why. Summary to detail, context intact.</p>
+        <div class="socials">
+          <a class="icon-btn" href="#top" aria-label="Stratum on the web"><span class="material-symbols-rounded" aria-hidden="true">public</span></a>
+          <a class="icon-btn" href="#top" aria-label="Stratum community"><span class="material-symbols-rounded" aria-hidden="true">forum</span></a>
+          <a class="icon-btn" href="#top" aria-label="Stratum updates"><span class="material-symbols-rounded" aria-hidden="true">rss_feed</span></a>
+        </div>
+      </div>
+      <div class="footer-cols">
+        <div class="footer-col">
+          <h4>Product</h4>
+          <a href="#features">Features</a><a href="#how">How it works</a><a href="#pricing">Pricing</a>
+        </div>
+        <div class="footer-col">
+          <h4>Resources</h4>
+          <a href="#faq">FAQ</a><a href="#testimonials">Customer stories</a><a href="#cta">Get started</a>
+        </div>
+        <div class="footer-col">
+          <h4>Company</h4>
+          <a href="#top">About</a><a href="#top">Careers</a><a href="#top">Security</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Stratum Analytics, Inc. All rights reserved.</span>
+      <span class="here-crumb" aria-label="Current location">You are here:<span class="material-symbols-rounded" aria-hidden="true" style="font-size:.9rem">chevron_right</span><b>Home</b></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+var root=document.documentElement;
+var reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* Theme toggle */
+var toggle=document.getElementById("theme-toggle");
+function syncToggle(){
+  var dark=root.dataset.theme==="dark";
+  toggle.setAttribute("aria-pressed",String(dark));
+  toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+}
+toggle.addEventListener("click",function(){
+  root.dataset.theme=root.dataset.theme==="dark"?"light":"dark";
+  localStorage.setItem("theme",root.dataset.theme);
+  syncToggle();
+});
+syncToggle();
+
+/* Mobile menu */
+var menuBtn=document.getElementById("menu-btn");
+var mobileNav=document.getElementById("mobile-nav");
+function closeMenu(){mobileNav.hidden=true;menuBtn.setAttribute("aria-expanded","false");menuBtn.setAttribute("aria-label","Open navigation menu");}
+menuBtn.addEventListener("click",function(){
+  var open=mobileNav.hidden;
+  mobileNav.hidden=!open;
+  menuBtn.setAttribute("aria-expanded",String(open));
+  menuBtn.setAttribute("aria-label",open?"Close navigation menu":"Open navigation menu");
+});
+mobileNav.addEventListener("click",function(e){if(e.target.closest("a"))closeMenu();});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")closeMenu();});
+
+/* Breadcrumb scroll sync */
+var crumbLinks=document.querySelectorAll("[data-crumb]");
+var mobileCrumb=document.getElementById("mobile-crumb");
+var sectionNames={top:"Overview",features:"Features",how:"How it works",pricing:"Pricing",faq:"FAQ"};
+var sections=["top","features","how","pricing","faq"].map(function(id){return document.getElementById(id);}).filter(Boolean);
+function setCurrent(id){
+  crumbLinks.forEach(function(a){
+    if(a.dataset.crumb===id)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current");
+  });
+  mobileCrumb.textContent=sectionNames[id]||"Overview";
+}
+if("IntersectionObserver" in window){
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){if(en.isIntersecting)setCurrent(en.target.id);});
+  },{rootMargin:"-40% 0px -55% 0px"});
+  sections.forEach(function(s){io.observe(s);});
+}
+
+/* Back button: scroll to previous section */
+var backBtn=document.getElementById("back-btn");
+var order=["top","features","how","pricing","faq"];
+backBtn.addEventListener("click",function(){
+  var current=order.find(function(id){return document.querySelector('.crumbs__link[data-crumb="'+id+'"][aria-current="page"]');})||"top";
+  var idx=order.indexOf(current);
+  var target=document.getElementById(idx>0?order[idx-1]:"top");
+  target.scrollIntoView({behavior:reduce?"auto":"smooth"});
+});
+
+/* Hero drill demo */
+var dash=document.getElementById("dash");
+var chips=dash.querySelectorAll(".chip");
+var bars=dash.querySelectorAll(".chart__bar");
+var status=document.getElementById("level-status");
+var dc1=document.getElementById("dc-1"),dc2=document.getElementById("dc-2"),dc3=document.getElementById("dc-3");
+var data={
+  1:{crumbs:["Overview","Revenue","Q4"],rev:"$1.24M",acct:"8,412",churn:"1.8%",bars:[45,60,52,70,64,82,95],deep:false,label:"Summary"},
+  2:{crumbs:["Overview","Revenue","By region"],rev:"$512K",acct:"3,204",churn:"1.6%",bars:[80,62,48,55,70,40,30],deep:false,label:"Category"},
+  3:{crumbs:["Revenue","NA","Accounts"],rev:"$4.2K",acct:"128",churn:"0.9%",bars:[30,55,40,75,60,90,50],deep:true,label:"Detail"}
+};
+function applyLevel(n){
+  var d=data[n];
+  dc1.textContent=d.crumbs[0];dc2.textContent=d.crumbs[1];dc3.textContent=d.crumbs[2];
+  chips.forEach(function(c){c.setAttribute("aria-pressed",String(c.dataset.level===String(n)));});
+  if(!reduce)dash.classList.add("is-reloading");
+  setTimeout(function(){
+    dash.querySelector('[data-kpi="rev"]').textContent=d.rev;
+    dash.querySelector('[data-kpi="acct"]').textContent=d.acct;
+    dash.querySelector('[data-kpi="churn"]').textContent=d.churn;
+    bars.forEach(function(b,i){
+      b.style.height=d.bars[i]+"%";
+      b.classList.toggle("chart__bar--deep",d.deep);
+    });
+    setTimeout(function(){dash.classList.remove("is-reloading");},600);
+  },reduce?0:180);
+  status.textContent="Now viewing: "+d.label+" level";
+}
+chips.forEach(function(c){c.addEventListener("click",function(){applyLevel(c.dataset.level);});});
+applyLevel(1);
+
+/* KPI click scrolls to detail */
+dash.querySelectorAll(".kpi").forEach(function(k){
+  k.addEventListener("click",function(){
+    var t=document.querySelector(k.dataset.scroll);
+    if(t)t.scrollIntoView({behavior:reduce?"auto":"smooth",block:"start"});
+  });
+});
+
+/* Reveal on scroll */
+var reveals=document.querySelectorAll(".reveal");
+if("IntersectionObserver" in window&&!reduce){
+  var rio=new IntersectionObserver(function(entries){
+    entries.forEach(function(en,i){
+      if(en.isIntersecting){
+        en.target.style.transitionDelay=(i%3)*70+"ms";
+        en.target.classList.add("is-in");
+        rio.unobserve(en.target);
+      }
+    });
+  },{threshold:.12});
+  reveals.forEach(function(el){rio.observe(el);});
+}else{
+  reveals.forEach(function(el){el.classList.add("is-in");});
+}
+
+/* CTA form */
+var form=document.getElementById("cta-form");
+var email=document.getElementById("cta-email");
+var submitBtn=document.getElementById("cta-submit");
+var btnText=document.getElementById("cta-btn-text");
+var btnIcon=document.getElementById("cta-icon");
+var ctaStatus=document.getElementById("cta-status");
+form.addEventListener("submit",function(e){
+  e.preventDefault();
+  ctaStatus.className="input-group__status";
+  ctaStatus.textContent="";
+  email.classList.remove("is-valid","is-invalid");
+  var val=email.value.trim();
+  var ok=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val);
+  if(!ok){
+    email.classList.add("is-invalid");
+    ctaStatus.classList.add("input-group__status--err");
+    ctaStatus.innerHTML='<span class="material-symbols-rounded" aria-hidden="true">error</span>Please enter a valid work email.';
+    email.focus();
+    return;
+  }
+  submitBtn.classList.add("is-loading");
+  submitBtn.disabled=true;
+  btnIcon.hidden=false;
+  btnText.textContent="Sending";
+  setTimeout(function(){
+    submitBtn.classList.remove("is-loading");
+    submitBtn.disabled=false;
+    btnIcon.hidden=true;
+    btnText.textContent="Get started";
+    email.classList.add("is-valid");
+    ctaStatus.classList.add("input-group__status--ok");
+    ctaStatus.innerHTML='<span class="material-symbols-rounded" aria-hidden="true">check_circle</span>You are on the list. Check your inbox for a setup link.';
+    form.reset();
+  },1200);
+});
+})();
+</script>
+</body>
+</html>

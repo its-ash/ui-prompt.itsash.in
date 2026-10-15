@@ -1,661 +1,719 @@
 <!DOCTYPE html>
-<html lang="en" class="light">
+<html lang="en" data-theme="light">
 <head>
-  <meta charset="UTF-8">
-  <title>CARBON — a typewriter memoir</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Symbols+Rounded">
-  <style>
-    /* ---- Reset & Base ---- */
-    *,::before,::after{box-sizing:border-box;margin:0;padding:0;border:none;}
-    html{font-family:system-ui,Arial,sans-serif;scroll-behavior:smooth;}
-    body{margin:0;background:var(--bg-primary);color:var(--text-primary);line-height:1.5;-webkit-tap-highlight-color:transparent;}
-    a{color:inherit;text-decoration:none;}
-    button{background:none;padding:0;cursor:pointer;}
-    img{max-width:100%;display:block;}
-    button:focus-visible,input:focus-visible{outline:2px solid var(--primary);outline-offset:3px;}
-    @media (prefers-reduced-motion:reduce){*{-webkit-animation-duration:0s;animation-duration:0s;-webkit-transition-duration:0s;transition-duration:0s;}}
-    .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:clip;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
-    /* ---- Tokens ---- */
-    :root{
-      --primary:#b2452e;--primary-strong:#9e3a24;
-      --secondary:#5b4632;
-      --bg-primary:#f6f0e2;--bg-secondary:#efe8d8;--bg-inset:#e4dbc6;
-      --text-primary:#2e2a26;--text-secondary:#5b4632;
-      --text-success:#43603f;--text-error:#9c2b1c;
-      --border-default:#2e2a26;
-      --radius-sm:2px;--radius-md:10px;--radius-lg:18px;
-      --shadow-sm:0 1px 3px rgba(46,42,38,.18);
-      --shadow-md:0 8px 24px rgba(46,42,38,.22);
-      --shadow-neu:8px 8px 18px rgba(46,42,38,.20),-8px -8px 18px rgba(255,252,244,.85);
-      --glow-primary:0 0 24px rgba(178,69,46,.35);
-      --gradient-paper:linear-gradient(135deg,#f6f0e2,#efe8d8,#e4dbc6);
-      --gradient-ink:linear-gradient(135deg,#b2452e,#5b4632);
-      --spacing-gap:clamp(1.25rem,3vw,2rem);
-      --transition-fast:140ms;--transition-normal:280ms;
-      --ease-standard:cubic-bezier(.4,0,.2,1);
-      --z-dropdown:100;--z-modal:200;--z-toast:300;--z-header:90;--z-grain:4000;
-      --font-display:'Special Elite';
-      --font-base:'Courier Prime';
-      --font-stamp:'Archivo Black';
-    }
-    @media (prefers-color-scheme:dark){
-      :root[data-theme="dark"]{
-        --primary:#e07a5c;--primary-strong:#f0937a;
-        --secondary:#d8b98a;
-        --bg-primary:#2e2a26;--bg-secondary:#3a342d;--bg-inset:#262220;
-        --text-primary:#efe8d8;--text-secondary:#cfc4ab;
-        --text-success:#9dc08b;--text-error:#ff9b85;
-        --border-default:#efe8d8;--border-error:#ff9b85;--border-success:#9dc08b;
-      }
-    }
-    .dark{
-      --primary:#e07a5c;--primary-strong:#f0937a;
-      --secondary:#d8b98a;
-      --bg-primary:#2e2a26;--bg-secondary:#3a342d;--bg-inset:#262220;
-      --text-primary:#efe8d8;--text-secondary:#cfc4ab;
-      --text-success:#9dc08b;--text-error:#ff9b85;
-      --border-default:#efe8d8;--border-error:#ff9b85;--border-success:#9dc08b;
-    }
-    /* ---- Grain overlay ---- */
-    .grain-overlay{
-      position:fixed;inset:0;pointer-events:none;z-index:var(--z-grain);
-      background:
-        repeating-linear-gradient(45deg,transparent,transparent 1px,#fefefe 1px,#fefefe 2px),
-        repeating-linear-gradient(135deg,transparent,transparent 1px,#fefefe 1px,#fefefe 2px);
-      opacity:.05;mix-blend-mode:multiply;
-    }
-    @media (prefers-color-scheme:dark){.grain-overlay{mix-blend-mode:overlay;}}
-    /* ---- Layout ---- */
-    .container{max-width:72rem;margin:0 auto;padding:0 var(--spacing-gap);}
-    header,.section{position:relative;}
-    .site-header{
-      position:sticky;top:0;background:var(--bg-primary);border-bottom:2px solid var(--border-default);z-index:var(--z-header);
-      display:grid;grid-template-columns:auto 1fr auto auto;gap:var(--spacing-gap);align-items:center;padding:0.75rem var(--spacing-gap);}
-    .nav{display:flex;gap:1rem;align-items:center;}
-    .nav a{font-family:var(--font-display);font-size:0.875rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-primary);}
-    .nav a:hover{color:var(--primary);}
-    .theme-toggle{position:relative;display:flex;align-items:center;gap:0.5rem;}
-    .theme-toggle .material-symbols-rounded{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;}
-    .cta-btn{font-family:var(--font-base);font-weight:700;padding:0.6rem 1.2rem;background:var(--gradient-ink);color:#fff;border:2px solid var(--primary);border-radius:var(--radius-sm);font-size:0.875rem;}
-    .cta-btn:hover{background:#9e3a24;--shadow-md}
-    .hamburger{display:none;width:1.8rem;height:1.8rem;flex-direction:column;gap:2px;background:none;}
-    .hamburger span{display:block;width:100%;height:2px;background:var(--text-primary);transition:transform .3s ease,opacity .3s ease;}
-    .hamburger.active span:nth-child(1){transform:rotate(45deg) translate(5px,5px);}
-    .hamburger.active span:nth-child(2){opacity:0;}
-    .hamburger.active span:nth-child(3){transform:rotate(-45deg) translate(7px,-6px);}
-    /* ---- Hero ---- */
-    .hero{
-      display:grid;grid-template-columns:1fr 1fr;gap:var(--spacing-gap);align-items:center;padding:3rem var(--spacing-gap);background:var(--gradient-paper);
-    }
-    .hero .eyebrow{
-      font-family:var(--font-stamp);font-size:0.75rem;text-transform:uppercase;letter-spacing:.2em;color:var(--primary);background:#fff2e6;padding:0.2rem 0.5rem;border-radius:var(--radius-sm);margin-bottom:1rem;
-    }
-    .hero h1{
-      font-family:var(--font-display);font-size:3.5rem;line-height:1.1;color:var(--text-primary);
-      background:var(--gradient-ink);-webkit-background-clip:text;background-clip:text;color:transparent;
-    }
-    .tagline{font-family:var(--font-base);font-size:1.25rem;margin:1.5rem 0;}
-    .tagline span{display:block;animation:typing 4s infinite;overflow:hidden;color:var(--text-primary);}
-    @keyframes typing{
-      0%,100%{width:0;}
-      33%{width:100%;}
-      66%{width:100%;}
-    }
-    .tagline .line1{animation-delay:0s;}
-    .tagline .line2{animation-delay:1.5s;}
-    .tagline .line3{animation-delay:3s;}
-    .cta-group{display:flex;gap:0.75rem;margin-top:1.5rem;}
-    .secondary-cta{font-family:var(--font-base);padding:0.6rem 1.2rem;background:transparent;color:var(--primary);border:2px solid var(--primary);border-radius:var(--radius-sm);}
-    .right{position:relative;align-self:end;}
-    .right::after{
-      content:"";position:absolute;inset:0;background:var(--gradient-ink);border-radius:var(--radius-lg);z-index:-1;opacity:.2;
-    }
-    .typewriter-vignette{
-      background:var(--bg-secondary);border:2px solid var(--border-default);border-radius:var(--radius-lg);padding:2rem;position:relative;
-    }
-    .vignette-stamp{
-      width:8rem;height:8rem;background:var(--primary);border-radius:50%;position:relative;top:-3rem;margin:0 auto -2rem;
-      display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-stamp);font-size:3rem;
-    }
-    .vignette-stamp::after{content:"CARBON";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:1.2rem;letter-spacing:.1em;}
-    .ruled-lines{
-      height:12rem;margin-top:1rem;background:repeating-linear-gradient(90deg,transparent,transparent 4px,#b2452e 4px,#b2452e 8px);
-    }
-    .key-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:1rem;background:#2e2a26;padding:2px;border-radius:var(--radius-sm);color:#666;font-size:0.6rem;}
-    .ticker{
-      overflow:hidden;white-space:nowrap;margin-top:2rem;
-    }
-    .ticker span{
-      display:inline-block;animation:ticker 20s linear infinite;
-    }
-    .ticker span.dup{position:absolute;left:100%;animation-direction:reverse;}
-    @keyframes ticker{to{transform:translateX(-50%);}}
-    /* ---- Features ---- */
-    .section{padding:3rem var(--spacing-gap);}
-    .section-header{text-align:center;margin-bottom:2rem;}
-    .section-header .kicker{font-family:var(--font-stamp);font-size:0.75rem;text-transform:uppercase;letter-spacing:.2em;color:var(--primary);margin-bottom:0.5rem;}
-    .section-header h2{font-family:var(--font-stamp);font-size:2rem;}
-    .features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));gap:1.5rem;}
-    .card{
-      background:var(--bg-secondary);border:2px solid var(--border-default);border-radius:var(--radius-sm);padding:1.5rem;display:flex;flex-direction:column;gap:0.75rem;
-    }
-    .card .icon{font-size:1.5rem;color:var(--primary);}
-    .card h3{font-family:var(--font-stamp);font-size:1rem;}
-    .card p{font-size:0.875rem;color:var(--text-secondary);}
-    .card .read-more{margin-top:auto;font-size:0.75rem;color:var(--primary);align-self:flex-start;}
-    /* ---- How it works ---- */
-    .steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;align-items:center;}
-    .step{text-align:center;}
-    .step .numeral{
-      font-family:var(--font-stamp);font-size:3rem;opacity:.2;position:relative;z-index:-1;color:var(--primary);
-    }
-    .step .icon{font-size:2rem;color:var(--primary);margin:.5rem 0;}
-    .step h3{font-size:1rem;margin:.5rem 0;}
-    .connector{position:relative;margin:0 auto;}
-    .connector::before{
-      content:"";position:absolute;right:0;top:1.5rem;height:2px;background:var(--border-default);width:40%;transform:rotate(45deg);
-    }
-    @media (max-width:1023px){.steps-grid,.features-grid{grid-template-columns:1fr;}}
-    /* ---- Testimonials ---- */
-    .testimonials{display:grid;grid-template-columns:repeat(auto-fit,minmax(18rem,1fr));gap:1.5rem;padding:3rem var(--spacing-gap);}
-    .memo-card{
-      background:var(--bg-secondary);border:2px solid var(--border-default);border-radius:var(--radius-sm);padding:1.5rem;position:relative;display:flex;flex-direction:column;gap:0.75rem;
-    }
-    .memo-card .quote{font-family:var(--font-base);font-style:italic;margin:-0.5rem 0 1rem;}
-    .memo-card .avatar{
-      width:4rem;height:4rem;border:4px solid var(--bg-primary);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-base);font-weight:700;color:var(--primary);
-    }
-    .memo-card .name{font-family:var(--font-stamp);font-size:0.875rem;}
-    .memo-card .role{font-size:0.75rem;color:var(--text-secondary);}
-    .memo-card .verified{position:absolute;right:1rem;top:1rem;font-size:1rem;color:var(--text-success);}
-    /* ---- Pricing ---- */
-    .pricing{padding:3rem var(--spacing-gap);background:var(--gradient-paper);}
-    .pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;align-items:center;}
-    .card--featured{position:relative;border-color:var(--primary);background:var(--gradient-ink);color:#fff;}
-    .card--featured::before{content:"MOST INKED";font-family:var(--font-stamp);font-size:0.65rem;text-transform:uppercase;letter-spacing:.1em;color:#fff;background:#9e3a24;padding:0.2rem 0.5rem;border-radius:var(--radius-sm);position:absolute;top:-1rem;left:1.5rem;}
-    .card--featured .price{font-size:2rem;margin:1rem 0;}
-    .card--featured .list{color:#eaddd5;}
-    .card--featured .list .icon{color:#ffe;}
-    .card--featured .btn{background:#fff;color:#9e3a24;border-color:#fff;}
-    .card--featured .btn:hover{background:#f0937a;color:#fff;}
-    .card{background:var(--bg-secondary);border:2px solid var(--border-default);color:var(--text-primary);}
-    .card .price{font-size:1.5rem;margin:1rem 0;}
-    .card .list{color:var(--text-secondary);}
-    .card .list .icon{color:var(--primary);}
-    .card .btn{background:none;border:2px solid var(--border-default);color:var(--text-primary);padding:0.6rem 1rem;border-radius:var(--radius-sm);}
-    .card .btn--secondary{background:none;border:2px solid var(--border-default);color:var(--text-primary);}
-    .card .btn--secondary:hover{border-color:var(--primary);color:var(--primary);}
-    @media (max-width:1023px){.pricing-grid{grid-template-columns:1fr;}}
-    /* ---- FAQ ---- */
-    .faq{padding:3rem var(--spacing-gap);}
-    .faq-item{margin-bottom:1rem;}
-    .faq-btn{
-      width:100%;text-align:left;font-family:var(--font-base);font-size:1rem;background:none;border:none;color:var(--text-primary);padding:1rem 0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;
-    }
-    .faq-btn .material-symbols-rounded{transition:transform .28s ease;}
-    .faq-btn[aria-expanded="true"] .material-symbols-rounded{transform:rotate(180deg);}
-    .faq-panel{
-      max-height:0;overflow:hidden;transition:max-height .28s ease-out;font-size:0.875rem;color:var(--text-secondary);line-height:1.5;
-    }
-    .faq-panel[aria-hidden="false"]{max-height:10000px;}
-    /* ---- Final CTA ---- */
-    .final-cta{
-      position:relative;background:var(--gradient-ink);color:#fff;padding:3rem var(--spacing-gap);margin:3rem 0;
-    }
-    .final-cta .h2{font-family:var(--font-stamp);font-size:2rem;margin-bottom:1rem;}
-    .email-form{display:flex;gap:1rem;align-items:center;margin-top:1rem;}
-    .email-form input{
-      flex:1;padding:0.75rem 1rem;border:2px solid rgba(255,255,255,.3);border-radius:var(--radius-sm);background:rgba(255,255,255,.1);color:#fff;font-family:var(--font-base);
-    }
-    .email-form input:focus{outline:none;border-color:var(--primary);}
-    .email-form button{padding:0 1.5rem;}
-    .toast{
-      position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--bg-primary);color:var(--text-primary);padding:0.75rem 1.25rem;border-radius:var(--radius-md);border:2px solid var(--primary);z-index:var(--z-toast);min-width:20rem;opacity:0;transition:opacity .3s;
-    }
-    .toast.show{opacity:1;}
-    /* ---- Footer ---- */
-    footer{
-      background:var(--text-primary);color:var(--bg-primary);padding:2rem var(--spacing-gap);margin-top:3rem;
-    }
-    .footer-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:2rem;margin-bottom:2rem;}
-    .footer-cols h4{font-family:var(--font-stamp);font-size:0.85rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:1rem;}
-    .footer-cols ul{list-style:none;padding:0;}
-    .footer-cols li{margin-bottom:0.5rem;}
-    .footer-bottom{
-      border-top:1px solid rgba(255,255,255,.2);padding-top:1rem;display:flex;justify-content:space-between;align-items:center;font-size:0.75rem;
-    }
-    .back-to-top .material-symbols-rounded{cursor:pointer;}
-    /* ---- Reduced motion ---- */
-    @media (prefers-reduced-motion:reduce){
-      .tagline span{animation:none;width:auto;}
-      .ticker span{animation:none;}
-      .faq-panel{max-height:10000px;transition:none;}
-      .faq-btn[aria-expanded="true"] .material-symbols-rounded{transform:none;}
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CARBON - a typewriter memoir</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Archivo+Black&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<style>
+/* ===== tokens ===== */
+:root{
+  --primary:#b2452e;--primary-strong:#9e3a24;--secondary:#5b4632;
+  --bg-primary:#f6f0e2;--bg-secondary:#efe8d8;--bg-inset:#e4dbc6;
+  --text-primary:#2e2a26;--text-secondary:#5b4632;
+  --text-success:#43603f;--text-error:#9c2b1c;
+  --border-default:#2e2a26;--border-error:#9c2b1c;--border-success:#43603f;
+  --on-accent:#f6f0e2;--paper-hi:#fffcf4;
+  --radius-sm:2px;--radius-md:10px;--radius-lg:18px;
+  --shadow-sm:0 1px 3px rgba(46,42,38,.18);
+  --shadow-md:0 8px 24px rgba(46,42,38,.22);
+  --shadow-neu:8px 8px 18px rgba(46,42,38,.20),-8px -8px 18px rgba(255,252,244,.85);
+  --glow-primary:0 0 24px rgba(178,69,46,.35);
+  --gradient-paper:linear-gradient(135deg,#f6f0e2,#efe8d8,#e4dbc6);
+  --gradient-ink:linear-gradient(135deg,#b2452e,#5b4632);
+  --spacing-gap:clamp(1.25rem,3vw,2rem);
+  --transition-fast:140ms;--transition-normal:280ms;
+  --ease-standard:cubic-bezier(.4,0,.2,1);
+  --z-dropdown:100;--z-modal:200;--z-toast:300;--z-header:90;--z-grain:4000;
+  --font-display:'Special Elite',monospace;--font-base:'Courier Prime',monospace;--font-stamp:'Archivo Black',sans-serif;
+  --blend-stamp:multiply;--grain-blend:multiply;
+}
+:root[data-theme="dark"]{
+  --primary:#e07a5c;--primary-strong:#f0937a;--secondary:#d8b98a;
+  --bg-primary:#2e2a26;--bg-secondary:#3a342d;--bg-inset:#262220;
+  --text-primary:#efe8d8;--text-secondary:#cfc4ab;
+  --text-success:#9dc08b;--text-error:#ff9b85;
+  --border-default:#efe8d8;--border-error:#ff9b85;--border-success:#9dc08b;
+  --on-accent:#2e2a26;--paper-hi:#4a433a;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.4);
+  --shadow-md:0 8px 24px rgba(0,0,0,.5);
+  --shadow-neu:8px 8px 18px rgba(0,0,0,.5),-8px -8px 18px rgba(74,67,58,.35);
+  --glow-primary:0 0 24px rgba(224,122,92,.35);
+  --gradient-paper:linear-gradient(135deg,#2e2a26,#3a342d,#262220);
+  --gradient-ink:linear-gradient(135deg,#e07a5c,#8a5a3a);
+  --blend-stamp:soft-light;--grain-blend:overlay;
+}
+/* ===== reset/base ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;font-size:1rem;overflow-x:hidden}
+img{max-width:100%}
+h1,h2,h3{font-family:var(--font-display);line-height:1.15;letter-spacing:-0.01em;font-weight:400}
+a{color:var(--primary-strong);text-underline-offset:3px}
+:root[data-theme="dark"] a{color:var(--primary-strong)}
+button{font-family:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+section{scroll-margin-top:5rem}
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.container{max-width:1200px;margin:0 auto;padding:0 clamp(1.25rem,4vw,2rem)}
+.material-symbols-rounded{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;font-size:1.25rem;line-height:1;vertical-align:middle}
+.skip-link{position:absolute;left:1rem;top:-4rem;background:var(--text-primary);color:var(--bg-primary);padding:.6rem 1rem;z-index:calc(var(--z-header) + 10);transition:top var(--transition-fast) var(--ease-standard);border-radius:var(--radius-sm)}
+.skip-link:focus{top:.5rem;color:var(--bg-primary)}
+/* grain */
+.grain{position:fixed;inset:0;pointer-events:none;z-index:var(--z-grain);opacity:.05;mix-blend-mode:var(--grain-blend);filter:contrast(1.4);background:repeating-conic-gradient(rgba(46,42,38,.6) 0 .0001%,transparent 0 .0002%),repeating-linear-gradient(45deg,rgba(46,42,38,.4) 0 1px,transparent 1px 3px)}
+/* ===== buttons ===== */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:.65rem 1.4rem;border:2px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-base);font-weight:700;font-size:1rem;text-decoration:none;transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard),filter var(--transition-fast) var(--ease-standard);white-space:nowrap}
+.btn:active{transform:scale(.97)}
+.btn--primary{background:var(--primary);color:var(--on-accent);border-color:var(--border-default)}
+.btn--secondary{background:var(--bg-secondary);color:var(--text-primary)}
+.btn--danger{background:var(--text-error);color:var(--bg-primary);border-color:var(--border-default)}
+@media (hover:hover) and (pointer:fine){
+  .btn--primary:hover{filter:brightness(1.08);box-shadow:var(--glow-primary)}
+  .btn--secondary:hover{box-shadow:var(--shadow-md)}
+  .btn--danger:hover{filter:brightness(1.1)}
+}
+.btn[disabled]{opacity:.5;filter:grayscale(.6);cursor:not-allowed}
+.btn.is-loading{pointer-events:none}
+.btn.is-loading .btn__label{visibility:hidden}
+.btn.is-loading::after{content:"";position:absolute;width:1.2rem;height:1.2rem;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite}
+.btn{position:relative}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* ===== header ===== */
+.site-header{position:sticky;top:0;z-index:var(--z-header);background:var(--bg-primary);border-bottom:2px solid var(--border-default)}
+.site-header__inner{display:flex;align-items:center;justify-content:space-between;gap:1rem;height:64px;max-width:1200px;margin:0 auto;padding:0 clamp(1.25rem,4vw,2rem)}
+.brand{font-family:var(--font-display);font-size:1.35rem;color:var(--text-primary);text-decoration:none;letter-spacing:.04em}
+.brand::after{content:"";display:inline-block;width:.55em;height:1em;background:var(--primary);margin-left:.15em;vertical-align:-.12em;animation:blink 1.1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.site-nav{display:flex;align-items:center;gap:1.4rem}
+.site-nav a{color:var(--text-primary);text-decoration:none;font-weight:700;font-size:.95rem}
+@media (hover:hover) and (pointer:fine){.site-nav a:hover{color:var(--primary-strong)}}
+.site-header__actions{display:flex;align-items:center;gap:.7rem}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;background:var(--bg-secondary);border:2px solid var(--border-default);border-radius:var(--radius-sm);color:var(--text-primary);transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard)}
+.icon-btn:active{transform:scale(.95)}
+@media (hover:hover) and (pointer:fine){.icon-btn:hover{box-shadow:var(--shadow-sm)}}
+.icon-btn .material-symbols-rounded{font-size:1.35rem}
+#theme-toggle .icon-sun,:root[data-theme="dark"] #theme-toggle .icon-moon{display:none}
+:root[data-theme="dark"] #theme-toggle .icon-sun{display:inline}
+.nav-toggle{display:none}
+.header-cta{padding:.5rem 1rem;min-height:44px;font-size:.9rem}
+@media (max-width:767px){
+  .nav-toggle{display:inline-flex}
+  .site-nav{position:absolute;top:64px;left:0;right:0;flex-direction:column;align-items:stretch;background:var(--bg-primary);border-bottom:2px solid var(--border-default);padding:1rem 1.25rem;gap:.25rem;z-index:var(--z-dropdown);display:none}
+  .site-nav.is-open{display:flex}
+  .site-nav a{padding:.7rem .25rem;border-bottom:1px dashed var(--border-default)}
+  .header-cta{display:none}
+}
+/* ===== hero ===== */
+.hero{padding:clamp(3rem,6vw,5rem) 0 clamp(3rem,6vw,4.5rem);background:var(--gradient-paper)}
+.hero__grid{display:grid;grid-template-columns:1fr;gap:clamp(2rem,5vw,4rem);align-items:center}
+@media (min-width:1024px){.hero__grid{grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr)}}
+.stamp-chip{display:inline-block;font-family:var(--font-display);font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--primary-strong);border:2px solid var(--primary);border-radius:var(--radius-sm);padding:.35rem .8rem;transform:rotate(-2deg);margin-bottom:1.2rem;mix-blend-mode:var(--blend-stamp)}
+.hero h1{font-size:clamp(2.4rem,5.5vw,4rem);letter-spacing:-0.02em;margin-bottom:1rem}
+.hero h1 .accent{background:var(--gradient-ink);-webkit-background-clip:text;background-clip:text;color:transparent}
+.typeline{font-size:1.15rem;min-height:1.8em;color:var(--text-secondary);margin-bottom:.8rem}
+.typeline .caret{display:inline-block;width:.55em;height:1.05em;background:var(--primary);vertical-align:-.15em;animation:blink 1.1s steps(1) infinite}
+.hero__sub{max-width:52ch;color:var(--text-secondary);margin-bottom:1.6rem}
+.hero__ctas{display:flex;flex-wrap:wrap;gap:.9rem;align-items:center;margin-bottom:1.1rem}
+.hero__proof{font-size:.85rem;color:var(--text-secondary)}
+.hero__proof strong{color:var(--primary-strong)}
+/* typewriter vignette */
+.vignette{position:relative;background:var(--bg-secondary);border:2px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-neu);padding:clamp(1.4rem,3vw,2.2rem);overflow:hidden}
+.vignette::before{content:"";position:absolute;inset:auto -10% -30% -10%;height:60%;background:radial-gradient(ellipse at center,rgba(178,69,46,.28),transparent 70%);pointer-events:none}
+.vignette__paper{background:var(--bg-primary);border:1px solid var(--border-default);border-radius:var(--radius-sm);padding:1.4rem 1.2rem 1.1rem;box-shadow:var(--shadow-sm);background-image:repeating-linear-gradient(transparent 0 1.55em,rgba(91,70,50,.28) 1.55em calc(1.55em + 1px));position:relative;transform:rotate(-1deg)}
+.vignette__bar{display:block;height:.62em;background:var(--text-primary);opacity:.78;border-radius:1px;margin-bottom:calc(1.55em - .62em)}
+.vignette__bar--w80{width:80%}.vignette__bar--w95{width:95%}.vignette__bar--w60{width:60%}.vignette__bar--w88{width:88%}.vignette__bar--w45{width:45%;background:var(--primary);opacity:.85}
+.vignette__stamp{position:absolute;right:.8rem;top:.6rem;width:5.2rem;height:5.2rem;border:3px double var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-stamp);font-size:.72rem;letter-spacing:.14em;color:var(--primary);transform:rotate(12deg);mix-blend-mode:var(--blend-stamp);opacity:.85;animation:thunk .5s var(--ease-standard) both .3s}
+@keyframes thunk{from{transform:rotate(12deg) scale(1.6);opacity:0}to{transform:rotate(12deg) scale(1);opacity:.85}}
+.vignette__keys{display:grid;grid-template-columns:repeat(10,1fr);gap:.4rem;margin-top:1.3rem}
+.vignette__key{aspect-ratio:1;background:var(--bg-inset);border:2px solid var(--border-default);border-radius:var(--radius-sm);box-shadow:0 3px 0 var(--border-default);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:var(--text-secondary)}
+/* ticker */
+.ticker{border-top:2px solid var(--border-default);border-bottom:2px solid var(--border-default);background:var(--text-primary);color:var(--bg-primary);overflow:hidden;padding:.7rem 0}
+.ticker__track{display:flex;gap:2.5rem;width:max-content;animation:ticker 26s linear infinite;font-family:var(--font-display);font-size:.95rem;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+@media (hover:hover) and (pointer:fine){.ticker:hover .ticker__track{animation-play-state:paused}}
+@keyframes ticker{to{transform:translateX(-50%)}}
+.ticker__track span::after{content:"·";margin-left:2.5rem;color:var(--primary)}
+/* ===== sections ===== */
+.section{padding:clamp(4rem,8vw,7rem) 0}
+.section--wash{background:var(--gradient-paper)}
+.section-header{max-width:65ch;margin-bottom:clamp(2rem,4vw,3rem)}
+.section-header h2{font-size:clamp(1.8rem,3.5vw,2.6rem);margin-bottom:.7rem}
+.section-header p{color:var(--text-secondary);max-width:60ch}
+.kicker{font-family:var(--font-display);font-size:.8rem;letter-spacing:.16em;text-transform:uppercase;color:var(--primary-strong);display:block;margin-bottom:.6rem}
+/* cards */
+.grid-3{display:grid;grid-template-columns:1fr;gap:var(--spacing-gap)}
+@media (min-width:1024px){.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.card{display:flex;flex-direction:column;align-items:flex-start;gap:.9rem;background:var(--bg-secondary);border:2px solid var(--border-default);border-radius:var(--radius-sm);box-shadow:var(--shadow-neu);padding:1.8rem 1.6rem;transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard)}
+@media (hover:hover) and (pointer:fine){.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-neu),var(--glow-primary)}}
+.card:focus-within{border-color:var(--primary);box-shadow:var(--shadow-neu),var(--glow-primary)}
+.card__icon{display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;background:var(--gradient-ink);color:var(--on-accent);border:2px solid var(--border-default);border-radius:var(--radius-md);transform:rotate(-3deg)}
+.card h3{font-size:1.25rem}
+.card p{color:var(--text-secondary);font-size:.95rem}
+.card__link{font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:.35rem;margin-top:auto}
+.card--skeleton{gap:.9rem}
+.card--skeleton .sk{display:block;width:100%;height:1em;border-radius:var(--radius-sm);background:linear-gradient(90deg,var(--bg-inset) 25%,var(--bg-secondary) 50%,var(--bg-inset) 75%);background-size:200% 100%;animation:shimmer 1.4s linear infinite}
+@keyframes shimmer{to{background-position:-200% 0}}
+.card--empty{align-items:center;text-align:center;justify-content:center;color:var(--text-secondary)}
+.card--empty .material-symbols-rounded{font-size:2.4rem;color:var(--primary)}
+/* steps */
+.steps{display:grid;grid-template-columns:1fr;gap:var(--spacing-gap);counter-reset:step}
+@media (min-width:1024px){.steps{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.step{position:relative;padding:1.6rem 0 0;display:flex;flex-direction:column;gap:.7rem;align-items:flex-start}
+.step__ghost{font-family:var(--font-stamp);font-size:clamp(4rem,8vw,6rem);line-height:1;color:var(--primary);opacity:.16;mix-blend-mode:var(--blend-stamp);position:absolute;top:-.6rem;left:-.4rem;pointer-events:none}
+.step .material-symbols-rounded{font-size:2rem;color:var(--primary-strong);margin-top:2.6rem}
+.step h3{font-size:1.3rem}
+.step p{color:var(--text-secondary);font-size:.95rem;max-width:34ch}
+@media (min-width:1024px){
+  .step:not(:last-child)::before{content:"";position:absolute;top:3.6rem;right:calc(var(--spacing-gap) * -1);width:var(--spacing-gap);border-top:2px dashed var(--secondary)}
+}
+/* testimonials */
+.memo{background:var(--bg-secondary);border:2px solid var(--border-default);border-radius:var(--radius-sm);box-shadow:var(--shadow-neu);padding:1.8rem 1.6rem;display:flex;flex-direction:column;gap:1rem;transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard)}
+@media (hover:hover) and (pointer:fine){.memo:hover{transform:translateY(-3px);box-shadow:var(--shadow-neu),var(--shadow-md)}}
+.memo .material-symbols-rounded{color:var(--primary);font-size:1.8rem}
+.memo blockquote{font-family:var(--font-display);font-size:1.02rem;line-height:1.55}
+.memo__by{display:flex;align-items:center;gap:.8rem;margin-top:auto}
+.memo__avatar{width:44px;height:44px;border-radius:50%;background:var(--gradient-ink);color:var(--on-accent);display:flex;align-items:center;justify-content:center;font-family:var(--font-stamp);font-size:.85rem;border:2px solid var(--border-default);flex-shrink:0}
+.memo__name{font-weight:700;font-size:.92rem;display:flex;align-items:center;gap:.3rem}
+.memo__name .material-symbols-rounded{font-size:1rem;color:var(--text-success)}
+.memo__role{font-size:.82rem;color:var(--text-secondary)}
+/* pricing */
+.price-card{display:flex;flex-direction:column;background:var(--bg-secondary);border:2px solid var(--border-default);border-radius:var(--radius-sm);box-shadow:var(--shadow-neu);overflow:hidden;position:relative}
+.price-card__head{padding:1.4rem 1.6rem;border-bottom:2px solid var(--border-default)}
+.price-card__head h3{font-size:1.3rem}
+.price-card__price{font-family:var(--font-stamp);font-size:2rem;margin-top:.4rem}
+.price-card__price small{font-family:var(--font-base);font-size:.85rem;font-weight:400;color:var(--text-secondary)}
+.price-card__body{padding:1.4rem 1.6rem 1.8rem;display:flex;flex-direction:column;gap:1.2rem;flex:1}
+.price-card__list{list-style:none;display:flex;flex-direction:column;gap:.6rem;font-size:.93rem}
+.price-card__list li{display:flex;align-items:flex-start;gap:.5rem}
+.price-card__list .material-symbols-rounded{color:var(--text-success);font-size:1.1rem;margin-top:.15rem}
+.price-card .btn{margin-top:auto}
+.price-card--featured{border-width:3px;box-shadow:var(--shadow-neu),var(--glow-primary)}
+:root[data-theme="dark"] .price-card--featured{border-color:var(--border-default)}
+.price-card--featured .price-card__head{background:var(--gradient-ink);color:var(--on-accent)}
+.price-card--featured .price-card__price small{color:var(--on-accent);opacity:.85}
+.price-card__stamp{position:absolute;top:.9rem;right:1rem;font-family:var(--font-stamp);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;border:2px solid currentColor;border-radius:var(--radius-sm);padding:.25rem .55rem;transform:rotate(6deg);color:var(--on-accent)}
+@media (min-width:1024px){.price-card--featured{transform:scale(1.03)}}
+/* faq */
+.faq{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:.9rem}
+.faq__item{border:2px solid var(--border-default);border-radius:var(--radius-sm);background:var(--bg-secondary);box-shadow:var(--shadow-sm)}
+.faq__q{width:100%;display:flex;align-items:center;justify-content:space-between;gap:1rem;background:none;border:none;padding:1.1rem 1.3rem;font-family:var(--font-display);font-size:1.02rem;color:var(--text-primary);text-align:left;min-height:44px}
+.faq__q .material-symbols-rounded{transition:transform var(--transition-normal) var(--ease-standard);flex-shrink:0;color:var(--primary-strong)}
+.faq__q[aria-expanded="true"] .material-symbols-rounded{transform:rotate(180deg)}
+.faq__panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--transition-normal) var(--ease-standard)}
+.faq__panel.is-open{grid-template-rows:1fr}
+.faq__panel-inner{overflow:hidden}
+.faq__panel p{padding:0 1.3rem 1.2rem;color:var(--text-secondary);font-size:.95rem}
+/* final cta */
+.final-cta{background:var(--gradient-ink);color:var(--on-accent);border-top:3px solid var(--border-default);border-bottom:3px solid var(--border-default)}
+.final-cta__inner{max-width:680px;margin:0 auto;text-align:center;display:flex;flex-direction:column;align-items:center;gap:1.1rem}
+.final-cta h2{font-size:clamp(1.9rem,4vw,2.8rem)}
+.final-cta p{opacity:.92;max-width:52ch}
+.input-group{display:flex;flex-direction:column;gap:.4rem;width:100%;max-width:460px;text-align:left;margin-top:.4rem}
+.input-group label{font-weight:700;font-size:.92rem}
+.input-group__row{display:flex;gap:.6rem;flex-wrap:wrap}
+.input-group input{flex:1;min-width:200px;min-height:44px;padding:.65rem .9rem;font-family:var(--font-base);font-size:1rem;background:var(--bg-primary);color:var(--text-primary);border:2px solid var(--border-default);border-radius:var(--radius-sm)}
+.input-group input:focus-visible{outline:2px solid var(--paper-hi);outline-offset:2px}
+.input-group input[aria-invalid="true"]{border-color:var(--border-error)}
+.input-group__hint{font-size:.82rem;opacity:.85}
+.input-group__error{font-size:.85rem;min-height:1.3em;font-weight:700;display:flex;align-items:center;gap:.35rem}
+.input-group__error .material-symbols-rounded{font-size:1rem}
+.form-success{display:flex;align-items:center;gap:.5rem;font-weight:700;background:var(--bg-primary);color:var(--text-success);border:2px solid var(--border-success);border-radius:var(--radius-sm);padding:.8rem 1.1rem}
+/* toast */
+.toast{position:fixed;bottom:1.2rem;left:50%;transform:translate(-50%,1rem);z-index:var(--z-toast);background:var(--text-primary);color:var(--bg-primary);border:2px solid var(--border-default);border-radius:var(--radius-sm);padding:.8rem 1.1rem;display:flex;align-items:center;gap:.7rem;box-shadow:var(--shadow-md);opacity:0;pointer-events:none;transition:opacity var(--transition-normal) var(--ease-standard),transform var(--transition-normal) var(--ease-standard);max-width:min(90vw,420px)}
+.toast.is-visible{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.toast button{background:none;border:none;color:inherit;display:inline-flex;min-width:44px;min-height:44px;align-items:center;justify-content:center;margin:-.6rem -.8rem -.6rem 0}
+/* footer */
+.site-footer{background:var(--text-primary);color:var(--bg-primary)}
+.site-footer__grid{display:grid;grid-template-columns:1fr;gap:2rem;padding:clamp(3rem,6vw,4.5rem) 0 2.5rem}
+@media (min-width:768px){.site-footer__grid{grid-template-columns:2fr 1fr 1fr 1fr}}
+.site-footer h4{font-family:var(--font-display);font-size:1rem;margin-bottom:.8rem;letter-spacing:.06em;text-transform:uppercase}
+.site-footer ul{list-style:none;display:flex;flex-direction:column;gap:.45rem}
+.site-footer a{color:var(--bg-primary);text-decoration:none;font-size:.92rem;opacity:.85}
+@media (hover:hover) and (pointer:fine){.site-footer a:hover{opacity:1;text-decoration:underline}}
+.site-footer .brand{color:var(--bg-primary)}
+.site-footer__mission{font-size:.9rem;opacity:.85;margin-top:.8rem;max-width:32ch}
+.site-footer__bar{border-top:1px solid rgba(128,128,128,.35);padding:1.2rem 0;display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between;font-size:.85rem}
+.back-top{display:inline-flex;align-items:center;gap:.35rem}
+/* reveal */
+.reveal{opacity:0;transform:translateY(14px);transition:opacity .5s var(--ease-standard),transform .5s var(--ease-standard)}
+.reveal.is-visible{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.15s!important}
+  .ticker__track{animation:none;flex-wrap:wrap;white-space:normal;width:auto}
+  .reveal{opacity:1;transform:none;transition:none}
+  .brand::after,.typeline .caret{animation:none}
+}
+@media (prefers-reduced-transparency:reduce){.grain{display:none}}
+</style>
 </head>
 <body>
-  <!-- Grain overlay -->
-  <div class="grain-overlay"></div>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="grain" aria-hidden="true"></div>
 
-  <!-- Skip link -->
-  <a href="#main" class="visually-hidden">Skip to main content</a>
-
-  <!-- Site header -->
-  <header class="site-header" id="header">
-    <div class="container">
-      <div class="brand">CARBON</div>
-      <nav class="nav" aria-label="Main navigation">
-        <a href="#features">Features</a>
-        <a href="#how-it-works">How It Works</a>
-        <a href="#testimonials">Testimonials</a>
-        <a href="#pricing">Pricing</a>
-        <a href="#faq">FAQ</a>
-      </nav>
-      <div class="actions">
-        <button class="theme-toggle" aria-pressed="false" aria-label="Switch to dark mode" id="themeToggle">
-          <span class="material-symbols-rounded" id="themeIcon">light_mode</span>
-        </button>
-        <button class="cta-btn" aria-label="Begin your memoir">Begin your memoir</button>
-      </div>
+<header class="site-header">
+  <div class="site-header__inner">
+    <a class="brand" href="#top">CARBON</a>
+    <nav class="site-nav" id="site-nav" aria-label="Primary">
+      <a href="#features">Features</a>
+      <a href="#how">How It Works</a>
+      <a href="#testimonials">Testimonials</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="site-header__actions">
+      <button id="theme-toggle" class="icon-btn" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-rounded icon-moon" aria-hidden="true">dark_mode</span>
+        <span class="material-symbols-rounded icon-sun" aria-hidden="true">light_mode</span>
+      </button>
+      <a class="btn btn--primary header-cta" href="#start">Start writing</a>
+      <button class="icon-btn nav-toggle" id="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">
+        <span class="material-symbols-rounded" aria-hidden="true">menu</span>
+      </button>
     </div>
-  </header>
+  </div>
+</header>
 
-  <!-- Main content -->
-  <main id="main">
-
-    <!-- Hero -->
-    <section class="hero" aria-labelledby="hero-title">
+<main id="main">
+  <!-- HERO -->
+  <section class="hero" id="top" aria-labelledby="hero-title">
+    <div class="container hero__grid">
       <div>
-        <div class="eyebrow">Manuscript No. 001 — Est. 2010s</div>
-        <h1 id="hero-title">CARBON — a typewriter memoir</h1>
-        <p class="tagline">
-          <span class="line1">Write your story.</span>
-          <span class="line2">Ink it forever.</span>
-          <span class="line3">Share it once.</span>
-        </p>
-        <div class="cta-group">
-          <button class="cta-btn" aria-label="Begin your memoir">Begin your memoir</button>
-          <button class="secondary-cta" aria-label="See how it works">See how it works</button>
+        <span class="stamp-chip">Manuscript No. 001, Est. 2010s</span>
+        <h1 id="hero-title">CARBON, a <span class="accent">typewriter</span> memoir</h1>
+        <p class="typeline" aria-hidden="true"><span id="typeline-text"></span><span class="caret"></span></p>
+        <p class="visually-hidden" id="typeline-live">Write the story only you can tell.</p>
+        <p class="hero__sub">A distraction-free writing desk that feels like ink on paper, built for anyone finally ready to put their life story down.</p>
+        <div class="hero__ctas">
+          <a class="btn btn--primary" href="#start">Begin your memoir</a>
+          <a class="btn btn--secondary" href="#how">See how it works</a>
         </div>
-        <p class="proof">12,842 memoirs in progress</p>
+        <p class="hero__proof"><strong>12,842</strong> memoirs in progress this month</p>
       </div>
-      <div class="right">
-        <div class="typewriter-vignette">
-          <div class="vignette-stamp"><span class="material-symbols-rounded">stamp</span></div>
-          <div class="ruled-lines"></div>
-          <div class="key-grid">
-            <span>Q</span><span>W</span><span>E</span><span>R</span><span>T</span>
-          </div>
+      <div class="vignette" aria-hidden="true">
+        <div class="vignette__paper">
+          <span class="vignette__bar vignette__bar--w95"></span>
+          <span class="vignette__bar vignette__bar--w80"></span>
+          <span class="vignette__bar vignette__bar--w88"></span>
+          <span class="vignette__bar vignette__bar--w60"></span>
+          <span class="vignette__bar vignette__bar--w45"></span>
+          <span class="vignette__stamp">CARBON</span>
         </div>
-        <div class="ticker" aria-live="polite" aria-atomic="true">
-          <span>distraction‑free</span>
-          <span>autosave</span>
-          <span>prompts</span>
-          <span class="dup">distraction‑free</span>
-          <span class="dup">autosave</span>
-          <span class="dup">prompts</span>
+        <div class="vignette__keys">
+          <span class="vignette__key">Q</span><span class="vignette__key">W</span><span class="vignette__key">E</span><span class="vignette__key">R</span><span class="vignette__key">T</span><span class="vignette__key">Y</span><span class="vignette__key">U</span><span class="vignette__key">I</span><span class="vignette__key">O</span><span class="vignette__key">P</span>
+          <span class="vignette__key">A</span><span class="vignette__key">S</span><span class="vignette__key">D</span><span class="vignette__key">F</span><span class="vignette__key">G</span><span class="vignette__key">H</span><span class="vignette__key">J</span><span class="vignette__key">K</span><span class="vignette__key">L</span><span class="vignette__key">.</span>
         </div>
-      </div>
-    </section>
-
-    <!-- Features -->
-    <section class="section" id="features">
-      <div class="container">
-        <div class="section-header">
-          <div class="kicker">Distraction‑free drafting</div>
-          <h2>Features</h2>
-        </div>
-        <div class="features-grid">
-          <article class="card">
-            <div class="icon material-symbols-rounded">edit_note</div>
-            <h3>Focus mode</h3>
-            <p>Eliminate digital noise and write in a calm, monospaced environment designed for deep work.</p>
-            <a href="#" class="read-more">Read more</a>
-          </article>
-          <article class="card">
-            <div class="icon material-symbols-rounded">cloud_sync</div>
-            <h3>Carbon‑copy autosave</h3>
-            <p>Every keystroke is mirrored to a secure cloud, so your words are never lost.</p>
-            <a href="#" class="read-more">Read more</a>
-          </article>
-          <article class="card">
-            <div class="icon material-symbols-rounded">auto_stories</div>
-            <h3>Guided prompts</h3>
-            <p>Structured memoir questions that help you uncover memories you forgot you had.</p>
-            <a href="#" class="read-more">Read more</a>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- How it works -->
-    <section class="section" id="how-it-works">
-      <div class="container">
-        <div class="section-header">
-          <div class="kicker">Load the ribbon</div>
-          <h2>How It Works</h2>
-        </div>
-        <div class="steps-grid">
-          <div class="step">
-            <div class="numeral">01</div>
-            <div class="icon material-symbols-rounded">cloud_sync</div>
-            <h3>Load the ribbon</h3>
-            <p>Insert your chosen paper ribbon and the machine powers on.</p>
-          </div>
-          <div class="step">
-            <div class="numeral">02</div>
-            <div class="icon material-symbols-rounded">format_quote</div>
-            <h3>Type your truth</h3>
-            <p>Write freely; each keystroke is recorded on the carbon sheet beneath.</p>
-          </div>
-          <div class="step">
-            <div class="numeral">03</div>
-            <div class="icon material-symbols-rounded">verified</div>
-            <h3>Seal the carbon copy</h3>
-            <p>Press “Seal” and your memoir is saved as a permanent, shareable file.</p>
-          </div>
-          <div class="connector"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Testimonials -->
-    <section class="section" id="testimonials">
-      <div class="container">
-        <div class="testimonials">
-          <article class="memo-card">
-            <p class="quote">“CARBON turned my fragmented notes into a finished manuscript in weeks.”</p>
-            <div class="avatar">JD</div>
-            <div>
-              <div class="name">Jordan D.</div>
-              <div class="role">Memoirist</div>
-            </div>
-            <span class="material-symbols-rounded verified">check</span>
-          </article>
-          <article class="memo-card">
-            <p class="quote">“The guided prompts unlocked memories I thought were lost forever.”</p>
-            <div class="avatar">MK</div>
-            <div>
-              <div class="name">Mia K.</div>
-              <div class="role">Writer</div>
-            </div>
-            <span class="material-symbols-rounded verified">check</span>
-          </article>
-          <article class="memo-card">
-            <p class="quote">“Never lose a sentence again — autosave works every time.”</p>
-            <div class="avatar">TL</div>
-            <div>
-              <div class="name">Tom L.</div>
-              <div class="role">Author</div>
-            </div>
-            <span class="material-symbols-rounded verified">check</span>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- Pricing -->
-    <section class="section" id="pricing" aria-labelledby="pricing-title">
-      <div class="container">
-        <div class="section-header">
-          <div class="kicker">Choose your path</div>
-          <h2>Pricing</h2>
-        </div>
-        <div class="pricing-grid">
-          <article class="card">
-            <div class="price">Free</div>
-            <div class="list">
-              <span class="material-symbols-rounded">check</span> Basic ribbon
-              <span class="material-symbols-rounded">close</span> Autosave disabled
-              <span class="material-symbols-rounded">close</span> No prompts
-            </div>
-            <button class="btn--secondary" aria-label="Start free draft">Start free draft</button>
-          </article>
-          <article class="card card--featured" aria-labelledby="featured-plan">
-            <div class="price" id="featured-plan">Carriage Return</div>
-            <div class="list">
-              <span class="material-symbols-rounded">check</span> Full ribbon set
-              <span class="material-symbols-rounded">check</span> Autosave enabled
-              <span class="material-symbols-rounded">check</span> Daily prompts
-            </div>
-            <button class="btn btn--primary" aria-label="Subscribe to Carriage Return">Subscribe</button>
-          </article>
-          <article class="card">
-            <div class="price">Archive</div>
-            <div class="list">
-              <span class="material-symbols-rounded">check</span> Unlimited storage
-              <span class="material-symbols-rounded">check</span> Export formats
-              <span class="material-symbols-rounded">close</span> Premium prompts
-            </div>
-            <button class="btn--secondary" aria-label="Buy Archive plan">Buy Archive</button>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- FAQ -->
-    <section class="section" id="faq" aria-labelledby="faq-title">
-      <div class="container">
-        <h2 id="faq-title">Frequently asked questions</h2>
-        <div class="faq-item">
-          <button class="faq-btn" aria-controls="q1" aria-expanded="true">
-            <span>How do I export my memoir?</span>
-            <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
-          </button>
-          <div class="faq-panel" aria-hidden="false">
-            You can export your memoir as PDF, TXT, or CARBON project file from the Account > Export menu.
-          </div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-btn" aria-controls="q2" aria-expanded="false">
-            <span>Is my data private?</span>
-            <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
-          </button>
-          <div class="faq-panel" aria-hidden="true">
-            Yes. All writing stays on your device unless you choose iCloud sync. We never read your content.
-          </div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-btn" aria-controls="q3" aria-expanded="false">
-            <span>Can I use CARBON on a tablet?</span>
-            <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
-          </button>
-          <div class="faq-panel" aria-hidden="true">
-            The interface scales from 320px to 1920px. Touch devices work with the on‑screen keyboard.
-          </div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-btn" aria-controls="q4" aria-expanded="false">
-            <span>What if I lose my ribbon?</span>
-            <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
-          </button>
-          <div class="faq-panel" aria-hidden="true">
-            Replacement ribbons are available in our shop. Your saved carbon copies remain in the cloud.
-          </div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-btn" aria-controls="q5" aria-expanded="false">
-            <span>Does it work offline?</span>
-            <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
-          </button>
-          <div class="faq-panel" aria-hidden="true">
-            Yes. All core functions work without an internet connection. Sync occurs when you reconnect.
-          </div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-btn" aria-controls="q6" aria-expanded="false">
-            <span>How do I cancel my subscription?</span>
-            <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
-          </button>
-          <div class="faq-panel" aria-hidden="true">
-            Cancel anytime from the Billing page. Access to Carriage Return features ends at the end of the billing cycle.
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Final CTA -->
-    <section class="final-cta" aria-label="Start your memoir">
-      <h2>Start your memoir today</h2>
-      <p>Join thousands of writers who are preserving their stories with CARBON.</p>
-      <form class="email-form" id="ctaForm" novalidate>
-        <input type="email" placeholder="you@email.com" required>
-        <button type="submit" class="btn btn--primary">Send me a ribbon</button>
-      </form>
-      <div class="toast" role="status" aria-live="polite" aria-atomic="true" id="toast"></div>
-    </section>
-
-  </main>
-
-  <!-- Footer -->
-  <footer>
-    <div class="container">
-      <div class="footer-cols">
-        <div>
-          <div class="brand">CARBON</div>
-          <div class="mission">We build tools that help writers preserve their stories for generations.</div>
-        </div>
-        <div>
-          <h4>Company</h4>
-          <ul>
-            <li><a href="#">About</a></li>
-            <li><a href="#">Manifesto</a></li>
-            <li><a href="#">Contact</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4>Support</h4>
-          <ul>
-            <li><a href="#faq">FAQ</a></li>
-            <li><a href="#">Care Guide</a></li>
-            <li><a href="#">Status</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4>Legal</h4>
-          <ul>
-            <li><a href="#">Privacy</a></li>
-            <li><a href="#">Terms</a></li>
-            <li><a href="#">Cookies</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <span>&copy; 2025 CARBON</span>
-        <a href="#header" class="back-to-top" aria-label="Back to top">
-          <span class="material-symbols-rounded">arrow_upward</span>
-        </a>
       </div>
     </div>
-  </footer>
+  </section>
 
-  <!-- Toast template -->
-  <div class="toast" role="status" aria-live="polite" aria-atomic="true" id="toast" style="display:none;"></div>
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker__track">
+      <span>Ink on paper</span><span>One page a day</span><span>Your story matters</span><span>No distractions</span><span>Carbon copy saved</span><span>Type your truth</span>
+      <span>Ink on paper</span><span>One page a day</span><span>Your story matters</span><span>No distractions</span><span>Carbon copy saved</span><span>Type your truth</span>
+    </div>
+  </div>
 
-  <script>
-    // Theme toggle
-    const html = document.documentElement;
-    const themeToggle = document.getElementById('themeToggle');
-    const themeIcon = document.getElementById('themeIcon');
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+  <!-- FEATURES -->
+  <section class="section section--wash" id="features" aria-labelledby="features-title">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="kicker">The Machine</span>
+        <h2 id="features-title">Built for long memories, not loud notifications</h2>
+        <p>Every detail of CARBON exists to keep you in the chair and the words coming.</p>
+      </div>
+      <div class="grid-3">
+        <article class="card reveal">
+          <span class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">edit_note</span></span>
+          <h3>Distraction-free drafting</h3>
+          <p>A single sheet of paper, a steady caret, and nothing else. No feeds, no badges, no settings begging for attention.</p>
+          <a class="card__link" href="#start">Read more<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+        </article>
+        <article class="card reveal">
+          <span class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">cloud_sync</span></span>
+          <h3>Carbon-copy autosave</h3>
+          <p>Every keystroke is pressed twice: once on your page, once into your private archive. Close the lid anytime; nothing is lost.</p>
+          <a class="card__link" href="#start">Read more<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+        </article>
+        <article class="card reveal">
+          <span class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">auto_stories</span></span>
+          <h3>Guided memoir prompts</h3>
+          <p>Three hundred questions drawn from oral-history practice nudge you past blank-page mornings and into the good material.</p>
+          <a class="card__link" href="#start">Read more<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+        </article>
+      </div>
+    </div>
+  </section>
 
-    function setTheme(dark){
-      if(dark){ html.classList.add('dark'); html.setAttribute('data-theme','dark'); }
-      else{ html.classList.remove('dark'); html.removeAttribute('data-theme'); }
-      localStorage.carbonTheme = dark ? 'dark' : 'light';
-      themeIcon.textContent = dark ? 'light_mode' : 'dark_mode';
-      themeToggle.setAttribute('aria-pressed', dark);
-      themeToggle.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+  <!-- HOW IT WORKS -->
+  <section class="section" id="how" aria-labelledby="how-title">
+    <div class="container">
+      <div class="section-header reveal">
+        <h2 id="how-title">Three turns of the platen</h2>
+        <p>From first memory to finished manuscript, the ritual stays simple.</p>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <span class="step__ghost" aria-hidden="true">01</span>
+          <span class="material-symbols-rounded" aria-hidden="true">history_edu</span>
+          <h3>Load the ribbon</h3>
+          <p>Answer a short interview about the years you want to cover. CARBON threads your prompts into a personal outline.</p>
+        </div>
+        <div class="step reveal">
+          <span class="step__ghost" aria-hidden="true">02</span>
+          <span class="material-symbols-rounded" aria-hidden="true">edit_note</span>
+          <h3>Type your truth</h3>
+          <p>Write in short daily sessions. The page keeps your place, your pace, and your word count without ever rushing you.</p>
+        </div>
+        <div class="step reveal">
+          <span class="step__ghost" aria-hidden="true">03</span>
+          <span class="material-symbols-rounded" aria-hidden="true">verified</span>
+          <h3>Seal the carbon copy</h3>
+          <p>Export a print-ready book or a private family edition. Your archive stays yours, stamped and dated.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="section section--wash" id="testimonials" aria-labelledby="testimonials-title">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="kicker">From the Reading Room</span>
+        <h2 id="testimonials-title">Writers who finally finished</h2>
+      </div>
+      <div class="grid-3">
+        <article class="memo reveal">
+          <span class="material-symbols-rounded" aria-hidden="true">format_quote</span>
+          <blockquote>&ldquo;I tried to write my father&rsquo;s story for eleven years. CARBON&rsquo;s prompts got me to page one in a single evening.&rdquo;</blockquote>
+          <div class="memo__by">
+            <span class="memo__avatar" aria-hidden="true">MR</span>
+            <div>
+              <p class="memo__name">Marta Reyes <span class="material-symbols-rounded" aria-hidden="true">verified</span></p>
+              <p class="memo__role">Retired nurse, Portland</p>
+            </div>
+          </div>
+        </article>
+        <article class="memo reveal">
+          <span class="material-symbols-rounded" aria-hidden="true">format_quote</span>
+          <blockquote>&ldquo;The typewriter sounds are a gimmick, sure. But the discipline of one page a day is real. I finished 240 pages.&rdquo;</blockquote>
+          <div class="memo__by">
+            <span class="memo__avatar" aria-hidden="true">DK</span>
+            <div>
+              <p class="memo__name">David Kessler <span class="material-symbols-rounded" aria-hidden="true">verified</span></p>
+              <p class="memo__role">Former rail engineer, Leeds</p>
+            </div>
+          </div>
+        </article>
+        <article class="memo reveal">
+          <span class="material-symbols-rounded" aria-hidden="true">format_quote</span>
+          <blockquote>&ldquo;My grandchildren read my archive edition cover to cover. That alone was worth every session.&rdquo;</blockquote>
+          <div class="memo__by">
+            <span class="memo__avatar" aria-hidden="true">AO</span>
+            <div>
+              <p class="memo__name">Adaeze Okafor <span class="material-symbols-rounded" aria-hidden="true">verified</span></p>
+              <p class="memo__role">School principal, Lagos</p>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="section" id="pricing" aria-labelledby="pricing-title">
+    <div class="container">
+      <div class="section-header reveal">
+        <h2 id="pricing-title">Pick your ribbon</h2>
+        <p>Start free. Upgrade when the story outgrows the free ribbon.</p>
+      </div>
+      <div class="grid-3">
+        <article class="price-card reveal">
+          <div class="price-card__head">
+            <h3>Draft</h3>
+            <p class="price-card__price">$0 <small>forever</small></p>
+          </div>
+          <div class="price-card__body">
+            <ul class="price-card__list">
+              <li><span class="material-symbols-rounded" aria-hidden="true">check</span>One memoir project</li>
+              <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Fifty guided prompts</li>
+              <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Carbon-copy autosave</li>
+            </ul>
+            <a class="btn btn--secondary" href="#start">Start free</a>
+          </div>
+        </article>
+        <article class="price-card price-card--featured reveal">
+          <span class="price-card__stamp">Most Inked</span>
+          <div class="price-card__head">
+            <h3>Carriage Return</h3>
+            <p class="price-card__price">$8 <small>per month</small></p>
+          </div>
+          <div class="price-card__body">
+            <ul class="price-card__list">
+              <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Unlimited memoir projects</li>
+              <li><span class="material-symbols-rounded" aria-hidden="true">check</span>All three hundred prompts</li>
+              <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Print-ready book export</li>
+              <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Family sharing edition</li>
+            </ul>
+            <a class="btn btn--primary" href="#start">Begin your memoir</a>
+          </div>
+        </article>
+        <article class="price-card reveal">
+          <div class="price-card__head">
+            <h3>Archive</h3>
+            <p class="price-card__price">$240 <small>once, lifetime</small></p>
+          </div>
+          <div class="price-card__body">
+            <ul class="price-card__list">
+              <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Everything in Carriage Return</li>
+              <li><span class="material-symbols-rounded" aria-hidden="true">check</span>One hardcover printing credit</li>
+              <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Permanent archive guarantee</li>
+            </ul>
+            <a class="btn btn--secondary" href="#start">Seal the archive</a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section section--wash" id="faq" aria-labelledby="faq-title">
+    <div class="container">
+      <div class="section-header reveal">
+        <h2 id="faq-title">Questions from the desk</h2>
+      </div>
+      <div class="faq">
+        <div class="faq__item reveal">
+          <button class="faq__q" type="button" aria-expanded="false" aria-controls="faq-p1" id="faq-q1">Do I need to be a good writer to use CARBON?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button>
+          <div class="faq__panel" id="faq-p1" role="region" aria-labelledby="faq-q1"><div class="faq__panel-inner"><p>No. The prompts ask plain questions and you answer them the way you would talk. Most members have never published a word.</p></div></div>
+        </div>
+        <div class="faq__item reveal">
+          <button class="faq__q" type="button" aria-expanded="false" aria-controls="faq-p2" id="faq-q2">Who owns what I write?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button>
+          <div class="faq__panel" id="faq-p2" role="region" aria-labelledby="faq-q2"><div class="faq__panel-inner"><p>You do, completely. Your manuscript is exportable at any time and we claim no rights over your words.</p></div></div>
+        </div>
+        <div class="faq__item reveal">
+          <button class="faq__q" type="button" aria-expanded="false" aria-controls="faq-p3" id="faq-q3">Can I print my memoir as a real book?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button>
+          <div class="faq__panel" id="faq-p3" role="region" aria-labelledby="faq-q3"><div class="faq__panel-inner"><p>Yes. Paid plans export a print-ready file, and the Archive tier includes a credit for one hardcover printing.</p></div></div>
+        </div>
+        <div class="faq__item reveal">
+          <button class="faq__q" type="button" aria-expanded="false" aria-controls="faq-p4" id="faq-q4">Does it work offline?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button>
+          <div class="faq__panel" id="faq-p4" role="region" aria-labelledby="faq-q4"><div class="faq__panel-inner"><p>The writing desk works fully offline. Your carbon copy syncs to the archive the next time you connect.</p></div></div>
+        </div>
+        <div class="faq__item reveal">
+          <button class="faq__q" type="button" aria-expanded="false" aria-controls="faq-p5" id="faq-q5">Can family members contribute memories?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button>
+          <div class="faq__panel" id="faq-p5" role="region" aria-labelledby="faq-q5"><div class="faq__panel-inner"><p>On Carriage Return and Archive, you can invite relatives to add recollections to specific chapters. You approve every addition.</p></div></div>
+        </div>
+        <div class="faq__item reveal">
+          <button class="faq__q" type="button" aria-expanded="false" aria-controls="faq-p6" id="faq-q6">What happens if I cancel?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button>
+          <div class="faq__panel" id="faq-p6" role="region" aria-labelledby="faq-q6"><div class="faq__panel-inner"><p>You keep read and export access to everything you wrote. Nothing is deleted unless you ask us to delete it.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="section final-cta" id="start" aria-labelledby="cta-title">
+    <div class="container final-cta__inner reveal">
+      <h2 id="cta-title">Roll a fresh sheet into the machine</h2>
+      <p>Leave your address and we will send your first writing session, plus the prompt that starts most memoirs.</p>
+      <form class="input-group" id="cta-form" novalidate>
+        <label for="cta-email">Email address</label>
+        <div class="input-group__row">
+          <input type="email" id="cta-email" name="email" autocomplete="email" aria-describedby="cta-hint cta-error" required>
+          <button class="btn btn--secondary" id="cta-submit" type="submit"><span class="btn__label">Begin your memoir</span></button>
+        </div>
+        <p class="input-group__hint" id="cta-hint">One email to start. No newsletter unless you ask for it.</p>
+        <p class="input-group__error" id="cta-error" aria-live="polite"></p>
+      </form>
+      <p class="form-success" id="cta-success" hidden><span class="material-symbols-rounded" aria-hidden="true">check</span>Your first session is on its way. Check your inbox.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer" role="contentinfo">
+  <div class="container">
+    <div class="site-footer__grid">
+      <div>
+        <a class="brand" href="#top">CARBON</a>
+        <p class="site-footer__mission">A quieter desk for the loudest stories: your own.</p>
+      </div>
+      <div>
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#" data-toast-link>About</a></li>
+          <li><a href="#" data-toast-link>Manifesto</a></li>
+          <li><a href="#" data-toast-link>Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Support</h4>
+        <ul>
+          <li><a href="#faq">FAQ</a></li>
+          <li><a href="#" data-toast-link>Care Guide</a></li>
+          <li><a href="#" data-toast-link>Status</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="#" data-toast-link>Privacy</a></li>
+          <li><a href="#" data-toast-link>Terms</a></li>
+          <li><a href="#" data-toast-link>Cookies</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="site-footer__bar">
+      <span>&copy; 2026 CARBON. Every life is a first draft worth keeping.</span>
+      <a class="back-top" href="#top">Back to top<span class="material-symbols-rounded" aria-hidden="true">arrow_upward</span></a>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span id="toast-msg"></span>
+  <button type="button" id="toast-close" aria-label="Dismiss notification"><span class="material-symbols-rounded" aria-hidden="true">close</span></button>
+</div>
+
+<script>
+(function(){
+"use strict";
+var reduceMotion=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* theme toggle */
+var toggle=document.getElementById("theme-toggle");
+function syncToggle(){
+  var dark=document.documentElement.dataset.theme==="dark";
+  toggle.setAttribute("aria-pressed",String(dark));
+  toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+}
+toggle.addEventListener("click",function(){
+  var next=document.documentElement.dataset.theme==="dark"?"light":"dark";
+  document.documentElement.dataset.theme=next;
+  localStorage.setItem("theme",next);
+  syncToggle();
+});
+syncToggle();
+
+/* mobile nav */
+var navToggle=document.getElementById("nav-toggle");
+var nav=document.getElementById("site-nav");
+function closeNav(){nav.classList.remove("is-open");navToggle.setAttribute("aria-expanded","false");navToggle.setAttribute("aria-label","Open menu");}
+navToggle.addEventListener("click",function(){
+  var open=nav.classList.toggle("is-open");
+  navToggle.setAttribute("aria-expanded",String(open));
+  navToggle.setAttribute("aria-label",open?"Close menu":"Open menu");
+});
+nav.addEventListener("click",function(e){if(e.target.closest("a"))closeNav();});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")closeNav();});
+document.addEventListener("click",function(e){
+  if(nav.classList.contains("is-open")&&!e.target.closest(".site-nav")&&!e.target.closest("#nav-toggle"))closeNav();
+});
+
+/* typewriter tagline */
+var lines=["Write the story only you can tell.","One page a day keeps the past alive.","Ink fades. Carbon copies do not."];
+var typeEl=document.getElementById("typeline-text");
+var liveEl=document.getElementById("typeline-live");
+if(reduceMotion){
+  typeEl.textContent=lines[0];
+}else{
+  var li=0,ci=0,deleting=false;
+  (function tick(){
+    var line=lines[li];
+    if(!deleting){
+      ci++;
+      typeEl.textContent=line.slice(0,ci);
+      if(ci===line.length){liveEl.textContent=line;deleting=true;setTimeout(tick,2200);return;}
+      setTimeout(tick,55);
+    }else{
+      ci--;
+      typeEl.textContent=line.slice(0,ci);
+      if(ci===0){deleting=false;li=(li+1)%lines.length;setTimeout(tick,400);return;}
+      setTimeout(tick,26);
     }
+  })();
+}
 
-    // Persistence
-    const stored = localStorage.carbonTheme;
-    if(stored === 'dark') setTheme(true);
-    else if(stored === 'light') setTheme(false);
-    else{
-      // fallback to system preference
-      setTheme(window.matchMedia('(prefers-color-scheme: dark)').matches);
-    }
-
-    themeToggle.addEventListener('click',()=>{
-      const isDark = html.classList.contains('dark');
-      setTheme(!isDark);
+/* scroll reveal */
+var revealEls=document.querySelectorAll(".reveal");
+if(reduceMotion||!("IntersectionObserver" in window)){
+  revealEls.forEach(function(el){el.classList.add("is-visible");});
+}else{
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){en.target.classList.add("is-visible");io.unobserve(en.target);}
     });
+  },{threshold:.12});
+  revealEls.forEach(function(el,i){
+    el.style.transitionDelay=(i%3)*70+"ms";
+    io.observe(el);
+  });
+}
 
-    // Reduced motion handling
-    prefersReduced.addEventListener('change',()=>{
-      if(prefersReduced.matches){
-        document.querySelectorAll('.tagline span,.ticker span').forEach(el=>{el.style.animation='none';el.style.width='auto';});
-        document.querySelectorAll('.faq-panel').forEach(el=>{el.style.maxHeight='10000px';el.style.transition='none';});
-        document.querySelectorAll('.faq-btn .material-symbols-rounded').forEach(el=>{el.style.transform='none';});
-      }
-    });
+/* FAQ accordion */
+document.querySelectorAll(".faq__q").forEach(function(btn){
+  btn.addEventListener("click",function(){
+    var panel=document.getElementById(btn.getAttribute("aria-controls"));
+    var open=btn.getAttribute("aria-expanded")==="true";
+    btn.setAttribute("aria-expanded",String(!open));
+    panel.classList.toggle("is-open",!open);
+  });
+});
 
-    // FAQ accordion
-    document.querySelectorAll('.faq-btn').forEach(btn=>{
-      btn.addEventListener('click',()=>{
-        const expanded = btn.getAttribute('aria-expanded') === 'true';
-        btn.setAttribute('aria-expanded', !expanded);
-        const panel = document.getElementById('q' + btn.getAttribute('aria-controls').replace('q',''));
-        if(!expanded){
-          panel.setAttribute('aria-hidden','false');
-          panel.style.maxHeight = panel.scrollHeight + 'px';
-        }else{
-          panel.style.maxHeight = '0';
-          setTimeout(()=>{panel.setAttribute('aria-hidden','true');},280);
-        }
-      });
-    });
+/* toast */
+var toast=document.getElementById("toast");
+var toastMsg=document.getElementById("toast-msg");
+var toastTimer=null;
+function showToast(msg){
+  toastMsg.textContent=msg;
+  toast.classList.add("is-visible");
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){toast.classList.remove("is-visible");},4000);
+}
+document.getElementById("toast-close").addEventListener("click",function(){
+  clearTimeout(toastTimer);toast.classList.remove("is-visible");
+});
+document.querySelectorAll("[data-toast-link]").forEach(function(a){
+  a.addEventListener("click",function(e){
+    e.preventDefault();
+    showToast("This page is coming soon.");
+  });
+});
 
-    // Close FAQ panels on window click outside
-    document.addEventListener('click',e=>{
-      if(!e.target.closest('.faq-item')){ document.querySelectorAll('.faq-panel[aria-hidden="false"]').forEach(p=>{p.setAttribute('aria-hidden','true');p.style.maxHeight='0';});}
-    });
-
-    // Form submission simulation
-    const ctaForm = document.getElementById('ctaForm');
-    const toastEl = document.getElementById('toast');
-    ctaForm.addEventListener('submit',e=>{
-      e.preventDefault();
-      const btn = ctaForm.querySelector('button');
-      const input = ctaForm.querySelector('input');
-      btn.setAttribute('disabled','');
-      btn.textContent = 'Sending…';
-      setTimeout(()=>{
-        btn.removeAttribute('disabled');
-        btn.textContent = 'Send me a ribbon';
-        input.value = '';
-        showToast('Thanks! We\'ll send your ribbon shortly.');
-      },900);
-    });
-
-    function showToast(msg){
-      toastEl.textContent = msg;
-      toastEl.classList.add('show');
-      setTimeout(()=>{toastEl.classList.remove('show');},4000);
-    }
-
-    // Hamburger menu for mobile (simple)
-    const header = document.querySelector('.site-header');
-    const nav = document.querySelector('.nav');
-    const hamburger = document.querySelector('.hamburger');
-    if(hamburger){
-      hamburger.addEventListener('click',()=>{
-        const open = nav.getAttribute('aria-expanded') === 'true';
-        nav.setAttribute('aria-expanded', !open);
-        hamburger.classList.toggle('active',!open);
-        // simple toggle: in real impl add mobile nav markup
-      });
-    }
-
-    // Skip link focus
-    document.querySelector('.visually-hidden').addEventListener('focus',()=>{nav.focus();});
-  </script>
+/* email form */
+var form=document.getElementById("cta-form");
+var email=document.getElementById("cta-email");
+var errEl=document.getElementById("cta-error");
+var submitBtn=document.getElementById("cta-submit");
+var successEl=document.getElementById("cta-success");
+form.addEventListener("submit",function(e){
+  e.preventDefault();
+  var val=email.value.trim();
+  var valid=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+  if(!valid){
+    email.setAttribute("aria-invalid","true");
+    errEl.innerHTML='<span class="material-symbols-rounded" aria-hidden="true">error</span>Please enter a valid email address.';
+    email.focus();
+    return;
+  }
+  email.removeAttribute("aria-invalid");
+  errEl.textContent="";
+  submitBtn.classList.add("is-loading");
+  submitBtn.disabled=true;
+  setTimeout(function(){
+    submitBtn.classList.remove("is-loading");
+    submitBtn.disabled=false;
+    form.hidden=true;
+    successEl.hidden=false;
+    showToast("Welcome aboard. Your first session is on its way.");
+  },900);
+});
+})();
+</script>
 </body>
 </html>

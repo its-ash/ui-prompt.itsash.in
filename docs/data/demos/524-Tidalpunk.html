@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tidalpunk - Power from the Living Ocean</title>
+<script>
+(function(){var t=localStorage.getItem("tidalpunk-theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<style>
+/* ============ TOKENS ============ */
+:root{
+  color-scheme:light;
+  --bg-primary:#e8f6f3;--bg-secondary:#d7ece7;--bg-tertiary:#bfdcd5;
+  --primary:#0b6e60;--on-primary:#fefefe;
+  --secondary:#2f6b3a;--accent:#8a6420;--accent-fill:#d9a441;--on-accent:#04211f;
+  --text-primary:#0a3d3f;--text-secondary:#456d67;
+  --text-success:#256b43;--text-error:#b3402e;
+  --border-default:#7fb5ad;--border-success:#2e7d4f;--border-error:#b3402e;
+  --shadow-sm:0 2px 8px rgba(10,61,63,.10);--shadow-md:0 8px 20px rgba(10,61,63,.14);--shadow-lg:0 16px 40px rgba(10,61,63,.18);
+  --focus-ring:rgba(11,110,96,.28);
+  --radius-sm:8px;--radius-md:14px;--radius-lg:22px;--radius-pill:999px;
+  --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--space-10:40px;--space-12:48px;--space-16:64px;--space-20:80px;--space-24:96px;
+  --spacing-gap:16px;
+  --transition-fast:150ms;--transition-normal:250ms;--ease-standard:cubic-bezier(0.2,0,0,1);
+  --z-dropdown:1000;--z-modal:1100;--z-toast:1200;
+  --text-xs:.75rem;--text-sm:.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--text-4xl:2.25rem;--text-5xl:3rem;
+  --font-base:'Inter',system-ui,sans-serif;--font-display:'Space Grotesk','Inter',system-ui,sans-serif;
+  --wave-crest:radial-gradient(circle at 10px -4px, transparent 14px, var(--crest-color, var(--bg-secondary)) 15px);
+  --kelp-fade:linear-gradient(180deg, var(--bg-secondary), var(--bg-primary));
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg-primary:#0a3d3f;--bg-secondary:#0f4d4f;--bg-tertiary:#145e60;
+  --primary:#22b8a3;--on-primary:#04211f;
+  --secondary:#3f7d4a;--accent:#d9a441;--accent-fill:#d9a441;--on-accent:#04211f;
+  --text-primary:#e8f6f3;--text-secondary:#a9d6cf;
+  --text-success:#8fe3b0;--text-error:#ff8a7a;
+  --border-default:#2f8b83;--border-success:#4fae7a;--border-error:#ff8a7a;
+  --shadow-sm:0 2px 8px rgba(0,0,0,.25);--shadow-md:0 8px 20px rgba(0,0,0,.30);--shadow-lg:0 16px 40px rgba(0,0,0,.35);
+  --focus-ring:rgba(34,184,163,.28);
+}
+/* ============ BASE ============ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);font-size:var(--text-base);line-height:1.6;color:var(--text-primary);background:var(--bg-primary);overflow-x:hidden;transition:background var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard)}
+h1,h2,h3{font-family:var(--font-display);line-height:1.12;letter-spacing:-0.025em;font-weight:700}
+h2{font-size:clamp(var(--text-3xl),4vw,var(--text-4xl));margin-bottom:var(--space-4)}
+h3{font-size:var(--text-xl);letter-spacing:-0.01em}
+p{max-width:65ch;color:var(--text-secondary)}
+img{max-width:100%}
+section{scroll-margin-top:90px}
+.container{max-width:1140px;margin-inline:auto;padding-inline:var(--space-5)}
+.section{padding-block:clamp(var(--space-16),8vw,var(--space-24))}
+.section__head{margin-bottom:var(--space-12)}
+.icon{font-family:'Material Symbols Rounded';font-weight:normal;font-style:normal;font-size:24px;line-height:1;display:inline-block;direction:ltr;-webkit-font-smoothing:antialiased;user-select:none}
+.skip-link{position:absolute;left:var(--space-4);top:-60px;z-index:var(--z-toast);background:var(--primary);color:var(--on-primary);padding:var(--space-3) var(--space-5);border-radius:var(--radius-pill);font-weight:600;text-decoration:none;transition:top var(--transition-fast) var(--ease-standard)}
+.skip-link:focus{top:var(--space-4)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* ============ BADGE / EYEBROW ============ */
+.badge{display:inline-flex;align-items:center;gap:var(--space-2);min-height:32px;padding:var(--space-1) var(--space-4);border-radius:var(--radius-pill);font-size:var(--text-sm);font-weight:600;background:var(--bg-tertiary);color:var(--text-primary);border:1px solid var(--border-default)}
+.badge--kelp{background:var(--secondary);color:#fefefe;border-color:transparent}
+.badge--gold{background:var(--accent-fill);color:var(--on-accent);border-color:transparent}
+.eyebrow{display:inline-block;font-size:var(--text-xs);font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--primary);margin-bottom:var(--space-3)}
+/* ============ BUTTONS ============ */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-2);min-height:44px;min-width:44px;padding:var(--space-3) var(--space-6);border-radius:var(--radius-pill);border:1px solid transparent;font-family:var(--font-base);font-size:var(--text-base);font-weight:600;text-decoration:none;cursor:pointer;transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard),background var(--transition-fast) var(--ease-standard),opacity var(--transition-fast) var(--ease-standard);position:relative}
+.btn--primary{background:var(--primary);color:var(--on-primary)}
+.btn--accent{background:var(--accent-fill);color:var(--on-accent)}
+.btn--ghost{background:transparent;color:var(--text-primary);border-color:var(--border-default)}
+.btn--danger{background:var(--text-error);color:#fefefe}
+.btn:disabled{opacity:.5;filter:grayscale(.6);cursor:not-allowed}
+.btn[aria-busy="true"]{pointer-events:none}
+.btn__spinner{width:18px;height:18px;border-radius:50%;border:2px solid currentColor;border-top-color:transparent;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (hover:hover) and (pointer:fine){
+  .btn:hover{transform:translateY(-1px);box-shadow:var(--shadow-md)}
+}
+.btn:active{transform:scale(.97)}
+/* ============ HEADER ============ */
+.header{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--bg-primary);border-bottom:1px solid var(--border-default)}
+.header::after{content:"";position:absolute;left:0;right:0;bottom:-12px;height:12px;--crest-color:var(--bg-primary);background-image:var(--wave-crest);background-size:20px 12px;background-repeat:repeat-x;pointer-events:none}
+.header__row{display:flex;align-items:center;gap:var(--space-4);height:68px}
+.header__logo{display:flex;align-items:center;gap:var(--space-2);font-family:var(--font-display);font-weight:700;font-size:var(--text-xl);letter-spacing:-0.02em;color:var(--text-primary);text-decoration:none}
+.header__logo .icon{color:var(--primary);font-size:28px}
+.header__nav{display:flex;align-items:center;gap:var(--space-1);margin-left:auto}
+.header__nav a{display:flex;align-items:center;min-height:44px;padding:var(--space-2) var(--space-3);border-radius:var(--radius-sm);color:var(--text-secondary);text-decoration:none;font-weight:500;font-size:var(--text-sm);transition:color var(--transition-fast) var(--ease-standard),background var(--transition-fast) var(--ease-standard)}
+@media (hover:hover) and (pointer:fine){.header__nav a:hover{color:var(--text-primary);background:var(--bg-secondary)}}
+.header__actions{display:flex;align-items:center;gap:var(--space-3);margin-left:var(--space-3)}
+.theme-toggle{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-pill);border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);cursor:pointer;transition:transform var(--transition-fast) var(--ease-standard),background var(--transition-fast) var(--ease-standard)}
+.theme-toggle:active{transform:scale(.95)}
+.theme-toggle .icon--sun{display:none}
+:root[data-theme="dark"] .theme-toggle .icon--sun{display:inline-block}
+:root[data-theme="dark"] .theme-toggle .icon--moon{display:none}
+.menu-btn{display:none;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-sm);border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);cursor:pointer}
+@media (max-width:900px){
+  .menu-btn{display:flex}
+  .header__nav{position:absolute;top:68px;left:0;right:0;flex-direction:column;align-items:stretch;gap:var(--space-1);background:var(--bg-primary);border-bottom:1px solid var(--border-default);padding:var(--space-4) var(--space-5);display:none}
+  .header__nav[data-open="true"]{display:flex}
+  .header__cta{display:none}
+}
+/* ============ HERO ============ */
+.hero{position:relative;overflow:hidden;background:var(--kelp-fade);padding-block:clamp(var(--space-12),7vw,var(--space-20))}
+.hero__grid{display:flex;align-items:center;gap:var(--space-12)}
+.hero__copy{flex:1 1 52%}
+.hero h1{font-size:clamp(var(--text-4xl),5.5vw,3.75rem);margin-block:var(--space-4);background:linear-gradient(100deg,var(--primary) 30%,var(--accent) 90%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero__sub{font-size:var(--text-lg);margin-bottom:var(--space-6)}
+.hero__ctas{display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap;margin-bottom:var(--space-8)}
+.hero__stats{display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap}
+.stat-chip{display:flex;flex-direction:column;justify-content:center;padding:var(--space-3) var(--space-4);border-radius:var(--radius-md);background:var(--bg-secondary);border:1px solid var(--border-default);min-width:130px}
+.stat-chip strong{font-family:var(--font-display);font-size:var(--text-lg);color:var(--text-primary)}
+.stat-chip span{font-size:var(--text-xs);color:var(--text-secondary)}
+.hero__visual{flex:1 1 42%;position:relative;min-height:340px;border-radius:var(--radius-lg);overflow:hidden;background:linear-gradient(180deg,var(--bg-tertiary),var(--primary) 130%);box-shadow:var(--shadow-lg);border:1px solid var(--border-default)}
+.hero__visual::before{content:"";position:absolute;inset:0;background-image:radial-gradient(circle at 20% 110%, var(--secondary) 0 60px, transparent 61px),radial-gradient(circle at 55% 115%, var(--secondary) 0 90px, transparent 91px),radial-gradient(circle at 85% 108%, var(--secondary) 0 55px, transparent 56px);opacity:.55}
+.hero__visual::after{content:"";position:absolute;left:0;right:0;top:0;height:26px;--crest-color:var(--bg-primary);background-image:var(--wave-crest);background-size:26px 26px;background-repeat:repeat-x}
+.hero__waves{position:absolute;left:0;right:0;bottom:0;height:120px;background-image:radial-gradient(circle at 30px -10px, transparent 34px, rgba(254,254,254,.16) 35px),radial-gradient(circle at 90px -6px, transparent 34px, rgba(254,254,254,.10) 35px);background-size:120px 60px,120px 60px;background-repeat:repeat-x;animation:drift 14s linear infinite}
+.hero__sun{position:absolute;top:18%;right:14%;width:72px;height:72px;border-radius:50%;background:var(--accent-fill);box-shadow:0 0 40px rgba(217,164,65,.5)}
+@keyframes drift{to{background-position:120px 0,120px 0}}
+/* ============ CARDS ============ */
+.card{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-3);background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);padding:var(--space-8) var(--space-6) var(--space-6);position:relative;overflow:hidden;transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),border-color var(--transition-normal) var(--ease-standard)}
+.card::before{content:"";position:absolute;top:0;left:0;right:0;height:12px;--crest-color:var(--bg-tertiary);background-image:var(--wave-crest);background-size:20px 12px;background-repeat:repeat-x}
+@media (hover:hover) and (pointer:fine){.card--lift:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}}
+.card:focus-within{border-color:var(--primary)}
+.card__icon{display:flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:50%;background:var(--bg-tertiary);border:1px solid var(--border-default);color:var(--primary);margin-top:var(--space-2)}
+.card__icon .icon{font-size:26px}
+.card--skeleton{pointer-events:none}
+.card--skeleton .sk{border-radius:var(--radius-sm);background:linear-gradient(90deg,var(--bg-tertiary) 25%,var(--bg-primary) 50%,var(--bg-tertiary) 75%);background-size:200% 100%;animation:shimmer 1.4s linear infinite}
+@keyframes shimmer{to{background-position:-200% 0}}
+/* ============ FEATURES ============ */
+.features__grid{display:flex;gap:var(--spacing-gap);align-items:stretch}
+.features__grid .card{flex:1 1 0}
+/* ============ STEPS ============ */
+.steps{display:flex;gap:var(--spacing-gap);align-items:stretch;position:relative}
+.step{flex:1 1 0;display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-3);padding:var(--space-6);border-radius:var(--radius-lg);background:var(--bg-secondary);border:1px solid var(--border-default);position:relative}
+.step__num{display:inline-flex;align-items:center;justify-content:center;min-width:52px;height:32px;padding-inline:var(--space-3);border-radius:var(--radius-pill);background:var(--primary);color:var(--on-primary);font-family:var(--font-display);font-weight:700;font-size:var(--text-sm)}
+.step .icon{color:var(--accent);font-size:30px}
+.step__line{position:absolute;top:calc(50% - 1px);left:100%;width:var(--spacing-gap);height:2px;background-image:radial-gradient(circle at 4px 1px, var(--border-default) 2px, transparent 3px);background-size:12px 4px;background-repeat:repeat-x}
+.step:last-child .step__line{display:none}
+/* ============ TESTIMONIALS ============ */
+.quotes{display:flex;gap:var(--spacing-gap);align-items:stretch}
+.quote{flex:1 1 0}
+.quote__stars{display:flex;gap:2px;color:var(--accent)}
+.quote__stars .icon{font-size:18px}
+.quote blockquote{font-size:var(--text-base);color:var(--text-primary);line-height:1.55}
+.quote__who{display:flex;align-items:center;gap:var(--space-3);margin-top:auto}
+.quote__avatar{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;background:var(--bg-tertiary);border:1px solid var(--border-default);color:var(--primary);flex-shrink:0}
+.quote__who strong{display:block;font-size:var(--text-sm);color:var(--text-primary)}
+.quote__who span{font-size:var(--text-xs);color:var(--text-secondary)}
+/* ============ PRICING ============ */
+.pricing__grid{display:flex;gap:var(--spacing-gap);align-items:stretch} /* exception: stretch for equal-height pricing cards */
+.price-card{flex:1 1 0;display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-4)}
+.price-card--featured{border:2px solid var(--accent);box-shadow:var(--shadow-lg)}
+:root[data-theme="dark"] .price-card--featured{border-color:var(--accent)}
+.price-card__price{font-family:var(--font-display);font-size:var(--text-4xl);font-weight:700;letter-spacing:-0.03em;color:var(--text-primary)}
+.price-card__price small{font-size:var(--text-sm);font-weight:500;color:var(--text-secondary);letter-spacing:0}
+.price-card__list{list-style:none;display:flex;flex-direction:column;gap:var(--space-2);width:100%}
+.price-card__list li{display:flex;align-items:center;gap:var(--space-2);font-size:var(--text-sm);color:var(--text-secondary)}
+.price-card__list .icon{font-size:20px;color:var(--text-success)}
+.price-card .btn{width:100%;margin-top:auto}
+/* ============ FAQ ============ */
+.faq__list{display:flex;flex-direction:column;gap:var(--space-3);max-width:760px}
+.faq__item{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);overflow:hidden}
+.faq__item summary{display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);min-height:44px;padding:var(--space-4) var(--space-5);cursor:pointer;font-weight:600;font-family:var(--font-display);color:var(--text-primary);list-style:none;transition:background var(--transition-fast) var(--ease-standard)}
+.faq__item summary::-webkit-details-marker{display:none}
+@media (hover:hover) and (pointer:fine){.faq__item summary:hover{background:var(--bg-tertiary)}}
+.faq__item summary .icon{color:var(--primary);transition:transform var(--transition-normal) var(--ease-standard);flex-shrink:0}
+.faq__item[open] summary .icon{transform:rotate(180deg)}
+.faq__panel{padding:0 var(--space-5) var(--space-5);color:var(--text-secondary);font-size:var(--text-sm);line-height:1.6}
+/* ============ CTA BAND ============ */
+.cta-band{position:relative;background:var(--kelp-fade);border-block:1px solid var(--border-default);text-align:center}
+.cta-band::before,.cta-band::after{content:"";position:absolute;left:0;right:0;height:14px;--crest-color:var(--bg-primary);background-image:var(--wave-crest);background-size:22px 14px;background-repeat:repeat-x}
+.cta-band::before{top:-1px}
+.cta-band::after{bottom:-1px;transform:scaleY(-1)}
+.cta-band .container{display:flex;flex-direction:column;align-items:center;gap:var(--space-4)}
+.cta-band p{margin-inline:auto}
+/* ============ FORM ============ */
+.input-group{display:flex;flex-direction:column;align-items:stretch;gap:var(--space-2);width:100%;max-width:460px;text-align:left}
+.input-group label{font-weight:600;font-size:var(--text-sm);color:var(--text-primary)}
+.input-group__row{display:flex;gap:var(--space-2)}
+.input{flex:1;min-height:44px;padding:var(--space-3) var(--space-4);border-radius:var(--radius-pill);border:1px solid var(--border-default);background:var(--bg-primary);color:var(--text-primary);font-family:var(--font-base);font-size:var(--text-base);transition:border-color var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard)}
+.input::placeholder{color:var(--text-secondary)}
+.input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--focus-ring)}
+.input--valid{border-color:var(--border-success)}
+.input--invalid{border-color:var(--border-error)}
+.input:disabled{opacity:.5;cursor:not-allowed}
+.input-group__hint{font-size:var(--text-xs);color:var(--text-secondary)}
+.input-group__error{display:flex;align-items:center;gap:var(--space-1);font-size:var(--text-xs);color:var(--text-error);font-weight:600}
+.input-group__error .icon{font-size:16px}
+.form-status{font-size:var(--text-sm);font-weight:600;min-height:24px}
+.form-status--ok{color:var(--text-success)}
+.form-status--err{color:var(--text-error)}
+/* ============ FOOTER ============ */
+.footer{position:relative;background:var(--bg-secondary);border-top:1px solid var(--border-default);padding-block:var(--space-16) var(--space-8)}
+.footer::before{content:"";position:absolute;top:-13px;left:0;right:0;height:13px;--crest-color:var(--bg-secondary);background-image:var(--wave-crest);background-size:22px 13px;background-repeat:repeat-x;transform:scaleY(-1)}
+.footer__grid{display:flex;gap:var(--space-10);align-items:flex-start;flex-wrap:wrap} /* exception: flex-start aligns nav columns at top */
+.footer__brand{flex:1 1 260px;display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-3)}
+.footer__nav{display:flex;gap:var(--space-10);flex:2 1 480px;align-items:flex-start}
+.footer__col{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2);flex:1 1 0}
+.footer__col h3{font-size:var(--text-sm);letter-spacing:.08em;text-transform:uppercase;color:var(--text-primary)}
+.footer__col ul{list-style:none;display:flex;flex-direction:column;gap:var(--space-1)}
+.footer__col a{display:inline-flex;align-items:center;min-height:32px;color:var(--text-secondary);text-decoration:none;font-size:var(--text-sm);transition:color var(--transition-fast) var(--ease-standard)}
+@media (hover:hover) and (pointer:fine){.footer__col a:hover{color:var(--primary)}}
+.footer__social{display:flex;gap:var(--space-2)}
+.footer__social a{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;border:1px solid var(--border-default);color:var(--text-primary);background:var(--bg-primary);transition:transform var(--transition-fast) var(--ease-standard)}
+@media (hover:hover) and (pointer:fine){.footer__social a:hover{transform:translateY(-2px)}}
+.footer__legal{margin-top:var(--space-10);padding-top:var(--space-6);border-top:1px solid var(--border-default);color:var(--text-secondary);font-size:var(--text-sm)}
+/* ============ REVEAL ============ */
+.reveal{opacity:0;transform:translateY(14px);transition:opacity 500ms var(--ease-standard),transform 500ms var(--ease-standard)}
+.reveal.is-visible{opacity:1;transform:none}
+/* ============ RESPONSIVE ============ */
+@media (max-width:768px){
+  .hero__grid{flex-direction:column;align-items:stretch;gap:var(--space-8)}
+  .hero__visual{min-height:220px}
+  .features__grid,.steps,.quotes,.pricing__grid{flex-direction:column}
+  .step__line{display:none}
+  .footer__nav{flex-wrap:wrap}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:150ms!important}
+  .hero__waves{animation:none}
+  .reveal{transform:none;transition:opacity 200ms ease}
+}
+@media (prefers-reduced-transparency:reduce){
+  .hero__waves{background:none}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="header">
+  <div class="container header__row">
+    <a class="header__logo" href="#top" aria-label="Tidalpunk home">
+      <span class="icon" aria-hidden="true">waves</span>Tidalpunk
+    </a>
+    <button class="menu-btn" id="menu-btn" aria-expanded="false" aria-controls="site-nav" aria-label="Open navigation menu">
+      <span class="icon" aria-hidden="true">menu</span>
+    </button>
+    <nav class="header__nav" id="site-nav" aria-label="Primary">
+      <a href="#features">Features</a>
+      <a href="#how">How It Works</a>
+      <a href="#stories">Testimonials</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="header__actions">
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="icon icon--moon" aria-hidden="true">dark_mode</span>
+        <span class="icon icon--sun" aria-hidden="true">light_mode</span>
+      </button>
+      <a class="btn btn--primary header__cta" href="#join">Join the Tide</a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <!-- HERO -->
+  <section class="hero" id="top">
+    <div class="container hero__grid">
+      <div class="hero__copy">
+        <span class="badge badge--kelp"><span class="icon" aria-hidden="true">grass</span>Seafaring cooperative energy</span>
+        <h1>Power from the living ocean</h1>
+        <p class="hero__sub">Tidal turbines, kelp farms, and salvaged hulls working together to light coastal towns.</p>
+        <div class="hero__ctas">
+          <a class="btn btn--primary" href="#join">Join the Tide</a>
+          <a class="btn btn--ghost" href="#how">See How It Works</a>
+        </div>
+        <div class="hero__stats">
+          <div class="stat-chip"><strong>240 MWh</strong><span>capacity deployed</span></div>
+          <div class="stat-chip"><strong>99.2%</strong><span>fleet uptime</span></div>
+          <div class="stat-chip"><strong>18k t</strong><span>emissions avoided</span></div>
+        </div>
+      </div>
+      <div class="hero__visual" role="img" aria-label="Stylized ocean scene with kelp beds, drifting waves, and a golden sun">
+        <span class="hero__sun" aria-hidden="true"></span>
+        <span class="hero__waves" aria-hidden="true"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section" id="features">
+    <div class="container">
+      <div class="section__head">
+        <span class="eyebrow">What we build</span>
+        <h2>Three currents, one grid</h2>
+        <p>Every project pairs proven marine hardware with the communities that maintain it.</p>
+      </div>
+      <div class="features__grid">
+        <article class="card card--lift reveal">
+          <span class="card__icon"><span class="icon" aria-hidden="true">bolt</span></span>
+          <h3>Tidal energy arrays</h3>
+          <p>Slow-turning turbines anchored in predictable channels. They generate on every tide, in any weather, with no fuel and no noise above the waterline.</p>
+        </article>
+        <article class="card card--lift reveal">
+          <span class="card__icon"><span class="icon" aria-hidden="true">grass</span></span>
+          <h3>Regenerative kelp farms</h3>
+          <p>Long-line kelp beds absorb carbon, shelter juvenile fish, and supply local growers with food, fertilizer, and bioplastic feedstock each harvest.</p>
+        </article>
+        <article class="card card--lift reveal">
+          <span class="card__icon"><span class="icon" aria-hidden="true">recycling</span></span>
+          <h3>Salvaged materials</h3>
+          <p>Retired hulls and dock steel become turbine housings, reef structures, and workshop stock. Nothing seaworthy goes to the scrapyard.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="section" id="how" style="background:var(--bg-secondary)">
+    <div class="container">
+      <div class="section__head">
+        <h2>From survey to first light</h2>
+        <p>A cooperative project moves through three clear phases, usually within one year.</p>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <span class="step__num">01</span>
+          <span class="icon" aria-hidden="true">explore</span>
+          <h3>Chart the site</h3>
+          <p>We map currents, seabed, and seasonal life with local fishers before a single anchor drops.</p>
+          <span class="step__line" aria-hidden="true"></span>
+        </div>
+        <div class="step reveal">
+          <span class="step__num">02</span>
+          <span class="icon" aria-hidden="true">construction</span>
+          <h3>Build with the crew</h3>
+          <p>Members assemble turbines and kelp lines in the harbor workshop from certified salvaged stock.</p>
+          <span class="step__line" aria-hidden="true"></span>
+        </div>
+        <div class="step reveal">
+          <span class="step__num">03</span>
+          <span class="icon" aria-hidden="true">monitoring</span>
+          <h3>Harvest and share</h3>
+          <p>Power flows to the town grid at parity rates, and revenue returns to the cooperative ledger.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="section" id="stories">
+    <div class="container">
+      <div class="section__head">
+        <span class="eyebrow">Voices from the water</span>
+        <h2>Trusted by working harbors</h2>
+      </div>
+      <div class="quotes">
+        <article class="card quote reveal">
+          <div class="quote__stars" aria-label="Rated 5 out of 5">
+            <span class="icon" aria-hidden="true">star</span><span class="icon" aria-hidden="true">star</span><span class="icon" aria-hidden="true">star</span><span class="icon" aria-hidden="true">star</span><span class="icon" aria-hidden="true">star</span>
+          </div>
+          <blockquote>&ldquo;Our cold storage runs on the tide now. The fuel budget we used to fear every winter is simply gone.&rdquo;</blockquote>
+          <div class="quote__who">
+            <span class="quote__avatar"><span class="icon" aria-hidden="true">sailing</span></span>
+            <div><strong>Maren Solberg</strong><span>Harbor Master, Skjold Bay Cooperative</span></div>
+          </div>
+        </article>
+        <article class="card quote reveal">
+          <div class="quote__stars" aria-label="Rated 5 out of 5">
+            <span class="icon" aria-hidden="true">star</span><span class="icon" aria-hidden="true">star</span><span class="icon" aria-hidden="true">star</span><span class="icon" aria-hidden="true">star</span><span class="icon" aria-hidden="true">star</span>
+          </div>
+          <blockquote>&ldquo;The kelp lines doubled as a nursery. We logged more juvenile cod this season than in the last five.&rdquo;</blockquote>
+          <div class="quote__who">
+            <span class="quote__avatar"><span class="icon" aria-hidden="true">anchor</span></span>
+            <div><strong>Tomas Ibarra</strong><span>Marine Biologist, Costa Verde Trust</span></div>
+          </div>
+        </article>
+        <article class="card quote reveal">
+          <div class="quote__stars" aria-label="Rated 4 out of 5">
+            <span class="icon" aria-hidden="true">star</span><span class="icon" aria-hidden="true">star</span><span class="icon" aria-hidden="true">star</span><span class="icon" aria-hidden="true">star</span><span class="icon" aria-hidden="true">star_half</span>
+          </div>
+          <blockquote>&ldquo;Training took a season, but now our apprentices maintain the whole array without outside contractors.&rdquo;</blockquote>
+          <div class="quote__who">
+            <span class="quote__avatar"><span class="icon" aria-hidden="true">person</span></span>
+            <div><strong>Adaeze Okafor</strong><span>Workshop Lead, Breakwater Yards</span></div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="section" id="pricing" style="background:var(--bg-secondary)">
+    <div class="container">
+      <div class="section__head">
+        <h2>Membership that fits your harbor</h2>
+        <p>Every tier includes grid parity pricing and a seat on the cooperative council.</p>
+      </div>
+      <div class="pricing__grid">
+        <article class="card price-card reveal">
+          <h3>Drift</h3>
+          <p class="price-card__price">$0<small> / month</small></p>
+          <ul class="price-card__list">
+            <li><span class="icon" aria-hidden="true">check</span>Community tide forecasts</li>
+            <li><span class="icon" aria-hidden="true">check</span>Open workshop days</li>
+            <li><span class="icon" aria-hidden="true">check</span>Newsletter and harvest reports</li>
+          </ul>
+          <a class="btn btn--ghost" href="#join">Start Drifting</a>
+        </article>
+        <article class="card price-card price-card--featured reveal">
+          <span class="badge badge--gold">Most Popular</span>
+          <h3>Current</h3>
+          <p class="price-card__price">$24<small> / month</small></p>
+          <ul class="price-card__list">
+            <li><span class="icon" aria-hidden="true">check</span>Everything in Drift</li>
+            <li><span class="icon" aria-hidden="true">check</span>Home power at parity rates</li>
+            <li><span class="icon" aria-hidden="true">check</span>Kelp share each harvest</li>
+            <li><span class="icon" aria-hidden="true">check</span>Maintenance training access</li>
+          </ul>
+          <a class="btn btn--primary" href="#join">Join the Tide</a>
+        </article>
+        <article class="card price-card reveal">
+          <h3>Tidal</h3>
+          <p class="price-card__price">$96<small> / month</small></p>
+          <ul class="price-card__list">
+            <li><span class="icon" aria-hidden="true">check</span>Everything in Current</li>
+            <li><span class="icon" aria-hidden="true">check</span>Business and fleet metering</li>
+            <li><span class="icon" aria-hidden="true">check</span>Priority salvage claims</li>
+            <li><span class="icon" aria-hidden="true">check</span>Dedicated site engineer</li>
+          </ul>
+          <a class="btn btn--ghost" href="#join">Go Tidal</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq">
+    <div class="container">
+      <div class="section__head">
+        <h2>Questions from the dock</h2>
+      </div>
+      <div class="faq__list">
+        <details class="faq__item">
+          <summary>Do tidal turbines harm marine life?<span class="icon" aria-hidden="true">expand_more</span></summary>
+          <div class="faq__panel">Our rotors turn at under 12 RPM, slower than most swimming fish. Independent surveys at every site track mammal and fish activity, and arrays pause during migration windows.</div>
+        </details>
+        <details class="faq__item">
+          <summary>What happens when the tide is slack?<span class="icon" aria-hidden="true">expand_more</span></summary>
+          <div class="faq__panel">Tides are predictable decades ahead, so slack periods are scheduled. Shore batteries charged at peak flow cover the short gaps, and the grid never notices.</div>
+        </details>
+        <details class="faq__item">
+          <summary>Who owns the equipment?<span class="icon" aria-hidden="true">expand_more</span></summary>
+          <div class="faq__panel">The cooperative does. Members hold shares, vote on expansion, and receive dividends from power sales and kelp harvests each quarter.</div>
+        </details>
+        <details class="faq__item">
+          <summary>Can I join without boating experience?<span class="icon" aria-hidden="true">expand_more</span></summary>
+          <div class="faq__panel">Yes. Most members start in the harbor workshop or on kelp lines. Certified trainers run free courses in rigging, diving safety, and turbine maintenance.</div>
+        </details>
+        <details class="faq__item">
+          <summary>How is salvaged material certified safe?<span class="icon" aria-hidden="true">expand_more</span></summary>
+          <div class="faq__panel">Every beam and plate is ultrasonically tested and stamped before reuse. Anything that fails inspection becomes artificial reef substrate instead of structure.</div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="section cta-band" id="join">
+    <div class="container">
+      <h2>The tide is already turning</h2>
+      <p>Get the harbor bulletin: project openings, harvest dates, and training seats, once a month.</p>
+      <form class="input-group" id="newsletter-form" novalidate>
+        <label for="email">Email address</label>
+        <div class="input-group__row">
+          <input class="input" id="email" name="email" type="email" autocomplete="email" placeholder="you@harbor.example" aria-describedby="email-hint email-error" required>
+          <button class="btn btn--primary" id="newsletter-btn" type="submit">Subscribe</button>
+        </div>
+        <span class="input-group__hint" id="email-hint">We never share your address. Unsubscribe anytime.</span>
+        <span class="input-group__error" id="email-error" aria-live="polite" hidden><span class="icon" aria-hidden="true">error</span><span id="email-error-text"></span></span>
+      </form>
+      <p class="form-status" id="form-status" aria-live="polite"></p>
+      <a class="btn btn--ghost" href="#how">See How It Works</a>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <a class="header__logo" href="#top"><span class="icon" aria-hidden="true">waves</span>Tidalpunk</a>
+        <p>Hopeful infrastructure for coastal towns: tidal power, kelp harvests, and hulls given a second life.</p>
+        <div class="footer__social">
+          <a href="#" aria-label="Tidalpunk on the fediverse"><span class="icon" aria-hidden="true">public</span></a>
+          <a href="#" aria-label="Tidalpunk video channel"><span class="icon" aria-hidden="true">play_circle</span></a>
+          <a href="#" aria-label="Tidalpunk radio dispatch"><span class="icon" aria-hidden="true">podcasts</span></a>
+        </div>
+      </div>
+      <div class="footer__nav">
+        <nav class="footer__col" aria-label="Product">
+          <h3>Product</h3>
+          <ul>
+            <li><a href="#">Turbine arrays</a></li>
+            <li><a href="#">Kelp shares</a></li>
+            <li><a href="#">Shore batteries</a></li>
+            <li><a href="#">Salvage registry</a></li>
+          </ul>
+        </nav>
+        <nav class="footer__col" aria-label="Company">
+          <h3>Company</h3>
+          <ul>
+            <li><a href="#">Cooperative charter</a></li>
+            <li><a href="#">Harbor crews</a></li>
+            <li><a href="#">Careers</a></li>
+            <li><a href="#">Press kit</a></li>
+          </ul>
+        </nav>
+        <nav class="footer__col" aria-label="Resources">
+          <h3>Resources</h3>
+          <ul>
+            <li><a href="#">Tide tables</a></li>
+            <li><a href="#">Training courses</a></li>
+            <li><a href="#">Impact reports</a></li>
+            <li><a href="#">Safety standards</a></li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+    <p class="footer__legal">&copy; 2026 Tidalpunk Cooperative. Built from salvaged steel and stubborn hope.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  /* Theme toggle */
+  var root=document.documentElement;
+  var toggle=document.getElementById("theme-toggle");
+  function syncToggle(){
+    var dark=root.dataset.theme==="dark";
+    toggle.setAttribute("aria-pressed",String(dark));
+    toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+  }
+  syncToggle();
+  toggle.addEventListener("click",function(){
+    var next=root.dataset.theme==="dark"?"light":"dark";
+    root.dataset.theme=next;
+    localStorage.setItem("tidalpunk-theme",next);
+    syncToggle();
+  });
+
+  /* Mobile menu */
+  var menuBtn=document.getElementById("menu-btn");
+  var nav=document.getElementById("site-nav");
+  function closeMenu(){
+    nav.dataset.open="false";
+    menuBtn.setAttribute("aria-expanded","false");
+    menuBtn.setAttribute("aria-label","Open navigation menu");
+  }
+  menuBtn.addEventListener("click",function(){
+    var open=nav.dataset.open==="true";
+    nav.dataset.open=String(!open);
+    menuBtn.setAttribute("aria-expanded",String(!open));
+    menuBtn.setAttribute("aria-label",open?"Open navigation menu":"Close navigation menu");
+  });
+  nav.addEventListener("click",function(e){if(e.target.tagName==="A"){closeMenu();}});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape"){closeMenu();}});
+
+  /* Reveal on scroll */
+  var reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var items=document.querySelectorAll(".reveal");
+  if(reduced||!("IntersectionObserver" in window)){
+    items.forEach(function(el){el.classList.add("is-visible");});
+  }else{
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){
+          var el=entry.target;
+          var idx=Array.prototype.indexOf.call(el.parentNode.children,el);
+          el.style.transitionDelay=(idx%3)*70+"ms";
+          el.classList.add("is-visible");
+          io.unobserve(el);
+        }
+      });
+    },{threshold:.15});
+    items.forEach(function(el){io.observe(el);});
+  }
+
+  /* Newsletter form */
+  var form=document.getElementById("newsletter-form");
+  var email=document.getElementById("email");
+  var btn=document.getElementById("newsletter-btn");
+  var errBox=document.getElementById("email-error");
+  var errText=document.getElementById("email-error-text");
+  var status=document.getElementById("form-status");
+  var btnLabel=btn.textContent;
+  form.addEventListener("submit",function(e){
+    e.preventDefault();
+    var val=email.value.trim();
+    var valid=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val);
+    status.textContent="";
+    status.className="form-status";
+    if(!valid){
+      email.classList.remove("input--valid");
+      email.classList.add("input--invalid");
+      errText.textContent=val?"That address looks incomplete. Check for a typo.":"Please enter your email address.";
+      errBox.hidden=false;
+      status.textContent="Subscription failed. Fix the email and try again.";
+      status.classList.add("form-status--err");
+      email.focus();
+      return;
+    }
+    errBox.hidden=true;
+    email.classList.remove("input--invalid");
+    btn.setAttribute("aria-busy","true");
+    btn.disabled=true;
+    btn.innerHTML='<span class="btn__spinner" aria-hidden="true"></span><span>Subscribing</span>';
+    setTimeout(function(){
+      btn.removeAttribute("aria-busy");
+      btn.disabled=false;
+      btn.textContent=btnLabel;
+      email.classList.add("input--valid");
+      status.textContent="Welcome aboard. Your first harbor bulletin arrives next month.";
+      status.classList.add("form-status--ok");
+      form.reset();
+    },1200);
+  });
+  email.addEventListener("input",function(){
+    email.classList.remove("input--invalid","input--valid");
+    errBox.hidden=true;
+  });
+})();
+</script>
+</body>
+</html>

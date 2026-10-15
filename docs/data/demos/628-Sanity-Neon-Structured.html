@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Strukt - Structured Content CMS</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<style>
+@layer tokens,base,components,utilities;
+@layer tokens{
+:root{
+--bg-primary:#f5f4f2;--bg-secondary:#fefefe;--bg-tertiary:#e9e8e5;
+--text-primary:#1a1a1a;--text-secondary:#4a4a4a;--text-muted:#6b6b6b;
+--primary:#f36458;--on-primary:#0b0b0b;--secondary:#0052ef;--on-secondary:#fefefe;
+--text-success:#0d8a52;--text-error:#d1402f;
+--border-default:#d8d6d2;--border-strong:#b5b3ae;--border-error:#f36458;--border-success:#0d8a52;
+--radius-sm:6px;--radius-md:6px;--radius-lg:12px;--radius-pill:99999px;
+--shadow-sm:0 2px 8px rgba(20,20,20,0.10);--shadow-md:0 8px 24px rgba(20,20,20,0.18);
+--z-dropdown:100;--z-modal:1000;--z-toast:2000;
+--font-display:"Waldenburg","Space Grotesk","IBM Plex Sans",system-ui,sans-serif;
+--font-base:"IBM Plex Sans",system-ui,sans-serif;
+--font-mono:"IBM Plex Mono",ui-monospace,system-ui,monospace;
+--tracking-display:-0.04em;
+--spacing-gap:1.5rem;
+--transition-fast:120ms;--transition-normal:240ms;
+--ease-standard:cubic-bezier(0.22,1,0.36,1);
+}
+:root[data-theme="dark"]{
+--bg-primary:#0b0b0b;--bg-secondary:#151515;--bg-tertiary:#212121;
+--text-primary:#fefefe;--text-secondary:#b9b9b9;--text-muted:#a3a3a3;
+--primary:#f36458;--on-primary:#0b0b0b;--secondary:#0052ef;--on-secondary:#fefefe;
+--text-success:#3dffa8;--text-error:#f36458;
+--border-default:#212121;--border-strong:#353535;--border-error:#f36458;--border-success:#3dffa8;
+--shadow-sm:0 2px 8px rgba(0,0,0,0.45);--shadow-md:0 8px 24px rgba(0,0,0,0.45);
+}
+@supports (color: color(display-p3 0 1 0)){
+:root[data-theme="dark"]{--text-success:color(display-p3 0.25 1 0.55);--border-success:color(display-p3 0.25 1 0.55);}
+}
+}
+@layer base{
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;font-size:1rem;overflow-x:hidden}
+[hidden]{display:none!important}
+::selection{background:var(--primary);color:var(--on-primary)}
+h1,h2,h3{font-family:var(--font-display);letter-spacing:var(--tracking-display);line-height:1.08;font-weight:700}
+h2{font-size:clamp(1.9rem,4vw,2.75rem)}
+h3{font-size:1.35rem;letter-spacing:-0.02em}
+img{max-width:100%;display:block}
+a{color:var(--text-primary);text-decoration:none}
+:focus-visible{outline:2px solid var(--secondary);outline-offset:3px;border-radius:2px}
+@media (prefers-reduced-motion: reduce){
+*,*::before,*::after{transition-duration:0.01ms!important;animation-duration:0.01ms!important;transform:none!important}
+html{scroll-behavior:auto}
+}
+}
+@layer components{
+.container{max-width:1200px;margin:0 auto;padding-left:1.25rem;padding-right:1.25rem}
+@media(min-width:768px){.container{padding-left:2rem;padding-right:2rem}}
+.section{padding-top:clamp(4rem,8vw,7rem);padding-bottom:clamp(4rem,8vw,7rem)}
+.mono-label{font-family:var(--font-mono);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted)}
+.skip-link{position:absolute;left:1rem;top:-4rem;z-index:var(--z-toast);background:var(--primary);color:var(--on-primary);padding:0.6rem 1.2rem;border-radius:var(--radius-sm);font-weight:600;transition:top var(--transition-fast) var(--ease-standard)}
+.skip-link:focus{top:1rem}
+/* Buttons */
+.btn{display:flex;align-items:center;justify-content:center;gap:0.5rem;min-height:44px;min-width:44px;padding:0.65rem 1.5rem;font-family:var(--font-base);font-size:0.95rem;font-weight:600;border:1px solid transparent;cursor:pointer;transition:all var(--transition-fast) var(--ease-standard);text-align:center}
+.btn--primary{border-radius:var(--radius-pill);background:var(--primary);color:var(--on-primary)}
+.btn--secondary{border-radius:var(--radius-sm);border-color:var(--border-strong);background:transparent;color:var(--text-primary)}
+.btn--success{border-radius:var(--radius-pill);background:var(--text-success);color:#0b0b0b}
+.btn--error{border-radius:var(--radius-pill);background:var(--primary);color:var(--on-primary)}
+.btn:disabled{opacity:0.5;filter:grayscale(0.6);cursor:not-allowed}
+.btn--loading{pointer-events:none}
+.btn--loading .material-symbols-rounded{animation:spin 0.9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (hover:hover) and (pointer:fine){
+.btn--primary:hover:not(:disabled){background:var(--secondary);color:var(--on-secondary)}
+.btn--secondary:hover:not(:disabled){border-color:var(--secondary);background:rgba(0,82,239,0.12);color:var(--text-primary)}
+.btn:active:not(:disabled){transform:scale(0.97)}
+}
+.btn:active:not(:disabled){transform:scale(0.97)}
+.material-symbols-rounded{font-size:1.25rem;line-height:1}
+/* Header */
+.header{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--bg-primary);border-bottom:1px solid var(--border-default)}
+.header__inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:1rem}
+.brand{font-family:var(--font-display);font-weight:700;font-size:1.4rem;letter-spacing:var(--tracking-display);display:flex;align-items:center}
+.brand__dot{color:var(--primary)}
+.nav{display:flex;align-items:center;gap:1.75rem}
+.nav__link{font-size:0.92rem;color:var(--text-secondary);transition:color var(--transition-fast) var(--ease-standard);padding:0.4rem 0}
+@media (hover:hover) and (pointer:fine){.nav__link:hover{color:var(--secondary)}}
+.header__actions{display:flex;align-items:center;gap:0.75rem}
+.theme-toggle{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-sm);border:1px solid var(--border-strong);background:transparent;color:var(--text-primary);cursor:pointer;transition:all var(--transition-fast) var(--ease-standard)}
+@media (hover:hover) and (pointer:fine){.theme-toggle:hover{border-color:var(--secondary);color:var(--secondary)}}
+.theme-toggle__moon{display:none}
+:root[data-theme="dark"] .theme-toggle__sun{display:none}
+:root[data-theme="dark"] .theme-toggle__moon{display:block}
+.menu-btn{display:none;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-sm);border:1px solid var(--border-strong);background:transparent;color:var(--text-primary);cursor:pointer}
+@media(max-width:767px){
+.menu-btn{display:flex}
+.nav{position:absolute;top:68px;left:0;right:0;flex-direction:column;align-items:stretch;background:var(--bg-primary);border-bottom:1px solid var(--border-default);padding:1rem 1.25rem 1.5rem;gap:0.5rem;display:none}
+.nav--open{display:flex}
+.nav__link{padding:0.75rem 0;border-bottom:1px solid var(--border-default)}
+.header__cta{display:none}
+}
+/* Hero */
+.hero{padding-top:clamp(3rem,6vw,6rem);padding-bottom:clamp(4rem,8vw,7rem);position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background-image:linear-gradient(var(--border-default) 1px,transparent 1px),linear-gradient(90deg,var(--border-default) 1px,transparent 1px);background-size:56px 56px;opacity:0.35;mask-image:radial-gradient(ellipse at 30% 20%,black,transparent 70%);pointer-events:none}
+.hero__grid{display:flex;align-items:center;gap:clamp(2rem,5vw,4.5rem);position:relative}
+.hero__content{flex:1 1 52%;display:flex;flex-direction:column;align-items:flex-start;gap:1.4rem}
+.hero h1{font-size:clamp(2.75rem,8vw,7rem);letter-spacing:-0.04em}
+.hero__sub{color:var(--text-secondary);font-size:1.08rem;max-width:44ch}
+.hero__ctas{display:flex;align-items:center;gap:0.9rem;flex-wrap:wrap}
+.schema{flex:1 1 42%;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);padding:1.5rem;font-family:var(--font-mono);font-size:0.82rem;min-width:0}
+.schema__head{display:flex;align-items:center;justify-content:space-between;padding-bottom:0.9rem;border-bottom:1px solid var(--border-default)}
+.schema__title{color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;font-size:0.72rem}
+.schema__status{display:flex;align-items:center;gap:0.45rem;color:var(--text-success);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em}
+.schema__dot{width:8px;height:8px;border-radius:50%;background:var(--text-success)}
+.schema__row{display:flex;gap:0.75rem;padding:0.65rem 0;border-bottom:1px solid var(--border-default);color:var(--text-secondary)}
+.schema__row:last-child{border-bottom:none}
+.schema__key{color:var(--text-primary);min-width:5.5rem}
+.schema__type{color:var(--text-muted)}
+@media(max-width:900px){.hero__grid{flex-direction:column;align-items:stretch}.schema{width:100%}}
+/* Section header */
+.section__head{display:flex;flex-direction:column;align-items:flex-start;gap:0.75rem;margin-bottom:clamp(2rem,4vw,3.5rem)}
+.section__head p{color:var(--text-secondary);max-width:56ch}
+/* Cards */
+.card-row{display:flex;align-items:stretch;gap:var(--spacing-gap)}
+.card{display:flex;flex-direction:column;align-items:flex-start;gap:0.9rem;flex:1;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:1.75rem;box-shadow:var(--shadow-sm);transition:all var(--transition-normal) var(--ease-standard)}
+@media (hover:hover) and (pointer:fine){
+.card:hover{border-color:var(--border-strong);transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.card:hover .card__icon{color:var(--secondary)}
+}
+.card:focus-within{border-color:var(--secondary)}
+.card__icon{color:var(--text-primary);font-size:1.75rem;transition:color var(--transition-fast) var(--ease-standard)}
+.card p{color:var(--text-secondary);font-size:0.95rem}
+.card__tag{margin-top:auto}
+@media(max-width:767px){.card-row{flex-direction:column}}
+/* Steps */
+.steps{display:flex;align-items:stretch;gap:var(--spacing-gap)}
+.step{flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:0.75rem}
+.step__num{font-family:var(--font-mono);font-size:2.5rem;font-weight:500;color:var(--text-muted);letter-spacing:-0.02em}
+.step__rule{width:100%;height:1px;background:var(--border-default)}
+.step p{color:var(--text-secondary);font-size:0.95rem}
+@media(max-width:767px){.steps{flex-direction:column}}
+/* Testimonials */
+.quote{font-size:1.05rem;line-height:1.55}
+.quote::before{content:"\201C"}
+.quote::after{content:"\201D"}
+.testimonial__author{display:flex;align-items:center;gap:0.85rem;margin-top:auto}
+.avatar{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;border:1px solid var(--border-strong);font-family:var(--font-mono);font-size:0.8rem;color:var(--text-primary);flex-shrink:0}
+.testimonial__who{display:flex;flex-direction:column;align-items:flex-start}
+.testimonial__name{font-weight:600;font-size:0.92rem}
+.testimonial__role{font-family:var(--font-mono);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted)}
+/* Pricing */
+.price-card{position:relative}
+.price-card--featured{border-color:var(--primary);box-shadow:var(--shadow-md)}
+:root[data-theme="dark"] .price-card--featured{border-color:var(--primary)}
+.price-card__badge{position:absolute;top:-0.85rem;left:1.75rem;background:var(--primary);color:var(--on-primary);font-family:var(--font-mono);font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;padding:0.3rem 0.8rem;border-radius:var(--radius-pill)}
+.price-card__price{font-family:var(--font-display);font-size:2.75rem;letter-spacing:var(--tracking-display);font-weight:700;display:flex;align-items:baseline;gap:0.5rem}
+.price-card__per{font-family:var(--font-mono);font-size:0.75rem;color:var(--text-muted);letter-spacing:0.08em;text-transform:uppercase}
+.price-card__list{list-style:none;display:flex;flex-direction:column;align-items:flex-start;gap:0.6rem;width:100%}
+.price-card__list li{display:flex;align-items:center;gap:0.55rem;font-size:0.92rem;color:var(--text-secondary)}
+.price-card__list .material-symbols-rounded{color:var(--text-success);font-size:1.1rem}
+.price-card .btn{width:100%;margin-top:auto}
+/* FAQ */
+.faq{border-top:1px solid var(--border-default)}
+.faq details{border-bottom:1px solid var(--border-default)}
+.faq summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;list-style:none;cursor:pointer;padding:1.35rem 0;font-weight:600;font-size:1.02rem;transition:color var(--transition-fast) var(--ease-standard)}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary .material-symbols-rounded{transition:transform var(--transition-normal) var(--ease-standard),color var(--transition-fast) var(--ease-standard);flex-shrink:0}
+.faq details[open] summary .material-symbols-rounded{transform:rotate(180deg)}
+@media (hover:hover) and (pointer:fine){.faq summary:hover,.faq summary:hover .material-symbols-rounded{color:var(--secondary)}}
+.faq__body{padding:0 0 1.35rem;color:var(--text-secondary);max-width:65ch}
+/* Final CTA */
+.cta-band{background:var(--bg-tertiary);border-top:3px solid var(--primary);border-radius:var(--radius-lg);padding:clamp(2.5rem,6vw,4.5rem);display:flex;flex-direction:column;align-items:flex-start;gap:1.5rem}
+.cta-band p{color:var(--text-secondary);max-width:52ch}
+.signup{display:flex;flex-direction:column;align-items:flex-start;gap:0.5rem;width:100%;max-width:520px}
+.input-group{display:flex;flex-direction:column;align-items:flex-start;gap:0.5rem;width:100%}
+.input-group__row{display:flex;align-items:center;gap:0.75rem;width:100%}
+.input-group input{flex:1;min-height:48px;padding:0.7rem 1rem;background:var(--bg-secondary);border:1px solid var(--border-strong);border-radius:var(--radius-sm);color:var(--text-primary);font-family:var(--font-base);font-size:0.95rem;transition:border-color var(--transition-fast) var(--ease-standard)}
+.input-group input::placeholder{color:var(--text-muted)}
+.input-group input:focus{outline:none;border-color:var(--secondary);box-shadow:0 0 0 3px rgba(0,82,239,0.25)}
+.input-group.is-valid input{border-color:var(--border-success)}
+.input-group.is-invalid input{border-color:var(--border-error)}
+.input-group__msg{display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;min-height:1.4rem}
+.input-group__msg--error{color:var(--text-error)}
+.input-group__msg--success{color:var(--text-success)}
+.cta-band__alt{font-size:0.92rem;color:var(--text-secondary)}
+.cta-band__alt a{color:var(--text-primary);font-weight:600;border-bottom:1px solid var(--border-strong);transition:all var(--transition-fast) var(--ease-standard)}
+@media (hover:hover) and (pointer:fine){.cta-band__alt a:hover{color:var(--secondary);border-color:var(--secondary)}}
+@media(max-width:560px){.input-group__row{flex-direction:column;align-items:stretch}}
+/* Footer */
+.footer{border-top:1px solid var(--border-default);padding:3.5rem 0 2rem}
+.footer__grid{display:flex;align-items:flex-start;justify-content:space-between;gap:2.5rem;flex-wrap:wrap}
+.footer__brand{display:flex;flex-direction:column;align-items:flex-start;gap:0.6rem;max-width:280px}
+.footer__tagline{color:var(--text-secondary);font-size:0.92rem}
+.footer__groups{display:flex;align-items:flex-start;gap:clamp(2rem,5vw,4.5rem);flex-wrap:wrap}
+.footer__group{display:flex;flex-direction:column;align-items:flex-start;gap:0.55rem}
+.footer__group h4{font-family:var(--font-mono);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:0.25rem}
+.footer__group a{color:var(--text-secondary);font-size:0.9rem;border-bottom:1px solid transparent;transition:all var(--transition-fast) var(--ease-standard)}
+@media (hover:hover) and (pointer:fine){.footer__group a:hover{color:var(--secondary);border-color:var(--secondary)}}
+.footer__bottom{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--border-default);flex-wrap:wrap}
+.footer__social{display:flex;align-items:center;gap:0.5rem}
+.footer__social a{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-sm);color:var(--text-secondary);transition:all var(--transition-fast) var(--ease-standard)}
+@media (hover:hover) and (pointer:fine){.footer__social a:hover{color:var(--secondary)}}
+}
+@layer utilities{
+.reveal{opacity:0;transform:translateY(18px);transition:opacity 500ms var(--ease-standard),transform 500ms var(--ease-standard)}
+.reveal--visible{opacity:1;transform:none}
+@media (prefers-reduced-motion: reduce){.reveal{opacity:1;transform:none;transition:none}}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="header">
+  <div class="container header__inner">
+    <a class="brand" href="#top" aria-label="Strukt home">strukt<span class="brand__dot">.</span></a>
+    <nav class="nav" id="site-nav" aria-label="Primary">
+      <a class="nav__link" href="#features">Features</a>
+      <a class="nav__link" href="#how">How it works</a>
+      <a class="nav__link" href="#pricing">Pricing</a>
+      <a class="nav__link" href="#faq">FAQ</a>
+    </nav>
+    <div class="header__actions">
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="true" aria-label="Switch to light mode">
+        <span class="material-symbols-rounded theme-toggle__sun" aria-hidden="true">light_mode</span>
+        <span class="material-symbols-rounded theme-toggle__moon" aria-hidden="true">dark_mode</span>
+      </button>
+      <a class="btn btn--primary header__cta" href="#get-started">Get started</a>
+      <button class="menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">
+        <span class="material-symbols-rounded" aria-hidden="true">menu</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <!-- Hero -->
+  <section class="hero" id="top" aria-labelledby="hero-title">
+    <div class="container hero__grid">
+      <div class="hero__content">
+        <span class="mono-label">[ Structured Content CMS ]</span>
+        <h1 id="hero-title">Content, structured for everything.</h1>
+        <p class="hero__sub">Strukt stores content as data, not pages. Model it once, ship it to every channel through one real-time API.</p>
+        <div class="hero__ctas">
+          <a class="btn btn--primary" href="#get-started">Get started</a>
+          <a class="btn btn--secondary" href="#how">See how it works</a>
+        </div>
+      </div>
+      <div class="schema" aria-label="Schema preview">
+        <div class="schema__head">
+          <span class="schema__title">article.schema.js</span>
+          <span class="schema__status"><span class="schema__dot" aria-hidden="true"></span>Validated</span>
+        </div>
+        <div class="schema__row"><span class="schema__key">type</span><span>"document"</span></div>
+        <div class="schema__row"><span class="schema__key">title</span><span class="schema__type">string, required</span></div>
+        <div class="schema__row"><span class="schema__key">slug</span><span class="schema__type">slug, unique</span></div>
+        <div class="schema__row"><span class="schema__key">tags</span><span class="schema__type">array of references</span></div>
+        <div class="schema__row"><span class="schema__key">body</span><span class="schema__type">portable text</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="section" id="features" aria-labelledby="features-title">
+    <div class="container">
+      <div class="section__head">
+        <span class="mono-label">01, Features</span>
+        <h2 id="features-title">Built for teams that ship content daily</h2>
+      </div>
+      <div class="card-row">
+        <article class="card reveal">
+          <span class="material-symbols-rounded card__icon" aria-hidden="true">account_tree</span>
+          <h3>Structured schemas</h3>
+          <p>Define content models in code. Fields, references, and validation rules live in version control alongside your product.</p>
+          <span class="mono-label card__tag">Schema as code</span>
+        </article>
+        <article class="card reveal">
+          <span class="material-symbols-rounded card__icon" aria-hidden="true">bolt</span>
+          <h3>Real-time collaboration</h3>
+          <p>Editors see each other's changes as they type. Presence, live cursors, and conflict-free merges come standard.</p>
+          <span class="mono-label card__tag">Live editing</span>
+        </article>
+        <article class="card reveal">
+          <span class="material-symbols-rounded card__icon" aria-hidden="true">sync</span>
+          <h3>Flexible content APIs</h3>
+          <p>Query exactly the fields you need with GROQ or GraphQL. One API serves web, mobile, print, and whatever ships next.</p>
+          <span class="mono-label card__tag">GROQ + GraphQL</span>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="section" id="how" aria-labelledby="how-title">
+    <div class="container">
+      <div class="section__head">
+        <span class="mono-label">02, How it works</span>
+        <h2 id="how-title">From model to multichannel in three steps</h2>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <span class="step__num">01</span>
+          <div class="step__rule" aria-hidden="true"></div>
+          <h3>Model your content</h3>
+          <p>Write schemas in JavaScript. Strukt validates every document against them before it reaches production.</p>
+        </div>
+        <div class="step reveal">
+          <span class="step__num">02</span>
+          <div class="step__rule" aria-hidden="true"></div>
+          <h3>Edit in real time</h3>
+          <p>Your team works in a customizable studio with live previews, revision history, and granular roles.</p>
+        </div>
+        <div class="step reveal">
+          <span class="step__num">03</span>
+          <div class="step__rule" aria-hidden="true"></div>
+          <h3>Deliver anywhere</h3>
+          <p>Pull content through a global CDN with sub-100ms reads. Webhooks keep every downstream system in sync.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="section" id="testimonials" aria-labelledby="testimonials-title">
+    <div class="container">
+      <div class="section__head">
+        <span class="mono-label">03, Testimonials</span>
+        <h2 id="testimonials-title">Trusted by content teams worldwide</h2>
+      </div>
+      <div class="card-row">
+        <article class="card reveal">
+          <p class="quote">We cut our publish time from hours to minutes. The schema-first approach ended our content migration cycles for good.</p>
+          <div class="testimonial__author">
+            <span class="avatar" aria-hidden="true">MK</span>
+            <div class="testimonial__who">
+              <span class="testimonial__name">Mara Kessler</span>
+              <span class="testimonial__role">Head of Content, Fieldnote Media</span>
+            </div>
+          </div>
+        </article>
+        <article class="card reveal">
+          <p class="quote">Real-time editing changed how our newsroom works. Twelve editors in one article at once, zero conflicts, zero lost work.</p>
+          <div class="testimonial__author">
+            <span class="avatar" aria-hidden="true">DO</span>
+            <div class="testimonial__who">
+              <span class="testimonial__name">David Okafor</span>
+              <span class="testimonial__role">CTO, Meridian Press</span>
+            </div>
+          </div>
+        </article>
+        <article class="card reveal">
+          <p class="quote">One API feeds our site, app, and retail kiosks. When we added a new channel last quarter, content was ready on day one.</p>
+          <div class="testimonial__author">
+            <span class="avatar" aria-hidden="true">SL</span>
+            <div class="testimonial__who">
+              <span class="testimonial__name">Sofia Lindqvist</span>
+              <span class="testimonial__role">Product Lead, Northwind Retail</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section class="section" id="pricing" aria-labelledby="pricing-title">
+    <div class="container">
+      <div class="section__head">
+        <span class="mono-label">04, Pricing</span>
+        <h2 id="pricing-title">Pricing that scales with your content</h2>
+      </div>
+      <div class="card-row">
+        <article class="card price-card reveal">
+          <h3>Free</h3>
+          <div class="price-card__price">$0<span class="price-card__per">/ month</span></div>
+          <ul class="price-card__list">
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>3 users, 1 project</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>10k API requests / month</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Community support</li>
+          </ul>
+          <a class="btn btn--secondary" href="#get-started">Get started</a>
+        </article>
+        <article class="card price-card price-card--featured reveal">
+          <span class="price-card__badge">Most popular</span>
+          <h3>Pro</h3>
+          <div class="price-card__price">$99<span class="price-card__per">/ month</span></div>
+          <ul class="price-card__list">
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>20 users, unlimited projects</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>1M API requests / month</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Real-time collaboration</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Priority support</li>
+          </ul>
+          <a class="btn btn--primary" href="#get-started">Get started</a>
+        </article>
+        <article class="card price-card reveal">
+          <h3>Scale</h3>
+          <div class="price-card__price">$499<span class="price-card__per">/ month</span></div>
+          <ul class="price-card__list">
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Unlimited users and projects</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Custom API limits and SLA</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>SSO and audit logs</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Dedicated success manager</li>
+          </ul>
+          <a class="btn btn--secondary" href="#get-started">Get started</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq" aria-labelledby="faq-title">
+    <div class="container">
+      <div class="section__head">
+        <span class="mono-label">05, FAQ</span>
+        <h2 id="faq-title">Frequently asked questions</h2>
+      </div>
+      <div class="faq">
+        <details>
+          <summary>What is structured content?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__body">Structured content is stored as typed data fields rather than formatted pages. A product, article, or event becomes a document with defined fields, so the same content can render on a website, an app, or a voice interface without copy-paste.</p>
+        </details>
+        <details>
+          <summary>Can I migrate from my current CMS?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__body">Yes. Strukt ships with importers for WordPress, Contentful, and plain JSON or CSV. Most teams map their existing content types to Strukt schemas and run a scripted migration in days, not months.</p>
+        </details>
+        <details>
+          <summary>How does real-time collaboration work?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__body">Every document is synced through a conflict-free replicated data layer. Editors see live cursors and field-level presence, and simultaneous edits merge automatically without locking documents.</p>
+        </details>
+        <details>
+          <summary>What query languages do you support?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__body">Strukt supports GROQ, a declarative query language built for JSON content, and a generated GraphQL endpoint derived from your schemas. Both are served from a global CDN with cached, sub-100ms reads.</p>
+        </details>
+        <details>
+          <summary>Is there an on-premise or EU hosting option?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__body">Scale plans can pin data residency to EU regions, and enterprise agreements include dedicated infrastructure options. Contact sales for compliance documentation including SOC 2 and GDPR commitments.</p>
+        </details>
+        <details>
+          <summary>What happens if I exceed my API limit?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__body">Nothing breaks. We notify you at 80% and 100% of your quota, and overage is billed at a published per-request rate. Free projects are rate-limited gracefully rather than taken offline.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="section" id="get-started" aria-labelledby="cta-title">
+    <div class="container">
+      <div class="cta-band">
+        <h2 id="cta-title">Start structuring your content today.</h2>
+        <p>Create a free project in under two minutes. No credit card required, and your schemas stay yours forever.</p>
+        <form class="signup" id="signup-form" novalidate>
+          <div class="input-group" id="email-group">
+            <label class="mono-label" for="email">Work email</label>
+            <div class="input-group__row">
+              <input type="email" id="email" name="email" required autocomplete="email" placeholder="you@company.com" aria-describedby="email-msg">
+              <button class="btn btn--primary" id="signup-btn" type="submit">
+                <span class="btn__label">Get started</span>
+              </button>
+            </div>
+            <p class="input-group__msg" id="email-msg" aria-live="polite"></p>
+          </div>
+        </form>
+        <p class="cta-band__alt">Need a custom plan? <a href="#faq">Talk to sales</a></p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <a class="brand" href="#top">strukt<span class="brand__dot">.</span></a>
+        <p class="footer__tagline">The structured content platform for teams that publish everywhere.</p>
+      </div>
+      <div class="footer__groups">
+        <div class="footer__group">
+          <h4>Product</h4>
+          <a href="#features">Features</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#how">How it works</a>
+        </div>
+        <div class="footer__group">
+          <h4>Resources</h4>
+          <a href="#faq">FAQ</a>
+          <a href="#get-started">Documentation</a>
+          <a href="#get-started">API reference</a>
+        </div>
+        <div class="footer__group">
+          <h4>Company</h4>
+          <a href="#testimonials">Customers</a>
+          <a href="#get-started">Careers</a>
+          <a href="#get-started">Contact</a>
+        </div>
+        <div class="footer__group">
+          <h4>Legal</h4>
+          <a href="#get-started">Privacy</a>
+          <a href="#get-started">Terms</a>
+          <a href="#get-started">Security</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span class="mono-label">© 2026 Strukt Systems, Inc. All rights reserved.</span>
+      <div class="footer__social">
+        <a href="#top" aria-label="Strukt on GitHub"><span class="material-symbols-rounded" aria-hidden="true">code</span></a>
+        <a href="#top" aria-label="Strukt on X"><span class="material-symbols-rounded" aria-hidden="true">share</span></a>
+        <a href="#top" aria-label="Strukt community chat"><span class="material-symbols-rounded" aria-hidden="true">forum</span></a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+/* Theme toggle */
+var toggle=document.getElementById("theme-toggle");
+function syncToggle(){
+var dark=document.documentElement.dataset.theme==="dark";
+toggle.setAttribute("aria-pressed",String(dark));
+toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+}
+toggle.addEventListener("click",function(){
+var next=document.documentElement.dataset.theme==="dark"?"light":"dark";
+document.documentElement.dataset.theme=next;
+localStorage.setItem("theme",next);
+syncToggle();
+});
+syncToggle();
+
+/* Mobile menu */
+var menuBtn=document.getElementById("menu-btn");
+var nav=document.getElementById("site-nav");
+function closeMenu(){
+nav.classList.remove("nav--open");
+menuBtn.setAttribute("aria-expanded","false");
+menuBtn.setAttribute("aria-label","Open menu");
+}
+menuBtn.addEventListener("click",function(){
+var open=nav.classList.toggle("nav--open");
+menuBtn.setAttribute("aria-expanded",String(open));
+menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");
+});
+nav.addEventListener("click",function(e){if(e.target.closest("a"))closeMenu();});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")closeMenu();});
+
+/* Signup form state machine */
+var form=document.getElementById("signup-form");
+var group=document.getElementById("email-group");
+var email=document.getElementById("email");
+var msg=document.getElementById("email-msg");
+var btn=document.getElementById("signup-btn");
+var submitting=false;
+var emailRe=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+function setMsg(text,type,icon){
+msg.className="input-group__msg"+(type?" input-group__msg--"+type:"");
+msg.innerHTML="";
+if(icon){var s=document.createElement("span");s.className="material-symbols-rounded";s.setAttribute("aria-hidden","true");s.textContent=icon;msg.appendChild(s);}
+msg.appendChild(document.createTextNode(text));
+}
+form.addEventListener("submit",function(e){
+e.preventDefault();
+if(submitting)return;
+var value=email.value.trim();
+if(!emailRe.test(value)){
+group.classList.remove("is-valid");
+group.classList.add("is-invalid");
+email.setAttribute("aria-invalid","true");
+setMsg("Enter a valid work email address.","error","error");
+email.focus();
+return;
+}
+submitting=true;
+group.classList.remove("is-invalid");
+email.removeAttribute("aria-invalid");
+btn.classList.add("btn--loading");
+btn.setAttribute("aria-busy","true");
+btn.innerHTML='<span class="material-symbols-rounded" aria-hidden="true">progress_activity</span><span class="btn__label">Creating project</span>';
+setMsg("Setting up your workspace...","","");
+setTimeout(function(){
+submitting=false;
+btn.classList.remove("btn--loading");
+btn.removeAttribute("aria-busy");
+btn.classList.remove("btn--primary");
+btn.classList.add("btn--success");
+btn.innerHTML='<span class="material-symbols-rounded" aria-hidden="true">check_circle</span><span class="btn__label">Project created</span>';
+group.classList.add("is-valid");
+setMsg("Check your inbox to activate your free project.","success","check_circle");
+form.reset();
+},800);
+});
+email.addEventListener("input",function(){
+group.classList.remove("is-invalid","is-valid");
+email.removeAttribute("aria-invalid");
+if(!submitting)setMsg("","","");
+});
+
+/* Scroll reveal */
+var reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+var items=document.querySelectorAll(".reveal");
+if(reduced||!("IntersectionObserver" in window)){
+items.forEach(function(el){el.classList.add("reveal--visible");});
+}else{
+var observer=new IntersectionObserver(function(entries){
+entries.forEach(function(entry){
+if(entry.isIntersecting){
+var el=entry.target;
+var siblings=Array.prototype.slice.call(el.parentElement.children).filter(function(n){return n.classList&&n.classList.contains("reveal");});
+var idx=siblings.indexOf(el);
+el.style.transitionDelay=(Math.max(idx,0)*70)+"ms";
+el.classList.add("reveal--visible");
+observer.unobserve(el);
+}
+});
+},{threshold:0.15});
+items.forEach(function(el){observer.observe(el);});
+}
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FUSE - Shell Designer</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t="light";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0&display=block" rel="stylesheet">
+<style>
+:root{
+  --primary:#0c1424;--secondary:#6a82a8;
+  --bg-primary:#e8eef8;--bg-secondary:#fefefe;
+  --text-primary:#060a14;--text-secondary:#4a5f80;
+  --text-success:#1a7a4a;--text-error:#b3261e;
+  --border-default:rgba(12,20,36,.14);--border-error:#b3261e;--border-success:#1a7a4a;
+  --glass-bg:rgba(254,254,254,.55);--glass-border:rgba(254,254,254,.75);--glass-highlight:rgba(254,254,254,.9);--backdrop-blur:18px;
+  --on-accent:#e8eef8;
+  --radius-sm:.5rem;--radius-md:.875rem;--radius-lg:1.25rem;
+  --shadow-sm:0 2px 10px rgba(12,20,36,.08);--shadow-md:0 12px 32px rgba(12,20,36,.14);
+  --spacing-gap:1.5rem;--transition-fast:150ms;--transition-normal:250ms;--ease-standard:cubic-bezier(.2,.7,.3,1);
+  --z-dropdown:100;--z-modal:200;--z-toast:300;
+  --font-base:'Inter',system-ui,sans-serif;--font-display:'Space Grotesk','Inter',sans-serif;
+}
+:root[data-theme="dark"]{
+  --primary:#e8eef8;--secondary:#6a82a8;
+  --bg-primary:#060a14;--bg-secondary:#0a1020;
+  --text-primary:#e8eef8;--text-secondary:#a8b8d0;
+  --text-success:#4ade80;--text-error:#f28b82;
+  --border-default:rgba(216,226,240,.14);--border-error:#f28b82;--border-success:#4ade80;
+  --glass-bg:rgba(12,20,36,.55);--glass-border:rgba(216,226,240,.16);--glass-highlight:rgba(216,226,240,.08);--backdrop-blur:18px;
+  --on-accent:#060a14;
+  --shadow-sm:0 2px 10px rgba(0,0,0,.4);--shadow-md:0 12px 32px rgba(0,0,0,.5);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);font-size:1rem;line-height:1.6;color:var(--text-primary);background:linear-gradient(160deg,var(--bg-primary) 0%,#d8e2f0 55%,var(--bg-primary) 100%);overflow-x:hidden;transition:background var(--transition-normal),color var(--transition-normal)}
+:root[data-theme="dark"] body{background:linear-gradient(160deg,#060a14 0%,#0a1020 55%,#060a14 100%)}
+h1,h2,h3{font-family:var(--font-display);line-height:1.12;letter-spacing:-.025em;color:var(--text-primary)}
+h1{font-size:clamp(2.25rem,5vw,3.5rem)}
+h2{font-size:clamp(1.75rem,3.5vw,2.5rem)}
+h3{font-size:1.2rem;letter-spacing:-.01em}
+p{max-width:65ch}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--secondary);outline-offset:2px;border-radius:var(--radius-sm)}
+.material-symbols-rounded{font-size:1.35rem;line-height:1;user-select:none}
+.skip-link{position:absolute;left:1rem;top:-4rem;z-index:var(--z-toast);background:var(--primary);color:var(--on-accent);padding:.75rem 1.25rem;border-radius:var(--radius-sm);transition:top var(--transition-fast)}
+.skip-link:focus{top:1rem}
+/* Background blooms */
+.bg-blooms{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.55}
+.orb--1{width:44vw;height:44vw;top:-12%;left:-8%;background:radial-gradient(circle,#6a82a8,transparent 65%);animation:drift1 26s ease-in-out infinite alternate}
+.orb--2{width:36vw;height:36vw;top:22%;right:-10%;background:radial-gradient(circle,#8fa8cf,transparent 65%);animation:drift2 32s ease-in-out infinite alternate}
+.orb--3{width:40vw;height:40vw;bottom:-14%;left:28%;background:radial-gradient(circle,#5a6f96,transparent 65%);animation:drift1 38s ease-in-out infinite alternate-reverse}
+.orb--4{width:26vw;height:26vw;top:55%;left:6%;background:radial-gradient(circle,#a9bedd,transparent 65%);animation:drift2 30s ease-in-out infinite alternate-reverse}
+@keyframes drift1{from{transform:translate(0,0) scale(1)}to{transform:translate(4vw,3vh) scale(1.08)}}
+@keyframes drift2{from{transform:translate(0,0) scale(1.05)}to{transform:translate(-3vw,-4vh) scale(.96)}}
+/* Layout */
+.container{max-width:1200px;margin:0 auto;padding-left:1.25rem;padding-right:1.25rem}
+@media(min-width:768px){.container{padding-left:2rem;padding-right:2rem}}
+section{padding:clamp(4rem,8vw,7rem) 0}
+.section-head{display:flex;flex-direction:column;align-items:center;text-align:center;gap:.75rem;margin-bottom:3rem}
+.section-head p{color:var(--text-secondary);max-width:52ch}
+/* Nav */
+.nav{position:sticky;top:0;z-index:var(--z-dropdown);backdrop-filter:blur(var(--backdrop-blur));-webkit-backdrop-filter:blur(var(--backdrop-blur));background:var(--glass-bg);border-bottom:1px solid var(--glass-border)}
+.nav__inner{display:flex;align-items:center;gap:1rem;height:64px}
+.nav__logo{display:flex;align-items:center;gap:.5rem;font-family:var(--font-display);font-weight:700;font-size:1.15rem;letter-spacing:-.02em}
+.nav__logo .material-symbols-rounded{color:var(--secondary)}
+.nav__links{display:none;align-items:center;gap:1.5rem;margin-left:auto}
+.nav__links a{font-size:.925rem;font-weight:500;color:var(--text-secondary);transition:color var(--transition-fast)}
+.nav__links a:hover{color:var(--text-primary)}
+.nav__actions{display:flex;align-items:center;gap:.5rem;margin-left:auto}
+.nav__toggle,.nav__menu{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-sm);border:1px solid var(--border-default);background:var(--glass-bg);color:var(--text-primary);transition:background var(--transition-fast),transform var(--transition-fast)}
+.nav__toggle:active,.nav__menu:active{transform:scale(.95)}
+.nav__menu{display:flex}
+.nav__mobile{display:none;flex-direction:column;gap:.25rem;padding:.75rem 1.25rem 1.25rem;align-items:stretch}
+.nav__mobile a{padding:.75rem;border-radius:var(--radius-sm);font-weight:500;color:var(--text-secondary)}
+.nav__mobile a:hover{background:var(--glass-highlight);color:var(--text-primary)}
+.nav--open .nav__mobile{display:flex}
+@media(min-width:768px){
+  .nav__links{display:flex}
+  .nav__menu{display:none}
+  .nav__actions{margin-left:0}
+  .nav__mobile{display:none!important}
+}
+/* Buttons */
+.btn{display:flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:.7rem 1.4rem;border-radius:var(--radius-md);border:1px solid transparent;font-weight:600;font-size:.95rem;transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast),filter var(--transition-fast),background var(--transition-normal);position:relative}
+.btn:active{transform:scale(.97)}
+.btn--primary{background:linear-gradient(135deg,#0c1424,#3a4f74);color:var(--on-accent);box-shadow:var(--shadow-sm)}
+:root[data-theme="dark"] .btn--primary{background:linear-gradient(135deg,#e8eef8,#a9bedd);color:#060a14}
+.btn--glass{background:var(--glass-bg);border-color:var(--glass-border);color:var(--text-primary);backdrop-filter:blur(var(--backdrop-blur));-webkit-backdrop-filter:blur(var(--backdrop-blur))}
+.btn--danger{background:var(--text-error);color:#fff}
+@media(hover:hover) and (pointer:fine){
+  .btn--primary:hover{filter:brightness(1.12);box-shadow:var(--shadow-md)}
+  .btn--glass:hover{background:var(--glass-highlight);box-shadow:var(--shadow-sm)}
+}
+.btn:disabled,.btn--loading{opacity:.6;cursor:not-allowed;filter:grayscale(.4);pointer-events:none}
+.btn .spinner{width:1.1rem;height:1.1rem;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.btn--success{border-color:var(--border-success);color:var(--text-success);background:var(--glass-bg)}
+.chip{display:inline-flex;align-items:center;gap:.4rem;padding:.35rem .85rem;border-radius:999px;font-size:.8rem;font-weight:600;background:var(--glass-bg);border:1px solid var(--glass-border);color:var(--text-secondary);backdrop-filter:blur(var(--backdrop-blur));-webkit-backdrop-filter:blur(var(--backdrop-blur))}
+/* Glass card */
+.glass-card{display:flex;flex-direction:column;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);backdrop-filter:blur(var(--backdrop-blur));-webkit-backdrop-filter:blur(var(--backdrop-blur));transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal),border-color var(--transition-normal)}
+@supports not (backdrop-filter:blur(1px)){.glass-card{background:var(--bg-secondary)}}
+@media(hover:hover) and (pointer:fine){.glass-card:hover{transform:translateY(-2px);box-shadow:0 18px 44px rgba(12,20,36,.18)}}
+.glass-card:focus-within{border-color:var(--secondary)}
+.glass-card--featured{border-color:var(--secondary);box-shadow:0 18px 48px rgba(106,130,168,.35)}
+.icon-tile{display:flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:var(--radius-md);background:var(--glass-highlight);border:1px solid var(--glass-border);color:var(--secondary);flex:none}
+.icon-tile .material-symbols-rounded{font-size:1.6rem}
+/* Hero */
+.hero{padding-top:clamp(3rem,6vw,5rem)}
+.hero__grid{display:flex;flex-direction:column;gap:2.5rem;align-items:center}
+.hero__copy{display:flex;flex-direction:column;gap:1.25rem;align-items:flex-start}
+.hero__copy p{color:var(--text-secondary);font-size:1.1rem}
+.hero__ctas{display:flex;gap:.75rem;flex-wrap:wrap}
+.hero__trust{font-size:.85rem;color:var(--text-secondary)}
+.hero__visual{width:100%;animation:floaty 7s ease-in-out infinite}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.term{padding:1.25rem 1.5rem;font-family:'Space Grotesk',monospace}
+.term__bar{display:flex;align-items:center;gap:.45rem;margin-bottom:1rem}
+.term__dot{width:.7rem;height:.7rem;border-radius:50%;background:var(--border-default)}
+.term__title{margin-left:auto;font-size:.78rem;color:var(--text-secondary)}
+.term__line{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.6rem}
+.seg{padding:.3rem .7rem;border-radius:var(--radius-sm);font-size:.85rem;font-weight:600}
+.seg--1{background:#0c1424;color:#e8eef8}
+.seg--2{background:#6a82a8;color:#fefefe}
+.seg--3{background:#3a4f74;color:#d8e2f0}
+.seg--4{background:#d8e2f0;color:#060a14;border:1px solid var(--border-default)}
+:root[data-theme="dark"] .seg--1{background:#e8eef8;color:#060a14}
+:root[data-theme="dark"] .seg--4{background:#0c1424;color:#d8e2f0}
+.term__cmd{font-size:.85rem;color:var(--text-secondary)}
+.term__cmd b{color:var(--text-primary);font-weight:600}
+@media(min-width:900px){.hero__grid{flex-direction:row}.hero__copy{flex:1}.hero__visual{flex:1.1}}
+/* Features */
+.cards-row{display:flex;flex-direction:column;gap:var(--spacing-gap);align-items:stretch}
+.cards-row .glass-card{padding:1.75rem;gap:1rem;flex:1}
+.cards-row .glass-card p{color:var(--text-secondary);font-size:.95rem}
+@media(min-width:768px){.cards-row{flex-direction:row}}
+/* Steps */
+.steps{display:flex;flex-direction:column;gap:var(--spacing-gap);position:relative;align-items:stretch}
+.step{display:flex;gap:1.25rem;align-items:flex-start;flex:1}
+.step__num{font-family:var(--font-display);font-weight:700;font-size:1rem;display:flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:50%;background:var(--glass-bg);border:1px solid var(--glass-border);color:var(--secondary);flex:none;backdrop-filter:blur(var(--backdrop-blur));-webkit-backdrop-filter:blur(var(--backdrop-blur))}
+.step__body{display:flex;flex-direction:column;gap:.35rem}
+.step__body p{color:var(--text-secondary);font-size:.95rem}
+@media(min-width:768px){
+  .steps{flex-direction:row}
+  .steps::before{content:"";position:absolute;top:26px;left:8%;right:8%;height:1px;background:var(--border-default)}
+  .step{flex-direction:column;align-items:center;text-align:center}
+}
+/* Testimonials */
+.quote-card{padding:1.75rem;gap:1rem;flex:1}
+.quote-card__top{display:flex;align-items:center;gap:.9rem}
+.avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-family:var(--font-display);color:#fefefe;background:radial-gradient(circle at 30% 30%,#8fa8cf,#3a4f74);flex:none}
+.stars{display:flex;color:var(--secondary)}
+.stars .material-symbols-rounded{font-size:1.05rem}
+.quote-card blockquote{font-size:.95rem;color:var(--text-primary)}
+.quote-card figcaption{font-size:.85rem;color:var(--text-secondary)}
+.skeleton{position:relative;overflow:hidden;background:var(--glass-highlight);border-radius:var(--radius-sm);min-height:1rem}
+.skeleton::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,var(--glass-highlight),transparent);animation:shimmer 1.6s linear infinite}
+@keyframes shimmer{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+/* Pricing */
+.billing{display:flex;align-items:center;gap:.85rem;justify-content:center;margin-bottom:2.5rem;font-size:.925rem;font-weight:500}
+.switch{width:56px;height:32px;border-radius:999px;border:1px solid var(--glass-border);background:var(--glass-bg);position:relative;flex:none;transition:background var(--transition-normal)}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:var(--secondary);transition:transform var(--transition-normal) var(--ease-standard)}
+.switch[aria-checked="true"]::after{transform:translateX(24px)}
+.price-card{padding:2rem;gap:1.1rem;flex:1;position:relative}
+.price-card__price{font-family:var(--font-display);font-size:2.4rem;font-weight:700;letter-spacing:-.03em}
+.price-card__price span{font-size:.95rem;font-weight:500;color:var(--text-secondary);font-family:var(--font-base)}
+.price-card ul{list-style:none;display:flex;flex-direction:column;gap:.65rem;align-items:flex-start}
+.price-card li{display:flex;align-items:center;gap:.55rem;font-size:.92rem;color:var(--text-secondary)}
+.price-card li .material-symbols-rounded{color:var(--text-success);font-size:1.15rem}
+.price-card .btn{margin-top:auto;width:100%}
+.price-card__note{text-align:center;font-size:.8rem;color:var(--text-secondary)}
+.pop-chip{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#0c1424,#3a4f74);color:#e8eef8;font-size:.75rem;font-weight:700;padding:.3rem .9rem;border-radius:999px;white-space:nowrap}
+:root[data-theme="dark"] .pop-chip{background:linear-gradient(135deg,#e8eef8,#a9bedd);color:#060a14}
+.price-flip{transition:opacity var(--transition-fast)}
+/* FAQ */
+.faq{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:.75rem;align-items:stretch}
+.faq__item{border:1px solid var(--glass-border);border-radius:var(--radius-md);background:var(--glass-bg);backdrop-filter:blur(var(--backdrop-blur));-webkit-backdrop-filter:blur(var(--backdrop-blur));overflow:hidden}
+.faq__btn{display:flex;align-items:center;justify-content:space-between;gap:1rem;width:100%;min-height:44px;padding:1rem 1.25rem;background:none;border:none;text-align:left;font-weight:600;color:var(--text-primary)}
+.faq__btn .material-symbols-rounded{transition:transform var(--transition-normal) var(--ease-standard);color:var(--text-secondary);flex:none}
+.faq__btn[aria-expanded="true"] .material-symbols-rounded{transform:rotate(180deg)}
+.faq__panel{max-height:0;overflow:hidden;transition:max-height var(--transition-normal) var(--ease-standard),opacity var(--transition-normal);opacity:0}
+.faq__btn[aria-expanded="true"]+.faq__panel{opacity:1}
+.faq__panel p{padding:0 1.25rem 1.1rem;color:var(--text-secondary);font-size:.95rem}
+/* Final CTA */
+.cta-panel{max-width:680px;margin:0 auto;padding:clamp(2rem,5vw,3.5rem);align-items:center;text-align:center;gap:1.25rem}
+.cta-panel p{color:var(--text-secondary)}
+.input-group{display:flex;flex-direction:column;gap:.4rem;width:100%;max-width:420px;text-align:left;align-items:stretch}
+.input-group label{font-weight:600;font-size:.9rem}
+.input-group__row{display:flex;gap:.5rem;align-items:stretch}
+.input-group input{flex:1;min-height:44px;padding:.7rem 1rem;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);font:inherit;transition:border-color var(--transition-fast),box-shadow var(--transition-fast);min-width:0}
+.input-group input:focus{outline:none;border-color:var(--secondary);box-shadow:0 0 0 3px rgba(106,130,168,.3)}
+.input-group input[aria-invalid="true"]{border-color:var(--border-error)}
+.input-group--valid input{border-color:var(--border-success)}
+.input-group__error{display:flex;align-items:center;gap:.35rem;font-size:.85rem;color:var(--text-error);min-height:1.3rem}
+.input-group__hint{font-size:.8rem;color:var(--text-secondary)}
+.cta-success{display:flex;align-items:center;gap:.5rem;color:var(--text-success);font-weight:600}
+/* Footer */
+footer{border-top:1px solid var(--border-default);padding:3.5rem 0 2rem;background:var(--glass-bg);backdrop-filter:blur(var(--backdrop-blur));-webkit-backdrop-filter:blur(var(--backdrop-blur))}
+.footer__grid{display:flex;flex-direction:column;gap:2.5rem;align-items:flex-start}
+.footer__brand{display:flex;flex-direction:column;gap:.75rem;max-width:300px}
+.footer__brand p{font-size:.9rem;color:var(--text-secondary)}
+.footer__col{display:flex;flex-direction:column;gap:.6rem;align-items:flex-start}
+.footer__col h4{font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-secondary);font-family:var(--font-base)}
+.footer__col a{font-size:.92rem;color:var(--text-secondary);transition:color var(--transition-fast)}
+.footer__col a:hover{color:var(--text-primary)}
+.footer__bottom{display:flex;flex-direction:column;gap:1rem;align-items:flex-start;margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--border-default);font-size:.85rem;color:var(--text-secondary)}
+.socials{display:flex;gap:.5rem}
+.socials a{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-sm);border:1px solid var(--border-default);color:var(--text-secondary);transition:color var(--transition-fast),transform var(--transition-fast)}
+.socials a:hover{color:var(--text-primary)}
+.socials a:active{transform:scale(.95)}
+@media(min-width:768px){
+  .footer__grid{flex-direction:row;justify-content:space-between}
+  .footer__bottom{flex-direction:row;justify-content:space-between;align-items:center;width:100%}
+}
+/* Modal */
+.modal{position:fixed;inset:0;z-index:var(--z-modal);display:flex;align-items:center;justify-content:center;padding:1.25rem;opacity:0;pointer-events:none;transition:opacity var(--transition-normal)}
+.modal--open{opacity:1;pointer-events:auto}
+.modal__overlay{position:absolute;inset:0;background:rgba(6,10,20,.5);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.modal__panel{position:relative;width:100%;max-width:480px;padding:2rem;gap:1.1rem;transform:scale(.96);transition:transform var(--transition-normal) var(--ease-standard)}
+.modal--open .modal__panel{transform:scale(1)}
+.modal__close{position:absolute;top:.85rem;right:.85rem;display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-sm);border:1px solid var(--border-default);background:transparent;color:var(--text-secondary)}
+.modal__formats{display:flex;flex-direction:column;gap:.6rem;align-items:stretch}
+.format{display:flex;align-items:center;gap:.85rem;padding:.85rem 1rem;border-radius:var(--radius-md);border:1px solid var(--glass-border);background:var(--glass-highlight);transition:border-color var(--transition-fast),transform var(--transition-fast);text-align:left;color:var(--text-primary)}
+.format:hover{border-color:var(--secondary)}
+.format:active{transform:scale(.98)}
+.format .material-symbols-rounded{color:var(--secondary)}
+.format small{display:block;color:var(--text-secondary);font-size:.8rem}
+.modal__note{font-size:.85rem;color:var(--text-secondary)}
+/* Reveal */
+.reveal{opacity:1}
+.js .reveal{opacity:0;transform:translateY(18px);transition:opacity .5s var(--ease-standard),transform .5s var(--ease-standard)}
+.js .reveal--in{opacity:1;transform:none}
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce){
+  .orb,.hero__visual,.skeleton::after,.btn .spinner{animation:none!important}
+  *{transition-duration:.01ms!important;transition-property:opacity!important}
+  .js .reveal{transform:none}
+  html{scroll-behavior:auto}
+}
+@media (prefers-reduced-transparency: reduce){
+  .glass-card,.nav,.chip,.faq__item,footer{background:var(--bg-secondary);backdrop-filter:none;-webkit-backdrop-filter:none}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="bg-blooms" aria-hidden="true">
+  <div class="orb orb--1"></div><div class="orb orb--2"></div><div class="orb orb--3"></div><div class="orb orb--4"></div>
+</div>
+
+<header class="nav" id="nav">
+  <div class="container nav__inner">
+    <a class="nav__logo" href="#top" aria-label="FUSE home"><span class="material-symbols-rounded" aria-hidden="true">terminal</span>FUSE</a>
+    <nav class="nav__links" aria-label="Primary">
+      <a href="#features">Features</a>
+      <a href="#how">How It Works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="nav__actions">
+      <button id="theme-toggle" class="nav__toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-rounded" id="theme-icon" aria-hidden="true">dark_mode</span>
+      </button>
+      <button class="nav__menu" id="menu-btn" type="button" aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu">
+        <span class="material-symbols-rounded" aria-hidden="true">menu</span>
+      </button>
+      <button class="btn btn--primary" type="button" data-open-modal>Start designing</button>
+    </div>
+  </div>
+  <nav class="nav__mobile" id="mobile-menu" aria-label="Mobile">
+    <a href="#features">Features</a>
+    <a href="#how">How It Works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#faq">FAQ</a>
+  </nav>
+</header>
+
+<main id="main">
+  <!-- Hero -->
+  <section class="hero" id="top">
+    <div class="container hero__grid">
+      <div class="hero__copy">
+        <span class="chip"><span class="material-symbols-rounded" aria-hidden="true">local_fire_department</span>New: Firework engine</span>
+        <h1>Design your shell like a studio piece</h1>
+        <p>FUSE is a browser studio for crafting terminal themes: prompt segments, colors, and glyphs with a live preview and export-ready configs.</p>
+        <div class="hero__ctas">
+          <button class="btn btn--primary" type="button" data-open-modal><span class="material-symbols-rounded" aria-hidden="true">bolt</span>Start designing</button>
+          <a class="btn btn--glass" href="#how">How it works</a>
+        </div>
+        <p class="hero__trust">Free to start. Exports for zsh, fish, PowerShell, and Starship.</p>
+      </div>
+      <div class="hero__visual">
+        <div class="glass-card term" role="img" aria-label="Terminal preview showing a styled FUSE prompt with colored segments">
+          <div class="term__bar"><span class="term__dot"></span><span class="term__dot"></span><span class="term__dot"></span><span class="term__title">fuse preview, zsh</span></div>
+          <div class="term__line">
+            <span class="seg seg--1">mara@studio</span>
+            <span class="seg seg--2">~/projects/fuse</span>
+            <span class="seg seg--3">main +2</span>
+            <span class="seg seg--4">node 22.1</span>
+          </div>
+          <p class="term__cmd"><b>$</b> fuse export --shell starship<br>theme fused in 0.4s · config written to ~/.config/starship.toml</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2>A studio, not a config file</h2>
+        <p>Everything you need to shape a prompt that feels like yours, without reading shell manuals.</p>
+      </div>
+      <div class="cards-row">
+        <article class="glass-card reveal">
+          <div class="icon-tile"><span class="material-symbols-rounded" aria-hidden="true">visibility</span></div>
+          <h3>Live prompt preview</h3>
+          <p>Every change renders instantly in a faithful terminal canvas, including glyphs, spacing, and truecolor output.</p>
+        </article>
+        <article class="glass-card reveal">
+          <div class="icon-tile"><span class="material-symbols-rounded" aria-hidden="true">tune</span></div>
+          <h3>Segment and theme controls</h3>
+          <p>Compose prompt segments, palettes, and separators with precise controls instead of hand-editing escape codes.</p>
+        </article>
+        <article class="glass-card reveal">
+          <div class="icon-tile"><span class="material-symbols-rounded" aria-hidden="true">ios_share</span></div>
+          <h3>One-click export</h3>
+          <p>Generate ready-to-paste configs for zsh, fish, PowerShell, and Starship, tested against real shell versions.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section id="how">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2>From blank prompt to fused in minutes</h2>
+        <p>Three steps stand between you and a terminal that looks deliberate.</p>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <span class="step__num" aria-hidden="true">01</span>
+          <div class="step__body"><h3>Pick a base shell</h3><p>Start from a curated preset tuned for your shell, or begin with a blank canvas.</p></div>
+        </div>
+        <div class="step reveal">
+          <span class="step__num" aria-hidden="true">02</span>
+          <div class="step__body"><h3>Compose in the studio</h3><p>Arrange segments, dial in colors, and preview against light and dark terminal backgrounds.</p></div>
+        </div>
+        <div class="step reveal">
+          <span class="step__num" aria-hidden="true">03</span>
+          <div class="step__body"><h3>Export and fuse</h3><p>Copy the generated config into your shell setup. Your prompt updates on the next session.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section id="testimonials">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2>Loved by terminal people</h2>
+        <p>Designers and engineers who care about the two hundred characters they stare at all day.</p>
+      </div>
+      <div class="cards-row">
+        <figure class="glass-card quote-card reveal">
+          <div class="quote-card__top">
+            <span class="avatar" aria-hidden="true">MK</span>
+            <div><strong>Mara Kessler</strong><div class="stars" role="img" aria-label="Rated 5 out of 5 stars"><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span></div></div>
+          </div>
+          <blockquote>&ldquo;I rebuilt my entire Starship setup in one afternoon. The live preview caught contrast issues I had shipped for months.&rdquo;</blockquote>
+          <figcaption>Platform Engineer, Northwind Labs</figcaption>
+        </figure>
+        <figure class="glass-card quote-card reveal">
+          <div class="quote-card__top">
+            <span class="avatar" aria-hidden="true">DO</span>
+            <div><strong>Devon Okafor</strong><div class="stars" role="img" aria-label="Rated 5 out of 5 stars"><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span></div></div>
+          </div>
+          <blockquote>&ldquo;Our team shares one FUSE theme across zsh and PowerShell. Onboarding docs went from a page to a link.&rdquo;</blockquote>
+          <figcaption>DevEx Lead, Copperline</figcaption>
+        </figure>
+        <figure class="glass-card quote-card reveal">
+          <div class="quote-card__top">
+            <span class="avatar" aria-hidden="true">IR</span>
+            <div><strong>Ines Rocha</strong><div class="stars" role="img" aria-label="Rated 5 out of 5 stars"><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span></div></div>
+          </div>
+          <blockquote>&ldquo;The segment editor feels like a design tool, not a config generator. My prompt finally matches the rest of my setup.&rdquo;</blockquote>
+          <figcaption>Product Designer, Fieldnote</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section id="pricing">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2>Pricing that scales with your setup</h2>
+        <p>Start free, upgrade when your themes multiply.</p>
+      </div>
+      <div class="billing reveal">
+        <span id="bill-monthly">Monthly</span>
+        <button class="switch" id="billing-switch" type="button" role="switch" aria-checked="true" aria-labelledby="bill-monthly bill-yearly"></button>
+        <span id="bill-yearly">Yearly <strong>save 20%</strong></span>
+      </div>
+      <div class="cards-row">
+        <article class="glass-card price-card reveal">
+          <h3>Spark</h3>
+          <p class="price-card__price price-flip" data-monthly="$0" data-yearly="$0">$0<span> / forever</span></p>
+          <ul>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>3 saved themes</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Live prompt preview</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>zsh and fish export</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Community presets</li>
+          </ul>
+          <button class="btn btn--glass" type="button" data-open-modal>Start free</button>
+          <p class="price-card__note">No card required.</p>
+        </article>
+        <article class="glass-card glass-card--featured price-card reveal">
+          <span class="pop-chip">Most popular</span>
+          <h3>Ignite</h3>
+          <p class="price-card__price price-flip" data-monthly="$8" data-yearly="$6.40">$6.40<span> / month, billed yearly</span></p>
+          <ul>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Unlimited themes</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>All four shell exports</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Custom glyphs and palettes</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Version history</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Priority support</li>
+          </ul>
+          <button class="btn btn--primary" type="button" data-open-modal>Start designing</button>
+          <p class="price-card__note">Cancel anytime.</p>
+        </article>
+        <article class="glass-card price-card reveal">
+          <h3>Studio</h3>
+          <p class="price-card__price price-flip" data-monthly="$24" data-yearly="$19.20">$19.20<span> / seat, billed yearly</span></p>
+          <ul>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Everything in Ignite</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Shared team themes</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Brand palette locks</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>SSO and audit log</li>
+          </ul>
+          <button class="btn btn--glass" type="button" data-open-modal>Contact sales</button>
+          <p class="price-card__note">Cancel anytime.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2>Questions, answered</h2>
+        <p>The details people ask about before fusing their first theme.</p>
+      </div>
+      <div class="faq">
+        <div class="faq__item reveal">
+          <button class="faq__btn" type="button" aria-expanded="false">Which shells does FUSE support?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button>
+          <div class="faq__panel"><p>FUSE exports native configs for zsh, fish, and PowerShell, plus a Starship TOML that works in any shell Starship supports. Bash users can export through Starship.</p></div>
+        </div>
+        <div class="faq__item reveal">
+          <button class="faq__btn" type="button" aria-expanded="false">What exactly do I get on export?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button>
+          <div class="faq__panel"><p>A ready-to-paste config file with install notes. For Starship you get a starship.toml; for zsh and fish you get a sourced theme file; for PowerShell a profile snippet.</p></div>
+        </div>
+        <div class="faq__item reveal">
+          <button class="faq__btn" type="button" aria-expanded="false">Can I use my own fonts and glyphs?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button>
+          <div class="faq__panel"><p>Yes. Ignite and Studio plans include a glyph picker with Nerd Font symbols and a fallback checker that warns when a glyph may not render in common terminal fonts.</p></div>
+        </div>
+        <div class="faq__item reveal">
+          <button class="faq__btn" type="button" aria-expanded="false">What is the refund policy?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button>
+          <div class="faq__panel"><p>Every paid plan includes a 14-day refund window, no questions asked. After that you can cancel anytime and keep access until the period ends.</p></div>
+        </div>
+        <div class="faq__item reveal">
+          <button class="faq__btn" type="button" aria-expanded="false">How do team plans work?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button>
+          <div class="faq__panel"><p>Studio adds a shared workspace where teams publish approved themes, lock brand palettes, and roll out a standard prompt across every machine with one link.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section id="get-started">
+    <div class="container">
+      <div class="glass-card cta-panel reveal">
+        <h2>Fuse your first theme today</h2>
+        <p>Join the waitlist for the studio beta and get the Firework preset pack on launch day.</p>
+        <form class="input-group" id="cta-form" novalidate>
+          <label for="cta-email">Email address</label>
+          <div class="input-group__row">
+            <input type="email" id="cta-email" name="email" autocomplete="email" placeholder="you@example.com" aria-describedby="cta-error cta-hint" required>
+            <button class="btn btn--primary" id="cta-submit" type="submit"><span class="btn__label">Get access</span></button>
+          </div>
+          <p class="input-group__error" id="cta-error" aria-live="polite"></p>
+          <p class="input-group__hint" id="cta-hint">One email at launch. No newsletters, no spam.</p>
+        </form>
+        <p class="cta-success" id="cta-success" hidden><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>You are on the list. Watch your inbox.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <a class="nav__logo" href="#top"><span class="material-symbols-rounded" aria-hidden="true">terminal</span>FUSE</a>
+        <p>A browser studio for designing terminal shell themes with live preview and one-click export.</p>
+      </div>
+      <div class="footer__col">
+        <h4>Product</h4>
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#how">How it works</a>
+      </div>
+      <div class="footer__col">
+        <h4>Resources</h4>
+        <a href="#faq">FAQ</a>
+        <a href="#get-started">Beta waitlist</a>
+        <a href="#testimonials">Community</a>
+      </div>
+      <div class="footer__col">
+        <h4>Company</h4>
+        <a href="#top">About</a>
+        <a href="#top">Careers</a>
+        <a href="#top">Contact</a>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <p>&copy; 2026 FUSE Studio. All rights reserved.</p>
+      <div class="socials">
+        <a href="#top" aria-label="FUSE on GitHub"><span class="material-symbols-rounded" aria-hidden="true">code</span></a>
+        <a href="#top" aria-label="FUSE on Mastodon"><span class="material-symbols-rounded" aria-hidden="true">forum</span></a>
+        <a href="#top" aria-label="FUSE on RSS"><span class="material-symbols-rounded" aria-hidden="true">rss_feed</span></a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- Export modal -->
+<div class="modal" id="export-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal__overlay" data-close-modal></div>
+  <div class="glass-card modal__panel">
+    <button class="modal__close" type="button" data-close-modal aria-label="Close dialog"><span class="material-symbols-rounded" aria-hidden="true">close</span></button>
+    <h2 id="modal-title">Export your theme</h2>
+    <p class="modal__note">Pick a shell to generate a ready-to-paste config. This demo shows the export flow.</p>
+    <div class="modal__formats">
+      <button class="format" type="button"><span class="material-symbols-rounded" aria-hidden="true">terminal</span><span>zsh<small>Theme file for .zshrc</small></span></button>
+      <button class="format" type="button"><span class="material-symbols-rounded" aria-hidden="true">set_meal</span><span>fish<small>conf.d snippet</small></span></button>
+      <button class="format" type="button"><span class="material-symbols-rounded" aria-hidden="true">keyboard_command_key</span><span>PowerShell<small>Profile module</small></span></button>
+      <button class="format" type="button"><span class="material-symbols-rounded" aria-hidden="true">rocket_launch</span><span>Starship<small>starship.toml</small></span></button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+document.documentElement.classList.add("js");
+
+/* Theme toggle */
+var root=document.documentElement,toggle=document.getElementById("theme-toggle"),icon=document.getElementById("theme-icon");
+function applyTheme(t){
+  root.dataset.theme=t;
+  var dark=t==="dark";
+  toggle.setAttribute("aria-pressed",String(dark));
+  toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+  icon.textContent=dark?"light_mode":"dark_mode";
+}
+applyTheme(root.dataset.theme==="dark"?"dark":"light");
+toggle.addEventListener("click",function(){
+  var next=root.dataset.theme==="dark"?"light":"dark";
+  localStorage.setItem("theme",next);
+  applyTheme(next);
+});
+
+/* Mobile menu */
+var nav=document.getElementById("nav"),menuBtn=document.getElementById("menu-btn"),mobileMenu=document.getElementById("mobile-menu");
+function closeMenu(){nav.classList.remove("nav--open");menuBtn.setAttribute("aria-expanded","false");}
+menuBtn.addEventListener("click",function(){
+  var open=nav.classList.toggle("nav--open");
+  menuBtn.setAttribute("aria-expanded",String(open));
+});
+mobileMenu.addEventListener("click",function(e){if(e.target.tagName==="A")closeMenu();});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")closeMenu();});
+
+/* Reveal on scroll */
+var revealEls=document.querySelectorAll(".reveal");
+if("IntersectionObserver" in window){
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){en.target.classList.add("reveal--in");io.unobserve(en.target);}
+    });
+  },{threshold:.12});
+  revealEls.forEach(function(el,i){el.style.transitionDelay=(i%3)*70+"ms";io.observe(el);});
+}else{
+  revealEls.forEach(function(el){el.classList.add("reveal--in");});
+}
+
+/* FAQ accordion */
+document.querySelectorAll(".faq__btn").forEach(function(btn){
+  btn.addEventListener("click",function(){
+    var open=btn.getAttribute("aria-expanded")==="true";
+    document.querySelectorAll(".faq__btn").forEach(function(b){
+      b.setAttribute("aria-expanded","false");
+      b.nextElementSibling.style.maxHeight="0px";
+    });
+    if(!open){
+      btn.setAttribute("aria-expanded","true");
+      var panel=btn.nextElementSibling;
+      panel.style.maxHeight=panel.scrollHeight+"px";
+    }
+  });
+});
+
+/* Billing switch */
+var bs=document.getElementById("billing-switch");
+bs.addEventListener("click",function(){
+  var yearly=bs.getAttribute("aria-checked")!=="true";
+  bs.setAttribute("aria-checked",String(yearly));
+  document.querySelectorAll(".price-flip").forEach(function(p){
+    p.style.opacity="0";
+    setTimeout(function(){
+      var val=yearly?p.dataset.yearly:p.dataset.monthly;
+      var suffix=p.querySelector("span")?p.querySelector("span").outerHTML:"";
+      p.innerHTML=val+suffix;
+      if(!yearly&&p.dataset.monthly==="$0")p.innerHTML="$0<span> / forever</span>";
+      p.style.opacity="1";
+    },150);
+  });
+});
+
+/* Modal */
+var modal=document.getElementById("export-modal"),lastFocus=null;
+function openModal(){
+  lastFocus=document.activeElement;
+  modal.classList.add("modal--open");
+  document.body.style.overflow="hidden";
+  modal.querySelector(".modal__close").focus();
+}
+function closeModal(){
+  modal.classList.remove("modal--open");
+  document.body.style.overflow="";
+  if(lastFocus)lastFocus.focus();
+}
+document.querySelectorAll("[data-open-modal]").forEach(function(b){b.addEventListener("click",openModal);});
+modal.querySelectorAll("[data-close-modal]").forEach(function(b){b.addEventListener("click",closeModal);});
+document.addEventListener("keydown",function(e){
+  if(!modal.classList.contains("modal--open"))return;
+  if(e.key==="Escape")closeModal();
+  if(e.key==="Tab"){
+    var focusables=modal.querySelectorAll("button");
+    var first=focusables[0],last=focusables[focusables.length-1];
+    if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+    else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+  }
+});
+modal.querySelectorAll(".format").forEach(function(f){
+  f.addEventListener("click",function(){
+    var old=f.innerHTML;
+    f.innerHTML='<span class="material-symbols-rounded" aria-hidden="true">check_circle</span><span>Config copied<small>Paste it into your shell setup</small></span>';
+    setTimeout(function(){f.innerHTML=old;closeModal();},900);
+  });
+});
+
+/* CTA form */
+var form=document.getElementById("cta-form"),email=document.getElementById("cta-email"),
+    err=document.getElementById("cta-error"),submitBtn=document.getElementById("cta-submit"),
+    success=document.getElementById("cta-success"),group=form;
+form.addEventListener("submit",function(e){
+  e.preventDefault();
+  err.textContent="";
+  email.removeAttribute("aria-invalid");
+  group.classList.remove("input-group--valid");
+  var val=email.value.trim();
+  if(!val||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)){
+    email.setAttribute("aria-invalid","true");
+    err.innerHTML='<span class="material-symbols-rounded" aria-hidden="true">error</span>Enter a valid email address.';
+    email.focus();
+    return;
+  }
+  submitBtn.classList.add("btn--loading");
+  submitBtn.disabled=true;
+  submitBtn.innerHTML='<span class="spinner" aria-hidden="true"></span><span class="btn__label">Joining</span>';
+  setTimeout(function(){
+    submitBtn.classList.remove("btn--loading");
+    submitBtn.classList.add("btn--success");
+    submitBtn.innerHTML='<span class="material-symbols-rounded" aria-hidden="true">check</span><span class="btn__label">Joined</span>';
+    group.classList.add("input-group--valid");
+    email.readOnly=true;
+    success.hidden=false;
+    err.textContent="Success. You are on the waitlist.";
+  },1200);
+});
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GATEWORKS | Browser Logic Circuit Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet">
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<style>
+:root{
+--bg-primary:#e8e8f0;--bg-secondary:#fefefe;--bg-inset:#c8ccd8;
+--primary:#14161c;--secondary:#262a34;
+--text-primary:#14161c;--text-secondary:#5a5f70;--border-default:#c8ccd8;
+--text-success:#1b7f3c;--border-success:#1b7f3c;--text-error:#b3261e;--border-error:#b3261e;
+--on-primary:#e8e8f0;--on-secondary:#e8e8f0;
+--radius-sm:2px;--radius-md:6px;--radius-lg:10px;
+--shadow-sm:0 1px 2px rgba(20,22,28,.08);--shadow-md:0 8px 24px rgba(20,22,28,.14);
+--spacing-gap:1.5rem;--spacing-section:clamp(4rem,8vw,7rem);
+--transition-fast:120ms;--transition-normal:240ms;--ease-standard:cubic-bezier(.2,0,.2,1);
+--z-dropdown:100;--z-modal:1000;--z-toast:1100;
+--font-display:'Space Grotesk',sans-serif;--font-base:'Inter',sans-serif;--font-mono:'JetBrains Mono',monospace;
+}
+:root[data-theme="dark"]{
+--bg-primary:#14161c;--bg-secondary:#262a34;--bg-inset:#2e3340;
+--primary:#c8ccd8;--secondary:#2e3340;
+--text-primary:#e8e8f0;--text-secondary:#c8ccd8;--border-default:#3a3f4e;
+--text-success:#4ade80;--border-success:#4ade80;--text-error:#ff8a80;--border-error:#ff8a80;
+--on-primary:#14161c;--on-secondary:#e8e8f0;
+--shadow-sm:0 1px 2px rgba(0,0,0,.4);--shadow-md:0 8px 24px rgba(0,0,0,.5);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);font-size:1rem;line-height:1.6;color:var(--text-primary);background:var(--bg-primary);transition:background var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard);overflow-x:hidden}
+h1,h2,h3{font-family:var(--font-display);letter-spacing:-.02em;line-height:1.1}
+img{max-width:100%}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--text-primary);outline-offset:2px}
+.container{max-width:1200px;margin:0 auto;padding:0 1.25rem;width:100%}
+@media(min-width:768px){.container{padding:0 2rem}}
+.section{padding:var(--spacing-section) 0}
+.mono{font-family:var(--font-mono);font-size:.8125rem;letter-spacing:.06em}
+.eyebrow{font-family:var(--font-mono);font-size:.8125rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:.75rem}
+.section__title{font-size:clamp(1.75rem,3.5vw,2.5rem);margin-bottom:.75rem}
+.section__intro{color:var(--text-secondary);max-width:60ch;margin-bottom:2.5rem}
+.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;font-size:1.25rem;line-height:1;user-select:none}
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:.625rem 1.25rem;border-radius:var(--radius-sm);border:1px solid transparent;font-family:var(--font-base);font-size:.9375rem;font-weight:600;cursor:pointer;transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard),background var(--transition-fast) var(--ease-standard),border-color var(--transition-fast) var(--ease-standard);white-space:nowrap}
+.btn--primary{background:var(--primary);color:var(--on-primary)}
+.btn--secondary{background:transparent;color:var(--text-primary);border-color:var(--border-default)}
+.btn--danger{background:transparent;color:var(--text-error);border-color:var(--border-error)}
+@media(hover:hover) and (pointer:fine){
+.btn--primary:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.btn--secondary:hover{border-color:var(--text-secondary);transform:translateY(-2px)}
+.btn--danger:hover{background:var(--text-error);color:var(--bg-secondary);transform:translateY(-2px)}
+}
+.btn:active{transform:scale(.97)}
+.btn.is-disabled,.btn:disabled{opacity:.5;filter:grayscale(1);cursor:not-allowed;transform:none}
+.btn.is-loading{pointer-events:none;opacity:.85}
+.btn.is-loading .material-symbols-outlined{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* Header */
+.header{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--bg-primary);border-bottom:1px solid var(--border-default)}
+.header__inner{display:flex;align-items:center;justify-content:space-between;height:64px;gap:1rem}
+.logo{display:flex;align-items:center;gap:.5rem;font-family:var(--font-display);font-weight:700;font-size:1.125rem;letter-spacing:.02em}
+.logo .material-symbols-outlined{font-size:1.5rem}
+.nav{display:flex;align-items:center;gap:1.5rem}
+.nav__link{position:relative;font-size:.9375rem;font-weight:500;color:var(--text-secondary);padding:.25rem 0;transition:color var(--transition-fast) var(--ease-standard)}
+.nav__link::after{content:"";position:absolute;left:0;bottom:0;width:100%;height:1px;background:var(--text-primary);transform:scaleX(0);transform-origin:left;transition:transform var(--transition-normal) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.nav__link:hover{color:var(--text-primary)}.nav__link:hover::after{transform:scaleX(1)}}
+.header__actions{display:flex;align-items:center;gap:.75rem}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-sm);border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);cursor:pointer;transition:border-color var(--transition-fast) var(--ease-standard),transform var(--transition-fast) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.icon-btn:hover{border-color:var(--text-secondary);transform:translateY(-1px)}}
+.icon-btn:active{transform:scale(.95)}
+.menu-btn{display:none}
+.skip-link{position:absolute;left:-9999px;top:0;background:var(--primary);color:var(--on-primary);padding:.75rem 1rem;z-index:var(--z-toast)}
+.skip-link:focus{left:0}
+/* Hero */
+.hero{padding-top:clamp(3rem,6vw,5rem);padding-bottom:var(--spacing-section)}
+.hero__grid{display:flex;align-items:center;gap:3rem}
+.hero__text{flex:1;min-width:0}
+.hero h1{font-size:clamp(2.25rem,5vw,3.75rem);margin-bottom:1rem}
+.hero__sub{color:var(--text-secondary);font-size:1.0625rem;max-width:48ch;margin-bottom:1.75rem}
+.hero__ctas{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin-bottom:1.5rem}
+.hero__chips{display:flex;gap:.5rem;flex-wrap:wrap}
+.chip{font-family:var(--font-mono);font-size:.75rem;padding:.375rem .625rem;border:1px solid var(--border-default);border-radius:var(--radius-sm);background:var(--bg-secondary);color:var(--text-secondary)}
+.hero__visual{flex:1;min-width:0}
+.board{position:relative;background:var(--bg-inset);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:1.5rem;min-height:320px;background-image:repeating-linear-gradient(0deg,transparent 0 23px,rgba(90,95,112,.18) 23px 24px),repeating-linear-gradient(90deg,transparent 0 23px,rgba(90,95,112,.18) 23px 24px)}
+.board__trace{position:absolute;background:var(--text-secondary);opacity:.5}
+.board__trace--h{height:1px;left:12%;right:12%}
+.board__trace--v{width:1px;top:18%;bottom:18%}
+.gate{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.25rem;width:76px;height:56px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-sm);box-shadow:var(--shadow-sm);font-family:var(--font-mono);font-size:.6875rem;color:var(--text-secondary)}
+.gate .material-symbols-outlined{font-size:1.125rem;color:var(--text-primary)}
+.node{position:absolute;width:8px;height:8px;border-radius:50%;background:var(--text-primary);animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+/* Cards */
+.grid-3{display:flex;gap:var(--spacing-gap);align-items:stretch}
+.grid-3>*{flex:1;min-width:0}
+.card{display:flex;flex-direction:column;align-items:flex-start;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);padding:1.75rem;transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),border-color var(--transition-normal) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);border-color:var(--text-secondary)}}
+.card:focus-within{border-color:var(--text-primary)}
+.card__icon{display:flex;align-items:center;justify-content:center;width:48px;height:48px;border:1px solid var(--border-default);border-radius:var(--radius-sm);background:var(--bg-inset);margin-bottom:1.25rem}
+.card__icon .material-symbols-outlined{font-size:1.5rem}
+.card__tag{font-family:var(--font-mono);font-size:.75rem;letter-spacing:.08em;color:var(--text-secondary);margin-bottom:.5rem}
+.card h3{font-size:1.25rem;margin-bottom:.5rem}
+.card p{color:var(--text-secondary);font-size:.9375rem;margin-bottom:1.25rem}
+.card__link{display:inline-flex;align-items:center;gap:.375rem;font-weight:600;font-size:.875rem;margin-top:auto}
+.card__link .material-symbols-outlined{font-size:1rem;transition:transform var(--transition-fast) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.card__link:hover .material-symbols-outlined{transform:translateX(3px)}}
+/* Steps */
+.steps{display:flex;gap:var(--spacing-gap);align-items:stretch;counter-reset:step}
+.step{flex:1;min-width:0;position:relative;padding-top:1rem}
+.step__num{font-family:var(--font-mono);font-size:.8125rem;color:var(--text-secondary);display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem}
+.step__num::after{content:"";flex:1;height:1px;background:var(--border-default)}
+.step:last-child .step__num::after{display:none}
+.step__icon{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border:1px solid var(--border-default);border-radius:var(--radius-sm);background:var(--bg-secondary);margin-bottom:1rem}
+.step h3{font-size:1.125rem;margin-bottom:.5rem}
+.step p{color:var(--text-secondary);font-size:.9375rem}
+/* Testimonials */
+.quote-icon{color:var(--text-secondary);margin-bottom:1rem}
+.avatar{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;background:var(--bg-inset);border:1px solid var(--border-default);font-family:var(--font-mono);font-size:.8125rem;font-weight:500;color:var(--text-primary)}
+.card__author{display:flex;align-items:center;gap:.75rem;margin-top:auto;padding-top:1rem}
+.card__author-name{font-weight:600;font-size:.875rem}
+.card__author-role{font-size:.8125rem;color:var(--text-secondary)}
+.card__author-org{font-family:var(--font-mono);font-size:.75rem;color:var(--text-secondary)}
+/* Pricing */
+.pricing__grid{display:flex;gap:var(--spacing-gap);align-items:stretch}
+.price-card{position:relative}
+.price-card--featured{border:2px solid var(--primary);box-shadow:var(--shadow-md);transform:translateY(-6px)}
+:root[data-theme="dark"] .price-card--featured{border-color:var(--primary)}
+.badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);font-family:var(--font-mono);font-size:.6875rem;letter-spacing:.1em;background:var(--primary);color:var(--on-primary);padding:.25rem .625rem;border-radius:var(--radius-sm)}
+.price-card__tier{font-family:var(--font-mono);font-size:.8125rem;letter-spacing:.12em;color:var(--text-secondary);margin-bottom:.75rem}
+.price-card__price{font-family:var(--font-display);font-size:2.25rem;font-weight:700;letter-spacing:-.02em;margin-bottom:.25rem}
+.price-card__per{font-size:.8125rem;color:var(--text-secondary);margin-bottom:1.5rem}
+.price-card__list{list-style:none;display:flex;flex-direction:column;gap:.625rem;margin-bottom:1.75rem;width:100%}
+.price-card__list li{display:flex;align-items:flex-start;gap:.5rem;font-size:.9375rem;color:var(--text-secondary)}
+.price-card__list .material-symbols-outlined{font-size:1.125rem;color:var(--text-success);flex-shrink:0;margin-top:.15rem}
+.price-card .btn{width:100%;margin-top:auto}
+.pricing__note{margin-top:1.5rem;color:var(--text-secondary)}
+/* FAQ */
+.faq{max-width:760px}
+.faq__item{border:1px solid var(--border-default);border-radius:var(--radius-md);background:var(--bg-secondary);margin-bottom:.75rem;overflow:hidden}
+.faq__trigger{display:flex;align-items:center;justify-content:space-between;gap:1rem;width:100%;min-height:44px;padding:1rem 1.25rem;background:none;border:none;font-family:var(--font-base);font-size:1rem;font-weight:600;color:var(--text-primary);text-align:left;cursor:pointer}
+.faq__trigger .material-symbols-outlined{transition:transform var(--transition-normal) var(--ease-standard);flex-shrink:0}
+.faq__trigger[aria-expanded="true"] .material-symbols-outlined{transform:rotate(180deg)}
+@media(hover:hover) and (pointer:fine){.faq__trigger:hover{color:var(--text-secondary)}}
+.faq__panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--transition-normal) var(--ease-standard)}
+.faq__trigger[aria-expanded="true"]+.faq__panel{grid-template-rows:1fr}
+.faq__panel-inner{overflow:hidden}
+.faq__panel p{padding:0 1.25rem 1.25rem;color:var(--text-secondary);font-size:.9375rem}
+/* CTA band */
+.cta-band{background:var(--secondary);color:var(--on-secondary)}
+:root[data-theme="dark"] .cta-band{background:var(--bg-secondary);border-top:1px solid var(--border-default);border-bottom:1px solid var(--border-default);color:var(--text-primary)}
+.cta-band .section__intro{color:inherit;opacity:.75}
+.cta-band__inner{display:flex;flex-direction:column;align-items:flex-start;max-width:640px}
+.input-group{display:flex;flex-direction:column;gap:.375rem;width:100%;max-width:480px}
+.input-group label{font-size:.875rem;font-weight:600}
+.input-group__row{display:flex;gap:.5rem;align-items:stretch}
+.input-group__row .btn{flex-shrink:0}
+.input{flex:1;min-width:0;min-height:44px;padding:.625rem .875rem;border:1px solid var(--border-default);border-radius:var(--radius-sm);background:var(--bg-secondary);color:var(--text-primary);font-family:var(--font-base);font-size:.9375rem;transition:border-color var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard)}
+.input::placeholder{color:var(--text-secondary)}
+.input:focus{outline:none;border-color:var(--text-primary);box-shadow:0 0 0 2px var(--bg-primary),0 0 0 4px var(--text-primary)}
+.input.is-valid{border-color:var(--border-success)}
+.input.is-invalid{border-color:var(--border-error)}
+.input:disabled,.input[readonly]{opacity:.6;cursor:not-allowed}
+.input-group__feedback{display:flex;align-items:center;gap:.375rem;font-size:.8125rem;min-height:1.25rem}
+.input-group__feedback.is-error{color:var(--text-error)}
+.input-group__feedback.is-success{color:var(--text-success)}
+.cta-band .input-group__feedback.is-success{color:var(--text-success)}
+/* Footer */
+.footer{border-top:1px solid var(--border-default);padding:3.5rem 0 2rem}
+.footer__grid{display:flex;gap:3rem;align-items:flex-start;flex-wrap:wrap}
+.footer__brand{flex:1.5;min-width:220px}
+.footer__brand p{color:var(--text-secondary);font-size:.9375rem;margin:.75rem 0 1.25rem;max-width:32ch}
+.footer__social{display:flex;gap:.5rem}
+.footer__col{flex:1;min-width:140px;display:flex;flex-direction:column;align-items:flex-start;gap:.625rem}
+.footer__col h4{font-family:var(--font-mono);font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:.5rem}
+.footer__link{position:relative;font-size:.9375rem;color:var(--text-secondary);transition:color var(--transition-fast) var(--ease-standard)}
+.footer__link::after{content:"";position:absolute;left:0;bottom:-2px;width:100%;height:1px;background:var(--text-primary);transform:scaleX(0);transform-origin:left;transition:transform var(--transition-normal) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.footer__link:hover{color:var(--text-primary)}.footer__link:hover::after{transform:scaleX(1)}}
+.footer__bar{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--border-default);color:var(--text-secondary)}
+.footer__bar nav{display:flex;gap:1.5rem}
+/* Modal */
+.modal{position:fixed;inset:0;z-index:var(--z-modal);display:flex;align-items:center;justify-content:center;padding:1rem;background:rgba(20,22,28,.6);opacity:0;pointer-events:none;transition:opacity var(--transition-normal) var(--ease-standard)}
+.modal.is-open{opacity:1;pointer-events:auto}
+.modal__dialog{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);max-width:560px;width:100%;padding:2rem;position:relative;transform:scale(.96);opacity:0;transition:transform var(--transition-normal) var(--ease-standard),opacity var(--transition-normal) var(--ease-standard)}
+.modal.is-open .modal__dialog{transform:scale(1);opacity:1}
+.modal__close{position:absolute;top:.75rem;right:.75rem}
+.modal__title{font-size:1.375rem;margin-bottom:.5rem;padding-right:3rem}
+.modal__body{color:var(--text-secondary);font-size:.9375rem;margin-bottom:1.5rem}
+.demo-canvas{background:var(--bg-inset);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:1.5rem;min-height:180px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem}
+.demo-canvas__bits{font-family:var(--font-mono);font-size:1.5rem;letter-spacing:.35em;color:var(--text-primary)}
+.demo-canvas__bits span{animation:pulse 1.6s ease-in-out infinite}
+.demo-canvas__bits span:nth-child(2){animation-delay:.2s}
+.demo-canvas__bits span:nth-child(3){animation-delay:.4s}
+.demo-canvas__bits span:nth-child(4){animation-delay:.6s}
+.demo-canvas__label{font-family:var(--font-mono);font-size:.75rem;color:var(--text-secondary)}
+.spinner{animation:spin 1s linear infinite;font-size:2rem!important;color:var(--text-secondary)}
+/* Reveal */
+.reveal{opacity:1}
+.js .reveal{opacity:0;transform:translateY(12px);transition:opacity 400ms var(--ease-standard),transform 400ms var(--ease-standard)}
+.js .reveal.is-visible{opacity:1;transform:none}
+/* Responsive */
+@media(max-width:900px){
+.grid-3,.pricing__grid,.steps{flex-direction:column}
+.price-card--featured{transform:none}
+.hero__grid{flex-direction:column;align-items:flex-start}
+.hero__visual{width:100%}
+}
+@media(max-width:768px){
+.nav{position:absolute;top:64px;left:0;right:0;flex-direction:column;align-items:flex-start;background:var(--bg-primary);border-bottom:1px solid var(--border-default);padding:1rem 1.25rem;gap:1rem;display:none}
+.nav.is-open{display:flex}
+.menu-btn{display:inline-flex}
+.header__cta{display:none}
+.input-group__row{flex-direction:column}
+.input-group__row .btn{width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+html{scroll-behavior:auto}
+.js .reveal{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="header">
+  <div class="container header__inner">
+    <a class="logo" href="#top" aria-label="GATEWORKS home">
+      <span class="material-symbols-outlined" aria-hidden="true">memory</span>GATEWORKS
+    </a>
+    <nav class="nav" id="nav-menu" aria-label="Primary">
+      <a class="nav__link" href="#features">Features</a>
+      <a class="nav__link" href="#how">How It Works</a>
+      <a class="nav__link" href="#pricing">Pricing</a>
+      <a class="nav__link" href="#faq">FAQ</a>
+    </nav>
+    <div class="header__actions">
+      <button class="icon-btn" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-outlined" id="theme-icon" aria-hidden="true">dark_mode</span>
+      </button>
+      <a class="btn btn--primary header__cta" href="#pricing">Start Building</a>
+      <button class="icon-btn menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="nav-menu" aria-label="Toggle navigation menu">
+        <span class="material-symbols-outlined" aria-hidden="true">grid_view</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="container hero__grid">
+    <div class="hero__text">
+      <p class="eyebrow">// LOGIC CIRCUIT LAB</p>
+      <h1>Design logic circuits in your browser</h1>
+      <p class="hero__sub">Drag gates onto the canvas, wire them up, and watch truth tables and waveforms update live. No installs, no setup.</p>
+      <div class="hero__ctas">
+        <a class="btn btn--primary" href="#pricing">Start Building<span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span></a>
+        <button class="btn btn--secondary" id="demo-open" type="button">Watch the Demo</button>
+      </div>
+      <div class="hero__chips" aria-label="Product highlights">
+        <span class="chip">14 gate types</span>
+        <span class="chip">0 setup</span>
+        <span class="chip">100% in-browser</span>
+      </div>
+    </div>
+    <div class="hero__visual" aria-hidden="true">
+      <div class="board">
+        <div class="board__trace board__trace--h" style="top:30%"></div>
+        <div class="board__trace board__trace--h" style="top:62%"></div>
+        <div class="board__trace board__trace--v" style="left:38%"></div>
+        <div class="board__trace board__trace--v" style="left:70%"></div>
+        <div class="gate" style="top:14%;left:10%"><span class="material-symbols-outlined">developer_board</span>AND</div>
+        <div class="gate" style="top:48%;left:32%"><span class="material-symbols-outlined">developer_board</span>XOR</div>
+        <div class="gate" style="top:26%;left:64%"><span class="material-symbols-outlined">developer_board</span>OR</div>
+        <div class="gate" style="top:66%;left:70%"><span class="material-symbols-outlined">developer_board</span>NOT</div>
+        <div class="node" style="top:29%;left:37%"></div>
+        <div class="node" style="top:61%;left:69%;animation-delay:.5s"></div>
+        <div class="node" style="top:29%;left:69%;animation-delay:1s"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="container">
+    <p class="eyebrow">// FEATURES</p>
+    <h2 class="section__title">A full lab bench, in a tab</h2>
+    <p class="section__intro">Everything you need to design, test, and share digital logic, without touching a breadboard.</p>
+    <div class="grid-3">
+      <article class="card reveal">
+        <div class="card__icon"><span class="material-symbols-outlined" aria-hidden="true">grid_view</span></div>
+        <p class="card__tag">AND · OR · XOR</p>
+        <h3>Visual Gate Builder</h3>
+        <p>Drag any of 14 gate types onto the canvas and wire inputs to outputs with a click. Circuits snap to the grid and stay readable as they grow.</p>
+        <a class="card__link" href="#how">Learn more<span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span></a>
+      </article>
+      <article class="card reveal">
+        <div class="card__icon"><span class="material-symbols-outlined" aria-hidden="true">rule</span></div>
+        <p class="card__tag">0 | 1 TRUTH TABLES</p>
+        <h3>Truth Table Engine</h3>
+        <p>Every circuit generates its truth table in real time. Toggle inputs and watch outputs recompute instantly, row by row.</p>
+        <a class="card__link" href="#how">Learn more<span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span></a>
+      </article>
+      <article class="card reveal">
+        <div class="card__icon"><span class="material-symbols-outlined" aria-hidden="true">show_chart</span></div>
+        <p class="card__tag">CLK · PROPAGATION</p>
+        <h3>Live Waveform Simulation</h3>
+        <p>Run clocked signals through your design and inspect timing diagrams. Spot race conditions before they reach silicon.</p>
+        <a class="card__link" href="#how">Learn more<span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span></a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how">
+  <div class="container">
+    <h2 class="section__title">From idea to verified circuit</h2>
+    <p class="section__intro">Three steps between a blank canvas and a design you can export or share.</p>
+    <div class="steps">
+      <div class="step reveal">
+        <p class="step__num mono">01</p>
+        <div class="step__icon"><span class="material-symbols-outlined" aria-hidden="true">design_services</span></div>
+        <h3>Design</h3>
+        <p>Drag gates onto the canvas, connect them, and label your inputs and outputs.</p>
+      </div>
+      <div class="step reveal">
+        <p class="step__num mono">02</p>
+        <div class="step__icon"><span class="material-symbols-outlined" aria-hidden="true">monitoring</span></div>
+        <h3>Simulate</h3>
+        <p>Run signals through the circuit and watch truth tables and waveforms update live.</p>
+      </div>
+      <div class="step reveal">
+        <p class="step__num mono">03</p>
+        <div class="step__icon"><span class="material-symbols-outlined" aria-hidden="true">ios_share</span></div>
+        <h3>Ship</h3>
+        <p>Export to Verilog or PNG, or send a shareable link to classmates and teammates.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="section" id="testimonials">
+  <div class="container">
+    <h2 class="section__title">Trusted in labs and lecture halls</h2>
+    <p class="section__intro">Engineers and educators use GATEWORKS to teach and prototype digital logic.</p>
+    <div class="grid-3">
+      <article class="card reveal">
+        <span class="material-symbols-outlined quote-icon" aria-hidden="true">format_quote</span>
+        <p>My students build a full adder in their first lab session. The live truth tables make the theory click immediately.</p>
+        <div class="card__author">
+          <span class="avatar" aria-hidden="true">MK</span>
+          <div>
+            <p class="card__author-name">Mara Kessler</p>
+            <p class="card__author-role">Senior Lecturer, Computer Engineering</p>
+            <p class="card__author-org">// NORTHGATE POLYTECHNIC</p>
+          </div>
+        </div>
+      </article>
+      <article class="card reveal">
+        <span class="material-symbols-outlined quote-icon" aria-hidden="true">format_quote</span>
+        <p>We prototype control logic in GATEWORKS before touching HDL. The waveform view caught a timing bug in minutes.</p>
+        <div class="card__author">
+          <span class="avatar" aria-hidden="true">DR</span>
+          <div>
+            <p class="card__author-name">Dev Ramanathan</p>
+            <p class="card__author-role">Hardware Engineer</p>
+            <p class="card__author-org">// VOLTLINE SYSTEMS</p>
+          </div>
+        </div>
+      </article>
+      <article class="card reveal">
+        <span class="material-symbols-outlined quote-icon" aria-hidden="true">format_quote</span>
+        <p>Sharing a circuit link beats emailing screenshots. Our review sessions run entirely in the browser now.</p>
+        <div class="card__author">
+          <span class="avatar" aria-hidden="true">SO</span>
+          <div>
+            <p class="card__author-name">Sofia Okafor</p>
+            <p class="card__author-role">Curriculum Lead</p>
+            <p class="card__author-org">// CIRCUITRY ACADEMY</p>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="section" id="pricing">
+  <div class="container">
+    <h2 class="section__title">Pick your bench</h2>
+    <p class="section__intro">Start free, upgrade when your circuits outgrow the breadboard.</p>
+    <div class="pricing__grid">
+      <article class="card price-card reveal">
+        <p class="price-card__tier">BREADBOARD</p>
+        <p class="price-card__price">$0</p>
+        <p class="price-card__per">Free forever</p>
+        <ul class="price-card__list">
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>3 circuit boards</li>
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>8 basic gate types</li>
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>1 collaborator</li>
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Community projects</li>
+        </ul>
+        <a class="btn btn--secondary" href="#cta">Start Building</a>
+      </article>
+      <article class="card price-card price-card--featured reveal">
+        <span class="badge">MOST POPULAR</span>
+        <p class="price-card__tier">FAB</p>
+        <p class="price-card__price">$19</p>
+        <p class="price-card__per">Per month</p>
+        <ul class="price-card__list">
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Unlimited boards</li>
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>All 14 gate types</li>
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Waveform simulator</li>
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Verilog export</li>
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>5 collaborators</li>
+        </ul>
+        <a class="btn btn--primary" href="#cta">Start Building</a>
+      </article>
+      <article class="card price-card reveal">
+        <p class="price-card__tier">FOUNDRY</p>
+        <p class="price-card__price">$49</p>
+        <p class="price-card__per">Per user / month</p>
+        <ul class="price-card__list">
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Everything in FAB</li>
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Shared component libraries</li>
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Version history</li>
+          <li><span class="material-symbols-outlined" aria-hidden="true">check</span>SSO and priority support</li>
+        </ul>
+        <a class="btn btn--secondary" href="#cta">Start Building</a>
+      </article>
+    </div>
+    <p class="pricing__note mono">* Prices in USD, per month. Education discounts available.</p>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" id="faq">
+  <div class="container">
+    <h2 class="section__title">Frequently asked questions</h2>
+    <p class="section__intro">Answers to the questions we hear most from engineers and educators.</p>
+    <div class="faq">
+      <div class="faq__item">
+        <button class="faq__trigger" type="button" aria-expanded="false" aria-controls="faq-1">Do I need to install anything to use GATEWORKS?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button>
+        <div class="faq__panel" id="faq-1"><div class="faq__panel-inner"><p>No. GATEWORKS runs entirely in modern browsers. Your circuits save to your account and sync across devices, so you can start on a lab machine and finish on your laptop.</p></div></div>
+      </div>
+      <div class="faq__item">
+        <button class="faq__trigger" type="button" aria-expanded="false" aria-controls="faq-2">What export formats are supported?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button>
+        <div class="faq__panel" id="faq-2"><div class="faq__panel-inner"><p>You can export circuits as Verilog modules for HDL workflows, PNG images for reports and slides, or a shareable link that opens an interactive copy of your design.</p></div></div>
+      </div>
+      <div class="faq__item">
+        <button class="faq__trigger" type="button" aria-expanded="false" aria-controls="faq-3">Can I use GATEWORKS in a classroom?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button>
+        <div class="faq__panel" id="faq-3"><div class="faq__panel-inner"><p>Yes. Classroom mode lets instructors create shared workspaces, assign starter circuits, and review student boards. Education pricing is available for schools and universities.</p></div></div>
+      </div>
+      <div class="faq__item">
+        <button class="faq__trigger" type="button" aria-expanded="false" aria-controls="faq-4">What are the limits of the free tier?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button>
+        <div class="faq__panel" id="faq-4"><div class="faq__panel-inner"><p>The BREADBOARD tier includes 3 boards, 8 basic gate types, and 1 collaborator. It is free forever with no time limit, and you can upgrade whenever you need more.</p></div></div>
+      </div>
+      <div class="faq__item">
+        <button class="faq__trigger" type="button" aria-expanded="false" aria-controls="faq-5">Do you offer team discounts?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button>
+        <div class="faq__panel" id="faq-5"><div class="faq__panel-inner"><p>Teams of 10 or more on the FOUNDRY plan receive volume pricing. Contact us through the footer link and we will put together a quote for your team.</p></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section cta-band" id="cta">
+  <div class="container">
+    <div class="cta-band__inner">
+      <h2 class="section__title">Get early access to GATEWORKS</h2>
+      <p class="section__intro">Join the waitlist and be first on the bench when new gate types and classroom tools ship.</p>
+      <form class="input-group" id="cta-form" novalidate>
+        <label for="cta-email">Work email</label>
+        <div class="input-group__row">
+          <input class="input" id="cta-email" name="email" type="email" placeholder="you@company.com" autocomplete="email" required>
+          <button class="btn btn--primary" id="cta-submit" type="submit"><span class="material-symbols-outlined" aria-hidden="true">mail</span>Notify Me</button>
+        </div>
+        <p class="input-group__feedback" id="cta-feedback" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <a class="logo" href="#top"><span class="material-symbols-outlined" aria-hidden="true">memory</span>GATEWORKS</a>
+        <p>A precision logic circuit lab that runs entirely in your browser.</p>
+        <div class="footer__social">
+          <a class="icon-btn" href="#top" aria-label="Email us"><span class="material-symbols-outlined" aria-hidden="true">mail</span></a>
+          <a class="icon-btn" href="#top" aria-label="Community forum"><span class="material-symbols-outlined" aria-hidden="true">forum</span></a>
+          <a class="icon-btn" href="#top" aria-label="Share GATEWORKS"><span class="material-symbols-outlined" aria-hidden="true">ios_share</span></a>
+        </div>
+      </div>
+      <nav class="footer__col" aria-label="Product">
+        <h4>Product</h4>
+        <a class="footer__link" href="#features">Features</a>
+        <a class="footer__link" href="#pricing">Pricing</a>
+        <a class="footer__link" href="#top">Changelog</a>
+      </nav>
+      <nav class="footer__col" aria-label="Resources">
+        <h4>Resources</h4>
+        <a class="footer__link" href="#top">Docs</a>
+        <a class="footer__link" href="#top">Truth Table Guide</a>
+        <a class="footer__link" href="#top">Community</a>
+      </nav>
+      <nav class="footer__col" aria-label="Company">
+        <h4>Company</h4>
+        <a class="footer__link" href="#top">About</a>
+        <a class="footer__link" href="#top">Careers</a>
+        <a class="footer__link" href="#top">Contact</a>
+      </nav>
+    </div>
+    <div class="footer__bar">
+      <span class="mono">© 2026 GATEWORKS</span>
+      <nav aria-label="Legal">
+        <a class="footer__link" href="#top">Privacy</a>
+        <a class="footer__link" href="#top">Terms</a>
+      </nav>
+    </div>
+  </div>
+</footer>
+
+<!-- MODAL -->
+<div class="modal" id="demo-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+  <div class="modal__dialog">
+    <button class="icon-btn modal__close" id="demo-close" type="button" aria-label="Close demo">
+      <span class="material-symbols-outlined" aria-hidden="true">close</span>
+    </button>
+    <h2 class="modal__title" id="modal-title">Live circuit simulation</h2>
+    <p class="modal__body">A half adder running in real time. Watch the input bits propagate through XOR and AND gates to produce sum and carry outputs.</p>
+    <div class="demo-canvas" id="demo-canvas" aria-hidden="true">
+      <span class="material-symbols-outlined spinner" id="demo-spinner">progress_activity</span>
+      <div id="demo-bits" hidden>
+        <p class="demo-canvas__bits"><span>0</span><span>1</span><span>1</span><span>0</span></p>
+        <p class="demo-canvas__label">A B | SUM CARRY</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+document.documentElement.classList.add("js");
+var reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* Theme toggle */
+var root=document.documentElement,toggle=document.getElementById("theme-toggle"),icon=document.getElementById("theme-icon");
+function applyTheme(t){
+  root.dataset.theme=t;
+  var dark=t==="dark";
+  toggle.setAttribute("aria-pressed",String(dark));
+  toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+  icon.textContent=dark?"light_mode":"dark_mode";
+}
+applyTheme(root.dataset.theme==="dark"?"dark":"light");
+toggle.addEventListener("click",function(){
+  var next=root.dataset.theme==="dark"?"light":"dark";
+  localStorage.setItem("theme",next);
+  applyTheme(next);
+});
+
+/* Mobile nav */
+var menuBtn=document.getElementById("menu-btn"),nav=document.getElementById("nav-menu");
+menuBtn.addEventListener("click",function(){
+  var open=nav.classList.toggle("is-open");
+  menuBtn.setAttribute("aria-expanded",String(open));
+});
+nav.addEventListener("click",function(e){
+  if(e.target.closest(".nav__link")){nav.classList.remove("is-open");menuBtn.setAttribute("aria-expanded","false");}
+});
+document.addEventListener("keydown",function(e){
+  if(e.key==="Escape"&&nav.classList.contains("is-open")){nav.classList.remove("is-open");menuBtn.setAttribute("aria-expanded","false");menuBtn.focus();}
+});
+
+/* FAQ accordion */
+var triggers=document.querySelectorAll(".faq__trigger");
+triggers.forEach(function(btn){
+  btn.addEventListener("click",function(){
+    var open=btn.getAttribute("aria-expanded")==="true";
+    triggers.forEach(function(b){b.setAttribute("aria-expanded","false");});
+    btn.setAttribute("aria-expanded",String(!open));
+  });
+});
+
+/* Modal */
+var modal=document.getElementById("demo-modal"),openBtn=document.getElementById("demo-open"),
+    closeBtn=document.getElementById("demo-close"),spinner=document.getElementById("demo-spinner"),
+    bits=document.getElementById("demo-bits"),lastFocus=null,loadTimer=null;
+function openModal(){
+  lastFocus=document.activeElement;
+  modal.hidden=false;
+  requestAnimationFrame(function(){modal.classList.add("is-open");});
+  document.body.style.overflow="hidden";
+  spinner.hidden=false;bits.hidden=true;
+  loadTimer=setTimeout(function(){spinner.hidden=true;bits.hidden=false;},reduced?100:1200);
+  closeBtn.focus();
+  document.addEventListener("keydown",trapKeys);
+}
+function closeModal(){
+  clearTimeout(loadTimer);
+  modal.classList.remove("is-open");
+  document.body.style.overflow="";
+  document.removeEventListener("keydown",trapKeys);
+  setTimeout(function(){modal.hidden=true;},reduced?0:240);
+  if(lastFocus)lastFocus.focus();
+}
+function trapKeys(e){
+  if(e.key==="Escape"){closeModal();return;}
+  if(e.key!=="Tab")return;
+  var focusables=modal.querySelectorAll("button,[href],input,select,textarea,[tabindex]:not([tabindex='-1'])");
+  var first=focusables[0],last=focusables[focusables.length-1];
+  if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+  else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+}
+openBtn.addEventListener("click",openModal);
+closeBtn.addEventListener("click",closeModal);
+modal.addEventListener("click",function(e){if(e.target===modal)closeModal();});
+
+/* CTA form */
+var form=document.getElementById("cta-form"),email=document.getElementById("cta-email"),
+    submit=document.getElementById("cta-submit"),feedback=document.getElementById("cta-feedback");
+form.addEventListener("submit",function(e){
+  e.preventDefault();
+  var val=email.value.trim();
+  feedback.className="input-group__feedback";
+  email.classList.remove("is-valid","is-invalid");
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val)){
+    email.classList.add("is-invalid");
+    feedback.classList.add("is-error");
+    feedback.innerHTML='<span class="material-symbols-outlined" aria-hidden="true">error</span>Please enter a valid email address.';
+    email.focus();
+    return;
+  }
+  submit.classList.add("is-loading");
+  submit.innerHTML='<span class="material-symbols-outlined" aria-hidden="true">progress_activity</span>Joining';
+  setTimeout(function(){
+    submit.classList.remove("is-loading");
+    submit.innerHTML='<span class="material-symbols-outlined" aria-hidden="true">check</span>Done';
+    email.classList.add("is-valid");
+    email.readOnly=true;
+    submit.disabled=true;
+    feedback.classList.add("is-success");
+    feedback.innerHTML='<span class="material-symbols-outlined" aria-hidden="true">check</span>You\'re on the list. We\'ll be in touch soon.';
+  },reduced?100:1200);
+});
+
+/* Scroll reveal */
+var reveals=document.querySelectorAll(".reveal");
+if("IntersectionObserver" in window&&!reduced){
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){
+        var el=en.target;
+        var idx=Array.prototype.indexOf.call(el.parentNode.children,el);
+        el.style.transitionDelay=(idx%3)*70+"ms";
+        el.classList.add("is-visible");
+        io.unobserve(el);
+      }
+    });
+  },{threshold:.15});
+  reveals.forEach(function(el){io.observe(el);});
+}else{
+  reveals.forEach(function(el){el.classList.add("is-visible");});
+}
+})();
+</script>
+</body>
+</html>

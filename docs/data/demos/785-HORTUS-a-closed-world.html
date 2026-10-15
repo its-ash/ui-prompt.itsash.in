@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HORTUS - A Closed World</title>
+<script>
+(function(){var t=localStorage.getItem("hortus-theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet">
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --bg-primary:#c9d8b8; --bg-secondary:#1c2418;
+  --primary:#1c2418; --primary-contrast:#c9d8b8;
+  --secondary:#6a5a3a; --secondary-contrast:#fefefe;
+  --text-primary:#10160c; --text-secondary:#4a3e28;
+  --text-on-dark:#c9d8b8; --text-on-dark-muted:#a9bb93;
+  --text-success:#35603a; --text-error:#97382a;
+  --border-default:rgba(16,22,12,.2);
+  --border-success:rgba(53,96,58,.55); --border-error:rgba(151,56,42,.55);
+  --nm-shadow:rgba(110,128,88,.5); --nm-highlight:rgba(254,254,254,.65);
+  --nm-out:8px 8px 18px var(--nm-shadow),-8px -8px 18px var(--nm-highlight);
+  --nm-out-sm:4px 4px 10px var(--nm-shadow),-4px -4px 10px var(--nm-highlight);
+  --nm-in:inset 5px 5px 12px var(--nm-shadow),inset -5px -5px 12px var(--nm-highlight);
+  --radius-sm:10px; --radius-md:18px; --radius-lg:28px; --radius-pill:999px;
+  --shadow-sm:0 2px 8px rgba(16,22,12,.08); --shadow-md:0 8px 24px rgba(16,22,12,.14);
+  --spacing-gap:1.5rem;
+  --transition-fast:150ms; --transition-normal:300ms;
+  --ease-standard:cubic-bezier(.4,0,.2,1);
+  --z-dropdown:100; --z-modal:200; --z-toast:300;
+  --gradient-forest:linear-gradient(150deg,#1c2418,#10160c);
+  --gradient-earth:linear-gradient(150deg,#6a5a3a,#3a3020);
+  --gradient-accent:linear-gradient(120deg,#1c2418,#6a5a3a);
+  --font-display:"Fraunces",serif; --font-base:"Nunito Sans",sans-serif;
+  --glass-hi:rgba(254,254,254,.75);
+  --chip-bg:#c9d8b8;
+}
+:root[data-theme="dark"]{
+  --bg-primary:#10160c; --bg-secondary:#1c2418;
+  --primary:#c9d8b8; --primary-contrast:#10160c;
+  --secondary:#a9bb93; --secondary-contrast:#10160c;
+  --text-primary:#c9d8b8; --text-secondary:#a9bb93;
+  --text-on-dark:#c9d8b8; --text-on-dark-muted:#a9bb93;
+  --text-success:#8fbf7f; --text-error:#e08a72;
+  --border-default:rgba(201,216,184,.22);
+  --border-success:rgba(143,191,127,.6); --border-error:rgba(224,138,114,.6);
+  --nm-shadow:rgba(0,0,0,.6); --nm-highlight:rgba(70,90,55,.28);
+  --shadow-sm:0 2px 8px rgba(0,0,0,.35); --shadow-md:0 8px 24px rgba(0,0,0,.45);
+  --gradient-forest:linear-gradient(150deg,#1c2418,#10160c);
+  --gradient-earth:linear-gradient(150deg,#6a5a3a,#3a3020);
+  --gradient-accent:linear-gradient(120deg,#c9d8b8,#8a7a52);
+  --glass-hi:rgba(201,216,184,.35);
+  --chip-bg:#10160c;
+}
+/* ============ BASE ============ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:96px}
+body{font-family:var(--font-base);font-size:1rem;line-height:1.6;color:var(--text-primary);background:var(--bg-primary);overflow-x:hidden;transition:background var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard)}
+[hidden]{display:none!important}
+img{max-width:100%}
+h1,h2,h3{font-family:var(--font-display);font-weight:700;line-height:1.12;letter-spacing:-.02em;color:var(--text-primary)}
+h2{font-size:clamp(1.9rem,4vw,2.75rem)}
+h3{font-size:1.3rem;line-height:1.25}
+p{max-width:65ch}
+a{color:inherit}
+button{font-family:inherit}
+.material-symbols-rounded{font-variation-settings:'FILL' 0,'wght' 500,'GRAD' 0,'opsz' 24;font-size:1.4em;line-height:1;user-select:none}
+.icon--fill{font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
+:focus-visible{outline:none;box-shadow:0 0 0 3px var(--bg-primary),0 0 0 5px var(--text-primary);border-radius:var(--radius-sm)}
+.skip-link{position:absolute;left:1rem;top:-4rem;z-index:var(--z-toast);background:var(--primary);color:var(--primary-contrast);padding:.75rem 1.25rem;border-radius:var(--radius-pill);font-weight:700;text-decoration:none;transition:top var(--transition-fast) var(--ease-standard)}
+.skip-link:focus{top:1rem}
+.container{max-width:1200px;margin:0 auto;padding:0 1.25rem}
+.section{padding:clamp(4rem,8vw,6rem) 0}
+.section__head{display:flex;flex-direction:column;align-items:flex-start;gap:.75rem;margin-bottom:3rem;max-width:44rem}
+.section__eyebrow{font-size:.78rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--text-secondary)}
+.section__sub{color:var(--text-secondary);font-size:1.05rem}
+/* ============ BUTTONS ============ */
+.btn{display:flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;min-width:44px;padding:.75rem 1.75rem;border-radius:var(--radius-pill);border:1px solid transparent;cursor:pointer;font-weight:700;font-size:1rem;text-decoration:none;transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard),filter var(--transition-fast) var(--ease-standard);position:relative}
+.btn--primary{background:var(--gradient-forest);color:#c9d8b8;border-color:rgba(201,216,184,.25)}
+:root[data-theme="dark"] .btn--primary{background:var(--gradient-accent);color:var(--primary-contrast);border-color:transparent}
+.btn--secondary{background:transparent;color:var(--text-primary);border-color:var(--border-default)}
+.btn--neu{background:var(--bg-primary);color:var(--text-primary);box-shadow:var(--nm-out-sm);border-color:var(--border-default)}
+.btn--danger{background:linear-gradient(150deg,#97382a,#6e2a1f);color:#fefefe;border-color:rgba(254,254,254,.2)}
+@media (hover:hover) and (pointer:fine){
+  .btn:hover{filter:brightness(1.07)}
+  .btn--neu:hover{box-shadow:var(--nm-out)}
+}
+.btn:active{transform:scale(.97)}
+.btn--neu:active{box-shadow:var(--nm-in)}
+.btn:disabled,.btn.is-disabled{opacity:.5;filter:grayscale(.6);cursor:not-allowed}
+.btn.is-loading{pointer-events:none;color:transparent!important}
+.btn.is-loading .material-symbols-rounded{opacity:0}
+.btn.is-loading::after{content:"";position:absolute;width:1.25rem;height:1.25rem;border:3px solid currentColor;border-top-color:transparent;border-radius:50%;color:var(--primary-contrast);animation:spin .7s linear infinite}
+.btn.is-success{color:var(--text-success)}
+.btn.is-error{color:var(--text-error)}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* ============ HEADER ============ */
+.header{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--bg-primary);box-shadow:var(--nm-out-sm);border-bottom:1px solid var(--border-default)}
+.header__inner{display:flex;align-items:center;justify-content:space-between;gap:1rem;height:68px}
+.brand{display:flex;align-items:center;gap:.65rem;text-decoration:none;font-family:var(--font-display);font-weight:700;font-size:1.2rem;letter-spacing:.14em;color:var(--text-primary)}
+.brand__icon{display:flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:50%;box-shadow:var(--nm-in);border:1px solid var(--border-default);color:var(--text-secondary)}
+.nav{display:flex;align-items:center;gap:.25rem}
+.nav__link{display:flex;align-items:center;min-height:44px;padding:.5rem 1rem;border-radius:var(--radius-pill);text-decoration:none;font-weight:600;font-size:.95rem;color:var(--text-secondary);transition:box-shadow var(--transition-fast) var(--ease-standard),color var(--transition-fast) var(--ease-standard)}
+@media (hover:hover) and (pointer:fine){.nav__link:hover{box-shadow:var(--nm-in);color:var(--text-primary)}}
+.header__actions{display:flex;align-items:center;gap:.5rem}
+.icon-btn{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;border:1px solid var(--border-default);background:var(--bg-primary);color:var(--text-primary);box-shadow:var(--nm-out-sm);cursor:pointer;transition:box-shadow var(--transition-fast) var(--ease-standard),transform var(--transition-fast) var(--ease-standard)}
+.icon-btn:active{transform:scale(.95);box-shadow:var(--nm-in)}
+.icon-btn .material-symbols-rounded{transition:transform var(--transition-normal) var(--ease-standard)}
+#theme-toggle:active .material-symbols-rounded{transform:rotate(180deg)}
+#theme-toggle .icon-sun,:root[data-theme="dark"] #theme-toggle .icon-moon{display:none}
+:root[data-theme="dark"] #theme-toggle .icon-sun{display:block}
+.menu-btn{display:none}
+@media (max-width:767px){
+  .menu-btn{display:flex}
+  .nav{position:absolute;top:68px;left:0;right:0;flex-direction:column;align-items:stretch;background:var(--bg-primary);padding:1rem 1.25rem 1.5rem;box-shadow:var(--nm-out);border-bottom:1px solid var(--border-default);display:none}
+  .nav.is-open{display:flex}
+  .nav__link{justify-content:center}
+}
+/* ============ HERO ============ */
+.hero{position:relative;padding:clamp(3rem,6vw,5rem) 0 clamp(4rem,8vw,6rem);overflow:hidden}
+.hero__blob{position:absolute;border-radius:50%;filter:blur(90px);opacity:.45;pointer-events:none}
+.hero__blob--a{width:34rem;height:34rem;top:-10rem;right:-8rem;background:radial-gradient(circle,#6a5a3a,transparent 70%)}
+.hero__blob--b{width:28rem;height:28rem;bottom:-12rem;left:-10rem;background:radial-gradient(circle,#1c2418,transparent 70%)}
+.hero__inner{display:flex;flex-direction:column;align-items:center;gap:3rem;position:relative}
+.hero__copy{display:flex;flex-direction:column;align-items:flex-start;gap:1.25rem;flex:1 1 26rem}
+.hero__eyebrow{font-size:.78rem;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:var(--text-secondary)}
+.hero__title{font-size:clamp(2.5rem,5.5vw,4rem);line-height:1.08}
+.hero__accent{background:var(--gradient-accent);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero__sub{font-size:1.1rem;color:var(--text-secondary);max-width:34rem}
+.hero__ctas{display:flex;flex-wrap:wrap;align-items:center;gap:1rem}
+.hero__stats{display:flex;flex-wrap:wrap;align-items:center;gap:.85rem;margin-top:.5rem}
+.stat-chip{display:flex;align-items:center;gap:.5rem;padding:.6rem 1.1rem;border-radius:var(--radius-pill);box-shadow:var(--nm-in);border:1px solid var(--border-default);font-size:.88rem;font-weight:600;color:var(--text-secondary)}
+.stat-chip .material-symbols-rounded{font-size:1.15em;color:var(--text-secondary)}
+.hero__visual{display:flex;align-items:center;justify-content:center;flex:1 1 22rem;position:relative;min-height:22rem}
+/* Pure-CSS terrarium */
+.terrarium{position:relative;width:min(20rem,80vw);aspect-ratio:1/1.1;display:flex;align-items:flex-end;justify-content:center}
+.terrarium__dome{position:absolute;inset:0;border-radius:50% 50% 46% 46%/58% 58% 42% 42%;background:radial-gradient(circle at 32% 22%,var(--glass-hi) 0%,rgba(254,254,254,.12) 26%,rgba(201,216,184,.08) 55%,rgba(16,22,12,.1) 100%);border:2px solid rgba(254,254,254,.5);box-shadow:inset -14px -18px 40px rgba(16,22,12,.14),inset 10px 14px 34px rgba(254,254,254,.4),var(--nm-out)}
+:root[data-theme="dark"] .terrarium__dome{border-color:rgba(201,216,184,.3);background:radial-gradient(circle at 32% 22%,var(--glass-hi) 0%,rgba(201,216,184,.06) 30%,rgba(0,0,0,.15) 100%)}
+.terrarium__soil{position:absolute;bottom:6%;left:14%;right:14%;height:26%;border-radius:0 0 999px 999px/0 0 220px 220px;background:var(--gradient-earth);overflow:hidden}
+.terrarium__soil::before{content:"";position:absolute;top:0;left:0;right:0;height:34%;background:linear-gradient(180deg,#3a3020,rgba(58,48,32,0))}
+.terrarium__soil::after{content:"";position:absolute;bottom:0;left:0;right:0;height:26%;background:linear-gradient(0deg,rgba(16,22,12,.55),transparent)}
+.terrarium__plants{position:absolute;bottom:24%;left:0;right:0;display:flex;align-items:flex-end;justify-content:center;gap:.4rem;color:#2e4023}
+:root[data-theme="dark"] .terrarium__plants{color:#8fbf7f}
+.terrarium__plants .material-symbols-rounded{font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 48}
+.terrarium__plants .p1{font-size:4.6rem}
+.terrarium__plants .p2{font-size:3.2rem;color:#42582f}
+.terrarium__plants .p3{font-size:2.5rem;color:#5a7040}
+:root[data-theme="dark"] .terrarium__plants .p2{color:#a9bb93}
+:root[data-theme="dark"] .terrarium__plants .p3{color:#6f8a55}
+.terrarium__base{position:absolute;bottom:0;left:10%;right:10%;height:5%;border-radius:var(--radius-pill);background:var(--gradient-earth);box-shadow:var(--shadow-md)}
+.float-chip{position:absolute;display:flex;align-items:center;gap:.5rem;background:var(--chip-bg);padding:.7rem 1.15rem;border-radius:var(--radius-pill);box-shadow:var(--nm-out-sm);border:1px solid var(--border-default);font-weight:700;font-size:.85rem;color:var(--text-primary);animation:float 6s ease-in-out infinite;white-space:nowrap}
+.float-chip .material-symbols-rounded{color:var(--text-secondary);font-size:1.15em}
+.float-chip--a{top:8%;left:-4%}
+.float-chip--b{bottom:18%;right:-6%;animation-delay:-3s}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@media (min-width:1024px){.hero__inner{flex-direction:row}}
+@media (max-width:640px){.float-chip--a{left:0}.float-chip--b{right:0}}
+/* ============ CARDS ============ */
+.card-row{display:flex;flex-wrap:wrap;align-items:stretch;gap:var(--spacing-gap)} /* exception (b): stretch for equal heights */
+.card{display:flex;flex-direction:column;align-items:flex-start;gap:1rem;flex:1 1 320px;background:var(--bg-primary);border-radius:var(--radius-lg);border:1px solid var(--border-default);box-shadow:var(--nm-out);padding:2rem;transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard)}
+@media (hover:hover) and (pointer:fine){.card:hover{transform:translateY(-2px);box-shadow:10px 12px 26px var(--nm-shadow),-8px -8px 18px var(--nm-highlight)}}
+.card:focus-within{border-color:var(--text-secondary);box-shadow:var(--nm-out),0 0 0 3px var(--bg-primary),0 0 0 5px var(--text-secondary)}
+.card__icon{display:flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;box-shadow:var(--nm-in);border:1px solid var(--border-default);color:var(--text-secondary)}
+.card__icon .material-symbols-rounded{font-size:1.7em}
+.card p{color:var(--text-secondary);font-size:.98rem}
+.skeleton{position:relative;overflow:hidden;background:var(--bg-primary);border-radius:var(--radius-md)}
+.skeleton::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,var(--nm-highlight) 50%,transparent 70%);animation:shimmer 1.4s linear infinite}
+@keyframes shimmer{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+.empty-state{display:flex;flex-direction:column;align-items:center;gap:.75rem;padding:3rem 1.5rem;text-align:center;color:var(--text-secondary)}
+.empty-state .material-symbols-rounded{font-size:2.5rem}
+/* ============ STEPS ============ */
+.steps{display:flex;flex-direction:column;align-items:stretch;gap:2.5rem} /* exception (b): stretch */
+.step{display:flex;flex-direction:column;align-items:flex-start;gap:.85rem;flex:1 1 16rem;position:relative}
+.step__badge{display:flex;align-items:center;justify-content:center;width:60px;height:60px;border-radius:50%;box-shadow:var(--nm-in);border:1px solid var(--border-default);font-family:var(--font-display);font-weight:700;font-size:1.25rem;color:var(--text-secondary)}
+.step p{color:var(--text-secondary);font-size:.97rem}
+.step__icon{color:var(--text-secondary)}
+@media (min-width:768px){
+  .steps{flex-direction:row;align-items:flex-start;gap:3.5rem} /* exception (c): multi-line text stacks */
+  .step:not(:last-child)::after{content:"";position:absolute;top:30px;left:70px;right:-3rem;border-top:2px dashed var(--border-default)}
+}
+/* ============ TESTIMONIALS ============ */
+.quote__mark{font-size:2.6rem;color:var(--text-secondary);line-height:0}
+.quote__stars{display:flex;align-items:center;gap:.15rem;color:var(--secondary)}
+:root[data-theme="dark"] .quote__stars{color:#c9b98a}
+.quote__stars .material-symbols-rounded{font-size:1.1em}
+.quote__text{font-size:1.02rem}
+.quote__author{display:flex;align-items:center;gap:.85rem;margin-top:auto}
+.quote__avatar{display:flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:50%;background:var(--gradient-earth);color:#fefefe;font-weight:700;font-size:.9rem;letter-spacing:.04em;box-shadow:var(--shadow-sm)}
+.quote__meta{display:flex;flex-direction:column;align-items:flex-start;line-height:1.35} /* exception (c): multi-line text stack */
+.quote__name{font-weight:700;font-size:.95rem}
+.quote__role{font-size:.85rem;color:var(--text-secondary)}
+/* ============ PRICING ============ */
+.plan{display:flex;flex-direction:column;align-items:flex-start;gap:1.1rem;flex:1 1 300px;background:var(--bg-primary);border-radius:var(--radius-lg);border:1px solid var(--border-default);box-shadow:var(--nm-out);padding:2.25rem 2rem;position:relative;transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard)}
+.plan__tier{font-size:.82rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--text-secondary)}
+.plan__price{font-family:var(--font-display);font-size:2.6rem;font-weight:700;letter-spacing:-.02em}
+.plan__note{font-size:.88rem;color:var(--text-secondary);margin-top:-.6rem}
+.plan__list{display:flex;flex-direction:column;align-items:flex-start;gap:.65rem;list-style:none;margin:.25rem 0 .5rem} /* exception (c) */
+.plan__list li{display:flex;align-items:center;gap:.6rem;font-size:.96rem}
+.plan__list .material-symbols-rounded{color:var(--text-success);font-size:1.2em}
+.plan .btn{width:100%;margin-top:auto}
+.plan--featured{background:linear-gradient(var(--bg-primary),var(--bg-primary)) padding-box,var(--gradient-accent) border-box;border:2px solid transparent}
+@media (min-width:1024px){.plan--featured{transform:translateY(-8px)}}
+@media (hover:hover) and (pointer:fine){.plan:hover{transform:translateY(-2px)}.plan--featured:hover{transform:translateY(-10px)}}
+.plan__badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--gradient-accent);color:#c9d8b8;padding:.35rem 1.1rem;border-radius:var(--radius-pill);font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+:root[data-theme="dark"] .plan__badge{color:var(--primary-contrast)}
+/* ============ FAQ / ACCORDION ============ */
+.faq__list{display:flex;flex-direction:column;align-items:stretch;gap:1rem;max-width:52rem} /* exception (b) */
+.accordion{border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--nm-out-sm);background:var(--bg-primary);overflow:hidden}
+.accordion__trigger{display:flex;align-items:center;justify-content:space-between;gap:1rem;width:100%;min-height:44px;padding:1.15rem 1.4rem;background:none;border:none;cursor:pointer;font-family:var(--font-base);font-weight:700;font-size:1.02rem;color:var(--text-primary);text-align:left;transition:box-shadow var(--transition-fast) var(--ease-standard)}
+@media (hover:hover) and (pointer:fine){.accordion__trigger:hover{box-shadow:var(--nm-in)}}
+.accordion__chev{transition:transform var(--transition-normal) var(--ease-standard);color:var(--text-secondary);flex-shrink:0}
+.accordion__trigger[aria-expanded="true"] .accordion__chev{transform:rotate(180deg)}
+.accordion__panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--transition-normal) var(--ease-standard)}
+.accordion__panel.is-open{grid-template-rows:1fr}
+.accordion__body{overflow:hidden}
+.accordion__body p{padding:0 1.4rem 1.3rem;color:var(--text-secondary);font-size:.97rem}
+/* ============ CTA BAND ============ */
+.cta-band__inner{background:var(--gradient-forest);border-radius:var(--radius-lg);padding:clamp(2.5rem,6vw,4.5rem);display:flex;flex-direction:column;align-items:flex-start;gap:1.5rem;box-shadow:var(--shadow-md)}
+.cta-band h2{color:var(--text-on-dark)}
+.cta-band p{color:var(--text-on-dark-muted)}
+.news-form{display:flex;flex-wrap:wrap;align-items:flex-start;gap:1rem;width:100%;max-width:36rem}
+.input-group{display:flex;flex-direction:column;align-items:stretch;gap:.4rem;flex:1 1 16rem} /* exception (a): column + stretch */
+.input-group__label{font-weight:700;font-size:.92rem;color:var(--text-on-dark)}
+.input-group__control{position:relative;display:flex;align-items:center}
+.input-group__input{width:100%;min-height:48px;padding:.8rem 2.8rem .8rem 1.2rem;border-radius:var(--radius-pill);border:1px solid rgba(201,216,184,.3);background:#10160c;color:var(--text-on-dark);font-family:var(--font-base);font-size:1rem;box-shadow:inset 5px 5px 12px rgba(0,0,0,.6),inset -5px -5px 12px rgba(70,90,55,.22);transition:border-color var(--transition-fast) var(--ease-standard)}
+.input-group__input::placeholder{color:var(--text-on-dark-muted)}
+.input-group__input:focus-visible{box-shadow:inset 5px 5px 12px rgba(0,0,0,.6),inset -5px -5px 12px rgba(70,90,55,.22),0 0 0 3px #10160c,0 0 0 5px var(--text-on-dark)}
+.input-group__control::after{font-family:"Material Symbols Rounded";position:absolute;right:1rem;font-size:1.25rem;pointer-events:none}
+.input-group.is-valid .input-group__control::after{content:"check_circle";color:#8fbf7f}
+.input-group.is-valid .input-group__input{border-color:rgba(143,191,127,.6)}
+.input-group.is-invalid .input-group__control::after{content:"error";color:#e08a72}
+.input-group.is-invalid .input-group__input{border-color:rgba(224,138,114,.65)}
+.input-group__helper{font-size:.82rem;color:var(--text-on-dark-muted)}
+.input-group__error{min-height:1.3rem;font-size:.85rem;font-weight:600;color:#e08a72;display:flex;align-items:center;gap:.35rem}
+.form-feedback{min-height:1.5rem;font-weight:700;color:var(--text-on-dark);display:flex;align-items:center;gap:.5rem}
+.form-feedback .material-symbols-rounded{color:#8fbf7f}
+/* ============ FOOTER ============ */
+.footer{background:var(--gradient-forest);color:var(--text-on-dark);padding:clamp(3rem,6vw,4.5rem) 0 0;margin-top:clamp(4rem,8vw,6rem)}
+.footer__grid{display:flex;flex-wrap:wrap;align-items:flex-start;gap:2.5rem} /* exception (c) */
+.footer__col{display:flex;flex-direction:column;align-items:flex-start;gap:.35rem;flex:1 1 12rem;min-width:10rem} /* exception (c) */
+.footer__col--brand{flex:2 1 18rem;gap:.9rem}
+.footer__brand{display:flex;align-items:center;gap:.6rem;font-family:var(--font-display);font-weight:700;letter-spacing:.14em;font-size:1.15rem}
+.footer__brand .material-symbols-rounded{color:var(--text-on-dark)}
+.footer__blurb{color:var(--text-on-dark-muted);font-size:.95rem}
+.footer__heading{font-size:.82rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--text-on-dark-muted);margin-bottom:.5rem}
+.footer__link{display:flex;align-items:center;min-height:44px;color:var(--text-on-dark);text-decoration:none;font-size:.95rem;opacity:.9;transition:opacity var(--transition-fast) var(--ease-standard),transform var(--transition-fast) var(--ease-standard)}
+@media (hover:hover) and (pointer:fine){.footer__link:hover{opacity:1;transform:translateX(3px)}}
+.footer__social{display:flex;align-items:center;gap:.6rem;margin-top:.4rem}
+.footer__social .icon-btn{background:transparent;box-shadow:none;border-color:rgba(201,216,184,.3);color:var(--text-on-dark)}
+.footer__bottom{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1rem;margin-top:3rem;padding:1.5rem 0;border-top:1px solid rgba(201,216,184,.18);font-size:.88rem;color:var(--text-on-dark-muted)}
+.to-top{background:transparent;box-shadow:none;border-color:rgba(201,216,184,.3);color:var(--text-on-dark);text-decoration:none}
+/* ============ REVEAL ============ */
+.js .reveal{opacity:0;transform:translateY(18px);transition:opacity 500ms var(--ease-standard),transform 500ms var(--ease-standard)}
+.js .reveal.in-view{opacity:1;transform:none}
+.js .reveal[data-delay="1"]{transition-delay:60ms}
+.js .reveal[data-delay="2"]{transition-delay:120ms}
+/* ============ REDUCED MOTION / TRANSPARENCY ============ */
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  .float-chip{animation:none}
+  .js .reveal{opacity:1;transform:none}
+}
+@media (prefers-reduced-transparency:reduce){
+  .hero__blob{display:none}
+  .terrarium__dome{background:var(--bg-primary)}
+}
+@media (min-width:768px){.container{padding:0 2rem}}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="header">
+  <div class="container header__inner">
+    <a class="brand" href="#top" aria-label="HORTUS home">
+      <span class="brand__icon"><span class="material-symbols-rounded icon--fill" aria-hidden="true">eco</span></span>
+      HORTUS
+    </a>
+    <nav class="nav" id="site-nav" aria-label="Primary">
+      <a class="nav__link" href="#features">Features</a>
+      <a class="nav__link" href="#how-it-works">How It Works</a>
+      <a class="nav__link" href="#testimonials">Testimonials</a>
+      <a class="nav__link" href="#pricing">Pricing</a>
+      <a class="nav__link" href="#faq">FAQ</a>
+    </nav>
+    <div class="header__actions">
+      <button class="icon-btn" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-rounded icon-moon" aria-hidden="true">dark_mode</span>
+        <span class="material-symbols-rounded icon-sun" aria-hidden="true">light_mode</span>
+      </button>
+      <button class="icon-btn menu-btn" id="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">
+        <span class="material-symbols-rounded" aria-hidden="true">menu</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <!-- HERO -->
+  <section class="hero" id="top" aria-labelledby="hero-title">
+    <div class="hero__blob hero__blob--a" aria-hidden="true"></div>
+    <div class="hero__blob hero__blob--b" aria-hidden="true"></div>
+    <div class="container hero__inner">
+      <div class="hero__copy">
+        <p class="hero__eyebrow">HORTUS, A Closed World</p>
+        <h1 class="hero__title" id="hero-title">A world that <span class="hero__accent">waters itself.</span></h1>
+        <p class="hero__sub">Hand-sealed glass biomes that recycle their own water and air, thriving for years without a single drop from you.</p>
+        <div class="hero__ctas">
+          <a class="btn btn--primary" href="#pricing">Build your world</a>
+          <a class="btn btn--neu" href="#how-it-works">How it works</a>
+        </div>
+        <div class="hero__stats">
+          <span class="stat-chip"><span class="material-symbols-rounded icon--fill" aria-hidden="true">water_drop</span>Sealed water cycle</span>
+          <span class="stat-chip"><span class="material-symbols-rounded icon--fill" aria-hidden="true">schedule</span>Lives 5+ years</span>
+          <span class="stat-chip"><span class="material-symbols-rounded icon--fill" aria-hidden="true">handyman</span>Zero upkeep</span>
+        </div>
+      </div>
+      <div class="hero__visual">
+        <div class="terrarium" role="img" aria-label="A sealed glass terrarium with layered soil and green plants growing inside">
+          <div class="terrarium__dome" aria-hidden="true"></div>
+          <div class="terrarium__soil" aria-hidden="true"></div>
+          <div class="terrarium__plants" aria-hidden="true">
+            <span class="material-symbols-rounded p2">grass</span>
+            <span class="material-symbols-rounded p1">potted_plant</span>
+            <span class="material-symbols-rounded p3">eco</span>
+          </div>
+          <div class="terrarium__base" aria-hidden="true"></div>
+        </div>
+        <span class="float-chip float-chip--a"><span class="material-symbols-rounded icon--fill" aria-hidden="true">eco</span>100% self-sustaining</span>
+        <span class="float-chip float-chip--b"><span class="material-symbols-rounded icon--fill" aria-hidden="true">water_drop</span>0 waterings</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section" id="features" aria-labelledby="features-title">
+    <div class="container">
+      <div class="section__head reveal">
+        <p class="section__eyebrow">Features</p>
+        <h2 id="features-title">Everything a world needs</h2>
+        <p class="section__sub">Each vessel is planted, balanced, and sealed by hand, then left to run its own quiet cycle.</p>
+      </div>
+      <div class="card-row">
+        <article class="card reveal">
+          <span class="card__icon"><span class="material-symbols-rounded icon--fill" aria-hidden="true">water_drop</span></span>
+          <h3>Sealed water cycle</h3>
+          <p>Moisture evaporates, condenses on the glass, and rains back onto the soil. The same water loops for years, so you never open the lid.</p>
+        </article>
+        <article class="card reveal" data-delay="1">
+          <span class="card__icon"><span class="material-symbols-rounded icon--fill" aria-hidden="true">thermostat</span></span>
+          <h3>Balanced light and humidity</h3>
+          <p>We pair slow-growing mosses and ferns that share one climate. Indirect daylight from a nearby window is all the energy the system needs.</p>
+        </article>
+        <article class="card reveal" data-delay="2">
+          <span class="card__icon"><span class="material-symbols-rounded icon--fill" aria-hidden="true">bubble_chart</span></span>
+          <h3>Hand-blown glass</h3>
+          <p>Every vessel is blown and finished in small batches. Slight variations in the glass make each closed world one of a kind.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="section" id="how-it-works" aria-labelledby="how-title">
+    <div class="container">
+      <div class="section__head reveal">
+        <p class="section__eyebrow">How It Works</p>
+        <h2 id="how-title">Three steps to a living world</h2>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <span class="step__badge">01</span>
+          <h3>Choose your ecosystem</h3>
+          <p>Pick a vessel size and a planting style, from mossy forest floor to miniature fern canopy.</p>
+          <span class="material-symbols-rounded icon--fill step__icon" aria-hidden="true">yard</span>
+        </div>
+        <div class="step reveal" data-delay="1">
+          <span class="step__badge">02</span>
+          <h3>We plant and seal it</h3>
+          <p>Our growers layer soil, stone, and plants, balance the moisture, then close the glass for good.</p>
+          <span class="material-symbols-rounded icon--fill step__icon" aria-hidden="true">potted_plant</span>
+        </div>
+        <div class="step reveal" data-delay="2">
+          <span class="step__badge">03</span>
+          <h3>Watch it thrive</h3>
+          <p>Set it near indirect light and do nothing. Condensation on the glass means the cycle is alive.</p>
+          <span class="material-symbols-rounded icon--fill step__icon" aria-hidden="true">visibility</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="section" id="testimonials" aria-labelledby="testimonials-title">
+    <div class="container">
+      <div class="section__head reveal">
+        <p class="section__eyebrow">Testimonials</p>
+        <h2 id="testimonials-title">Worlds already living</h2>
+      </div>
+      <div class="card-row">
+        <article class="card reveal">
+          <span class="material-symbols-rounded icon--fill quote__mark" aria-hidden="true">format_quote</span>
+          <p class="quote__text">Three years on my bookshelf and it has never been opened. Morning fog on the glass is still my favorite part of the day.</p>
+          <div class="quote__stars" role="img" aria-label="Rated 5 out of 5 stars">
+            <span class="material-symbols-rounded icon--fill" aria-hidden="true">star</span><span class="material-symbols-rounded icon--fill" aria-hidden="true">star</span><span class="material-symbols-rounded icon--fill" aria-hidden="true">star</span><span class="material-symbols-rounded icon--fill" aria-hidden="true">star</span><span class="material-symbols-rounded icon--fill" aria-hidden="true">star</span>
+          </div>
+          <div class="quote__author">
+            <span class="quote__avatar" aria-hidden="true">MK</span>
+            <span class="quote__meta"><span class="quote__name">Mara Kessler</span><span class="quote__role">Architect, Portland</span></span>
+          </div>
+        </article>
+        <article class="card reveal" data-delay="1">
+          <span class="material-symbols-rounded icon--fill quote__mark" aria-hidden="true">format_quote</span>
+          <p class="quote__text">I kill every plant I touch, except this one, because it wants nothing from me. It just sits there being a forest.</p>
+          <div class="quote__stars" role="img" aria-label="Rated 5 out of 5 stars">
+            <span class="material-symbols-rounded icon--fill" aria-hidden="true">star</span><span class="material-symbols-rounded icon--fill" aria-hidden="true">star</span><span class="material-symbols-rounded icon--fill" aria-hidden="true">star</span><span class="material-symbols-rounded icon--fill" aria-hidden="true">star</span><span class="material-symbols-rounded icon--fill" aria-hidden="true">star</span>
+          </div>
+          <div class="quote__author">
+            <span class="quote__avatar" aria-hidden="true">TO</span>
+            <span class="quote__meta"><span class="quote__name">Tunde Okafor</span><span class="quote__role">Software Engineer, Austin</span></span>
+          </div>
+        </article>
+        <article class="card reveal" data-delay="2">
+          <span class="material-symbols-rounded icon--fill quote__mark" aria-hidden="true">format_quote</span>
+          <p class="quote__text">We gave the Monolith to my father when he moved into care. It gives him a garden to watch over without any work at all.</p>
+          <div class="quote__stars" role="img" aria-label="Rated 5 out of 5 stars">
+            <span class="material-symbols-rounded icon--fill" aria-hidden="true">star</span><span class="material-symbols-rounded icon--fill" aria-hidden="true">star</span><span class="material-symbols-rounded icon--fill" aria-hidden="true">star</span><span class="material-symbols-rounded icon--fill" aria-hidden="true">star</span><span class="material-symbols-rounded icon--fill" aria-hidden="true">star</span>
+          </div>
+          <div class="quote__author">
+            <span class="quote__avatar" aria-hidden="true">SL</span>
+            <span class="quote__meta"><span class="quote__name">Sofia Lindqvist</span><span class="quote__role">Teacher, Minneapolis</span></span>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="section" id="pricing" aria-labelledby="pricing-title">
+    <div class="container">
+      <div class="section__head reveal">
+        <p class="section__eyebrow">Pricing</p>
+        <h2 id="pricing-title">One world, one price</h2>
+        <p class="section__sub">Every vessel is a one-time purchase with free sealed shipping. No subscriptions, no refills, ever.</p>
+      </div>
+      <div class="card-row">
+        <article class="plan reveal">
+          <p class="plan__tier">Sprout</p>
+          <p class="plan__price">$59</p>
+          <p class="plan__note">One-time purchase, free sealed shipping</p>
+          <ul class="plan__list">
+            <li><span class="material-symbols-rounded icon--fill" aria-hidden="true">check</span>4-inch hand-blown globe</li>
+            <li><span class="material-symbols-rounded icon--fill" aria-hidden="true">check</span>Moss and fittonia planting</li>
+            <li><span class="material-symbols-rounded icon--fill" aria-hidden="true">check</span>Balanced sealed water cycle</li>
+            <li><span class="material-symbols-rounded icon--fill" aria-hidden="true">check</span>Care and placement guide</li>
+          </ul>
+          <a class="btn btn--neu" href="#cta">Build your world</a>
+        </article>
+        <article class="plan plan--featured reveal" data-delay="1">
+          <span class="plan__badge">Most popular</span>
+          <p class="plan__tier">Canopy</p>
+          <p class="plan__price">$129</p>
+          <p class="plan__note">One-time purchase, free sealed shipping</p>
+          <ul class="plan__list">
+            <li><span class="material-symbols-rounded icon--fill" aria-hidden="true">check</span>8-inch hand-blown dome</li>
+            <li><span class="material-symbols-rounded icon--fill" aria-hidden="true">check</span>Fern, moss, and ivy layers</li>
+            <li><span class="material-symbols-rounded icon--fill" aria-hidden="true">check</span>Stone and charcoal strata</li>
+            <li><span class="material-symbols-rounded icon--fill" aria-hidden="true">check</span>Five-year vitality promise</li>
+            <li><span class="material-symbols-rounded icon--fill" aria-hidden="true">check</span>Care and placement guide</li>
+          </ul>
+          <a class="btn btn--primary" href="#cta">Build your world</a>
+        </article>
+        <article class="plan reveal" data-delay="2">
+          <p class="plan__tier">Monolith</p>
+          <p class="plan__price">$299</p>
+          <p class="plan__note">One-time purchase, free sealed shipping</p>
+          <ul class="plan__list">
+            <li><span class="material-symbols-rounded icon--fill" aria-hidden="true">check</span>14-inch statement vessel</li>
+            <li><span class="material-symbols-rounded icon--fill" aria-hidden="true">check</span>Multi-species forest floor</li>
+            <li><span class="material-symbols-rounded icon--fill" aria-hidden="true">check</span>Commissioned planting design</li>
+            <li><span class="material-symbols-rounded icon--fill" aria-hidden="true">check</span>White-glove delivery</li>
+            <li><span class="material-symbols-rounded icon--fill" aria-hidden="true">check</span>Lifetime grower support</li>
+          </ul>
+          <a class="btn btn--neu" href="#cta">Build your world</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq" aria-labelledby="faq-title">
+    <div class="container">
+      <div class="section__head reveal">
+        <p class="section__eyebrow">FAQ</p>
+        <h2 id="faq-title">Questions from curious keepers</h2>
+      </div>
+      <div class="faq__list reveal">
+        <div class="accordion">
+          <button class="accordion__trigger" type="button" aria-expanded="false" aria-controls="faq-p1" id="faq-t1">
+            Can I ever open the world?
+            <span class="material-symbols-rounded accordion__chev" aria-hidden="true">expand_more</span>
+          </button>
+          <div class="accordion__panel" id="faq-p1" role="region" aria-labelledby="faq-t1">
+            <div class="accordion__body"><p>You can, but you should not need to. Opening breaks the sealed balance, so we recommend enjoying it through the glass. If you ever unseal it, treat it like a normal potted plant and water lightly.</p></div>
+          </div>
+        </div>
+        <div class="accordion">
+          <button class="accordion__trigger" type="button" aria-expanded="false" aria-controls="faq-p2" id="faq-t2">
+            Why is there condensation on the glass?
+            <span class="material-symbols-rounded accordion__chev" aria-hidden="true">expand_more</span>
+          </button>
+          <div class="accordion__panel" id="faq-p2" role="region" aria-labelledby="faq-t2">
+            <div class="accordion__body"><p>Condensation is the water cycle at work. Light mist on one side of the glass is healthy. If the glass is fully fogged for days, move the vessel a little farther from direct sun.</p></div>
+          </div>
+        </div>
+        <div class="accordion">
+          <button class="accordion__trigger" type="button" aria-expanded="false" aria-controls="faq-p3" id="faq-t3">
+            How long will it live?
+            <span class="material-symbols-rounded accordion__chev" aria-hidden="true">expand_more</span>
+          </button>
+          <div class="accordion__panel" id="faq-p3" role="region" aria-labelledby="faq-t3">
+            <div class="accordion__body"><p>Most HORTUS worlds thrive for five years or more, and well-placed sealed terrariums have been documented living for decades. Slow-growing species are chosen specifically for longevity.</p></div>
+          </div>
+        </div>
+        <div class="accordion">
+          <button class="accordion__trigger" type="button" aria-expanded="false" aria-controls="faq-p4" id="faq-t4">
+            Where should I place it?
+            <span class="material-symbols-rounded accordion__chev" aria-hidden="true">expand_more</span>
+          </button>
+          <div class="accordion__panel" id="faq-p4" role="region" aria-labelledby="faq-t4">
+            <div class="accordion__body"><p>Bright, indirect light is ideal, such as a shelf near a north or east window. Avoid harsh direct sun, radiators, and cold drafts, which can overheat or chill the sealed climate.</p></div>
+          </div>
+        </div>
+        <div class="accordion">
+          <button class="accordion__trigger" type="button" aria-expanded="false" aria-controls="faq-p5" id="faq-t5">
+            What is inside each vessel?
+            <span class="material-symbols-rounded accordion__chev" aria-hidden="true">expand_more</span>
+          </button>
+          <div class="accordion__panel" id="faq-p5" role="region" aria-labelledby="faq-t5">
+            <div class="accordion__body"><p>Layered stone for drainage, activated charcoal to keep the soil fresh, a custom soil blend, and a planting of mosses, ferns, or tropicals matched to the vessel size. Everything is listed on your care card.</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="section cta-band" id="cta" aria-labelledby="cta-title">
+    <div class="container">
+      <div class="cta-band__inner reveal">
+        <h2 id="cta-title">Close the loop. Open a world.</h2>
+        <p>Join the list for early access to new vessels, planting stories, and seasonal releases.</p>
+        <form class="news-form" id="news-form" novalidate>
+          <div class="input-group" id="email-group">
+            <label class="input-group__label" for="email">Email address</label>
+            <div class="input-group__control">
+              <input class="input-group__input" type="email" id="email" name="email" autocomplete="email" placeholder="you@example.com" aria-describedby="email-helper email-error" required>
+            </div>
+            <p class="input-group__helper" id="email-helper">One letter a month, no noise.</p>
+            <p class="input-group__error" id="email-error" aria-live="polite"></p>
+          </div>
+          <button class="btn btn--primary" id="news-submit" type="submit">Build your world</button>
+        </form>
+        <p class="form-feedback" id="form-feedback" aria-live="polite"></p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__col footer__col--brand">
+        <p class="footer__brand"><span class="material-symbols-rounded icon--fill" aria-hidden="true">eco</span>HORTUS</p>
+        <p class="footer__blurb">Hand-sealed, self-sustaining terrariums. A closed world that waters itself, made in small batches and shipped with care.</p>
+        <div class="footer__social">
+          <a class="icon-btn" href="mailto:hello@hortus.world" aria-label="Email HORTUS"><span class="material-symbols-rounded" aria-hidden="true">mail</span></a>
+          <a class="icon-btn" href="#" aria-label="HORTUS journal feed"><span class="material-symbols-rounded" aria-hidden="true">rss_feed</span></a>
+          <a class="icon-btn" href="#" aria-label="HORTUS around the world"><span class="material-symbols-rounded" aria-hidden="true">public</span></a>
+        </div>
+      </div>
+      <nav class="footer__col" aria-label="Explore">
+        <p class="footer__heading">Explore</p>
+        <a class="footer__link" href="#features">Features</a>
+        <a class="footer__link" href="#how-it-works">How It Works</a>
+        <a class="footer__link" href="#testimonials">Testimonials</a>
+        <a class="footer__link" href="#pricing">Pricing</a>
+      </nav>
+      <nav class="footer__col" aria-label="Support">
+        <p class="footer__heading">Support</p>
+        <a class="footer__link" href="#faq">Care Guide</a>
+        <a class="footer__link" href="#">Shipping</a>
+        <a class="footer__link" href="#">Warranty</a>
+        <a class="footer__link" href="mailto:hello@hortus.world">Contact</a>
+      </nav>
+      <nav class="footer__col" aria-label="Legal">
+        <p class="footer__heading">Legal</p>
+        <a class="footer__link" href="#">Privacy</a>
+        <a class="footer__link" href="#">Terms</a>
+      </nav>
+    </div>
+    <div class="footer__bottom">
+      <p>&copy; <span id="year">2026</span> HORTUS. All rights reserved.</p>
+      <a class="icon-btn to-top" href="#top" aria-label="Back to top"><span class="material-symbols-rounded" aria-hidden="true">arrow_upward</span></a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  document.documentElement.classList.add("js");
+
+  /* ---- Theme manager ---- */
+  var root=document.documentElement;
+  var toggle=document.getElementById("theme-toggle");
+  var media=window.matchMedia("(prefers-color-scheme: dark)");
+  function applyTheme(t,save){
+    root.dataset.theme=t;
+    toggle.setAttribute("aria-pressed",t==="dark"?"true":"false");
+    toggle.setAttribute("aria-label",t==="dark"?"Switch to light mode":"Switch to dark mode");
+    if(save){localStorage.setItem("hortus-theme",t);}
+  }
+  applyTheme(root.dataset.theme==="dark"?"dark":"light",false);
+  toggle.addEventListener("click",function(){
+    applyTheme(root.dataset.theme==="dark"?"light":"dark",true);
+  });
+  media.addEventListener("change",function(e){
+    if(!localStorage.getItem("hortus-theme")){applyTheme(e.matches?"dark":"light",false);}
+  });
+
+  /* ---- Mobile nav ---- */
+  var menuBtn=document.getElementById("menu-toggle");
+  var nav=document.getElementById("site-nav");
+  function closeMenu(){
+    nav.classList.remove("is-open");
+    menuBtn.setAttribute("aria-expanded","false");
+    menuBtn.setAttribute("aria-label","Open menu");
+  }
+  menuBtn.addEventListener("click",function(){
+    var open=nav.classList.toggle("is-open");
+    menuBtn.setAttribute("aria-expanded",open?"true":"false");
+    menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");
+  });
+  nav.addEventListener("click",function(e){if(e.target.closest(".nav__link")){closeMenu();}});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape"){closeMenu();}});
+  document.addEventListener("click",function(e){
+    if(nav.classList.contains("is-open")&&!e.target.closest(".nav")&&!e.target.closest("#menu-toggle")){closeMenu();}
+  });
+
+  /* ---- Accordion (single open) ---- */
+  var triggers=document.querySelectorAll(".accordion__trigger");
+  triggers.forEach(function(btn){
+    btn.addEventListener("click",function(){
+      var panel=document.getElementById(btn.getAttribute("aria-controls"));
+      var isOpen=btn.getAttribute("aria-expanded")==="true";
+      triggers.forEach(function(b){
+        b.setAttribute("aria-expanded","false");
+        document.getElementById(b.getAttribute("aria-controls")).classList.remove("is-open");
+      });
+      if(!isOpen){
+        btn.setAttribute("aria-expanded","true");
+        panel.classList.add("is-open");
+      }
+    });
+  });
+
+  /* ---- Newsletter form ---- */
+  var form=document.getElementById("news-form");
+  var email=document.getElementById("email");
+  var group=document.getElementById("email-group");
+  var errorBox=document.getElementById("email-error");
+  var submitBtn=document.getElementById("news-submit");
+  var feedback=document.getElementById("form-feedback");
+  var busy=false;
+  form.addEventListener("submit",function(e){
+    e.preventDefault();
+    if(busy){return;}
+    var val=email.value.trim();
+    var valid=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val);
+    group.classList.remove("is-valid","is-invalid");
+    feedback.textContent="";
+    if(!valid){
+      group.classList.add("is-invalid");
+      errorBox.textContent="Please enter a valid email address.";
+      email.focus();
+      return;
+    }
+    errorBox.textContent="";
+    group.classList.add("is-valid");
+    busy=true;
+    submitBtn.classList.add("is-loading");
+    submitBtn.setAttribute("aria-busy","true");
+    setTimeout(function(){
+      submitBtn.classList.remove("is-loading");
+      submitBtn.removeAttribute("aria-busy");
+      submitBtn.classList.add("is-success");
+      submitBtn.innerHTML='<span class="material-symbols-rounded icon--fill" aria-hidden="true">check_circle</span>Done';
+      feedback.innerHTML='<span class="material-symbols-rounded icon--fill" aria-hidden="true">check_circle</span>You are on the list. Welcome to the closed world.';
+      email.setAttribute("readonly","");
+      busy=false;
+    },1200);
+  });
+  email.addEventListener("input",function(){
+    group.classList.remove("is-invalid");
+    errorBox.textContent="";
+  });
+
+  /* ---- Reveal on scroll ---- */
+  var revealEls=document.querySelectorAll(".reveal");
+  if("IntersectionObserver" in window){
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){en.target.classList.add("in-view");io.unobserve(en.target);}
+      });
+    },{threshold:.12});
+    revealEls.forEach(function(el){io.observe(el);});
+  }else{
+    revealEls.forEach(function(el){el.classList.add("in-view");});
+  }
+
+  /* ---- Footer year ---- */
+  document.getElementById("year").textContent=new Date().getFullYear();
+})();
+</script>
+</body>
+</html>

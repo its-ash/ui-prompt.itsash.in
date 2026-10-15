@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nimbus - Infrastructure Provisioning as Code</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<style>
+:root{
+  --primary:#1060ff;--secondary:#0c56e9;--on-primary:#ffffff;
+  --bg-primary:#fefefe;--bg-secondary:#fafafa;--bg-tertiary:#f1f2f4;
+  --text-primary:#0c0c0e;--text-secondary:#3b3f45;--text-faint:#656a76;
+  --text-success:#008a22;--text-error:#e52228;
+  --border-default:rgba(101,106,118,.2);--border-strong:rgba(101,106,118,.45);
+  --border-success:rgba(0,138,34,.4);--border-error:rgba(229,34,40,.45);
+  --code-bg:#0c0c0e;--code-text:#e6e8eb;--code-key:#7aa2ff;--code-str:#3fba6e;--code-com:#8a909c;
+  --radius-sm:5px;--radius-md:6px;--radius-lg:8px;
+  --shadow-sm:0 1px 3px 0 rgba(12,12,14,.1),0 1px 2px 0 rgba(12,12,14,.06);
+  --shadow-md:0 4px 10px -2px rgba(12,12,14,.12),0 2px 6px -2px rgba(12,12,14,.08);
+  --shadow-lg:0 12px 28px -8px rgba(12,12,14,.18);
+  --spacing-gap:1.5rem;
+  --transition-fast:.12s;--transition-normal:.2s;--ease-standard:cubic-bezier(.4,0,.2,1);
+  --z-dropdown:100;--z-modal:200;--z-toast:300;
+  --font-base:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+:root[data-theme="dark"]{
+  --primary:#4d8dff;--secondary:#6ea1ff;--on-primary:#0a0f1e;
+  --bg-primary:#0c0c0e;--bg-secondary:#151619;--bg-tertiary:#1d1f24;
+  --text-primary:#f2f3f5;--text-secondary:#c3c7cd;--text-faint:#9aa0a9;
+  --text-success:#3fba6e;--text-error:#ff6b6e;
+  --border-default:rgba(194,199,206,.18);--border-strong:rgba(194,199,206,.4);
+  --border-success:rgba(63,186,110,.45);--border-error:rgba(255,107,110,.5);
+  --code-bg:#08090b;--code-text:#e6e8eb;--code-key:#7aa2ff;--code-str:#3fba6e;--code-com:#8a909c;
+  --shadow-sm:0 1px 3px 0 rgba(0,0,0,.5),0 1px 2px 0 rgba(0,0,0,.4);
+  --shadow-md:0 4px 10px -2px rgba(0,0,0,.55),0 2px 6px -2px rgba(0,0,0,.45);
+  --shadow-lg:0 12px 28px -8px rgba(0,0,0,.65);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;font-size:1rem;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+img{max-width:100%;display:block}
+a{color:var(--primary);text-decoration:none}
+a:hover{text-decoration:underline}
+h1,h2,h3{line-height:1.15;letter-spacing:-.02em;font-weight:700;color:var(--text-primary)}
+h1{font-size:clamp(2.25rem,4.5vw,3.5rem);letter-spacing:-.03em}
+h2{font-size:clamp(1.75rem,3vw,2.5rem)}
+h3{font-size:1.125rem;letter-spacing:-.01em}
+p{color:var(--text-secondary);max-width:65ch}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:var(--radius-sm)}
+.material-symbols-outlined{font-size:1.25rem;line-height:1;user-select:none}
+.container{max-width:1200px;margin:0 auto;padding-left:1.25rem;padding-right:1.25rem}
+.section{padding-top:clamp(4rem,8vw,7rem);padding-bottom:clamp(4rem,8vw,7rem)}
+.section-head{max-width:44rem;margin-bottom:3rem}
+.section-head p{margin-top:.75rem;font-size:1.0625rem}
+.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--primary);margin-bottom:.75rem}
+
+/* ---------- Buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:.625rem 1.25rem;font-family:var(--font-base);font-size:.9375rem;font-weight:600;line-height:1.4;border:1px solid transparent;border-radius:var(--radius-md);cursor:pointer;transition:background-color var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),transform var(--transition-fast) var(--ease-standard),border-color var(--transition-normal) var(--ease-standard);white-space:nowrap}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--primary);color:var(--on-primary)}
+.btn-primary:hover{background:var(--secondary);box-shadow:var(--shadow-md)}
+.btn-secondary{background:transparent;color:var(--text-primary);border-color:var(--border-strong)}
+.btn-secondary:hover{border-color:var(--text-faint);background:var(--bg-secondary);box-shadow:var(--shadow-sm)}
+.btn[disabled]{opacity:.5;cursor:not-allowed;filter:grayscale(.4)}
+.btn .material-symbols-outlined{font-size:1.125rem}
+
+/* ---------- Nav ---------- */
+.nav{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--bg-primary);border-bottom:1px solid var(--border-default)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;height:64px;gap:1rem}
+.brand{display:flex;align-items:center;gap:.625rem;font-weight:700;font-size:1.0625rem;color:var(--text-primary);letter-spacing:-.01em}
+.brand:hover{text-decoration:none}
+.brand-mark{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:var(--radius-sm);background:var(--primary);color:var(--on-primary)}
+.brand-mark .material-symbols-outlined{font-size:1.125rem}
+.nav-links{display:flex;align-items:center;gap:.25rem;list-style:none}
+.nav-links a{display:flex;align-items:center;min-height:44px;padding:.5rem .875rem;font-size:.9375rem;font-weight:500;color:var(--text-secondary);border-radius:var(--radius-md);transition:color var(--transition-fast) var(--ease-standard),background-color var(--transition-fast) var(--ease-standard)}
+.nav-links a:hover{color:var(--text-primary);background:var(--bg-secondary);text-decoration:none}
+.nav-actions{display:flex;align-items:center;gap:.5rem}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border:1px solid transparent;border-radius:var(--radius-md);background:transparent;color:var(--text-secondary);cursor:pointer;transition:background-color var(--transition-fast) var(--ease-standard),color var(--transition-fast) var(--ease-standard)}
+.icon-btn:hover{background:var(--bg-secondary);color:var(--text-primary)}
+#theme-toggle .icon-sun{display:none}
+:root[data-theme="dark"] #theme-toggle .icon-sun{display:inline-block}
+:root[data-theme="dark"] #theme-toggle .icon-moon{display:none}
+.menu-btn{display:none}
+.nav-cta{margin-left:.25rem}
+
+/* ---------- Hero ---------- */
+.hero{padding-top:clamp(3rem,6vw,5rem);padding-bottom:clamp(3.5rem,7vw,6rem);border-bottom:1px solid var(--border-default);background:linear-gradient(180deg,var(--bg-secondary) 0%,var(--bg-primary) 100%)}
+.hero-grid{display:flex;align-items:center;gap:clamp(2rem,5vw,4.5rem)}
+.hero-copy{flex:1 1 46%;min-width:0}
+.hero-copy h1{margin-bottom:1rem}
+.hero-copy p{font-size:1.125rem;margin-bottom:1.75rem}
+.hero-ctas{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+.hero-visual{flex:1 1 54%;min-width:0}
+.code-card{background:var(--code-bg);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);overflow:hidden}
+.code-card-bar{display:flex;align-items:center;gap:.5rem;padding:.625rem 1rem;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03)}
+.code-card-bar .dot{width:10px;height:10px;border-radius:50%}
+.dot-r{background:#ff5f57}.dot-y{background:#febc2e}.dot-g{background:#28c840}
+.code-card-title{margin-left:auto;margin-right:auto;font-family:var(--font-mono);font-size:.75rem;color:#8a909c}
+.code-card pre{padding:1.25rem 1.5rem;font-family:var(--font-mono);font-size:.8125rem;line-height:1.7;color:var(--code-text);overflow-x:auto}
+.tk-k{color:var(--code-key)}.tk-s{color:var(--code-str)}.tk-c{color:var(--code-com)}
+.hero-status{display:flex;align-items:center;gap:.5rem;padding:.625rem 1rem;border-top:1px solid rgba(255,255,255,.08);font-family:var(--font-mono);font-size:.75rem;color:#3fba6e}
+.hero-status .material-symbols-outlined{font-size:1rem}
+
+/* ---------- Features ---------- */
+.card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--spacing-gap)}
+.card{display:flex;flex-direction:column;align-items:flex-start;gap:.875rem;background:var(--bg-primary);border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);padding:1.75rem;transition:box-shadow var(--transition-normal) var(--ease-standard),transform var(--transition-normal) var(--ease-standard),border-color var(--transition-normal) var(--ease-standard)}
+.card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.card:focus-within{border-color:var(--primary)}
+.card-icon{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-md);background:var(--bg-tertiary);color:var(--primary);border:1px solid var(--border-default)}
+.card p{font-size:.9375rem}
+.card-link{display:inline-flex;align-items:center;gap:.375rem;font-size:.9375rem;font-weight:600;margin-top:auto;padding-top:.25rem}
+.card-link .material-symbols-outlined{font-size:1rem;transition:transform var(--transition-fast) var(--ease-standard)}
+.card-link:hover .material-symbols-outlined{transform:translateX(2px)}
+
+/* ---------- Steps ---------- */
+.steps{background:var(--bg-secondary);border-top:1px solid var(--border-default);border-bottom:1px solid var(--border-default)}
+.steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--spacing-gap);counter-reset:step}
+.step{display:flex;flex-direction:column;align-items:flex-start;gap:.75rem;padding:1.5rem;background:var(--bg-primary);border:1px solid var(--border-default);border-radius:var(--radius-md)}
+.step-num{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:var(--radius-sm);background:var(--primary);color:var(--on-primary);font-weight:700;font-size:.9375rem;font-family:var(--font-mono)}
+.step p{font-size:.9375rem}
+.step code{font-family:var(--font-mono);font-size:.8125rem;background:var(--bg-tertiary);border:1px solid var(--border-default);border-radius:var(--radius-sm);padding:.125rem .375rem;color:var(--text-primary)}
+
+/* ---------- Testimonials ---------- */
+.quotes{display:grid;grid-template-columns:1fr 1fr;gap:var(--spacing-gap)}
+.quote{display:flex;flex-direction:column;gap:1.25rem;padding:2rem;background:var(--bg-primary);border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm)}
+.quote blockquote{font-size:1.0625rem;line-height:1.55;color:var(--text-primary)}
+.quote blockquote::before{content:"\201C"}.quote blockquote::after{content:"\201D"}
+.quote-who{display:flex;align-items:center;gap:.875rem;margin-top:auto}
+.monogram{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;background:var(--bg-tertiary);border:1px solid var(--border-default);font-weight:700;font-size:.875rem;color:var(--primary);flex-shrink:0}
+.quote-name{font-weight:600;font-size:.9375rem;color:var(--text-primary)}
+.quote-role{font-size:.8125rem;color:var(--text-faint)}
+
+/* ---------- Pricing ---------- */
+.pricing{background:var(--bg-secondary);border-top:1px solid var(--border-default);border-bottom:1px solid var(--border-default)}
+.tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--spacing-gap);align-items:stretch}
+.tier{display:flex;flex-direction:column;gap:1.25rem;padding:2rem;background:var(--bg-primary);border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);position:relative;transition:box-shadow var(--transition-normal) var(--ease-standard),transform var(--transition-normal) var(--ease-standard)}
+.tier:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.tier-featured{border:2px solid var(--primary);box-shadow:var(--shadow-md)}
+:root[data-theme="dark"] .tier-featured{border-color:var(--primary)}
+.tier-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--primary);color:var(--on-primary);font-size:.75rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:.25rem .75rem;border-radius:999px;white-space:nowrap}
+.tier-name{font-size:1.125rem;font-weight:700}
+.tier-price{display:flex;align-items:baseline;gap:.375rem}
+.tier-price strong{font-size:2.25rem;font-weight:800;letter-spacing:-.03em;color:var(--text-primary)}
+.tier-price span{font-size:.875rem;color:var(--text-faint)}
+.tier-list{list-style:none;display:flex;flex-direction:column;gap:.625rem;font-size:.9375rem;color:var(--text-secondary)}
+.tier-list li{display:flex;align-items:flex-start;gap:.5rem}
+.tier-list .material-symbols-outlined{font-size:1.125rem;color:var(--text-success);margin-top:.15rem}
+.tier .btn{margin-top:auto;width:100%}
+
+/* ---------- FAQ ---------- */
+.faq-list{display:flex;flex-direction:column;gap:.75rem;max-width:48rem}
+.faq-item{background:var(--bg-primary);border:1px solid var(--border-default);border-radius:var(--radius-md);overflow:hidden}
+.faq-item summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:44px;padding:1.125rem 1.5rem;font-weight:600;font-size:1rem;color:var(--text-primary);cursor:pointer;list-style:none;transition:background-color var(--transition-fast) var(--ease-standard)}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-item summary:hover{background:var(--bg-secondary)}
+.faq-item summary .material-symbols-outlined{color:var(--text-faint);transition:transform var(--transition-normal) var(--ease-standard)}
+.faq-item[open] summary .material-symbols-outlined{transform:rotate(180deg)}
+.faq-body{padding:0 1.5rem 1.25rem;font-size:.9375rem}
+
+/* ---------- CTA band ---------- */
+.cta-band{background:var(--primary);color:var(--on-primary)}
+.cta-band-inner{display:flex;flex-direction:column;align-items:center;text-align:center;gap:1.25rem;padding-top:clamp(4rem,8vw,6rem);padding-bottom:clamp(4rem,8vw,6rem)}
+.cta-band h2{color:var(--on-primary)}
+.cta-band p{color:var(--on-primary);opacity:.85;max-width:36rem}
+.cta-band .btn-primary{background:var(--bg-primary);color:var(--primary)}
+:root[data-theme="dark"] .cta-band .btn-primary{background:#0c0c0e;color:#4d8dff}
+.cta-band .btn-primary:hover{box-shadow:var(--shadow-lg);background:var(--bg-primary)}
+:root[data-theme="dark"] .cta-band .btn-primary:hover{background:#151619}
+
+/* ---------- Footer ---------- */
+.footer{border-top:1px solid var(--border-default);background:var(--bg-secondary)}
+.footer-inner{display:flex;align-items:flex-start;justify-content:space-between;gap:2.5rem;padding-top:3.5rem;padding-bottom:2.5rem;flex-wrap:wrap}
+.footer-brand{display:flex;flex-direction:column;align-items:flex-start;gap:.875rem;max-width:20rem}
+.footer-brand p{font-size:.875rem;color:var(--text-faint)}
+.footer-cols{display:flex;align-items:flex-start;gap:clamp(2rem,6vw,5rem);flex-wrap:wrap}
+.footer-col{display:flex;flex-direction:column;align-items:flex-start;gap:.625rem}
+.footer-col h4{font-size:.8125rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-faint);margin-bottom:.25rem}
+.footer-col a{font-size:.9375rem;color:var(--text-secondary);padding:.125rem 0}
+.footer-col a:hover{color:var(--primary)}
+.footer-bottom{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding-top:1.5rem;padding-bottom:1.5rem;border-top:1px solid var(--border-default);font-size:.8125rem;color:var(--text-faint);flex-wrap:wrap}
+.footer-bottom-links{display:flex;align-items:center;gap:1.25rem}
+.footer-bottom-links a{color:var(--text-faint);font-size:.8125rem}
+.footer-bottom-links a:hover{color:var(--primary)}
+
+/* ---------- Reveal ---------- */
+.reveal{opacity:0;transform:translateY(14px);transition:opacity .5s var(--ease-standard),transform .5s var(--ease-standard)}
+.reveal.is-visible{opacity:1;transform:none}
+
+/* ---------- Responsive ---------- */
+@media (max-width:900px){
+  .hero-grid{flex-direction:column;align-items:stretch}
+  .card-grid,.steps-grid,.tiers{grid-template-columns:1fr}
+  .quotes{grid-template-columns:1fr}
+  .tier-featured{order:-1}
+}
+@media (max-width:768px){
+  .menu-btn{display:inline-flex}
+  .nav-links{position:absolute;top:64px;left:0;right:0;display:none;flex-direction:column;align-items:stretch;gap:.25rem;background:var(--bg-primary);border-bottom:1px solid var(--border-default);box-shadow:var(--shadow-md);padding:.75rem 1.25rem 1.25rem}
+  .nav-links.open{display:flex}
+  .nav-links a{width:100%}
+  .nav-cta{display:none}
+}
+@media (hover:none){
+  .card:hover,.tier:hover{transform:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important;scroll-behavior:auto!important}
+  .reveal{opacity:1;transform:none}
+}
+@media (prefers-reduced-transparency:reduce){
+  .nav{background:var(--bg-primary)}
+}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="container nav-inner">
+    <a class="brand" href="#top" aria-label="Nimbus home">
+      <span class="brand-mark" aria-hidden="true"><span class="material-symbols-outlined">deployed_code</span></span>
+      Nimbus
+    </a>
+    <nav aria-label="Primary">
+      <ul class="nav-links" id="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+    </nav>
+    <div class="nav-actions">
+      <button id="theme-toggle" class="icon-btn" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-outlined icon-moon" aria-hidden="true">dark_mode</span>
+        <span class="material-symbols-outlined icon-sun" aria-hidden="true">light_mode</span>
+      </button>
+      <a class="btn btn-primary nav-cta" href="#pricing">Get Started</a>
+      <button class="icon-btn menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Open navigation menu">
+        <span class="material-symbols-outlined" aria-hidden="true">menu</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container hero-grid">
+      <div class="hero-copy">
+        <h1>Provision infrastructure from versioned code</h1>
+        <p>Nimbus turns declarative configuration into reviewed, repeatable changes across every cloud your team runs.</p>
+        <div class="hero-ctas">
+          <a class="btn btn-primary" href="#pricing">Get Started<span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span></a>
+          <a class="btn btn-secondary" href="#how-it-works">How It Works</a>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="code-card" role="img" aria-label="Example Nimbus configuration file defining a network and two servers">
+          <div class="code-card-bar">
+            <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+            <span class="code-card-title">main.nimbus.hcl</span>
+          </div>
+          <pre><code><span class="tk-k">resource</span> <span class="tk-s">"network"</span> <span class="tk-s">"core"</span> {
+  region  = <span class="tk-s">"eu-central-1"</span>
+  cidr    = <span class="tk-s">"10.4.0.0/16"</span>
+}
+
+<span class="tk-k">resource</span> <span class="tk-s">"server"</span> <span class="tk-s">"api"</span> {
+  count   = <span class="tk-s">2</span>
+  image   = <span class="tk-s">"debian-12"</span>
+  network = network.core.id
+  <span class="tk-c"># plan: 2 to create, 0 to change</span>
+}</code></pre>
+          <div class="hero-status">
+            <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+            plan succeeded · 2 resources to create · 0 drift detected
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="section" id="features">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Features</span>
+        <h2>Built for teams that run production</h2>
+        <p>Deterministic plans, policy checks, and state you can audit. Everything an infrastructure team expects from a core tool.</p>
+      </div>
+      <div class="card-grid">
+        <article class="card reveal">
+          <span class="card-icon" aria-hidden="true"><span class="material-symbols-outlined">account_tree</span></span>
+          <h3>Plan before apply</h3>
+          <p>Every change produces a diff you can review in pull requests. Nothing touches production until a human approves the plan output.</p>
+          <a class="card-link" href="#faq">Read the docs<span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span></a>
+        </article>
+        <article class="card reveal">
+          <span class="card-icon" aria-hidden="true"><span class="material-symbols-outlined">lock</span></span>
+          <h3>Policy as guardrails</h3>
+          <p>Enforce tagging, region allowlists, and cost ceilings at plan time. Violations block the apply with a clear, actionable message.</p>
+          <a class="card-link" href="#faq">Read the docs<span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span></a>
+        </article>
+        <article class="card reveal">
+          <span class="card-icon" aria-hidden="true"><span class="material-symbols-outlined">history</span></span>
+          <h3>Auditable state</h3>
+          <p>State is versioned, encrypted at rest, and locked during operations. Roll back to any prior revision with a single command.</p>
+          <a class="card-link" href="#faq">Read the docs<span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span></a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section class="section steps" id="how-it-works">
+    <div class="container">
+      <div class="section-head">
+        <h2>From commit to cloud in three steps</h2>
+        <p>The same workflow on a laptop and in CI. No separate tooling for local development.</p>
+      </div>
+      <div class="steps-grid">
+        <article class="step reveal">
+          <span class="step-num">1</span>
+          <h3>Write configuration</h3>
+          <p>Describe resources in HCL and commit to version control. Run <code>nimbus fmt</code> and <code>nimbus validate</code> before pushing.</p>
+        </article>
+        <article class="step reveal">
+          <span class="step-num">2</span>
+          <h3>Review the plan</h3>
+          <p><code>nimbus plan</code> posts a resource diff to your pull request. Reviewers see exactly what will be created, changed, or destroyed.</p>
+        </article>
+        <article class="step reveal">
+          <span class="step-num">3</span>
+          <h3>Apply with confidence</h3>
+          <p>On merge, <code>nimbus apply</code> executes the approved plan with state locking, then records the revision for audit and rollback.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="section" id="testimonials">
+    <div class="container">
+      <div class="section-head">
+        <h2>Trusted by infrastructure teams</h2>
+        <p>From two-person platform teams to organizations managing thousands of workspaces.</p>
+      </div>
+      <div class="quotes">
+        <article class="quote reveal">
+          <blockquote>We replaced a wiki page of manual steps with reviewed plans. Change failure rate dropped by half in the first quarter.</blockquote>
+          <div class="quote-who">
+            <span class="monogram" aria-hidden="true">MK</span>
+            <div>
+              <div class="quote-name">Marta Kowalczyk</div>
+              <div class="quote-role">Staff SRE, Northwind Logistics</div>
+            </div>
+          </div>
+        </article>
+        <article class="quote reveal">
+          <blockquote>Policy checks at plan time ended the Friday-afternoon incident review. Auditors finally get a straight answer from our state history.</blockquote>
+          <div class="quote-who">
+            <span class="monogram" aria-hidden="true">DA</span>
+            <div>
+              <div class="quote-name">Daniel Adeyemi</div>
+              <div class="quote-role">Platform Lead, Covalent Health</div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section class="section pricing" id="pricing">
+    <div class="container">
+      <div class="section-head">
+        <h2>Pricing that scales with your workspaces</h2>
+        <p>Open-source core, always free. Pay for collaboration, governance, and support.</p>
+      </div>
+      <div class="tiers">
+        <article class="tier reveal">
+          <h3 class="tier-name">Community</h3>
+          <div class="tier-price"><strong>$0</strong><span>forever</span></div>
+          <ul class="tier-list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Open-source CLI and providers</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Local state and locking</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Community forum support</li>
+          </ul>
+          <a class="btn btn-secondary" href="#faq">Get Started</a>
+        </article>
+        <article class="tier tier-featured reveal">
+          <span class="tier-badge">Most Popular</span>
+          <h3 class="tier-name">Team</h3>
+          <div class="tier-price"><strong>$20</strong><span>per user / month</span></div>
+          <ul class="tier-list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Remote state with versioning</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Plan reviews in pull requests</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Policy checks at plan time</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>SSO and role-based access</li>
+          </ul>
+          <a class="btn btn-primary" href="#faq">Get Started</a>
+        </article>
+        <article class="tier reveal">
+          <h3 class="tier-name">Enterprise</h3>
+          <div class="tier-price"><strong>Custom</strong><span>annual</span></div>
+          <ul class="tier-list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Self-hosted or managed runners</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Audit log export and retention</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>99.9% uptime SLA with 24/7 support</li>
+          </ul>
+          <a class="btn btn-secondary" href="#faq">Contact Sales</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq">
+    <div class="container">
+      <div class="section-head">
+        <h2>Frequently asked questions</h2>
+        <p>Answers to the questions platform teams ask before rolling Nimbus out to production.</p>
+      </div>
+      <div class="faq-list">
+        <details class="faq-item">
+          <summary>How does Nimbus store state?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></summary>
+          <div class="faq-body"><p>State is stored in an encrypted remote backend with full version history. Operations acquire a lock before running, so concurrent applies cannot corrupt state. You can export or roll back to any revision.</p></div>
+        </details>
+        <details class="faq-item">
+          <summary>Can I migrate from an existing provisioning tool?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></summary>
+          <div class="faq-body"><p>Yes. The <code>nimbus import</code> command reads existing cloud resources and generates matching configuration and state. Most teams migrate one workspace at a time over a few weeks.</p></div>
+        </details>
+        <details class="faq-item">
+          <summary>Which cloud providers are supported?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></summary>
+          <div class="faq-body"><p>Nimbus ships maintained providers for AWS, Google Cloud, Azure, and Kubernetes, plus a provider SDK with a public registry of over 200 community providers.</p></div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="cta-band">
+    <div class="container cta-band-inner">
+      <h2>Ship your next change with a reviewed plan</h2>
+      <p>Install the CLI in under a minute and run your first plan against a sandbox workspace today.</p>
+      <a class="btn btn-primary" href="#pricing">Get Started<span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span></a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a class="brand" href="#top" aria-label="Nimbus home">
+          <span class="brand-mark" aria-hidden="true"><span class="material-symbols-outlined">deployed_code</span></span>
+          Nimbus
+        </a>
+        <p>Open-source infrastructure provisioning with reviewed plans, policy guardrails, and auditable state.</p>
+      </div>
+      <div class="footer-cols">
+        <div class="footer-col">
+          <h4>Product</h4>
+          <a href="#features">Features</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#faq">FAQ</a>
+        </div>
+        <div class="footer-col">
+          <h4>Resources</h4>
+          <a href="#how-it-works">Documentation</a>
+          <a href="#how-it-works">Provider Registry</a>
+          <a href="#faq">Community Forum</a>
+        </div>
+        <div class="footer-col">
+          <h4>Company</h4>
+          <a href="#testimonials">Customers</a>
+          <a href="#faq">Security</a>
+          <a href="#faq">Contact</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Nimbus Systems, Inc. All rights reserved.</span>
+      <div class="footer-bottom-links">
+        <a href="#faq">Privacy Policy</a>
+        <a href="#faq">Terms of Service</a>
+        <a href="#faq">Trademark Policy</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  /* Theme toggle */
+  var toggle=document.getElementById("theme-toggle");
+  function syncToggle(){
+    var dark=document.documentElement.dataset.theme==="dark";
+    toggle.setAttribute("aria-pressed",String(dark));
+    toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+  }
+  toggle.addEventListener("click",function(){
+    var next=document.documentElement.dataset.theme==="dark"?"light":"dark";
+    document.documentElement.dataset.theme=next;
+    try{localStorage.setItem("theme",next);}catch(e){}
+    syncToggle();
+  });
+  syncToggle();
+
+  /* Mobile menu */
+  var menuBtn=document.getElementById("menu-btn");
+  var navLinks=document.getElementById("nav-links");
+  function setMenu(open){
+    navLinks.classList.toggle("open",open);
+    menuBtn.setAttribute("aria-expanded",String(open));
+    menuBtn.setAttribute("aria-label",open?"Close navigation menu":"Open navigation menu");
+    menuBtn.querySelector(".material-symbols-outlined").textContent=open?"close":"menu";
+  }
+  menuBtn.addEventListener("click",function(){
+    setMenu(!navLinks.classList.contains("open"));
+  });
+  navLinks.addEventListener("click",function(e){
+    if(e.target.closest("a")){setMenu(false);}
+  });
+  document.addEventListener("keydown",function(e){
+    if(e.key==="Escape"&&navLinks.classList.contains("open")){setMenu(false);menuBtn.focus();}
+  });
+
+  /* Scroll reveal with stagger */
+  var items=document.querySelectorAll(".reveal");
+  if("IntersectionObserver" in window){
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){
+          var el=entry.target;
+          var siblings=Array.prototype.slice.call(el.parentElement.children);
+          el.style.transitionDelay=(siblings.indexOf(el)*70)+"ms";
+          el.classList.add("is-visible");
+          io.unobserve(el);
+        }
+      });
+    },{threshold:0.15});
+    items.forEach(function(el){io.observe(el);});
+  }else{
+    items.forEach(function(el){el.classList.add("is-visible");});
+  }
+})();
+</script>
+</body>
+</html>

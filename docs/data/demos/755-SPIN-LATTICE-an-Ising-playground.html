@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPIN LATTICE - an Ising playground</title>
+<meta name="description" content="An interactive Ising-model playground: flip spins, tune temperature, and watch magnetic order emerge from thermal noise.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --primary:#E0491F; --primary-strong:#C23A14; --on-primary:#EDE7D9;
+  --secondary:#6f6754;
+  --bg-primary:#EDE7D9; --bg-secondary:#E3DCC9; --surface-raise:#F2ECDD;
+  --text-primary:#16130D; --text-secondary:#6f6754;
+  --text-success:#2E7D4F; --text-error:#B3261E;
+  --border-default:#c9c0a9; --border-success:#2E7D4F; --border-error:#B3261E;
+  --spin-down:#c9c0a9;
+  --radius-sm:6px; --radius-md:12px; --radius-lg:20px;
+  --shadow-sm:0 1px 3px rgba(22,19,13,.10),0 1px 2px rgba(22,19,13,.06);
+  --shadow-md:0 8px 24px rgba(22,19,13,.14),0 2px 6px rgba(22,19,13,.08);
+  --spacing-gap:1.5rem;
+  --transition-fast:150ms; --transition-normal:300ms;
+  --ease-standard:cubic-bezier(0.4,0,0.2,1);
+  --z-header:10; --z-dropdown:100; --z-modal:1000; --z-toast:1100;
+  --font-display:'Space Grotesk',sans-serif; --font-base:'Inter',sans-serif; --font-mono:'Space Mono',monospace;
+  --hero-glow:rgba(224,73,31,.28);
+  --band-grad:linear-gradient(135deg,#E0491F 0%,#8a3a1c 45%,#16130D 100%);
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --primary:#F2552C; --primary-strong:#E0491F; --on-primary:#16130D;
+  --secondary:#c9c0a9;
+  --bg-primary:#16130D; --bg-secondary:#241E15; --surface-raise:#2C2519;
+  --text-primary:#EDE7D9; --text-secondary:#c9c0a9;
+  --text-success:#5FBF8A; --text-error:#E0776F;
+  --border-default:#3E372A; --border-success:#5FBF8A; --border-error:#E0776F;
+  --spin-down:#6f6754;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.4),0 1px 2px rgba(0,0,0,.3);
+  --shadow-md:0 8px 24px rgba(0,0,0,.5),0 2px 6px rgba(0,0,0,.35);
+  --hero-glow:rgba(242,85,44,.22);
+  --band-grad:linear-gradient(135deg,#F2552C 0%,#7a3016 45%,#0d0b07 100%);
+  color-scheme:dark;
+}
+/* ============ BASE ============ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;font-size:1rem;overflow-x:hidden;transition:background var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard)}
+img,svg{max-width:100%;display:block}
+h1,h2,h3{font-family:var(--font-display);font-weight:700;line-height:1.1;letter-spacing:-0.02em}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+:focus-visible{outline:none;box-shadow:0 0 0 3px var(--bg-primary),0 0 0 6px var(--primary);border-radius:var(--radius-sm)}
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;font-size:1.25rem;line-height:1}
+.container{max-width:1200px;margin:0 auto;padding:0 1.25rem}
+.section{padding:clamp(4rem,8vw,7rem) 0;scroll-margin-top:5rem}
+.section__head{max-width:44rem;margin-bottom:3rem}
+.section__title{font-size:clamp(1.75rem,3.5vw,2.5rem);margin-bottom:.75rem}
+.section__sub{color:var(--text-secondary);max-width:60ch}
+.eyebrow{font-family:var(--font-mono);font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--primary);margin-bottom:1rem}
+/* ============ BUTTONS ============ */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;min-width:44px;padding:.7rem 1.5rem;border-radius:var(--radius-md);font-family:var(--font-display);font-weight:500;font-size:1rem;border:1px solid transparent;transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard),background var(--transition-fast) var(--ease-standard),filter var(--transition-fast) var(--ease-standard);position:relative;white-space:nowrap}
+.btn:active{transform:scale(.97)}
+.btn--primary{background:var(--primary);color:var(--on-primary)}
+.btn--ghost{background:transparent;border-color:var(--border-default);color:var(--text-primary)}
+.btn--light{background:#fefefe;color:#16130D}
+.btn--sm{padding:.5rem 1rem;min-height:40px;font-size:.9rem}
+.btn[disabled],.btn--disabled{opacity:.5;filter:grayscale(.6);cursor:not-allowed;pointer-events:none}
+.btn.is-loading{pointer-events:none;color:transparent!important}
+.btn.is-loading .material-symbols-outlined,.btn.is-loading .btn__label{visibility:hidden}
+.btn.is-loading::after{content:"";position:absolute;width:1.25rem;height:1.25rem;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;color:var(--on-primary);animation:spin .7s linear infinite}
+.btn--ghost.is-loading::after{color:var(--text-primary)}
+.btn--light.is-loading::after{color:#16130D}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (hover:hover) and (pointer:fine){
+  .btn--primary:hover{filter:brightness(1.08);box-shadow:var(--shadow-md)}
+  .btn--ghost:hover{border-color:var(--primary);color:var(--primary)}
+  .btn--light:hover{filter:brightness(.95);box-shadow:var(--shadow-md)}
+}
+/* ============ HEADER ============ */
+.header{position:sticky;top:0;z-index:var(--z-header);background:color-mix(in srgb,var(--bg-primary) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--border-default)}
+.header__inner{display:flex;align-items:center;justify-content:space-between;height:64px;gap:1rem}
+.wordmark{display:flex;align-items:center;gap:.5rem;font-family:var(--font-display);font-weight:700;font-size:1.05rem;letter-spacing:.02em}
+.wordmark .material-symbols-outlined{color:var(--primary)}
+.nav{display:flex;align-items:center;gap:1.75rem}
+.nav__link{font-size:.925rem;font-weight:500;color:var(--text-secondary);transition:color var(--transition-fast) var(--ease-standard);padding:.5rem 0}
+@media (hover:hover) and (pointer:fine){.nav__link:hover{color:var(--primary)}}
+.header__actions{display:flex;align-items:center;gap:.5rem}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-md);border:1px solid var(--border-default);color:var(--text-primary);transition:transform var(--transition-fast) var(--ease-standard),border-color var(--transition-fast) var(--ease-standard),color var(--transition-fast) var(--ease-standard)}
+.icon-btn:active{transform:scale(.97)}
+@media (hover:hover) and (pointer:fine){.icon-btn:hover{border-color:var(--primary);color:var(--primary)}}
+#theme-toggle .icon-sun{display:none}
+:root[data-theme="dark"] #theme-toggle .icon-sun{display:block}
+:root[data-theme="dark"] #theme-toggle .icon-moon{display:none}
+.menu-btn{display:none}
+/* ============ HERO ============ */
+.hero{position:relative;overflow:hidden;background:
+  radial-gradient(60rem 32rem at 78% 18%,var(--hero-glow),transparent 65%),
+  radial-gradient(40rem 26rem at 8% 90%,var(--hero-glow),transparent 60%),
+  linear-gradient(180deg,var(--bg-primary),var(--bg-secondary))}
+.hero__inner{display:grid;grid-template-columns:1fr 1fr;gap:clamp(2rem,5vw,4rem);align-items:center;padding-top:clamp(3rem,6vw,5.5rem);padding-bottom:clamp(3rem,6vw,5.5rem);min-height:calc(100dvh - 64px)}
+.hero__title{font-size:clamp(2.25rem,5vw,3.75rem);margin-bottom:1.25rem;background:linear-gradient(100deg,var(--primary) 20%,var(--secondary) 90%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero__sub{color:var(--text-secondary);max-width:52ch;margin-bottom:2rem;font-size:1.0625rem}
+.hero__ctas{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.lattice-wrap{display:flex;flex-direction:column;align-items:center;gap:1rem}
+.lattice{display:grid;grid-template-columns:repeat(12,1fr);gap:3px;width:100%;max-width:30rem;padding:.75rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-md)}
+.spin{aspect-ratio:1/1;border-radius:var(--radius-sm);transition:transform var(--transition-normal) var(--ease-standard),background var(--transition-normal) var(--ease-standard);cursor:pointer}
+.spin--up{background:linear-gradient(135deg,var(--primary),var(--primary-strong))}
+.spin--down{background:var(--spin-down)}
+.spin--flip{transform:rotateX(180deg)}
+@media (hover:hover) and (pointer:fine){.spin:hover{filter:brightness(1.12)}}
+.lattice__bar{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;justify-content:center}
+.magnet{font-family:var(--font-mono);font-size:1rem;color:var(--text-primary);background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:.5rem 1rem;min-width:9.5rem;text-align:center}
+/* ============ CARDS ============ */
+.grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:var(--spacing-gap)}
+.card{display:flex;flex-direction:column;align-items:flex-start;gap:.75rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:1.75rem;transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),border-color var(--transition-normal) var(--ease-standard);position:relative}
+.card:focus-within{border-color:var(--primary)}
+@media (hover:hover) and (pointer:fine){
+  .card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);border-color:transparent;background:linear-gradient(var(--bg-secondary),var(--bg-secondary)) padding-box,linear-gradient(135deg,var(--primary),var(--secondary)) border-box}
+}
+.card__icon{display:inline-flex;align-items:center;justify-content:center;width:2.75rem;height:2.75rem;border-radius:var(--radius-md);background:var(--bg-primary);border:1px solid var(--border-default);color:var(--primary)}
+.card__icon .material-symbols-outlined{font-size:1.5rem}
+.card__title{font-size:1.2rem}
+.card__text{color:var(--text-secondary);font-size:.95rem}
+/* ============ STEPS ============ */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--spacing-gap)}
+.step{display:flex;flex-direction:column;align-items:flex-start;gap:.75rem;position:relative;padding:1.75rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm)}
+.step__num{font-family:var(--font-mono);font-weight:700;font-size:1.5rem;color:var(--primary)}
+.step__title{font-size:1.2rem}
+.step__text{color:var(--text-secondary);font-size:.95rem}
+@media (min-width:768px){
+  .step:not(:last-child)::after{content:"";position:absolute;top:2.6rem;right:calc(-1 * var(--spacing-gap));width:var(--spacing-gap);border-top:2px dotted var(--border-default)}
+}
+/* ============ TESTIMONIALS ============ */
+.quote-card{display:flex;flex-direction:column;align-items:flex-start;gap:1rem}
+.quote-card .material-symbols-outlined{color:var(--primary);font-size:1.75rem}
+.quote-card__text{font-size:1rem;line-height:1.6}
+.quote-card__who{display:flex;align-items:center;gap:.75rem;margin-top:auto}
+.monogram{display:inline-flex;align-items:center;justify-content:center;width:2.5rem;height:2.5rem;border-radius:50%;background:var(--primary);color:var(--on-primary);font-family:var(--font-display);font-weight:700;font-size:.85rem;flex-shrink:0}
+.quote-card__name{font-weight:500;font-size:.9rem}
+.quote-card__role{color:var(--text-secondary);font-size:.8rem}
+/* ============ PRICING ============ */
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:var(--spacing-gap);align-items:stretch}
+.price-card{display:flex;flex-direction:column;align-items:stretch;gap:1rem;text-align:left}
+.price-card--featured{background:linear-gradient(var(--bg-secondary),var(--bg-secondary)) padding-box,linear-gradient(135deg,var(--primary),var(--secondary)) border-box;border:1px solid transparent;box-shadow:var(--shadow-md);transform:translateY(-.5rem)}
+.price-card__badge{position:absolute;top:-.8rem;left:50%;transform:translateX(-50%);font-family:var(--font-mono);font-size:.65rem;letter-spacing:.15em;background:var(--primary);color:var(--on-primary);padding:.3rem .8rem;border-radius:999px;white-space:nowrap}
+.price-card__tier{font-family:var(--font-display);font-weight:500;font-size:1.05rem;color:var(--text-secondary)}
+.price-card__price{font-family:var(--font-display);font-weight:700;font-size:2.25rem;letter-spacing:-0.02em}
+.price-card__price small{font-size:.9rem;font-weight:500;color:var(--text-secondary)}
+.price-card__list{list-style:none;display:flex;flex-direction:column;align-items:flex-start;gap:.6rem;flex:1;font-size:.925rem}
+.price-card__list li{display:flex;align-items:center;gap:.5rem}
+.price-card__list .material-symbols-outlined{color:var(--text-success);font-size:1.1rem}
+/* ============ FAQ ============ */
+.faq{max-width:46rem;margin:0 auto;display:flex;flex-direction:column;gap:.75rem}
+.faq__item{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);overflow:hidden}
+.faq__trigger{display:flex;align-items:center;justify-content:space-between;gap:1rem;width:100%;text-align:left;padding:1.1rem 1.25rem;font-family:var(--font-display);font-weight:500;font-size:1rem;min-height:44px;transition:color var(--transition-fast) var(--ease-standard)}
+.faq__trigger .material-symbols-outlined{transition:transform var(--transition-normal) var(--ease-standard);color:var(--text-secondary);flex-shrink:0}
+.faq__trigger[aria-expanded="true"] .material-symbols-outlined{transform:rotate(180deg);color:var(--primary)}
+@media (hover:hover) and (pointer:fine){.faq__trigger:hover{color:var(--primary)}}
+.faq__panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--transition-normal) var(--ease-standard)}
+.faq__panel-inner{overflow:hidden}
+.faq__panel p{padding:0 1.25rem 1.1rem;color:var(--text-secondary);font-size:.95rem}
+.faq__item.is-open .faq__panel{grid-template-rows:1fr}
+/* ============ CTA BAND ============ */
+.band{background:var(--band-grad);color:#EDE7D9;text-align:center}
+.band__title{font-size:clamp(1.75rem,4vw,2.75rem);margin-bottom:1rem;color:#EDE7D9}
+.band__sub{max-width:52ch;margin:0 auto 2rem;color:#EDE7D9;opacity:.9}
+.band__form{display:flex;align-items:flex-start;gap:.75rem;max-width:30rem;margin:2rem auto 0;flex-wrap:wrap;justify-content:center}
+.band .input-group{flex:1;min-width:14rem}
+.band .input-group input{background:rgba(22,19,13,.35);border-color:rgba(237,231,217,.45);color:#EDE7D9}
+.band .input-group input::placeholder{color:rgba(237,231,217,.6)}
+.band .input-group label{color:#EDE7D9}
+.band .input-group__helper{color:rgba(237,231,217,.75)}
+/* ============ FORMS ============ */
+.input-group{display:flex;flex-direction:column;align-items:stretch;gap:.35rem;text-align:left}
+.input-group label{font-size:.85rem;font-weight:500}
+.input-group__field{position:relative;display:flex;align-items:center}
+.input-group input{width:100%;min-height:44px;padding:.65rem 2.5rem .65rem .9rem;border:1px solid var(--border-default);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary);font:inherit;transition:border-color var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard)}
+.input-group input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 25%,transparent)}
+.input-group input:disabled{opacity:.5;cursor:not-allowed}
+.input-group input[readonly]{background:var(--bg-secondary)}
+.input-group__icon{position:absolute;right:.75rem;font-size:1.15rem;display:none;pointer-events:none}
+.input-group--valid input{border-color:var(--border-success)}
+.input-group--valid .icon-check{display:block;color:var(--text-success)}
+.input-group--invalid input{border-color:var(--border-error)}
+.input-group--invalid .icon-error{display:block;color:var(--text-error)}
+.input-group__helper{font-size:.78rem;color:var(--text-secondary)}
+.input-group__error{font-size:.78rem;color:var(--text-error);display:none}
+.input-group--invalid .input-group__error{display:block}
+.input-group--invalid .input-group__helper{display:none}
+/* ============ MODAL ============ */
+.modal{position:fixed;inset:0;z-index:var(--z-modal);display:flex;align-items:center;justify-content:center;padding:1.25rem;visibility:hidden;opacity:0;transition:opacity var(--transition-normal) var(--ease-standard),visibility var(--transition-normal)}
+.modal.is-open{visibility:visible;opacity:1}
+.modal__backdrop{position:absolute;inset:0;background:rgba(22,19,13,.6)}
+.modal__box{position:relative;background:var(--bg-primary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);max-width:28rem;width:100%;padding:2rem;transform:scale(.95);opacity:0;transition:transform var(--transition-normal) var(--ease-standard),opacity var(--transition-normal) var(--ease-standard)}
+.modal.is-open .modal__box{transform:scale(1);opacity:1}
+.modal__close{position:absolute;top:.75rem;right:.75rem}
+.modal__title{font-size:1.4rem;margin-bottom:.5rem;padding-right:2.5rem}
+.modal__sub{color:var(--text-secondary);font-size:.925rem;margin-bottom:1.5rem}
+.modal__form{display:flex;flex-direction:column;align-items:stretch;gap:1rem}
+.modal__success{display:flex;flex-direction:column;align-items:center;gap:.75rem;text-align:center;padding:1rem 0}
+.modal__success .material-symbols-outlined{font-size:3rem;color:var(--text-success)}
+/* ============ TOAST ============ */
+.toast-zone{position:fixed;bottom:1.25rem;right:1.25rem;z-index:var(--z-toast);display:flex;flex-direction:column;align-items:flex-end;gap:.5rem}
+.toast{display:flex;align-items:center;gap:.6rem;background:var(--text-primary);color:var(--bg-primary);padding:.8rem 1.1rem;border-radius:var(--radius-md);box-shadow:var(--shadow-md);font-size:.9rem;transform:translateY(.5rem);opacity:0;transition:transform var(--transition-normal) var(--ease-standard),opacity var(--transition-normal) var(--ease-standard)}
+.toast.is-visible{transform:translateY(0);opacity:1}
+.toast .material-symbols-outlined{color:var(--text-success)}
+/* ============ FOOTER ============ */
+.footer{background:var(--bg-secondary);border-top:1px solid var(--border-default);padding:3.5rem 0 2rem}
+.footer__grid{display:grid;grid-template-columns:2fr repeat(4,1fr);gap:2rem;margin-bottom:2.5rem}
+.footer__brand p{color:var(--text-secondary);font-size:.875rem;max-width:26ch;margin-top:.75rem}
+.footer__col h4{font-family:var(--font-display);font-size:.85rem;font-weight:500;margin-bottom:.9rem;letter-spacing:.02em}
+.footer__col ul{list-style:none;display:flex;flex-direction:column;align-items:flex-start;gap:.55rem}
+.footer__col a{color:var(--text-secondary);font-size:.875rem;transition:color var(--transition-fast) var(--ease-standard)}
+@media (hover:hover) and (pointer:fine){.footer__col a:hover{color:var(--primary)}}
+.footer__bottom{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;padding-top:1.5rem;border-top:1px solid var(--border-default);color:var(--text-secondary);font-size:.8rem}
+.footer__social{display:flex;align-items:center;gap:.5rem}
+/* ============ REVEAL ============ */
+.reveal{opacity:0;transform:translateY(14px);transition:opacity .5s var(--ease-standard),transform .5s var(--ease-standard)}
+.reveal.is-in{opacity:1;transform:none}
+/* ============ RESPONSIVE ============ */
+@media (max-width:900px){
+  .hero__inner{grid-template-columns:1fr;min-height:0;padding-top:3rem}
+  .lattice{max-width:26rem;margin:0 auto}
+  .footer__grid{grid-template-columns:1fr 1fr}
+}
+@media (max-width:767px){
+  .nav{position:fixed;top:64px;left:0;right:0;z-index:var(--z-dropdown);flex-direction:column;align-items:stretch;gap:0;background:var(--bg-primary);border-bottom:1px solid var(--border-default);padding:.5rem 1.25rem 1rem;transform:translateY(-.5rem);opacity:0;visibility:hidden;transition:opacity var(--transition-fast) var(--ease-standard),transform var(--transition-fast) var(--ease-standard),visibility var(--transition-fast)}
+  .nav.is-open{transform:none;opacity:1;visibility:visible}
+  .nav__link{padding:.8rem 0;border-bottom:1px solid var(--border-default)}
+  .menu-btn{display:inline-flex}
+  .steps{grid-template-columns:1fr}
+  .lattice{grid-template-columns:repeat(6,1fr);gap:2px}
+  .price-card--featured{transform:none}
+  .band__form{flex-direction:column;align-items:stretch}
+}
+@media (max-width:560px){.footer__grid{grid-template-columns:1fr}}
+/* ============ REDUCED MOTION / TRANSPARENCY ============ */
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:120ms!important}
+  .spin--flip{transform:none}
+  .reveal{transform:none}
+}
+@media (prefers-reduced-transparency:reduce){
+  .header{background:var(--bg-primary);backdrop-filter:none}
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="container header__inner">
+    <a href="#top" class="wordmark"><span class="material-symbols-outlined" aria-hidden="true">grid_on</span>SPIN LATTICE</a>
+    <nav class="nav" id="site-nav" aria-label="Primary">
+      <a class="nav__link" href="#features">Features</a>
+      <a class="nav__link" href="#how">How It Works</a>
+      <a class="nav__link" href="#testimonials">Testimonials</a>
+      <a class="nav__link" href="#pricing">Pricing</a>
+      <a class="nav__link" href="#faq">FAQ</a>
+    </nav>
+    <div class="header__actions">
+      <button id="theme-toggle" class="icon-btn" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-outlined icon-moon" aria-hidden="true">dark_mode</span>
+        <span class="material-symbols-outlined icon-sun" aria-hidden="true">light_mode</span>
+      </button>
+      <button class="icon-btn menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">
+        <span class="material-symbols-outlined" aria-hidden="true">menu</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container hero__inner">
+      <div>
+        <p class="eyebrow">An Ising Playground</p>
+        <h1 class="hero__title">Watch order emerge from pure noise.</h1>
+        <p class="hero__sub">A lattice of spins, a dial for temperature, and nothing else. Flip cells, cool the system, and see magnetism appear on your screen.</p>
+        <div class="hero__ctas">
+          <a class="btn btn--primary" href="#pricing"><span class="btn__label">Run the lattice</span></a>
+          <a class="btn btn--ghost" href="#how"><span class="btn__label">Read the science</span></a>
+        </div>
+      </div>
+      <div class="lattice-wrap">
+        <p class="visually-hidden" id="lattice-desc">A decorative grid of spin tiles. Orange tiles point up, tan tiles point down. Use the shuffle button to randomize them.</p>
+        <div class="lattice" id="lattice" aria-hidden="true"></div>
+        <div class="lattice__bar">
+          <p class="magnet" aria-live="polite" id="magnet">M = +0.00</p>
+          <button class="btn btn--ghost btn--sm" id="shuffle-btn" type="button" aria-describedby="lattice-desc"><span class="material-symbols-outlined" aria-hidden="true">shuffle</span><span class="btn__label">Shuffle spins</span></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section" id="features">
+    <div class="container">
+      <div class="section__head">
+        <h2 class="section__title">A physics lab that fits in a tab</h2>
+        <p class="section__sub">Every control maps to a real parameter of the Ising model. Nothing is decoration.</p>
+      </div>
+      <div class="grid-3">
+        <article class="card reveal">
+          <span class="card__icon"><span class="material-symbols-outlined" aria-hidden="true">touch_app</span></span>
+          <h3 class="card__title">Flip spins by hand</h3>
+          <p class="card__text">Click any cell to reverse it and watch its four neighbors respond. Coupling is not a metaphor here; it is the whole point.</p>
+        </article>
+        <article class="card reveal">
+          <span class="card__icon"><span class="material-symbols-outlined" aria-hidden="true">monitoring</span></span>
+          <h3 class="card__title">Live magnetization readout</h3>
+          <p class="card__text">The net magnetization updates on every flip, so you can see order build or dissolve in real time. Export the series as CSV when a run gets interesting.</p>
+        </article>
+        <article class="card reveal">
+          <span class="card__icon"><span class="material-symbols-outlined" aria-hidden="true">tune</span></span>
+          <h3 class="card__title">Temperature and field controls</h3>
+          <p class="card__text">Sweep past the critical temperature or apply an external field with two sliders. Hysteresis loops are one patient afternoon away.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="section" id="how" style="background:var(--bg-secondary)">
+    <div class="container">
+      <div class="section__head">
+        <h2 class="section__title">Three moves to a phase transition</h2>
+        <p class="section__sub">The same protocol condensed-matter students run, minus the Fortran.</p>
+      </div>
+      <div class="steps">
+        <article class="step reveal">
+          <span class="step__num">01</span>
+          <h3 class="step__title">Heat it up</h3>
+          <p class="step__text">Raise the temperature past the critical point and the lattice dissolves into flickering disorder. Thermal noise wins every local argument.</p>
+        </article>
+        <article class="step reveal">
+          <span class="step__num">02</span>
+          <h3 class="step__title">Nudge the spins</h3>
+          <p class="step__text">Flip a few cells by hand and watch the perturbation spread or die out, depending on how hot the system is.</p>
+        </article>
+        <article class="step reveal">
+          <span class="step__num">03</span>
+          <h3 class="step__title">Cool it down</h3>
+          <p class="step__text">Lower the temperature slowly and domains nucleate, grow, and lock in. The readout settles near plus or minus one.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="section" id="testimonials">
+    <div class="container">
+      <div class="section__head">
+        <h2 class="section__title">People who keep it open in a tab</h2>
+      </div>
+      <div class="grid-3">
+        <figure class="card quote-card reveal">
+          <span class="material-symbols-outlined" aria-hidden="true">format_quote</span>
+          <blockquote class="quote-card__text">I prototype coupling schemes here before touching the cluster. It is fast enough to think with, which is rarer than it sounds.</blockquote>
+          <figcaption class="quote-card__who">
+            <span class="monogram" aria-hidden="true">MK</span>
+            <span><span class="quote-card__name">Dr. Mira Kessler</span><br><span class="quote-card__role">Condensed-matter physicist, TU Delft</span></span>
+          </figcaption>
+        </figure>
+        <figure class="card quote-card reveal">
+          <span class="material-symbols-outlined" aria-hidden="true">format_quote</span>
+          <blockquote class="quote-card__text">My students finally believe the critical temperature is a real thing because they can overshoot it and watch the lattice fall apart.</blockquote>
+          <figcaption class="quote-card__who">
+            <span class="monogram" aria-hidden="true">TO</span>
+            <span><span class="quote-card__name">Tomas Okafor</span><br><span class="quote-card__role">Physics teacher, Bristol Grammar School</span></span>
+          </figcaption>
+        </figure>
+        <figure class="card quote-card reveal">
+          <span class="material-symbols-outlined" aria-hidden="true">format_quote</span>
+          <blockquote class="quote-card__text">I pipe the magnetization stream into a shader and let phase transitions drive the visuals. It is my favorite signal source right now.</blockquote>
+          <figcaption class="quote-card__who">
+            <span class="monogram" aria-hidden="true">AR</span>
+            <span><span class="quote-card__name">Ana Ribeiro</span><br><span class="quote-card__role">Creative coder, Studio Maré</span></span>
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="section" id="pricing" style="background:var(--bg-secondary)">
+    <div class="container">
+      <div class="section__head">
+        <h2 class="section__title">Pick a lattice size</h2>
+        <p class="section__sub">Free for learning, priced for research, negotiable for departments.</p>
+      </div>
+      <div class="pricing-grid">
+        <article class="card price-card reveal">
+          <h3 class="price-card__tier">Student</h3>
+          <p class="price-card__price">Free</p>
+          <ul class="price-card__list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>64 by 64 lattice</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>Temperature and field sliders</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>Community tutorials</li>
+          </ul>
+          <a class="btn btn--ghost" href="#top"><span class="btn__label">Start free</span></a>
+        </article>
+        <article class="card price-card price-card--featured reveal">
+          <span class="price-card__badge">MOST POPULAR</span>
+          <h3 class="price-card__tier">Researcher</h3>
+          <p class="price-card__price">$9<small>/mo</small></p>
+          <ul class="price-card__list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>512 by 512 lattice, GPU solver</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>CSV and image export</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>Saved experiments and sharing links</li>
+          </ul>
+          <a class="btn btn--primary" href="#top"><span class="btn__label">Start free</span></a>
+        </article>
+        <article class="card price-card reveal">
+          <h3 class="price-card__tier">Institution</h3>
+          <p class="price-card__price">Let's talk</p>
+          <ul class="price-card__list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>Classroom and lab seats</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>Custom couplings and lattices</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>Priority support and training</li>
+          </ul>
+          <button class="btn btn--ghost" id="modal-open" type="button"><span class="btn__label">Talk to us</span></button>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq">
+    <div class="container">
+      <div class="section__head">
+        <h2 class="section__title">Questions, answered</h2>
+      </div>
+      <div class="faq">
+        <div class="faq__item">
+          <button class="faq__trigger" type="button" aria-expanded="false" aria-controls="faq-p1" id="faq-t1">What is the Ising model?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button>
+          <div class="faq__panel" id="faq-p1" role="region" aria-labelledby="faq-t1"><div class="faq__panel-inner"><p>A lattice of spins that each point up or down and prefer to agree with their neighbors. It is the simplest model that shows a genuine phase transition, which is why physicists have studied it for a century.</p></div></div>
+        </div>
+        <div class="faq__item">
+          <button class="faq__trigger" type="button" aria-expanded="false" aria-controls="faq-p2" id="faq-t2">Do I need a physics background?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button>
+          <div class="faq__panel" id="faq-p2" role="region" aria-labelledby="faq-t2"><div class="faq__panel-inner"><p>No. The playground is built so intuition comes first: flip spins, move one slider, watch what happens. Short guided notes explain the vocabulary as you go.</p></div></div>
+        </div>
+        <div class="faq__item">
+          <button class="faq__trigger" type="button" aria-expanded="false" aria-controls="faq-p3" id="faq-t3">Can I export my lattices?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button>
+          <div class="faq__panel" id="faq-p3" role="region" aria-labelledby="faq-t3"><div class="faq__panel-inner"><p>Yes. Researcher plans export spin configurations as CSV, snapshots as PNG, and magnetization time series for plotting in your tool of choice.</p></div></div>
+        </div>
+        <div class="faq__item">
+          <button class="faq__trigger" type="button" aria-expanded="false" aria-controls="faq-p4" id="faq-t4">Does it work on mobile?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button>
+          <div class="faq__panel" id="faq-p4" role="region" aria-labelledby="faq-t4"><div class="faq__panel-inner"><p>It does. The lattice collapses to a touch-friendly grid, sliders become full-width, and the solver adapts its update rate to keep everything smooth.</p></div></div>
+        </div>
+        <div class="faq__item">
+          <button class="faq__trigger" type="button" aria-expanded="false" aria-controls="faq-p5" id="faq-t5">Is the Student tier really free?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button>
+          <div class="faq__panel" id="faq-p5" role="region" aria-labelledby="faq-t5"><div class="faq__panel-inner"><p>Really free, no card required. We built this so anyone curious about statistical mechanics can play first and read the textbook later.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="section band">
+    <div class="container">
+      <h2 class="band__title">The critical point is waiting</h2>
+      <p class="band__sub">Open a lattice, push the temperature around, and see a hundred-year-old idea behave like it was invented for your screen.</p>
+      <a class="btn btn--light" href="#pricing"><span class="btn__label">Start flipping</span></a>
+      <form class="band__form" id="news-form" novalidate>
+        <div class="input-group" id="news-group">
+          <label for="news-email">Get one physics note a month</label>
+          <div class="input-group__field">
+            <input type="email" id="news-email" name="email" placeholder="you@university.edu" autocomplete="email" aria-describedby="news-helper news-error">
+            <span class="material-symbols-outlined input-group__icon icon-check" aria-hidden="true">check</span>
+            <span class="material-symbols-outlined input-group__icon icon-error" aria-hidden="true">error</span>
+          </div>
+          <p class="input-group__helper" id="news-helper">No spam. Unsubscribe anytime.</p>
+          <p class="input-group__error" id="news-error" aria-live="polite">Please enter a valid email address.</p>
+        </div>
+        <button class="btn btn--light" id="news-btn" type="submit"><span class="btn__label">Subscribe</span></button>
+      </form>
+    </div>
+  </section>
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <a href="#top" class="wordmark"><span class="material-symbols-outlined" aria-hidden="true">grid_on</span>SPIN LATTICE</a>
+        <p>An interactive Ising-model playground for students, researchers, and the pleasantly curious.</p>
+      </div>
+      <div class="footer__col">
+        <h4>Product</h4>
+        <ul><li><a href="#features">Features</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#top">Changelog</a></li></ul>
+      </div>
+      <div class="footer__col">
+        <h4>Science</h4>
+        <ul><li><a href="#how">The Ising model</a></li><li><a href="#how">Tutorials</a></li><li><a href="#how">References</a></li></ul>
+      </div>
+      <div class="footer__col">
+        <h4>Company</h4>
+        <ul><li><a href="#top">About</a></li><li><a href="#top">Contact</a></li><li><a href="#top">Careers</a></li></ul>
+      </div>
+      <div class="footer__col">
+        <h4>Legal</h4>
+        <ul><li><a href="#top">Privacy</a></li><li><a href="#top">Terms</a></li></ul>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span>© 2026 SPIN LATTICE. Built at finite temperature.</span>
+      <div class="footer__social">
+        <a class="icon-btn" href="#top" aria-label="Community forum"><span class="material-symbols-outlined" aria-hidden="true">forum</span></a>
+        <a class="icon-btn" href="#top" aria-label="Code repository"><span class="material-symbols-outlined" aria-hidden="true">code</span></a>
+        <a class="icon-btn" href="#top" aria-label="Back to top"><span class="material-symbols-outlined" aria-hidden="true">arrow_upward</span></a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- MODAL -->
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+  <div class="modal__backdrop" data-close></div>
+  <div class="modal__box">
+    <button class="icon-btn modal__close" type="button" data-close aria-label="Close dialog"><span class="material-symbols-outlined" aria-hidden="true">close</span></button>
+    <div id="modal-form-view">
+      <h2 class="modal__title" id="modal-title">Talk to us</h2>
+      <p class="modal__sub">Tell us about your department or lab and we will reply within two working days.</p>
+      <form class="modal__form" id="modal-form" novalidate>
+        <div class="input-group" id="modal-name-group">
+          <label for="modal-name">Your name</label>
+          <div class="input-group__field">
+            <input type="text" id="modal-name" autocomplete="name" aria-describedby="modal-name-error">
+            <span class="material-symbols-outlined input-group__icon icon-check" aria-hidden="true">check</span>
+            <span class="material-symbols-outlined input-group__icon icon-error" aria-hidden="true">error</span>
+          </div>
+          <p class="input-group__error" id="modal-name-error" aria-live="polite">Please enter your name.</p>
+        </div>
+        <div class="input-group" id="modal-email-group">
+          <label for="modal-email">Work email</label>
+          <div class="input-group__field">
+            <input type="email" id="modal-email" autocomplete="email" aria-describedby="modal-email-error">
+            <span class="material-symbols-outlined input-group__icon icon-check" aria-hidden="true">check</span>
+            <span class="material-symbols-outlined input-group__icon icon-error" aria-hidden="true">error</span>
+          </div>
+          <p class="input-group__error" id="modal-email-error" aria-live="polite">Please enter a valid email address.</p>
+        </div>
+        <button class="btn btn--primary" id="modal-submit" type="submit"><span class="btn__label">Send request</span></button>
+      </form>
+    </div>
+    <div class="modal__success" id="modal-success-view" hidden>
+      <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+      <h2 class="modal__title">Request received</h2>
+      <p class="modal__sub">Thanks for reaching out. We will be in touch shortly.</p>
+      <button class="btn btn--ghost" type="button" data-close><span class="btn__label">Close</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-zone" id="toast-zone" aria-live="polite"></div>
+
+<script>
+(function(){
+"use strict";
+var reduceMotion=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------- Theme toggle ---------- */
+var root=document.documentElement,toggle=document.getElementById("theme-toggle");
+function syncToggle(){
+  var dark=root.dataset.theme==="dark";
+  toggle.setAttribute("aria-pressed",String(dark));
+  toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+}
+toggle.addEventListener("click",function(){
+  root.dataset.theme=root.dataset.theme==="dark"?"light":"dark";
+  localStorage.setItem("theme",root.dataset.theme);
+  syncToggle();
+});
+syncToggle();
+
+/* ---------- Mobile nav ---------- */
+var menuBtn=document.getElementById("menu-btn"),nav=document.getElementById("site-nav");
+function closeMenu(){nav.classList.remove("is-open");menuBtn.setAttribute("aria-expanded","false");menuBtn.setAttribute("aria-label","Open menu");}
+menuBtn.addEventListener("click",function(){
+  var open=nav.classList.toggle("is-open");
+  menuBtn.setAttribute("aria-expanded",String(open));
+  menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");
+});
+nav.addEventListener("click",function(e){if(e.target.closest(".nav__link"))closeMenu();});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")closeMenu();});
+
+/* ---------- Spin lattice ---------- */
+var lattice=document.getElementById("lattice"),magnet=document.getElementById("magnet");
+var COLS=12,ROWS=8,N=COLS*ROWS,spins=[],tiles=[];
+function renderMag(){
+  var sum=0,i;for(i=0;i<N;i++)sum+=spins[i];
+  var m=sum/N;
+  magnet.textContent="M = "+(m>=0?"+":"")+m.toFixed(2);
+}
+function paint(i){tiles[i].classList.toggle("spin--up",spins[i]===1);tiles[i].classList.toggle("spin--down",spins[i]===-1);}
+function flip(i,animate){
+  spins[i]*=-1;
+  if(animate&&!reduceMotion){tiles[i].classList.add("spin--flip");setTimeout(function(){paint(i);tiles[i].classList.remove("spin--flip");},150);}
+  else paint(i);
+}
+function flipWithNeighbors(i){
+  flip(i,true);
+  var r=Math.floor(i/COLS),c=i%COLS;
+  if(c>0)flip(i-1,true);if(c<COLS-1)flip(i+1,true);
+  if(r>0)flip(i-COLS,true);if(r<ROWS-1)flip(i+COLS,true);
+  renderMag();
+}
+var i;
+for(i=0;i<N;i++){
+  spins[i]=Math.random()<0.5?1:-1;
+  var d=document.createElement("div");
+  d.className="spin";
+  d.dataset.idx=i;
+  lattice.appendChild(d);tiles.push(d);paint(i);
+}
+renderMag();
+lattice.addEventListener("click",function(e){
+  var t=e.target.closest(".spin");
+  if(t)flipWithNeighbors(Number(t.dataset.idx));
+});
+document.getElementById("shuffle-btn").addEventListener("click",function(){
+  for(var k=0;k<N;k++){spins[k]=Math.random()<0.5?1:-1;paint(k);}
+  renderMag();
+});
+if(!reduceMotion){
+  setInterval(function(){
+    var k=Math.floor(Math.random()*N);
+    flip(k,true);renderMag();
+  },900);
+}
+
+/* ---------- Reveal on scroll ---------- */
+var revealEls=document.querySelectorAll(".reveal");
+if("IntersectionObserver" in window&&!reduceMotion){
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){
+        var el=en.target;
+        var idx=Array.prototype.indexOf.call(el.parentNode.children,el);
+        el.style.transitionDelay=(idx%3)*70+"ms";
+        el.classList.add("is-in");io.unobserve(el);
+      }
+    });
+  },{threshold:.15});
+  revealEls.forEach(function(el){io.observe(el);});
+}else{revealEls.forEach(function(el){el.classList.add("is-in");});}
+
+/* ---------- FAQ accordion ---------- */
+document.querySelectorAll(".faq__trigger").forEach(function(btn){
+  btn.addEventListener("click",function(){
+    var item=btn.closest(".faq__item"),open=item.classList.toggle("is-open");
+    btn.setAttribute("aria-expanded",String(open));
+  });
+});
+
+/* ---------- Toasts ---------- */
+var toastZone=document.getElementById("toast-zone");
+function toast(msg){
+  var t=document.createElement("div");
+  t.className="toast";t.setAttribute("role","status");
+  t.innerHTML='<span class="material-symbols-outlined" aria-hidden="true">check_circle</span><span></span>';
+  t.lastElementChild.textContent=msg;
+  toastZone.appendChild(t);
+  requestAnimationFrame(function(){t.classList.add("is-visible");});
+  setTimeout(function(){t.classList.remove("is-visible");setTimeout(function(){t.remove();},350);},4000);
+}
+
+/* ---------- Newsletter form ---------- */
+var emailRe=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+var newsForm=document.getElementById("news-form"),newsGroup=document.getElementById("news-group"),
+    newsEmail=document.getElementById("news-email"),newsBtn=document.getElementById("news-btn");
+newsForm.addEventListener("submit",function(e){
+  e.preventDefault();
+  if(!emailRe.test(newsEmail.value.trim())){
+    newsGroup.classList.add("input-group--invalid");newsGroup.classList.remove("input-group--valid");
+    newsEmail.focus();return;
+  }
+  newsGroup.classList.remove("input-group--invalid");
+  newsBtn.classList.add("is-loading");newsBtn.setAttribute("aria-busy","true");
+  setTimeout(function(){
+    newsBtn.classList.remove("is-loading");newsBtn.removeAttribute("aria-busy");
+    newsGroup.classList.add("input-group--valid");
+    toast("Subscribed. First note arrives next month.");
+    newsForm.reset();
+    setTimeout(function(){newsGroup.classList.remove("input-group--valid");},3000);
+  },900);
+});
+
+/* ---------- Modal ---------- */
+var modal=document.getElementById("modal"),modalOpen=document.getElementById("modal-open"),
+    modalForm=document.getElementById("modal-form"),modalSubmit=document.getElementById("modal-submit"),
+    formView=document.getElementById("modal-form-view"),successView=document.getElementById("modal-success-view"),
+    lastFocus=null;
+function openModal(){
+  lastFocus=document.activeElement;
+  modal.hidden=false;
+  requestAnimationFrame(function(){modal.classList.add("is-open");});
+  document.body.style.overflow="hidden";
+  document.getElementById("modal-name").focus();
+  document.addEventListener("keydown",trapKeys);
+}
+function closeModal(){
+  modal.classList.remove("is-open");
+  document.removeEventListener("keydown",trapKeys);
+  document.body.style.overflow="";
+  setTimeout(function(){
+    modal.hidden=true;
+    formView.hidden=false;successView.hidden=true;
+    modalForm.reset();
+    document.querySelectorAll("#modal-form .input-group").forEach(function(g){g.classList.remove("input-group--valid","input-group--invalid");});
+    if(lastFocus)lastFocus.focus();
+  },300);
+}
+function trapKeys(e){
+  if(e.key==="Escape"){closeModal();return;}
+  if(e.key!=="Tab")return;
+  var f=modal.querySelectorAll("button,input,a[href]");
+  var list=Array.prototype.filter.call(f,function(el){return el.offsetParent!==null;});
+  if(!list.length)return;
+  var first=list[0],last=list[list.length-1];
+  if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+  else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+}
+modalOpen.addEventListener("click",openModal);
+modal.addEventListener("click",function(e){if(e.target.closest("[data-close]"))closeModal();});
+modalForm.addEventListener("submit",function(e){
+  e.preventDefault();
+  var name=document.getElementById("modal-name"),email=document.getElementById("modal-email"),
+      nameG=document.getElementById("modal-name-group"),emailG=document.getElementById("modal-email-group"),ok=true;
+  if(!name.value.trim()){nameG.classList.add("input-group--invalid");ok=false;}else{nameG.classList.remove("input-group--invalid");nameG.classList.add("input-group--valid");}
+  if(!emailRe.test(email.value.trim())){emailG.classList.add("input-group--invalid");ok=false;}else{emailG.classList.remove("input-group--invalid");emailG.classList.add("input-group--valid");}
+  if(!ok)return;
+  modalSubmit.classList.add("is-loading");modalSubmit.setAttribute("aria-busy","true");
+  setTimeout(function(){
+    modalSubmit.classList.remove("is-loading");modalSubmit.removeAttribute("aria-busy");
+    formView.hidden=true;successView.hidden=false;
+    successView.querySelector("[data-close]").focus();
+    toast("Request sent. We will reply soon.");
+  },1000);
+});
+})();
+</script>
+</body>
+</html>

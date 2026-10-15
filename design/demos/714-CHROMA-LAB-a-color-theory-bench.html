@@ -1,1545 +1,644 @@
 <!DOCTYPE html>
-<html lang="en" class="light">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CHROMA LAB — Color Theory Bench</title>
+<title>CHROMA LAB - A Color Theory Bench</title>
+<script>
+(function(){var t=localStorage.getItem("chroma-lab-theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0,0" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet">
 <style>
-:root {
-  --primary: #2F6BFF;
-  --primary-strong: #1F55E0;
-  --secondary: #8B887F;
-  --bg-primary: #F5F4F0;
-  --bg-secondary: #FFFFFF;
-  --bg-tertiary: #ECEBE4;
-  --text-primary: #1C1B18;
-  --text-secondary: #6B685F;
-  --text-success: #15803D;
-  --text-error: #B42318;
-  --border-default: #E3E1D8;
-  --border-success: #15803D;
-  --border-error: #B42318;
-  --radius-sm: 4px;
-  --radius-md: 12px;
-  --radius-lg: 20px;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
-  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-  --spacing-gap: 1.5rem;
-  --transition-fast: 120ms;
-  --transition-normal: 240ms;
-  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
-  --z-header: 50;
-  --z-dropdown: 100;
-  --z-modal: 1000;
-  --z-toast: 1100;
-  --font-display: 'Space Grotesk', sans-serif;
-  --font-base: 'Inter', sans-serif;
-  --font-mono: 'IBM Plex Mono', monospace;
-  --spec-red: #FF5252;
-  --spec-yellow: #FFD43B;
-  --spec-blue: #2F6BFF;
-  --mix-blend: multiply;
-  color-scheme: light;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg-primary: #1C1B18;
-    --bg-secondary: #26241E;
-    --bg-tertiary: #2E2C26;
-    --text-primary: #F5F4F0;
-    --text-secondary: #A9A59A;
-    --border-default: #3B3931;
-    --primary: #2F6BFF;
-    --primary-strong: #7DA2FF;
-    --text-success: #4ADE80;
-    --text-error: #FF8073;
-    --border-success: #4ADE80;
-    --border-error: #FF8073;
-    --shadow-sm: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
-    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -1px rgba(0,0,0,0.2);
-    --mix-blend: screen;
-    color-scheme: dark;
-  }
-}
-.dark {
-  --bg-primary: #1C1B18;
-  --bg-secondary: #26241E;
-  --bg-tertiary: #2E2C26;
-  --text-primary: #F5F4F0;
-  --text-secondary: #A9A59A;
-  --border-default: #3B3931;
-  --primary: #2F6BFF;
-  --primary-strong: #7DA2FF;
-  --text-success: #4ADE80;
-  --text-error: #FF8073;
-  --border-success: #4ADE80;
-  --border-error: #FF8073;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
-  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -1px rgba(0,0,0,0.2);
-  --mix-blend: screen;
-  color-scheme: dark;
-}
-*, *::before, *::after { box-sizing: border-box; }
-html { font-size: 16px; }
-body {
-  margin: 0;
-  font-family: var(--font-base);
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  line-height: 1.6;
-}
-.skip-link {
-  position: absolute;
-  left: -999px;
-  top: auto;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-}
-.skip-link:focus {
-  left: 0;
-  top: 0;
-  width: auto;
-  height: auto;
-  overflow: visible;
-  background: var(--bg-secondary);
-  padding: 0.5rem 1rem;
-  z-index: 1000;
-}
-.container {
-  width: 90%;
-  max-width: 1160px;
-  margin: 0 auto;
-  padding: 0 var(--spacing-gap);
-}
-header {
-  position: sticky;
-  top: 0;
-  z-index: var(--z-header);
-  background: rgba(245, 244, 240, 0.8);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--border-default);
-  padding: 1rem 0;
-}
-@supports not (backdrop-filter: blur(10px)) {
-  header { background: var(--bg-secondary); }
-}
-.header-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(1.5rem, 4vw, 2rem);
-  color: var(--text-primary);
-  text-decoration: none;
-}
-.logo .material-symbols-outlined {
-  font-variation-settings:
-  'FILL' 0,
-  'wght' 400,
-  'GRAD' 0,
-  'opsz' 24;
-}
-nav {
-  display: flex;
-  gap: 2rem;
-  flex-wrap: wrap;
-}
-.nav-link {
-  font-family: var(--font-base);
-  font-weight: 500;
-  color: var(--text-secondary);
-  text-decoration: none;
-  position: relative;
-  padding: 0.25rem 0;
-  transition: color var(--transition-fast) var(--ease-standard);
-}
-.nav-link:hover,
-.nav-link:focus {
-  color: var(--text-primary);
-}
-.nav-link::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 0;
-  height: 2px;
-  background: var(--primary);
-  transition: width var(--transition-normal) var(--ease-standard);
-}
-.nav-link:hover::after,
-.nav-link:focus::after {
-  width: 100%;
-}
-.theme-toggle {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-sm);
-  transition: background-color var(--transition-fast) var(--ease-standard);
-}
-.theme-toggle:hover,
-.theme-toggle:focus {
-  background-color: rgba(0,0,0,0.05);
-}
-.theme-toggle:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
-}
-.theme-toggle .material-symbols-outlined {
-  font-variation-settings:
-  'FILL' 0,
-  'wght' 400,
-  'GRAD' 0,
-  'opsz' 24;
-  font-size: 1.5rem;
-  color: var(--text-primary);
-}
-.nav-toggle {
-  display: none;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0.5rem;
-}
-.nav-toggle .material-symbols-outlined {
-  font-variation-settings:
-  'FILL' 0,
-  'wght' 400,
-  'GRAD' 0,
-  'opsz' 24;
-  font-size: 1.5rem;
-  color: var(--text-primary);
-}
-.nav-menu {
-  display: flex;
-  gap: 2rem;
-  flex-wrap: wrap;
-}
-@media (max-width: 768px) {
-  .nav-toggle { display: block; }
-  .nav-menu {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: var(--bg-secondary);
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height var(--transition-normal) var(--ease-standard);
-    z-index: var(--z-dropdown);
-    border-top: 1px solid var(--border-default);
-  }
-  .nav-menu.open {
-    max-height: 300px;
-  }
-  .nav-link {
-    padding: 1rem;
-    width: 100%;
-    text-align: left;
-    border-bottom: 1px solid var(--border-default);
-  }
-}
-.hero {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-gap);
-  align-items: center;
-  padding: 6rem 0;
-  position: relative;
-  overflow: hidden;
-}
-.hero::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 1px,
-    var(--border-default) 1px,
-    var(--border-default) 2px
-  );
-  opacity: 0.1;
-  pointer-events: none;
-}
-.hero-content {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-.eyebrow {
-  font-family: var(--font-mono);
-  font-size: 0.875rem;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--primary);
-}
-.hero h1 {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(2.5rem, 8vw, 3.5rem);
-  line-height: 1.2;
-  margin: 0;
-  position: relative;
-}
-.hero h1 .gradient-text {
-  background: linear-gradient(90deg, var(--spec-red), var(--spec-yellow), var(--spec-blue));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-.hero p {
-  font-size: 1.125rem;
-  color: var(--text-secondary);
-  max-width: 40ch;
-}
-.hero-ctas {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-.mixer-visual {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 1;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  background: var(--bg-tertiary);
-}
-.mixer-circle {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  filter: blur(48px);
-  mix-blend-mode: var(--mix-blend);
-  animation: drift 20s ease-in-out infinite;
-}
-.mixer-circle:nth-child(1) {
-  background: var(--spec-red);
-  animation-delay: 0s;
-}
-.mixer-circle:nth-child(2) {
-  background: var(--spec-yellow);
-  animation-delay: 6s;
-}
-.mixer-circle:nth-child(3) {
-  background: var(--spec-blue);
-  animation-delay: 12s;
-}
-@keyframes drift {
-  0%, 100% {
-    transform: translate(0, 0) rotate(0deg);
-  }
-  33% {
-    transform: translate(15%, -10%) rotate(120deg);
-  }
-  66% {
-    transform: translate(-10%, 15%) rotate(240deg);
-  }
-}
-.mixer-label {
-  position: absolute;
-  bottom: 1rem;
-  left: 1rem;
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  color: var(--text-primary);
-  background: rgba(255,255,255,0.7);
-  padding: 0.25rem 0.5rem;
-  border-radius: var(--radius-sm);
-}
-.mixer-label.red { left: 1rem; }
-.mixer-label.yellow { left: 50%; transform: translateX(-50%); }
-.mixer-label.blue { right: 1rem; left: auto; }
-.stats {
-  display: flex;
-  gap: 2rem;
-  font-family: var(--font-mono);
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-}
-.stats div {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  font-family: var(--font-base);
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-  border: none;
-  border-radius: var(--radius-md);
-  padding: 0.75rem 1.5rem;
-  min-height: 44px;
-  transition: all var(--transition-normal) var(--ease-standard);
-}
-.btn--primary {
-  background-color: var(--primary-strong);
-  color: var(--bg-secondary);
-}
-.btn--primary:hover,
-.btn--primary:focus {
-  background-color: var(--primary);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-.btn--primary:active {
-  transform: scale(0.97);
-}
-.btn--ghost {
-  border: 2px solid var(--border-default);
-  color: var(--text-primary);
-  background: transparent;
-}
-.btn--ghost:hover,
-.btn--ghost:focus {
-  border-color: var(--primary);
-  color: var(--primary);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
-}
-.btn--ghost:active {
-  transform: scale(0.97);
-}
-.section {
-  padding: 6rem 0;
-}
-.section-title {
-  text-align: center;
-  margin-bottom: 4rem;
-}
-.section-title h2 {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(2rem, 5vw, 2.5rem);
-  margin: 0 0 0.5rem;
-  color: var(--text-primary);
-}
-.section-title p {
-  font-size: 1.125rem;
-  color: var(--text-secondary);
-  max-width: 50ch;
-  margin-left: auto;
-  margin-right: auto;
-}
-.features {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--spacing-gap);
-}
-.card {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  padding: 2rem;
-  transition: all var(--transition-normal) var(--ease-standard);
-}
-.card:hover,
-.card:focus-within {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--primary);
-}
-.card-icon {
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg-tertiary);
-  border-radius: var(--radius-sm);
-  color: var(--primary);
-}
-.card-icon .material-symbols-outlined {
-  font-variation-settings:
-  'FILL' 0,
-  'wght' 400,
-  'GRAD' 0,
-  'opsz' 24;
-  font-size: 1.5rem;
-}
-.card h3 {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 1.25rem;
-  margin: 0;
-  color: var(--text-primary);
-}
-.card p {
-  flex-grow: 1;
-  color: var(--text-secondary);
-  margin: 0;
-}
-.card-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-family: var(--font-base);
-  font-weight: 500;
-  color: var(--primary);
-  text-decoration: none;
-  font-size: 0.875rem;
-}
-.card-link:hover,
-.card-link:focus {
-  text-decoration: underline;
-}
-.card-link .material-symbols-outlined {
-  font-variation-settings:
-  'FILL' 0,
-  'wght' 400,
-  'GRAD' 0,
-  'opsz' 20;
-  font-size: 1rem;
-  transition: transform var(--transition-fast) var(--ease-standard);
-}
-.card-link:hover .material-symbols-outlined,
-.card-link:focus .material-symbols-outlined {
-  transform: translateX(2px);
-}
-.steps {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: var(--spacing-gap);
-  position: relative;
-}
-.step {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 1.5rem;
-  padding: 2rem;
-}
-.step-number {
-  font-family: var(--font-mono);
-  font-size: 3.5rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  line-height: 1;
-}
-.step-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-}
-.step-swatch {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-}
-.step-swatch:nth-child(1) { background: var(--spec-red); }
-.step-swatch:nth-child(2) { background: var(--spec-yellow); }
-.step-swatch:nth-child(3) { background: var(--spec-blue); }
-.step h3 {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 1.25rem;
-  margin: 0;
-  color: var(--text-primary);
-}
-.step p {
-  color: var(--text-secondary);
-  max-width: 20ch;
-}
-.progress-line {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 1px;
-  height: 80%;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 4px,
-    var(--border-default) 4px,
-    var(--border-default) 8px
-  );
-  transform: translate(-50%, -50%);
-}
-@media (max-width: 768px) {
-  .progress-line {
-    width: 80%;
-    height: 1px;
-    top: auto;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-  }
-}
-.testimonials {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--spacing-gap);
-}
-.testimonial-card {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  padding: 2rem;
-}
-.testimonial-icon {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg-tertiary);
-  border-radius: 50%;
-  color: var(--primary);
-}
-.testimonial-icon .material-symbols-outlined {
-  font-variation-settings:
-  'FILL' 0,
-  'wght' 400,
-  'GRAD' 0,
-  'opsz' 20;
-  font-size: 1.25rem;
-}
-.testimonial-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-.testimonial-content blockquote {
-  margin: 0;
-  font-style: italic;
-  color: var(--text-secondary);
-  line-height: 1.6;
-}
-.testimonial-avatar {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-.avatar-circle {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-mono);
-  font-weight: 500;
-  color: var(--bg-secondary);
-}
-.avatar-circle.red { background: var(--spec-red); }
-.avatar-circle.yellow { background: var(--spec-yellow); }
-.avatar-circle.blue { background: var(--spec-blue); }
-.avatar-info {
-  display: flex;
-  flex-direction: column;
-}
-.avatar-info h4 {
-  margin: 0;
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 1rem;
-  color: var(--text-primary);
-}
-.avatar-info p {
-  margin: 0;
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-}
-.pricing {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--spacing-gap);
-}
-.pricing-toggle {
-  text-align: center;
-  margin-bottom: 3rem;
-}
-.toggle-label {
-  font-family: var(--font-mono);
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
-.toggle-switch {
-  position: relative;
-  display: inline-block;
-  width: 44px;
-  height: 24px;
-}
-.toggle-switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-.toggle-slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--border-default);
-  transition: .4s;
-  border-radius: 24px;
-}
-.toggle-slider:before {
-  position: absolute;
-  content: "";
-  height: 20px;
-  width: 20px;
-  left: 2px;
-  bottom: 2px;
-  background-color: var(--bg-secondary);
-  transition: .4s;
-  border-radius: 50%;
-}
-input:checked + .toggle-slider {
-  background-color: var(--primary);
-}
-input:checked + .toggle-slider:before {
-  transform: translateX(20px);
-}
-.pricing-card {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  padding: 2rem;
-  transition: all var(--transition-normal) var(--ease-standard);
-}
-.pricing-card:hover,
-.pricing-card:focus-within {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--primary);
-}
-.pricing-card.highlight {
-  border: 2px solid;
-  background: linear-gradient(
-    135deg,
-    rgba(47, 107, 255, 0.1),
-    rgba(47, 107, 255, 0.05)
-  );
-  transform: scale(1.02);
-  box-shadow: var(--shadow-md);
-}
-.pricing-card.highlight .badge {
-  display: block;
-}
-.badge {
-  display: none;
-  background: var(--primary-strong);
-  color: var(--bg-secondary);
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  font-weight: 500;
-  padding: 0.25rem 0.75rem;
-  border-radius: var-radius-sm;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 1rem;
-  align-self: flex-start;
-}
-.pricing-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-}
-.pricing-icon {
-  width: 56px;
-  height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg-tertiary);
-  border-radius: 50%;
-}
-.pricing-icon .material-symbols-outlined {
-  font-variation-settings:
-  'FILL' 0,
-  'wght' 400,
-  'GRAD' 0,
-  'opsz' 24;
-  font-size: 2rem;
-  color: var(--primary);
-}
-.pricing-card.highlight .pricing-icon {
-  background: var(--primary);
-}
-.pricing-card.highlight .pricing-icon .material-symbols-outlined {
-  color: var(--bg-secondary);
-}
-.pricing-title {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 1.5rem;
-  margin: 0;
-  color: var(--text-primary);
-}
-.pricing-price {
-  font-family: var(--font-mono);
-  font-size: 2.25rem;
-  font-weight: 500;
-  color: var(--text-primary);
-  margin: 0;
-}
-.pricing-price sup {
-  font-size: 0.75em;
-}
-.pricing-price sub {
-  font-size: 0.75em;
-}
-.pricing-period {
-  font-family: var(--font-mono);
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-}
-.pricing-features {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  flex-grow: 1;
-}
-.feature-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 0.9375rem;
-  color: var(--text-secondary);
-}
-.feature-item .material-symbols-outlined {
-  font-variation-settings:
-  'FILL' 0,
-  'wght' 400,
-  'GRAD' 0,
-  'opsz' 20;
-  font-size: 1.25rem;
-  color: var(--primary);
-}
-.pricing-cta {
-  margin-top: 1.5rem;
-}
-.faq {
-  max-width: 800px;
-  margin: 0 auto;
-}
-.faq-item {
-  border-bottom: 1px solid var(--border-default);
-}
-.faq-button {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  padding: 1.5rem;
-  background: none;
-  border: none;
-  text-align: left;
-  font-family: var(--font-base);
-  font-weight: 600;
-  font-size: 1.125rem;
-  color: var(--text-primary);
-  cursor: pointer;
-}
-.faq-button:hover,
-.faq-button:focus {
-  background-color: var(--bg-tertiary);
-}
-.faq-button:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
-}
-.faq-button .material-symbols-outlined {
-  font-variation-settings:
-  'FILL' 0,
-  'wght' 400,
-  'GRAD' 0,
-  'opsz' 24;
-  font-size: 1.25rem;
-  transition: transform var(--transition-normal) var(--ease-standard);
-}
-.faq-button[aria-expanded="true"] .material-symbols-outlined {
-  transform: rotate(180deg);
-}
-.faq-panel {
-  padding: 0 1.5rem;
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height var(--transition-normal) var(--ease-standard);
-  background: var(--bg-tertiary);
-}
-.faq-panel[aria-hidden="false"] {
-  max-height: 200px;
-}
-.faq-panel p {
-  margin: 0 0 1rem;
-  color: var(--text-secondary);
-}
-.cta-band {
-  position: relative;
-  overflow: hidden;
-  padding: 6rem 0;
-  text-align: center;
-}
-.cta-band::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    circle at 30% 30%,
-    rgba(47, 107, 255, 0.15),
-    transparent 50%
-  ),
-  radial-gradient(
-    circle at 70% 70%,
-    rgba(255, 212, 59, 0.15),
-    transparent 50%
-  );
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-}
-.cta-band h2 {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(2rem, 5vw, 2.5rem);
-  margin: 0 0 1.5rem;
-  color: var(--text-primary);
-  position: relative;
-}
-.input-group {
-  display: flex;
-  gap: 0.5rem;
-  max-width: 480px;
-  margin: 0 auto;
-}
-.input-group label {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-family: var(--font-base);
-  font-weight: 500;
-  color: var(--text-primary);
-}
-.input-group input {
-  flex: 1;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  font-family: var(--font-base);
-  font-size: 1rem;
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-}
-.input-group input:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(47, 107, 255, 0.2);
-}
-.input-group button {
-  flex-shrink: 0;
-  padding: 0.75rem 1.5rem;
-}
-.footer {
-  background: var(--bg-tertiary);
-  color: var(--text-secondary);
-  padding: 4rem 0 2rem;
-}
-.footer-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--spacing-gap);
-  margin-bottom: 2rem;
-}
-.footer-column h3 {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 1.25rem;
-  margin: 0 0 1rem;
-  color: var(--text-primary);
-}
-.footer-column ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-.footer-column li {
-  margin-bottom: 0.5rem;
-}
-.footer-column a {
-  color: var(--text-secondary);
-  text-decoration: none;
-}
-.footer-column a:hover,
-.footer-column a:focus {
-  color: var(--text-primary);
-}
-.footer-social {
-  display: flex;
-  gap: 1rem;
-}
-.footer-social a {
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg-secondary);
-  border-radius: 50%;
-  color: var(--text-primary);
-}
-.footer-social a:hover,
-.footer-social a:focus {
-  background: var(--primary);
-  color: var(--bg-secondary);
-}
-.footer-bottom {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  font-family: var(--font-mono);
-  font-size: 0.875rem;
-  border-top: 1px solid var(--border-default);
-  padding-top: 1.5rem;
-  margin-top: 2rem;
-}
-.footer-bottom p {
-  margin: 0;
-}
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-  }
-  .mixer-circle {
-    animation: none;
-  }
-  .progress-line {
-    background: var(--border-default);
-  }
+/* ============ TOKENS ============ */
+:root{
+  color-scheme:light;
+  --primary:#2F6BFF;--primary-strong:#1F55E0;--secondary:#8B887F;
+  --bg-primary:#F5F4F0;--bg-secondary:#FFFFFF;--bg-tertiary:#ECEBE4;
+  --text-primary:#1C1B18;--text-secondary:#6B685F;
+  --text-success:#15803D;--text-error:#B42318;
+  --border-default:#E3E1D8;--border-success:#15803D;--border-error:#B42318;
+  --on-primary:#FFFFFF;
+  --radius-sm:4px;--radius-md:12px;--radius-lg:20px;
+  --shadow-sm:0 1px 2px rgba(28,27,24,.06),0 2px 8px rgba(28,27,24,.05);
+  --shadow-md:0 4px 12px rgba(28,27,24,.08),0 12px 32px rgba(28,27,24,.10);
+  --spacing-gap:1.5rem;
+  --transition-fast:120ms;--transition-normal:240ms;
+  --ease-standard:cubic-bezier(0.2,0,0,1);
+  --z-header:50;--z-dropdown:100;--z-modal:1000;--z-toast:1100;
+  --font-display:"Space Grotesk",sans-serif;--font-base:"Inter",sans-serif;--font-mono:"IBM Plex Mono",monospace;
+  --spec-red:#FF5252;--spec-yellow:#FFD43B;--spec-blue:#2F6BFF;
+  --mix-blend:multiply;
+  --header-bg:rgba(245,244,240,.82);
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg-primary:#1C1B18;--bg-secondary:#26241E;--bg-tertiary:#2E2C26;
+  --text-primary:#F5F4F0;--text-secondary:#A9A59A;
+  --border-default:#3B3931;
+  --primary-strong:#7DA2FF;
+  --on-primary:#1C1B18;
+  --text-success:#4ADE80;--text-error:#FF8073;
+  --border-success:#4ADE80;--border-error:#FF8073;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.35),0 2px 8px rgba(0,0,0,.3);
+  --shadow-md:0 4px 12px rgba(0,0,0,.4),0 12px 32px rgba(0,0,0,.45);
+  --mix-blend:screen;
+  --header-bg:rgba(28,27,24,.82);
+}
+/* ============ BASE ============ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;font-size:1rem;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+h1,h2,h3{font-family:var(--font-display);line-height:1.1;letter-spacing:-0.025em;font-weight:700}
+h2{font-size:clamp(1.75rem,3.5vw,2.5rem)}
+h3{font-size:1.125rem;letter-spacing:-0.01em}
+a{color:var(--primary-strong);text-decoration:none}
+img{max-width:100%}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--primary-strong);outline-offset:2px;border-radius:var(--radius-sm)}
+.container{max-width:1160px;margin-inline:auto;padding-inline:1.25rem}
+@media(min-width:768px){.container{padding-inline:2rem}}
+.mono{font-family:var(--font-mono);font-size:.8125rem;letter-spacing:.04em}
+.skip-link{position:absolute;left:1rem;top:-4rem;z-index:var(--z-toast);background:var(--primary-strong);color:var(--on-primary);padding:.75rem 1.25rem;border-radius:var(--radius-sm);transition:top var(--transition-fast) var(--ease-standard)}
+.skip-link:focus{top:1rem}
+.icon{font-family:"Material Symbols Outlined";font-weight:normal;font-style:normal;line-height:1;display:inline-block;font-size:1.25rem;vertical-align:middle}
+/* ============ BUTTONS ============ */
+.btn{display:flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:.625rem 1.375rem;border-radius:var(--radius-sm);font-weight:600;font-size:.9375rem;border:1px solid transparent;transition:filter var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard),transform var(--transition-fast) var(--ease-standard);white-space:nowrap}
+.btn:active{transform:scale(.97)}
+.btn--primary{background:var(--primary-strong);color:var(--on-primary)}
+.btn--ghost{background:transparent;color:var(--text-primary);border-color:var(--border-default)}
+.btn--ghost:hover{border-color:var(--text-secondary)}
+.btn-danger{background:var(--text-error);color:#fff}
+.btn:disabled,.btn[aria-disabled="true"]{opacity:.5;filter:grayscale(.6);cursor:not-allowed}
+.btn--loading{pointer-events:none;min-width:9.5rem}
+.btn__spinner{width:1.125rem;height:1.125rem;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(hover:hover) and (pointer:fine){
+  .btn--primary:hover{filter:brightness(1.1);box-shadow:var(--shadow-sm)}
+  .btn--ghost:hover{background:var(--bg-tertiary)}
+}
+/* ============ HEADER ============ */
+.header{position:sticky;top:0;z-index:var(--z-header);background:var(--bg-primary);border-bottom:1px solid var(--border-default)}
+@supports(backdrop-filter:blur(8px)){.header{background:var(--header-bg);backdrop-filter:blur(12px)}}
+.header__inner{display:flex;align-items:center;justify-content:space-between;height:64px;gap:1rem}
+.brand{display:flex;align-items:center;gap:.5rem;font-family:var(--font-display);font-weight:700;letter-spacing:.02em;color:var(--text-primary);font-size:1.0625rem}
+.brand .icon{color:var(--primary-strong)}
+.nav{display:flex;align-items:center;gap:1.75rem}
+.nav__link{position:relative;color:var(--text-secondary);font-size:.9375rem;font-weight:500;padding:.25rem 0;transition:color var(--transition-fast) var(--ease-standard)}
+.nav__link::after{content:"";position:absolute;left:0;bottom:0;width:100%;height:2px;background:var(--primary-strong);transform:scaleX(0);transform-origin:left;transition:transform var(--transition-normal) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.nav__link:hover{color:var(--text-primary)}.nav__link:hover::after{transform:scaleX(1)}}
+.header__actions{display:flex;align-items:center;gap:.75rem}
+.theme-toggle{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-sm);border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);transition:background var(--transition-fast) var(--ease-standard)}
+.theme-toggle .icon--moon{display:none}
+:root[data-theme="dark"] .theme-toggle .icon--sun{display:none}
+:root[data-theme="dark"] .theme-toggle .icon--moon{display:inline-block}
+.menu-btn{display:none;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-sm);border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary)}
+@media(max-width:820px){
+  .menu-btn{display:flex}
+  .nav{position:absolute;top:64px;left:0;right:0;z-index:var(--z-dropdown);flex-direction:column;align-items:stretch;gap:0;background:var(--bg-secondary);border-bottom:1px solid var(--border-default);padding:.5rem 1.25rem 1rem;box-shadow:var(--shadow-md);opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity var(--transition-normal) var(--ease-standard),transform var(--transition-normal) var(--ease-standard)}
+  .nav.is-open{opacity:1;transform:translateY(0);pointer-events:auto}
+  .nav__link{padding:.75rem 0;border-bottom:1px solid var(--border-default)}
+  .header__cta{display:none}
+}
+/* ============ SECTIONS ============ */
+.section{padding-block:clamp(4rem,8vw,6.5rem)}
+.section__head{max-width:40rem;margin-bottom:clamp(2rem,4vw,3rem)}
+.section__head p{color:var(--text-secondary);margin-top:.75rem;max-width:60ch}
+.eyebrow{font-family:var(--font-mono);font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-secondary);display:block;margin-bottom:.875rem}
+/* ============ HERO ============ */
+.hero{position:relative;padding-top:clamp(3rem,6vw,5rem);padding-bottom:clamp(4rem,7vw,6rem);overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background-image:repeating-linear-gradient(0deg,var(--border-default) 0 1px,transparent 1px 56px),repeating-linear-gradient(90deg,var(--border-default) 0 1px,transparent 1px 56px);opacity:.45;pointer-events:none}
+.hero__grid{position:relative;display:grid;grid-template-columns:1fr;gap:clamp(2rem,5vw,4rem);align-items:center}
+@media(min-width:900px){.hero__grid{grid-template-columns:1.05fr 1fr}}
+.hero h1{font-size:clamp(2.5rem,5.5vw,4rem);margin-bottom:1.125rem}
+.hero__grad{background:linear-gradient(100deg,var(--spec-red),var(--spec-yellow) 45%,var(--spec-blue));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero__sub{color:var(--text-secondary);font-size:1.0625rem;max-width:34rem;margin-bottom:1.75rem}
+.hero__ctas{display:flex;align-items:center;gap:.875rem;flex-wrap:wrap;margin-bottom:1.75rem}
+.hero__stats{font-family:var(--font-mono);font-size:.75rem;letter-spacing:.05em;color:var(--text-secondary)}
+/* mixer visual */
+.mixer{position:relative;aspect-ratio:1/1;max-width:30rem;margin-inline:auto;width:100%}
+.mixer__disc{position:absolute;width:62%;aspect-ratio:1/1;border-radius:50%;filter:blur(48px);mix-blend-mode:var(--mix-blend);opacity:.9}
+.mixer__disc--r{background:var(--spec-red);top:4%;left:2%;animation:driftA 16s ease-in-out infinite alternate}
+.mixer__disc--y{background:var(--spec-yellow);top:8%;right:2%;animation:driftB 19s ease-in-out infinite alternate}
+.mixer__disc--b{background:var(--spec-blue);bottom:2%;left:20%;animation:driftC 14s ease-in-out infinite alternate}
+@keyframes driftA{to{transform:translate(14%,18%) scale(1.06)}}
+@keyframes driftB{to{transform:translate(-16%,22%) scale(.94)}}
+@keyframes driftC{to{transform:translate(10%,-16%) scale(1.08)}}
+.mixer__tag{position:absolute;font-family:var(--font-mono);font-size:.6875rem;letter-spacing:.08em;color:var(--text-primary);background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-sm);padding:.25rem .5rem;box-shadow:var(--shadow-sm)}
+.mixer__tag--r{top:2%;left:0}.mixer__tag--y{top:0;right:4%}.mixer__tag--b{bottom:0;left:8%}
+.mixer__tag--c{bottom:18%;right:2%}
+/* ============ CARDS / FEATURES ============ */
+.grid-3{display:grid;grid-template-columns:1fr;gap:var(--spacing-gap)}
+@media(min-width:768px){.grid-3{grid-template-columns:repeat(3,1fr)}}
+.card{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:.875rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);padding:1.75rem;transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),border-color var(--transition-normal) var(--ease-standard);overflow:hidden}
+@media(hover:hover) and (pointer:fine){.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}}
+.card:focus-within{border-color:var(--primary-strong)}
+.card__swatch{position:absolute;top:0;left:0;right:0;height:4px}
+.card__swatch--a{background:linear-gradient(90deg,var(--spec-red),var(--spec-yellow))}
+.card__swatch--b{background:linear-gradient(90deg,var(--spec-yellow),var(--spec-blue))}
+.card__swatch--c{background:linear-gradient(90deg,var(--spec-blue),var(--spec-red))}
+.card__icon{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-sm);background:var(--bg-tertiary);color:var(--primary-strong);transition:filter var(--transition-normal) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.card:hover .card__icon{filter:saturate(1.5)}}
+.card p{color:var(--text-secondary);font-size:.9375rem}
+.card__link{display:inline-flex;align-items:center;gap:.25rem;font-weight:600;font-size:.9375rem;margin-top:auto}
+/* skeleton + empty utilities */
+.skeleton{background:linear-gradient(90deg,var(--bg-tertiary) 25%,var(--bg-secondary) 50%,var(--bg-tertiary) 75%);background-size:200% 100%;animation:shimmer 1.4s linear infinite;border-radius:var(--radius-sm)}
+@keyframes shimmer{to{background-position:-200% 0}}
+.empty-state{display:flex;flex-direction:column;align-items:center;gap:.75rem;padding:2.5rem 1.5rem;text-align:center;color:var(--text-secondary)}
+/* ============ STEPS ============ */
+.steps{position:relative;display:grid;grid-template-columns:1fr;gap:var(--spacing-gap)}
+@media(min-width:768px){
+  .steps{grid-template-columns:repeat(3,1fr)}
+  .steps::before{content:"";position:absolute;top:2.25rem;left:8%;right:8%;height:2px;background:linear-gradient(90deg,var(--spec-red),var(--spec-yellow),var(--spec-blue));opacity:.6}
+}
+.step{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:.75rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:1.75rem;box-shadow:var(--shadow-sm)}
+.step__num{font-family:var(--font-mono);font-size:2.25rem;font-weight:500;line-height:1;color:var(--text-primary)}
+.step__chip{display:inline-block;width:2rem;height:.625rem;border-radius:99px}
+.step__chip--1{background:var(--spec-red)}.step__chip--2{background:var(--spec-yellow)}.step__chip--3{background:var(--spec-blue)}
+.step p{color:var(--text-secondary);font-size:.9375rem}
+/* ============ TESTIMONIALS ============ */
+.quote{display:flex;flex-direction:column;align-items:flex-start;gap:1rem}
+.quote .icon{color:var(--primary-strong)}
+.quote blockquote{font-size:1rem;color:var(--text-primary)}
+.quote__person{display:flex;align-items:center;gap:.75rem;margin-top:auto}
+.avatar{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;font-family:var(--font-mono);font-size:.8125rem;font-weight:500;color:#1C1B18;transition:filter var(--transition-normal) var(--ease-standard)}
+.avatar--a{background:linear-gradient(135deg,var(--spec-red),var(--spec-yellow))}
+.avatar--b{background:linear-gradient(135deg,var(--spec-yellow),var(--spec-blue));color:#fff}
+.avatar--c{background:linear-gradient(135deg,var(--spec-blue),var(--spec-red));color:#fff}
+@media(hover:hover) and (pointer:fine){.quote:hover .avatar{filter:saturate(1.4) hue-rotate(8deg)}}
+.quote__name{font-weight:600;font-size:.9375rem}
+.quote__role{color:var(--text-secondary);font-size:.8125rem}
+/* ============ PRICING ============ */
+.billing{display:flex;align-items:center;gap:.875rem;margin-bottom:2.5rem;flex-wrap:wrap}
+.billing__label{font-size:.9375rem;font-weight:500}
+.switch{position:relative;width:52px;height:28px;border-radius:99px;border:1px solid var(--border-default);background:var(--bg-tertiary);transition:background var(--transition-normal) var(--ease-standard);flex:none}
+.switch__thumb{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--primary-strong);transition:transform var(--transition-normal) var(--ease-standard)}
+.switch[aria-checked="true"] .switch__thumb{transform:translateX(24px)}
+.billing__note{font-family:var(--font-mono);font-size:.75rem;letter-spacing:.06em;color:var(--text-success)}
+.price-card__tier{font-family:var(--font-mono);font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-secondary)}
+.price-card__price{font-family:var(--font-mono);font-size:2.5rem;font-weight:500;line-height:1.1;transition:opacity var(--transition-normal) var(--ease-standard)}
+.price-card__price small{font-size:.875rem;color:var(--text-secondary)}
+.price-card__list{list-style:none;display:flex;flex-direction:column;align-items:flex-start;gap:.625rem;width:100%;margin-block:.25rem .75rem}
+.price-card__list li{display:flex;align-items:center;gap:.5rem;font-size:.9375rem;color:var(--text-secondary)}
+.price-card__list .icon{color:var(--text-success);font-size:1.125rem}
+.price-card .btn{width:100%}
+.price-card--featured{box-shadow:var(--shadow-md);border:1px solid transparent;background:linear-gradient(var(--bg-secondary),var(--bg-secondary)) padding-box,linear-gradient(135deg,var(--spec-red),var(--spec-yellow),var(--spec-blue)) border-box}
+@media(min-width:768px){.price-card--featured{transform:scale(1.03)}
+@media(hover:hover) and (pointer:fine){.price-card--featured:hover{transform:scale(1.03) translateY(-2px)}}}
+.badge{position:absolute;top:1rem;right:1rem;font-family:var(--font-mono);font-size:.6875rem;letter-spacing:.1em;background:var(--primary-strong);color:var(--on-primary);padding:.25rem .625rem;border-radius:99px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* ============ FAQ ============ */
+.faq{max-width:46rem}
+.faq__item{border:1px solid var(--border-default);border-radius:var(--radius-md);background:var(--bg-secondary);margin-bottom:.75rem;overflow:hidden}
+.faq__btn{display:flex;align-items:center;justify-content:space-between;gap:1rem;width:100%;min-height:44px;padding:1.125rem 1.375rem;background:none;border:none;text-align:left;font-weight:600;font-size:1rem;color:var(--text-primary)}
+.faq__btn .icon{transition:transform var(--transition-normal) var(--ease-standard);color:var(--text-secondary);flex:none}
+.faq__btn[aria-expanded="true"] .icon{transform:rotate(180deg)}
+.faq__panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--transition-normal) var(--ease-standard)}
+.faq__panel.is-open{grid-template-rows:1fr}
+.faq__panel-inner{overflow:hidden}
+.faq__panel p{padding:0 1.375rem 1.25rem;color:var(--text-secondary);font-size:.9375rem}
+/* ============ CTA ============ */
+.cta-band{position:relative;overflow:hidden;border-block:1px solid var(--border-default);text-align:center}
+.cta-band__blob{position:absolute;width:34rem;height:34rem;border-radius:50%;filter:blur(90px);opacity:.35;pointer-events:none}
+.cta-band__blob--1{background:var(--spec-yellow);top:-12rem;left:-8rem}
+.cta-band__blob--2{background:var(--spec-blue);bottom:-14rem;right:-8rem}
+.cta-band__inner{position:relative;padding-block:clamp(4rem,8vw,6.5rem);display:flex;flex-direction:column;align-items:center;gap:1rem}
+.cta-band p{color:var(--text-secondary);max-width:34rem}
+.input-group{display:flex;flex-direction:column;align-items:stretch;gap:.5rem;width:100%;max-width:26rem;margin-top:.75rem;text-align:left}
+.input-group label{font-weight:600;font-size:.875rem}
+.input-group__row{display:flex;align-items:stretch;gap:.625rem;flex-wrap:wrap}
+.input-group__row .input{flex:1;min-width:12rem}
+.input-group__helper{font-size:.8125rem;color:var(--text-secondary)}
+.input-group__error{display:flex;align-items:center;gap:.375rem;font-size:.8125rem;color:var(--text-error);min-height:1.25rem}
+.input-group__success{display:flex;align-items:center;gap:.5rem;font-size:.9375rem;font-weight:600;color:var(--text-success)}
+.input{min-height:44px;padding:.625rem .875rem;border:1px solid var(--border-default);border-radius:var(--radius-sm);background:var(--bg-secondary);color:var(--text-primary);font:inherit;transition:border-color var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard)}
+.input::placeholder{color:var(--text-secondary)}
+.input:focus{outline:none;border-color:var(--primary-strong);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary-strong) 22%,transparent)}
+.input--invalid{border-color:var(--border-error)}
+.input--valid{border-color:var(--border-success)}
+.input:disabled{opacity:.5;cursor:not-allowed}
+.input[readonly]{background:var(--bg-tertiary)}
+/* ============ FOOTER ============ */
+.footer{border-top:1px solid var(--border-default);padding-block:3.5rem 2rem;background:var(--bg-secondary)}
+.footer__grid{display:grid;grid-template-columns:1fr;gap:2.5rem}
+@media(min-width:768px){.footer__grid{grid-template-columns:1.4fr 1fr 1fr 1fr}}
+.footer__tag{color:var(--text-secondary);font-size:.9375rem;margin-top:.75rem;max-width:22rem}
+.footer__social{display:flex;align-items:center;gap:.625rem;margin-top:1.25rem}
+.footer__social a{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border:1px solid var(--border-default);border-radius:var(--radius-sm);color:var(--text-secondary);transition:color var(--transition-fast),border-color var(--transition-fast)}
+@media(hover:hover) and (pointer:fine){.footer__social a:hover{color:var(--primary-strong);border-color:var(--primary-strong)}}
+.footer__col h3{font-size:.8125rem;font-family:var(--font-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:1rem;font-weight:500}
+.footer__col ul{list-style:none;display:flex;flex-direction:column;align-items:flex-start;gap:.625rem}
+.footer__col a{color:var(--text-secondary);font-size:.9375rem}
+@media(hover:hover) and (pointer:fine){.footer__col a:hover{color:var(--text-primary)}}
+.footer__bar{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--border-default);font-size:.8125rem;color:var(--text-secondary)}
+/* ============ REVEALS ============ */
+.js .reveal{opacity:0;transform:translateY(16px);transition:opacity 500ms var(--ease-standard),transform 500ms var(--ease-standard)}
+.js .reveal.is-visible{opacity:1;transform:none}
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:120ms!important}
+  .mixer__disc{animation:none}
+  .js .reveal{transform:none;transition:opacity 200ms ease}
+}
+@media (prefers-reduced-transparency: reduce){
+  .header{background:var(--bg-primary);backdrop-filter:none}
 }
 </style>
 </head>
 <body>
-<a href="#main-content" class="skip-link">Skip to content</a>
-<header>
-  <div class="container header-content">
-    <a href="#" class="logo">CHROMA LAB<span class="material-symbols-outlined">science</span></a>
-    <button class="nav-toggle" aria-expanded="false" aria-controls="primary-menu">
-      <span class="material-symbols-outlined">menu</span>
-    </button>
-    <nav class="nav-menu" id="primary-menu">
-      <a href="#features" class="nav-link">Features</a>
-      <a href="#how-it-works" class="nav-link">Process</a>
-      <a href="#pricing" class="nav-link">Pricing</a>
-      <a href="#faq" class="nav-link">FAQ</a>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="header">
+  <div class="container header__inner">
+    <a class="brand" href="#top" aria-label="CHROMA LAB home"><span class="icon" aria-hidden="true">science</span>CHROMA LAB</a>
+    <nav class="nav" id="site-nav" aria-label="Primary">
+      <a class="nav__link" href="#features">Features</a>
+      <a class="nav__link" href="#process">Process</a>
+      <a class="nav__link" href="#pricing">Pricing</a>
+      <a class="nav__link" href="#faq">FAQ</a>
     </nav>
-    <button class="theme-toggle" aria-pressed="false" aria-label="Toggle dark mode">
-      <span class="material-symbols-outlined" id="theme-icon">dark_mode</span>
-    </button>
-    <a href="#cta" class="btn btn--primary">Open the Bench</a>
+    <div class="header__actions">
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Toggle dark mode">
+        <span class="icon icon--sun" aria-hidden="true">light_mode</span>
+        <span class="icon icon--moon" aria-hidden="true">dark_mode</span>
+      </button>
+      <a class="btn btn--primary header__cta" href="#cta">Open the Bench</a>
+      <button class="menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">
+        <span class="icon" aria-hidden="true">menu</span>
+      </button>
+    </div>
   </div>
 </header>
-<main id="main-content">
-  <section class="hero">
-    <div class="container">
-      <div class="hero-content">
-        <div class="eyebrow">SPECIMEN 01 — COLOR MIXER</div>
-        <h1>Color theory, <span class="gradient-text">put to the test.</span></h1>
-        <p>CHROMA LAB is a scientific bench for mixing, measuring, and shipping accessible color. Validate palettes against WCAG, translate across gamuts, and export production-ready assets — all in one interactive environment.</p>
-        <div class="hero-ctas">
-          <a href="#cta" class="btn btn--primary">Open the Bench</a>
-          <a href="#how-it-works" class="btn btn--ghost">See the method</a>
+
+<main id="main">
+  <!-- HERO -->
+  <section class="hero" id="top" aria-labelledby="hero-title">
+    <div class="container hero__grid">
+      <div>
+        <span class="eyebrow">Specimen bench · v3 calibration</span>
+        <h1 id="hero-title">Color theory, <span class="hero__grad">put to the test.</span></h1>
+        <p class="hero__sub">CHROMA LAB is a scientific bench for mixing, measuring, and shipping accessible color, with every result scored before it leaves the lab.</p>
+        <div class="hero__ctas">
+          <a class="btn btn--primary" href="#cta">Open the Bench</a>
+          <a class="btn btn--ghost" href="#process">See the method</a>
         </div>
-        <div class="stats">
-          <div><span class="material-symbols-outlined">palette</span>16.7M mixable values</div>
-          <div><span class="material-symbols-outlined">check_circle</span>WCAG-checked output</div>
-          <div><span class="material-symbols-outlined">code</span>Zero image assets</div>
-        </div>
+        <p class="hero__stats">16.7M mixable values · WCAG-checked output · Zero image assets</p>
       </div>
-      <div class="mixer-visual" aria-label="Color mixer visualization">
-        <div class="mixer-circle"></div>
-        <div class="mixer-circle"></div>
-        <div class="mixer-circle"></div>
-        <div class="mixer-label red">SPECIMEN 01</div>
-        <div class="mixer-label yellow">SPECIMEN 02</div>
-        <div class="mixer-label blue">SPECIMEN 03</div>
+      <div class="mixer" role="img" aria-label="Three overlapping blurred discs in red, yellow, and blue mixing like light on a bench">
+        <div class="mixer__disc mixer__disc--r"></div>
+        <div class="mixer__disc mixer__disc--y"></div>
+        <div class="mixer__disc mixer__disc--b"></div>
+        <span class="mixer__tag mixer__tag--r">SPECIMEN 01 · R</span>
+        <span class="mixer__tag mixer__tag--y">SPECIMEN 02 · Y</span>
+        <span class="mixer__tag mixer__tag--b">SPECIMEN 03 · B</span>
+        <span class="mixer__tag mixer__tag--c">ΔE &lt; 2.0 · PASS</span>
       </div>
     </div>
   </section>
 
-  <section id="features" class="section">
+  <!-- FEATURES -->
+  <section class="section" id="features" aria-labelledby="features-title">
     <div class="container">
-      <div class="section-title">
-        <h2 id="features-heading">Features</h2>
-        <p>Precision tools built for the modern color scientist.</p>
+      <div class="section__head reveal">
+        <h2 id="features-title">Instruments on the bench</h2>
+        <p>Three calibrated tools cover the full path from raw swatch to verified palette.</p>
       </div>
-      <div class="features">
-        <div class="card">
-          <div class="card-icon"><span class="material-symbols-outlined">tune</span></div>
+      <div class="grid-3">
+        <article class="card reveal">
+          <span class="card__swatch card__swatch--a" aria-hidden="true"></span>
+          <span class="card__icon"><span class="icon" aria-hidden="true">tune</span></span>
           <h3>Spectral Mixer</h3>
-          <p>Blend colors in RGB, LAB, and HCL spaces with real-time delta-E calculation. See how mixtures shift under different illuminants.</p>
-          <a href="#" class="card-link">Learn more →<span class="material-symbols-outlined">arrow_forward</span></a>
-          <div class="card-gradient" style="background: linear-gradient(90deg, var(--spec-red), var(--spec-yellow), var(--spec-blue)); height: 4px; border-radius: var(--radius-sm);"></div>
-        </div>
-        <div class="card">
-          <div class="card-icon"><span class="material-symbols-outlined">visibility</span></div>
+          <p>Blend real color spaces instead of guessing hex values. Mix in OKLCH, LAB, or classic RGB and watch the midpoint stay honest.</p>
+          <a class="card__link" href="#pricing">Learn more <span class="icon" aria-hidden="true">arrow_forward</span></a>
+        </article>
+        <article class="card reveal">
+          <span class="card__swatch card__swatch--b" aria-hidden="true"></span>
+          <span class="card__icon"><span class="icon" aria-hidden="true">visibility</span></span>
           <h3>Contrast Lab</h3>
-          <p>Every mix is automatically scored against WCAG 2.1 AA and AAA thresholds. Get instant feedback on text and UI element accessibility.</p>
-          <a href="#" class="card-link">Learn more →<span class="material-symbols-outlined">arrow_forward</span></a>
-          <div class="card-gradient" style="background: linear-gradient(90deg, var(--spec-yellow), var(--spec-blue), var(--spec-red)); height: 4px; border-radius: var(--radius-sm);"></div>
-        </div>
-        <div class="card">
-          <div class="card-icon"><span class="material-symbols-outlined">palette</span></div>
+          <p>Every mix is scored against WCAG AA and AAA thresholds in real time, so failing pairs never reach your stylesheet.</p>
+          <a class="card__link" href="#pricing">Learn more <span class="icon" aria-hidden="true">arrow_forward</span></a>
+        </article>
+        <article class="card reveal">
+          <span class="card__swatch card__swatch--c" aria-hidden="true"></span>
+          <span class="card__icon"><span class="icon" aria-hidden="true">palette</span></span>
           <h3>Gamut Mapper</h3>
-          <p>Translate palettes between sRGB, Display P3, and CMYK with perceptual intent preservation. Export device-specific profiles.</p>
-          <a href="#" class="card-link">Learn more →<span class="material-symbols-outlined">arrow_forward</span></a>
-          <div class="card-gradient" style="background: linear-gradient(90deg, var(--spec-blue), var(--spec-red), var(--spec-yellow)); height: 4px; border-radius: var(--radius-sm);"></div>
-        </div>
+          <p>Translate palettes across sRGB, Display P3, and print profiles with visible warnings wherever a color leaves gamut.</p>
+          <a class="card__link" href="#pricing">Learn more <span class="icon" aria-hidden="true">arrow_forward</span></a>
+        </article>
       </div>
     </div>
   </section>
 
-  <section id="how-it-works" class="section">
+  <!-- PROCESS -->
+  <section class="section" id="process" aria-labelledby="process-title">
     <div class="container">
-      <div class="section-title">
-        <h2 id="how-it-works-heading">How It Works</h2>
-        <p>Three steps to validate and export your color system.</p>
+      <div class="section__head reveal">
+        <h2 id="process-title">The method, in three runs</h2>
+        <p>A repeatable procedure, from raw samples to documented evidence.</p>
       </div>
       <div class="steps">
-        <div class="step">
-          <div class="step-number">01</div>
-          <div class="step-content">
-            <div class="step-swatch"></div>
-            <h3>Load your swatches</h3>
-            <p>Paste HEX, RGB, or LAB values or drag-and-drop ASE, JSON, or CSV files.</p>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-number">02</div>
-          <div class="step-content">
-            <div class="step-swatch"></div>
-            <h3>Run the mix</h3>
-            <p>Create mixtures, adjust ratios, and see instant contrast and gamut mapping.</p>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-number">03</div>
-          <div class="step-content">
-            <div class="step-swatch"></div>
-            <h3>Export the evidence</h3>
-            <p>Generate accessible palettes, contrast reports, and design tokens for Figma, CSS, or iOS/Android.</p>
-          </div>
-        </div>
-      </div>
-      <div class="progress-line" aria-hidden="true"></div>
-    </div>
-  </section>
-
-  <section id="testimonials" class="section">
-    <div class="container">
-      <div class="section-title">
-        <h2 id="testimonials-heading">Testimonials</h2>
-        <p>What color scientists and designers are saying.</p>
-      </div>
-      <div class="testimonials">
-        <div class="testimonial-card">
-          <div class="testimonial-icon"><span class="material-symbols-outlined">format_quote</span></div>
-          <div class="testimonial-content">
-            <blockquote>CHROMA LAB cut our color validation time by 70%. The contrast scoring is spot-on and has prevented multiple accessibility issues before release.</blockquote>
-            <div class="testimonial-avatar">
-              <div class="avatar-circle red">AR</div>
-              <div class="avatar-info">
-                <h4>Alex Rivera</h4>
-                <p>Lead Designer, Veridian Systems</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="testimonial-card">
-          <div class="testimonial-icon"><span class="material-symbols-outlined">format_quote</span></div>
-          <div class="testimonial-content">
-            <blockquote>Finally, a tool that treats color as a scientific measurement. The gamut mapping saved us from costly print reworks.</blockquote>
-            <div class="testimonial-avatar">
-              <div class="avatar-circle yellow">MS</div>
-              <div class="avatar-info">
-                <h4>Morgan Smith</h4>
-                <p>Color Scientist, Pigment Labs</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="testimonial-card">
-          <div class="testimonial-icon"><span class="material-symbols-outlined">format_quote</span></div>
-          <div class="testimonial-content">
-            <blockquote>The WCAG integration is seamless. We now ship with confidence knowing our palettes meet accessibility standards.</blockquote>
-            <div class="testimonial-avatar">
-              <div class="avatar-circle blue">TK</div>
-              <div class="avatar-info">
-                <h4>Taylor Kim</h4>
-                <p>Accessibility Lead, Apex Digital</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <article class="step reveal">
+          <span class="step__num">01</span>
+          <span class="step__chip step__chip--1" aria-hidden="true"></span>
+          <h3>Load your swatches</h3>
+          <p>Drop in brand colors, tokens, or a full design system export as your starting samples.</p>
+        </article>
+        <article class="step reveal">
+          <span class="step__num">02</span>
+          <span class="step__chip step__chip--2" aria-hidden="true"></span>
+          <h3>Run the mix</h3>
+          <p>Blend, adjust, and measure while contrast scores update on every move.</p>
+        </article>
+        <article class="step reveal">
+          <span class="step__num">03</span>
+          <span class="step__chip step__chip--3" aria-hidden="true"></span>
+          <h3>Export the evidence</h3>
+          <p>Ship tokens, CSS variables, and a contrast report your whole team can audit.</p>
+        </article>
       </div>
     </div>
   </section>
 
-  <section id="pricing" class="section">
+  <!-- TESTIMONIALS -->
+  <section class="section" id="testimonials" aria-labelledby="testimonials-title">
     <div class="container">
-      <div class="section-title">
-        <h2 id="pricing-heading">Pricing</h2>
-        <p>Plans for every stage of your color journey.</p>
+      <div class="section__head reveal">
+        <h2 id="testimonials-title">Notes from the field</h2>
+        <p>Teams that moved their color decisions onto the bench.</p>
       </div>
-      <div class="pricing-toggle">
-        <label class="toggle-label">
-          <span>Annual billing (save 20%)</span>
-          <label class="toggle-switch">
-            <input type="checkbox" id="billing-toggle" aria-checked="false">
-            <span class="toggle-slider"></span>
-          </label>
-        </label>
-        <p class="save-note" aria-live="polite">Monthly billing</p>
-      </div>
-      <div class="pricing">
-        <div class="pricing-card">
-          <div class="badge">FREE</div>
-          <div class="pricing-header">
-            <div class="pricing-icon"><span class="material-symbols-outlined">palette</span></div>
-            <h3 class="pricing-title">Bench</h3>
+      <div class="grid-3">
+        <article class="card quote reveal">
+          <span class="icon" aria-hidden="true">format_quote</span>
+          <blockquote>“We stopped arguing about hex values in reviews. The contrast report ends the debate before it starts.”</blockquote>
+          <div class="quote__person">
+            <span class="avatar avatar--a" aria-hidden="true">MR</span>
+            <div><div class="quote__name">Mara Reyes</div><div class="quote__role">Design Lead, Fieldnote Systems</div></div>
           </div>
-          <div class="pricing-price">$0<span class="pricing-period">/mo</span></div>
-          <div class="pricing-features">
-            <div class="feature-item"><span class="material-symbols-outlined">check</span>Unlimited mixes</div>
-            <div class="feature-item"><span class="material-symbols-outlined">check</span>Basic contrast scoring</div>
-            <div class="feature-item"><span class="material-symbols-outlined">check</span>HEX/RGB export</div>
-            <div class="feature-item"><span class="material-symbols-outlined">check</span>Community support</div>
+        </article>
+        <article class="card quote reveal">
+          <span class="icon" aria-hidden="true">format_quote</span>
+          <blockquote>“Our accessibility audit findings on color dropped to zero in one release cycle. The lab paid for itself immediately.”</blockquote>
+          <div class="quote__person">
+            <span class="avatar avatar--b" aria-hidden="true">TO</span>
+            <div><div class="quote__name">Tunde Okafor</div><div class="quote__role">Frontend Engineer, Brightline Health</div></div>
           </div>
-          <a href="#" class="btn btn--primary">Get Started Free</a>
-        </div>
-        <div class="pricing-card highlight">
-          <div class="badge">MOST TESTED</div>
-          <div class="pricing-header">
-            <div class="pricing-icon"><span class="material-symbols-outlined">palette</span></div>
-            <h3 class="pricing-title">Lab</h3>
+        </article>
+        <article class="card quote reveal">
+          <span class="icon" aria-hidden="true">format_quote</span>
+          <blockquote>“Gamut warnings caught three brand colors that would have shifted badly in print. That saved a full packaging run.”</blockquote>
+          <div class="quote__person">
+            <span class="avatar avatar--c" aria-hidden="true">SL</span>
+            <div><div class="quote__name">Sofia Lindqvist</div><div class="quote__role">Brand Director, Northpaper Co.</div></div>
           </div>
-          <div class="pricing-price">$29<span class="pricing-period">/mo</span></div>
-          <div class="pricing-features">
-            <div class="feature-item"><span class="material-symbols-outlined">check</span>Everything in Bench</div>
-            <div class="feature-item"><span class="material-symbols-outlined">check</span>Advanced gamut mapping</div>
-            <div class="feature-item"><span class="material-symbols-outlined">check</span>WCAG 2.1 AAA reporting</div>
-            <div class="feature-item"><span class="material-symbols-outlined">check</span>Figma & CSS plugin</div>
-            <div class="feature-item"><span class="material-symbols-outlined">check</span>Priority support</div>
-          </div>
-          <a href="#" class="btn btn--primary">Start Trial</a>
-        </div>
-        <div class="pricing-card">
-          <div class="pricing-header">
-            <div class="pricing-icon"><span class="material-symbols-outlined">palette</span></div>
-            <h3 class="pricing-title">Studio</h3>
-          </div>
-          <div class="pricing-price">$99<span class="pricing-period">/mo</span></div>
-          <div class="pricing-features">
-            <div class="feature-item"><span class="material-symbols-outlined">check</span>Everything in Lab</div>
-            <div class="feature-item"><span class="material-symbols-outlined">check</span>Team workspaces</div>
-            <div class="feature-item"><span class="material-symbols-outlined">check</span>API access</div>
-            <div class="feature-item"><span class="material-symbols-outlined">check</span>Custom gamut profiles</div>
-            <div class="feature-item"><span class="material-symbols-outlined">check</span>Dedicated account manager</div>
-          </div>
-          <a href="#" class="btn btn--primary">Contact Sales</a>
-        </div>
+        </article>
       </div>
     </div>
   </section>
 
-  <section id="faq" class="section">
+  <!-- PRICING -->
+  <section class="section" id="pricing" aria-labelledby="pricing-title">
     <div class="container">
-      <div class="section-title">
-        <h2 id="faq-heading">FAQ</h2>
-        <p>Answers to common questions about color science and accessibility.</p>
+      <div class="section__head reveal">
+        <h2 id="pricing-title">Pick your bench</h2>
+        <p>Start free, upgrade when the experiments outgrow the bench.</p>
       </div>
-      <div class="faq">
-        <div class="faq-item">
-          <button class="faq-button" aria-expanded="false" aria-controls="faq-1">
-            What color spaces does CHROMA LAB support?
-            <span class="material-symbols-outlined">expand_more</span>
-          </button>
-          <div class="faq-panel" id="faq-1" aria-hidden="true" role="region">
-            <p>We support RGB, sRGB, Display P3, LAB, LCH, HCL, and CMYK. All conversions use ICC v4 profiles with perceptual intent preservation for accurate cross-device matching.</p>
-          </div>
+      <div class="billing reveal">
+        <span class="billing__label" id="billing-monthly">Monthly</span>
+        <button class="switch" id="billing-switch" type="button" role="switch" aria-checked="false" aria-labelledby="billing-monthly billing-annual">
+          <span class="switch__thumb" aria-hidden="true"></span>
+        </button>
+        <span class="billing__label" id="billing-annual">Annual</span>
+        <span class="billing__note">SAVE 20% ON ANNUAL</span>
+        <span class="sr-only" role="status" id="billing-live" aria-live="polite"></span>
+      </div>
+      <div class="grid-3">
+        <article class="card price-card reveal">
+          <span class="price-card__tier">Bench</span>
+          <div class="price-card__price" data-monthly="$0" data-annual="$0">$0<small>/mo</small></div>
+          <ul class="price-card__list">
+            <li><span class="icon" aria-hidden="true">check</span>3 active mixes</li>
+            <li><span class="icon" aria-hidden="true">check</span>WCAG AA scoring</li>
+            <li><span class="icon" aria-hidden="true">check</span>CSS variable export</li>
+          </ul>
+          <a class="btn btn--ghost" href="#cta">Open the Bench</a>
+        </article>
+        <article class="card price-card price-card--featured reveal">
+          <span class="badge">MOST TESTED</span>
+          <span class="price-card__tier">Lab</span>
+          <div class="price-card__price" data-monthly="$12" data-annual="$9.60">$12<small>/mo</small></div>
+          <ul class="price-card__list">
+            <li><span class="icon" aria-hidden="true">check</span>Unlimited mixes</li>
+            <li><span class="icon" aria-hidden="true">check</span>AA + AAA scoring</li>
+            <li><span class="icon" aria-hidden="true">check</span>Gamut mapping (sRGB, P3, print)</li>
+            <li><span class="icon" aria-hidden="true">check</span>Contrast reports</li>
+          </ul>
+          <a class="btn btn--primary" href="#cta">Open the Bench</a>
+        </article>
+        <article class="card price-card reveal">
+          <span class="price-card__tier">Studio</span>
+          <div class="price-card__price" data-monthly="$39" data-annual="$31.20">$39<small>/mo</small></div>
+          <ul class="price-card__list">
+            <li><span class="icon" aria-hidden="true">check</span>Everything in Lab</li>
+            <li><span class="icon" aria-hidden="true">check</span>Shared team benches</li>
+            <li><span class="icon" aria-hidden="true">check</span>API access</li>
+            <li><span class="icon" aria-hidden="true">check</span>Priority support</li>
+          </ul>
+          <a class="btn btn--ghost" href="#cta">Open the Bench</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq" aria-labelledby="faq-title">
+    <div class="container">
+      <div class="section__head reveal">
+        <h2 id="faq-title">Frequently tested questions</h2>
+      </div>
+      <div class="faq reveal">
+        <div class="faq__item">
+          <h3><button class="faq__btn" type="button" aria-expanded="false" aria-controls="faq-p1" id="faq-b1">Which color spaces does CHROMA LAB support?<span class="icon" aria-hidden="true">expand_more</span></button></h3>
+          <div class="faq__panel" id="faq-p1" role="region" aria-labelledby="faq-b1"><div class="faq__panel-inner"><p>Mixing runs in OKLCH, LAB, HSL, and RGB. Gamut mapping covers sRGB, Display P3, and common CMYK print profiles.</p></div></div>
         </div>
-        <div class="faq-item">
-          <button class="faq-button" aria-expanded="false" aria-controls="faq-2">
-            How does the contrast scoring work?
-            <span class="material-symbols-outlined">expand_more</span>
-          </button>
-          <div class="faq-panel" id="faq-2" aria-hidden="true" role="region">
-            <p>Every mix is evaluated against WCAG 2.1 using the luminance contrast ratio formula. We test both normal and large text thresholds at AA and AAA levels, reporting pass/fail states with exact ratio values.</p>
-          </div>
+        <div class="faq__item">
+          <h3><button class="faq__btn" type="button" aria-expanded="false" aria-controls="faq-p2" id="faq-b2">Does the bench guarantee WCAG compliance?<span class="icon" aria-hidden="true">expand_more</span></button></h3>
+          <div class="faq__panel" id="faq-p2" role="region" aria-labelledby="faq-b2"><div class="faq__panel-inner"><p>Every pair is scored against WCAG 2.2 contrast formulas and flagged the moment it drops below AA or AAA. Final compliance still depends on how you apply the palette, but failing colors can never leave the bench unmarked.</p></div></div>
         </div>
-        <div class="faq-item">
-          <button class="faq-button" aria-expanded="false" aria-controls="faq-3">
-            What export formats are available?
-            <span class="material-symbols-outlined">expand_more</span>
-          </button>
-          <div class="faq-panel" id="faq-3" aria-hidden="true" role="region">
-            <p>Export as ASE (Adobe Swatch Exchange), JSON, CSS variables, SVG gradients, Figma plugins, iOS UIColor/Android ColorStateList, and Adobe Color themes. All exports include contrast metadata.</p>
-          </div>
+        <div class="faq__item">
+          <h3><button class="faq__btn" type="button" aria-expanded="false" aria-controls="faq-p3" id="faq-b3">What export formats are available?<span class="icon" aria-hidden="true">expand_more</span></button></h3>
+          <div class="faq__panel" id="faq-p3" role="region" aria-labelledby="faq-b3"><div class="faq__panel-inner"><p>CSS custom properties, Sass variables, design tokens in JSON, Tailwind config fragments, and a PDF contrast report for audits.</p></div></div>
         </div>
-        <div class="faq-item">
-          <button class="faq-button" aria-expanded="false" aria-controls="faq-4">
-            Which browsers are supported?
-            <span class="material-symbols-outlined">expand_more</span>
-          </button>
-          <div class="faq-panel" id="faq-4" aria-hidden="true" role="region">
-            <p>CHROMA LAB works in all modern browsers: Chrome, Firefox, Safari, and Edge. We use progressive enhancement — core functionality works without JavaScript, while advanced features like the mixer visual enhance the experience.</p>
-          </div>
+        <div class="faq__item">
+          <h3><button class="faq__btn" type="button" aria-expanded="false" aria-controls="faq-p4" id="faq-b4">Which browsers are supported?<span class="icon" aria-hidden="true">expand_more</span></button></h3>
+          <div class="faq__panel" id="faq-p4" role="region" aria-labelledby="faq-b4"><div class="faq__panel-inner"><p>The current versions of Chrome, Firefox, Safari, and Edge. Wide-gamut previews require a P3-capable display; everything else degrades gracefully to sRGB.</p></div></div>
         </div>
-        <div class="faq-item">
-          <button class="faq-button" aria-expanded="false" aria-controls="faq-5">
-            What is your refund policy?
-            <span class="material-symbols-outlined">expand_more</span>
-          </button>
-          <div class="faq-panel" id="faq-5" aria-hidden="true" role="region">
-            <p>We offer a 30-day money-back guarantee on all paid plans. If you're not satisfied, contact us within 30 days of your first payment for a full refund — no questions asked.</p>
-          </div>
+        <div class="faq__item">
+          <h3><button class="faq__btn" type="button" aria-expanded="false" aria-controls="faq-p5" id="faq-b5">Can I get a refund?<span class="icon" aria-hidden="true">expand_more</span></button></h3>
+          <div class="faq__panel" id="faq-p5" role="region" aria-labelledby="faq-b5"><div class="faq__panel-inner"><p>Yes. Paid plans carry a 30-day refund window, no questions asked. The free Bench tier stays free forever.</p></div></div>
         </div>
       </div>
     </div>
   </section>
 
-  <section id="cta" class="section cta-band">
-    <div class="container">
-      <h2>Put your palette on the bench.</h2>
-      <form class="input-group" id="cta-form" aria-label="Email signup for CHROMA LAB">
-        <label for="cta-email">
-          <span class="material-symbols-outlined">email</span>
-          Email address
-        </label>
-        <input type="email" id="cta-email" name="email" placeholder="you@example.com" required>
-        <button type="submit" class="btn btn--primary">Join the Lab</button>
+  <!-- FINAL CTA -->
+  <section class="cta-band" id="cta" aria-labelledby="cta-title">
+    <div class="cta-band__blob cta-band__blob--1" aria-hidden="true"></div>
+    <div class="cta-band__blob cta-band__blob--2" aria-hidden="true"></div>
+    <div class="container cta-band__inner reveal">
+      <h2 id="cta-title">Put your palette on the bench.</h2>
+      <p>Get early access to CHROMA LAB and a calibration checklist for your current palette.</p>
+      <form class="input-group" id="cta-form" novalidate>
+        <label for="cta-email">Work email</label>
+        <div class="input-group__row">
+          <input class="input" id="cta-email" name="email" type="email" autocomplete="email" placeholder="you@studio.com" aria-describedby="cta-helper cta-error" required>
+          <button class="btn btn--primary" id="cta-submit" type="submit"><span class="btn__label">Request access</span></button>
+        </div>
+        <span class="input-group__helper" id="cta-helper">One email when the bench opens. Nothing else.</span>
+        <span class="input-group__error" id="cta-error" aria-live="polite"></span>
+        <span class="input-group__success" id="cta-success" aria-live="polite" hidden><span class="icon" aria-hidden="true">check_circle</span>Request logged. Check your inbox for confirmation.</span>
       </form>
-      <div id="cta-feedback" aria-live="polite"></div>
     </div>
   </section>
 </main>
+
 <footer class="footer">
   <div class="container">
-    <div class="footer-grid">
-      <div class="footer-column">
-        <h3>CHROMA LAB<span class="material-symbols-outlined">science</span></h3>
-        <p>Color theory, put to the test.</p>
-        <div class="footer-social">
-          <a href="#" aria-label="Twitter"><span class="material-symbols-outlined">twitter</span></a>
-          <a href="#" aria-label="LinkedIn"><span class="material-symbols-outlined">linkedin</span></a>
-          <a href="#" aria-label="GitHub"><span class="material-symbols-outlined">code</span></a>
+    <div class="footer__grid">
+      <div>
+        <a class="brand" href="#top"><span class="icon" aria-hidden="true">science</span>CHROMA LAB</a>
+        <p class="footer__tag">A scientific bench for mixing, measuring, and shipping accessible color.</p>
+        <div class="footer__social">
+          <a href="#" aria-label="CHROMA LAB on GitHub"><span class="icon" aria-hidden="true">code</span></a>
+          <a href="#" aria-label="CHROMA LAB on Mastodon"><span class="icon" aria-hidden="true">forum</span></a>
+          <a href="#" aria-label="CHROMA LAB RSS feed"><span class="icon" aria-hidden="true">rss_feed</span></a>
         </div>
       </div>
-      <div class="footer-column">
+      <div class="footer__col">
         <h3>Product</h3>
-        <ul>
-          <li><a href="#features">Features</a></li>
-          <li><a href="#pricing">Pricing</a></li>
-          <li><a href="#">Changelog</a></li>
-          <li><a href="#">Roadmap</a></li>
-        </ul>
+        <ul><li><a href="#features">Features</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#">Changelog</a></li><li><a href="#">Roadmap</a></li></ul>
       </div>
-      <div class="footer-column">
+      <div class="footer__col">
         <h3>Resources</h3>
-        <ul>
-          <li><a href="#">Color docs</a></li>
-          <li><a href="#">Contrast guide</a></li>
-          <li><a href="#">API</a></li>
-        </ul>
+        <ul><li><a href="#">Color docs</a></li><li><a href="#">Contrast guide</a></li><li><a href="#">API</a></li></ul>
       </div>
-      <div class="footer-column">
+      <div class="footer__col">
         <h3>Company</h3>
-        <ul>
-          <li><a href="#">About</a></li>
-          <li><a href="#">Contact</a></li>
-          <li><a href="#">Privacy</a></li>
-        </ul>
+        <ul><li><a href="#">About</a></li><li><a href="#">Contact</a></li><li><a href="#">Privacy</a></li></ul>
       </div>
     </div>
-    <div class="footer-bottom">
-      <p>&copy; 2026 CHROMA LAB. All rights reserved.</p>
-      <p>Built on the visible spectrum <span class="material-symbols-outlined">brightness_5</span></p>
+    <div class="footer__bar">
+      <span>© 2026 CHROMA LAB. All rights reserved.</span>
+      <span class="mono">Built on the visible spectrum</span>
+      <span class="mono" id="theme-note">MODE: LIGHT</span>
     </div>
   </div>
 </footer>
+
 <script>
-  // Theme toggle with localStorage persistence
-  const themeToggle = document.querySelector('.theme-toggle');
-  const themeIcon = document.getElementById('theme-icon');
-  const htmlEl = document.documentElement;
-  
-  // Check for saved theme or prefer-color-scheme
-  const getPreferredTheme = () => {
-    const saved = localStorage.getItem('chroma-lab-theme');
-    if (saved) return saved;
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  };
-  
-  const setTheme = (theme) => {
-    if (theme === 'dark') {
-      htmlEl.classList.add('dark');
-      htmlEl.classList.remove('light');
-      themeIcon.textContent = 'light_mode';
-      themeToggle.setAttribute('aria-pressed', 'true');
-    } else {
-      htmlEl.classList.add('light');
-      htmlEl.classList.remove('dark');
-      themeIcon.textContent = 'dark_mode';
-      themeToggle.setAttribute('aria-pressed', 'false');
-    }
-    localStorage.setItem('chroma-lab-theme', theme);
-  };
-  
-  // Initialize theme
-  setTheme(getPreferredTheme());
-  
-  // Toggle theme
-  themeToggle.addEventListener('click', () => {
-    const newTheme = htmlEl.classList.contains('dark') ? 'light' : 'dark';
-    setTheme(newTheme);
+(function(){
+"use strict";
+document.documentElement.classList.add("js");
+var root=document.documentElement;
+var reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* Theme toggle */
+var toggle=document.getElementById("theme-toggle");
+var note=document.getElementById("theme-note");
+function applyTheme(t){
+  root.dataset.theme=t;
+  toggle.setAttribute("aria-pressed",String(t==="dark"));
+  note.textContent="MODE: "+t.toUpperCase();
+}
+applyTheme(root.dataset.theme==="dark"?"dark":"light");
+toggle.addEventListener("click",function(){
+  var next=root.dataset.theme==="dark"?"light":"dark";
+  localStorage.setItem("chroma-lab-theme",next);
+  applyTheme(next);
+});
+
+/* Mobile nav */
+var menuBtn=document.getElementById("menu-btn");
+var nav=document.getElementById("site-nav");
+function setMenu(open){
+  menuBtn.setAttribute("aria-expanded",String(open));
+  menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");
+  nav.classList.toggle("is-open",open);
+}
+menuBtn.addEventListener("click",function(){setMenu(menuBtn.getAttribute("aria-expanded")!=="true");});
+nav.addEventListener("click",function(e){if(e.target.closest("a"))setMenu(false);});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")setMenu(false);});
+
+/* FAQ accordion */
+document.querySelectorAll(".faq__btn").forEach(function(btn){
+  btn.addEventListener("click",function(){
+    var open=btn.getAttribute("aria-expanded")==="true";
+    btn.setAttribute("aria-expanded",String(!open));
+    document.getElementById(btn.getAttribute("aria-controls")).classList.toggle("is-open",!open);
   });
-  
-  // Mobile nav toggle
-  const navToggle = document.querySelector('.nav-toggle');
-  const navMenu = document.querySelector('.nav-menu');
-  navToggle.addEventListener('click', () => {
-    const isOpen = navToggle.getAttribute('aria-expanded') === 'true';
-    navToggle.setAttribute('aria-expanded', !isOpen);
-    navMenu.classList.toggle('open', !isOpen);
+});
+
+/* Billing toggle */
+var sw=document.getElementById("billing-switch");
+var live=document.getElementById("billing-live");
+sw.addEventListener("click",function(){
+  var annual=sw.getAttribute("aria-checked")!=="true";
+  sw.setAttribute("aria-checked",String(annual));
+  document.querySelectorAll(".price-card__price").forEach(function(p){
+    p.style.opacity="0";
+    setTimeout(function(){
+      p.innerHTML=(annual?p.dataset.annual:p.dataset.monthly)+"<small>/mo</small>";
+      p.style.opacity="1";
+    },reduced?0:200);
   });
-  
-  // Close mobile nav on escape
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && navMenu.classList.contains('open')) {
-      navToggle.setAttribute('aria-expanded', 'false');
-      navMenu.classList.remove('open');
-    }
-  });
-  
-  // FAQ accordion
-  const faqButtons = document.querySelectorAll('.faq-button');
-  faqButtons.forEach(button => {
-    button.addEventListener('click', () => {
-      const expanded = button.getAttribute('aria-expanded') === 'true';
-      button.setAttribute('aria-expanded', !expanded);
-      const panel = button.nextElementSibling;
-      panel.setAttribute('aria-hidden', expanded);
-    });
-  });
-  
-  // Pricing toggle
-  const billingToggle = document.getElementById('billing-toggle');
-  const saveNote = document.querySelector('.save-note');
-  const pricingPrices = document.querySelectorAll('.pricing-price');
-  const monthlyPrices = ['$0', '$29', '$99'];
-  const annualPrices = ['$0', '$23', '$79']; // 20% off
-  
-  billingToggle.addEventListener('change', () => {
-    const isAnnual = billingToggle.checked;
-    saveNote.textContent = isAnnual ? 'Monthly billing' : 'Annual billing (save 20%)';
-    billingToggle.setAttribute('aria-checked', isAnnual);
-    
-    pricingPrices.forEach((price, index) => {
-      price.textContent = isAnnual ? annualPrices[index] : monthlyPrices[index];
-    });
-    
-    // Announce change
-    saveNote.dispatchEvent(new CustomEvent('announce', { detail: isAnnual ? 'Annual billing selected' : 'Monthly billing selected' }));
-  });
-  
-  // CTA form handling
-  const ctaForm = document.getElementById('cta-form');
-  const ctaFeedback = document.getElementById('cta-feedback');
-  ctaForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const emailInput = ctaForm.elements['email'];
-    const email = emailInput.value.trim();
-    
-    // Simple email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      ctaFeedback.textContent = 'Please enter a valid email address.';
-      ctaFeedback.style.color = 'var(--text-error)';
-      emailInput.setAttribute('aria-invalid', 'true');
-      emailInput.focus();
-      return;
-    }
-    
-    // Simulate loading
-    const submitBtn = ctaForm.querySelector('button[type="submit"]');
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> Submitting...';
-    
-    setTimeout(() => {
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = 'Join the Lab';
-      ctaFeedback.textContent = 'Thanks for joining! We\'ll notify you when the bench opens.';
-      ctaFeedback.style.color = 'var(--text-success)';
-      emailInput.value = '';
-      emailInput.removeAttribute('aria-invalid');
-    }, 1500);
-  });
-  
-  // IntersectionObserver for reveal animations (respects reduced motion)
-  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-visible');
-        }
-      });
-    }, { threshold: 0.1 });
-    
-    document.querySelectorAll('.section, .hero, .cta-band').forEach(el => {
-      observer.observe(el);
-    });
+  live.textContent=annual?"Annual billing selected, prices reduced by 20 percent.":"Monthly billing selected.";
+});
+
+/* CTA form */
+var form=document.getElementById("cta-form");
+var email=document.getElementById("cta-email");
+var submitBtn=document.getElementById("cta-submit");
+var err=document.getElementById("cta-error");
+var ok=document.getElementById("cta-success");
+form.addEventListener("submit",function(e){
+  e.preventDefault();
+  err.textContent="";ok.hidden=true;email.classList.remove("input--invalid","input--valid");
+  var v=email.value.trim();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)){
+    email.classList.add("input--invalid");
+    err.innerHTML='<span class="icon" aria-hidden="true">error</span>Enter a valid email address, for example you@studio.com.';
+    email.focus();return;
   }
+  submitBtn.classList.add("btn--loading");
+  submitBtn.disabled=true;
+  submitBtn.innerHTML='<span class="btn__spinner" aria-hidden="true"></span><span class="btn__label">Logging…</span>';
+  setTimeout(function(){
+    submitBtn.classList.remove("btn--loading");
+    submitBtn.disabled=false;
+    submitBtn.innerHTML='<span class="btn__label">Request access</span>';
+    email.classList.add("input--valid");
+    email.readOnly=true;
+    ok.hidden=false;
+  },900);
+});
+
+/* Scroll reveals */
+if("IntersectionObserver" in window && !reduced){
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){en.target.classList.add("is-visible");io.unobserve(en.target);}
+    });
+  },{threshold:.12});
+  document.querySelectorAll(".reveal").forEach(function(el,i){
+    el.style.transitionDelay=(i%3)*60+"ms";
+    io.observe(el);
+  });
+}else{
+  document.querySelectorAll(".reveal").forEach(function(el){el.classList.add("is-visible");});
+}
+})();
 </script>
 </body>
 </html>

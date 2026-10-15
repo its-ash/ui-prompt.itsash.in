@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VoxelForge - Build voxel art in your browser</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet">
+<style>
+@layer tokens, base, components, sections, utilities;
+@layer tokens {
+:root {
+  --color-bg: #a8e0f0;
+  --color-surface: #ffffff;
+  --color-surface-strong: #eef7fb;
+  --color-border: #16324a;
+  --color-text: #16324a;
+  --color-text-muted: #3b5a72;
+  --color-primary: #ff6b3d;
+  --color-accent: #2fbf71;
+  --color-yellow: #ffc93c;
+  --color-on-primary: #16110c;
+  --color-on-accent: #0a2416;
+  --color-on-yellow: #16324a;
+  --color-bg-secondary: var(--color-surface-strong);
+  --color-text-primary: var(--color-text);
+  --color-text-secondary: var(--color-text-muted);
+  --color-border-default: var(--color-border);
+  --color-text-success: #15734a;
+  --color-text-error: #b3362e;
+  --color-border-success: #1a8f55;
+  --color-border-error: #b3362e;
+  --radius-sm: 0px; --radius-md: 0px; --radius-lg: 0px; --radius-pill: 0px;
+  --shadow-sm: 3px 3px 0 var(--color-border);
+  --shadow-md: 5px 5px 0 var(--color-border);
+  --shadow-lg: 8px 8px 0 var(--color-border);
+  --font-sans: 'Space Grotesk', 'Segoe UI', sans-serif;
+  --font-display: 'Press Start 2P', 'Space Grotesk', monospace;
+  --font-mono: 'VT323', ui-monospace, monospace;
+  --font-base: var(--font-sans);
+  --text-xs: 0.75rem; --text-sm: 0.875rem; --text-base: 1rem; --text-lg: 1.125rem;
+  --text-xl: 1.375rem; --text-2xl: 1.75rem; --text-3xl: 2.25rem;
+  --text-4xl: 2.75rem; --text-5xl: 3.5rem;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-6: 24px; --space-8: 32px; --space-12: 48px; --space-16: 64px; --space-24: 96px;
+  --spacing-gap: var(--space-4);
+  --ease-standard: steps(4, end);
+  --transition-fast: 0.1s;
+  --transition-normal: 0.2s;
+  --z-dropdown: 100; --z-modal: 200; --z-toast: 300;
+  --voxel-top: linear-gradient(180deg, rgba(255,255,255,0.55) 0 30%, transparent 30%);
+  --voxel-side: 4px solid var(--color-border);
+  --pixel-notch: 8px;
+}
+:root[data-theme="dark"] {
+  --color-bg: #141f33;
+  --color-surface: #1d2b42;
+  --color-surface-strong: #273a58;
+  --color-border: #a8d8ec;
+  --color-text: #eef7fd;
+  --color-text-muted: #a9c4d9;
+  --color-primary: #ff6b3d;
+  --color-accent: #2fbf71;
+  --color-yellow: #ffc93c;
+  --color-on-primary: #16110c;
+  --color-on-accent: #0a2416;
+  --color-on-yellow: #16324a;
+  --color-text-success: #6fdcae;
+  --color-text-error: #ff9d8f;
+  --color-border-success: #2fbf71;
+  --color-border-error: #ff6b5e;
+}
+}
+@layer base {
+*,*::before,*::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; color: var(--color-text); font-family: var(--font-base); background: var(--color-bg); font-size: var(--text-base); line-height: 1.6; overflow-x: hidden; }
+h1,h2,h3 { color: var(--color-text); line-height: 1.15; letter-spacing: -0.01em; margin: 0 0 var(--space-4); }
+h1,h2 { font-family: var(--font-display); }
+h1 { font-size: clamp(1.5rem, 4vw, 2.5rem); line-height: 1.35; }
+h2 { font-size: clamp(1.1rem, 2.6vw, 1.6rem); line-height: 1.4; }
+h3 { font-size: var(--text-xl); font-weight: 700; }
+p { margin: 0 0 var(--space-4); max-width: 65ch; }
+a { color: var(--color-text); }
+img { max-width: 100%; }
+section { scroll-margin-top: 96px; }
+[hidden] { display: none !important; }
+:focus-visible { outline: 3px solid var(--color-primary); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition-duration: 0.01ms !important; }
+}
+}
+@layer components {
+.icon { font-family: 'Material Symbols Sharp'; font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; font-size: 24px; line-height: 1; font-style: normal; user-select: none; }
+.container { max-width: 1200px; margin-inline: auto; padding-inline: var(--space-6); }
+.skip-link { position: absolute; left: var(--space-4); top: -60px; z-index: var(--z-toast); background: var(--color-yellow); color: var(--color-on-yellow); border: var(--voxel-side); padding: var(--space-3) var(--space-4); font-weight: 700; transition: top var(--transition-fast) var(--ease-standard); }
+.skip-link:focus { top: var(--space-3); }
+.nav { display: flex; gap: var(--space-4); align-items: center; padding: var(--space-3) var(--space-6); background: var(--color-surface); border-bottom: var(--voxel-side); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: var(--z-dropdown); min-height: 64px; }
+.nav__brand { display: flex; align-items: center; gap: var(--space-3); text-decoration: none; font-family: var(--font-display); font-size: var(--text-sm); color: var(--color-text); margin-right: auto; }
+.nav__links { display: flex; gap: var(--space-2); align-items: center; list-style: none; margin: 0; padding: 0; }
+.nav__link { display: flex; align-items: center; min-height: 44px; padding: var(--space-2) var(--space-3); text-decoration: none; font-weight: 700; font-size: var(--text-sm); border: 3px solid transparent; transition: transform var(--transition-fast) var(--ease-standard), background var(--transition-fast) var(--ease-standard); }
+@media (hover: hover) and (pointer: fine) { .nav__link:hover { background: var(--color-surface-strong); border-color: var(--color-border); } }
+.nav__toggle, .nav__menu-btn { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; background: var(--color-surface-strong); color: var(--color-text); border: var(--voxel-side); box-shadow: var(--shadow-sm); cursor: pointer; transition: transform var(--transition-fast) var(--ease-standard), box-shadow var(--transition-fast) var(--ease-standard); }
+@media (hover: hover) and (pointer: fine) { .nav__toggle:hover, .nav__menu-btn:hover { transform: translate(-2px,-2px); box-shadow: var(--shadow-md); } }
+.nav__toggle:active, .nav__menu-btn:active { transform: translate(3px,3px); box-shadow: none; }
+.nav__menu-btn { display: none; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; font: 700 var(--text-base)/1 var(--font-sans); padding: var(--space-3) var(--space-6); min-height: 44px; border-radius: var(--radius-sm); background: var(--color-yellow); color: var(--color-on-yellow); border: var(--voxel-side); background-image: var(--voxel-top); box-shadow: var(--shadow-sm); cursor: pointer; text-decoration: none; position: relative; transition: transform .1s var(--ease-standard), box-shadow .1s var(--ease-standard); }
+@media (hover: hover) and (pointer: fine) { .btn:hover { transform: translate(-2px,-2px); box-shadow: var(--shadow-md); } }
+.btn:active { transform: translate(3px,3px); box-shadow: none; }
+.btn:focus-visible { outline: 3px solid var(--color-primary); outline-offset: 3px; }
+.btn[disabled] { opacity: .5; cursor: not-allowed; transform: none; box-shadow: var(--shadow-sm); }
+.btn--primary { background: var(--color-primary); color: var(--color-on-primary); background-image: var(--voxel-top); }
+.btn--success { background: var(--color-accent); color: var(--color-on-accent); background-image: var(--voxel-top); }
+.btn--error { background: var(--color-surface); color: var(--color-text-error); border-color: var(--color-border-error); background-image: none; }
+.btn.is-loading { pointer-events: none; }
+.btn.is-loading .btn__label, .btn.is-loading .icon { visibility: hidden; }
+.btn.is-loading::after { content: ""; position: absolute; width: 18px; height: 18px; border: 4px solid var(--color-on-primary); border-top-color: transparent; animation: voxel-spin 0.8s steps(8, end) infinite; }
+@keyframes voxel-spin { to { transform: rotate(360deg); } }
+.card { background: var(--color-surface); color: var(--color-text); padding: var(--space-6); border: var(--voxel-side); box-shadow: var(--shadow-lg); border-radius: var(--radius-md); position: relative; display: flex; flex-direction: column; gap: var(--space-3); transition: transform var(--transition-fast) var(--ease-standard), box-shadow var(--transition-fast) var(--ease-standard), border-color var(--transition-fast) var(--ease-standard); }
+.card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 10px; background: var(--voxel-top); pointer-events: none; }
+@media (hover: hover) and (pointer: fine) { .card:hover { transform: translate(-2px,-2px); box-shadow: 10px 10px 0 var(--color-border); } }
+.card:focus-within { border-color: var(--color-primary); }
+.card--skeleton { min-height: 220px; background: repeating-linear-gradient(90deg, var(--color-surface-strong) 0 24px, var(--color-surface) 24px 48px); }
+.card--empty { align-items: center; text-align: center; color: var(--color-text-muted); }
+.badge { display: inline-flex; align-items: center; gap: .4em; font-size: var(--text-xs); font-weight: 700; padding: .3em .8em; border-radius: var(--radius-pill); background: var(--color-accent); color: var(--color-on-accent); border: 2px solid var(--color-border); width: fit-content; }
+.input-group { display: flex; flex-direction: column; gap: var(--space-2); }
+.input-group label { font-weight: 700; font-size: var(--text-sm); }
+.input { width: 100%; box-sizing: border-box; color: var(--color-text); font: var(--text-base) var(--font-sans); padding: var(--space-3) var(--space-4); min-height: 48px; border-radius: var(--radius-sm); background: var(--color-surface-strong); border: var(--voxel-side); box-shadow: var(--shadow-sm); }
+.input::placeholder { color: var(--color-text-muted); }
+.input:focus { outline: none; box-shadow: var(--shadow-md); }
+.input:focus-visible { outline: 3px solid var(--color-primary); outline-offset: 3px; }
+.input.is-valid { border-color: var(--color-border-success); }
+.input.is-invalid { border-color: var(--color-border-error); }
+.input[disabled], .input[readonly] { opacity: .6; cursor: not-allowed; }
+.input-feedback { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); min-height: 1.4em; }
+.input-feedback--error { color: var(--color-text-error); }
+.input-feedback--success { color: var(--color-text-success); }
+.input-helper { font-size: var(--text-sm); color: var(--color-text-muted); }
+/* voxel cube */
+.voxel-cube { position: relative; width: var(--cube-size, 48px); height: var(--cube-size, 48px); flex: none; }
+.voxel-cube__face { position: absolute; inset: 0; }
+.voxel-cube__face--top { clip-path: polygon(50% 0, 100% 25%, 50% 50%, 0 25%); background: var(--cube-light, #8fe3ff); }
+.voxel-cube__face--left { clip-path: polygon(0 25%, 50% 50%, 50% 100%, 0 75%); background: var(--cube-mid, #4fb8dd); }
+.voxel-cube__face--right { clip-path: polygon(50% 50%, 100% 25%, 100% 75%, 50% 100%); background: var(--cube-dark, #2f86ab); }
+.voxel-cube--grass { --cube-light: #7fe0a0; --cube-mid: #2fbf71; --cube-dark: #1a8f55; }
+.voxel-cube--trunk { --cube-light: #ffb08a; --cube-mid: #ff6b3d; --cube-dark: #c94a22; }
+.voxel-cube--cloud { --cube-light: #ffe08a; --cube-mid: #ffc93c; --cube-dark: #d9a41c; }
+.voxel-cube--stone { --cube-light: #cfe6f2; --cube-mid: #8fb6cc; --cube-dark: #5d87a1; }
+.voxel-cube--bob { animation: voxel-bob 2.4s steps(6, end) infinite alternate; }
+@keyframes voxel-bob { from { transform: translateY(0); } to { transform: translateY(-8px); } }
+}
+@layer sections {
+.section { padding-block: clamp(4rem, 8vw, 7rem); }
+.section__head { margin-bottom: var(--space-12); }
+.section__sub { color: var(--color-text-muted); font-size: var(--text-lg); margin: 0; }
+/* hero */
+.hero { padding-top: clamp(3rem, 6vw, 6rem); padding-bottom: clamp(4rem, 8vw, 6rem); }
+.hero__row { display: flex; align-items: center; gap: var(--space-12); }
+.hero__text { flex: 1 1 52%; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-4); }
+.hero__text p { color: var(--color-text-muted); font-size: var(--text-lg); margin: 0; }
+.hero__ctas { display: flex; gap: var(--space-4); flex-wrap: wrap; }
+.hero__stats { font-family: var(--font-mono); font-size: var(--text-lg); color: var(--color-text-muted); margin: 0; }
+.hero__stage { flex: 1 1 42%; min-width: 0; position: relative; height: clamp(280px, 34vw, 420px); }
+.hero__stage .voxel-cube { position: absolute; }
+.diorama__ground { position: absolute; left: 8%; right: 8%; bottom: 6%; height: 18px; background: var(--color-border); opacity: .25; }
+/* features */
+.features__grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: var(--space-6); }
+.tile { display: flex; align-items: center; justify-content: center; width: 56px; height: 56px; border: var(--voxel-side); box-shadow: var(--shadow-sm); background-image: var(--voxel-top); flex: none; }
+.tile--yellow { background-color: var(--color-yellow); color: var(--color-on-yellow); }
+.tile--primary { background-color: var(--color-primary); color: var(--color-on-primary); }
+.tile--accent { background-color: var(--color-accent); color: var(--color-on-accent); }
+.card p { color: var(--color-text-muted); margin: 0; }
+/* steps */
+.steps__row { display: flex; align-items: stretch; gap: var(--space-6); }
+.step { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-3); }
+.step__num { display: flex; align-items: center; justify-content: center; width: 64px; height: 64px; font-family: var(--font-display); font-size: var(--text-base); border: var(--voxel-side); box-shadow: var(--shadow-md); background-image: var(--voxel-top); }
+.step p { color: var(--color-text-muted); margin: 0; }
+.step__divider { flex: 0 0 48px; align-self: center; height: 4px; background: repeating-linear-gradient(90deg, var(--color-border) 0 10px, transparent 10px 20px); }
+/* testimonials */
+.quotes__grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: var(--space-6); }
+.stars { display: flex; gap: 2px; color: var(--color-yellow); }
+.stars .icon { -webkit-text-stroke: 2px var(--color-border); }
+.quote__text { font-size: var(--text-lg); color: var(--color-text) !important; margin: 0; }
+.quote__divider { border: none; border-top: 3px dashed var(--color-border); margin: var(--space-2) 0; }
+.quote__person { display: flex; align-items: center; gap: var(--space-3); }
+.avatar { display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; font-family: var(--font-mono); font-size: var(--text-xl); border: var(--voxel-side); box-shadow: var(--shadow-sm); flex: none; }
+.quote__name { font-weight: 700; margin: 0; }
+.quote__role { color: var(--color-text-muted); font-size: var(--text-sm); margin: 0; }
+/* pricing */
+.pricing__grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: var(--space-6); align-items: stretch; }
+.price { font-family: var(--font-mono); font-size: var(--text-4xl); line-height: 1; }
+.price small { font-family: var(--font-sans); font-size: var(--text-sm); color: var(--color-text-muted); }
+.plan__list { list-style: none; margin: 0 0 var(--space-4); padding: 0; display: flex; flex-direction: column; gap: var(--space-2); flex: 1; }
+.plan__list li { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); }
+.plan__list .icon { font-size: 20px; }
+.plan__yes { color: var(--color-text-success); }
+.plan__no { color: var(--color-text-muted); }
+.plan__no .icon { opacity: .6; }
+@media (min-width: 768px) { .card--featured { transform: translateY(-8px); } .card--featured:hover { transform: translateY(-8px) translate(-2px,-2px); } }
+/* faq */
+.faq__list { display: flex; flex-direction: column; gap: var(--space-4); max-width: 760px; }
+.faq__item { background: var(--color-surface); border: var(--voxel-side); box-shadow: var(--shadow-md); }
+.faq__item summary { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); min-height: 44px; padding: var(--space-4) var(--space-6); font-weight: 700; cursor: pointer; list-style: none; }
+.faq__item summary::-webkit-details-marker { display: none; }
+.faq__item summary .icon { transition: transform var(--transition-normal) var(--ease-standard); flex: none; }
+.faq__item[open] summary .icon { transform: rotate(90deg); }
+.faq__item p { padding: 0 var(--space-6) var(--space-4); color: var(--color-text-muted); margin: 0; }
+/* cta band */
+.cta-band { background: var(--color-surface-strong); border-top: var(--voxel-side); border-bottom: var(--voxel-side); }
+.cta-band__inner { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-4); }
+.cta-form { display: flex; gap: var(--space-4); align-items: flex-end; width: 100%; max-width: 640px; }
+.cta-form .input-group { flex: 1 1 auto; min-width: 0; }
+.cta-form .btn { flex: none; }
+.cta-success { display: flex; align-items: center; gap: var(--space-2); color: var(--color-text-success); font-weight: 700; margin: 0; }
+/* footer */
+.footer { background: var(--color-surface); border-top: var(--voxel-side); padding-block: var(--space-12) var(--space-6); }
+.footer__top { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-8); flex-wrap: wrap; margin-bottom: var(--space-8); }
+.footer__brand { display: flex; flex-direction: column; gap: var(--space-3); max-width: 320px; }
+.footer__brand p { color: var(--color-text-muted); font-size: var(--text-sm); margin: 0; }
+.footer__social { display: flex; gap: var(--space-3); }
+.footer__social a { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: var(--voxel-side); box-shadow: var(--shadow-sm); background: var(--color-surface-strong); color: var(--color-text); transition: transform var(--transition-fast) var(--ease-standard), box-shadow var(--transition-fast) var(--ease-standard); }
+@media (hover: hover) and (pointer: fine) { .footer__social a:hover { transform: translate(-2px,-2px); box-shadow: var(--shadow-md); } }
+.footer__social a:active { transform: translate(3px,3px); box-shadow: none; }
+.footer__cols { display: flex; gap: var(--space-12); flex-wrap: wrap; }
+.footer__col h3 { font-size: var(--text-sm); text-transform: uppercase; letter-spacing: .08em; margin-bottom: var(--space-3); }
+.footer__col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.footer__col a { color: var(--color-text-muted); text-decoration: none; font-size: var(--text-sm); }
+@media (hover: hover) and (pointer: fine) { .footer__col a:hover { color: var(--color-primary); } }
+.footer__bar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap; border-top: 3px dashed var(--color-border); padding-top: var(--space-6); font-size: var(--text-sm); color: var(--color-text-muted); }
+.footer__bar a { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--color-text); font-weight: 700; text-decoration: none; min-height: 44px; }
+}
+@layer utilities {
+.reveal { opacity: 0; transform: translateY(16px); transition: opacity .3s ease-out, transform .3s var(--ease-standard); }
+.reveal.is-visible { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .reveal { transform: none; transition: opacity .2s ease; } }
+@media (max-width: 900px) {
+  .hero__row { flex-direction: column; align-items: flex-start; }
+  .hero__stage { width: 100%; }
+  .features__grid, .pricing__grid, .quotes__grid { grid-template-columns: 1fr; }
+  .steps__row { flex-direction: column; }
+  .step__divider { display: none; }
+  .cta-form { flex-direction: column; align-items: stretch; }
+}
+@media (max-width: 767px) {
+  .nav__menu-btn { display: flex; }
+  .nav__links { display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; align-items: stretch; background: var(--color-surface); border-bottom: var(--voxel-side); box-shadow: var(--shadow-md); padding: var(--space-3); z-index: var(--z-dropdown); }
+  .nav__links.is-open { display: flex; }
+  .nav__link { width: 100%; }
+}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header>
+<nav class="nav" aria-label="Main navigation">
+  <a class="nav__brand" href="#top">
+    <span class="voxel-cube voxel-cube--grass" style="--cube-size:28px" aria-hidden="true"><span class="voxel-cube__face voxel-cube__face--top"></span><span class="voxel-cube__face voxel-cube__face--left"></span><span class="voxel-cube__face voxel-cube__face--right"></span></span>
+    VOXELFORGE
+  </a>
+  <ul class="nav__links" id="nav-menu">
+    <li><a class="nav__link" href="#features">Features</a></li>
+    <li><a class="nav__link" href="#how">How It Works</a></li>
+    <li><a class="nav__link" href="#pricing">Pricing</a></li>
+    <li><a class="nav__link" href="#faq">FAQ</a></li>
+  </ul>
+  <button class="nav__toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+    <span class="icon" id="theme-icon" aria-hidden="true">dark_mode</span>
+  </button>
+  <button class="nav__menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="nav-menu" aria-label="Open menu">
+    <span class="icon" aria-hidden="true">menu</span>
+  </button>
+</nav>
+</header>
+
+<main id="main">
+<!-- HERO -->
+<section class="hero" id="top" aria-labelledby="hero-title">
+  <div class="container hero__row">
+    <div class="hero__text">
+      <span class="badge"><span class="icon" aria-hidden="true" style="font-size:14px">new_releases</span>Version 2.0 is live</span>
+      <h1 id="hero-title">Build worlds one cube at a time</h1>
+      <p>A voxel art studio that runs entirely in your browser. Stack, paint, and export blocky creations with zero installs.</p>
+      <div class="hero__ctas">
+        <a class="btn btn--primary" href="#pricing"><span class="btn__label">Start building free</span></a>
+        <a class="btn" href="#how"><span class="btn__label">See how it works</span></a>
+      </div>
+      <p class="hero__stats">1.4M cubes placed · 12,000 builders online</p>
+    </div>
+    <div class="hero__stage" aria-hidden="true">
+      <div class="diorama__ground"></div>
+      <span class="voxel-cube voxel-cube--grass" style="--cube-size:96px; left:30%; bottom:14%"><span class="voxel-cube__face voxel-cube__face--top"></span><span class="voxel-cube__face voxel-cube__face--left"></span><span class="voxel-cube__face voxel-cube__face--right"></span></span>
+      <span class="voxel-cube voxel-cube--grass" style="--cube-size:64px; left:14%; bottom:14%"><span class="voxel-cube__face voxel-cube__face--top"></span><span class="voxel-cube__face voxel-cube__face--left"></span><span class="voxel-cube__face voxel-cube__face--right"></span></span>
+      <span class="voxel-cube voxel-cube--grass" style="--cube-size:64px; left:56%; bottom:14%"><span class="voxel-cube__face voxel-cube__face--top"></span><span class="voxel-cube__face voxel-cube__face--left"></span><span class="voxel-cube__face voxel-cube__face--right"></span></span>
+      <span class="voxel-cube voxel-cube--trunk" style="--cube-size:40px; left:38%; bottom:38%"><span class="voxel-cube__face voxel-cube__face--top"></span><span class="voxel-cube__face voxel-cube__face--left"></span><span class="voxel-cube__face voxel-cube__face--right"></span></span>
+      <span class="voxel-cube voxel-cube--grass" style="--cube-size:56px; left:35%; bottom:52%"><span class="voxel-cube__face voxel-cube__face--top"></span><span class="voxel-cube__face voxel-cube__face--left"></span><span class="voxel-cube__face voxel-cube__face--right"></span></span>
+      <span class="voxel-cube voxel-cube--grass voxel-cube--bob" style="--cube-size:40px; left:41%; bottom:66%"><span class="voxel-cube__face voxel-cube__face--top"></span><span class="voxel-cube__face voxel-cube__face--left"></span><span class="voxel-cube__face voxel-cube__face--right"></span></span>
+      <span class="voxel-cube voxel-cube--cloud voxel-cube--bob" style="--cube-size:56px; left:66%; top:8%"><span class="voxel-cube__face voxel-cube__face--top"></span><span class="voxel-cube__face voxel-cube__face--left"></span><span class="voxel-cube__face voxel-cube__face--right"></span></span>
+      <span class="voxel-cube voxel-cube--cloud" style="--cube-size:36px; left:80%; top:24%"><span class="voxel-cube__face voxel-cube__face--top"></span><span class="voxel-cube__face voxel-cube__face--left"></span><span class="voxel-cube__face voxel-cube__face--right"></span></span>
+      <span class="voxel-cube voxel-cube--stone" style="--cube-size:32px; left:8%; bottom:14%"><span class="voxel-cube__face voxel-cube__face--top"></span><span class="voxel-cube__face voxel-cube__face--left"></span><span class="voxel-cube__face voxel-cube__face--right"></span></span>
+      <span class="voxel-cube voxel-cube--trunk" style="--cube-size:28px; left:72%; bottom:14%"><span class="voxel-cube__face voxel-cube__face--top"></span><span class="voxel-cube__face voxel-cube__face--left"></span><span class="voxel-cube__face voxel-cube__face--right"></span></span>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section" id="features" aria-labelledby="features-title">
+  <div class="container">
+    <div class="section__head">
+      <h2 id="features-title">Everything fits in a cube</h2>
+      <p class="section__sub">A full modeling toolkit that feels like a toy box and exports like a pro tool.</p>
+    </div>
+    <div class="features__grid">
+      <article class="card reveal">
+        <span class="tile tile--yellow"><span class="icon" aria-hidden="true">view_in_ar</span></span>
+        <h3>Stack cubes in your browser</h3>
+        <p>Paint, extrude, and carve on a snappy grid. No downloads, no GPU driver drama, just open a tab and build.</p>
+      </article>
+      <article class="card reveal">
+        <span class="tile tile--primary"><span class="icon" aria-hidden="true">download</span></span>
+        <h3>Export anywhere</h3>
+        <p>Send your models to .vox, .obj, and .gltf with materials intact. Drop them straight into games, renders, or 3D prints.</p>
+      </article>
+      <article class="card reveal">
+        <span class="tile tile--accent"><span class="icon" aria-hidden="true">groups</span></span>
+        <h3>Remix community galleries</h3>
+        <p>Fork any shared build, swap the palette, and publish your version. Every remix credits the original builder.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how" aria-labelledby="how-title" style="background:var(--color-surface-strong); border-top:var(--voxel-side); border-bottom:var(--voxel-side)">
+  <div class="container">
+    <div class="section__head">
+      <h2 id="how-title">Three steps to your first build</h2>
+      <p class="section__sub">From blank canvas to shared gallery in under five minutes.</p>
+    </div>
+    <div class="steps__row">
+      <div class="step reveal">
+        <span class="step__num tile--yellow">01</span>
+        <h3>Pick your canvas</h3>
+        <p>Choose a grid size from 16 to 256 cubes per side, or start from a community template.</p>
+      </div>
+      <div class="step__divider" aria-hidden="true"></div>
+      <div class="step reveal">
+        <span class="step__num tile--primary">02</span>
+        <h3>Stack your cubes</h3>
+        <p>Paint with palettes, mirror across axes, and carve with box tools. Undo goes back 500 steps.</p>
+      </div>
+      <div class="step__divider" aria-hidden="true"></div>
+      <div class="step reveal">
+        <span class="step__num tile--accent">03</span>
+        <h3>Export and share</h3>
+        <p>Render a turntable, export your model files, or publish to the gallery with one click.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="section" id="testimonials" aria-labelledby="quotes-title">
+  <div class="container">
+    <div class="section__head">
+      <h2 id="quotes-title">Builders say it best</h2>
+    </div>
+    <div class="quotes__grid">
+      <article class="card reveal">
+        <div class="stars" role="img" aria-label="Rated 5 out of 5 stars">
+          <span class="icon" aria-hidden="true">star</span><span class="icon" aria-hidden="true">star</span><span class="icon" aria-hidden="true">star</span><span class="icon" aria-hidden="true">star</span><span class="icon" aria-hidden="true">star</span>
+        </div>
+        <p class="quote__text">"I prototyped every prop for our indie game jam in VoxelForge. The .gltf export dropped straight into our engine with zero cleanup."</p>
+        <hr class="quote__divider">
+        <div class="quote__person">
+          <span class="avatar tile--primary" aria-hidden="true">MK</span>
+          <div><p class="quote__name">Mara Kessler</p><p class="quote__role">Game Artist, Pixel Foundry</p></div>
+        </div>
+      </article>
+      <article class="card reveal">
+        <div class="stars" role="img" aria-label="Rated 5 out of 5 stars">
+          <span class="icon" aria-hidden="true">star</span><span class="icon" aria-hidden="true">star</span><span class="icon" aria-hidden="true">star</span><span class="icon" aria-hidden="true">star</span><span class="icon" aria-hidden="true">star</span>
+        </div>
+        <p class="quote__text">"My students build dioramas on school Chromebooks with no installs. The remix gallery turned the whole class into collaborators."</p>
+        <hr class="quote__divider">
+        <div class="quote__person">
+          <span class="avatar tile--accent" aria-hidden="true">DO</span>
+          <div><p class="quote__name">Devon Okafor</p><p class="quote__role">Design Teacher, Northgate School</p></div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="section" id="pricing" aria-labelledby="pricing-title" style="background:var(--color-surface-strong); border-top:var(--voxel-side); border-bottom:var(--voxel-side)">
+  <div class="container">
+    <div class="section__head">
+      <h2 id="pricing-title">Pick your plan</h2>
+      <p class="section__sub">Start free. Upgrade when your worlds outgrow the workbench.</p>
+    </div>
+    <div class="pricing__grid">
+      <article class="card reveal">
+        <h3>Apprentice</h3>
+        <p class="price">$0<small> /month</small></p>
+        <ul class="plan__list">
+          <li class="plan__yes"><span class="icon" aria-hidden="true">check</span>64-cube canvases</li>
+          <li class="plan__yes"><span class="icon" aria-hidden="true">check</span>.vox export</li>
+          <li class="plan__yes"><span class="icon" aria-hidden="true">check</span>3 saved projects</li>
+          <li class="plan__no"><span class="icon" aria-hidden="true">close</span>Community remixing</li>
+          <li class="plan__no"><span class="icon" aria-hidden="true">close</span>Turntable renders</li>
+        </ul>
+        <a class="btn" href="#cta"><span class="btn__label">Start free</span></a>
+      </article>
+      <article class="card card--featured reveal">
+        <span class="badge">MOST POPULAR</span>
+        <h3>Builder</h3>
+        <p class="price">$8<small> /month</small></p>
+        <ul class="plan__list">
+          <li class="plan__yes"><span class="icon" aria-hidden="true">check</span>256-cube canvases</li>
+          <li class="plan__yes"><span class="icon" aria-hidden="true">check</span>.vox, .obj, and .gltf export</li>
+          <li class="plan__yes"><span class="icon" aria-hidden="true">check</span>Unlimited projects</li>
+          <li class="plan__yes"><span class="icon" aria-hidden="true">check</span>Community remixing</li>
+          <li class="plan__no"><span class="icon" aria-hidden="true">close</span>Team workspaces</li>
+        </ul>
+        <a class="btn btn--primary" href="#cta"><span class="btn__label">Start building</span></a>
+      </article>
+      <article class="card reveal">
+        <h3>Studio</h3>
+        <p class="price">$24<small> /month</small></p>
+        <ul class="plan__list">
+          <li class="plan__yes"><span class="icon" aria-hidden="true">check</span>Everything in Builder</li>
+          <li class="plan__yes"><span class="icon" aria-hidden="true">check</span>Team workspaces</li>
+          <li class="plan__yes"><span class="icon" aria-hidden="true">check</span>4K turntable renders</li>
+          <li class="plan__yes"><span class="icon" aria-hidden="true">check</span>Priority support</li>
+          <li class="plan__yes"><span class="icon" aria-hidden="true">check</span>API access</li>
+        </ul>
+        <a class="btn" href="#cta"><span class="btn__label">Start free</span></a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" id="faq" aria-labelledby="faq-title">
+  <div class="container">
+    <div class="section__head">
+      <h2 id="faq-title">Common questions</h2>
+    </div>
+    <div class="faq__list">
+      <details class="faq__item" name="faq">
+        <summary>Which browsers does VoxelForge support?<span class="icon" aria-hidden="true">expand_more</span></summary>
+        <p>Any current version of Chrome, Firefox, Safari, or Edge. Everything renders with WebGL, and projects autosave to your account so you can switch devices mid-build.</p>
+      </details>
+      <details class="faq__item" name="faq">
+        <summary>What file formats can I export?<span class="icon" aria-hidden="true">expand_more</span></summary>
+        <p>Free plans export .vox for MagicaVoxel. Paid plans add .obj and .gltf with full material and palette data, ready for game engines and 3D printing pipelines.</p>
+      </details>
+      <details class="faq__item" name="faq">
+        <summary>Is there a limit on cubes per model?<span class="icon" aria-hidden="true">expand_more</span></summary>
+        <p>Canvases go up to 256 cubes per side on Builder and Studio plans, which is over 16 million possible voxels. Most detailed characters use fewer than 20,000.</p>
+      </details>
+      <details class="faq__item" name="faq">
+        <summary>Can I get a refund?<span class="icon" aria-hidden="true">expand_more</span></summary>
+        <p>Yes. Every paid plan comes with a 30-day refund window, no questions asked. Cancel from your account page and keep anything you exported.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section cta-band" id="cta" aria-labelledby="cta-title">
+  <div class="container cta-band__inner">
+    <h2 id="cta-title">Claim your workbench</h2>
+    <p class="section__sub">Drop your email and we will send you a free Builder account invite.</p>
+    <form class="cta-form" id="cta-form" novalidate>
+      <div class="input-group">
+        <label for="cta-email">Email address</label>
+        <input class="input" id="cta-email" name="email" type="email" autocomplete="email" placeholder="builder@example.com" aria-describedby="cta-helper cta-feedback" required>
+        <span class="input-helper" id="cta-helper">We send one invite. No spam, ever.</span>
+        <span class="input-feedback" id="cta-feedback" aria-live="polite"></span>
+      </div>
+      <button class="btn btn--primary" id="cta-submit" type="submit"><span class="btn__label">Reserve my cube</span></button>
+    </form>
+    <p class="cta-success" id="cta-success" hidden><span class="icon" aria-hidden="true">check_circle</span>Cube reserved, check your inbox.</p>
+  </div>
+</section>
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer__top">
+      <div class="footer__brand">
+        <a class="nav__brand" href="#top">
+          <span class="voxel-cube voxel-cube--grass" style="--cube-size:28px" aria-hidden="true"><span class="voxel-cube__face voxel-cube__face--top"></span><span class="voxel-cube__face voxel-cube__face--left"></span><span class="voxel-cube__face voxel-cube__face--right"></span></span>
+          VOXELFORGE
+        </a>
+        <p>The voxel art studio that lives in your browser tab.</p>
+        <div class="footer__social">
+          <a href="#" aria-label="VoxelForge on X"><span class="icon" aria-hidden="true">tag</span></a>
+          <a href="#" aria-label="VoxelForge on YouTube"><span class="icon" aria-hidden="true">play_circle</span></a>
+          <a href="#" aria-label="VoxelForge on Discord"><span class="icon" aria-hidden="true">forum</span></a>
+        </div>
+      </div>
+      <div class="footer__cols">
+        <nav class="footer__col" aria-label="Product links">
+          <h3>Product</h3>
+          <ul>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#pricing">Pricing</a></li>
+            <li><a href="#how">How it works</a></li>
+          </ul>
+        </nav>
+        <nav class="footer__col" aria-label="Resource links">
+          <h3>Resources</h3>
+          <ul>
+            <li><a href="#">Tutorials (coming soon)</a></li>
+            <li><a href="#">Palette library (coming soon)</a></li>
+            <li><a href="#faq">FAQ</a></li>
+          </ul>
+        </nav>
+        <nav class="footer__col" aria-label="Company links">
+          <h3>Company</h3>
+          <ul>
+            <li><a href="#">About (coming soon)</a></li>
+            <li><a href="#">Careers (coming soon)</a></li>
+            <li><a href="#">Press kit (coming soon)</a></li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+    <div class="footer__bar">
+      <span>© 2026 VoxelForge. Made of 100% cubes.</span>
+      <a href="#top">Back to top <span class="icon" aria-hidden="true">arrow_upward</span></a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var root = document.documentElement;
+  var toggle = document.getElementById("theme-toggle");
+  var icon = document.getElementById("theme-icon");
+  function applyTheme(t){
+    root.dataset.theme = t;
+    var dark = t === "dark";
+    toggle.setAttribute("aria-pressed", String(dark));
+    toggle.setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode");
+    icon.textContent = dark ? "light_mode" : "dark_mode";
+  }
+  applyTheme(root.dataset.theme === "dark" ? "dark" : "light");
+  toggle.addEventListener("click", function(){
+    var next = root.dataset.theme === "dark" ? "light" : "dark";
+    localStorage.setItem("theme", next);
+    applyTheme(next);
+  });
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function(e){
+    if(!localStorage.getItem("theme")){ applyTheme(e.matches ? "dark" : "light"); }
+  });
+
+  var menuBtn = document.getElementById("menu-btn");
+  var menu = document.getElementById("nav-menu");
+  function closeMenu(){ menu.classList.remove("is-open"); menuBtn.setAttribute("aria-expanded","false"); menuBtn.setAttribute("aria-label","Open menu"); }
+  menuBtn.addEventListener("click", function(){
+    var open = menu.classList.toggle("is-open");
+    menuBtn.setAttribute("aria-expanded", String(open));
+    menuBtn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+  });
+  menu.addEventListener("click", function(e){ if(e.target.closest("a")){ closeMenu(); } });
+  document.addEventListener("keydown", function(e){ if(e.key === "Escape"){ closeMenu(); } });
+
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var revealEls = document.querySelectorAll(".reveal");
+  if("IntersectionObserver" in window && !reduced){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){
+          var el = en.target;
+          var idx = Array.prototype.indexOf.call(el.parentNode.children, el);
+          el.style.transitionDelay = (Math.max(idx,0) * 60) + "ms";
+          el.classList.add("is-visible");
+          io.unobserve(el);
+        }
+      });
+    }, { threshold: 0.15 });
+    revealEls.forEach(function(el){ io.observe(el); });
+  } else {
+    revealEls.forEach(function(el){ el.classList.add("is-visible"); });
+  }
+
+  var form = document.getElementById("cta-form");
+  var email = document.getElementById("cta-email");
+  var feedback = document.getElementById("cta-feedback");
+  var submitBtn = document.getElementById("cta-submit");
+  var successMsg = document.getElementById("cta-success");
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  form.addEventListener("submit", function(e){
+    e.preventDefault();
+    successMsg.hidden = true;
+    feedback.className = "input-feedback";
+    email.classList.remove("is-valid","is-invalid");
+    var val = email.value.trim();
+    if(!EMAIL_RE.test(val)){
+      email.classList.add("is-invalid");
+      feedback.classList.add("input-feedback--error");
+      feedback.innerHTML = '<span class="icon" aria-hidden="true" style="font-size:18px">error</span>That address does not look right. Check for typos.';
+      email.focus();
+      return;
+    }
+    email.classList.add("is-valid");
+    submitBtn.classList.add("is-loading");
+    submitBtn.setAttribute("aria-busy","true");
+    submitBtn.disabled = true;
+    setTimeout(function(){
+      submitBtn.classList.remove("is-loading");
+      submitBtn.removeAttribute("aria-busy");
+      submitBtn.disabled = false;
+      submitBtn.classList.add("btn--success");
+      submitBtn.innerHTML = '<span class="icon" aria-hidden="true">check</span><span class="btn__label">Reserved</span>';
+      feedback.className = "input-feedback input-feedback--success";
+      feedback.innerHTML = '<span class="icon" aria-hidden="true" style="font-size:18px">check_circle</span>Invite sent.';
+      successMsg.hidden = false;
+      email.value = "";
+      email.classList.remove("is-valid");
+    }, 800);
+  });
+})();
+</script>
+</body>
+</html>

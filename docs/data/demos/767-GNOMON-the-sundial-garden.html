@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GNOMON - the sundial garden</title>
+<script>
+(function(){var t=localStorage.getItem("gnomon-theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --primary:#4a3a28; --secondary:#5a4a32; --accent:#a08c6a; --accent-deep:#8a6e44; --sand:#c9b896;
+  --bg-primary:#f6eee0; --bg-secondary:#fefefe;
+  --text-primary:#4a3a28; --text-secondary:#5a4a32;
+  --text-success:#3f6d50; --text-error:#a8462e;
+  --border-default:rgba(74,58,40,0.16); --border-error:rgba(168,70,46,0.5); --border-success:rgba(63,109,80,0.5);
+  --glass-bg:rgba(254,254,254,0.55); --glass-blur:14px; --glass-border:rgba(255,255,255,0.6);
+  --on-primary:#f6eee0; --btn-primary-bg:#4a3a28; --btn-primary-text:#f6eee0;
+  --font-base:"Inter",system-ui,sans-serif; --font-display:"Cormorant Garamond",Georgia,serif;
+  --radius-sm:6px; --radius-md:14px; --radius-lg:26px;
+  --shadow-sm:0 4px 14px rgba(74,58,40,0.10); --shadow-md:0 12px 32px rgba(74,58,40,0.14);
+  --spacing-gap:1.5rem;
+  --transition-fast:150ms; --transition-normal:320ms; --ease-standard:cubic-bezier(0.22,1,0.36,1);
+  --z-dropdown:100; --z-modal:200; --z-toast:300;
+  --focus-ring:var(--accent-deep);
+}
+:root[data-theme="dark"]{
+  --primary:#f6eee0; --secondary:#c9b896; --accent:#c9b896; --accent-deep:#d9c9a6; --sand:#8a6e44;
+  --bg-primary:#201a13; --bg-secondary:#2b241b;
+  --text-primary:#f6eee0; --text-secondary:#c9b896;
+  --text-success:#a3c293; --text-error:#e8917a;
+  --border-default:rgba(160,140,106,0.28); --border-error:rgba(232,145,122,0.55); --border-success:rgba(163,194,147,0.55);
+  --glass-bg:rgba(43,36,27,0.55); --glass-border:rgba(201,184,150,0.18);
+  --btn-primary-bg:#f6eee0; --btn-primary-text:#4a3a28;
+  --shadow-sm:0 4px 14px rgba(0,0,0,0.35); --shadow-md:0 14px 36px rgba(0,0,0,0.45);
+  --focus-ring:var(--sand);
+}
+/* ============ BASE ============ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);font-size:1rem;line-height:1.6;color:var(--text-primary);background:var(--bg-primary);overflow-x:hidden;transition:background var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard)}
+h1,h2,h3{font-family:var(--font-display);font-weight:600;letter-spacing:-0.02em;line-height:1.1;color:var(--primary)}
+img{max-width:100%;display:block}
+a{color:inherit}
+section{padding:clamp(4rem,8vw,7rem) 0}
+.container{max-width:1200px;margin:0 auto;padding:0 clamp(1.25rem,4vw,2rem);width:100%}
+.material-symbols-rounded{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;font-size:1.25rem;line-height:1}
+.skip-link{position:absolute;left:1rem;top:-4rem;z-index:var(--z-toast);background:var(--btn-primary-bg);color:var(--btn-primary-text);padding:.75rem 1.25rem;border-radius:var(--radius-sm);text-decoration:none;transition:top var(--transition-fast) var(--ease-standard)}
+.skip-link:focus{top:1rem}
+:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px;border-radius:var(--radius-sm)}
+/* ============ GLASS ============ */
+.glass-panel{background:var(--glass-bg);backdrop-filter:blur(var(--glass-blur)) saturate(1.15);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.15);border:1px solid var(--glass-border);border-radius:var(--radius-lg)}
+@supports not (backdrop-filter:blur(1px)){.glass-panel{background:rgba(254,254,254,0.9)}
+:root[data-theme="dark"] .glass-panel{background:rgba(43,36,27,0.9)}}
+@media (prefers-reduced-transparency:reduce){.glass-panel{background:var(--bg-secondary);backdrop-filter:none;-webkit-backdrop-filter:none}}
+/* ============ BUTTONS ============ */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:.7rem 1.6rem;border-radius:999px;font-family:var(--font-base);font-size:.95rem;font-weight:500;text-decoration:none;border:1px solid transparent;cursor:pointer;transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),filter var(--transition-normal) var(--ease-standard),background var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard),border-color var(--transition-normal) var(--ease-standard);white-space:nowrap}
+.btn:active{transform:scale(0.97)}
+.btn-primary{background:var(--btn-primary-bg);color:var(--btn-primary-text);box-shadow:var(--shadow-sm)}
+.btn-secondary{background:var(--glass-bg);color:var(--text-primary);border-color:var(--border-default)}
+.btn-ghost{background:transparent;color:var(--text-secondary);border-color:transparent;text-decoration:underline;text-underline-offset:4px}
+.btn[disabled],.btn.is-disabled{opacity:.5;filter:grayscale(1);cursor:not-allowed;pointer-events:none}
+@media (hover:hover) and (pointer:fine){
+.btn-primary:hover{filter:brightness(1.08);box-shadow:var(--shadow-md)}
+.btn-secondary:hover{filter:brightness(1.03);box-shadow:var(--shadow-md);border-color:var(--accent-deep)}
+.btn-ghost:hover{color:var(--accent-deep)}
+}
+/* ============ HEADER ============ */
+.site-header{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--glass-bg);backdrop-filter:blur(var(--glass-blur)) saturate(1.15);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.15);border-bottom:1px solid transparent;transition:border-color var(--transition-normal) var(--ease-standard)}
+.site-header.is-scrolled{border-bottom-color:var(--border-default)}
+.nav-bar{display:flex;align-items:center;justify-content:space-between;gap:1rem;height:68px;max-width:1200px;margin:0 auto;padding:0 clamp(1.25rem,4vw,2rem)}
+.wordmark{font-family:var(--font-display);font-weight:600;font-size:1.4rem;letter-spacing:.18em;color:var(--primary);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:1.75rem;list-style:none}
+.nav-links a{font-size:.9rem;color:var(--text-secondary);text-decoration:none;transition:color var(--transition-fast) var(--ease-standard)}
+@media (hover:hover) and (pointer:fine){.nav-links a:hover{color:var(--accent-deep)}}
+.nav-actions{display:flex;align-items:center;gap:.75rem}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;border:1px solid var(--border-default);background:transparent;color:var(--text-primary);cursor:pointer;transition:color var(--transition-fast) var(--ease-standard),border-color var(--transition-fast) var(--ease-standard),transform var(--transition-fast) var(--ease-standard)}
+.icon-btn:active{transform:scale(0.97)}
+@media (hover:hover) and (pointer:fine){.icon-btn:hover{color:var(--accent-deep);border-color:var(--accent-deep)}}
+#theme-toggle .icon-sun,#theme-toggle .icon-moon{display:none}
+:root[data-theme="light"] #theme-toggle .icon-moon{display:inline-block}
+:root[data-theme="dark"] #theme-toggle .icon-sun{display:inline-block}
+.menu-btn{display:none}
+.nav-cta{padding:.55rem 1.25rem;min-height:44px}
+@media (max-width:860px){
+  .menu-btn{display:inline-flex}
+  .nav-links{position:absolute;top:68px;left:0;right:0;flex-direction:column;align-items:stretch;gap:0;background:var(--bg-secondary);border-bottom:1px solid var(--border-default);padding:.5rem 1.25rem 1rem;box-shadow:var(--shadow-md)}
+  .nav-links li{border-bottom:1px solid var(--border-default)}
+  .nav-links li:last-child{border-bottom:none}
+  .nav-links a{display:flex;align-items:center;min-height:48px}
+  .nav-links[hidden]{display:none}
+  .nav-cta{display:none}
+}
+/* ============ HERO ============ */
+.hero{position:relative;min-height:calc(100dvh - 68px);display:flex;align-items:center;justify-content:center;overflow:hidden;padding:clamp(3rem,6vw,6rem) 0 4rem}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 78% 12%,rgba(201,184,150,0.55),rgba(201,184,150,0.18) 32%,transparent 60%);pointer-events:none}
+:root[data-theme="dark"] .hero::before{background:radial-gradient(circle at 78% 12%,rgba(201,184,150,0.22),rgba(201,184,150,0.07) 32%,transparent 60%)}
+.hour-arcs{position:absolute;left:50%;top:58%;transform:translate(-50%,-50%);width:min(120vmin,900px);aspect-ratio:1;pointer-events:none}
+.hour-arcs span{position:absolute;inset:0;border:1px solid rgba(160,140,106,0.18);border-radius:50%}
+.hour-arcs span:nth-child(2){inset:12%}
+.hour-arcs span:nth-child(3){inset:24%}
+.hour-arcs span:nth-child(4){inset:36%}
+.gnomon-motif{position:absolute;left:50%;top:58%;transform:translate(-50%,-50%);width:min(70vmin,520px);aspect-ratio:1;pointer-events:none}
+.gnomon-blade{position:absolute;left:50%;bottom:50%;width:0;height:0;border-left:26px solid transparent;border-right:26px solid transparent;border-bottom:150px solid rgba(138,110,68,0.35);transform:translateX(-50%);filter:blur(.5px)}
+.gnomon-shadow{position:absolute;left:50%;top:50%;width:62%;height:34px;background:linear-gradient(90deg,rgba(74,58,40,0.30),rgba(74,58,40,0));transform-origin:left center;transform:rotate(14deg) skewX(-32deg);filter:blur(6px);animation:shadowDrift 24s ease-in-out infinite alternate}
+:root[data-theme="dark"] .gnomon-shadow{background:linear-gradient(90deg,rgba(0,0,0,0.55),rgba(0,0,0,0))}
+@keyframes shadowDrift{from{transform:rotate(8deg) skewX(-32deg)}to{transform:rotate(22deg) skewX(-32deg)}}
+.hero-panel{position:relative;z-index:1;max-width:640px;text-align:center;padding:clamp(2rem,5vw,3.5rem) clamp(1.5rem,5vw,3.5rem);box-shadow:var(--shadow-md)}
+.eyebrow{font-size:.78rem;letter-spacing:.22em;text-transform:uppercase;color:var(--accent-deep);font-weight:500;margin-bottom:1rem}
+.hero h1{font-size:clamp(2.75rem,7vw,4.5rem);margin-bottom:1rem}
+.hero-sub{max-width:44ch;margin:0 auto 1.75rem;color:var(--text-secondary);font-size:1.05rem}
+.hero-ctas{display:flex;align-items:center;justify-content:center;gap:1rem;flex-wrap:wrap}
+.scroll-cue{position:absolute;bottom:1.25rem;left:50%;transform:translateX(-50%);color:var(--text-secondary);opacity:.7;z-index:1}
+/* ============ SECTION HEADERS ============ */
+.section-head{max-width:56ch;margin-bottom:clamp(2.5rem,5vw,3.5rem)}
+.section-head h2{font-size:clamp(2rem,4.5vw,3rem);margin-bottom:.75rem}
+.section-head p{color:var(--text-secondary);max-width:55ch}
+.center-head{margin-left:auto;margin-right:auto;text-align:center}
+.center-head p{margin:0 auto}
+/* ============ FEATURES ============ */
+.card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--spacing-gap)}
+.card{display:flex;flex-direction:column;align-items:flex-start;gap:1rem;background:var(--glass-bg);backdrop-filter:blur(var(--glass-blur)) saturate(1.15);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.15);border:1px solid var(--glass-border);border-radius:var(--radius-md);padding:2rem;box-shadow:var(--shadow-sm);transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),border-color var(--transition-normal) var(--ease-standard)}
+.card:focus-within{border-color:var(--accent-deep)}
+@media (hover:hover) and (pointer:fine){.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}}
+.card-icon{display:flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:50%;background:rgba(160,140,106,0.16);color:var(--accent-deep)}
+.card-icon .material-symbols-rounded{font-size:1.6rem}
+.card h3{font-size:1.5rem}
+.card p{color:var(--text-secondary);font-size:.95rem}
+.card--tinted{background:linear-gradient(150deg,rgba(201,184,150,0.28),var(--glass-bg) 65%)}
+/* ============ STEPS ============ */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--spacing-gap);position:relative}
+.steps::before{content:"";position:absolute;top:2.4rem;left:12%;right:12%;height:1px;background:var(--border-default)}
+.step{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:.6rem;padding:1.25rem;border-radius:var(--radius-md);transition:background var(--transition-normal) var(--ease-standard)}
+@media (hover:hover) and (pointer:fine){.step:hover{background:rgba(160,140,106,0.08)}}
+.step-num{font-family:var(--font-display);font-size:3.2rem;font-weight:500;line-height:1;color:var(--accent);background:var(--bg-primary);padding-right:.75rem;position:relative}
+.step h3{font-size:1.5rem}
+.step p{color:var(--text-secondary);font-size:.95rem}
+/* ============ TESTIMONIALS ============ */
+.quotes{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--spacing-gap)}
+.quote-card{display:flex;flex-direction:column;align-items:flex-start;gap:1.1rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:2rem;box-shadow:var(--shadow-sm);transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard)}
+@media (hover:hover) and (pointer:fine){.quote-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}}
+.quote-card .material-symbols-rounded{color:var(--accent);font-size:1.8rem}
+.quote-card blockquote{font-family:var(--font-display);font-style:italic;font-size:1.2rem;line-height:1.4;color:var(--primary)}
+.quote-card figcaption{display:flex;align-items:center;gap:.85rem;margin-top:auto}
+.avatar{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;background:rgba(160,140,106,0.18);color:var(--accent-deep);flex:none}
+.quote-name{font-weight:500;font-size:.9rem}
+.quote-role{font-size:.82rem;color:var(--text-secondary)}
+/* ============ PRICING ============ */
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--spacing-gap);align-items:stretch}
+.pricing-card{display:flex;flex-direction:column;align-items:flex-start;gap:1.1rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:2.25rem;box-shadow:var(--shadow-sm);transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard)}
+@media (hover:hover) and (pointer:fine){.pricing-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}}
+.pricing-card--featured{border:1px solid var(--accent);box-shadow:var(--shadow-md);transform:translateY(-8px);position:relative}
+:root[data-theme="dark"] .pricing-card--featured{border-color:var(--accent)}
+@media (hover:hover) and (pointer:fine){.pricing-card--featured:hover{transform:translateY(-10px)}}
+.badge{position:absolute;top:-0.85rem;left:50%;transform:translateX(-50%);background:var(--btn-primary-bg);color:var(--btn-primary-text);font-size:.72rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;padding:.35rem .9rem;border-radius:999px;white-space:nowrap}
+.tier-name{font-family:var(--font-display);font-size:1.7rem;font-weight:600;color:var(--primary)}
+.tier-price{font-family:var(--font-display);font-size:2.6rem;font-weight:600;color:var(--primary);line-height:1}
+.tier-price small{font-family:var(--font-base);font-size:.85rem;font-weight:400;color:var(--text-secondary)}
+.tier-desc{font-size:.9rem;color:var(--text-secondary)}
+.tier-list{list-style:none;display:flex;flex-direction:column;align-items:flex-start;gap:.65rem;width:100%;padding:.5rem 0 1rem;border-top:1px solid var(--border-default)}
+.tier-list li{display:flex;align-items:center;gap:.6rem;font-size:.92rem;color:var(--text-secondary)}
+.tier-list .material-symbols-rounded{color:var(--text-success);font-size:1.1rem}
+.pricing-card .btn{width:100%;margin-top:auto}
+/* ============ FAQ ============ */
+.faq-wrap{max-width:760px;margin:0 auto}
+.accordion-item{border-bottom:1px solid var(--border-default)}
+.accordion-trigger{display:flex;align-items:center;justify-content:space-between;gap:1rem;width:100%;min-height:44px;padding:1.25rem .25rem;background:none;border:none;cursor:pointer;text-align:left;font-family:var(--font-display);font-size:1.3rem;font-weight:600;color:var(--primary);transition:color var(--transition-fast) var(--ease-standard)}
+@media (hover:hover) and (pointer:fine){.accordion-trigger:hover{color:var(--accent-deep)}}
+.accordion-trigger .material-symbols-rounded{flex:none;transition:transform var(--transition-normal) var(--ease-standard);color:var(--accent-deep)}
+.accordion-trigger[aria-expanded="true"] .material-symbols-rounded{transform:rotate(180deg)}
+.accordion-panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--transition-normal) var(--ease-standard)}
+.accordion-panel.is-open{grid-template-rows:1fr}
+.accordion-inner{overflow:hidden}
+.accordion-inner p{padding:0 .25rem 1.4rem;color:var(--text-secondary);font-size:.95rem;max-width:60ch}
+/* ============ FINAL CTA ============ */
+.final-cta{position:relative;overflow:hidden}
+.cta-band{position:relative;text-align:center;padding:clamp(3rem,7vw,5rem) clamp(1.5rem,5vw,3rem);box-shadow:var(--shadow-md);overflow:hidden}
+.cta-band::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 130%,rgba(201,184,150,0.6),rgba(201,184,150,0.15) 45%,transparent 70%);pointer-events:none}
+:root[data-theme="dark"] .cta-band::before{background:radial-gradient(circle at 50% 130%,rgba(201,184,150,0.25),rgba(201,184,150,0.06) 45%,transparent 70%)}
+.cta-band h2{position:relative;font-size:clamp(2rem,5vw,3.2rem);margin-bottom:.75rem}
+.cta-band p{position:relative;color:var(--text-secondary);margin-bottom:1.75rem}
+.cta-actions{position:relative;display:flex;align-items:center;justify-content:center;gap:1.25rem;flex-wrap:wrap}
+/* ============ FOOTER ============ */
+.site-footer{border-top:1px solid var(--border-default);padding:3.5rem 0 2rem}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:2.5rem;margin-bottom:2.5rem}
+.footer-tag{color:var(--text-secondary);font-size:.9rem;margin-top:.5rem;max-width:30ch}
+.footer-col h4{font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:.9rem;font-weight:500}
+.footer-col ul{list-style:none;display:flex;flex-direction:column;align-items:flex-start;gap:.55rem}
+.footer-col a{font-size:.9rem;color:var(--text-secondary);text-decoration:none;transition:color var(--transition-fast) var(--ease-standard)}
+@media (hover:hover) and (pointer:fine){.footer-col a:hover{color:var(--accent-deep)}}
+.social-row{display:flex;align-items:center;gap:.5rem;margin-top:1.25rem}
+.footer-bottom{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;padding-top:1.5rem;border-top:1px solid var(--border-default);font-size:.85rem;color:var(--text-secondary)}
+.back-top{display:inline-flex;align-items:center;gap:.4rem;color:var(--text-secondary);text-decoration:none;min-height:44px}
+@media (hover:hover) and (pointer:fine){.back-top:hover{color:var(--accent-deep)}}
+/* ============ REVEAL ============ */
+.reveal{opacity:0;transform:translateY(16px);transition:opacity 600ms var(--ease-standard),transform 600ms var(--ease-standard)}
+.reveal.is-visible{opacity:1;transform:none}
+/* ============ RESPONSIVE ============ */
+@media (max-width:900px){
+  .card-grid,.quotes,.pricing-grid{grid-template-columns:1fr}
+  .steps{grid-template-columns:1fr}
+  .steps::before{display:none}
+  .pricing-card--featured{transform:none}
+  .footer-grid{grid-template-columns:1fr 1fr}
+}
+@media (max-width:560px){
+  .footer-grid{grid-template-columns:1fr}
+  .gnomon-motif{width:88vmin}
+  .hero-ctas .btn{width:100%}
+}
+/* ============ REDUCED MOTION ============ */
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:150ms!important}
+  .gnomon-shadow{animation:none}
+  .reveal{opacity:1;transform:none;transition:none}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header" id="site-header">
+  <nav class="nav-bar" aria-label="Primary">
+    <a class="wordmark" href="#top">GNOMON</a>
+    <ul class="nav-links" id="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#how">How It Works</a></li>
+      <li><a href="#testimonials">Testimonials</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button id="theme-toggle" class="icon-btn" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-rounded icon-moon" aria-hidden="true">dark_mode</span>
+        <span class="material-symbols-rounded icon-sun" aria-hidden="true">light_mode</span>
+      </button>
+      <a class="btn btn-primary nav-cta" href="#pricing">Enter the garden</a>
+      <button class="icon-btn menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">
+        <span class="material-symbols-rounded" aria-hidden="true">menu</span>
+      </button>
+    </div>
+  </nav>
+</header>
+
+<main id="main">
+  <!-- HERO -->
+  <section class="hero" id="top" aria-label="Introduction">
+    <div class="hour-arcs" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+    <div class="gnomon-motif" aria-hidden="true">
+      <div class="gnomon-blade"></div>
+      <div class="gnomon-shadow"></div>
+    </div>
+    <div class="hero-panel glass-panel">
+      <p class="eyebrow">A garden that keeps time</p>
+      <h1>Time, told in light.</h1>
+      <p class="hero-sub">A walled morning garden where a single stone blade and the moving sun mark the hours. No screens, no chimes, only shadow.</p>
+      <div class="hero-ctas">
+        <a class="btn btn-primary" href="#pricing">Enter the garden</a>
+        <a class="btn btn-secondary" href="#how">See how it works</a>
+      </div>
+    </div>
+    <span class="scroll-cue material-symbols-rounded" aria-hidden="true">expand_more</span>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features" aria-labelledby="features-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="features-title">A slower instrument</h2>
+        <p>Gnomon is built around one idea: that watching time pass gently changes how you spend it.</p>
+      </div>
+      <div class="card-grid">
+        <article class="card reveal">
+          <span class="card-icon"><span class="material-symbols-rounded" aria-hidden="true">wb_sunny</span></span>
+          <h3>Honest solar time</h3>
+          <p>The dial reads true solar noon, the hour the sun actually crosses the meridian above the garden, not the hour on a server clock.</p>
+        </article>
+        <article class="card card--tinted reveal">
+          <span class="card-icon"><span class="material-symbols-rounded" aria-hidden="true">spa</span></span>
+          <h3>Designed for stillness</h3>
+          <p>Stone benches, low planting, and a single water channel keep the garden quiet enough to hear the light change.</p>
+        </article>
+        <article class="card reveal">
+          <span class="card-icon"><span class="material-symbols-rounded" aria-hidden="true">self_improvement</span></span>
+          <h3>Hours you can watch</h3>
+          <p>The shadow moves about a hand's width each hour. Sit long enough and you will see an hour pass with your own eyes.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="how" aria-labelledby="how-title">
+    <div class="container">
+      <div class="section-head center-head">
+        <h2 id="how-title">How the garden works</h2>
+        <p>Three things happen every clear day, whether anyone is watching or not.</p>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <span class="step-num" aria-hidden="true">01</span>
+          <h3>The blade stands</h3>
+          <p>A granite gnomon rises from the dial face, angled to the garden's latitude so its edge runs parallel to the Earth's axis.</p>
+        </div>
+        <div class="step reveal">
+          <span class="step-num" aria-hidden="true">02</span>
+          <h3>The sun writes</h3>
+          <p>As the sun crosses the sky, the blade's shadow sweeps across engraved hour arcs, each one cut by hand into the stone.</p>
+        </div>
+        <div class="step reveal">
+          <span class="step-num" aria-hidden="true">03</span>
+          <h3>You simply notice</h3>
+          <p>There is nothing to set, wind, or charge. You arrive, you sit, and the garden tells you what the sun already knows.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section id="testimonials" aria-labelledby="testimonials-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="testimonials-title">Voices from the benches</h2>
+        <p>Members on what an hour of shadow-watching does for the rest of the day.</p>
+      </div>
+      <div class="quotes">
+        <figure class="quote-card reveal">
+          <span class="material-symbols-rounded" aria-hidden="true">format_quote</span>
+          <blockquote>I came for ten minutes between meetings and stayed until the shadow crossed two hour lines. My afternoon felt entirely different.</blockquote>
+          <figcaption>
+            <span class="avatar"><span class="material-symbols-rounded" aria-hidden="true">person</span></span>
+            <span><span class="quote-name">Mara Ellison</span><br><span class="quote-role">Architect, Portland</span></span>
+          </figcaption>
+        </figure>
+        <figure class="quote-card reveal">
+          <span class="material-symbols-rounded" aria-hidden="true">format_quote</span>
+          <blockquote>My grandfather kept a sundial. Sitting here on a clear morning is the closest I have felt to him in twenty years.</blockquote>
+          <figcaption>
+            <span class="avatar"><span class="material-symbols-rounded" aria-hidden="true">person</span></span>
+            <span><span class="quote-name">Tomas Reyes</span><br><span class="quote-role">Retired teacher, Santa Fe</span></span>
+          </figcaption>
+        </figure>
+        <figure class="quote-card reveal">
+          <span class="material-symbols-rounded" aria-hidden="true">format_quote</span>
+          <blockquote>It is the only clock I have ever met that makes me want to slow down rather than hurry up.</blockquote>
+          <figcaption>
+            <span class="avatar"><span class="material-symbols-rounded" aria-hidden="true">person</span></span>
+            <span><span class="quote-name">Priya Nandakumar</span><br><span class="quote-role">Writer, Chicago</span></span>
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section id="pricing" aria-labelledby="pricing-title">
+    <div class="container">
+      <div class="section-head center-head">
+        <h2 id="pricing-title">Choose your hours</h2>
+        <p>Every membership supports the garden's upkeep and the engraving of new hour lines each solstice.</p>
+      </div>
+      <div class="pricing-grid">
+        <article class="pricing-card reveal">
+          <h3 class="tier-name">Dawn</h3>
+          <p class="tier-price">$0 <small>/ month</small></p>
+          <p class="tier-desc">For first light and quiet mornings.</p>
+          <ul class="tier-list">
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Entry from sunrise to 9am</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Open bench seating</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Seasonal solstice letter</li>
+          </ul>
+          <a class="btn btn-secondary" href="#faq">Enter the garden</a>
+        </article>
+        <article class="pricing-card pricing-card--featured reveal">
+          <span class="badge">Recommended</span>
+          <h3 class="tier-name">Meridian</h3>
+          <p class="tier-price">$18 <small>/ month</small></p>
+          <p class="tier-desc">For those who keep solar noon.</p>
+          <ul class="tier-list">
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>All-day entry, sunrise to sunset</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Reserved stone bench</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Monthly guided shadow reading</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Guest pass each month</li>
+          </ul>
+          <a class="btn btn-primary" href="#faq">Enter the garden</a>
+        </article>
+        <article class="pricing-card reveal">
+          <h3 class="tier-name">Dusk</h3>
+          <p class="tier-price">$42 <small>/ month</small></p>
+          <p class="tier-desc">For keepers of the long evening.</p>
+          <ul class="tier-list">
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Everything in Meridian</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Twilight hour access</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Private equinox gatherings</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Name engraved on an hour arc</li>
+          </ul>
+          <a class="btn btn-secondary" href="#faq">Enter the garden</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" aria-labelledby="faq-title">
+    <div class="container">
+      <div class="section-head center-head">
+        <h2 id="faq-title">Quiet questions</h2>
+        <p>Everything visitors tend to ask before their first morning in the garden.</p>
+      </div>
+      <div class="faq-wrap">
+        <div class="accordion-item">
+          <h3><button class="accordion-trigger" type="button" aria-expanded="false" aria-controls="faq-panel-1" id="faq-btn-1">What is a gnomon, exactly?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button></h3>
+          <div class="accordion-panel" id="faq-panel-1" role="region" aria-labelledby="faq-btn-1"><div class="accordion-inner"><p>The gnomon is the upright blade of a sundial, the part that casts the shadow. Ours is a single piece of granite, three metres tall, set at the exact angle of the garden's latitude so it keeps honest solar time all year.</p></div></div>
+        </div>
+        <div class="accordion-item">
+          <h3><button class="accordion-trigger" type="button" aria-expanded="false" aria-controls="faq-panel-2" id="faq-btn-2">Does the garden work on cloudy days?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button></h3>
+          <div class="accordion-panel" id="faq-panel-2" role="region" aria-labelledby="faq-btn-2"><div class="accordion-inner"><p>The shadow rests when the sun does, and the garden simply becomes a garden. Many members tell us the overcast mornings, with the hour arcs standing quiet, are their favorite time to visit.</p></div></div>
+        </div>
+        <div class="accordion-item">
+          <h3><button class="accordion-trigger" type="button" aria-expanded="false" aria-controls="faq-panel-3" id="faq-btn-3">Can I visit at night?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button></h3>
+          <div class="accordion-panel" id="faq-panel-3" role="region" aria-labelledby="faq-btn-3"><div class="accordion-inner"><p>Dusk members have access through the twilight hour, and the garden opens on clear full-moon nights four times a year. The gnomon casts a faint moon shadow that experienced visitors can read.</p></div></div>
+        </div>
+        <div class="accordion-item">
+          <h3><button class="accordion-trigger" type="button" aria-expanded="false" aria-controls="faq-panel-4" id="faq-btn-4">Is the garden accessible?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button></h3>
+          <div class="accordion-inner-wrap"><div class="accordion-panel" id="faq-panel-4" role="region" aria-labelledby="faq-btn-4"><div class="accordion-inner"><p>Yes. Level stone paths run to every bench and the dial face, with tactile hour markers at ground level and seating at multiple heights. Assistance animals are always welcome, and entry is free for companions.</p></div></div></div>
+        </div>
+        <div class="accordion-item">
+          <h3><button class="accordion-trigger" type="button" aria-expanded="false" aria-controls="faq-panel-5" id="faq-btn-5">Can I cancel my membership?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button></h3>
+          <div class="accordion-panel" id="faq-panel-5" role="region" aria-labelledby="faq-btn-5"><div class="accordion-inner"><p>Anytime, in two clicks, with no notice period. Your bench stays yours until the end of the paid month, and Dawn entry remains open to you forever.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="final-cta" aria-labelledby="cta-title">
+    <div class="container">
+      <div class="cta-band glass-panel reveal">
+        <h2 id="cta-title">The sun is already keeping your place.</h2>
+        <p>Come sit with the shadow for an hour. The garden is open from first light.</p>
+        <div class="cta-actions">
+          <a class="btn btn-primary" href="#pricing">Begin your visit</a>
+          <a class="btn btn-ghost" href="#features">Or read more about the garden</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <a class="wordmark" href="#top">GNOMON</a>
+        <p class="footer-tag">A walled garden where the sun keeps the hours.</p>
+        <div class="social-row">
+          <a class="icon-btn" href="#top" aria-label="Gnomon on Instagram"><span class="material-symbols-rounded" aria-hidden="true">photo_camera</span></a>
+          <a class="icon-btn" href="#top" aria-label="Gnomon journal feed"><span class="material-symbols-rounded" aria-hidden="true">rss_feed</span></a>
+          <a class="icon-btn" href="#top" aria-label="Email the garden"><span class="material-symbols-rounded" aria-hidden="true">mail</span></a>
+        </div>
+      </div>
+      <nav class="footer-col" aria-label="Garden">
+        <h4>Garden</h4>
+        <ul>
+          <li><a href="#top">Visit</a></li>
+          <li><a href="#how">Hours</a></li>
+          <li><a href="#testimonials">Journal</a></li>
+          <li><a href="#faq">Contact</a></li>
+        </ul>
+      </nav>
+      <nav class="footer-col" aria-label="Explore">
+        <h4>Explore</h4>
+        <ul>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#how">How it works</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+      </nav>
+      <nav class="footer-col" aria-label="Legal">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="#top">Privacy</a></li>
+          <li><a href="#top">Terms</a></li>
+          <li><a href="#top">Accessibility</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 Gnomon Garden. All hours kept by the sun.</p>
+      <a class="back-top" href="#top">Back to top <span class="material-symbols-rounded" aria-hidden="true">arrow_upward</span></a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var root=document.documentElement;
+
+  /* Theme toggle */
+  var toggle=document.getElementById("theme-toggle");
+  function syncToggle(){
+    var dark=root.dataset.theme==="dark";
+    toggle.setAttribute("aria-pressed",String(dark));
+    toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+  }
+  syncToggle();
+  toggle.addEventListener("click",function(){
+    root.dataset.theme=root.dataset.theme==="dark"?"light":"dark";
+    localStorage.setItem("gnomon-theme",root.dataset.theme);
+    syncToggle();
+  });
+
+  /* Header hairline on scroll */
+  var header=document.getElementById("site-header");
+  var onScroll=function(){header.classList.toggle("is-scrolled",window.scrollY>8);};
+  onScroll();
+  window.addEventListener("scroll",onScroll,{passive:true});
+
+  /* Mobile menu */
+  var menuBtn=document.getElementById("menu-btn");
+  var navLinks=document.getElementById("nav-links");
+  function setMenu(open){
+    menuBtn.setAttribute("aria-expanded",String(open));
+    menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");
+    menuBtn.querySelector(".material-symbols-rounded").textContent=open?"close":"menu";
+    if(window.matchMedia("(max-width: 860px)").matches){navLinks.hidden=!open;}
+  }
+  function syncNavForWidth(){
+    if(window.matchMedia("(max-width: 860px)").matches){
+      navLinks.hidden=menuBtn.getAttribute("aria-expanded")!=="true";
+    }else{navLinks.hidden=false;}
+  }
+  syncNavForWidth();
+  window.addEventListener("resize",syncNavForWidth);
+  menuBtn.addEventListener("click",function(){
+    setMenu(menuBtn.getAttribute("aria-expanded")!=="true");
+  });
+  navLinks.addEventListener("click",function(e){
+    if(e.target.closest("a")){setMenu(false);}
+  });
+  document.addEventListener("keydown",function(e){
+    if(e.key==="Escape"&&menuBtn.getAttribute("aria-expanded")==="true"){setMenu(false);menuBtn.focus();}
+  });
+
+  /* Accordion */
+  var triggers=document.querySelectorAll(".accordion-trigger");
+  triggers.forEach(function(btn){
+    btn.addEventListener("click",function(){
+      var open=btn.getAttribute("aria-expanded")==="true";
+      btn.setAttribute("aria-expanded",String(!open));
+      document.getElementById(btn.getAttribute("aria-controls")).classList.toggle("is-open",!open);
+    });
+  });
+
+  /* Reveal on scroll with stagger */
+  var revealEls=document.querySelectorAll(".reveal");
+  if("IntersectionObserver" in window&&!window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){
+          var el=entry.target;
+          var siblings=Array.prototype.slice.call(el.parentElement.children).filter(function(c){return c.classList.contains("reveal");});
+          el.style.transitionDelay=(siblings.indexOf(el)*70)+"ms";
+          el.classList.add("is-visible");
+          io.unobserve(el);
+        }
+      });
+    },{threshold:0.15});
+    revealEls.forEach(function(el){io.observe(el);});
+  }else{
+    revealEls.forEach(function(el){el.classList.add("is-visible");});
+  }
+
+  /* Guarded smooth scroll for same-page anchors */
+  if(window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+    document.querySelectorAll('a[href^="#"]').forEach(function(a){
+      a.addEventListener("click",function(e){
+        var t=document.querySelector(a.getAttribute("href"));
+        if(t){e.preventDefault();t.scrollIntoView();t.setAttribute("tabindex","-1");t.focus({preventScroll:true});}
+      });
+    });
+  }
+})();
+</script>
+</body>
+</html>

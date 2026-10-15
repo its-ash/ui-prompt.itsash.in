@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ember & Amethyst | Nimbus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,600&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0&display=block" rel="stylesheet">
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<style>
+:root{
+--primary:#FFA102;--secondary:#432E6F;--accent-red:#DD5533;--crimson:#BC2D29;--chocolate:#450E16;--cream:#F5F9CE;
+--bg-primary:#F5F9CE;--bg-secondary:#fdfbe8;--bg-dark:linear-gradient(135deg,#450E16,#432E6F);
+--text-primary:#450E16;--text-secondary:#432E6F;--text-on-dark:#F5F9CE;--text-on-primary:#450E16;
+--text-success:#2E6B34;--text-error:#BC2D29;--border-default:rgba(69,14,22,.18);--border-error:#BC2D29;--border-success:#2E6B34;
+--font-display:'Cormorant Garamond',serif;--font-body:'Source Sans 3',sans-serif;
+--radius-sm:6px;--radius-md:8px;--radius-lg:16px;
+--shadow-sm:0 2px 8px rgba(69,14,22,.12);--shadow-md:0 4px 16px rgba(69,14,22,.2);--shadow-dramatic:0 8px 24px rgba(69,14,22,.35);
+--glow:0 0 24px rgba(255,161,2,.45);
+--spacing-gap:1.5rem;--transition-fast:.2s;--transition-normal:.4s;--ease-standard:ease-out;
+--z-dropdown:100;--z-modal:200;--z-toast:300;
+}
+:root[data-theme="dark"]{
+--bg-primary:#2a0a12;--bg-secondary:#3a1020;
+--text-primary:#F5F9CE;--text-secondary:#e8dfa8;--text-on-primary:#450E16;
+--text-success:#8fd694;--text-error:#ff8a80;--border-default:rgba(245,249,206,.22);--border-error:#ff8a80;--border-success:#8fd694;
+--shadow-sm:0 2px 8px rgba(0,0,0,.4);--shadow-md:0 4px 16px rgba(0,0,0,.5);--shadow-dramatic:0 8px 24px rgba(0,0,0,.55);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-body);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;font-size:1.0625rem;overflow-x:hidden;transition:background var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard)}
+h1,h2,h3{font-family:var(--font-display);letter-spacing:.02em;line-height:1.1;color:var(--text-primary);font-weight:700}
+img{max-width:100%;display:block}
+a{color:inherit}
+.container{max-width:1200px;margin:0 auto;padding:0 1.25rem}
+@media(min-width:768px){.container{padding:0 2rem}}
+.material-symbols-rounded{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;font-size:1.5rem;line-height:1}
+.icon-fill{font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24}
+/* Nav */
+.nav{position:sticky;top:0;z-index:var(--z-dropdown);background:color-mix(in srgb,var(--bg-primary) 85%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-default)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;max-width:1200px;margin:0 auto;padding:0 1.25rem}
+@media(min-width:768px){.nav-inner{padding:0 2rem}}
+.brand{font-family:var(--font-display);font-size:1.5rem;font-weight:700;letter-spacing:.04em;text-decoration:none;display:flex;align-items:center;gap:.5rem}
+.brand .material-symbols-rounded{color:var(--primary)}
+.nav-links{display:flex;align-items:center;gap:1.75rem;list-style:none}
+.nav-links a{text-decoration:none;font-weight:600;font-size:.95rem;color:var(--text-secondary);transition:color var(--transition-fast) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.nav-links a:hover{color:var(--accent-red)}}
+.nav-actions{display:flex;align-items:center;gap:.5rem}
+.icon-btn{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:transparent;color:var(--text-primary);cursor:pointer;transition:all var(--transition-fast) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.icon-btn:hover{border-color:var(--primary);color:var(--primary)}}
+#menu-btn{display:none}
+@media(max-width:767px){
+#menu-btn{display:flex}
+.nav-links{position:absolute;top:68px;left:0;right:0;flex-direction:column;align-items:flex-start;background:var(--bg-secondary);padding:1rem 1.25rem;gap:1rem;border-bottom:1px solid var(--border-default);box-shadow:var(--shadow-md);display:none}
+.nav-links.open{display:flex}
+}
+:focus-visible{outline:3px solid var(--primary);outline-offset:2px;border-radius:var(--radius-sm)}
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:.75rem 1.75rem;border-radius:var(--radius-md);font-family:var(--font-body);font-weight:700;font-size:1rem;text-decoration:none;cursor:pointer;border:2px solid transparent;transition:all var(--transition-normal) var(--ease-standard)}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--primary);color:var(--text-on-primary);box-shadow:var(--glow)}
+@media(hover:hover) and (pointer:fine){.btn-primary:hover{background:var(--accent-red);color:#fff;box-shadow:0 0 36px rgba(221,85,51,.55)}}
+.btn-outline{background:transparent;border-color:var(--primary);color:var(--text-primary)}
+@media(hover:hover) and (pointer:fine){.btn-outline:hover{border-color:var(--accent-red);color:var(--accent-red)}}
+.btn-outline.on-dark{color:var(--text-on-dark);border-color:var(--cream)}
+@media(hover:hover) and (pointer:fine){.btn-outline.on-dark:hover{border-color:var(--primary);color:var(--primary)}}
+.btn:disabled{opacity:.5;filter:grayscale(.6);cursor:not-allowed}
+/* Hero */
+.hero{position:relative;background:var(--bg-dark);color:var(--text-on-dark);overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,161,2,.28),rgba(67,46,111,.55));pointer-events:none}
+.hero-inner{position:relative;display:flex;align-items:center;gap:3rem;padding:4.5rem 0 6rem;min-height:calc(100dvh - 68px)}
+.hero-copy{flex:1 1 52%}
+.hero-copy h1{color:var(--text-on-dark);font-size:clamp(2.5rem,5.5vw,4.25rem);letter-spacing:.02em;margin-bottom:1.25rem}
+.hero-copy h1 em{font-style:italic;color:var(--primary)}
+.hero-sub{max-width:34ch;font-size:1.125rem;color:var(--cream);opacity:.92;margin-bottom:2rem}
+.hero-ctas{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.hero-visual{flex:1 1 42%;display:flex;align-items:center;justify-content:center}
+.hero-frame{position:relative;width:100%;max-width:440px;border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-dramatic);border:1px solid rgba(245,249,206,.25);transform:rotate(2deg)}
+.hero-frame img{aspect-ratio:4/5;object-fit:cover;width:100%}
+.hero-badge{position:absolute;bottom:1rem;left:1rem;right:1rem;display:flex;align-items:center;gap:.75rem;background:rgba(69,14,22,.82);backdrop-filter:blur(6px);border-radius:var(--radius-md);padding:.75rem 1rem;color:var(--cream);font-weight:600;font-size:.9rem}
+.hero-badge .material-symbols-rounded{color:var(--primary)}
+@media(max-width:900px){.hero-inner{flex-direction:column;justify-content:center;text-align:center;padding:3rem 0 5rem;min-height:auto}.hero-sub{margin:0 auto 2rem}.hero-ctas{justify-content:center}.hero-frame{transform:none;max-width:360px}}
+/* Sections */
+.section{padding:clamp(4rem,8vw,7rem) 0}
+.section-dark{background:var(--bg-dark);color:var(--text-on-dark)}
+.section-dark h2,.section-dark h3{color:var(--text-on-dark)}
+.section-head{text-align:center;max-width:44rem;margin:0 auto 3.5rem}
+.section-head h2{font-size:clamp(2rem,4vw,3rem);margin-bottom:1rem}
+.section-head p{color:var(--text-secondary);max-width:52ch;margin:0 auto}
+.section-dark .section-head p{color:var(--cream);opacity:.85}
+/* Cards */
+.card-row{display:flex;align-items:stretch;gap:var(--spacing-gap)}
+.card{flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:1rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:2rem;box-shadow:var(--shadow-dramatic);transition:all var(--transition-normal) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.card:hover{transform:translateY(-4px);border-color:var(--primary);box-shadow:0 14px 32px rgba(69,14,22,.4)}}
+.card:focus-within{border-color:var(--primary)}
+.card-icon{display:flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:var(--radius-md);background:linear-gradient(135deg,rgba(255,161,2,.2),rgba(67,46,111,.25));color:var(--primary)}
+.card h3{font-size:1.5rem}
+.card p{color:var(--text-secondary);font-size:1rem}
+@media(max-width:767px){.card-row{flex-direction:column;align-items:stretch}}
+/* Steps */
+.steps{display:flex;align-items:stretch;gap:var(--spacing-gap);counter-reset:step}
+.step{flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:.75rem;position:relative;padding:0 .5rem}
+.step-num{font-family:var(--font-display);font-size:2.75rem;font-weight:700;color:var(--primary);line-height:1}
+.step .material-symbols-rounded{color:var(--accent-red);font-size:2rem}
+.step h3{font-size:1.5rem}
+.step p{color:inherit;opacity:.85;font-size:1rem}
+.step:not(:last-child)::after{content:"";position:absolute;top:1.4rem;left:calc(100% - 1rem);width:2rem;height:2px;background:linear-gradient(90deg,var(--primary),transparent)}
+@media(max-width:767px){.steps{flex-direction:column;gap:2.5rem}.step:not(:last-child)::after{display:none}}
+/* Testimonials */
+.stars{display:flex;gap:.15rem;color:var(--primary)}
+.stars .material-symbols-rounded{font-size:1.15rem}
+.quote{font-family:var(--font-display);font-size:1.25rem;font-style:italic;line-height:1.4}
+.quote::before{content:"\201C"}.quote::after{content:"\201D"}
+.author{display:flex;align-items:center;gap:.75rem;margin-top:auto}
+.monogram{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;background:var(--secondary);color:var(--cream);font-weight:700;font-size:.9rem;flex-shrink:0}
+.author-name{font-weight:700;font-size:.95rem}
+.author-role{font-size:.85rem;color:var(--text-secondary)}
+/* Pricing */
+.pricing-row{display:flex;align-items:stretch;gap:var(--spacing-gap)}
+.tier{flex:1;display:flex;flex-direction:column;gap:1.25rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:2.25rem 2rem;transition:all var(--transition-normal) var(--ease-standard);position:relative}
+.tier-featured{background:var(--bg-dark);color:var(--text-on-dark);box-shadow:var(--shadow-dramatic);border-color:var(--primary);transform:scale(1.03)}
+.tier-featured h3,.tier-featured .price{color:var(--text-on-dark)}
+.tier h3{font-size:1.5rem}
+.price{font-family:var(--font-display);font-size:3rem;font-weight:700;line-height:1}
+.price span{font-family:var(--font-body);font-size:.95rem;font-weight:400;opacity:.7}
+.tier ul{list-style:none;display:flex;flex-direction:column;gap:.7rem;flex:1}
+.tier li{display:flex;align-items:center;gap:.6rem;font-size:.98rem}
+.tier li .material-symbols-rounded{color:var(--primary);font-size:1.25rem}
+.pop-badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--accent-red);color:#fff;font-size:.78rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:.35rem 1rem;border-radius:999px;white-space:nowrap}
+@media(max-width:767px){.pricing-row{flex-direction:column;align-items:stretch}.tier-featured{transform:none}}
+/* FAQ */
+.faq{max-width:46rem;margin:0 auto;display:flex;flex-direction:column;gap:1rem}
+.faq details{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);overflow:hidden;transition:border-color var(--transition-fast) var(--ease-standard)}
+.faq details[open]{border-color:var(--primary)}
+.faq summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;cursor:pointer;list-style:none;padding:1.25rem 1.5rem;font-family:var(--font-display);font-size:1.25rem;font-weight:600;min-height:44px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary .material-symbols-rounded{transition:transform var(--transition-normal) var(--ease-standard);color:var(--primary);flex-shrink:0}
+.faq details[open] summary .material-symbols-rounded{transform:rotate(180deg)}
+.faq .answer{padding:0 1.5rem 1.25rem;color:var(--text-secondary)}
+/* Final CTA */
+.cta-band{position:relative;background:var(--bg-dark);color:var(--text-on-dark);clip-path:polygon(0 4vw,100% 0,100% 100%,0 100%);padding:clamp(6rem,10vw,8rem) 0}
+.cta-band::before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,161,2,.32),rgba(188,45,41,.25),rgba(67,46,111,.5));pointer-events:none}
+.cta-inner{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:1.5rem}
+.cta-inner h2{color:var(--text-on-dark);font-size:clamp(2.25rem,4.5vw,3.5rem);max-width:16ch}
+.cta-inner p{max-width:46ch;color:var(--cream);opacity:.9}
+/* Footer */
+.footer{background:var(--chocolate);color:var(--cream);padding:4rem 0 2rem}
+.footer-grid{display:flex;align-items:flex-start;gap:3rem;flex-wrap:wrap}
+.footer-brand{flex:2 1 240px;display:flex;flex-direction:column;align-items:flex-start;gap:1rem}
+.footer-brand p{opacity:.75;font-size:.95rem;max-width:32ch}
+.footer-col{flex:1 1 140px;display:flex;flex-direction:column;align-items:flex-start;gap:.6rem}
+.footer-col h4{font-family:var(--font-body);font-size:.8rem;text-transform:uppercase;letter-spacing:.12em;color:var(--primary);margin-bottom:.4rem}
+.footer-col a{text-decoration:none;opacity:.8;font-size:.95rem;transition:opacity var(--transition-fast)}
+@media(hover:hover) and (pointer:fine){.footer-col a:hover{opacity:1;color:var(--primary)}}
+.socials{display:flex;gap:.5rem}
+.socials a{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-md);border:1px solid rgba(245,249,206,.25);color:var(--cream);transition:all var(--transition-fast)}
+@media(hover:hover) and (pointer:fine){.socials a:hover{border-color:var(--primary);color:var(--primary)}}
+.footer-bottom{margin-top:3rem;padding-top:1.5rem;border-top:1px solid rgba(245,249,206,.15);text-align:center;font-size:.875rem;opacity:.7}
+@media(max-width:767px){.footer-grid{flex-direction:column;align-items:stretch;gap:2rem}}
+/* Reveal */
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .5s ease-out,transform .5s ease-out}
+.reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion: reduce){
+*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.15s!important}
+.reveal{transform:none}
+.hero-frame{transform:none}
+html{scroll-behavior:auto}
+}
+@media (prefers-reduced-transparency: reduce){.nav{background:var(--bg-primary);backdrop-filter:none}.hero-badge{background:var(--chocolate);backdrop-filter:none}}
+@media (prefers-contrast: more){.card,.tier,.faq details{border-width:2px}}
+</style>
+</head>
+<body>
+<header class="nav">
+<div class="nav-inner">
+<a class="brand" href="#top"><span class="material-symbols-rounded icon-fill" aria-hidden="true">local_fire_department</span>Nimbus</a>
+<nav aria-label="Primary">
+<ul class="nav-links" id="nav-links">
+<li><a href="#features">Features</a></li>
+<li><a href="#how">How It Works</a></li>
+<li><a href="#pricing">Pricing</a></li>
+<li><a href="#faq">FAQ</a></li>
+</ul>
+</nav>
+<div class="nav-actions">
+<button id="theme-toggle" class="icon-btn" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+<span class="material-symbols-rounded" id="theme-icon" aria-hidden="true">dark_mode</span>
+</button>
+<button id="menu-btn" class="icon-btn" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">
+<span class="material-symbols-rounded" aria-hidden="true">menu</span>
+</button>
+</div>
+</div>
+</header>
+<main id="top">
+<section class="hero">
+<div class="container hero-inner">
+<div class="hero-copy">
+<h1>Craft that burns <em>brighter</em> than the rest</h1>
+<p class="hero-sub">Nimbus pairs bold design tooling with regal precision, so your team ships work worth remembering.</p>
+<div class="hero-ctas">
+<a class="btn btn-primary" href="#pricing">Start Free<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+<a class="btn btn-outline on-dark" href="#how">See How</a>
+</div>
+</div>
+<div class="hero-visual">
+<figure class="hero-frame">
+<img src="https://picsum.photos/seed/ember-amethyst-studio/640/800" alt="Warm studio workspace with amber light and violet accents" width="640" height="800">
+<figcaption class="hero-badge"><span class="material-symbols-rounded icon-fill" aria-hidden="true">auto_awesome</span>Trusted by 4,200 creative teams</figcaption>
+</figure>
+</div>
+</div>
+</section>
+<section class="section" id="features">
+<div class="container">
+<div class="section-head reveal">
+<h2>Built for bold ambitions</h2>
+<p>Three pillars that carry every project from first spark to final polish.</p>
+</div>
+<div class="card-row">
+<article class="card reveal">
+<span class="card-icon"><span class="material-symbols-rounded" aria-hidden="true">bolt</span></span>
+<h3>Ignite Fast</h3>
+<p>Spin up a full project workspace in under a minute with opinionated defaults that stay out of your way.</p>
+</article>
+<article class="card reveal">
+<span class="card-icon"><span class="material-symbols-rounded" aria-hidden="true">diamond</span></span>
+<h3>Refine Deeply</h3>
+<p>Precision controls for type, color, and layout give every detail the weight it deserves without clutter.</p>
+</article>
+<article class="card reveal">
+<span class="card-icon"><span class="material-symbols-rounded" aria-hidden="true">groups</span></span>
+<h3>Ship Together</h3>
+<p>Live cursors, threaded comments, and version history keep the whole team moving in one direction.</p>
+</article>
+</div>
+</div>
+</section>
+<section class="section section-dark" id="how">
+<div class="container">
+<div class="section-head reveal">
+<h2>From spark to ship in three steps</h2>
+<p>A rhythm your team can learn in an afternoon and rely on for years.</p>
+</div>
+<div class="steps">
+<div class="step reveal">
+<span class="step-num">01</span>
+<span class="material-symbols-rounded" aria-hidden="true">edit_note</span>
+<h3>Draft the vision</h3>
+<p>Capture ideas on a shared canvas with structured blocks and mood boards.</p>
+</div>
+<div class="step reveal">
+<span class="step-num">02</span>
+<span class="material-symbols-rounded" aria-hidden="true">tune</span>
+<h3>Shape the system</h3>
+<p>Turn drafts into reusable components with tokens that stay consistent everywhere.</p>
+</div>
+<div class="step reveal">
+<span class="step-num">03</span>
+<span class="material-symbols-rounded" aria-hidden="true">rocket_launch</span>
+<h3>Launch with confidence</h3>
+<p>Publish with one click, track engagement, and iterate without redeploys.</p>
+</div>
+</div>
+</div>
+</section>
+<section class="section" id="testimonials">
+<div class="container">
+<div class="section-head reveal">
+<h2>Words from the workshop</h2>
+<p>Teams who traded bland tooling for something with a pulse.</p>
+</div>
+<div class="card-row">
+<article class="card reveal">
+<div class="stars" aria-label="Rated 5 out of 5 stars">
+<span class="material-symbols-rounded icon-fill" aria-hidden="true">star</span><span class="material-symbols-rounded icon-fill" aria-hidden="true">star</span><span class="material-symbols-rounded icon-fill" aria-hidden="true">star</span><span class="material-symbols-rounded icon-fill" aria-hidden="true">star</span><span class="material-symbols-rounded icon-fill" aria-hidden="true">star</span>
+</div>
+<p class="quote">Nimbus gave our brand work a backbone. Reviews that took weeks now close in days.</p>
+<div class="author"><span class="monogram" aria-hidden="true">MR</span><div><div class="author-name">Mara Reyes</div><div class="author-role">Design Lead, Copperline Studio</div></div></div>
+</article>
+<article class="card reveal">
+<div class="stars" aria-label="Rated 5 out of 5 stars">
+<span class="material-symbols-rounded icon-fill" aria-hidden="true">star</span><span class="material-symbols-rounded icon-fill" aria-hidden="true">star</span><span class="material-symbols-rounded icon-fill" aria-hidden="true">star</span><span class="material-symbols-rounded icon-fill" aria-hidden="true">star</span><span class="material-symbols-rounded icon-fill" aria-hidden="true">star</span>
+</div>
+<p class="quote">The token system ended our style drift overnight. Engineers and designers finally speak one language.</p>
+<div class="author"><span class="monogram" aria-hidden="true">TO</span><div><div class="author-name">Tunde Okafor</div><div class="author-role">Product Director, Halcyon Labs</div></div></div>
+</article>
+</div>
+</div>
+</section>
+<section class="section section-dark" id="pricing">
+<div class="container">
+<div class="section-head reveal">
+<h2>Choose your fire</h2>
+<p>Start free, upgrade when the work demands it. Cancel anytime.</p>
+</div>
+<div class="pricing-row">
+<article class="tier reveal">
+<h3>Spark</h3>
+<p class="price">$0<span> /month</span></p>
+<ul>
+<li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>3 active projects</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Core design tokens</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Community support</li>
+</ul>
+<a class="btn btn-outline on-dark" href="#cta">Start Free</a>
+</article>
+<article class="tier tier-featured reveal">
+<span class="pop-badge">Most Popular</span>
+<h3>Ember</h3>
+<p class="price">$24<span> /month</span></p>
+<ul>
+<li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Unlimited projects</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Advanced token pipelines</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Real-time collaboration</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Priority support</li>
+</ul>
+<a class="btn btn-primary" href="#cta">Start Free</a>
+</article>
+<article class="tier reveal">
+<h3>Amethyst</h3>
+<p class="price">$79<span> /month</span></p>
+<ul>
+<li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Everything in Ember</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>SSO and audit logs</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Dedicated success manager</li>
+</ul>
+<a class="btn btn-outline on-dark" href="#cta">Start Free</a>
+</article>
+</div>
+</div>
+</section>
+<section class="section" id="faq">
+<div class="container">
+<div class="section-head reveal">
+<h2>Questions, answered</h2>
+<p>The essentials before you commit.</p>
+</div>
+<div class="faq reveal">
+<details>
+<summary>Can I migrate existing design files?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+<p class="answer">Yes. Nimbus imports Figma and Sketch files directly, preserving layers, styles, and components so nothing gets lost in the move.</p>
+</details>
+<details>
+<summary>What happens when my trial ends?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+<p class="answer">Your workspace drops to the free Spark plan. Nothing is deleted, and you can upgrade again whenever you are ready.</p>
+</details>
+<details>
+<summary>Do you offer discounts for nonprofits?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+<p class="answer">Registered nonprofits and educators receive 50 percent off any paid plan. Write to our team with proof of status to apply.</p>
+</details>
+</div>
+</div>
+</section>
+<section class="cta-band" id="cta">
+<div class="container cta-inner reveal">
+<h2>Ready to make work that glows?</h2>
+<p>Join thousands of teams shipping bolder design with Nimbus. Your first project is free forever.</p>
+<a class="btn btn-primary" href="#pricing">Start Free<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+</div>
+</section>
+</main>
+<footer class="footer">
+<div class="container">
+<div class="footer-grid">
+<div class="footer-brand">
+<a class="brand" href="#top"><span class="material-symbols-rounded icon-fill" aria-hidden="true">local_fire_department</span>Nimbus</a>
+<p>Design tooling with warmth, depth, and a point of view.</p>
+<div class="socials">
+<a href="#" aria-label="Nimbus on X"><span class="material-symbols-rounded" aria-hidden="true">public</span></a>
+<a href="#" aria-label="Nimbus on Dribbble"><span class="material-symbols-rounded" aria-hidden="true">palette</span></a>
+<a href="#" aria-label="Nimbus on GitHub"><span class="material-symbols-rounded" aria-hidden="true">code</span></a>
+</div>
+</div>
+<div class="footer-col">
+<h4>Product</h4>
+<a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#how">How It Works</a>
+</div>
+<div class="footer-col">
+<h4>Company</h4>
+<a href="#">About</a><a href="#">Careers</a><a href="#">Press</a>
+</div>
+<div class="footer-col">
+<h4>Legal</h4>
+<a href="#">Privacy</a><a href="#">Terms</a><a href="#">Security</a>
+</div>
+</div>
+<p class="footer-bottom">© 2026 Nimbus Systems, Inc. All rights reserved.</p>
+</div>
+</footer>
+<script>
+(function(){
+var toggle=document.getElementById("theme-toggle");
+var icon=document.getElementById("theme-icon");
+function apply(t){document.documentElement.dataset.theme=t;var dark=t==="dark";toggle.setAttribute("aria-pressed",String(dark));toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");icon.textContent=dark?"light_mode":"dark_mode";}
+apply(document.documentElement.dataset.theme==="dark"?"dark":"light");
+toggle.addEventListener("click",function(){var next=document.documentElement.dataset.theme==="dark"?"light":"dark";localStorage.setItem("theme",next);apply(next);});
+var menuBtn=document.getElementById("menu-btn");
+var links=document.getElementById("nav-links");
+function closeMenu(){links.classList.remove("open");menuBtn.setAttribute("aria-expanded","false");menuBtn.querySelector(".material-symbols-rounded").textContent="menu";menuBtn.setAttribute("aria-label","Open menu");}
+menuBtn.addEventListener("click",function(){var open=links.classList.toggle("open");menuBtn.setAttribute("aria-expanded",String(open));menuBtn.querySelector(".material-symbols-rounded").textContent=open?"close":"menu";menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");});
+links.addEventListener("click",function(e){if(e.target.closest("a"))closeMenu();});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")closeMenu();});
+if("IntersectionObserver" in window&&!window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+var io=new IntersectionObserver(function(entries){entries.forEach(function(en,i){if(en.isIntersecting){en.target.style.transitionDelay=(i%3)*70+"ms";en.target.classList.add("in");io.unobserve(en.target);}});},{threshold:.15});
+document.querySelectorAll(".reveal").forEach(function(el){io.observe(el);});
+}else{document.querySelectorAll(".reveal").forEach(function(el){el.classList.add("in");});}
+})();
+</script>
+</body>
+</html>

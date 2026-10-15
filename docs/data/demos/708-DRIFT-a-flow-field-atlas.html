@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DRIFT - A Flow Field Atlas</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<style>
+:root{
+  --primary:#101014;--secondary:#17171d;--accent:#FFB27A;
+  --bg-primary:#E9E4D8;--bg-secondary:#fefefe;
+  --text-primary:#101014;--text-secondary:#5F5A50;
+  --text-success:#1E6B45;--text-error:#B3261E;
+  --border-default:rgba(16,16,20,.14);--border-success:rgba(30,107,69,.5);--border-error:rgba(179,38,30,.5);
+  --accent-ink:#8C4F1B;--btn-primary-bg:#101014;--btn-primary-text:#E9E4D8;
+  --glass-bg:rgba(254,254,254,.42);--glass-border:rgba(255,255,255,.55);--glass-blur:16px;
+  --radius-sm:10px;--radius-md:16px;--radius-lg:26px;
+  --shadow-sm:0 2px 8px rgba(16,16,20,.08);--shadow-md:0 12px 32px rgba(16,16,20,.14);
+  --spacing-gap:clamp(1rem,2vw,1.5rem);
+  --transition-fast:150ms;--transition-normal:300ms;--ease-standard:cubic-bezier(.4,0,.2,1);
+  --font-display:'Space Grotesk',sans-serif;--font-base:'Inter',sans-serif;
+  --ring:rgba(140,79,27,.35);--orb1:#FFB27A;--orb2:#9A948A;--orb3:#fdfaf3;
+}
+:root[data-theme="dark"]{
+  --bg-primary:#101014;--bg-secondary:#17171d;
+  --text-primary:#E9E4D8;--text-secondary:#9A948A;
+  --text-success:#7FC79B;--text-error:#FF9B8A;
+  --border-default:rgba(233,228,216,.14);
+  --accent-ink:#FFB27A;--btn-primary-bg:#E9E4D8;--btn-primary-text:#101014;
+  --glass-bg:rgba(23,23,29,.55);--glass-border:rgba(233,228,216,.12);
+  --shadow-sm:0 2px 8px rgba(0,0,0,.35);--shadow-md:0 12px 32px rgba(0,0,0,.5);
+  --ring:rgba(255,178,122,.4);--orb1:#3a2a1c;--orb2:#26262e;--orb3:#1b1b22;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;overflow-x:hidden;transition:background var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard)}
+h1,h2,h3{font-family:var(--font-display);letter-spacing:-.02em;line-height:1.1;font-weight:700}
+h2{font-size:clamp(1.75rem,3.5vw,2.5rem)}
+h3{font-size:1.2rem}
+p{max-width:65ch}
+a{color:inherit}
+section{scroll-margin-top:5.5rem;padding:clamp(4rem,8vw,7rem) 0}
+.wrap{max-width:1200px;margin:0 auto;padding:0 clamp(1.25rem,4vw,2rem)}
+.material-symbols-rounded{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;font-size:1.35em;line-height:1}
+.skip{position:absolute;left:1rem;top:-4rem;background:var(--btn-primary-bg);color:var(--btn-primary-text);padding:.75rem 1.25rem;border-radius:var(--radius-sm);z-index:1300;transition:top var(--transition-fast)}
+.skip:focus{top:1rem}
+/* flow field */
+.field{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;align-items:stretch}
+.field__orb{position:absolute;border-radius:50%;filter:blur(64px);opacity:.7}
+.field__orb--1{width:44vw;height:44vw;background:var(--orb1);top:-12%;left:-8%;animation:drift1 32s ease-in-out infinite alternate}
+.field__orb--2{width:36vw;height:36vw;background:var(--orb2);bottom:-10%;right:-6%;animation:drift2 26s ease-in-out infinite alternate}
+.field__orb--3{width:28vw;height:28vw;background:var(--orb3);top:38%;left:44%;animation:drift3 38s ease-in-out infinite alternate}
+.field__grid{position:absolute;inset:0;background-image:radial-gradient(circle,var(--border-default) 1px,transparent 1px);background-size:56px 56px;opacity:.5}
+@keyframes drift1{to{transform:translate(9vw,7vh) scale(1.12)}}
+@keyframes drift2{to{transform:translate(-8vw,-6vh) scale(.92)}}
+@keyframes drift3{to{transform:translate(-6vw,8vh) scale(1.08)}}
+/* glass */
+.glass{background:var(--glass-bg);backdrop-filter:blur(var(--glass-blur)) saturate(160%);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(160%);border:1px solid var(--glass-border);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm)}
+@supports not (backdrop-filter:blur(1px)){.glass{background:rgba(254,254,254,.88)}:root[data-theme="dark"] .glass{background:rgba(23,23,29,.9)}}
+/* buttons */
+.btn{display:flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;min-width:44px;padding:.7rem 1.4rem;border-radius:var(--radius-md);border:1px solid transparent;font:600 .95rem var(--font-base);text-decoration:none;cursor:pointer;transition:filter var(--transition-fast),box-shadow var(--transition-fast),transform var(--transition-fast),background var(--transition-fast)}
+.btn--primary{background:var(--btn-primary-bg);color:var(--btn-primary-text)}
+.btn--ghost{background:var(--glass-bg);border-color:var(--glass-border);color:var(--text-primary);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.btn--danger{background:var(--text-error);color:#fff}
+.btn--sm{padding:.5rem 1rem;min-height:44px}
+@media(hover:hover) and (pointer:fine){.btn:hover{filter:brightness(1.06);box-shadow:var(--shadow-md)}}
+.btn:active{transform:scale(.97)}
+.btn:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible{outline:none;box-shadow:0 0 0 3px var(--ring)}
+.btn[disabled],.btn--disabled{opacity:.5;filter:grayscale(1);cursor:not-allowed;transform:none}
+.btn--loading{pointer-events:none}
+.btn--loading .btn__label{visibility:hidden}
+.btn--loading::after{content:"";position:absolute;width:1.25em;height:1.25em;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite}
+.btn{position:relative}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* nav */
+.nav{position:sticky;top:0;z-index:1000;transition:background var(--transition-normal),box-shadow var(--transition-normal)}
+.nav--scrolled{background:var(--glass-bg);backdrop-filter:blur(var(--glass-blur)) saturate(160%);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(160%);box-shadow:var(--shadow-sm);border-bottom:1px solid var(--glass-border)}
+.nav__inner{display:flex;align-items:center;gap:1rem;max-width:1200px;margin:0 auto;padding:0 clamp(1.25rem,4vw,2rem);height:68px}
+.nav__brand{display:flex;align-items:center;gap:.5rem;font:700 1.15rem var(--font-display);letter-spacing:.04em;text-decoration:none}
+.nav__brand .material-symbols-rounded{color:var(--accent-ink)}
+.nav__links{display:flex;align-items:center;gap:.25rem;margin-left:auto;list-style:none}
+.nav__link{position:relative;display:flex;align-items:center;min-height:44px;padding:.4rem .8rem;text-decoration:none;font-weight:500;font-size:.92rem;color:var(--text-secondary);border-radius:var(--radius-sm);transition:color var(--transition-fast)}
+.nav__link::after{content:"";position:absolute;left:.8rem;right:.8rem;bottom:8px;height:2px;background:var(--accent-ink);transform:scaleX(0);transform-origin:left;transition:transform var(--transition-fast) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.nav__link:hover{color:var(--text-primary)}.nav__link:hover::after{transform:scaleX(1)}}
+.nav__toggle{display:none;align-items:center;justify-content:center;width:44px;height:44px;background:none;border:1px solid var(--border-default);border-radius:var(--radius-sm);color:var(--text-primary);cursor:pointer;margin-left:auto}
+.nav__cta{margin-left:.5rem}
+#theme-toggle{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-sm);border:1px solid var(--border-default);background:var(--glass-bg);color:var(--text-primary);cursor:pointer;transition:filter var(--transition-fast)}
+#theme-toggle .icon-moon{display:none}
+:root[data-theme="dark"] #theme-toggle .icon-sun{display:none}
+:root[data-theme="dark"] #theme-toggle .icon-moon{display:block}
+@media(max-width:900px){
+  .nav__toggle{display:flex}
+  .nav__links{position:absolute;top:68px;left:0;right:0;flex-direction:column;align-items:stretch;background:var(--glass-bg);backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur));border-bottom:1px solid var(--glass-border);padding:.75rem 1.25rem;gap:.25rem;display:none}
+  .nav__links.is-open{display:flex}
+  .nav__cta{display:none}
+}
+/* hero */
+.hero{padding-top:clamp(3rem,6vw,5rem)}
+.hero__grid{display:flex;align-items:center;gap:clamp(2rem,5vw,4rem);flex-wrap:wrap}
+.hero__copy{flex:1 1 320px;display:flex;flex-direction:column;align-items:flex-start;gap:1.25rem}
+.eyebrow{font:600 .78rem var(--font-base);letter-spacing:.14em;text-transform:uppercase;color:var(--accent-ink)}
+.hero h1{font-size:clamp(2.4rem,5.5vw,4rem)}
+.hero h1 em{font-style:italic;color:var(--accent-ink)}
+.hero__sub{color:var(--text-secondary);font-size:1.08rem}
+.hero__ctas{display:flex;gap:.75rem;flex-wrap:wrap}
+.hero__chips{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:.5rem}
+.chip{display:flex;align-items:center;gap:.5rem;padding:.55rem 1rem;border-radius:999px;font-size:.85rem;font-weight:500}
+.chip strong{font-family:var(--font-display)}
+.hero__visual{flex:1 1 340px;display:flex;align-items:center;justify-content:center}
+.atlas{position:relative;width:min(100%,440px);aspect-ratio:1;display:flex;align-items:center;justify-content:center;padding:2rem}
+.atlas__ring{position:absolute;border:1px solid var(--border-default);border-radius:50%}
+.atlas__ring--1{inset:6%}.atlas__ring--2{inset:20%}.atlas__ring--3{inset:34%}
+.atlas__arc{position:absolute;inset:13%;border-radius:50%;border:2px solid transparent;border-top-color:var(--accent);border-right-color:var(--accent);animation:spin 22s linear infinite}
+.atlas__core{display:flex;flex-direction:column;align-items:center;gap:.4rem;text-align:center;z-index:1}
+.atlas__core .material-symbols-rounded{font-size:2.6rem;color:var(--accent-ink)}
+.atlas__coord{font:600 .8rem var(--font-display);letter-spacing:.1em;color:var(--text-secondary)}
+.atlas__pt{position:absolute;width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent)}
+.atlas__pt--a{top:22%;left:30%}.atlas__pt--b{bottom:26%;right:24%}.atlas__pt--c{top:52%;right:14%}
+/* sections */
+.section-head{display:flex;flex-direction:column;gap:.75rem;margin-bottom:clamp(2rem,4vw,3rem);max-width:640px}
+.section-head p{color:var(--text-secondary)}
+.cards{display:flex;gap:var(--spacing-gap);flex-wrap:wrap;align-items:stretch}
+.card{display:flex;flex-direction:column;align-items:flex-start;gap:.9rem;flex:1 1 260px;padding:1.75rem;transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal),border-color var(--transition-normal)}
+@media(hover:hover) and (pointer:fine){.card--interactive:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}}
+.card:focus-within{border-color:var(--accent)}
+.card__icon{display:flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:var(--radius-md);background:var(--glass-bg);border:1px solid var(--glass-border);color:var(--accent-ink)}
+.card p{color:var(--text-secondary);font-size:.95rem}
+/* steps */
+.steps{display:flex;gap:var(--spacing-gap);flex-wrap:wrap;align-items:stretch}
+.step{position:relative;flex:1 1 240px;display:flex;flex-direction:column;align-items:flex-start;gap:.6rem;padding:1.75rem}
+.step__num{font:700 2rem var(--font-display);color:var(--accent-ink);letter-spacing:-.03em}
+.step p{color:var(--text-secondary);font-size:.95rem}
+@media(min-width:768px){.step:not(:last-child)::after{content:"";position:absolute;top:2.6rem;right:calc(var(--spacing-gap)*-1);width:var(--spacing-gap);height:1px;background:var(--border-default)}}
+/* testimonials */
+.quote{font-size:1rem;color:var(--text-primary)}
+.quote-card .material-symbols-rounded{color:var(--accent-ink)}
+.quote__by{display:flex;align-items:center;gap:.75rem;margin-top:auto}
+.avatar{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;background:var(--btn-primary-bg);color:var(--btn-primary-text);font:600 .85rem var(--font-display);flex-shrink:0}
+.quote__who{display:flex;flex-direction:column;align-items:flex-start;line-height:1.35}
+.quote__who small{color:var(--text-secondary)}
+/* pricing */
+.badge{align-self:flex-start;font:600 .72rem var(--font-base);letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink);border:1px solid var(--accent-ink);padding:.25rem .7rem;border-radius:999px}
+.card--featured{border:1px solid var(--accent);box-shadow:var(--shadow-md)}
+:root[data-theme="dark"] .card--featured{border-color:var(--accent)}
+.price{font:700 2.4rem var(--font-display);letter-spacing:-.03em}
+.price span{font:500 .9rem var(--font-base);color:var(--text-secondary);letter-spacing:0}
+.tier-list{list-style:none;display:flex;flex-direction:column;align-items:flex-start;gap:.55rem;font-size:.92rem}
+.tier-list li{display:flex;align-items:center;gap:.5rem}
+.tier-list .material-symbols-rounded{color:var(--text-success);font-size:1.1em}
+.card .btn{margin-top:auto;width:100%}
+/* faq */
+.faq{display:flex;flex-direction:column;align-items:stretch;gap:.75rem;max-width:760px}
+.faq details{border-radius:var(--radius-md);overflow:hidden}
+.faq summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:44px;padding:1.1rem 1.4rem;cursor:pointer;font:600 1rem var(--font-display);list-style:none}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary .material-symbols-rounded{transition:transform var(--transition-normal) var(--ease-standard);color:var(--accent-ink);flex-shrink:0}
+.faq details[open] summary .material-symbols-rounded{transform:rotate(180deg)}
+.faq__body{padding:0 1.4rem 1.2rem;color:var(--text-secondary);font-size:.95rem}
+/* cta */
+.cta-panel{display:flex;flex-direction:column;align-items:center;text-align:center;gap:1.25rem;padding:clamp(2.5rem,6vw,4.5rem)}
+.cta-panel p{color:var(--text-secondary)}
+.signup{display:flex;gap:.75rem;flex-wrap:wrap;justify-content:center;width:100%;max-width:520px}
+.input-group{display:flex;flex-direction:column;align-items:stretch;gap:.35rem;flex:1 1 240px;text-align:left}
+.input-group label{font:600 .85rem var(--font-base)}
+.input-group input{min-height:48px;padding:.7rem 1rem;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);font:400 1rem var(--font-base);transition:border-color var(--transition-fast),box-shadow var(--transition-fast)}
+.input-group input:focus{border-color:var(--accent-ink);outline:none;box-shadow:0 0 0 3px var(--ring)}
+.input-group input.is-valid{border-color:var(--border-success)}
+.input-group input.is-invalid{border-color:var(--border-error)}
+.field__error{font-size:.82rem;color:var(--text-error);display:flex;align-items:center;gap:.3rem}
+.field__hint{font-size:.82rem;color:var(--text-secondary)}
+.micro{font-size:.8rem;color:var(--text-secondary)}
+.form-status{font-weight:600;display:flex;align-items:center;gap:.4rem}
+.form-status.is-success{color:var(--text-success)}
+.form-status.is-error{color:var(--text-error)}
+/* footer */
+footer{border-top:1px solid var(--border-default);padding:3rem 0 2rem}
+.footer__grid{display:flex;gap:2.5rem;flex-wrap:wrap;align-items:flex-start}
+.footer__brand{flex:1 1 260px;display:flex;flex-direction:column;align-items:flex-start;gap:.75rem}
+.footer__brand p{color:var(--text-secondary);font-size:.92rem}
+.footer__col{display:flex;flex-direction:column;align-items:flex-start;gap:.5rem;flex:1 1 140px}
+.footer__col h4{font:600 .85rem var(--font-base);letter-spacing:.06em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:.25rem}
+.footer__col a{display:flex;align-items:center;min-height:32px;text-decoration:none;color:var(--text-secondary);font-size:.92rem;transition:color var(--transition-fast)}
+@media(hover:hover) and (pointer:fine){.footer__col a:hover{color:var(--text-primary)}}
+.footer__bar{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid var(--border-default);font-size:.85rem;color:var(--text-secondary)}
+/* reveal */
+.reveal{opacity:0;transform:translateY(14px);transition:opacity .5s ease-out,transform .5s ease-out}
+.reveal.is-in{opacity:1;transform:none}
+@media(max-width:767px){
+  .hero__grid{flex-direction:column;align-items:flex-start}
+  .hero__visual{width:100%}
+  .atlas{margin:0 auto}
+  .cards,.steps{flex-direction:column}
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .field__orb,.atlas__arc{animation:none}
+  .reveal{opacity:1;transform:none;transition:none}
+  *{transition-duration:.01ms!important}
+}
+@media(prefers-reduced-transparency:reduce){.glass,.nav--scrolled{background:var(--bg-secondary);backdrop-filter:none;-webkit-backdrop-filter:none}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="field" aria-hidden="true">
+  <div class="field__orb field__orb--1"></div>
+  <div class="field__orb field__orb--2"></div>
+  <div class="field__orb field__orb--3"></div>
+  <div class="field__grid"></div>
+</div>
+
+<header class="nav" id="site-nav">
+  <nav class="nav__inner" aria-label="Primary">
+    <a class="nav__brand" href="#top"><span class="material-symbols-rounded" aria-hidden="true">explore</span>DRIFT</a>
+    <button class="nav__toggle" id="menu-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu"><span class="material-symbols-rounded" aria-hidden="true">menu</span></button>
+    <ul class="nav__links" id="nav-links">
+      <li><a class="nav__link" href="#features">Features</a></li>
+      <li><a class="nav__link" href="#how">How It Works</a></li>
+      <li><a class="nav__link" href="#testimonials">Testimonials</a></li>
+      <li><a class="nav__link" href="#pricing">Pricing</a></li>
+      <li><a class="nav__link" href="#faq">FAQ</a></li>
+    </ul>
+    <button id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+      <span class="material-symbols-rounded icon-sun" aria-hidden="true">light_mode</span>
+      <span class="material-symbols-rounded icon-moon" aria-hidden="true">dark_mode</span>
+    </button>
+    <a class="btn btn--primary btn--sm nav__cta" href="#cta">Open the atlas</a>
+  </nav>
+</header>
+
+<main id="main">
+  <section class="hero" id="top" aria-labelledby="hero-title">
+    <div class="wrap hero__grid">
+      <div class="hero__copy">
+        <span class="eyebrow">A flow field atlas</span>
+        <h1 id="hero-title">Read the currents <em>beneath</em> your data</h1>
+        <p class="hero__sub">DRIFT maps movement as living cartography: layered fields, drifting trajectories, and coordinates you can query.</p>
+        <div class="hero__ctas">
+          <a class="btn btn--primary" href="#cta">Open the atlas <span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+          <a class="btn btn--ghost" href="#how">See how it works</a>
+        </div>
+        <div class="hero__chips">
+          <span class="chip glass"><strong>48k</strong> fields charted</span>
+          <span class="chip glass"><strong>120ms</strong> layer render</span>
+          <span class="chip glass"><strong>12</strong> coordinate systems</span>
+        </div>
+      </div>
+      <div class="hero__visual">
+        <div class="atlas glass" aria-hidden="true">
+          <div class="atlas__ring atlas__ring--1"></div>
+          <div class="atlas__ring atlas__ring--2"></div>
+          <div class="atlas__ring atlas__ring--3"></div>
+          <div class="atlas__arc"></div>
+          <span class="atlas__pt atlas__pt--a"></span>
+          <span class="atlas__pt atlas__pt--b"></span>
+          <span class="atlas__pt atlas__pt--c"></span>
+          <div class="atlas__core">
+            <span class="material-symbols-rounded">explore</span>
+            <span class="atlas__coord">51.5072° N / 0.1276° W</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="features" aria-labelledby="features-title">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <h2 id="features-title">Instruments for reading movement</h2>
+        <p>Three lenses, one atlas. Each tool turns raw motion into something you can navigate.</p>
+      </div>
+      <div class="cards">
+        <article class="card glass card--interactive reveal">
+          <span class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">layers</span></span>
+          <h3>Layered fields</h3>
+          <p>Stack currents, wind, and drift as translucent strata. Blend layers to see where flows converge or pull apart.</p>
+        </article>
+        <article class="card glass card--interactive reveal">
+          <span class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">blur_on</span></span>
+          <h3>Soft focus sampling</h3>
+          <p>Blur a region to read its average pull, then sharpen to trace a single particle's path through the field.</p>
+        </article>
+        <article class="card glass card--interactive reveal">
+          <span class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">timeline</span></span>
+          <h3>Trajectory playback</h3>
+          <p>Scrub time to replay how any coordinate drifted, with velocity ribbons drawn along every recorded path.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="how" aria-labelledby="how-title">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <h2 id="how-title">From raw signal to charted atlas</h2>
+        <p>Three steps stand between a stream of positions and a map you can read at a glance.</p>
+      </div>
+      <div class="steps">
+        <div class="step glass reveal">
+          <span class="step__num">01</span>
+          <h3>Plot the field</h3>
+          <p>Connect a data source and DRIFT projects every position onto a shared coordinate grid.</p>
+        </div>
+        <div class="step glass reveal">
+          <span class="step__num">02</span>
+          <h3>Trace the currents</h3>
+          <p>Flow lines are interpolated between points, revealing direction, speed, and eddies.</p>
+        </div>
+        <div class="step glass reveal">
+          <span class="step__num">03</span>
+          <h3>Read the atlas</h3>
+          <p>Query any coordinate for its history, or export the whole chart as a layered document.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="testimonials" aria-labelledby="testimonials-title">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <h2 id="testimonials-title">Charted by people who move</h2>
+        <p>Researchers, operators, and analysts who read their world through DRIFT.</p>
+      </div>
+      <div class="cards" id="testimonial-grid" aria-live="polite">
+        <article class="card glass quote-card reveal">
+          <span class="material-symbols-rounded" aria-hidden="true">format_quote</span>
+          <p class="quote">We stopped arguing about where the fleet drifted. The atlas just shows it, layer by layer.</p>
+          <div class="quote__by">
+            <span class="avatar" aria-hidden="true">MK</span>
+            <span class="quote__who"><strong>Mara Kessler</strong><small>Operations Lead, Northline Logistics</small></span>
+          </div>
+        </article>
+        <article class="card glass quote-card reveal">
+          <span class="material-symbols-rounded" aria-hidden="true">format_quote</span>
+          <p class="quote">The soft focus view is how I present field data now. Stakeholders read a current in seconds.</p>
+          <div class="quote__by">
+            <span class="avatar" aria-hidden="true">TO</span>
+            <span class="quote__who"><strong>Tunde Okafor</strong><small>Research Scientist, Halvard Institute</small></span>
+          </div>
+        </article>
+        <article class="card glass quote-card reveal">
+          <span class="material-symbols-rounded" aria-hidden="true">format_quote</span>
+          <p class="quote">Trajectory playback settled a six-month routing debate in one afternoon. That alone paid for the team plan.</p>
+          <div class="quote__by">
+            <span class="avatar" aria-hidden="true">LR</span>
+            <span class="quote__who"><strong>Lena Roth</strong><small>Data Director, Crossway Mobility</small></span>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing" aria-labelledby="pricing-title">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <h2 id="pricing-title">Choose your chart depth</h2>
+        <p>Start free, then add layers and seats as your atlas grows.</p>
+      </div>
+      <div class="cards">
+        <article class="card glass reveal">
+          <h3>Drift</h3>
+          <p class="price">$0 <span>/ forever</span></p>
+          <ul class="tier-list">
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>3 active flow fields</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Single-layer charts</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>7-day trajectory history</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Community coordinate library</li>
+          </ul>
+          <a class="btn btn--ghost" href="#cta">Start charting</a>
+        </article>
+        <article class="card glass card--featured reveal">
+          <span class="badge">Most popular</span>
+          <h3>Currents</h3>
+          <p class="price">$24 <span>/ month</span></p>
+          <ul class="tier-list">
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Unlimited flow fields</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>8 blended layers per chart</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Full trajectory playback</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Soft focus sampling</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Atlas export (PDF, GeoJSON)</li>
+          </ul>
+          <a class="btn btn--primary" href="#cta">Start charting</a>
+        </article>
+        <article class="card glass reveal">
+          <h3>Atlas</h3>
+          <p class="price">$79 <span>/ month, 5 seats</span></p>
+          <ul class="tier-list">
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Everything in Currents</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Shared team atlases</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Custom coordinate systems</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Priority field rendering</li>
+          </ul>
+          <a class="btn btn--ghost" href="#cta">Start charting</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq" aria-labelledby="faq-title">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <h2 id="faq-title">Questions from the field</h2>
+        <p>Practical answers about data, formats, and how the atlas behaves.</p>
+      </div>
+      <div class="faq reveal">
+        <details class="glass">
+          <summary>What data sources can DRIFT read? <span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__body">Any stream of timestamped positions: CSV uploads, GPS trackers, AIS feeds, or a REST endpoint. DRIFT normalizes everything onto a shared grid automatically.</p>
+        </details>
+        <details class="glass">
+          <summary>Do I need cartography experience to use it? <span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__body">No. Projections and coordinate transforms are handled for you. If you can read a weather map, you can read a DRIFT chart.</p>
+        </details>
+        <details class="glass">
+          <summary>How far back does trajectory history go? <span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__body">The free Drift tier keeps 7 days. Currents and Atlas retain full history for as long as your field stays active.</p>
+        </details>
+        <details class="glass">
+          <summary>Can I export charts for reports? <span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__body">Yes. Paid tiers export layered charts as PDF for print or GeoJSON for use in GIS tools, with every layer preserved.</p>
+        </details>
+        <details class="glass">
+          <summary>What happens if I cancel a paid plan? <span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__body">Your atlases drop to the free tier limits but are never deleted. Export everything first, or come back and pick up where you left off.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section id="cta" aria-labelledby="cta-title">
+    <div class="wrap">
+      <div class="cta-panel glass reveal">
+        <h2 id="cta-title">Chart your first current</h2>
+        <p>Leave an email and we will send your atlas key. Free tier, no card required.</p>
+        <form class="signup" id="signup-form" novalidate>
+          <div class="input-group">
+            <label for="email">Work email</label>
+            <input type="email" id="email" name="email" required autocomplete="email" aria-describedby="email-error email-hint" placeholder="you@company.com">
+            <span class="field__hint" id="email-hint">We send one invite, nothing else.</span>
+            <span class="field__error" id="email-error" aria-live="polite" hidden><span class="material-symbols-rounded" aria-hidden="true">error</span><span id="email-error-text"></span></span>
+          </div>
+          <button class="btn btn--primary" type="submit" id="signup-btn"><span class="btn__label">Request invite</span></button>
+        </form>
+        <p class="form-status" id="form-status" aria-live="polite" hidden></p>
+        <p class="micro">Your address is used only for the invite. No lists, no resale.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <a class="nav__brand" href="#top"><span class="material-symbols-rounded" aria-hidden="true">explore</span>DRIFT</a>
+        <p>A flow field atlas for reading the movement beneath your data.</p>
+      </div>
+      <div class="footer__col">
+        <h4>Product</h4>
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#how">How It Works</a>
+      </div>
+      <div class="footer__col">
+        <h4>Resources</h4>
+        <a href="#faq">FAQ</a>
+        <a href="#">Field guides</a>
+        <a href="#">Coordinate library</a>
+      </div>
+      <div class="footer__col">
+        <h4>Company</h4>
+        <a href="#">About</a>
+        <a href="#">Careers</a>
+        <a href="#">Contact</a>
+      </div>
+    </div>
+    <div class="footer__bar">
+      <span>© <span id="year">2026</span> DRIFT Cartography Ltd.</span>
+      <span>Every current leaves a trace.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  /* theme toggle */
+  var toggle=document.getElementById("theme-toggle");
+  function applyTheme(t){
+    document.documentElement.dataset.theme=t;
+    toggle.setAttribute("aria-pressed",t==="dark"?"true":"false");
+    toggle.setAttribute("aria-label",t==="dark"?"Switch to light mode":"Switch to dark mode");
+  }
+  applyTheme(document.documentElement.dataset.theme==="dark"?"dark":"light");
+  toggle.addEventListener("click",function(){
+    var next=document.documentElement.dataset.theme==="dark"?"light":"dark";
+    localStorage.setItem("theme",next);
+    applyTheme(next);
+  });
+  /* nav scroll state */
+  var nav=document.getElementById("site-nav");
+  var onScroll=function(){nav.classList.toggle("nav--scrolled",window.scrollY>24);};
+  window.addEventListener("scroll",onScroll,{passive:true});
+  onScroll();
+  /* mobile menu */
+  var menuBtn=document.getElementById("menu-toggle");
+  var links=document.getElementById("nav-links");
+  function closeMenu(){links.classList.remove("is-open");menuBtn.setAttribute("aria-expanded","false");menuBtn.setAttribute("aria-label","Open menu");}
+  menuBtn.addEventListener("click",function(){
+    var open=links.classList.toggle("is-open");
+    menuBtn.setAttribute("aria-expanded",open?"true":"false");
+    menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");
+  });
+  links.addEventListener("click",function(e){if(e.target.closest("a"))closeMenu();});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape")closeMenu();});
+  /* reveal on scroll */
+  var revealEls=document.querySelectorAll(".reveal");
+  if("IntersectionObserver" in window){
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){
+          var el=en.target;
+          var idx=Array.prototype.indexOf.call(el.parentNode.children,el);
+          el.style.transitionDelay=(Math.max(0,idx)%3*70)+"ms";
+          el.classList.add("is-in");
+          io.unobserve(el);
+        }
+      });
+    },{threshold:.12});
+    revealEls.forEach(function(el){io.observe(el);});
+  }else{
+    revealEls.forEach(function(el){el.classList.add("is-in");});
+  }
+  /* FAQ exclusive open */
+  var faqItems=document.querySelectorAll(".faq details");
+  faqItems.forEach(function(d){
+    d.addEventListener("toggle",function(){
+      if(d.open){faqItems.forEach(function(o){if(o!==d)o.open=false;});}
+    });
+  });
+  /* signup form */
+  var form=document.getElementById("signup-form");
+  var email=document.getElementById("email");
+  var errBox=document.getElementById("email-error");
+  var errText=document.getElementById("email-error-text");
+  var status=document.getElementById("form-status");
+  var submitBtn=document.getElementById("signup-btn");
+  function setError(msg){
+    if(msg){
+      errText.textContent=msg;errBox.hidden=false;
+      email.classList.add("is-invalid");email.classList.remove("is-valid");
+    }else{
+      errBox.hidden=true;email.classList.remove("is-invalid");
+    }
+  }
+  email.addEventListener("input",function(){
+    setError("");
+    email.classList.toggle("is-valid",email.validity.valid&&email.value.length>0);
+  });
+  form.addEventListener("submit",function(e){
+    e.preventDefault();
+    status.hidden=true;
+    if(!email.value){setError("Enter your email to request an invite.");email.focus();return;}
+    if(!email.validity.valid){setError("That address does not look complete. Check for a missing @ or domain.");email.focus();return;}
+    setError("");
+    submitBtn.classList.add("btn--loading");
+    submitBtn.setAttribute("aria-busy","true");
+    setTimeout(function(){
+      submitBtn.classList.remove("btn--loading");
+      submitBtn.removeAttribute("aria-busy");
+      status.hidden=false;
+      status.className="form-status is-success";
+      status.innerHTML='<span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Invite requested. Check your inbox for the atlas key.';
+      form.reset();
+      email.classList.remove("is-valid");
+    },1200);
+  });
+  /* footer year */
+  document.getElementById("year").textContent=new Date().getFullYear();
+})();
+</script>
+</body>
+</html>

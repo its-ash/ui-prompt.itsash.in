@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HeatLens · Heat map analytics for data teams</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;600&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0&display=block" rel="stylesheet">
+<script>(function(){var t=null;try{t=localStorage.getItem('heatlens-theme')}catch(e){}if(t==='dark'||(!t&&window.matchMedia&&matchMedia('(prefers-color-scheme:dark)').matches))document.documentElement.classList.add('dark')})();</script>
+<style>
+:root{--primary:#0080FF;--bg:#F4F7FA;--bg2:#FEFEFE;--tx:#10202E;--tx2:#51637A;--bd:#D8E1EA;--ok:#0E8345;--err:#C81E1E;--cool:#0080FF;--mid:#FEFEFE;--hot:#FF0000;--seq1:#FEFEFE;--seq2:#FFD34D;--grad:linear-gradient(90deg,var(--cool),var(--mid) 50%,var(--hot));--fd:'Space Grotesk',sans-serif;--fb:'Inter',sans-serif;--fm:'IBM Plex Mono',monospace;--r:14px;--sh:0 2px 10px rgba(16,32,46,.07);--sh2:0 14px 34px rgba(16,32,46,.16);--tf:.15s ease;--tn:.4s ease;--accmid:#10202E}
+.dark{--bg:#0B1421;--bg2:#121E30;--tx:#E7EEF6;--tx2:#93A4B8;--bd:#243649;--ok:#3DCD7E;--err:#FF6B5E;--cool:#3D9BFF;--mid:#2E3E55;--hot:#FF4D42;--seq1:#2E3E55;--sh:0 2px 10px rgba(0,0,0,.45);--sh2:0 14px 34px rgba(0,0,0,.6);--accmid:#E7EEF6}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{font:400 16px/1.6 var(--fb);color:var(--tx);background:var(--bg);overflow-x:clip}
+svg{max-width:100%}
+h1,h2,h3,h4{font-family:var(--fd);line-height:1.12}
+h1{font-size:clamp(2.1rem,5.5vw,3.5rem);letter-spacing:-.02em}
+h2{font-size:clamp(1.45rem,3vw,2rem)}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+section:focus,main:focus{outline:0}
+.ms{font-family:'Material Symbols Outlined';font-size:1.15rem;line-height:1;display:inline-block}
+.wrap{max-width:1080px;margin:auto;padding:0 1rem}
+.sec{padding:4.2rem 0}
+.skip{position:fixed;left:-100px;top:0;z-index:99;background:var(--primary);color:#fff;padding:.75rem 1.1rem;border-radius:0 0 10px 0;font-weight:600}
+.skip:focus{left:0}
+.sr{position:absolute;width:1px;height:1px;clip-path:inset(50%);overflow:hidden;white-space:nowrap}
+.hdr{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--bd)}
+.hdr__in{max-width:1080px;margin:auto;display:flex;align-items:center;gap:1rem;padding:.65rem 1rem;flex-wrap:wrap}
+/* flex exception: links wrap to a second row instead of a hidden mobile menu */
+.brand{display:flex;align-items:center;gap:.45rem;font:700 1.2rem var(--fd);text-decoration:none}
+.nav{display:flex;gap:1.15rem;margin-left:auto;flex-wrap:wrap;padding:.15rem 0}
+.nav a{font:600 .88rem var(--fb);color:var(--tx2);text-decoration:none;padding:.55rem .15rem;transition:color var(--tf)}
+.nav a:hover{color:var(--primary)}
+.tbtn{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border:1px solid var(--bd);background:var(--bg2);border-radius:10px;color:var(--tx);cursor:pointer;font-size:1.25rem;transition:border-color var(--tf),color var(--tf)}
+.tbtn:hover{border-color:var(--primary);color:var(--primary)}
+.tbtn .il{display:none}
+.dark .tbtn .id{display:none}
+.dark .tbtn .il{display:block}
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:.55rem 1.25rem;border-radius:11px;border:1px solid transparent;font:600 .95rem var(--fb);cursor:pointer;text-decoration:none;transition:filter var(--tf),box-shadow var(--tf),transform var(--tf),background var(--tf),color var(--tf)}
+.btn--p{background:var(--primary);color:#fff}
+.btn--p:hover{filter:brightness(1.12);box-shadow:0 6px 18px rgba(0,128,255,.35)}
+.btn--s{background:var(--bg2);color:var(--tx);border-color:var(--bd)}
+.btn--s:hover{border-color:var(--primary);color:var(--primary)}
+.btn--d{background:var(--bg2);color:var(--err);border-color:var(--err)}
+.btn--d:hover{background:var(--err);color:#fff}
+.btn:active{transform:scale(.97)}
+.btn:focus-visible{outline:0;box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--primary)}
+.btn[disabled]{opacity:.5;filter:grayscale(1);cursor:not-allowed}
+.btn.is-loading{pointer-events:none;opacity:.75}
+.btn.is-success{background:var(--ok);color:#fff}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadein{from{opacity:0}}
+.sp{display:none;position:absolute;left:50%;top:50%;width:24px;height:24px;margin:-12px 0 0 -12px;font-size:20px;line-height:24px}
+.is-loading>.sp{display:block;animation:spin .9s linear infinite}
+.is-loading>.b0,.is-loading>.btn__lb{visibility:hidden}
+.hero{padding:4rem 0 1rem}
+.hero__tx{max-width:680px;margin:0 auto 2.4rem;text-align:center;display:flex;flex-direction:column;gap:1.1rem;align-items:center}
+.hero__tx p{color:var(--tx2);font-size:1.06rem;max-width:56ch}
+.hero__cta{display:flex;gap:.8rem;flex-wrap:wrap;justify-content:center}
+.panel{position:relative;background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);box-shadow:var(--sh);padding:1.1rem 1rem 1rem;display:flex;flex-direction:column;gap:.85rem;max-width:760px;margin:auto}
+.panel__hd{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.panel__tt{font:600 .74rem var(--fm);color:var(--tx2);letter-spacing:.05em;text-transform:uppercase}
+.hmctl{display:flex;gap:.55rem;flex-wrap:wrap;align-items:center}
+.hmctl .btn{padding:.35rem .85rem;font-size:.83rem}
+.hmctl .btn[aria-pressed="true"]{background:var(--primary);border-color:var(--primary);color:#fff}
+.hm{display:grid;grid-template-columns:2.3em repeat(12,1fr);gap:3px}
+.hm__lb{font:600 .62rem var(--fm);color:var(--tx2);display:flex;align-items:center;justify-content:flex-end;padding-right:.35em}
+.hm__hours{grid-column:2/-1;display:flex;justify-content:space-between;font:400 .6rem var(--fm);color:var(--tx2);margin-top:2px}
+.heat-cell{position:relative;height:22px;min-width:0;border:0;border-radius:4px;background:var(--mid);padding:0;cursor:pointer;font:600 8px/22px var(--fm);color:transparent;outline:2px solid transparent;outline-offset:1px;transition:background-color var(--tn),outline-color var(--tf),transform var(--tf)}
+.heat-cell:hover{outline-color:var(--tx2);transform:scale(1.18);z-index:3}
+.heat-cell:focus-visible{outline-color:var(--primary)}
+.heat-cell[data-intensity="0"]{background:var(--cool)}
+.heat-cell[data-intensity="1"]{background:color-mix(in srgb,var(--cool) 80%,var(--mid))}
+.heat-cell[data-intensity="2"]{background:color-mix(in srgb,var(--cool) 60%,var(--mid))}
+.heat-cell[data-intensity="3"]{background:color-mix(in srgb,var(--cool) 40%,var(--mid))}
+.heat-cell[data-intensity="4"]{background:color-mix(in srgb,var(--cool) 20%,var(--mid))}
+.heat-cell[data-intensity="5"]{background:var(--mid)}
+.heat-cell[data-intensity="6"]{background:color-mix(in srgb,var(--hot) 20%,var(--mid))}
+.heat-cell[data-intensity="7"]{background:color-mix(in srgb,var(--hot) 40%,var(--mid))}
+.heat-cell[data-intensity="8"]{background:color-mix(in srgb,var(--hot) 60%,var(--mid))}
+.heat-cell[data-intensity="9"]{background:color-mix(in srgb,var(--hot) 80%,var(--mid))}
+.heat-cell[data-intensity="10"]{background:var(--hot)}
+.hm.acc .heat-cell{color:#fff}
+.hm.acc .heat-cell[data-intensity="3"],.hm.acc .heat-cell[data-intensity="4"],.hm.acc .heat-cell[data-intensity="5"],.hm.acc .heat-cell[data-intensity="6"],.hm.acc .heat-cell[data-intensity="7"]{color:var(--accmid)}
+.tip{position:absolute;left:50%;bottom:calc(100% + 7px);transform:translateX(-50%);z-index:30;background:var(--tx);color:var(--bg);padding:.45rem .65rem;border-radius:8px;font:600 .7rem/1.4 var(--fm);white-space:nowrap;pointer-events:none;opacity:0;transition:opacity var(--tf)}
+.tip.show{opacity:1}
+.tip--flip{bottom:auto;top:calc(100% + 7px)}
+.tip--shl{left:0;transform:none}
+.tip--shift{left:auto;right:0;transform:none}
+.legend{display:grid;gap:4px}
+.legend__bar{height:10px;border-radius:5px;background:var(--grad)}
+.legend__tk{display:flex;justify-content:space-between;gap:.5rem;font:400 .64rem var(--fm);color:var(--tx2)}
+.trust{display:flex;gap:1.4rem;flex-wrap:wrap;justify-content:center;align-items:center;color:var(--tx2);font:600 .72rem var(--fd);letter-spacing:.14em;text-transform:uppercase;padding:1.8rem 0 0;text-align:center}
+.trust b{color:var(--tx);font-weight:600}
+.sec__hd{text-align:center;max-width:640px;margin:0 auto 2.4rem;display:flex;flex-direction:column;gap:.6rem;align-items:center}
+.sec__hd p{color:var(--tx2)}
+.cards{display:grid;gap:1.2rem}
+@media(min-width:820px){.cards{grid-template-columns:repeat(3,1fr)}}
+.card{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);box-shadow:var(--sh);padding:1.4rem;display:flex;flex-direction:column;gap:.65rem;transition:box-shadow var(--tf),transform var(--tf),border-color var(--tf)}
+.card:hover{box-shadow:var(--sh2);transform:translateY(-2px)}
+.card:focus-within{border-color:var(--primary)}
+.card>.ms{font-size:1.5rem;color:var(--primary);width:44px;height:44px;border-radius:10px;background:color-mix(in srgb,var(--primary) 12%,var(--bg2));display:flex;align-items:center;justify-content:center}
+.card h3{font-size:1.1rem}
+.card p{color:var(--tx2);font-size:.92rem}
+.map{display:block;margin-top:.3rem}
+.rg{fill:var(--seq1);stroke:var(--bd);cursor:pointer;transition:fill var(--tn),stroke var(--tf)}
+.rg:hover{stroke:var(--primary);stroke-width:1.4}
+.rg[data-intensity="4"]{fill:color-mix(in srgb,var(--seq2) 20%,var(--seq1))}
+.rg[data-intensity="5"]{fill:color-mix(in srgb,var(--seq2) 45%,var(--seq1))}
+.rg[data-intensity="6"]{fill:color-mix(in srgb,var(--seq2) 75%,var(--seq1))}
+.rg[data-intensity="7"]{fill:color-mix(in srgb,var(--seq2) 65%,var(--hot))}
+.rg[data-intensity="8"]{fill:color-mix(in srgb,var(--seq2) 40%,var(--hot))}
+.rg[data-intensity="9"]{fill:var(--hot)}
+.mapcap{font:600 .72rem var(--fm);color:var(--tx2)}
+.steps{display:grid;gap:2.6rem;position:relative;list-style:none;padding:0}
+@media(min-width:820px){.steps{grid-template-columns:repeat(3,1fr);align-items:stretch}.steps::before{content:"";position:absolute;top:23px;left:9%;right:9%;height:3px;border-radius:2px;background:var(--grad)}}
+/* flex exception: step content aligns under its chip instead of centering */
+.step{display:flex;flex-direction:column;gap:.7rem;align-items:flex-start}
+.step__chip{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:700 1.15rem var(--fm);position:relative;z-index:1;box-shadow:var(--sh)}
+.step:nth-child(1) .step__chip{background:var(--cool);color:#fff}
+.step:nth-child(2) .step__chip{background:var(--seq2);color:#10202E}
+.step:nth-child(3) .step__chip{background:var(--hot);color:#fff}
+.step h3{font-size:1.05rem}
+.step h3 .ms{color:var(--primary);font-size:1.05rem;margin-right:.4rem;vertical-align:-3px}
+.step p{color:var(--tx2);font-size:.92rem}
+.quotes{display:grid;gap:1.2rem}
+@media(min-width:820px){.quotes{grid-template-columns:repeat(2,1fr);align-items:stretch}}
+.quotes blockquote{font-size:.98rem}
+.quote__ft{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;margin-top:.4rem}
+.ava{width:44px;height:44px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font:700 1.05rem var(--fd);flex:none}
+.who b{display:block;font-size:.93rem}.who span{font-size:.8rem;color:var(--tx2)}
+.metr{font:600 .88rem var(--fm);color:var(--primary);background:color-mix(in srgb,var(--primary) 10%,var(--bg2));border-radius:7px;padding:.25rem .55rem;margin-left:auto;white-space:nowrap}
+.seg{display:inline-flex;border:1px solid var(--bd);border-radius:11px;overflow:hidden;background:var(--bg2)}
+.seg button{min-height:44px;padding:0 1.1rem;border:0;background:transparent;color:var(--tx2);font:600 .88rem var(--fb);cursor:pointer;transition:background var(--tf),color var(--tf)}
+.seg button[aria-pressed="true"]{background:var(--primary);color:#fff}
+.seg small{font-size:.7rem;opacity:.85;margin-left:.3rem}
+.tiers{display:grid;gap:1.6rem;margin-top:2.2rem}
+@media(min-width:880px){.tiers{grid-template-columns:repeat(3,1fr);align-items:stretch}}
+.tier{position:relative;background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);box-shadow:var(--sh);padding:1.7rem 1.4rem 1.4rem;display:flex;flex-direction:column;gap:.5rem;transition:box-shadow var(--tf),transform var(--tf)}
+.tier:hover{box-shadow:var(--sh2);transform:translateY(-2px)}
+.tier--feat{border:2px solid transparent;background:linear-gradient(var(--bg2),var(--bg2)) padding-box,var(--grad) border-box;box-shadow:var(--sh2)}
+.tier__badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--primary);color:#fff;font:600 .7rem var(--fb);letter-spacing:.06em;text-transform:uppercase;padding:.28rem .7rem;border-radius:99px;white-space:nowrap}
+.tier h3{font-size:1.2rem}
+.tier__pr{font:600 2.1rem/1.1 var(--fm)}
+.tier__pr small{font:400 .8rem var(--fb);color:var(--tx2)}
+.tier ul{list-style:none;display:flex;flex-direction:column;gap:.5rem;margin:.4rem 0 1.2rem;flex:1}
+.tier li{display:flex;gap:.5rem;align-items:flex-start;color:var(--tx2);font-size:.92rem}
+.tier li::before{content:"check_circle";font-family:'Material Symbols Outlined';font-size:1.1rem;color:var(--ok);line-height:1.3}
+.tier .btn{margin-top:auto;width:100%}
+.pr-a{display:none}
+.annual .pr-m{display:none}
+.annual .pr-a{display:inline}
+.pr-m,.pr-a{animation:fadein .35s}
+.faq{max-width:760px;margin:auto;display:grid;gap:.9rem}
+details{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:0 1.2rem;transition:border-color var(--tf)}
+details[open]{border-color:var(--primary)}
+summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:56px;font:600 .98rem var(--fd)}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font:400 1.4rem var(--fm);color:var(--tx2);transition:transform var(--tn)}
+details[open] summary::after{transform:rotate(45deg)}
+details p{color:var(--tx2);font-size:.92rem;padding-bottom:1.1rem;animation:fadein .3s}
+.cta{position:relative;border-top:1px solid var(--bd);border-bottom:1px solid var(--bd);background:var(--bg2);overflow:hidden}
+.cta::before{content:"";position:absolute;inset:0;background:var(--grad);opacity:.1}
+.dark .cta::before{opacity:.06}
+.cta .wrap{position:relative;display:flex;flex-direction:column;align-items:center;gap:1rem;text-align:center;padding-top:3.8rem;padding-bottom:3.8rem}
+.cta p{color:var(--tx2);max-width:52ch}
+/* flex exception: stacked form group aligns to flex-start for tidy labels */
+.frm{width:100%;max-width:520px;display:flex;flex-direction:column;gap:.45rem;align-items:flex-start}
+.ig__row{display:flex;gap:.6rem;flex-wrap:wrap;width:100%}
+.ig input{flex:1;min-width:200px;min-height:44px;padding:.5rem .9rem;border:1px solid var(--bd);border-radius:11px;background:var(--bg);color:var(--tx);font:400 .95rem var(--fb);transition:border-color var(--tf),box-shadow var(--tf)}
+.ig label{font:600 .82rem var(--fb);color:var(--tx2)}
+.ig input:focus{outline:0;border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 25%,transparent)}
+.ig.is-inv input{border-color:var(--err)}
+.ig.is-inv .ig__err::before{content:"error";font-family:'Material Symbols Outlined';font-size:1rem;vertical-align:-2px;margin-right:.3rem}
+.ig.is-val input{border-color:var(--ok)}
+.ig.is-val label::after{content:"check_circle";font-family:'Material Symbols Outlined';font-size:1rem;color:var(--ok);margin-left:.4rem;vertical-align:-2px}
+.ig__err{min-height:1.25rem;font:400 .82rem var(--fb);color:var(--err)}
+.toast{position:fixed;left:50%;bottom:18px;transform:translate(-50%,16px);z-index:60;display:flex;align-items:center;gap:.5rem;background:var(--tx);color:var(--bg);padding:.75rem 1.1rem;border-radius:11px;box-shadow:var(--sh2);font:600 .9rem var(--fb);opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;max-width:calc(100vw - 2rem)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast .ms{color:var(--ok)}
+@media(min-width:768px){.toast{left:auto;right:24px;transform:translate(0,16px)}.toast.show{transform:none}}
+.ft{background:var(--bg2);border-top:1px solid var(--bd);padding:3rem 0 2rem;margin-top:4.2rem}
+.ft__cols{display:grid;gap:1.8rem;grid-template-columns:repeat(2,1fr)}
+@media(min-width:760px){.ft__cols{grid-template-columns:2fr 1fr 1fr 1fr 1fr}}
+.ft h4{font:600 .78rem var(--fd);letter-spacing:.1em;text-transform:uppercase;color:var(--tx2);margin-bottom:.6rem}
+.ft ul{list-style:none;display:flex;flex-direction:column;gap:.4rem;padding:0}
+.ft a{color:var(--tx2);text-decoration:none;font-size:.9rem;transition:color var(--tf)}
+.ft a:hover{color:var(--primary)}
+.ft__tag{font-size:.88rem;color:var(--tx2);max-width:26ch;margin-top:.6rem}
+.ft__bt{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;justify-content:space-between;margin-top:2.4rem;padding-top:1.4rem;border-top:1px solid var(--bd);color:var(--tx2);font-size:.85rem}
+.social{display:flex;gap:.5rem}
+.social a{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border:1px solid var(--bd);border-radius:10px;color:var(--tx2)}
+.social a:hover{border-color:var(--primary);color:var(--primary)}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="hdr">
+ <div class="hdr__in">
+  <a class="brand" href="#hero"><span class="ms" aria-hidden="true">grid_on</span>HeatLens</a>
+  <nav class="nav" aria-label="Primary">
+   <a href="#features">Features</a><a href="#how">How it works</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a>
+  </nav>
+  <button class="tbtn" id="tbtn" type="button" aria-pressed="false" aria-label="Toggle dark mode"><span class="ms id" aria-hidden="true">dark_mode</span><span class="ms il" aria-hidden="true">light_mode</span></button>
+  <a class="btn btn--p" href="#pricing">Start free</a>
+ </div>
+</header>
+<main id="main">
+ <p class="sr" id="live" aria-live="polite"></p>
+ <section class="hero wrap" id="hero" aria-label="HeatLens intro">
+  <div class="hero__tx">
+   <h1>See your data glow.</h1>
+   <p>HeatLens turns raw warehouse tables, spreadsheets and API streams into heat maps your whole team reads at a glance — exact values on hover, colorblind-safe by default.</p>
+   <div class="hero__cta">
+    <a class="btn btn--p" href="#pricing">Start free trial</a>
+    <a class="btn btn--s" href="#features">Explore features</a>
+   </div>
+  </div>
+  <div class="panel">
+   <div class="panel__hd">
+    <p class="panel__tt">Weekly activity · sessions vs baseline</p>
+    <div class="hmctl">
+     <button class="btn btn--s" id="sim" type="button"><span class="ms b0" aria-hidden="true">bolt</span><span class="ms sp" aria-hidden="true">progress_activity</span>Simulate live data</button>
+     <button class="btn btn--d" id="rst" type="button">Reset demo</button>
+     <button class="btn btn--s" id="acc" type="button" aria-pressed="false"><span class="ms b0" aria-hidden="true">palette</span>Colorblind-friendly</button>
+    </div>
+   </div>
+   <div class="hm" id="hm" role="group" aria-label="Weekly activity heat map: 7 days by 12 two-hour blocks; values as percent vs baseline"></div>
+   <div class="legend">
+    <span class="legend__bar" aria-hidden="true"></span>
+    <div class="legend__tk"><span>−100% · Below baseline</span><span>0 · Baseline</span><span>+100% · Above baseline</span></div>
+   </div>
+   <span class="tip" id="tip" role="status"></span>
+  </div>
+  <p class="trust"><span>Trusted by data teams at</span><b>Nordvault</b><b>Fjordata</b><b>Paneliq</b><b>Brickfield</b></p>
+ </section>
+ <section class="sec wrap" id="features" aria-labelledby="fh">
+  <div class="sec__hd"><h2 id="fh">Built for dense, decision-ready grids</h2><p>Three ways HeatLens turns numbers into patterns — without a single unreadable rainbow table.</p></div>
+  <div class="cards">
+   <article class="card">
+    <span class="ms" aria-hidden="true">grid_on</span>
+    <h3>Matrix &amp; correlation heat maps</h3>
+    <p>Render correlation matrices as dense, cell-based grids. Cluster rows by similarity, sort by intensity, annotate outliers, and hover any cell for exact values — no more squinting at spreadsheet conditional formatting.</p>
+   </article>
+   <article class="card">
+    <span class="ms" aria-hidden="true">map</span>
+    <h3>Geographic heat maps</h3>
+    <p>Plot unsigned magnitude by region on a sequential thermal scale — sign-ups by country, latency by edge node, revenue by territory. Intensity reads instantly.</p>
+    <svg class="map" viewBox="0 0 220 120" role="img" aria-label="Stylized world map shaded by session density: Europe +64%, North America +48%, Asia +31%, Africa +21%, South America +18%, Oceania +12%">
+     <path class="rg" data-intensity="8" d="M22 30q14-16 30-6t2 24-16 12-14-10z"><title>North America +48%</title></path>
+     <path class="rg" data-intensity="9" d="M96 24q12-10 20-2t4 18-14 8-10-9z"><title>Europe +64%</title></path>
+     <path class="rg" data-intensity="7" d="M100 48q14 4 10 18t-18 8-6-14z"><title>Africa +21%</title></path>
+     <path class="rg" data-intensity="6" d="M150 32q18-8 26 6t-6 22-20-4z"><title>Asia +31%</title></path>
+     <path class="rg" data-intensity="5" d="M56 66q10-4 12 6t-10 10-8-6z"><title>South America +18%</title></path>
+     <path class="rg" data-intensity="4" d="M182 84q10-6 14 2t-6 12-8-2z"><title>Oceania +12%</title></path>
+    </svg>
+    <p class="mapcap">Live: EU +64% · NA +48% · APAC +31%</p>
+   </article>
+   <article class="card">
+    <span class="ms" aria-hidden="true">palette</span>
+    <h3>Accessible divergent scales</h3>
+    <p>Divergent, sequential and monochromatic palettes with WCAG-conscious defaults, value labels and a one-click colorblind-safe mode — so no insight ever hides behind a hue.</p>
+   </article>
+  </div>
+ </section>
+ <section class="sec wrap" id="how" aria-labelledby="hh">
+  <div class="sec__hd"><h2 id="hh">From warehouse to insight in three steps</h2><p>No BI team required — connect, pick a scale, and read.</p></div>
+  <ol class="steps">
+   <li class="step"><span class="step__chip">1</span><h3><span class="ms" aria-hidden="true">storage</span>Connect your data</h3><p>Point HeatLens at Snowflake, BigQuery, Postgres, plain spreadsheets or streaming APIs. Schemas map in minutes.</p></li>
+   <li class="step"><span class="step__chip">2</span><h3><span class="ms" aria-hidden="true">tune</span>Choose your scale</h3><p>Divergent for deltas against baseline, sequential for magnitude, monochromatic for density. Baselines are computed for you.</p></li>
+   <li class="step"><span class="step__chip">3</span><h3><span class="ms" aria-hidden="true">insights</span>Watch patterns emerge</h3><p>Tooltips with exact values, annotations for the story, and one-click PNG, SVG or CSV exports your whole team can share.</p></li>
+  </ol>
+ </section>
+ <section class="sec wrap" id="pricing" aria-labelledby="ph">
+  <div class="sec__hd">
+   <h2 id="ph">Pricing that scales with your grids</h2>
+   <div class="seg" role="group" aria-label="Billing period">
+    <button type="button" id="bm" aria-pressed="true">Monthly</button>
+    <button type="button" id="ba" aria-pressed="false">Annual<small>Save 20%</small></button>
+   </div>
+  </div>
+  <div class="tiers" id="tiers">
+   <article class="tier">
+    <h3>Explorer</h3>
+    <p class="tier__pr">$0 <small>forever</small></p>
+    <ul><li>1 dashboard</li><li>10K cells per map</li><li>Community support</li></ul>
+    <a class="btn btn--s" href="#cta">Start free</a>
+   </article>
+   <article class="tier tier--feat">
+    <p class="tier__badge">Most popular</p>
+    <h3>Analyst</h3>
+    <p class="tier__pr"><span class="pr-m">$29</span><span class="pr-a">$23</span> <small>/user/mo</small></p>
+    <ul><li>Unlimited dashboards</li><li>5M cells per map</li><li>Geographic maps</li><li>PNG / SVG / CSV exports</li><li>Priority support</li></ul>
+    <a class="btn btn--p" href="#cta">Start 14-day trial</a>
+   </article>
+   <article class="tier">
+    <h3>Scale</h3>
+    <p class="tier__pr">Custom</p>
+    <ul><li>SSO / SAML</li><li>On-prem option</li><li>99.9% SLA</li><li>Audit logs</li></ul>
+    <a class="btn btn--s" href="#cta">Talk to sales</a>
+   </article>
+  </div>
+ </section>
+ <section class="sec wrap" id="testimonials" aria-labelledby="th">
+  <div class="sec__hd"><h2 id="th">Data teams read the room faster</h2><p>From funnel debugging to incident triage, heat is the fastest signal.</p></div>
+  <div class="quotes">
+   <figure class="card">
+    <blockquote>“We replaced three dashboards with one correlation matrix. Funnel anomalies used to take an afternoon to find — now the hot cells practically shout at you.”</blockquote>
+    <figcaption class="quote__ft"><span class="ava" aria-hidden="true">M</span><span class="who"><b>Mara Ellison</b><span>Head of Analytics, Nordvault</span></span><span class="metr">−38% time-to-insight</span></figcaption>
+   </figure>
+   <figure class="card">
+    <blockquote>“The colorblind-safe mode sold it to our whole eng org. Everyone reads the same map, the same values — so meetings start at the decision, not the legend.”</blockquote>
+    <figcaption class="quote__ft"><span class="ava" aria-hidden="true">D</span><span class="who"><b>Dev Kapoor</b><span>Staff Data Engineer, Fjordata</span></span><span class="metr">3× faster incident triage</span></figcaption>
+   </figure>
+  </div>
+ </section>
+ <section class="sec wrap" id="faq" aria-labelledby="qh">
+  <div class="sec__hd"><h2 id="qh">Frequently asked questions</h2></div>
+  <div class="faq">
+   <details><summary>Which data sources can I connect?</summary><p>HeatLens connects to major warehouses (Snowflake, BigQuery, Redshift, Postgres), CSV and Excel uploads, and REST or streaming APIs. Dashboards can mix sources, and paid plans sync as often as every 60 seconds.</p></details>
+   <details><summary>Is it usable for colorblind teammates?</summary><p>Yes. Every value is available as text via tooltips and labels, and the colorblind-friendly mode replaces hue with signed numbers on each cell. Palettes are tested against deuteranopia and protanopia by default.</p></details>
+   <details><summary>What are the cell, export and security limits?</summary><p>Explorer maps hold 10K cells; Analyst scales to 5M with client-side rendering. Paid plans export PNG, SVG and CSV. Data is encrypted in transit and at rest, with on-prem deployment and audit logs available on Scale.</p></details>
+  </div>
+ </section>
+ <section class="cta" id="cta" aria-labelledby="ch">
+  <div class="wrap">
+   <h2 id="ch">Make your next pattern impossible to miss.</h2>
+   <p>Spin up a workspace, connect a sample source, and ship your first heat map today. Free 14-day Analyst trial — no credit card required.</p>
+   <form class="frm" id="frm" novalidate>
+    <div class="ig" id="ig">
+     <label for="em">Work email</label>
+     <div class="ig__row">
+      <input id="em" type="email" name="email" placeholder="you@company.com" autocomplete="email" aria-describedby="em-err">
+      <button class="btn btn--p" id="sub" type="submit"><span class="btn__lb">Get started</span><span class="ms sp" aria-hidden="true">progress_activity</span></button>
+     </div>
+     <p class="ig__err" id="em-err" aria-live="polite"></p>
+    </div>
+   </form>
+  </div>
+ </section>
+</main>
+<footer class="ft">
+ <div class="wrap">
+  <div class="ft__cols">
+   <div><a class="brand" href="#hero"><span class="ms" aria-hidden="true">grid_on</span>HeatLens</a><p class="ft__tag">Heat maps that make metrics legible — from warehouse to whiteboard.</p></div>
+   <div><h4>Product</h4><ul><li><a href="#features">Features</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#">Changelog</a></li><li><a href="#">Roadmap</a></li></ul></div>
+   <div><h4>Resources</h4><ul><li><a href="#">Documentation</a></li><li><a href="#">API reference</a></li><li><a href="#">Guides</a></li><li><a href="#">Status</a></li></ul></div>
+   <div><h4>Company</h4><ul><li><a href="#">About</a></li><li><a href="#">Careers</a></li><li><a href="#">Blog</a></li><li><a href="#">Contact</a></li></ul></div>
+   <div><h4>Legal</h4><ul><li><a href="#">Privacy</a></li><li><a href="#">Terms</a></li><li><a href="#">Security</a></li><li><a href="#">DPA</a></li></ul></div>
+  </div>
+  <div class="ft__bt">
+   <p>© 2026 HeatLens, Inc. All rights reserved.</p>
+   <div class="social">
+    <a href="#" aria-label="HeatLens community"><span class="ms" aria-hidden="true">alternate_email</span></a>
+    <a href="#" aria-label="HeatLens blog feed"><span class="ms" aria-hidden="true">rss_feed</span></a>
+    <a href="#" aria-label="HeatLens forum"><span class="ms" aria-hidden="true">forum</span></a>
+   </div>
+  </div>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"><span class="ms" aria-hidden="true">check_circle</span><span id="ttx"></span></div>
+<script>
+(function(){
+"use strict";
+var $=function(i){return document.getElementById(i)};
+var rm=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+var live=$('live');
+/* theme toggle */
+var tb=$('tbtn');
+var sync=function(){tb.setAttribute('aria-pressed',document.documentElement.classList.contains('dark'))};
+tb.addEventListener('click',function(){var d=document.documentElement.classList.toggle('dark');try{localStorage.setItem('heatlens-theme',d?'dark':'light')}catch(e){}sync()});
+sync();
+/* anchor links: smooth scroll + move focus to target */
+document.querySelectorAll('a[href^="#"]').forEach(function(a){
+ a.addEventListener('click',function(){var el=document.querySelector(a.getAttribute('href'));if(el){el.setAttribute('tabindex','-1');el.focus({preventScroll:true})}});
+});
+/* toast */
+var toast=$('toast'),ttx=$('ttx'),tt;
+function toastMsg(m){ttx.textContent=m;toast.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){toast.classList.remove('show')},4000)}
+/* heat map: 7 days x 12 two-hour blocks; colors come only from CSS [data-intensity] rules */
+var hm=$('hm'),tip=$('tip'),open=null;
+var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+var HB=[2,3,3,5,7,8,7,5,6,8,9,7],DB=[0,1,1,2,2,0,-2];
+var cells=[];
+function val(r,c,k){return Math.max(0,Math.min(10,HB[c]+DB[r]+((r*31+c*17+k)%3)-1))}
+function setCell(b,r,c,i){
+ var d=(i-5)*20,s=(d>0?'+':'')+d;
+ b.dataset.intensity=i;b.textContent=s;
+ b.setAttribute('aria-label',DAYS[r]+' '+(c*2)+':00 to '+((c*2)+2)+':00, '+s+'% vs baseline, '+(400+i*145)+' sessions');
+}
+DAYS.forEach(function(d,r){
+ var l=document.createElement('div');l.className='hm__lb';l.textContent=d;hm.appendChild(l);
+ cells.push([]);
+ for(let c=0;c<12;c++){
+  var b=document.createElement('button');b.type='button';b.className='heat-cell';
+  setCell(b,r,c,val(r,c,0));
+  b.addEventListener('click',function(){
+   var i=+b.dataset.intensity,dd=(i-5)*20,ss=(dd>0?'+':'')+dd;
+   tip.textContent=DAYS[r]+' '+(c*2)+':00–'+(c*2+2)+':00 · '+(400+i*145)+' sessions · '+ss+'% vs baseline';
+   tip.className='tip';
+   if(r<2)tip.classList.add('tip--flip');
+   if(c<1)tip.classList.add('tip--shl');else if(c>10)tip.classList.add('tip--shift');
+   b.appendChild(tip);
+   requestAnimationFrame(function(){tip.classList.add('show')});
+   open=b;
+  });
+  hm.appendChild(b);cells[r].push(b);
+ }
+});
+var hr=document.createElement('div');hr.className='hm__hours';hr.innerHTML='<span>00</span><span>04</span><span>08</span><span>12</span><span>16</span><span>20</span><span>24</span>';hm.appendChild(hr);
+function hideTip(){tip.classList.remove('show');open=null}
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&open)hideTip()});
+document.addEventListener('click',function(e){if(open&&!open.contains(e.target)&&!e.target.closest('.heat-cell'))hideTip()});
+function wave(k,instant){
+ for(let c=0;c<12;c++){
+  var go=function(){for(let r=0;r<7;r++)setCell(cells[r][c],r,c,val(r,c,k))};
+  (instant||c===0)?go():setTimeout(go,c*60);
+ }
+}
+$('sim').addEventListener('click',function(){
+ var b=this;b.classList.add('is-loading');b.setAttribute('aria-busy','true');
+ wave(Math.floor(Math.random()*90)+3,rm);
+ setTimeout(function(){b.classList.remove('is-loading');b.removeAttribute('aria-busy');live.textContent='Heat map updated';toastMsg('Heat map updated with live data')},rm?50:760);
+});
+$('rst').addEventListener('click',function(){wave(0,true);live.textContent='Demo restored to baseline';toastMsg('Demo restored to baseline')});
+$('acc').addEventListener('click',function(){
+ var on=hm.classList.toggle('acc');
+ this.setAttribute('aria-pressed',on);
+ live.textContent=on?'Colorblind-friendly values shown on each cell':'Colorblind-friendly mode off';
+});
+/* pricing toggle */
+var bm=$('bm'),ba=$('ba'),tiers=$('tiers');
+function bill(a){(a?ba:bm).setAttribute('aria-pressed','true');(a?bm:ba).setAttribute('aria-pressed','false');tiers.classList.toggle('annual',a)}
+bm.addEventListener('click',function(){bill(false)});
+ba.addEventListener('click',function(){bill(true)});
+/* email capture */
+var em=$('em'),ig=$('ig'),err=$('em-err'),sub=$('sub'),lb=sub.querySelector('.btn__lb');
+function valid(){return /^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(em.value.trim())}
+function markErr(){ig.classList.add('is-inv');ig.classList.remove('is-val');err.textContent='Enter a valid work email address.';em.setAttribute('aria-invalid','true')}
+function clearErr(){ig.classList.remove('is-inv');err.textContent='';em.removeAttribute('aria-invalid')}
+em.addEventListener('blur',function(){if(em.value.trim()&&!valid())markErr()});
+em.addEventListener('input',function(){if(valid()){clearErr();ig.classList.add('is-val')}});
+$('frm').addEventListener('submit',function(e){
+ e.preventDefault();
+ if(!valid()){markErr();em.focus();return}
+ clearErr();ig.classList.add('is-val');
+ sub.classList.add('is-loading');sub.setAttribute('aria-busy','true');
+ setTimeout(function(){
+  sub.classList.remove('is-loading');sub.classList.add('is-success');
+  lb.textContent='You\u2019re in';
+  live.textContent='Signup received';
+  toastMsg('Thanks! Your demo workspace invite is on its way.');
+ },rm?50:900);
+});
+})();
+</script>
+</body>
+</html>

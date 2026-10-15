@@ -1,1613 +1,579 @@
 <!DOCTYPE html>
-<html lang="en" class="light">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nimbus - Real-Time Monitoring Platform</title>
+<title>Pulsegrid - Real-Time Monitoring for Modern Teams</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet">
 <style>
 :root{
---font-base:'Inter',sans-serif;
---font-mono:'JetBrains Mono',monospace;
---primary:#3b82f6;
---secondary:#64748b;
---bg-primary:#f2f5fa;
---bg-secondary:#ffffff;
---text-primary:#1e293b;
---text-secondary:#64748b;
---text-success:#22c55e;
---text-error:#ef4444;
---border-default:#e2e8f0;
---border-error:#ef4444;
---border-success:#22c55e;
---status-critical:#ef4444;
---status-warning:#f97316;
---status-normal:#22c55e;
---status-updating:#3b82f6;
---chart-line-1:#3b82f6;
---chart-line-2:#10b981;
---chart-line-3:#f59e0b;
---chart-line-4:#8b5cf6;
---stream-highlight:#3b82f6;
---radius-sm:0.375rem;
---radius-md:0.5rem;
---radius-lg:0.75rem;
---shadow-sm:0 1px 3px 0 rgba(0,0,0,0.1),0 1px 2px 0 rgba(0,0,0,0.06);
---shadow-md:0 4px 6px -1px rgba(0,0,0,0.1),0 2px 4px -1px rgba(0,0,0,0.06);
---spacing-gap:1rem;
---transition-fast:150ms;
---transition-normal:300ms;
---ease-standard:cubic-bezier(0.4,0,0.2,1);
---z-dropdown:1000;
---z-modal:2000;
---z-toast:3000;
-}
-@media (prefers-color-scheme: dark){
-:root{
---bg-primary:#0b1220;
---bg-secondary:#111a2e;
---text-primary:#f8fafc;
---text-secondary:#cbd5e1;
---text-success:#4ade80;
---text-error:#f87171;
---border-default:#334155;
---border-error:#f87171;
---border-success:#4ade80;
---status-critical:#ff6b6b;
---status-warning:#fb923c;
---status-normal:#4ade80;
---status-updating:#60a5fa;
-}
-}
-.dark{
---bg-primary:#0b1220;
---bg-secondary:#111a2e;
---text-primary:#f8fafc;
---text-secondary:#cbd5e1;
---text-success:#4ade80;
---text-error:#f87171;
---border-default:#334155;
---border-error:#f87171;
---border-success:#4ade80;
---status-critical:#ff6b6b;
---status-warning:#fb923c;
---status-normal:#4ade80;
---status-updating:#60a5fa;
-}
-*,*:before,*:after{box-sizing:border-box}
-html{font-size:16px}
-body{
-margin:0;
-font-family:var(--font-base);
-background:var(--bg-primary);
-color:var(--text-primary);
-line-height:1.5;
-}
-a{color:inherit;text-decoration:none}
-ul{list-style:none;padding:0;margin:0}
-img{max-width:100%;height:auto}
-button{
-font-family:inherit;
-cursor:pointer;
-}
-.skip-to-content{
-position:absolute;
-width:1px;height:1px;
-padding:0;margin:-1px;
-overflow:hidden;clip:rect(0,0,0,0);
-border:0;
-}
-.skip-to-content:focus{
-width:auto;height:auto;
-padding:1rem;
-margin:0;
-overflow:visible;clip:auto;
-background:var(--bg-secondary);
-border:2px solid var(--primary);
-border-radius:var(--radius-sm);
-}
-header{
-position:sticky;
-top:0;
-z-index:1000;
-background:var(--bg-secondary);
-border-bottom:1px solid var(--border-default);
-padding:1rem 0;
-}
-.nav-wrapper{
-display:flex;
-align-items:center;
-justify-content:space-between;
-max-width:80rem;
-margin:0 auto;
-padding:0 1rem;
-}
-.brand{
-display:flex;
-align-items:center;
-gap:0.5rem;
-font-weight:700;
-font-size:1.25rem;
-}
-.brand .material-symbols-outlined{
-font-variation-settings:
-'FILL' 0,
-'wght' 400,
-'GRAD' 0,
-'opsz' 24
-}
-.nav-links{
-display:flex;
-gap:2rem;
-align-items:center;
-}
-.nav-links a{
-font-weight:500;
-padding:0.5rem 0;
-position:relative;
-}
-.nav-links a:after{
-content:'';
-position:absolute;
-left:0;
-bottom:0;
-width:0;
-height:2px;
-background:var(--primary);
-transition:width var(--transition-normal) var(--ease-standard);
-}
-.nav-links a:hover:after,
-.nav-links a:focus-visible:after{
-width:100%;
-}
-.header-actions{
-display:flex;
-align-items:center;
-gap:1rem;
-}
-.connection-indicator{
-display:flex;
-align-items:center;
-gap:0.5rem;
-font-size:0.875rem;
-}
-.connection-indicator .status-dot{
-width:0.75rem;
-height:0.75rem;
-border-radius:50%;
-background:var(--status-normal);
-}
-.connection-indicator.live .status-dot{
-background:var(--status-normal);
-animation:pulse 2s infinite;
-}
-.connection-indicator.syncing .status-dot{
-background:var(--status-updating);
-animation:pulse 2s infinite;
-}
-.theme-toggle{
-background:none;
-border:none;
-color:var(--text-secondary);
-font-size:1.25rem;
-padding:0.5rem;
-border-radius:var(--radius-sm);
-display:flex;
-align-items:center;
-justify-content:center;
-transition:color var(--transition-fast);
-}
-.theme-toggle:hover,
-.theme-toggle:focus-visible{
-color:var(--text-primary);
-background:rgba(0,0,0,0.05);
-}
-.theme-toggle[aria-pressed="true"]{
-color:var(--primary);
-}
-.btn{
-display:flex;
-align-items:center;
-justify-content:center;
-gap:0.5rem;
-height:2.75rem;
-padding:0 1.5rem;
-font-weight:600;
-border:none;
-border-radius:var(--radius-md);
-transition:background var(--transition-fast),box-shadow var(--transition-fast),transform var(--transition-fast);
-font-size:0.875rem;
-}
-.btn--primary{
-background:var(--primary);
-color:#fff;
-}
-.btn--primary:hover{
-background:#2563eb;
-}
-.btn--primary:active{
-transform:scale(0.97);
-}
-.btn--secondary{
-background:var(--bg-secondary);
-color:var(--text-primary);
-border:1px solid var(--border-default);
-}
-.btn--secondary:hover{
-background:#f1f5f9;
-}
-.btn--secondary:active{
-transform:scale(0.97);
-}
-.btn--danger{
-background:var(--text-error);
-color:#fff;
-}
-.btn--danger:hover{
-background:#dc2626;
-}
-.btn--loading{
-pointer-events:none;
-opacity:0.7;
-}
-.btn--loading .material-symbols-outlined{
-animation:spin 1s linear infinite;
-}
-@keyframes spin{
-to{transform:rotate(360deg)}
-}
-@keyframes pulse{
-0%,100%{opacity:0.6}
-50%{opacity:1}
-}
-.status-dot{
-display:inline-block;
-width:0.75rem;
-height:0.75rem;
-border-radius:50%;
-margin-right:0.25rem;
-vertical-align:middle;
-}
-.status-dot--critical{background:var(--status-critical);animation:pulse-critical 2s infinite}
-.status-dot--warning{background:var(--status-warning);animation:pulse-warning 3s infinite}
-.status-dot--normal{background:var(--status-normal);animation:pulse-normal 4s infinite}
-.status-dot--updating{background:var(--status-updating);animation:blink 2s infinite}
-@keyframes pulse-critical{
-0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.4)}
-50%{box-shadow:0 0 0 4px rgba(239,68,68,0.2)}
-}
-@keyframes pulse-warning{
-0%,100%{box-shadow:0 0 0 0 rgba(249,115,22,0.4)}
-50%{box-shadow:0 0 0 4px rgba(249,115,22,0.2)}
-}
-@keyframes pulse-normal{
-0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,0.4)}
-50%{box-shadow:0 0 0 4px rgba(34,197,94,0.2)}
-}
-@keyframes blink{
-0%,50%{opacity:0.2}
-51%,100%{opacity:1}
-}
-.hero{
-display:flex;
-flex-wrap:wrap;
-align-items:center;
-gap:2rem;
-padding:4rem 1rem;
-max-width:80rem;
-margin:0 auto;
-}
-.hero-content{
-flex:1 1 300px;
-min-width:200px;
-}
-.hero-title{
-font-size:2.25rem;
-font-weight:700;
-line-height:1.2;
-margin-bottom:1rem;
-}
-.hero-subtitle{
-font-size:1.125rem;
-color:var(--text-secondary);
-margin-bottom:2rem;
-}
-.hero-actions{
-display:flex;
-gap:1rem;
-flex-wrap:wrap;
-}
-.dashboard-card{
-flex:1 1 350px;
-min-width:280px;
-background:var(--bg-secondary);
-border:1px solid var(--border-default);
-border-radius:var(--radius-lg);
-overflow:hidden;
-display:flex;
-flex-direction:column;
-}
-.dashboard-header{
-display:flex;
-align-items:center;
-justify-content:space-between;
-padding:1rem;
-border-bottom:1px solid var(--border-default);
-}
-.dashboard-title{
-font-weight:600;
-font-size:1rem;
-}
-.dashboard-status{
-display:flex;
-align-items:center;
-gap:0.5rem;
-font-size:0.875rem;
-}
-.kpi-grid{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:0.75rem;
-padding:1rem;
-}
-.kpi-item{
-display:flex;
-flex-direction:column;
-align-items:center;
-gap:0.25rem;
-}
-.kpi-label{
-font-size:0.75rem;
-color:var(--text-secondary);
-}
-.kpi-value{
-font-family:var(--font-mono);
-font-variant-numeric:tabular-nums;
-font-weight:500;
-font-size:1.125rem;
-display:flex;
-align-items:center;
-gap:0.25rem;
-}
-.chart-container{
-flex:1;
-min-height:120px;
-padding:1rem;
-position:relative;
-overflow:hidden;
-background:var(--bg-primary);
-border-top:1px solid var(--border-default);
-border-bottom:1px solid var(--border-default);
-}
-.chart-bars{
-display:flex;
-height:100%;
-gap:0.5rem;
-}
-.chart-bar{
-flex:1;
-background:var(--chart-line-1);
-border-radius:var(--radius-sm) var(--radius-sm) 0 0;
-transition:height var(--transition-normal) var(--ease-standard);
-position:relative;
-}
-.chart-bar::after{
-content:'';
-position:absolute;
-left:0;
-right:0;
-bottom:-4px;
-height:4px;
-background:var(--stream-highlight);
-border-radius:50%;
-opacity:0;
-transition:opacity var(--transition-fast);
-}
-.chart-bar.active::after{
-opacity:1;
-}
-.alert-feed{
-padding:1rem;
-}
-.alert-item{
-display:flex;
-align-items:center;
-gap:0.75rem;
-padding:0.75rem;
-margin-bottom:0.5rem;
-background:var(--bg-primary);
-border-radius:var(--radius-sm);
-border-left:3px solid transparent;
-}
-.alert-item--critical{border-left-color:var(--status-critical)}
-.alert-item--warning{border-left-color:var(--status-warning)}
-.alert-item--normal{border-left-color:var(--status-normal)}
-.alert-icon{
-font-size:1.25rem;
-}
-.alert-message{
-flex:1;
-font-size:0.875rem;
-}
-.alert-time{
-font-size:0.75rem;
-color:var(--text-secondary);
-}
-.features{
-padding:4rem 1rem;
-max-width:80rem;
-margin:0 auto;
-}
-.section-title{
-text-align:center;
-font-size:2rem;
-font-weight:700;
-margin-bottom:3rem;
-}
-.features-grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
-gap:var(--spacing-gap);
-}
-.card{
-display:flex;
-flex-direction:column;
-align-items:center;
-gap:1.5rem;
-padding:2rem;
-background:var(--bg-secondary);
-border:1px solid var(--border-default);
-border-radius:var(--radius-lg);
-transition:transform var(--transition-fast),box-shadow var(--transition-fast);
-}
-.card:hover{
-transform:translateY(-4px);
-box-shadow:var(--shadow-md);
-}
-.card:focus-within{
-outline:2px solid var(--primary);
-outline-offset:-2px;
-}
-.card-icon{
-font-size:2.5rem;
-color:var(--primary);
-width:3rem;
-height:3rem;
-display:flex;
-align-items:center;
-justify-content:center;
-}
-.card-title{
-font-size:1.5rem;
-font-weight:600;
-text-align:center;
-}
-.card-description{
-font-size:0.95rem;
-color:var(--text-secondary);
-text-align:center;
-line-height:1.4;
-}
-.card-visual{
-width:100%;
-height:80px;
-background:var(--bg-primary);
-border-radius:var(--radius-md);
-overflow:hidden;
-position:relative;
-}
-.sparkline{
-display:flex;
-height:100%;
-gap:2px;
-}
-.sparkline-bar{
-flex:1;
-background:var(--chart-line-2);
-border-radius:var(--radius-sm) var(--radius-sm) 0 0;
-transition:height var(--transition-normal);
-}
-.status-grid{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:0.5rem;
-height:100%;
-padding:0.5rem;
-}
-.status-item{
-display:flex;
-align-items:center;
-justify-content:center;
-gap:0.25rem;
-font-size:0.75rem;
-}
-.how-it-works{
-padding:4rem 1rem;
-max-width:80rem;
-margin:0 auto;
-background:var(--bg-primary);
-}
-.steps-container{
-display:flex;
-gap:2.5rem;
-align-items:flex-start;
-margin-top:3rem;
-}
-.step-number{
-font-family:var(--font-mono);
-font-variant-numeric:tabular-nums;
-font-weight:700;
-font-size:2.5rem;
-color:var(--text-secondary);
-min-width:3rem;
-}
-.step-content{
-flex:1;
-display:flex;
-flex-direction:column;
-gap:1.5rem;
-}
-.step{
-display:flex;
-align-items:flex-start;
-gap:1.5rem;
-}
-.step-icon{
-font-size:2rem;
-color:var(--primary);
-flex-shrink:0;
-}
-.step-details{
-flex:1;
-}
-.step-title{
-font-size:1.25rem;
-font-weight:600;
-margin-bottom:0.5rem;
-}
-.step-description{
-font-size:0.95rem;
-color:var(--text-secondary);
-line-height:1.5;
-}
-.step-connector{
-flex-shrink:0;
-width:2px;
-background:var(--border-default);
-margin-top:1rem;
-margin-bottom:1rem;
-}
-.step-connector::before{
-content:'';
-position:absolute;
-left:-6px;
-top:-6px;
-width:12px;
-height:12px;
-background:var(--primary);
-border-radius:50%;
-}
-.testimonials{
-padding:4rem 1rem;
-max-width:80rem;
-margin:0 auto;
-}
-.testimonials-grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
-gap:var(--spacing-gap);
-margin-top:3rem;
-}
-.testimonial-card{
-background:var(--bg-secondary);
-border:1px solid var(--border-default);
-border-radius:var(--radius-lg);
-padding:2rem;
-position:relative;
-}
-.avatar{
-width:3rem;
-height:3rem;
-border-radius:50%;
-background:var(--primary);
-color:#fff;
-display:flex;
-align-items:center;
-justify-content:center;
-font-weight:600;
-font-size:1.25rem;
-margin-bottom:1.5rem;
-}
-.testimonial-text{
-font-style:italic;
-font-size:1rem;
-line-height:1.6;
-margin-bottom:1.5rem;
-color:var(--text-primary);
-}
-.testimonial-author{
-display:flex;
-align-items:center;
-gap:1rem;
-font-size:0.9rem;
-}
-.testimonial-author-name{
-font-weight:600;
-}
-.testimonial-author-role{
-font-size:0.85rem;
-color:var(--text-secondary);
-}
-.pricing{
-padding:4rem 1rem;
-max-width:80rem;
-margin:0 auto;
-}
-.pricing-grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
-gap:var(--spacing-gap);
-margin-top:3rem;
-}
-.pricing-card{
-background:var(--bg-secondary);
-border:1px solid var(--border-default);
-border-radius:var(--radius-lg);
-padding:2.5rem;
-position:relative;
-}
-.pricing-card--featured{
-border:2px solid var(--primary);
-position:relative;
-}
-.pricing-card--featured::before{
-content:'Most Popular';
-position:absolute;
-top:-0.75rem;
-left:50%;
-transform:translateX(-50%);
-background:var(--primary);
-color:#fff;
-font-size:0.75rem;
-font-weight:600;
-padding:0.25rem 0.75rem;
-border-radius:var(--radius-sm);
-}
-.price{
-font-family:var(--font-mono);
-font-variant-numeric:tabular-nums;
-font-weight:700;
-font-size:2.5rem;
-margin:1.5rem 0;
-}
-.price sup{
-font-size:0.6em;
-top:-1.5em;
-}
-.price-sub{
-font-size:1rem;
-color:var(--text-secondary);
-margin-bottom:2rem;
-}
-.features-list{
-display:flex;
-flex-direction:column;
-gap:1rem;
-margin-bottom:2.5rem;
-}
-.feature-item{
-display:flex;
-align-items:center;
-gap:0.75rem;
-font-size:0.95rem;
-}
-.feature-item .material-symbols-outlined{
-font-variation-settings:
-'FILL' 1,
-'wght' 400,
-'GRAD' 0,
-'opsz' 24
-color:var(--status-normal);
-}
-.faq{
-padding:4rem 1rem;
-max-width:80rem;
-margin:0 auto;
-background:var(--bg-primary);
-}
-.faq-container{
-margin-top:3rem;
-}
-.faq-item{
-background:var(--bg-secondary);
-border:1px solid var(--border-default);
-border-radius:var(--radius-lg);
-margin-bottom:1rem;
-overflow:hidden;
-}
-.faq-summary{
-padding:1.5rem;
-font-weight:600;
-font-size:1.125rem;
-display:flex;
-align-items:center;
-justify-content:space-between;
-cursor:pointer;
-list-style:none;
-}
-.faq-summary:hover{
-background:var(--bg-primary);
-}
-.faq-summary .material-symbols-outlined{
-transition:transform var(--transition-fast);
-}
-.faq-details[open] .faq-summary .material-symbols-outlined{
-transform:rotate(180deg);
-}
-.faq-content{
-padding:0 1.5rem;
-max-height:0;
-overflow:hidden;
-transition:max-height var(--transition-normal) var(--ease-standard);
-}
-.faq-details[open] .faq-content{
-max-height:20rem;
-padding-top:1.5rem;
-padding-bottom:1.5rem;
-}
-.faq-content p{
-margin:0 0 1rem;
-font-size:0.95rem;
-color:var(--text-secondary);
-line-height:1.6;
-}
-.final-cta{
-padding:4rem 1rem;
-text-align:center;
-background:var(--primary);
-color:#fff;
-}
-.final-cta-content{
-max-width:50rem;
-margin:0 auto;
-}
-.final-cta-title{
-font-size:2rem;
-font-weight:700;
-margin-bottom:1rem;
-}
-.final-cta-subtitle{
-font-size:1.125rem;
-margin-bottom:2rem;
-opacity:0.9;
-}
-.input-group{
-display:flex;
-flex-wrap:wrap;
-gap:1rem;
-justify-content:center;
-align-items:stretch;
-margin-bottom:2rem;
-}
-.input-group label{
-flex:1 1 200px;
-min-width:150px;
-font-weight:600;
-}
-.input-group input{
-flex:1 1 250px;
-min-width:150px;
-padding:0.75rem 1rem;
-border:1px solid var(--border-default);
-border-radius:var(--radius-md);
-font-family:var(--font-base);
-font-size:1rem;
-background:var(--bg-secondary);
-color:var(--text-primary);
-transition:border-color var(--transition-fast),box-shadow var(--transition-fast);
-}
-.input-group input:focus{
-outline:none;
-border-color:var(--primary);
-box-shadow:0 0 0 3px rgba(59,130,246,0.25);
-}
-.input-group input.invalid{
-border-color:var(--text-error);
-color:var(--text-error);
-}
-.input-group input.invalid:focus{
-box-shadow:0 0 0 3px rgba(239,68,68,0.25);
-}
-.input-error{
-font-size:0.875rem;
-color:var(--text-error);
-margin-top:0.25px;
-min-height:1.25rem;
-display:none;
-}
-.input-group input.invalid + .input-error{display:block}
-.footer{
-padding:4rem 1rem;
-max-width:80rem;
-margin:0 auto;
-display:flex;
-flex-wrap:wrap;
-gap:3rem;
-justify-content:space-between;
-border-top:1px solid var(--border-default);
-margin-top:4rem;
-padding-top:3rem;
-}
-.footer-brand{
-flex:1 1 200px;
-min-width:150px;
-}
-.footer-brand p{
-margin-top:1rem;
-font-size:0.9rem;
-color:var(--text-secondary);
-line-height:1.6;
-}
-.footer-links{
-display:flex;
-flex-wrap:wrap;
-gap:2rem;
-}
-.footer-column{
-flex:1 1 150px;
-min-width:100px;
-}
-.footer-column h3{
-font-size:1.125rem;
-font-weight:600;
-margin-bottom:1.5rem;
-}
-.footer-column a{
-display:block;
-margin-bottom:0.75rem;
-font-size:0.9rem;
-color:var(--text-secondary);
-}
-.footer-column a:hover{
-color:var(--text-primary);
-}
-.social-links{
-display:flex;
-gap:1rem;
-margin-top:2rem;
-}
-.social-links .material-symbols-outlined{
-font-size:1.5rem;
-width:2.5rem;
-height:2.5rem;
-border-radius:50%;
-background:var(--bg-secondary);
-display:flex;
-align-items:center;
-justify-content:center;
-transition:background var(--transition-fast),color var(--transition-fast);
-}
-.social-links .material-symbols-outlined:hover{
-background:var(--primary);
-color:#fff;
-}
-.footer-bottom{
-margin-top:3rem;
-padding-top:2rem;
-border-top:1px solid var(--border-default);
-font-size:0.875rem;
-color:var(--text-secondary);
-text-align:center;
-}
-.status-line{
-display:flex;
-align-items:center;
-justify-content:center;
-gap:0.5rem;
-margin-top:1rem;
-font-size:0.875rem;
-}
-.status-line .status-dot{
-width:0.5rem;
-height:0.5rem;
-}
-@media (prefers-reduced-motion: reduce){
-*,
-*:before,*:after{
-animation-duration:0.001ms !important;
-animation-iteration-count:1 !important;
-transition-duration:0.001ms !important;
-}
-.status-dot{animation:none !important}
-.connection-indicator .status-dot{animation:none !important}
-.btn--loading .material-symbols-outlined{animation:none !important}
-.chart-bar{transition:none !important}
-.sparkline-bar{transition:none !important}
-.faq-content{transition:none !important}
-.faq-details[open] .faq-content{max-height:none !important}
-}
+--primary:#2563eb;--secondary:#0ea5e9;--accent:#2563eb;--on-accent:#ffffff;
+--bg-primary:#f2f5fa;--bg-secondary:#fefefe;--bg-tertiary:#e8edf5;
+--text-primary:#1a2332;--text-secondary:#4b5a70;--text-muted:#6b7a90;
+--text-success:#15803d;--text-error:#b91c1c;
+--border-default:#d6deeb;--border-error:#dc2626;--border-success:#16a34a;
+--status-critical:#dc2626;--status-warning:#d97706;--status-normal:#16a34a;--status-updating:#2563eb;
+--chart-line-1:#2563eb;--chart-line-2:#0ea5e9;--chart-line-3:#8b5cf6;--chart-line-4:#f59e0b;
+--stream-highlight:rgba(37,99,235,.12);
+--radius-sm:.5rem;--radius-md:.75rem;--radius-lg:1.25rem;
+--shadow-sm:0 1px 3px rgba(15,30,60,.08);--shadow-md:0 10px 30px -8px rgba(15,30,60,.18);
+--spacing-gap:1.5rem;--transition-fast:140ms ease-out;--transition-normal:240ms ease-out;--ease-standard:cubic-bezier(.22,1,.36,1);
+--z-dropdown:100;--z-modal:200;--z-toast:300;
+--font-base:"Inter",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
+--nav-bg:rgba(242,245,250,.85);
+}
+:root[data-theme="dark"]{
+--primary:#3b82f6;--secondary:#38bdf8;--accent:#3b82f6;--on-accent:#0b1220;
+--bg-primary:#0b1220;--bg-secondary:#111a2e;--bg-tertiary:#182440;
+--text-primary:#e6ecf5;--text-secondary:#a7b4c9;--text-muted:#7d8ca3;
+--text-success:#4ade80;--text-error:#f87171;
+--border-default:#243352;--border-error:#f87171;--border-success:#4ade80;
+--status-critical:#ff6b6b;--status-warning:#fbbf24;--status-normal:#4ade80;--status-updating:#60a5fa;
+--chart-line-1:#60a5fa;--chart-line-2:#38bdf8;--chart-line-3:#a78bfa;--chart-line-4:#fbbf24;
+--stream-highlight:rgba(96,165,250,.14);
+--shadow-sm:0 1px 3px rgba(0,0,0,.4);--shadow-md:0 10px 30px -8px rgba(0,0,0,.55);
+--nav-bg:rgba(11,18,32,.85);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;overflow-x:hidden;transition:background var(--transition-normal),color var(--transition-normal)}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.material-symbols-rounded{font-size:1.25rem;line-height:1}
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.skip-link{position:fixed;top:-3rem;left:1rem;z-index:var(--z-toast);background:var(--primary);color:var(--on-accent);padding:.6rem 1rem;border-radius:var(--radius-sm);transition:top var(--transition-fast)}
+.skip-link:focus{top:.75rem}
+.wrap{max-width:1200px;margin:0 auto;padding:0 1.25rem}
+@media(min-width:768px){.wrap{padding:0 2rem}}
+section{padding:clamp(4rem,8vw,6.5rem) 0}
+h1,h2,h3{line-height:1.12;letter-spacing:-.025em;font-weight:800}
+h1{font-size:clamp(2.25rem,5vw,3.6rem)}
+h2{font-size:clamp(1.8rem,3.5vw,2.5rem);margin-bottom:.75rem}
+h3{font-size:1.15rem;letter-spacing:-.01em}
+.section-sub{color:var(--text-secondary);max-width:60ch;margin-bottom:2.5rem}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:4px}
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:.65rem 1.4rem;border-radius:var(--radius-sm);border:1px solid transparent;font:600 .95rem var(--font-base);cursor:pointer;text-decoration:none;transition:transform var(--transition-fast),box-shadow var(--transition-fast),background var(--transition-fast),filter var(--transition-fast)}
+.btn:active{transform:scale(.97)}
+.btn--primary{background:var(--primary);color:var(--on-accent);box-shadow:var(--shadow-sm)}
+.btn--secondary{background:var(--bg-secondary);color:var(--text-primary);border-color:var(--border-default)}
+.btn--danger{background:var(--status-critical);color:#fff}
+.btn[disabled]{opacity:.5;filter:grayscale(.6);cursor:not-allowed}
+.btn.is-loading{pointer-events:none}
+.btn.is-loading .btn__label{opacity:.6}
+.btn__spinner{display:none;width:1.1rem;height:1.1rem;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite}
+.btn.is-loading .btn__spinner{display:block}
+.btn.is-success{background:var(--status-normal);color:#fff}
+@media(hover:hover) and (pointer:fine){.btn--primary:hover{filter:brightness(1.1);box-shadow:var(--shadow-md)}.btn--secondary:hover{border-color:var(--primary);color:var(--primary)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* Nav */
+.nav{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--nav-bg);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-default)}
+.nav__inner{display:flex;align-items:center;gap:1rem;height:64px}
+.nav__brand{display:flex;align-items:center;gap:.5rem;font-weight:800;font-size:1.1rem;color:var(--text-primary);text-decoration:none;letter-spacing:-.02em}
+.nav__brand .material-symbols-rounded{color:var(--primary);font-size:1.5rem}
+.nav__links{display:none;align-items:center;gap:1.5rem;margin-left:1.5rem}
+.nav__links a{color:var(--text-secondary);text-decoration:none;font-size:.9rem;font-weight:500;transition:color var(--transition-fast)}
+@media(hover:hover){.nav__links a:hover{color:var(--primary)}}
+.nav__right{display:flex;align-items:center;gap:.75rem;margin-left:auto}
+.conn{display:flex;align-items:center;gap:.45rem;font-size:.78rem;font-weight:600;color:var(--text-secondary)}
+.icon-btn{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-sm);border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);cursor:pointer;transition:transform var(--transition-fast),border-color var(--transition-fast)}
+.icon-btn:active{transform:scale(.95)}
+.nav__cta{display:none}
+.nav__menu-btn{display:flex}
+@media(min-width:900px){.nav__links{display:flex}.nav__cta{display:inline-flex}.nav__menu-btn{display:none}}
+.nav__panel{display:none;flex-direction:column;gap:.25rem;padding:.75rem 1.25rem 1rem;background:var(--bg-secondary);border-bottom:1px solid var(--border-default)}
+.nav__panel.is-open{display:flex}
+.nav__panel a{padding:.7rem .5rem;color:var(--text-primary);text-decoration:none;font-weight:500;border-radius:var(--radius-sm)}
+/* Status dots */
+.status-dot{width:.6rem;height:.6rem;border-radius:50%;flex:none;position:relative}
+.status-dot--normal{background:var(--status-normal);animation:pulse 2.4s ease-in-out infinite}
+.status-dot--critical{background:var(--status-critical);animation:pulse 1s ease-in-out infinite;box-shadow:0 0 0 0 rgba(220,38,38,.5)}
+.status-dot--warning{background:var(--status-warning);animation:pulse 1.8s ease-in-out infinite}
+.status-dot--updating{background:var(--status-updating);animation:blink 1s steps(2) infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+@keyframes blink{50%{opacity:.25}}
+/* Hero */
+.hero{padding:clamp(3rem,6vw,5rem) 0 clamp(4rem,8vw,6rem)}
+.hero__grid{display:flex;flex-direction:column;gap:2.5rem;align-items:center}
+@media(min-width:960px){.hero__grid{flex-direction:row;gap:3rem}.hero__copy{flex:1 1 46%}.hero__visual{flex:1 1 54%}}
+.hero__copy{display:flex;flex-direction:column;align-items:flex-start;gap:1.1rem}
+.hero__eyebrow{display:inline-flex;align-items:center;gap:.5rem;font-size:.75rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--primary);background:var(--stream-highlight);padding:.4rem .8rem;border-radius:999px}
+.hero__sub{color:var(--text-secondary);font-size:1.08rem;max-width:34rem}
+.hero__ctas{display:flex;gap:.8rem;flex-wrap:wrap;margin-top:.4rem}
+/* Cards */
+.card{display:flex;flex-direction:column;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);transition:transform var(--transition-normal),box-shadow var(--transition-normal),border-color var(--transition-normal)}
+@media(hover:hover) and (pointer:fine){.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}}
+.card:focus-within{border-color:var(--primary)}
+/* Dashboard mock */
+.dash{padding:1.25rem;gap:1rem;width:100%}
+.dash__head{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.dash__title{font-weight:700;font-size:.95rem}
+.dash__badge{margin-left:auto;display:flex;align-items:center;gap:.4rem;font-size:.72rem;color:var(--text-muted);font-family:var(--font-mono)}
+.dash__badge .material-symbols-rounded{font-size:1rem;animation:spin 3s linear infinite;color:var(--primary)}
+.kpis{display:flex;gap:.6rem;flex-wrap:wrap}
+.kpi{flex:1 1 8rem;display:flex;flex-direction:column;gap:.15rem;background:var(--bg-tertiary);border-radius:var(--radius-md);padding:.7rem .85rem}
+.kpi__label{display:flex;align-items:center;gap:.4rem;font-size:.72rem;color:var(--text-secondary);font-weight:600}
+.kpi__value{font-size:1.3rem;font-weight:700}
+.chart{display:flex;align-items:flex-end;gap:4px;height:110px;background:var(--bg-tertiary);border-radius:var(--radius-md);padding:.7rem .7rem 0;overflow:hidden}
+.chart__bar{flex:1;background:linear-gradient(180deg,var(--chart-line-1),var(--chart-line-2));border-radius:3px 3px 0 0;height:calc(var(--bar-value,40)*1%);min-height:4px;transition:height .9s var(--ease-standard);opacity:.9}
+.chart__bar:nth-child(3n){background:linear-gradient(180deg,var(--chart-line-3),var(--chart-line-1))}
+.chart__bar:nth-child(4n){background:linear-gradient(180deg,var(--chart-line-2),var(--chart-line-4))}
+.feed{display:flex;flex-direction:column;gap:.45rem}
+.feed__row{display:flex;align-items:center;gap:.6rem;font-size:.8rem;padding:.5rem .7rem;border-radius:var(--radius-sm);background:var(--bg-tertiary)}
+.feed__row .material-symbols-rounded{font-size:1.05rem}
+.feed__row--critical .material-symbols-rounded{color:var(--status-critical)}
+.feed__row--warning .material-symbols-rounded{color:var(--status-warning)}
+.feed__row--normal .material-symbols-rounded{color:var(--status-normal)}
+.feed__time{margin-left:auto;font-family:var(--font-mono);font-size:.7rem;color:var(--text-muted)}
+.skeleton .chart__bar,.skeleton .kpi__value{animation:shimmer 1.4s ease-in-out infinite;background:var(--bg-tertiary);color:transparent}
+@keyframes shimmer{0%,100%{opacity:.4}50%{opacity:.9}}
+/* Features */
+.features__grid{display:flex;flex-direction:column;gap:var(--spacing-gap)}
+@media(min-width:820px){.features__grid{flex-direction:row}}
+.feature{padding:1.75rem;gap:.9rem;flex:1}
+.feature__icon{display:flex;align-items:center;justify-content:center;width:3rem;height:3rem;border-radius:var(--radius-md);background:var(--stream-highlight);color:var(--primary)}
+.feature__icon .material-symbols-rounded{font-size:1.6rem}
+.feature p{color:var(--text-secondary);font-size:.92rem}
+.feature__mini{margin-top:auto;padding-top:.9rem}
+.spark{display:flex;align-items:flex-end;gap:3px;height:34px}
+.spark i{flex:1;background:var(--chart-line-2);border-radius:2px 2px 0 0;height:calc(var(--h)*1%);opacity:.75;transition:height .8s var(--ease-standard)}
+.mini-grid{display:flex;gap:.5rem;flex-wrap:wrap}
+.mini-grid span{display:flex;align-items:center;gap:.35rem;font-size:.72rem;color:var(--text-secondary);font-weight:600}
+.mini-alert{display:flex;align-items:center;gap:.5rem;font-size:.78rem;background:var(--bg-tertiary);padding:.5rem .7rem;border-radius:var(--radius-sm)}
+.mini-alert .material-symbols-rounded{color:var(--status-warning);font-size:1rem}
+/* Steps */
+.steps{display:flex;flex-direction:column;gap:2rem;position:relative}
+@media(min-width:820px){.steps{flex-direction:row;align-items:stretch}.steps::before{content:"";position:absolute;top:2.1rem;left:12%;right:12%;height:2px;background:var(--border-default)}}
+.step{flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:.7rem;position:relative}
+.step__num{display:flex;align-items:center;justify-content:center;width:4.2rem;height:4.2rem;border-radius:50%;background:var(--bg-secondary);border:2px solid var(--primary);color:var(--primary);z-index:1}
+.step__num .material-symbols-rounded{font-size:1.7rem}
+.step p{color:var(--text-secondary);font-size:.92rem}
+.step__tag{font-family:var(--font-mono);font-size:.72rem;font-weight:700;color:var(--primary);letter-spacing:.1em}
+/* Testimonials */
+.quotes{display:flex;flex-direction:column;gap:var(--spacing-gap)}
+@media(min-width:820px){.quotes{flex-direction:row}}
+.quote{padding:1.75rem;gap:1rem;flex:1}
+.quote__text{font-size:.95rem;color:var(--text-primary)}
+.quote__text::before{content:"\201C";color:var(--primary);font-weight:800}
+.quote__text::after{content:"\201D";color:var(--primary);font-weight:800}
+.quote__who{display:flex;align-items:center;gap:.75rem;margin-top:auto}
+.avatar{display:flex;align-items:center;justify-content:center;width:2.6rem;height:2.6rem;border-radius:50%;background:var(--primary);color:var(--on-accent);font-weight:700;font-size:.85rem;flex:none}
+.quote__name{font-weight:700;font-size:.88rem}
+.quote__role{font-size:.78rem;color:var(--text-muted)}
+/* Pricing */
+.pricing__grid{display:flex;flex-direction:column;gap:var(--spacing-gap);align-items:stretch}
+@media(min-width:880px){.pricing__grid{flex-direction:row;align-items:center}}
+.tier{padding:2rem;gap:1.1rem;flex:1}
+.tier__price{font-size:2.4rem;font-weight:700;letter-spacing:-.03em}
+.tier__price small{font-size:.85rem;color:var(--text-muted);font-weight:500}
+.tier ul{list-style:none;display:flex;flex-direction:column;gap:.55rem;font-size:.88rem;color:var(--text-secondary)}
+.tier li{display:flex;align-items:center;gap:.5rem}
+.tier li .material-symbols-rounded{color:var(--status-normal);font-size:1.1rem}
+.card--featured{border:2px solid var(--primary);box-shadow:0 0 0 4px var(--stream-highlight),var(--shadow-md);position:relative}
+:root[data-theme="dark"] .card--featured{border-color:var(--primary)}
+.tier__badge{position:absolute;top:-.8rem;left:50%;transform:translateX(-50%);background:var(--primary);color:var(--on-accent);font-size:.72rem;font-weight:700;padding:.3rem .9rem;border-radius:999px;letter-spacing:.05em;text-transform:uppercase}
+/* FAQ */
+.faq{max-width:46rem;margin:0 auto;display:flex;flex-direction:column;gap:.75rem}
+.faq details{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);overflow:hidden}
+.faq summary{display:flex;align-items:center;gap:.75rem;cursor:pointer;padding:1.1rem 1.25rem;font-weight:600;font-size:.95rem;list-style:none;min-height:44px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary .material-symbols-rounded{margin-left:auto;transition:transform var(--transition-normal);color:var(--text-muted)}
+.faq details[open] summary .material-symbols-rounded{transform:rotate(180deg)}
+.faq details p{padding:0 1.25rem 1.2rem;color:var(--text-secondary);font-size:.9rem}
+/* CTA band */
+.cta-band{background:linear-gradient(135deg,var(--primary),var(--secondary));border-radius:var(--radius-lg);padding:clamp(2.5rem,6vw,4rem);display:flex;flex-direction:column;align-items:flex-start;gap:1rem;color:#fff}
+.cta-band h2{color:#fff;margin:0}
+.cta-band p{max-width:52ch;opacity:.92}
+.input-group{display:flex;flex-direction:column;gap:.4rem;width:100%;max-width:26rem;margin-top:.5rem}
+.input-group label{font-weight:600;font-size:.85rem}
+.input-group__row{display:flex;gap:.6rem;flex-wrap:wrap}
+.input-group input{flex:1 1 14rem;min-height:44px;padding:.65rem .9rem;border-radius:var(--radius-sm);border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);font:400 .95rem var(--font-base);transition:border-color var(--transition-fast),box-shadow var(--transition-fast)}
+.input-group input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--stream-highlight)}
+.input-group input[aria-invalid="true"]{border-color:var(--border-error)}
+.input-group__helper{font-size:.78rem;opacity:.85}
+.input-group__error{font-size:.8rem;color:#ffe1e1;font-weight:600;display:flex;align-items:center;gap:.35rem}
+.cta-band .input-group__error{color:#fff;background:rgba(0,0,0,.25);padding:.3rem .6rem;border-radius:var(--radius-sm);width:fit-content}
+/* Toasts */
+.toasts{position:fixed;bottom:1rem;right:1rem;z-index:var(--z-toast);display:flex;flex-direction:column;gap:.6rem;max-width:min(22rem,calc(100vw - 2rem))}
+.toast{display:flex;align-items:center;gap:.7rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-left:4px solid var(--status-normal);border-radius:var(--radius-md);box-shadow:var(--shadow-md);padding:.85rem 1rem;font-size:.85rem;animation:toast-in .3s var(--ease-standard);position:relative;overflow:hidden}
+.toast--critical{border-left-color:var(--status-critical);animation:toast-in .3s var(--ease-standard),glow 1.6s ease-in-out infinite}
+.toast--warning{border-left-color:var(--status-warning)}
+.toast__icon{flex:none}
+.toast--critical .toast__icon{color:var(--status-critical)}
+.toast--warning .toast__icon{color:var(--status-warning)}
+.toast--normal .toast__icon{color:var(--status-normal)}
+.toast__close{margin-left:auto;background:none;border:none;color:var(--text-muted);cursor:pointer;display:flex;padding:.35rem;border-radius:var(--radius-sm);min-width:44px;min-height:44px;align-items:center;justify-content:center}
+.toast__bar{position:absolute;bottom:0;left:0;height:3px;background:var(--primary);width:100%;transform-origin:left;animation:bar 8s linear forwards}
+.toast.is-leaving{animation:toast-out .25s ease-in forwards}
+@keyframes toast-in{from{transform:translateX(110%);opacity:0}to{transform:none;opacity:1}}
+@keyframes toast-out{to{transform:translateX(110%);opacity:0}}
+@keyframes bar{to{transform:scaleX(0)}}
+@keyframes glow{0%,100%{box-shadow:var(--shadow-md)}50%{box-shadow:0 0 18px rgba(220,38,38,.45)}}
+/* Footer */
+footer{border-top:1px solid var(--border-default);background:var(--bg-secondary);padding:3.5rem 0 2rem}
+.footer__grid{display:flex;flex-direction:column;gap:2.5rem}
+@media(min-width:820px){.footer__grid{flex-direction:row;align-items:flex-start}}
+.footer__brand{flex:1.4;display:flex;flex-direction:column;gap:.8rem;align-items:flex-start}
+.footer__brand p{color:var(--text-secondary);font-size:.88rem;max-width:32ch}
+.footer__links{flex:3;display:flex;flex-wrap:wrap;gap:2rem}
+.footer__col{display:flex;flex-direction:column;gap:.55rem;min-width:8rem;align-items:flex-start}
+.footer__col h4{font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:.3rem}
+.footer__col a{color:var(--text-secondary);text-decoration:none;font-size:.88rem}
+@media(hover:hover){.footer__col a:hover{color:var(--primary)}}
+.footer__bottom{display:flex;flex-wrap:wrap;align-items:center;gap:1rem;margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--border-default);font-size:.8rem;color:var(--text-muted)}
+.footer__status{display:flex;align-items:center;gap:.45rem;font-weight:600;color:var(--text-success)}
+.footer__social{display:flex;gap:.5rem;margin-left:auto}
+@media(prefers-reduced-motion:reduce){
+*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.15s!important}
+.status-dot,.dash__badge .material-symbols-rounded{animation:none!important}
+.chart__bar,.spark i{transition:none!important}
+html{scroll-behavior:auto}
+}
+@media(prefers-reduced-transparency:reduce){.nav{background:var(--bg-primary);backdrop-filter:none}}
 </style>
 </head>
 <body>
-<a href="#main-content" class="skip-to-content">Skip to main content</a>
-<header>
-<div class="nav-wrapper">
-<div class="brand">
-<span class="material-symbols-outlined">monitoring</span>
-Nimbus
-</div>
-<nav class="nav-links">
-<a href="#features">Features</a>
-<a href="#how-it-works">How It Works</a>
-<a href="#pricing">Pricing</a>
-<a href="#faq">FAQ</a>
-</nav>
-<div class="header-actions">
-<div class="connection-indicator live" role="status" aria-label="Connection status: Live">
-<span class="material-symbols-outlined">wifi</span>
-<span class="status-dot"></span>
-<span>Live</span>
-</div>
-<button class="theme-toggle" id="theme-toggle" aria-label="Switch to dark mode" aria-pressed="false">
-<span class="material-symbols-outlined" id="theme-icon">dark_mode</span>
-</button>
-<a href="#final-cta" class="btn btn--primary">Start Monitoring Free</a>
-</div>
-</div>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="nav">
+  <div class="wrap nav__inner">
+    <a class="nav__brand" href="#"><span class="material-symbols-rounded" aria-hidden="true">monitor_heart</span>Pulsegrid</a>
+    <nav class="nav__links" aria-label="Primary">
+      <a href="#features">Features</a><a href="#how">How It Works</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a>
+    </nav>
+    <div class="nav__right">
+      <span class="conn" role="status"><span class="status-dot status-dot--normal" id="conn-dot" aria-hidden="true"></span><span id="conn-label">Live</span></span>
+      <button class="icon-btn" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode"><span class="material-symbols-rounded" id="theme-icon" aria-hidden="true">dark_mode</span></button>
+      <a class="btn btn--primary nav__cta" href="#cta">Start Free</a>
+      <button class="icon-btn nav__menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="nav-panel" aria-label="Open menu"><span class="material-symbols-rounded" aria-hidden="true">menu</span></button>
+    </div>
+  </div>
+  <nav class="nav__panel" id="nav-panel" aria-label="Mobile">
+    <a href="#features">Features</a><a href="#how">How It Works</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a><a href="#cta">Start Free</a>
+  </nav>
 </header>
-<main id="main-content">
+
+<main id="main">
 <section class="hero">
-<div class="hero-content">
-<h1 class="hero-title">See Your Systems in Real Time</h1>
-<p class="hero-subtitle">Monitor, alert, and act on live data streams with zero latency. Get instant visibility into every metric that matters.</p>
-<div class="hero-actions">
-<a href="#final-cta" class="btn btn--primary">Start Monitoring Free</a>
-<a href="#demo" class="btn btn--secondary">View Live Demo</a>
-</div>
-</div>
-<div class="dashboard-card">
-<div class="dashboard-header">
-<div class="dashboard-title">Live System Overview</div>
-<div class="dashboard-status">
-<span class="material-symbols-outlined" id="auto-refresh-icon">autorenew</span>
-<span>Updated <span id="auto-refresh-counter">0s</span> ago</span>
-</div>
-</div>
-<div class="kpi-grid">
-<div class="kpi-item">
-<div class="kpi-label">CPU Usage</div>
-<div class="kpi-value" id="cpu-value"><span class="status-dot" id="cpu-dot"></span><span>42%</span></div>
-</div>
-<div class="kpi-item">
-<div class="kpi-label">Memory</div>
-<div class="kpi-value" id="memory-value"><span class="status-dot" id="memory-dot"></span><span>68%</span></div>
-</div>
-<div class="kpi-item">
-<div class="kpi-label">Latency</div>
-<div class="kpi-value" id="latency-value"><span class="status-dot" id="latency-dot"></span><span>12ms</span></div>
-</div>
-</div>
-<div class="chart-container">
-<div class="chart-bars" id="chart-bars">
-<div class="chart-bar" style="--bar-value:0.6"></div>
-<div class="chart-bar" style="--bar-value:0.4"></div>
-<div class="chart-bar" style="--bar-value:0.7"></div>
-<div class="chart-bar" style="--bar-value:0.5"></div>
-<div class="chart-bar" style="--bar-value:0.3"></div>
-</div>
-</div>
-<div class="alert-feed">
-<div class="alert-item alert-item--warning">
-<span class="material-symbols-outlined">error</span>
-<div>
-<div class="alert-message">High memory usage detected on web-01</div>
-<div class="alert-time">2m ago</div>
-</div>
-</div>
-<div class="alert-item alert-item--normal">
-<span class="material-symbols-outlined">check_circle</span>
-<div>
-<div class="alert-message">Backup job completed successfully</div>
-<div class="alert-time">5m ago</div>
-</div>
-</div>
-<div class="alert-item alert-item--critical">
-<span class="material-symbols-outlined">error</span>
-<div>
-<div class="alert-message">Database connection pool exhausted</div>
-<div class="alert-time">8m ago</div>
-</div>
-</div>
-</div>
-</div>
+  <div class="wrap hero__grid">
+    <div class="hero__copy">
+      <span class="hero__eyebrow"><span class="status-dot status-dot--updating" aria-hidden="true"></span>Streaming now</span>
+      <h1>See every system, the second it changes.</h1>
+      <p class="hero__sub">Pulsegrid streams metrics, logs, and alerts into one live view so your team responds in seconds, not standups.</p>
+      <div class="hero__ctas">
+        <a class="btn btn--primary" href="#cta">Start Monitoring Free</a>
+        <a class="btn btn--secondary" href="#features"><span class="material-symbols-rounded" aria-hidden="true">play_circle</span>View Live Demo</a>
+      </div>
+    </div>
+    <div class="hero__visual">
+      <div class="card dash skeleton" id="dash" aria-label="Live dashboard preview">
+        <div class="dash__head">
+          <span class="dash__title">production-cluster</span>
+          <span class="conn"><span class="status-dot status-dot--normal" aria-hidden="true"></span>Connected</span>
+          <span class="dash__badge"><span class="material-symbols-rounded" aria-hidden="true">autorenew</span>Updated <span id="ago">0</span>s ago</span>
+        </div>
+        <div class="kpis">
+          <div class="kpi"><span class="kpi__label"><span class="status-dot status-dot--normal" aria-hidden="true"></span>CPU</span><span class="kpi__value mono" id="kpi-cpu">42%</span></div>
+          <div class="kpi"><span class="kpi__label"><span class="status-dot status-dot--warning" aria-hidden="true"></span>Memory</span><span class="kpi__value mono" id="kpi-mem">71%</span></div>
+          <div class="kpi"><span class="kpi__label"><span class="status-dot status-dot--normal" aria-hidden="true"></span>Latency</span><span class="kpi__value mono" id="kpi-lat">118ms</span></div>
+        </div>
+        <div class="chart" id="chart" aria-hidden="true"></div>
+        <div class="feed">
+          <div class="feed__row feed__row--warning"><span class="material-symbols-rounded" aria-hidden="true">warning</span>api-gateway p95 latency above 200ms<span class="feed__time" id="t1">12s</span></div>
+          <div class="feed__row feed__row--normal"><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>db-replica lag recovered to 40ms<span class="feed__time" id="t2">48s</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
-<section class="features" id="features">
-<h2 class="section-title">Real-Time Monitoring Features</h2>
-<div class="features-grid">
-<div class="card">
-<div class="card-icon material-symbols-outlined">notifications_active</div>
-<h3 class="card-title">Instant Alerting</h3>
-<p class="card-description">Get notified the moment thresholds are breached via email, SMS, or webhook with intelligent deduplication.</p>
-<div class="card-visual">
-<div class="sparkline" id="alert-sparkline">
-<div class="sparkline-bar" style="--bar-value:0.2"></div>
-<div class="sparkline-bar" style="--bar-value:0.5"></div>
-<div class="sparkline-bar" style="--bar-value:0.3"></div>
-<div class="sparkline-bar" style="--bar-value:0.7"></div>
-<div class="sparkline-bar" style="--bar-value:0.4"></div>
-</div>
-</div>
-</div>
-<div class="card">
-<div class="card-icon material-symbols-outlined">monitoring</div>
-<h3 class="card-title">Streaming Dashboards</h3>
-<p class="card-description">Build custom views with live-updating charts, gauges, and tables that refresh without manual intervention.</p>
-<div class="card-visual">
-<div class="status-grid" id="status-grid">
-<div class="status-item"><span class="material-symbols-outlined">check_circle</span>API Gateway</div>
-<div class="status-item"><span class="material-symbols-outlined">error</span>Auth Service</div>
-<div class="status-item"><span class="material-symbols-outlined">check_circle</span>Database</div>
-<div class="status-item"><span class="material-symbols-outlined">warning</span>Cache Layer</div>
-<div class="status-item"><span class="material-symbols-outlined">check_circle</span>Message Queue</div>
-<div class="status-item"><span class="material-symbols-outlined">error</span>Worker Pool</div>
-</div>
-</div>
-</div>
-<div class="card">
-<div class="card-icon material-symbols-outlined">health_and_safety</div>
-<h3 class="card-title">System Health Overview</h3>
-<p class="card-description">Aggregate health signals from infrastructure, applications, and business metrics into a single unified view.</p>
-<div class="card-visual">
-<div class="sparkline" id="health-sparkline">
-<div class="sparkline-bar" style="--bar-value:0.8"></div>
-<div class="sparkline-bar" style="--bar-value:0.9"></div>
-<div class="sparkline-bar" style="--bar-value:0.7"></div>
-<div class="sparkline-bar" style="--bar-value:0.85"></div>
-<div class="sparkline-bar" style="--bar-value:0.92"></div>
-</div>
-</div>
-</div>
-</div>
+
+<section id="features">
+  <div class="wrap">
+    <h2>Built for the moment things break</h2>
+    <p class="section-sub">Alerting, dashboards, and fleet health in one stream, tuned for on-call reality.</p>
+    <div class="features__grid">
+      <article class="card feature">
+        <span class="feature__icon"><span class="material-symbols-rounded" aria-hidden="true">notifications_active</span></span>
+        <h3>Real-Time Alerting</h3>
+        <p>Thresholds, anomalies, and rate-of-change triggers fire in under two seconds, routed to Slack, PagerDuty, or email.</p>
+        <div class="feature__mini"><div class="mini-alert"><span class="material-symbols-rounded" aria-hidden="true">bolt</span>Alert routed to #on-call in 1.4s</div></div>
+      </article>
+      <article class="card feature">
+        <span class="feature__icon"><span class="material-symbols-rounded" aria-hidden="true">monitoring</span></span>
+        <h3>Streaming Dashboards</h3>
+        <p>Every chart updates live with no refresh. Share a link and the whole room watches the same second of data.</p>
+        <div class="feature__mini"><div class="spark" id="spark" aria-hidden="true"></div></div>
+      </article>
+      <article class="card feature">
+        <span class="feature__icon"><span class="material-symbols-rounded" aria-hidden="true">health_and_safety</span></span>
+        <h3>System Health Overview</h3>
+        <p>One glance covers every service: status, saturation, and error budget burn across your entire fleet.</p>
+        <div class="feature__mini"><div class="mini-grid">
+          <span><span class="status-dot status-dot--normal" aria-hidden="true"></span>api</span>
+          <span><span class="status-dot status-dot--normal" aria-hidden="true"></span>web</span>
+          <span><span class="status-dot status-dot--warning" aria-hidden="true"></span>queue</span>
+          <span><span class="status-dot status-dot--normal" aria-hidden="true"></span>db</span>
+        </div></div>
+      </article>
+    </div>
+  </div>
 </section>
-<section class="how-it-works" id="how-it-works">
-<h2 class="section-title">How It Works</h2>
-<div class="steps-container">
-<div class="step-number">01</div>
-<div class="step-content">
-<div class="step">
-<div class="step-icon material-symbols-outlined">cable</div>
-<div class="step-details">
-<h3 class="step-title">Connect Your Data Sources</h3>
-<p class="step-description">Integrate with databases, APIs, logs, and cloud services in minutes using our pre-built connectors or custom SDK.</p>
-</div>
-</div>
-<div class="step-connector"></div>
-<div class="step">
-<div class="step-icon material-symbols-outlined">tune</div>
-<div class="step-details">
-<h3 class="step-title">Configure Thresholds & Rules</h3>
-<p class="step-description">Set intelligent alerting policies with dynamic baselines, anomaly detection, and noise reduction algorithms.</p>
-</div>
-</div>
-<div class="step-connector"></div>
-<div class="step">
-<div class="step-icon material-symbols-outlined">bolt</div>
-<div class="step-details">
-<h3 class="step-title">Get Alerted in Real Time</h3>
-<p class="step-description">Receive instant notifications via your preferred channels with rich context and one-click remediation actions.</p>
-</div>
-</div>
-</div>
-</div>
+
+<section id="how" style="background:var(--bg-secondary)">
+  <div class="wrap">
+    <h2>Live in three steps</h2>
+    <p class="section-sub">From first agent install to your first resolved incident in under an hour.</p>
+    <div class="steps">
+      <div class="step"><span class="step__num"><span class="material-symbols-rounded" aria-hidden="true">cable</span></span><span class="step__tag">01</span><h3>Connect your data sources</h3><p>Drop in the agent or forward metrics from Prometheus, CloudWatch, or OpenTelemetry.</p></div>
+      <div class="step"><span class="step__num"><span class="material-symbols-rounded" aria-hidden="true">tune</span></span><span class="step__tag">02</span><h3>Configure thresholds</h3><p>Set static limits or let anomaly detection learn each service's normal rhythm.</p></div>
+      <div class="step"><span class="step__num"><span class="material-symbols-rounded" aria-hidden="true">bolt</span></span><span class="step__tag">03</span><h3>Get alerted in real time</h3><p>Alerts reach the right person with context attached: recent deploys, related metrics, runbooks.</p></div>
+    </div>
+  </div>
 </section>
-<section class="testimonials" id="testimonials">
-<h2 class="section-title">What Engineers Are Saying</h2>
-<div class="testimonials-grid">
-<div class="testimonial-card">
-<div class="avatar">JL</div>
-<p class="testimonial-text">"Nimbus cut our MTTR by 70%. The real-time alerts caught issues before users even noticed, and the dashboards give us instant clarity during incidents."</p>
-<div class="testimonial-author">
-<div class="testimonial-author-name">Jessica Lin</div>
-<div class="testimonial-author-role">Senior SRE</div>
-</div>
-</div>
-<div class="testimonial-card">
-<div class="avatar">MR</div>
-<p class="testimonial-text">"Finally, a monitoring tool that doesn't require a PhD to operate. The setup was trivial, and we were seeing live data in under 5 minutes."</p>
-<div class="testimonial-author">
-<div class="testimonial-author-name">Marcus Rivera</div>
-<div class="testimonial-author-role">Platform Engineer</div>
-</div>
-</div>
-<div class="testimonial-card">
-<div class="avatar">TK</div>
-<p class="testimonial-text">"The alert noise reduction is game-changing. We went from 200+ alerts/day to under 10 meaningful ones. Our team actually sleeps now."</p>
-<div class="testimonial-author">
-<div class="testimonial-author-name">Tanya Kumar</div>
-<div class="testimonial-author-role">Engineering Manager</div>
-</div>
-</div>
-</div>
+
+<section aria-label="Testimonials">
+  <div class="wrap">
+    <h2>Trusted by teams on call</h2>
+    <p class="section-sub">Engineers who measure their nights in alerts, not hours.</p>
+    <div class="quotes">
+      <article class="card quote">
+        <p class="quote__text">We cut mean time to acknowledge from nine minutes to forty seconds. The live tail during incidents is the feature I didn't know I needed.</p>
+        <div class="quote__who"><span class="avatar" aria-hidden="true">MR</span><div><div class="quote__name">Mara Reyes</div><div class="quote__role">Staff SRE, Fieldnote</div></div></div>
+      </article>
+      <article class="card quote">
+        <p class="quote__text">Pulsegrid caught a memory leak at 3am that our old stack reported at 9am standup. That one alert paid for the year.</p>
+        <div class="quote__who"><span class="avatar" aria-hidden="true">DK</span><div><div class="quote__name">Devon Kaur</div><div class="quote__role">Engineering Lead, Cartloop</div></div></div>
+      </article>
+      <article class="card quote">
+        <p class="quote__text">The shared live dashboard ended our incident bridge screen-sharing habit. Everyone just opens the same link and watches.</p>
+        <div class="quote__who"><span class="avatar" aria-hidden="true">TO</span><div><div class="quote__name">Tomas Okafor</div><div class="quote__role">Platform Director, Meridian Health</div></div></div>
+      </article>
+    </div>
+  </div>
 </section>
-<section class="pricing" id="pricing">
-<h2 class="section-title">Simple, Transparent Pricing</h2>
-<div class="pricing-grid">
-<div class="pricing-card">
-<h3>Starter</h3>
-<div class="price">$49<span>/mo</span></div>
-<div class="price-sub">For small teams getting started</div>
-<ul class="features-list">
-<li class="feature-item"><span class="material-symbols-outlined">check_circle</span>Up to 5 hosts</li>
-<li class="feature-item"><span class="material-symbols-outlined">check_circle</span>Basic alerting (email)</li>
-<li class="feature-item"><span class="material-symbols-outlined">check_circle</span>Retention: 7 days</li>
-<li class="feature-item"><span class="material-symbols-outlined">check_circle</span>Community support</li>
-</ul>
-<a href="#" class="btn btn--secondary">Get Started</a>
-</div>
-<div class="pricing-card pricing-card--featured">
-<h3>Professional</h3>
-<div class="price">$149<span>/mo</span></div>
-<div class="price-sub">Most popular for growing teams</div>
-<ul class="features-list">
-<li class="feature-item"><span class="material-symbols-outlined">check_circle</span>Unlimited hosts</li>
-<li class="feature-item"><span class="material-symbols-outlined">check_circle</span>Advanced alerting (SMS, webhook)</li>
-<li class="feature-item"><span class="material-symbols-outlined">check_circle</span>Retention: 30 days</li>
-<li class="feature-item"><span class="material-symbols-outlined">check_circle</span>Custom dashboards</li>
-<li class="feature-item"><span class="material-symbols-outlined">check_circle</span>Priority support</li>
-</ul>
-<a href="#" class="btn btn--primary">Start Free Trial</a>
-</div>
-<div class="pricing-card">
-<h3>Enterprise</h3>
-<div class="price">Custom<span>/mo</span></div>
-<div class="price-sub">For large organizations</div>
-<ul class="features-list">
-<li class="feature-item"><span class="material-symbols-outlined">check_circle</span>Everything in Professional</li>
-<li class="feature-item"><span class="material-symbols-outlined">check_circle</span>SSO & RBAC</li>
-<li class="feature-item"><span class="material-symbols-outlined">check_circle</span>Retention: 1+ years</li>
-<li class="feature-item"><span class="material-symbols-outlined">check_circle</span>Dedicated account manager</li>
-<li class="feature-item"><span class="material-symbols-outlined">check_circle</span>24/7 phone support</li>
-</ul>
-<a href="#" class="btn btn--secondary">Contact Sales</a>
-</div>
-</div>
+
+<section id="pricing" style="background:var(--bg-secondary)">
+  <div class="wrap">
+    <h2>Pricing that scales with your fleet</h2>
+    <p class="section-sub">Start free. Pay when your infrastructure does.</p>
+    <div class="pricing__grid">
+      <article class="card tier">
+        <h3>Starter</h3>
+        <div class="tier__price mono">$0<small>/mo</small></div>
+        <ul>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Up to 10 hosts</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>30-second data resolution</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Email alerts</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>7-day retention</li>
+        </ul>
+        <a class="btn btn--secondary" href="#cta">Start Free</a>
+      </article>
+      <article class="card tier card--featured">
+        <span class="tier__badge">Most Popular</span>
+        <h3>Pro</h3>
+        <div class="tier__price mono">$49<small>/mo</small></div>
+        <ul>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Up to 100 hosts</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>1-second live streaming</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Slack, PagerDuty, webhooks</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Anomaly detection</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>13-month retention</li>
+        </ul>
+        <a class="btn btn--primary" href="#cta">Start Free</a>
+      </article>
+      <article class="card tier">
+        <h3>Enterprise</h3>
+        <div class="tier__price mono">Custom</div>
+        <ul>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Unlimited hosts</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>SSO and audit logs</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Private region deployment</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>99.99% uptime SLA</li>
+        </ul>
+        <a class="btn btn--secondary" href="#cta">Contact Sales</a>
+      </article>
+    </div>
+  </div>
 </section>
-<section class="faq" id="faq">
-<h2 class="section-title">Frequently Asked Questions</h2>
-<div class="faq-container">
-<details class="faq-item">
-<summary class="faq-summary">
-How does real-time data collection work?
-<span class="material-symbols-outlined">expand_more</span>
-</summary>
-<div class="faq-content">
-<p>Nimbus uses lightweight agents that push metrics via efficient binary protocols. Data is streamed to our processing engine with sub-second latency, enabling real-time dashboards and instant alerting.</p>
-</div>
-</details>
-<details class="faq-item">
-<summary class="faq-summary">
-What is the performance impact on my systems?
-<span class="material-symbols-outlined">expand_more</span>
-</summary>
-<div class="faq-content">
-<p>Our agents are designed for minimal overhead: typically <2% CPU and <10MB RAM per instance. We use adaptive sampling to reduce load during high-activity periods.</p>
-</div>
-</details>
-<details class="faq-item">
-<summary class="faq-summary">
-Can I monitor cloud services like AWS or Azure?
-<span class="material-symbols-outlined">expand_more</span>
-</summary>
-<div class="faq-content">
-<p>Yes! We offer native integrations for AWS CloudWatch, Azure Monitor, GCP Operations, and popular SaaS platforms like Kubernetes, Docker, and MongoDB.</p>
-</div>
-</details>
-<details class="faq-item">
-<summary class="faq-summary">
-How secure is my data in Nimbus?
-<span class="material-symbols-outlined">expand_more</span>
-</summary>
-<div class="faq-content">
-<p>All data is encrypted in transit (TLS 1.3) and at rest (AES-256). We are SOC 2 Type II certified and offer granular role-based access controls with detailed audit logs.</p>
-</div>
-</details>
-<details class="faq-item">
-<summary class="faq-summary">
-What happens if my internet connection drops?
-<span class="material-symbols-outlined">expand_more</span>
-</summary>
-<div class="faq-content">
-<p>Agents cache data locally and automatically resync when connectivity is restored. You won't lose any data, and alerting rules continue to evaluate against cached values.</p>
-</div>
-</details>
-</div>
+
+<section id="faq">
+  <div class="wrap">
+    <h2>Common questions</h2>
+    <p class="section-sub">The short answers, before you ask on the demo call.</p>
+    <div class="faq">
+      <details><summary>How fast is "real time", exactly?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary><p>Metrics reach dashboards in under two seconds from collection on Pro plans. Alert evaluation runs continuously, so threshold breaches notify within the same window.</p></details>
+      <details><summary>Does Pulsegrid replace my existing metrics stack?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary><p>No. Pulsegrid ingests from Prometheus, CloudWatch, Datadog, and OpenTelemetry, so you keep your collectors and gain a faster live layer on top.</p></details>
+      <details><summary>What happens to my data if I cancel?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary><p>You can export all metrics and alert history for 30 days after cancellation. After that, data is permanently deleted from our systems.</p></details>
+      <details><summary>Can I self-host Pulsegrid?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary><p>Enterprise plans include a private-region deployment option that runs inside your cloud account with the same live streaming engine.</p></details>
+      <details><summary>How does anomaly detection handle seasonal traffic?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary><p>The model learns weekly and daily patterns per service, so a Friday-night spike reads as normal while the same spike on Tuesday triggers a review.</p></details>
+    </div>
+  </div>
+</section>
+
+<section id="cta">
+  <div class="wrap">
+    <div class="cta-band">
+      <h2>Start watching your systems live</h2>
+      <p>Free for 10 hosts, no credit card. Your first dashboard streams within five minutes of install.</p>
+      <form class="input-group" id="cta-form" novalidate>
+        <label for="cta-email">Work email</label>
+        <div class="input-group__row">
+          <input id="cta-email" name="email" type="email" autocomplete="email" placeholder="you@company.com" aria-describedby="cta-helper cta-error">
+          <button class="btn btn--primary" id="cta-btn" type="submit"><span class="btn__spinner" aria-hidden="true"></span><span class="btn__label">Start Free</span></button>
+        </div>
+        <span class="input-group__helper" id="cta-helper">We send one setup link. No newsletter.</span>
+        <span class="input-group__error" id="cta-error" role="alert" aria-live="polite" hidden><span class="material-symbols-rounded" aria-hidden="true">error</span>Enter a valid work email address.</span>
+      </form>
+    </div>
+  </div>
 </section>
 </main>
-<section class="final-cta" id="final-cta">
-<div class="final-cta-content">
-<h2 class="final-cta-title">Ready to Monitor in Real Time?</h2>
-<p class="final-cta-subtitle">Join thousands of teams who trust Nimbus for instant visibility into their systems.</p>
-<form id="cta-form" class="input-group">
-<label for="cta-email">Email Address</label>
-<input type="email" id="cta-email" placeholder="you@company.com" required>
-<span class="input-error">Please enter a valid email address</span>
-<button type="submit" class="btn btn--primary" id="cta-submit">
-Get Started Free
-<span class="material-symbols-outlined" id="cta-spinner">autorenew</span>
-</button>
-</form>
-</div>
-</section>
-<footer class="footer">
-<div class="footer-brand">
-<div class="brand">
-<span class="material-symbols-outlined">monitoring</span>
-Nimbus
-</div>
-<p>Real-time monitoring platform for modern infrastructure. Gain instant visibility into your systems with zero-latency alerts and live dashboards.</p>
-</div>
-<div class="footer-links">
-<div class="footer-column">
-<h3>Product</h3>
-<a href="#features">Features</a>
-<a href="#how-it-works">How It Works</a>
-<a href="#pricing">Pricing</a>
-<a href="#faq">FAQ</a>
-</div>
-<div class="footer-column">
-<h3>Resources</h3>
-<a href="#">Documentation</a>
-<a href="#">Blog</a>
-<a href="#">Case Studies</a>
-<a href="#">Webinars</a>
-</div>
-<div class="footer-column">
-<h3>Company</h3>
-<a href="#">About Us</a>
-<a href="#">Careers</a>
-<a href="#">Press</a>
-<a href="#">Contact</a>
-</div>
-<div class="footer-column">
-<h3>Legal</h3>
-<a href="#">Privacy Policy</a>
-<a href="#">Terms of Service</a>
-<a href="#">Security</a>
-<a href="#">Status</a>
-</div>
-</div>
-<div class="social-links">
-<a href="#" aria-label="Twitter"><span class="material-symbols-outlined">twitter</span></a>
-<a href="#" aria-label="LinkedIn"><span class="material-symbols-outlined">linkedin</span></a>
-<a href="#" aria-label="GitHub"><span class="material-symbols-outlined">github</span></a>
-<a href="#" aria-label="YouTube"><span class="material-symbols-outlined">youtube</span></a>
-</div>
+
+<footer>
+  <div class="wrap">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <a class="nav__brand" href="#"><span class="material-symbols-rounded" aria-hidden="true">monitor_heart</span>Pulsegrid</a>
+        <p>Real-time monitoring for teams who would rather fix things than refresh dashboards.</p>
+      </div>
+      <div class="footer__links">
+        <div class="footer__col"><h4>Product</h4><a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#">Integrations</a><a href="#">Changelog</a></div>
+        <div class="footer__col"><h4>Resources</h4><a href="#">Documentation</a><a href="#">API Reference</a><a href="#">Status Page</a><a href="#">Blog</a></div>
+        <div class="footer__col"><h4>Company</h4><a href="#">About</a><a href="#">Careers</a><a href="#">Contact</a><a href="#">Press</a></div>
+        <div class="footer__col"><h4>Legal</h4><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Security</a><a href="#">DPA</a></div>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span>© 2026 Pulsegrid Systems, Inc.</span>
+      <span class="footer__status"><span class="status-dot status-dot--normal" aria-hidden="true"></span>All systems operational</span>
+      <div class="footer__social">
+        <button class="icon-btn" type="button" aria-label="Pulsegrid on GitHub"><span class="material-symbols-rounded" aria-hidden="true">code</span></button>
+        <button class="icon-btn" type="button" aria-label="Pulsegrid on X"><span class="material-symbols-rounded" aria-hidden="true">share</span></button>
+        <button class="icon-btn" type="button" aria-label="Pulsegrid community chat"><span class="material-symbols-rounded" aria-hidden="true">forum</span></button>
+      </div>
+    </div>
+  </div>
 </footer>
-<div class="footer-bottom">
-<p>© 2026 Nimbus Monitoring, Inc. All rights reserved.</p>
-<div class="status-line">
-<span class="material-symbols-outlined">check_circle</span>
-<span class="status-dot"></span>
-<span>All systems operational</span>
-</div>
-</div>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
 <script>
-document.documentElement.classList.add('light');
-const STORAGE_KEY = 'nimbus-theme';
-const htmlEl = document.documentElement;
-const themeToggle = document.getElementById('theme-toggle');
-const themeIcon = document.getElementById('theme-icon');
-const autoRefreshIcon = document.getElementById('auto-refresh-icon');
-const autoRefreshCounter = document.getElementById('auto-refresh-counter');
-const connectionIndicator = document.querySelector('.connection-indicator');
-const cpuValue = document.getElementById('cpu-value');
-const cpuDot = document.getElementById('cpu-dot');
-const memoryValue = document.getElementById('memory-value');
-const memoryDot = document.getElementById('memory-dot');
-const latencyValue = document.getElementById('latency-value');
-const latencyDot = document.getElementById('latency-dot');
-const chartBars = document.getElementById('chart-bars');
-const alertFeed = document.querySelector('.alert-feed');
-const alertSparkline = document.getElementById('alert-sparkline');
-const statusGrid = document.getElementById('status-grid');
-const healthSparkline = document.getElementById('health-sparkline');
-const ctaForm = document.getElementById('cta-form');
-const ctaEmail = document.getElementById('cta-email');
-const ctaSubmit = document.getElementById('cta-submit');
-const ctaSpinner = document.getElementById('cta-spinner');
-const inputError = ctaForm.querySelector('.input-error');
+(function(){
+"use strict";
+var reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-let lastToastTime = 0;
-const TOAST_THROTTLE = 10000;
-let isUpdating = false;
+/* Theme toggle */
+var root=document.documentElement,toggle=document.getElementById("theme-toggle"),icon=document.getElementById("theme-icon");
+function applyTheme(t){root.dataset.theme=t;var d=t==="dark";toggle.setAttribute("aria-pressed",String(d));toggle.setAttribute("aria-label",d?"Switch to light mode":"Switch to dark mode");icon.textContent=d?"light_mode":"dark_mode";}
+applyTheme(root.dataset.theme==="dark"?"dark":"light");
+toggle.addEventListener("click",function(){var t=root.dataset.theme==="dark"?"light":"dark";localStorage.setItem("theme",t);applyTheme(t);});
 
-// Theme handling
-function applyTheme(isDark) {
-if (isDark) {
-htmlEl.classList.add('dark');
-htmlEl.classList.remove('light');
-themeToggle.setAttribute('aria-pressed', 'true');
-themeToggle.setAttribute('aria-label', 'Switch to light mode');
-themeIcon.textContent = 'light_mode';
-} else {
-htmlEl.classList.remove('dark');
-htmlEl.classList.add('light');
-themeToggle.setAttribute('aria-pressed', 'false');
-themeToggle.setAttribute('aria-label', 'Switch to dark mode');
-themeIcon.textContent = 'dark_mode';
-}
-localStorage.setItem(STORAGE_KEY, isDark ? 'dark' : 'light');
-}
+/* Mobile nav */
+var menuBtn=document.getElementById("menu-btn"),panel=document.getElementById("nav-panel");
+function closeMenu(){panel.classList.remove("is-open");menuBtn.setAttribute("aria-expanded","false");}
+menuBtn.addEventListener("click",function(){var open=panel.classList.toggle("is-open");menuBtn.setAttribute("aria-expanded",String(open));});
+panel.addEventListener("click",function(e){if(e.target.tagName==="A")closeMenu();});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")closeMenu();});
 
-function initTheme() {
-const saved = localStorage.getItem(STORAGE_KEY);
-if (saved === 'dark' || saved === 'light') {
-applyTheme(saved === 'dark');
-} else {
-const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-applyTheme(prefersDark);
-}
-}
-themeToggle.addEventListener('click', () => {
-const isDark = !htmlEl.classList.contains('dark');
-applyTheme(isDark);
-});
+/* Build chart bars */
+var chart=document.getElementById("chart"),bars=[],i;
+for(i=0;i<28;i++){var b=document.createElement("div");b.className="chart__bar";b.style.setProperty("--bar-value",String(20+Math.random()*60));chart.appendChild(b);bars.push(b);}
+var spark=document.getElementById("spark"),sparks=[];
+for(i=0;i<16;i++){var s=document.createElement("i");s.style.setProperty("--h",String(20+Math.random()*75));spark.appendChild(s);sparks.push(s);}
 
-// Connection indicator simulation
-let connectionState = 'live';
-let connectionTimer = null;
-function startConnectionSimulation() {
-clearInterval(connectionTimer);
-connectionTimer = setInterval(() => {
-if (connectionState === 'live') {
-connectionState = 'syncing';
-connectionIndicator.classList.remove('live');
-connectionIndicator.classList.add('syncing');
-connectionIndicator.setAttribute('aria-label', 'Connection status: Syncing');
-} else {
-connectionState = 'live';
-connectionIndicator.classList.remove('syncing');
-connectionIndicator.classList.add('live');
-connectionIndicator.setAttribute('aria-label', 'Connection status: Live');
-}
-}, 5000 + Math.random() * 3000);
-}
+/* Skeleton reveal */
+var dash=document.getElementById("dash");
+setTimeout(function(){dash.classList.remove("skeleton");},1200);
 
-// Auto-refresh simulation
-let autoRefreshSeconds = 0;
-let autoRefreshTimer = null;
-function startAutoRefreshSimulation() {
-clearInterval(autoRefreshTimer);
-autoRefreshTimer = setInterval(() => {
-autoRefreshSeconds++;
-autoRefreshCounter.textContent = `${autoRefreshSeconds}s`;
-if (!document.documentElement.matches(':root')) {
-const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-if (!reducedMotion) {
-autoRefreshIcon.style.animation = 'spin 1s linear infinite';
-} else {
-autoRefreshIcon.style.animation = 'none';
-}
-} else {
-autoRefreshIcon.style.animation = 'none';
-}
-}, 1000);
-}
+/* Live ticks */
+var ago=document.getElementById("ago"),cpu=document.getElementById("kpi-cpu"),mem=document.getElementById("kpi-mem"),lat=document.getElementById("kpi-lat"),t1=document.getElementById("t1"),t2=document.getElementById("t2");
+var secs=0,c=42,m=71,l=118;
+setInterval(function(){
+  secs++;ago.textContent=String(secs);
+  t1.textContent=(12+secs)+"s";t2.textContent=(48+secs)+"s";
+},1000);
+setInterval(function(){
+  secs=0;ago.textContent="0";
+  c=Math.max(15,Math.min(95,c+Math.round((Math.random()-.5)*14)));
+  m=Math.max(30,Math.min(92,m+Math.round((Math.random()-.5)*8)));
+  l=Math.max(40,Math.min(400,l+Math.round((Math.random()-.5)*40)));
+  cpu.textContent=c+"%";mem.textContent=m+"%";lat.textContent=l+"ms";
+  bars.shift().remove();
+  var nb=document.createElement("div");nb.className="chart__bar";
+  nb.style.setProperty("--bar-value",String(20+Math.random()*65));
+  chart.appendChild(nb);bars.push(nb);
+  sparks.forEach(function(el){el.style.setProperty("--h",String(15+Math.random()*80));});
+},2000);
 
-// KPI simulation
-function updateKPIs() {
-const cpu = Math.floor(Math.random() * 30) + 20;
-const memory = Math.floor(Math.random() * 40) + 50;
-const latency = Math.floor(Math.random() * 20) + 5;
-cpuValue.innerHTML = `<span class="status-dot" id="cpu-dot"></span><span>${cpu}%</span>`;
-memoryValue.innerHTML = `<span class="status-dot" id="memory-dot"></span><span>${memory}%</span>`;
-latencyValue.innerHTML = `<span class="status-dot" id="latency-dot"></span><span>${latency}ms</span>`;
-updateStatusDot(cpuDot, cpu, 80, 95);
-updateStatusDot(memoryDot, memory, 85, 95);
-updateStatusDot(latencyDot, latency, 100, 200);
-}
-function updateStatusDot(dotEl, value, warningThreshold, criticalThreshold) {
-dotEl.className = 'status-dot';
-if (value >= criticalThreshold) {
-dotEl.classList.add('status-dot--critical');
-} else if (value >= warningThreshold) {
-dotEl.classList.add('status-dot--warning');
-} else {
-dotEl.classList.add('status-dot--normal');
-}
-}
+/* Connection indicator cycle */
+var connDot=document.getElementById("conn-dot"),connLabel=document.getElementById("conn-label");
+setInterval(function(){
+  connDot.className="status-dot status-dot--updating";connLabel.textContent="Syncing";
+  setTimeout(function(){connDot.className="status-dot status-dot--normal";connLabel.textContent="Live";},1600);
+},15000);
 
-// Chart simulation
-function updateChart() {
-const bars = chartBars.children;
-for (let i = 0; i < bars.length; i++) {
-const bar = bars[i];
-const value = Math.random();
-bar.style.setProperty('--bar-value', value);
-if (!document.documentElement.matches(':root')) {
-const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-if (!reducedMotion) {
-bar.classList.add('active');
-setTimeout(() => bar.classList.remove('active'), 300);
-}
-} else {
-bar.classList.remove('active');
-}
-}
-}
-
-// Alert feed simulation
-const alertMessages = [
-{text: 'High CPU usage detected on server-web-02', type: 'warning'},
-{text: 'Memory leak detected in service-api', type: 'critical'},
-{text: 'Backup job completed successfully', type: 'normal'},
-{text: 'SSL certificate expires in 7 days', type: 'warning'},
-{text: 'Disk space critical on data-node-01', type: 'critical'},
-{text: 'Network latency spike in us-east-1', type: 'warning'},
-{text: 'Cache hit ratio dropped below threshold', type: 'warning'},
-{text: 'New version v2.1.0 deployed successfully', type: 'normal'}
+/* Toasts */
+var toasts=document.getElementById("toasts"),lastToast=0;
+var pool=[
+ {cls:"toast--warning",icon:"warning",msg:"CPU threshold exceeded on worker-07 (91%)"},
+ {cls:"toast--normal",icon:"check_circle",msg:"Latency normalized on api-gateway"},
+ {cls:"toast--critical",icon:"error",msg:"Error rate spike detected on checkout service"},
+ {cls:"toast--normal",icon:"check_circle",msg:"db-replica lag recovered to 40ms"}
 ];
-function addAlert() {
-const alert = alertMessages[Math.floor(Math.random() * alertMessages.length)];
-const alertEl = document.createElement('div');
-alertEl.className = `alert-item alert-item--${alert.type}`;
-alertEl.innerHTML = `
-<span class="material-symbols-outlined">${alert.type === 'critical' ? 'error' : alert.type === 'warning' ? 'error' : 'check_circle'}</span>
-<div>
-<div class="alert-message">${alert.text}</div>
-<div class="alert-time">${Math.floor(Math.random() * 10)}m ago</div>
-</div>
-`;
-alertFeed.prepend(alertEl);
-while (alertFeed.children.length > 3) {
-alertFeed.removeChild(alertFeed.lastChild);
+var pi=0;
+function fireToast(){
+  var now=Date.now();if(now-lastToast<9000)return;lastToast=now;
+  var d=pool[pi++%pool.length];
+  var el=document.createElement("div");el.className="toast "+d.cls;
+  el.innerHTML='<span class="material-symbols-rounded toast__icon" aria-hidden="true">'+d.icon+'</span><span>'+d.msg+'</span><button class="toast__close" type="button" aria-label="Dismiss notification"><span class="material-symbols-rounded" aria-hidden="true">close</span></button><span class="toast__bar" aria-hidden="true"></span>';
+  toasts.appendChild(el);
+  function dismiss(){el.classList.add("is-leaving");setTimeout(function(){el.remove();},260);}
+  el.querySelector(".toast__close").addEventListener("click",dismiss);
+  setTimeout(dismiss,8000);
 }
-}
+setTimeout(fireToast,6000);
+setInterval(fireToast,12000);
 
-// Status grid simulation
-function updateStatusGrid() {
-const items = statusGrid.children;
-const statuses = ['check_circle', 'error', 'warning'];
-items.forEach((item, index) => {
-const icon = item.querySelector('.material-symbols-outlined');
-const status = statuses[Math.floor(Math.random() * statuses.length)];
-icon.textContent = status;
-if (status === 'error') {
-icon.style.color = 'var(--text-error)';
-} else if (status === 'warning') {
-icon.style.color = 'var(--status-warning)';
-} else {
-icon.style.color = 'var(--status-normal)';
-}
+/* CTA form */
+var form=document.getElementById("cta-form"),email=document.getElementById("cta-email"),err=document.getElementById("cta-error"),btn=document.getElementById("cta-btn");
+form.addEventListener("submit",function(e){
+  e.preventDefault();
+  var v=email.value.trim();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)){
+    email.setAttribute("aria-invalid","true");err.hidden=false;email.focus();return;
+  }
+  email.removeAttribute("aria-invalid");err.hidden=true;
+  btn.classList.add("is-loading");btn.setAttribute("aria-busy","true");btn.disabled=true;
+  setTimeout(function(){
+    btn.classList.remove("is-loading");btn.classList.add("is-success");btn.removeAttribute("aria-busy");
+    btn.querySelector(".btn__label").textContent="Check Your Inbox";
+    var el=document.createElement("div");el.className="toast toast--normal";
+    el.innerHTML='<span class="material-symbols-rounded toast__icon" aria-hidden="true">check_circle</span><span>Setup link sent to '+v+'</span><button class="toast__close" type="button" aria-label="Dismiss notification"><span class="material-symbols-rounded" aria-hidden="true">close</span></button><span class="toast__bar" aria-hidden="true"></span>';
+    toasts.appendChild(el);
+    el.querySelector(".toast__close").addEventListener("click",function(){el.remove();});
+    setTimeout(function(){el.remove();},8000);
+    form.reset();
+  },1400);
 });
-}
+email.addEventListener("input",function(){if(email.getAttribute("aria-invalid")){email.removeAttribute("aria-invalid");err.hidden=true;}});
 
-// Health sparkline simulation
-function updateHealthSparkline() {
-const bars = healthSparkline.children;
-bars.forEach(bar => {
-const value = 0.7 + Math.random() * 0.25;
-bar.style.setProperty('--bar-value', value);
-});
+/* Section reveal */
+if(!reduced&&"IntersectionObserver" in window){
+  var obs=new IntersectionObserver(function(entries){
+    entries.forEach(function(en,idx){if(en.isIntersecting){en.target.style.transitionDelay=(idx%3*70)+"ms";en.target.classList.add("is-in");obs.unobserve(en.target);}});
+  },{threshold:.12});
+  var st=document.createElement("style");
+  st.textContent=".rv{opacity:0;transform:translateY(14px);transition:opacity .5s ease-out,transform .5s var(--ease-standard)}.rv.is-in{opacity:1;transform:none}";
+  document.head.appendChild(st);
+  document.querySelectorAll(".feature,.step,.quote,.tier").forEach(function(el){el.classList.add("rv");obs.observe(el);});
 }
-
-// Alert sparkline simulation
-function updateAlertSparkline() {
-const bars = alertSparkline.children;
-bars.forEach(bar => {
-const value = Math.random();
-bar.style.setProperty('--bar-value', value);
-});
-}
-
-// Toast system
-function showToast(message, type = 'normal') {
-const now = Date.now();
-if (now - lastToastTime < TOAST_THROTTLE) return;
-lastToastTime = now;
-const toast = document.createElement('div');
-toast.className = `toast toast--${type}`;
-toast.setAttribute('aria-live', 'polite');
-toast.innerHTML = `
-<span class="material-symbols-outlined">${type === 'critical' ? 'error' : type === 'warning' ? 'error' : 'check_circle'}</span>
-<span>${message}</span>
-<button class="toast-close" aria-label="Dismiss toast">
-<span class="material-symbols-outlined">close</span>
-</span>
-`;
-document.body.appendChild(toast);
-setTimeout(() => {
-toast.classList.add('toast--show');
-}, 10);
-const progress = document.createElement('div');
-progress.className = 'toast-progress';
-toast.appendChild(progress);
-let width = 100;
-const interval = setInterval(() => {
-width -= 2;
-progress.style.width = width + '%';
-if (width <= 0) {
-clearInterval(interval);
-toast.remove();
-}
-}, 50);
-const closeBtn = toast.querySelector('.toast-close');
-closeBtn.addEventListener('click', () => {
-clearInterval(interval);
-toast.remove();
-});
-}
-
-// Form handling
-ctaForm.addEventListener('submit', (e) => {
-e.preventDefault();
-const email = ctaEmail.value.trim();
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-if (!emailRegex.test(email)) {
-ctaEmail.classList.add('invalid');
-inputError.textContent = 'Please enter a valid email address';
-return;
-}
-ctaEmail.classList.remove('invalid');
-inputError.textContent = '';
-ctaSubmit.disabled = true;
-ctaSubmit.classList.add('btn--loading');
-ctaSpinner.style.animation = 'spin 1s linear infinite';
-setTimeout(() => {
-ctaSubmit.classList.remove('btn--loading');
-ctaSpinner.style.animation = 'none';
-ctaSubmit.innerHTML = 'Success!';
-showToast('Welcome to Nimbus! Check your email to get started.', 'normal');
-setTimeout(() => {
-ctaSubmit.disabled = false;
-ctaSubmit.innerHTML = 'Get Started Free <span class="material-symbols-outlined" id="cta-spinner">autorenew</span>';
-}, 2000);
-}, 1500);
-});
-
-// Reduced motion handling
-const reducedMotionMedia = window.matchMedia('(prefers-reduced-motion: reduce)');
-function handleReducedMotionChange(e) {
-if (e.matches) {
-// Disable animations
-document.documentElement.style.setProperty('--transition-normal', '0ms');
-document.documentElement.style.setProperty('--transition-fast', '0ms');
-// Stop specific animations
-autoRefreshIcon.style.animation = 'none';
-ctaSpinner.style.animation = 'none';
-} else {
-// Restore transitions
-document.documentElement.style.setProperty('--transition-normal', '300ms');
-document.documentElement.style.setProperty('--transition-fast', '150ms');
-}
-}
-reducedMotionMedia.addListener(handleReducedMotionChange);
-handleReducedMotionChange(reducedMotionMedia);
-
-// Initialize
-initTheme();
-startConnectionSimulation();
-startAutoRefreshSimulation();
-setInterval(updateKPIs, 2000);
-setInterval(updateChart, 1500);
-setInterval(addAlert, 10000);
-setInterval(updateStatusGrid, 8000);
-setInterval(updateHealthSparkline, 5000);
-setInterval(updateAlertSparkline, 4000);
-// Initial updates
-updateKPIs();
-updateChart();
-updateStatusGrid();
-updateHealthSparkline();
-updateAlertSparkline();
-// Skip link handling
-document.querySelector('.skip-to-content').addEventListener('click', function(e) {
-e.preventDefault();
-document.getElementById('main-content').scrollIntoView({behavior: 'smooth'});
-});
+})();
 </script>
 </body>
 </html>

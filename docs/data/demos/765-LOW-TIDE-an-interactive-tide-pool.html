@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LOW TIDE - Know the tide, find the pools</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<style>
+:root{
+  --bg-primary:#d8e8e4;--bg-secondary:#fefefe;--text-primary:#20323a;--text-secondary:#4a6568;
+  --primary:#20323a;--text-on-primary:#d8e8e4;--secondary:#9ab8b4;--accent:#5f7f79;
+  --glass-bg:rgba(254,254,254,0.42);--glass-border:rgba(32,50,58,0.12);--border-default:rgba(32,50,58,0.16);
+  --text-success:#2f7d5f;--border-success:#2f7d5f;--text-error:#b3402e;--border-error:#b3402e;
+  --radius-sm:8px;--radius-md:14px;--radius-lg:22px;
+  --shadow-sm:0 2px 10px rgba(32,50,58,0.08);--shadow-md:0 12px 32px rgba(32,50,58,0.16);
+  --spacing-gap:1.5rem;--transition-fast:150ms;--transition-normal:300ms;
+  --ease-standard:cubic-bezier(0.4,0,0.2,1);
+  --z-dropdown:100;--z-modal:1000;--z-toast:1100;--glass-blur:14px;
+  --font-display:"Fraunces",serif;--font-base:"Inter",system-ui,sans-serif;
+  --band-grad:linear-gradient(135deg,#20323a 0%,#33525c 55%,#4a6568 100%);
+}
+:root[data-theme="dark"]{
+  --bg-primary:#14262e;--bg-secondary:#1b3038;--text-primary:#d8e8e4;--text-secondary:#a8c4be;
+  --primary:#d8e8e4;--text-on-primary:#20323a;--secondary:#7a9a94;--accent:#9ab8b4;
+  --glass-bg:rgba(20,38,46,0.55);--glass-border:rgba(216,232,228,0.14);--border-default:rgba(216,232,228,0.16);
+  --text-success:#7ecfa8;--border-success:#7ecfa8;--text-error:#ff9b8a;--border-error:#ff9b8a;
+  --shadow-sm:0 2px 10px rgba(0,0,0,0.35);--shadow-md:0 12px 32px rgba(0,0,0,0.5);
+  --band-grad:linear-gradient(135deg,#0c1a20 0%,#14262e 55%,#1b3038 100%);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;font-size:1rem;overflow-x:hidden;transition:background var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard)}
+h1,h2,h3{font-family:var(--font-display);letter-spacing:-0.02em;line-height:1.12;font-weight:600}
+img{max-width:100%}
+a{color:inherit}
+.container{max-width:1200px;margin:0 auto;padding:0 1.25rem}
+@media(min-width:768px){.container{padding:0 2rem}}
+.section{padding:clamp(4rem,8vw,7rem) 0}
+.material-symbols-rounded{font-variation-settings:'FILL' 0,'wght' 500,'GRAD' 0,'opsz' 24;font-size:1.4rem;line-height:1}
+.skip-link{position:absolute;left:-9999px;top:0;background:var(--primary);color:var(--text-on-primary);padding:0.75rem 1.25rem;border-radius:0 0 var(--radius-md) 0;z-index:var(--z-toast)}
+.skip-link:focus{left:0}
+/* ambient water */
+.water{position:fixed;inset:0;z-index:-1;overflow:hidden;background:
+  radial-gradient(1200px 600px at 80% -10%,rgba(207,232,224,0.9),transparent 60%),
+  radial-gradient(900px 500px at 10% 110%,rgba(154,184,180,0.45),transparent 60%),
+  linear-gradient(180deg,var(--bg-primary),var(--bg-primary))}
+:root[data-theme="dark"] .water{background:
+  radial-gradient(1200px 600px at 80% -10%,rgba(27,48,56,0.9),transparent 60%),
+  radial-gradient(900px 500px at 10% 110%,rgba(32,50,58,0.6),transparent 60%),
+  linear-gradient(180deg,var(--bg-primary),var(--bg-primary))}
+.blob{position:absolute;border-radius:50%;filter:blur(70px);opacity:0.55;animation:drift 26s ease-in-out infinite alternate}
+.blob--a{width:44vw;height:44vw;left:-10vw;top:-8vw;background:radial-gradient(circle,#cfe8e0,transparent 70%)}
+.blob--b{width:36vw;height:36vw;right:-8vw;top:30vh;background:radial-gradient(circle,#a8c4be,transparent 70%);animation-duration:32s}
+.blob--c{width:30vw;height:30vw;left:20vw;bottom:-12vw;background:radial-gradient(circle,#9ab8b4,transparent 70%);animation-duration:38s}
+@keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(6vw,4vh) scale(1.12)}}
+/* header */
+.header{position:sticky;top:0;z-index:var(--z-dropdown);backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur));background:var(--glass-bg);border-bottom:1px solid var(--glass-border);transition:box-shadow var(--transition-normal) var(--ease-standard)}
+.header--scrolled{box-shadow:var(--shadow-md)}
+.header__inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:1rem}
+.brand{display:flex;align-items:center;gap:0.5rem;font-family:var(--font-display);font-weight:700;font-size:1.2rem;letter-spacing:0.04em;text-decoration:none}
+.brand .material-symbols-rounded{font-variation-settings:'FILL' 1,'wght' 500;color:var(--accent)}
+.nav{display:flex;align-items:center;gap:0.25rem}
+.nav__link{display:flex;align-items:center;min-height:44px;padding:0 0.85rem;border-radius:var(--radius-sm);text-decoration:none;font-weight:500;font-size:0.95rem;color:var(--text-secondary);transition:color var(--transition-fast),background var(--transition-fast)}
+@media(hover:hover) and (pointer:fine){.nav__link:hover{color:var(--text-primary);background:var(--glass-bg)}}
+.header__actions{display:flex;align-items:center;gap:0.5rem}
+.icon-btn{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-sm);border:1px solid var(--border-default);background:transparent;color:var(--text-primary);cursor:pointer;transition:background var(--transition-fast),transform var(--transition-fast)}
+.icon-btn:active{transform:scale(0.95)}
+@media(hover:hover) and (pointer:fine){.icon-btn:hover{background:var(--glass-bg)}}
+.menu-btn{display:none}
+.mobile-panel{display:none}
+@media(max-width:860px){
+  .nav{display:none}
+  .menu-btn{display:flex}
+  .mobile-panel{display:block;position:absolute;top:68px;left:0;right:0;background:var(--glass-bg);backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur));border-bottom:1px solid var(--glass-border);padding:0.5rem 1.25rem 1rem;box-shadow:var(--shadow-md)}
+  .mobile-panel .nav__link{display:flex;width:100%}
+}
+/* buttons */
+.btn{display:flex;align-items:center;justify-content:center;gap:0.5rem;min-height:44px;padding:0.65rem 1.4rem;border-radius:var(--radius-md);border:1px solid transparent;font-family:var(--font-base);font-weight:600;font-size:0.95rem;cursor:pointer;text-decoration:none;transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast),filter var(--transition-fast),background var(--transition-fast),color var(--transition-fast);white-space:nowrap}
+.btn:active{transform:scale(0.97)}
+.btn:focus-visible,.icon-btn:focus-visible,.nav__link:focus-visible,a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px;box-shadow:0 0 0 4px var(--glass-border)}
+.btn-primary{background:var(--primary);color:var(--text-on-primary)}
+@media(hover:hover) and (pointer:fine){.btn-primary:hover{filter:brightness(1.12);box-shadow:var(--shadow-md)}}
+.btn-secondary{background:transparent;color:var(--text-primary);border-color:var(--border-default)}
+@media(hover:hover) and (pointer:fine){.btn-secondary:hover{background:var(--glass-bg)}}
+.btn-glass{background:var(--glass-bg);color:var(--text-primary);border-color:var(--glass-border);backdrop-filter:blur(var(--glass-blur))}
+.btn-danger{background:var(--text-error);color:#fefefe}
+.btn:disabled,.btn.is-disabled{opacity:0.5;filter:grayscale(0.6);cursor:not-allowed}
+.btn.is-loading{pointer-events:none;opacity:0.85}
+.btn.is-loading .material-symbols-rounded{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* glass card */
+.card,.glass-panel{position:relative;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:var(--spacing-gap);backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur));transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal),border-color var(--transition-normal)}
+@supports not (backdrop-filter:blur(1px)){.card,.glass-panel,.header,.mobile-panel{background:rgba(254,254,254,0.92)}
+:root[data-theme="dark"] .card,:root[data-theme="dark"] .glass-panel,:root[data-theme="dark"] .header,:root[data-theme="dark"] .mobile-panel{background:rgba(20,38,46,0.94)}}
+.card::after{content:"";position:absolute;inset:-1px;border-radius:var(--radius-lg);border:1px solid var(--accent);opacity:0;transform:scale(0.97);transition:opacity var(--transition-normal),transform var(--transition-normal);pointer-events:none}
+@media(hover:hover) and (pointer:fine){.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}.card:hover::after{opacity:0.5;transform:scale(1.02)}}
+.card:focus-within{border-color:var(--accent)}
+.card--skeleton{overflow:hidden}
+.card--skeleton::before{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,var(--glass-bg) 50%,transparent 70%);animation:shimmer 1.6s linear infinite}
+@keyframes shimmer{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+.card--empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5rem;text-align:center;color:var(--text-secondary);min-height:10rem}
+/* hero */
+.hero{padding:clamp(3rem,6vw,5rem) 0 clamp(3rem,6vw,5rem)}
+.hero__panel{max-width:760px;margin:0 auto;text-align:center;padding:clamp(2rem,5vw,3.5rem)}
+.hero__panel h1,.hero__panel h2{text-shadow:0 1px 2px rgba(254,254,254,0.35)}
+:root[data-theme="dark"] .hero__panel h1{text-shadow:0 1px 3px rgba(0,0,0,0.4)}
+.eyebrow{font-size:0.78rem;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:var(--accent);margin-bottom:1rem}
+.hero h1{font-size:clamp(2.25rem,5.4vw,3.9rem);margin-bottom:1rem}
+.hero__sub{color:var(--text-secondary);font-size:1.08rem;max-width:52ch;margin:0 auto 1.75rem}
+.hero__ctas{display:flex;align-items:center;justify-content:center;gap:0.75rem;flex-wrap:wrap}
+.tide-strip{display:flex;align-items:stretch;justify-content:center;gap:0.9rem;flex-wrap:wrap;margin-top:1.75rem}
+.chip{display:flex;align-items:center;gap:0.6rem;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-md);padding:0.7rem 1.1rem;backdrop-filter:blur(var(--glass-blur));font-size:0.92rem}
+.chip .material-symbols-rounded{color:var(--accent)}
+.chip strong{font-weight:600}
+.chip span{color:var(--text-secondary)}
+/* section headers */
+.sec-head{max-width:65ch;margin-bottom:2.5rem}
+.sec-head h2{font-size:clamp(1.8rem,3.6vw,2.6rem);margin-bottom:0.6rem}
+.sec-head p{color:var(--text-secondary);max-width:60ch}
+/* features */
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--spacing-gap)}
+@media(max-width:860px){.grid-3{grid-template-columns:1fr}}
+.feature__icon{display:flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:var(--radius-md);background:var(--glass-bg);border:1px solid var(--glass-border);color:var(--accent);margin-bottom:1rem}
+.feature__icon .material-symbols-rounded{font-size:1.7rem}
+.feature h3{font-size:1.25rem;margin-bottom:0.5rem}
+.feature p{color:var(--text-secondary);font-size:0.96rem}
+/* steps */
+.steps{display:flex;align-items:stretch;gap:var(--spacing-gap);position:relative}
+.steps::before{content:"";position:absolute;top:44px;left:12%;right:12%;height:1px;background:var(--border-default)}
+.step{flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:0.75rem;position:relative}
+/* exception: step stacks align flex-start per spec */
+.step__badge{display:flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;background:var(--primary);color:var(--text-on-primary);font-family:var(--font-display);font-weight:700;font-size:1.25rem;box-shadow:var(--shadow-sm)}
+.step h3{font-size:1.2rem;display:flex;align-items:center;gap:0.5rem}
+.step h3 .material-symbols-rounded{color:var(--accent)}
+.step p{color:var(--text-secondary);font-size:0.96rem}
+@media(max-width:768px){.steps{flex-direction:column}.steps::before{display:none}}
+/* testimonials */
+.quote-card{display:flex;flex-direction:column;gap:1rem}
+.quote-card .material-symbols-rounded{color:var(--accent);font-variation-settings:'FILL' 1}
+.stars{display:flex;gap:2px;color:var(--accent)}
+.stars .material-symbols-rounded{font-size:1.1rem;font-variation-settings:'FILL' 1}
+.quote-card blockquote{font-size:1rem;line-height:1.6}
+.quote-card blockquote p::before{content:"\201C "}
+.quote-card blockquote p::after{content:" \201D"}
+.person{display:flex;align-items:center;gap:0.75rem}
+.avatar{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#7a9a94,#20323a);color:#d8e8e4;font-weight:700;font-size:0.85rem;flex-shrink:0}
+:root[data-theme="dark"] .avatar{background:linear-gradient(135deg,#9ab8b4,#33525c);color:#14262e}
+.person small{display:block;color:var(--text-secondary)}
+/* pricing */
+.billing{display:flex;align-items:center;gap:0.75rem;margin-bottom:2.25rem}
+.billing__opt{background:none;border:none;font:inherit;font-weight:600;color:var(--text-secondary);cursor:pointer;min-height:44px;padding:0 0.35rem}
+.billing__opt[aria-pressed="true"]{color:var(--text-primary)}
+.billing__save{font-size:0.75rem;font-weight:600;color:var(--text-success)}
+.switch{position:relative;width:52px;height:28px;border-radius:999px;border:1px solid var(--border-default);background:var(--glass-bg);cursor:pointer;flex-shrink:0}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--accent);transition:transform var(--transition-fast) var(--ease-standard)}
+.switch[aria-pressed="true"]::after{transform:translateX(24px)}
+.price-grid{align-items:stretch}
+.tier{display:flex;flex-direction:column;gap:1rem}
+.tier--featured{border:1px solid var(--accent);box-shadow:var(--shadow-md);transform:scale(1.03)}
+:root[data-theme="dark"] .tier--featured{border-color:var(--accent)}
+.tier__badge{align-self:flex-start;font-size:0.72rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;background:var(--primary);color:var(--text-on-primary);border-radius:999px;padding:0.3rem 0.8rem}
+.tier h3{font-size:1.3rem}
+.tier__price{font-family:var(--font-display);font-size:2.4rem;font-weight:700;transition:opacity var(--transition-fast)}
+.tier__price small{font-family:var(--font-base);font-size:0.9rem;font-weight:500;color:var(--text-secondary)}
+.tier__price.is-fading{opacity:0}
+.tier ul{list-style:none;display:flex;flex-direction:column;gap:0.6rem;flex:1}
+.tier li{display:flex;align-items:flex-start;gap:0.55rem;font-size:0.94rem;color:var(--text-secondary)}
+.tier li .material-symbols-rounded{color:var(--text-success);font-size:1.15rem;margin-top:2px}
+/* faq */
+.faq{max-width:760px}
+.faq__item{border:1px solid var(--glass-border);border-radius:var(--radius-md);background:var(--glass-bg);backdrop-filter:blur(var(--glass-blur));margin-bottom:0.75rem;overflow:hidden}
+.faq__q{display:flex;align-items:center;justify-content:space-between;gap:1rem;width:100%;min-height:44px;padding:1rem 1.25rem;background:none;border:none;font:inherit;font-weight:600;text-align:left;color:var(--text-primary);cursor:pointer}
+.faq__q .material-symbols-rounded{transition:transform var(--transition-normal) var(--ease-standard);color:var(--accent);flex-shrink:0}
+.faq__q[aria-expanded="true"] .material-symbols-rounded{transform:rotate(180deg)}
+.faq__a{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--transition-normal) var(--ease-standard)}
+.faq__a>div{overflow:hidden}
+.faq__a p{padding:0 1.25rem 1.1rem;color:var(--text-secondary);font-size:0.95rem}
+.faq__item:has(.faq__q[aria-expanded="true"]) .faq__a{grid-template-rows:1fr}
+/* cta band */
+.cta-band{background:var(--band-grad);border-radius:var(--radius-lg);padding:clamp(2.5rem,6vw,4.5rem);text-align:center;color:#d8e8e4}
+.cta-band h2{font-size:clamp(1.7rem,3.4vw,2.5rem);margin-bottom:0.75rem;max-width:22ch;margin-left:auto;margin-right:auto}
+.cta-band p{color:#cfe8e0;max-width:48ch;margin:0 auto 1.75rem}
+.cta-band .btn-primary{background:#d8e8e4;color:#20323a}
+.cta-band__micro{font-size:0.82rem;color:#a8c4be;margin-top:1rem}
+/* footer */
+.footer{border-top:1px solid var(--glass-border);padding:3.5rem 0 2rem;background:var(--glass-bg);backdrop-filter:blur(var(--glass-blur))}
+.footer__grid{display:flex;gap:2.5rem;flex-wrap:wrap;align-items:flex-start}
+/* exception: footer columns align flex-start per spec */
+.footer__brand{flex:1 1 260px;display:flex;flex-direction:column;align-items:flex-start;gap:0.75rem}
+.footer__brand p{color:var(--text-secondary);font-size:0.92rem;max-width:32ch}
+.socials{display:flex;gap:0.5rem}
+.footer__col{display:flex;flex-direction:column;align-items:flex-start;gap:0.35rem;min-width:140px}
+.footer__col h4{font-size:0.8rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-secondary);margin-bottom:0.4rem}
+.footer__col a{display:flex;align-items:center;min-height:36px;text-decoration:none;color:var(--text-secondary);font-size:0.92rem}
+@media(hover:hover) and (pointer:fine){.footer__col a:hover{color:var(--text-primary)}}
+.footer__bar{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid var(--glass-border);color:var(--text-secondary);font-size:0.85rem}
+/* modal */
+.modal{position:fixed;inset:0;z-index:var(--z-modal);display:flex;align-items:center;justify-content:center;padding:1.25rem;background:rgba(20,38,46,0.45);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);opacity:0;pointer-events:none;transition:opacity var(--transition-normal) var(--ease-standard)}
+.modal.is-open{opacity:1;pointer-events:auto}
+.modal__panel{width:100%;max-width:440px;background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);padding:2rem;transform:scale(0.96);opacity:0;transition:transform var(--transition-normal) var(--ease-standard),opacity var(--transition-normal)}
+.modal.is-open .modal__panel{transform:scale(1);opacity:1}
+.modal__head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:0.5rem}
+.modal__head h2{font-size:1.5rem}
+.modal__sub{color:var(--text-secondary);font-size:0.94rem;margin-bottom:1.5rem}
+.input-group{display:flex;flex-direction:column;align-items:stretch;gap:0.4rem;margin-bottom:1.25rem}
+/* exception: form groups stack from top */
+.input-group label{font-weight:600;font-size:0.9rem}
+.input-group input{min-height:48px;padding:0 1rem;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-primary);color:var(--text-primary);font:inherit;transition:border-color var(--transition-fast),box-shadow var(--transition-fast)}
+.input-group input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--glass-border)}
+.input-group input:disabled{opacity:0.5;cursor:not-allowed}
+.input-group input[readonly]{background:var(--glass-bg)}
+.input-group.is-valid input{border-color:var(--border-success)}
+.input-group.is-invalid input{border-color:var(--border-error)}
+.input-group__hint{font-size:0.82rem;color:var(--text-secondary)}
+.input-group__error{display:flex;align-items:center;gap:0.35rem;font-size:0.84rem;color:var(--text-error);min-height:1.2em}
+.input-group__error .material-symbols-rounded{font-size:1rem}
+.modal__success{display:flex;flex-direction:column;align-items:center;gap:0.75rem;text-align:center;padding:1rem 0}
+.modal__success .material-symbols-rounded{font-size:2.6rem;color:var(--text-success);font-variation-settings:'FILL' 1}
+.modal__success p{color:var(--text-secondary)}
+/* reveal */
+.reveal{opacity:0;transform:translateY(14px);transition:opacity 500ms var(--ease-standard),transform 500ms var(--ease-standard)}
+.reveal.is-visible{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .blob{animation:none}
+  .reveal{transition:opacity 200ms ease;transform:none!important}
+  *,*::before,*::after{animation-duration:0.01ms!important;transition-duration:120ms!important}
+  .faq__a{transition:none}
+}
+@media (prefers-reduced-transparency:reduce){
+  .card,.glass-panel,.header,.mobile-panel,.chip,.faq__item,.footer{background:var(--bg-secondary);backdrop-filter:none}
+}
+@media (prefers-contrast:more){
+  .card,.glass-panel,.chip,.faq__item{background:var(--bg-secondary);border-color:var(--text-secondary)}
+}
+@media(max-width:640px){
+  .hero__ctas .btn{width:100%}
+  .tide-strip{flex-direction:column;align-items:stretch}
+  .tier--featured{transform:none}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="water" aria-hidden="true"><div class="blob blob--a"></div><div class="blob blob--b"></div><div class="blob blob--c"></div></div>
+
+<header class="header" data-header>
+  <div class="container header__inner">
+    <a class="brand" href="#top"><span class="material-symbols-rounded" aria-hidden="true">waves</span>LOW TIDE</a>
+    <nav class="nav" aria-label="Primary">
+      <a class="nav__link" href="#features">Features</a>
+      <a class="nav__link" href="#how">How it works</a>
+      <a class="nav__link" href="#pricing">Pricing</a>
+      <a class="nav__link" href="#faq">FAQ</a>
+    </nav>
+    <div class="header__actions">
+      <button class="icon-btn" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode"><span class="material-symbols-rounded" aria-hidden="true" data-theme-icon>dark_mode</span></button>
+      <button class="btn btn-primary" type="button" data-open-modal>Join the waitlist</button>
+      <button class="icon-btn menu-btn" type="button" aria-expanded="false" aria-controls="mobile-panel" aria-label="Open menu" data-menu-btn><span class="material-symbols-rounded" aria-hidden="true">menu</span></button>
+    </div>
+  </div>
+  <div class="mobile-panel" id="mobile-panel" hidden>
+    <nav aria-label="Mobile">
+      <a class="nav__link" href="#features">Features</a>
+      <a class="nav__link" href="#how">How it works</a>
+      <a class="nav__link" href="#pricing">Pricing</a>
+      <a class="nav__link" href="#faq">FAQ</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero" id="top">
+    <div class="container">
+      <div class="glass-panel hero__panel">
+        <p class="eyebrow">Know the tide</p>
+        <h1>The tide goes out. The wonder comes in.</h1>
+        <p class="hero__sub">LOW TIDE forecasts the intertidal window so you can time every rock pool visit to the moment the sea steps back.</p>
+        <div class="hero__ctas">
+          <a class="btn btn-primary" href="#features">Explore the pools</a>
+          <button class="btn btn-secondary" type="button" data-open-modal>Join the waitlist</button>
+        </div>
+        <div class="tide-strip" aria-label="Current tide conditions">
+          <div class="chip"><span class="material-symbols-rounded" aria-hidden="true">schedule</span><span>Next low tide</span><strong data-countdown>4:32 PM</strong></div>
+          <div class="chip"><span class="material-symbols-rounded" aria-hidden="true">thermostat</span><span>Water</span><strong>14&deg;C</strong></div>
+          <div class="chip"><span class="material-symbols-rounded" aria-hidden="true">waves</span><span>Swell</span><strong>0.6 m</strong></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="features">
+    <div class="container">
+      <div class="sec-head reveal">
+        <h2>Everything the shoreline is hiding</h2>
+        <p>Three tools, one goal: get you to the right pool at the right hour, with the confidence to stay a little longer.</p>
+      </div>
+      <div class="grid-3">
+        <article class="card feature reveal">
+          <div class="feature__icon"><span class="material-symbols-rounded" aria-hidden="true">waves</span></div>
+          <h3>Live Tide Charts</h3>
+          <p>Hour-by-hour predictions for 4,000 coastal stations, with the low-tide window highlighted so planning takes seconds.</p>
+        </article>
+        <article class="card feature reveal">
+          <div class="feature__icon"><span class="material-symbols-rounded" aria-hidden="true">explore</span></div>
+          <h3>Pool Discovery Maps</h3>
+          <p>Community-mapped tide pools rated by access, species richness, and how long each one stays exposed.</p>
+        </article>
+        <article class="card feature reveal">
+          <div class="feature__icon"><span class="material-symbols-rounded" aria-hidden="true">thermostat</span></div>
+          <h3>Marine Weather, Decoded</h3>
+          <p>Swell, wind, and water temperature translated into plain advice: calm morning, bring grippy shoes, go before ten.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="how">
+    <div class="container">
+      <div class="sec-head reveal">
+        <h2>From forecast to first find</h2>
+        <p>A low-tide outing, start to finish, in three moves.</p>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <div class="step__badge" aria-hidden="true">1</div>
+          <h3><span class="material-symbols-rounded" aria-hidden="true">schedule</span>Check the tide window</h3>
+          <p>Pick your beach and see exactly when the water pulls back far enough to reveal the pools.</p>
+        </div>
+        <div class="step reveal">
+          <div class="step__badge" aria-hidden="true">2</div>
+          <h3><span class="material-symbols-rounded" aria-hidden="true">route</span>Chart your pool walk</h3>
+          <p>Follow a suggested route between pools, timed so you reach each one while it is still exposed.</p>
+        </div>
+        <div class="step reveal">
+          <div class="step__badge" aria-hidden="true">3</div>
+          <h3><span class="material-symbols-rounded" aria-hidden="true">edit_note</span>Log what you find</h3>
+          <p>Record anemones, crabs, and sea stars. Your notes help the whole community map the reef.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="testimonials">
+    <div class="container">
+      <div class="sec-head reveal">
+        <h2>People who live by the water</h2>
+        <p>Field notes from the folks already walking the low tide with us.</p>
+      </div>
+      <div class="grid-3">
+        <article class="card quote-card reveal">
+          <span class="material-symbols-rounded" aria-hidden="true">format_quote</span>
+          <blockquote><p>I plan survey days around LOW TIDE now. The window alerts have never once left me standing on dry rock watching the water come back in.</p></blockquote>
+          <div class="stars" role="img" aria-label="Rated 5 out of 5"><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span></div>
+          <div class="person"><div class="avatar" aria-hidden="true">MO</div><div>Dr. Mara Okafor<small>Marine biologist, Pacifica Coastal Lab</small></div></div>
+        </article>
+        <article class="card quote-card reveal">
+          <span class="material-symbols-rounded" aria-hidden="true">format_quote</span>
+          <blockquote><p>My fourth graders found their first octopus den because the app told us which pool to visit and when. That is a field trip they will never forget.</p></blockquote>
+          <div class="stars" role="img" aria-label="Rated 5 out of 5"><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span></div>
+          <div class="person"><div class="avatar" aria-hidden="true">TR</div><div>Tom Reyes<small>Elementary school teacher, Mendocino</small></div></div>
+        </article>
+        <article class="card quote-card reveal">
+          <span class="material-symbols-rounded" aria-hidden="true">format_quote</span>
+          <blockquote><p>Forty years of beachcombing and I still check it every morning. The plain-language weather notes read like a friend who knows the coast.</p></blockquote>
+          <div class="stars" role="img" aria-label="Rated 5 out of 5"><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span></div>
+          <div class="person"><div class="avatar" aria-hidden="true">EB</div><div>Edith Bramwell<small>Lifelong beachcomber, Cannon Beach</small></div></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="pricing">
+    <div class="container">
+      <div class="sec-head reveal">
+        <h2>Pick your depth</h2>
+        <p>Start free. Upgrade when the pools start calling you by name.</p>
+      </div>
+      <div class="billing reveal">
+        <button class="billing__opt" type="button" aria-pressed="true" data-billing="monthly">Monthly</button>
+        <button class="switch" type="button" aria-pressed="false" aria-label="Toggle yearly billing" data-billing-switch></button>
+        <button class="billing__opt" type="button" aria-pressed="false" data-billing="yearly">Yearly <span class="billing__save">save ~17%</span></button>
+      </div>
+      <div class="grid-3 price-grid">
+        <article class="card tier reveal">
+          <h3>Driftwood</h3>
+          <p class="tier__price" data-price data-monthly="$0" data-yearly="$0">$0<small data-price-note data-monthly="/mo" data-yearly="/yr">/mo</small></p>
+          <ul>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Tide charts for 3 favorite beaches</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Daily low-tide summary</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Community pool map (view only)</li>
+          </ul>
+          <button class="btn btn-secondary" type="button" data-open-modal>Start free</button>
+        </article>
+        <article class="card tier tier--featured reveal">
+          <span class="tier__badge">Most popular</span>
+          <h3>Tide Pooler</h3>
+          <p class="tier__price" data-price data-monthly="$9" data-yearly="$90">$9<small data-price-note data-monthly="/mo" data-yearly="/yr">/mo</small></p>
+          <ul>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Unlimited beaches and alerts</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Low-tide window notifications</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Guided pool walk routes</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Offline charts and maps</li>
+          </ul>
+          <button class="btn btn-primary" type="button" data-open-modal>Go Pro</button>
+        </article>
+        <article class="card tier reveal">
+          <h3>Reef Crew</h3>
+          <p class="tier__price" data-price data-monthly="$24" data-yearly="$240">$24<small data-price-note data-monthly="/mo" data-yearly="/yr">/mo</small></p>
+          <ul>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Everything in Tide Pooler</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Up to 6 family or team seats</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Shared find logs and exports</li>
+          </ul>
+          <button class="btn btn-secondary" type="button" data-open-modal>Contact us</button>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="faq">
+    <div class="container">
+      <div class="sec-head reveal">
+        <h2>Questions from the shore</h2>
+        <p>The things people ask before their first low-tide walk.</p>
+      </div>
+      <div class="faq reveal" data-faq>
+        <div class="faq__item">
+          <button class="faq__q" type="button" aria-expanded="false" aria-controls="faq-a1" id="faq-q1"><span>Where does your tide data come from?</span><span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button>
+          <div class="faq__a" id="faq-a1" role="region" aria-labelledby="faq-q1"><div><p>We blend national hydrographic predictions with local sensor readings, then adjust for each beach using community reports from the past season.</p></div></div>
+        </div>
+        <div class="faq__item">
+          <button class="faq__q" type="button" aria-expanded="false" aria-controls="faq-a2" id="faq-q2"><span>Does it work offline at the beach?</span><span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button>
+          <div class="faq__a" id="faq-a2" role="region" aria-labelledby="faq-q2"><div><p>Yes. Tide Pooler and Reef Crew download charts and pool maps for your saved beaches, so a dead zone never strands your plans.</p></div></div>
+        </div>
+        <div class="faq__item">
+          <button class="faq__q" type="button" aria-expanded="false" aria-controls="faq-a3" id="faq-q3"><span>Can I get notified before a good low tide?</span><span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button>
+          <div class="faq__a" id="faq-a3" role="region" aria-labelledby="faq-q3"><div><p>Set a minimum tide height and a time window, and we nudge you the evening before conditions line up. No noise, only the tides worth waking for.</p></div></div>
+        </div>
+        <div class="faq__item">
+          <button class="faq__q" type="button" aria-expanded="false" aria-controls="faq-a4" id="faq-q4"><span>Is there a family plan?</span><span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button>
+          <div class="faq__a" id="faq-a4" role="region" aria-labelledby="faq-q4"><div><p>Reef Crew covers up to six seats with shared find logs, so the whole household can add sightings to one collection.</p></div></div>
+        </div>
+        <div class="faq__item">
+          <button class="faq__q" type="button" aria-expanded="false" aria-controls="faq-a5" id="faq-q5"><span>How do I cancel?</span><span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button>
+          <div class="faq__a" id="faq-a5" role="region" aria-labelledby="faq-q5"><div><p>One tap in settings, effective at the end of your billing period. Your saved beaches and logs stay on the free plan.</p></div></div>
+        </div>
+        <div class="faq__item">
+          <button class="faq__q" type="button" aria-expanded="false" aria-controls="faq-a6" id="faq-q6"><span>Is the app accessible?</span><span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button>
+          <div class="faq__a" id="faq-a6" role="region" aria-labelledby="faq-q6"><div><p>We design to WCAG AA contrast, full keyboard support, screen reader labels on every chart, and a reduced-motion mode that calms all animation.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="cta-band reveal">
+        <h2>The tide waits for no one, but it will tell you when to come back.</h2>
+        <p>Be first on the sand when LOW TIDE launches on your coast.</p>
+        <button class="btn btn-primary" type="button" data-open-modal>Join the waitlist</button>
+        <p class="cta-band__micro">No spam. One quiet note when we launch.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <a class="brand" href="#top"><span class="material-symbols-rounded" aria-hidden="true">waves</span>LOW TIDE</a>
+        <p>Tide forecasts and pool maps for people who plan their weekends around the moon.</p>
+        <div class="socials">
+          <a class="icon-btn" href="#top" aria-label="Email us"><span class="material-symbols-rounded" aria-hidden="true">alternate_email</span></a>
+          <a class="icon-btn" href="#top" aria-label="Visit our website"><span class="material-symbols-rounded" aria-hidden="true">public</span></a>
+          <a class="icon-btn" href="#top" aria-label="Read our journal feed"><span class="material-symbols-rounded" aria-hidden="true">rss_feed</span></a>
+        </div>
+      </div>
+      <div class="footer__col">
+        <h4>Product</h4>
+        <a href="#features">Features</a>
+        <a href="#how">How it works</a>
+        <a href="#pricing">Pricing</a>
+      </div>
+      <div class="footer__col">
+        <h4>Company</h4>
+        <a href="#testimonials">Stories</a>
+        <a href="#top">About</a>
+      </div>
+      <div class="footer__col">
+        <h4>Support</h4>
+        <a href="#faq">FAQ</a>
+        <a href="#faq">Accessibility</a>
+      </div>
+    </div>
+    <div class="footer__bar">
+      <span>&copy; 2026 LOW TIDE</span>
+      <span>Built for the intertidal curious.</span>
+    </div>
+  </div>
+</footer>
+
+<div class="modal" data-modal role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+  <div class="modal__panel">
+    <div class="modal__head">
+      <h2 id="modal-title">Join the waitlist</h2>
+      <button class="icon-btn" type="button" aria-label="Close dialog" data-close-modal><span class="material-symbols-rounded" aria-hidden="true">close</span></button>
+    </div>
+    <div data-modal-form-wrap>
+      <p class="modal__sub">Leave your email and we will hold a spot on the sand for you.</p>
+      <form data-waitlist-form novalidate>
+        <div class="input-group" data-input-group>
+          <label for="waitlist-email">Email address</label>
+          <input type="email" id="waitlist-email" name="email" autocomplete="email" placeholder="you@example.com" required>
+          <p class="input-group__hint">We only write when there is real news.</p>
+          <p class="input-group__error" aria-live="polite" data-email-error></p>
+        </div>
+        <button class="btn btn-primary" type="submit" data-submit-btn style="width:100%">Join the waitlist</button>
+      </form>
+    </div>
+    <div class="modal__success" data-modal-success hidden>
+      <span class="material-symbols-rounded" aria-hidden="true">check_circle</span>
+      <h3>You are on the list</h3>
+      <p aria-live="polite">We will send one quiet note when LOW TIDE reaches your coast.</p>
+      <button class="btn btn-secondary" type="button" data-close-modal>Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+var doc=document;
+
+/* theme toggle */
+var toggle=doc.getElementById("theme-toggle");
+var themeIcon=doc.querySelector("[data-theme-icon]");
+function applyThemeUI(){
+  var dark=doc.documentElement.dataset.theme==="dark";
+  toggle.setAttribute("aria-pressed",String(dark));
+  toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+  themeIcon.textContent=dark?"light_mode":"dark_mode";
+}
+applyThemeUI();
+toggle.addEventListener("click",function(){
+  var next=doc.documentElement.dataset.theme==="dark"?"light":"dark";
+  doc.documentElement.dataset.theme=next;
+  localStorage.setItem("theme",next);
+  applyThemeUI();
+});
+
+/* header shadow */
+var header=doc.querySelector("[data-header]");
+var io=new IntersectionObserver(function(entries){
+  header.classList.toggle("header--scrolled",!entries[0].isIntersecting);
+},{rootMargin:"-68px 0px 0px 0px"});
+var sentinel=doc.createElement("div");
+doc.body.prepend(sentinel);
+io.observe(sentinel);
+
+/* mobile menu */
+var menuBtn=doc.querySelector("[data-menu-btn]");
+var panel=doc.getElementById("mobile-panel");
+function setMenu(open){
+  menuBtn.setAttribute("aria-expanded",String(open));
+  menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");
+  menuBtn.querySelector(".material-symbols-rounded").textContent=open?"close":"menu";
+  panel.hidden=!open;
+}
+menuBtn.addEventListener("click",function(){setMenu(panel.hidden);});
+panel.addEventListener("click",function(e){if(e.target.closest("a"))setMenu(false);});
+doc.addEventListener("keydown",function(e){if(e.key==="Escape"&&!panel.hidden){setMenu(false);menuBtn.focus();}});
+doc.addEventListener("click",function(e){
+  if(!panel.hidden&&!e.target.closest(".mobile-panel")&&!e.target.closest("[data-menu-btn]"))setMenu(false);
+});
+
+/* countdown chip */
+var cd=doc.querySelector("[data-countdown]");
+function tick(){
+  var now=new Date();var low=new Date(now);
+  low.setHours(16,32,0,0);
+  if(low<=now)low.setDate(low.getDate()+1);
+  var m=Math.round((low-now)/60000);
+  cd.textContent=low.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})+" ("+Math.floor(m/60)+"h "+(m%60)+"m)";
+}
+tick();setInterval(tick,60000);
+
+/* reveal stagger */
+var revealIO=new IntersectionObserver(function(entries){
+  entries.forEach(function(en){
+    if(en.isIntersecting){en.target.classList.add("is-visible");revealIO.unobserve(en.target);}
+  });
+},{threshold:0.12});
+var reveals=Array.prototype.slice.call(doc.querySelectorAll(".reveal"));
+reveals.forEach(function(el,i){
+  el.style.transitionDelay=(i%3)*70+"ms";
+  revealIO.observe(el);
+});
+
+/* faq accordion */
+doc.querySelectorAll(".faq__q").forEach(function(btn){
+  btn.addEventListener("click",function(){
+    var open=btn.getAttribute("aria-expanded")==="true";
+    doc.querySelectorAll('.faq__q[aria-expanded="true"]').forEach(function(b){b.setAttribute("aria-expanded","false");});
+    btn.setAttribute("aria-expanded",String(!open));
+  });
+});
+
+/* billing toggle */
+var billBtns=doc.querySelectorAll("[data-billing]");
+var billSwitch=doc.querySelector("[data-billing-switch]");
+var prices=doc.querySelectorAll("[data-price]");
+var notes=doc.querySelectorAll("[data-price-note]");
+function setBilling(mode){
+  billBtns.forEach(function(b){b.setAttribute("aria-pressed",String(b.dataset.billing===mode));});
+  billSwitch.setAttribute("aria-pressed",String(mode==="yearly"));
+  prices.forEach(function(p,i){
+    p.classList.add("is-fading");
+    setTimeout(function(){
+      p.firstChild.textContent=p.dataset[mode];
+      notes[i].textContent=notes[i].dataset[mode];
+      p.classList.remove("is-fading");
+    },150);
+  });
+}
+billBtns.forEach(function(b){b.addEventListener("click",function(){setBilling(b.dataset.billing);});});
+billSwitch.addEventListener("click",function(){
+  setBilling(billSwitch.getAttribute("aria-pressed")==="true"?"monthly":"yearly");
+});
+
+/* modal */
+var modal=doc.querySelector("[data-modal]");
+var formWrap=doc.querySelector("[data-modal-form-wrap]");
+var success=doc.querySelector("[data-modal-success]");
+var form=doc.querySelector("[data-waitlist-form]");
+var group=doc.querySelector("[data-input-group]");
+var emailInput=doc.getElementById("waitlist-email");
+var errEl=doc.querySelector("[data-email-error]");
+var submitBtn=doc.querySelector("[data-submit-btn]");
+var lastTrigger=null;
+function openModal(trigger){
+  lastTrigger=trigger;
+  modal.hidden=false;
+  requestAnimationFrame(function(){modal.classList.add("is-open");});
+  doc.body.style.overflow="hidden";
+  formWrap.hidden=false;success.hidden=true;
+  group.classList.remove("is-valid","is-invalid");errEl.textContent="";
+  submitBtn.classList.remove("is-loading");submitBtn.disabled=false;
+  submitBtn.innerHTML="Join the waitlist";
+  setTimeout(function(){emailInput.focus();},80);
+}
+function closeModal(){
+  modal.classList.remove("is-open");
+  doc.body.style.overflow="";
+  setTimeout(function(){modal.hidden=true;},300);
+  if(lastTrigger)lastTrigger.focus();
+}
+doc.querySelectorAll("[data-open-modal]").forEach(function(b){
+  b.addEventListener("click",function(){openModal(b);});
+});
+doc.querySelectorAll("[data-close-modal]").forEach(function(b){
+  b.addEventListener("click",closeModal);
+});
+modal.addEventListener("click",function(e){if(e.target===modal)closeModal();});
+doc.addEventListener("keydown",function(e){
+  if(modal.hidden)return;
+  if(e.key==="Escape"){closeModal();return;}
+  if(e.key==="Tab"){
+    var focusables=modal.querySelectorAll("button,input,a[href]");
+    var list=Array.prototype.filter.call(focusables,function(el){return el.offsetParent!==null;});
+    if(!list.length)return;
+    var first=list[0],last=list[list.length-1];
+    if(e.shiftKey&&doc.activeElement===first){e.preventDefault();last.focus();}
+    else if(!e.shiftKey&&doc.activeElement===last){e.preventDefault();first.focus();}
+  }
+});
+function validateEmail(){
+  var v=emailInput.value.trim();
+  var ok=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+  group.classList.toggle("is-valid",ok&&v.length>0);
+  group.classList.toggle("is-invalid",!ok);
+  errEl.innerHTML=ok?"":'<span class="material-symbols-rounded" aria-hidden="true">error</span>Please enter a valid email address.';
+  return ok;
+}
+emailInput.addEventListener("blur",function(){if(emailInput.value.trim())validateEmail();});
+form.addEventListener("submit",function(e){
+  e.preventDefault();
+  if(submitBtn.classList.contains("is-loading"))return;
+  if(!validateEmail()){emailInput.focus();return;}
+  submitBtn.classList.add("is-loading");
+  submitBtn.disabled=true;
+  submitBtn.innerHTML='<span class="material-symbols-rounded" aria-hidden="true">progress_activity</span>Joining';
+  setTimeout(function(){
+    formWrap.hidden=true;
+    success.hidden=false;
+    success.querySelector("[data-close-modal]").focus();
+  },900);
+});
+})();
+</script>
+</body>
+</html>

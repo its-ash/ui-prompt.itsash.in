@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Petrichor - Rain on a Night Window</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --primary:#5a7ac9; --secondary:#2a3350;
+  --bg-primary:#dfe8ff; --bg-secondary:#fefefe;
+  --text-primary:#2a3350; --text-secondary:#4d5a75;
+  --text-success:#2e7d63; --text-error:#c2455a;
+  --border-default:rgba(122,134,153,.30);
+  --border-success:rgba(46,125,99,.55); --border-error:rgba(194,69,90,.55);
+  --glass-bg:rgba(254,254,254,.40); --glass-border:rgba(201,210,232,.55);
+  --on-accent:#dfe8ff; --shadow-text:0 2px 16px rgba(90,122,201,.18);
+  --radius-sm:8px; --radius-md:14px; --radius-lg:24px;
+  --shadow-sm:0 2px 12px rgba(5,7,12,.08); --shadow-md:0 14px 36px rgba(5,7,12,.16);
+  --spacing-gap:1.5rem;
+  --transition-fast:140ms; --transition-normal:280ms;
+  --ease-standard:cubic-bezier(.4,0,.2,1);
+  --z-header:90; --z-dropdown:100; --z-modal:1000; --z-toast:1100;
+  --font-base:'Inter',sans-serif; --font-display:'Outfit',sans-serif;
+  --orb-a:rgba(90,122,201,.35); --orb-b:rgba(122,134,153,.30);
+}
+:root[data-theme="dark"]{
+  --bg-primary:#05070c; --bg-secondary:#2a3350;
+  --text-primary:#dfe8ff; --text-secondary:#c9d2e8;
+  --text-success:#7fd8b4; --text-error:#ff9099;
+  --border-default:rgba(223,232,255,.18);
+  --border-success:rgba(127,216,180,.55); --border-error:rgba(255,144,153,.55);
+  --glass-bg:rgba(42,51,80,.38); --glass-border:rgba(223,232,255,.14);
+  --on-accent:#dfe8ff; --shadow-text:0 4px 28px rgba(90,122,201,.35);
+  --shadow-sm:0 2px 12px rgba(0,0,0,.45); --shadow-md:0 14px 36px rgba(0,0,0,.55);
+  --orb-a:rgba(90,122,201,.28); --orb-b:rgba(42,51,80,.55);
+}
+/* ============ BASE ============ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font-base); font-size:1rem; line-height:1.6;
+  color:var(--text-primary);
+  background:
+    radial-gradient(1200px 600px at 85% -10%, var(--orb-a), transparent 60%),
+    linear-gradient(160deg, var(--bg-primary) 0%, var(--bg-primary) 55%, rgba(42,51,80,.18) 100%);
+  min-height:100dvh; overflow-x:hidden;
+  transition:background var(--transition-normal) var(--ease-standard), color var(--transition-normal) var(--ease-standard);
+}
+:root[data-theme="dark"] body{
+  background:
+    radial-gradient(1100px 550px at 80% -10%, var(--orb-a), transparent 60%),
+    radial-gradient(900px 500px at 5% 110%, var(--orb-b), transparent 60%),
+    linear-gradient(170deg, #05070c 0%, #0a1020 60%, #131a30 100%);
+}
+h1,h2,h3{font-family:var(--font-display);line-height:1.12;letter-spacing:-.02em;font-weight:600}
+h1{font-size:clamp(2.25rem,5vw,3.75rem);text-shadow:var(--shadow-text)}
+h2{font-size:clamp(1.75rem,3.5vw,2.5rem)}
+h3{font-size:1.25rem}
+p{max-width:65ch}
+a{color:var(--primary);text-decoration:none}
+img{max-width:100%}
+.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;font-size:1.4rem;line-height:1;user-select:none}
+.container{max-width:1200px;margin-inline:auto;padding-inline:1.25rem}
+@media(min-width:768px){.container{padding-inline:2rem}}
+section{padding-block:clamp(4rem,8vw,7rem)}
+.section-head{max-width:44rem;margin-bottom:clamp(2rem,4vw,3rem)}
+.section-head p{color:var(--text-secondary);margin-top:.75rem;font-size:1.05rem}
+:focus-visible{outline:2px solid var(--primary);outline-offset:3px;border-radius:var(--radius-sm)}
+/* ============ ATMOSPHERE ============ */
+.orbs{position:fixed;inset:0;z-index:-2;pointer-events:none;overflow:hidden;aria-hidden:true}
+.orbs span{position:absolute;border-radius:50%;filter:blur(90px);opacity:.8}
+.orbs span:nth-child(1){width:34rem;height:34rem;background:var(--orb-a);top:-8rem;right:-6rem;animation:drift 26s ease-in-out infinite alternate}
+.orbs span:nth-child(2){width:26rem;height:26rem;background:var(--orb-b);bottom:-10rem;left:-8rem;animation:drift 32s ease-in-out infinite alternate-reverse}
+.orbs span:nth-child(3){width:18rem;height:18rem;background:var(--orb-a);top:45%;left:55%;opacity:.5;animation:drift 38s ease-in-out infinite alternate}
+@keyframes drift{from{transform:translate(0,0)}to{transform:translate(3rem,2rem)}}
+.rain{position:fixed;inset:-50%;z-index:-1;pointer-events:none;opacity:.10;
+  background:repeating-linear-gradient(105deg,transparent 0 14px,var(--primary) 14px 15px,transparent 15px 46px);
+  animation:rainfall 1.4s linear infinite}
+:root[data-theme="dark"] .rain{opacity:.14}
+@keyframes rainfall{from{transform:translateY(-4%)}to{transform:translateY(4%)}}
+/* ============ GLASS ============ */
+.glass{
+  background:var(--glass-bg);
+  -webkit-backdrop-filter:blur(16px) saturate(150%);
+  backdrop-filter:blur(16px) saturate(150%);
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-sm);
+}
+@supports not (backdrop-filter:blur(1px)){
+  .glass{background:var(--bg-secondary)}
+}
+/* ============ BUTTONS ============ */
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:.5rem;
+  min-height:44px;min-width:44px;padding:.75rem 1.5rem;
+  border-radius:var(--radius-md);border:1px solid transparent;
+  font-family:var(--font-base);font-weight:500;font-size:1rem;line-height:1;
+  cursor:pointer;transition:all var(--transition-normal) var(--ease-standard);
+  text-decoration:none;white-space:nowrap;
+}
+.btn--primary{background:var(--secondary);color:var(--on-accent)}
+.btn--secondary{background:var(--glass-bg);border-color:var(--glass-border);color:var(--text-primary)}
+.btn--danger{background:transparent;border-color:var(--border-error);color:var(--text-error)}
+@media(hover:hover) and (pointer:fine){
+  .btn:hover{filter:brightness(1.06);box-shadow:var(--shadow-md);transform:translateY(-2px)}
+}
+.btn:active{transform:scale(.97)}
+.btn:focus-visible{box-shadow:0 0 0 3px rgba(90,122,201,.45);outline:2px solid var(--primary);outline-offset:2px}
+.btn:disabled,.btn.is-disabled{opacity:.5;filter:grayscale(.6);cursor:not-allowed;pointer-events:none}
+.btn.is-loading{pointer-events:none}
+.btn.is-loading .btn__spinner{display:inline-block;animation:spin 1s linear infinite}
+.btn__spinner{display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.btn.is-success{border-color:var(--border-success);color:var(--text-success)}
+.btn.is-error{border-color:var(--border-error);color:var(--text-error)}
+/* ============ HEADER ============ */
+.site-header{
+  position:sticky;top:0;z-index:var(--z-header);
+  border-radius:0;border-left:0;border-right:0;border-top:0;
+}
+.site-header__inner{display:flex;align-items:center;justify-content:space-between;height:68px;max-width:1200px;margin-inline:auto;padding-inline:1.25rem}
+@media(min-width:768px){.site-header__inner{padding-inline:2rem}}
+.brand{display:flex;align-items:center;gap:.5rem;font-family:var(--font-display);font-weight:700;font-size:1.25rem;letter-spacing:-.02em;color:var(--text-primary)}
+.brand .material-symbols-outlined{color:var(--primary)}
+.nav__list{display:flex;align-items:center;gap:1.75rem;list-style:none}
+.nav__link{color:var(--text-primary);font-weight:500;font-size:.95rem;padding:.5rem .25rem;border-radius:var(--radius-sm);transition:color var(--transition-fast) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.nav__link:hover{color:var(--primary)}}
+.header__actions{display:flex;align-items:center;gap:.5rem}
+.icon-btn{
+  display:flex;align-items:center;justify-content:center;width:44px;height:44px;
+  border-radius:var(--radius-md);border:1px solid var(--glass-border);
+  background:var(--glass-bg);color:var(--text-primary);cursor:pointer;
+  transition:all var(--transition-fast) var(--ease-standard);
+}
+@media(hover:hover) and (pointer:fine){.icon-btn:hover{filter:brightness(1.05);transform:translateY(-1px)}}
+.icon-btn:active{transform:scale(.97)}
+#theme-toggle .icon-sun{display:none}
+:root[data-theme="dark"] #theme-toggle .icon-sun{display:block}
+:root[data-theme="dark"] #theme-toggle .icon-moon{display:none}
+.menu-btn{display:none}
+@media(max-width:767px){
+  .menu-btn{display:flex}
+  .nav{position:absolute;top:68px;left:0;right:0;z-index:var(--z-dropdown);
+    background:var(--glass-bg);-webkit-backdrop-filter:blur(16px) saturate(150%);backdrop-filter:blur(16px) saturate(150%);
+    border-bottom:1px solid var(--glass-border);
+    opacity:0;transform:translateY(-8px);pointer-events:none;
+    transition:opacity var(--transition-normal) var(--ease-standard),transform var(--transition-normal) var(--ease-standard)}
+  .nav.is-open{opacity:1;transform:translateY(0);pointer-events:auto}
+  .nav__list{flex-direction:column;align-items:stretch;gap:0;padding:.5rem 1.25rem 1rem}
+  .nav__link{display:block;padding:.85rem .5rem;font-size:1.05rem}
+}
+/* ============ HERO ============ */
+.hero{padding-top:clamp(3rem,6vw,5rem)}
+.hero__panel{display:flex;align-items:center;gap:clamp(2rem,5vw,4rem);padding:clamp(2rem,5vw,4rem)}
+.hero__copy{flex:1 1 55%;display:flex;flex-direction:column;align-items:flex-start;gap:1.25rem}
+.hero__sub{color:var(--text-secondary);font-size:1.1rem;max-width:34rem}
+.hero__ctas{display:flex;gap:.85rem;flex-wrap:wrap}
+.hero__visual{flex:1 1 40%;display:flex;align-items:center;justify-content:center;min-width:0}
+.window{
+  position:relative;width:100%;max-width:22rem;aspect-ratio:4/5;
+  border-radius:var(--radius-lg);overflow:hidden;
+  border:1px solid var(--glass-border);box-shadow:var(--shadow-md);
+  background:linear-gradient(170deg,#0a1020 0%,#131a30 55%,#2a3350 100%);
+}
+.window__glow{position:absolute;border-radius:50%;filter:blur(34px)}
+.window__glow--a{width:9rem;height:9rem;background:rgba(90,122,201,.55);top:18%;left:12%}
+.window__glow--b{width:7rem;height:7rem;background:rgba(223,232,255,.28);bottom:22%;right:14%}
+.window__glow--c{width:5rem;height:5rem;background:rgba(122,134,153,.5);top:55%;left:45%}
+.window__drop{position:absolute;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;
+  background:linear-gradient(180deg,rgba(223,232,255,.35),rgba(223,232,255,.08));
+  box-shadow:inset 0 -2px 4px rgba(223,232,255,.25)}
+.window__drop--1{width:14px;height:20px;top:12%;left:30%;animation:slide 9s ease-in infinite}
+.window__drop--2{width:10px;height:15px;top:30%;left:68%;animation:slide 12s ease-in infinite 2s}
+.window__drop--3{width:12px;height:18px;top:8%;left:52%;animation:slide 11s ease-in infinite 4s}
+.window__drop--4{width:8px;height:12px;top:44%;left:20%;animation:slide 13s ease-in infinite 1s}
+.window__drop--5{width:11px;height:16px;top:22%;left:82%;animation:slide 10s ease-in infinite 5.5s}
+@keyframes slide{0%{transform:translateY(0);opacity:0}8%{opacity:1}85%{opacity:1}100%{transform:translateY(16rem);opacity:0}}
+.window__sill{position:absolute;left:0;right:0;bottom:0;height:14%;background:linear-gradient(180deg,transparent,rgba(5,7,12,.6))}
+@media(max-width:767px){
+  .hero__panel{flex-direction:column;align-items:stretch}
+  .hero__visual{max-width:18rem;margin-inline:auto}
+}
+/* ============ FEATURES ============ */
+.grid-3{display:flex;gap:var(--spacing-gap);align-items:stretch}
+.grid-3>*{flex:1 1 0;min-width:0}
+@media(max-width:767px){.grid-3{flex-direction:column}}
+.card{display:flex;flex-direction:column;align-items:flex-start;gap:1rem;padding:2rem;transition:all var(--transition-normal) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){
+  .card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);border-color:var(--primary);filter:brightness(1.03)}
+}
+.card:focus-within{border-color:var(--primary)}
+.card p{color:var(--text-secondary)}
+.card__icon{
+  display:flex;align-items:center;justify-content:center;width:52px;height:52px;
+  border-radius:50%;background:var(--glass-bg);border:1px solid var(--glass-border);
+  color:var(--primary);box-shadow:var(--shadow-sm);
+}
+/* ============ STEPS ============ */
+.steps{display:flex;gap:var(--spacing-gap);align-items:flex-start;position:relative}
+.steps::before{content:"";position:absolute;top:34px;left:8%;right:8%;height:1px;background:var(--border-default)}
+.step{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:.9rem;position:relative}
+.step__badge{
+  display:flex;align-items:center;justify-content:center;width:68px;height:68px;
+  border-radius:50%;background:var(--glass-bg);border:1px solid var(--glass-border);
+  -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+  font-family:var(--font-display);font-weight:700;font-size:1.15rem;color:var(--primary);
+  box-shadow:var(--shadow-sm);position:relative;z-index:1;
+}
+.step p{color:var(--text-secondary)}
+@media(max-width:767px){.steps{flex-direction:column}.steps::before{display:none}}
+/* ============ TESTIMONIALS ============ */
+.quote__mark{color:var(--primary)}
+.quote__text{font-size:1.05rem}
+.quote__person{display:flex;align-items:center;gap:.8rem;margin-top:auto}
+.quote__mono{
+  display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;
+  background:var(--secondary);color:var(--on-accent);font-weight:600;font-size:.85rem;flex-shrink:0;
+}
+.quote__meta{display:flex;flex-direction:column;align-items:flex-start}
+.quote__name{font-weight:600;font-size:.95rem}
+.quote__role{color:var(--text-secondary);font-size:.85rem}
+/* ============ PRICING ============ */
+.price{display:flex;align-items:baseline;gap:.35rem}
+.price__amount{font-family:var(--font-display);font-size:2.5rem;font-weight:700;letter-spacing:-.03em}
+.price__per{color:var(--text-secondary);font-size:.9rem}
+.tier__list{list-style:none;display:flex;flex-direction:column;align-items:stretch;gap:.65rem;width:100%}
+.tier__list li{display:flex;align-items:center;gap:.6rem;color:var(--text-secondary);font-size:.95rem}
+.tier__list .material-symbols-outlined{color:var(--text-success);font-size:1.15rem}
+.tier .btn{width:100%;margin-top:auto}
+.card--featured{border-color:var(--primary);box-shadow:var(--shadow-md);position:relative}
+:root[data-theme="dark"] .card--featured{border-color:var(--primary);box-shadow:var(--shadow-md)}
+.tier__badge{
+  position:absolute;top:-13px;left:50%;transform:translateX(-50%);
+  background:var(--secondary);color:var(--on-accent);
+  font-size:.75rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  padding:.4rem .9rem;border-radius:999px;white-space:nowrap;
+}
+/* ============ FAQ ============ */
+.faq{max-width:46rem;margin-inline:auto;display:flex;flex-direction:column;align-items:stretch;gap:.85rem}
+.faq__item{overflow:hidden}
+.faq__trigger{
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;width:100%;
+  padding:1.1rem 1.4rem;background:none;border:0;cursor:pointer;text-align:left;
+  font-family:var(--font-base);font-weight:600;font-size:1rem;color:var(--text-primary);
+  min-height:44px;transition:color var(--transition-fast) var(--ease-standard);
+}
+@media(hover:hover) and (pointer:fine){.faq__trigger:hover{color:var(--primary)}}
+.faq__chevron{color:var(--primary);transition:transform var(--transition-normal) var(--ease-standard);flex-shrink:0}
+.faq__trigger[aria-expanded="true"] .faq__chevron{transform:rotate(180deg)}
+.faq__panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--transition-normal) var(--ease-standard)}
+.faq__trigger[aria-expanded="true"]+.faq__panel{grid-template-rows:1fr}
+.faq__panel-inner{overflow:hidden}
+.faq__panel p{padding:0 1.4rem 1.2rem;color:var(--text-secondary)}
+/* ============ CTA ============ */
+.cta__panel{display:flex;flex-direction:column;align-items:center;text-align:center;gap:1.1rem;padding:clamp(2.5rem,6vw,4.5rem)}
+.cta__panel p{color:var(--text-secondary)}
+.cta__form{display:flex;align-items:flex-end;gap:.85rem;width:100%;max-width:30rem;margin-top:.5rem}
+.input-group{display:flex;flex-direction:column;align-items:stretch;gap:.4rem;flex:1;text-align:left}
+.input-group label{font-weight:600;font-size:.9rem}
+.input-group input{
+  min-height:48px;padding:.7rem 1rem;border-radius:var(--radius-md);
+  border:1px solid var(--border-default);background:var(--glass-bg);
+  font-family:var(--font-base);font-size:1rem;color:var(--text-primary);
+  transition:border-color var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard);
+  width:100%;
+}
+.input-group input::placeholder{color:var(--text-secondary)}
+.input-group input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(90,122,201,.35)}
+.input-group.is-valid input{border-color:var(--border-success)}
+.input-group.is-invalid input{border-color:var(--border-error)}
+.input-group__feedback{font-size:.85rem;min-height:1.3em;display:flex;align-items:center;gap:.35rem}
+.input-group.is-valid .input-group__feedback{color:var(--text-success)}
+.input-group.is-invalid .input-group__feedback{color:var(--text-error)}
+@media(max-width:560px){.cta__form{flex-direction:column;align-items:stretch}.cta__form .btn{width:100%}}
+/* ============ FOOTER ============ */
+.site-footer{border-top:1px solid var(--border-default);padding-block:3rem 2rem}
+.footer__grid{display:flex;gap:2.5rem;align-items:flex-start;flex-wrap:wrap}
+.footer__brand{flex:2 1 16rem;display:flex;flex-direction:column;align-items:flex-start;gap:.6rem}
+.footer__brand p{color:var(--text-secondary);font-size:.95rem}
+.footer__col{flex:1 1 8rem;display:flex;flex-direction:column;align-items:flex-start;gap:.55rem}
+.footer__col h3{font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;font-family:var(--font-base);font-weight:600;color:var(--text-secondary)}
+.footer__link{color:var(--text-primary);font-size:.95rem;padding:.2rem 0;border-radius:var(--radius-sm);transition:color var(--transition-fast) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.footer__link:hover{color:var(--primary)}}
+.footer__bottom{margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid var(--border-default);color:var(--text-secondary);font-size:.85rem;display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+/* ============ REVEAL ============ */
+.reveal{opacity:0;transform:translateY(14px);transition:opacity 500ms var(--ease-standard),transform 500ms var(--ease-standard)}
+.reveal.is-visible{opacity:1;transform:none}
+/* ============ REDUCED MOTION / TRANSPARENCY ============ */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:150ms!important}
+  .rain{display:none}
+  .orbs span{animation:none}
+  .window__drop{animation:none;opacity:.7}
+  .reveal{opacity:1;transform:none;transition:opacity 200ms ease}
+  html{scroll-behavior:auto}
+}
+@media(prefers-reduced-transparency:reduce){
+  .glass,.site-header,.nav{background:var(--bg-secondary);-webkit-backdrop-filter:none;backdrop-filter:none}
+}
+</style>
+</head>
+<body>
+<div class="orbs" aria-hidden="true"><span></span><span></span><span></span></div>
+<div class="rain" aria-hidden="true"></div>
+
+<header class="site-header glass">
+  <div class="site-header__inner">
+    <a class="brand" href="#top"><span class="material-symbols-outlined" aria-hidden="true">rainy</span>Petrichor</a>
+    <nav class="nav" id="site-nav" aria-label="Primary">
+      <ul class="nav__list">
+        <li><a class="nav__link" href="#features">Features</a></li>
+        <li><a class="nav__link" href="#how">How it works</a></li>
+        <li><a class="nav__link" href="#pricing">Pricing</a></li>
+        <li><a class="nav__link" href="#faq">FAQ</a></li>
+      </ul>
+    </nav>
+    <div class="header__actions">
+      <button id="theme-toggle" class="icon-btn" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-outlined icon-moon" aria-hidden="true">dark_mode</span>
+        <span class="material-symbols-outlined icon-sun" aria-hidden="true">light_mode</span>
+      </button>
+      <button class="icon-btn menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">
+        <span class="material-symbols-outlined icon-menu" aria-hidden="true">menu</span>
+        <span class="material-symbols-outlined icon-close" aria-hidden="true" hidden>close</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+  <!-- HERO -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="container">
+      <div class="hero__panel glass">
+        <div class="hero__copy">
+          <h1 id="hero-title">Rain on glass. Calm in your head.</h1>
+          <p class="hero__sub">Petrichor blends real storm recordings with soft city ambience to help you focus, unwind, and fall asleep.</p>
+          <div class="hero__ctas">
+            <a class="btn btn--primary" href="#pricing">Start listening <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span></a>
+            <a class="btn btn--secondary" href="#how">How it works</a>
+          </div>
+        </div>
+        <div class="hero__visual" aria-hidden="true">
+          <div class="window">
+            <span class="window__glow window__glow--a"></span>
+            <span class="window__glow window__glow--b"></span>
+            <span class="window__glow window__glow--c"></span>
+            <span class="window__drop window__drop--1"></span>
+            <span class="window__drop window__drop--2"></span>
+            <span class="window__drop window__drop--3"></span>
+            <span class="window__drop window__drop--4"></span>
+            <span class="window__drop window__drop--5"></span>
+            <span class="window__sill"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features" aria-labelledby="features-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="features-title">Built for rainy minds</h2>
+        <p>Three tools, one purpose: a quieter headspace whenever the weather turns.</p>
+      </div>
+      <div class="grid-3">
+        <article class="card glass reveal">
+          <span class="card__icon"><span class="material-symbols-outlined" aria-hidden="true">water_drop</span></span>
+          <h3>Living rainscapes</h3>
+          <p>Over forty storms recorded on real windows, rooftops, and tin shelters, mixed fresh every session so loops never repeat.</p>
+        </article>
+        <article class="card glass reveal">
+          <span class="card__icon"><span class="material-symbols-outlined" aria-hidden="true">air</span></span>
+          <h3>Breath-paced thunder</h3>
+          <p>Distant rolls of thunder are timed to slow breathing rhythms, easing your nervous system down without a single instruction.</p>
+        </article>
+        <article class="card glass reveal">
+          <span class="card__icon"><span class="material-symbols-outlined" aria-hidden="true">waves</span></span>
+          <h3>Focus and sleep timers</h3>
+          <p>Set a deep-work session or an all-night drift. Rain fades out gently so you never wake to silence or lose your flow to a hard stop.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="how" aria-labelledby="how-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="how-title">From dry to drenched in three steps</h2>
+        <p>No accounts to configure, no settings maze. You are listening within a minute.</p>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <span class="step__badge">01</span>
+          <h3>Pick your storm</h3>
+          <p>Choose from drizzle on skylights, monsoon on tin, or a full night tempest over the city.</p>
+        </div>
+        <div class="step reveal">
+          <span class="step__badge">02</span>
+          <h3>Tune the mix</h3>
+          <p>Slide rain, thunder, and street ambience until the window in your head sounds exactly right.</p>
+        </div>
+        <div class="step reveal">
+          <span class="step__badge">03</span>
+          <h3>Let it run</h3>
+          <p>Start a timer or let it play all night. Petrichor handles the fade, you handle the rest.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section id="stories" aria-labelledby="stories-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="stories-title">Heard through the glass</h2>
+        <p>Listeners on what a nightly storm changed for them.</p>
+      </div>
+      <div class="grid-3">
+        <figure class="card glass quote reveal">
+          <span class="material-symbols-outlined quote__mark" aria-hidden="true">format_quote</span>
+          <blockquote class="quote__text">I stopped scrolling at midnight. Now I open Petrichor, hear the first drops, and my shoulders drop with them.</blockquote>
+          <figcaption class="quote__person">
+            <span class="quote__mono" aria-hidden="true">MK</span>
+            <span class="quote__meta"><span class="quote__name">Mara Kessler</span><span class="quote__role">Night-shift nurse, Portland</span></span>
+          </figcaption>
+        </figure>
+        <figure class="card glass quote reveal">
+          <span class="material-symbols-outlined quote__mark" aria-hidden="true">format_quote</span>
+          <blockquote class="quote__text">The thunder pacing is subtle but real. My writing sessions run forty minutes longer since I started mixing it under my rain.</blockquote>
+          <figcaption class="quote__person">
+            <span class="quote__mono" aria-hidden="true">DO</span>
+            <span class="quote__meta"><span class="quote__name">Daniel Okafor</span><span class="quote__role">Novelist, Lagos</span></span>
+          </figcaption>
+        </figure>
+        <figure class="card glass quote reveal">
+          <span class="material-symbols-outlined quote__mark" aria-hidden="true">format_quote</span>
+          <blockquote class="quote__text">My daughter asks for the tin roof storm every bedtime. It is the only app in our house that puts someone to sleep on purpose.</blockquote>
+          <figcaption class="quote__person">
+            <span class="quote__mono" aria-hidden="true">SR</span>
+            <span class="quote__meta"><span class="quote__name">Sofia Reyes</span><span class="quote__role">Teacher and parent, Valencia</span></span>
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section id="pricing" aria-labelledby="pricing-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="pricing-title">Choose your weather</h2>
+        <p>Every plan starts with a seven-day free trial. Cancel anytime, keep your mixes.</p>
+      </div>
+      <div class="grid-3">
+        <article class="card glass tier reveal">
+          <h3>Drizzle</h3>
+          <p class="price"><span class="price__amount">$0</span><span class="price__per">forever</span></p>
+          <ul class="tier__list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>6 core rainscapes</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>30-minute timers</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>1 saved mix</li>
+          </ul>
+          <a class="btn btn--secondary" href="#cta">Start free</a>
+        </article>
+        <article class="card glass card--featured tier reveal">
+          <span class="tier__badge">Most popular</span>
+          <h3>Monsoon</h3>
+          <p class="price"><span class="price__amount">$6</span><span class="price__per">/ month</span></p>
+          <ul class="tier__list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>All 40+ rainscapes</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>Breath-paced thunder</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>All-night sleep mode</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>Unlimited saved mixes</li>
+          </ul>
+          <a class="btn btn--primary" href="#cta">Start listening</a>
+        </article>
+        <article class="card glass tier reveal">
+          <h3>Tempest</h3>
+          <p class="price"><span class="price__amount">$12</span><span class="price__per">/ month</span></p>
+          <ul class="tier__list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>Everything in Monsoon</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>Spatial audio storms</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>5 household profiles</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>Offline downloads</li>
+          </ul>
+          <a class="btn btn--secondary" href="#cta">Start listening</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" aria-labelledby="faq-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="faq-title">Questions from the window seat</h2>
+      </div>
+      <div class="faq">
+        <div class="faq__item glass reveal">
+          <button class="faq__trigger" type="button" aria-expanded="false" aria-controls="faq-p1" id="faq-t1">
+            Is the rain real or synthesized?
+            <span class="material-symbols-outlined faq__chevron" aria-hidden="true">expand_more</span>
+          </button>
+          <div class="faq__panel" id="faq-p1" role="region" aria-labelledby="faq-t1">
+            <div class="faq__panel-inner"><p>Every recording is captured on location: real windows, rooftops, gutters, and streets across eleven cities. We layer and mix them, but nothing is generated.</p></div>
+          </div>
+        </div>
+        <div class="faq__item glass reveal">
+          <button class="faq__trigger" type="button" aria-expanded="false" aria-controls="faq-p2" id="faq-t2">
+            Can I listen offline?
+            <span class="material-symbols-outlined faq__chevron" aria-hidden="true">expand_more</span>
+          </button>
+          <div class="faq__panel" id="faq-p2" role="region" aria-labelledby="faq-t2">
+            <div class="faq__panel-inner"><p>Yes, on the Tempest plan. Download any rainscape or saved mix and it plays without a connection, including on flights and in cabins with no signal.</p></div>
+          </div>
+        </div>
+        <div class="faq__item glass reveal">
+          <button class="faq__trigger" type="button" aria-expanded="false" aria-controls="faq-p3" id="faq-t3">
+            Will it play all night without draining my battery?
+            <span class="material-symbols-outlined faq__chevron" aria-hidden="true">expand_more</span>
+          </button>
+          <div class="faq__panel" id="faq-p3" role="region" aria-labelledby="faq-t3">
+            <div class="faq__panel-inner"><p>Sleep mode streams a low-bitrate loop and dims the interface to near-black. In our tests, eight hours of playback uses less battery than thirty minutes of video.</p></div>
+          </div>
+        </div>
+        <div class="faq__item glass reveal">
+          <button class="faq__trigger" type="button" aria-expanded="false" aria-controls="faq-p4" id="faq-t4">
+            Does Petrichor work with speakers and headphones?
+            <span class="material-symbols-outlined faq__chevron" aria-hidden="true">expand_more</span>
+          </button>
+          <div class="faq__panel" id="faq-p4" role="region" aria-labelledby="faq-t4">
+            <div class="faq__panel-inner"><p>Both. Headphones get a binaural mix with rain that moves around you; speakers get a room-fill profile tuned so thunder stays soft and never rattles the walls.</p></div>
+          </div>
+        </div>
+        <div class="faq__item glass reveal">
+          <button class="faq__trigger" type="button" aria-expanded="false" aria-controls="faq-p5" id="faq-t5">
+            What happens when my trial ends?
+            <span class="material-symbols-outlined faq__chevron" aria-hidden="true">expand_more</span>
+          </button>
+          <div class="faq__panel" id="faq-p5" role="region" aria-labelledby="faq-t5">
+            <div class="faq__panel-inner"><p>You drop gently to the free Drizzle plan. Your saved mixes stay, your timers stay, and we email you once before anything changes. No surprise charges.</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section id="cta" aria-labelledby="cta-title">
+    <div class="container">
+      <div class="cta__panel glass">
+        <h2 id="cta-title">Bring the storm home tonight</h2>
+        <p>Leave your email and we will send your first rainscape within the minute.</p>
+        <form class="cta__form" id="cta-form" novalidate>
+          <div class="input-group" id="email-group">
+            <label for="cta-email">Email address</label>
+            <input id="cta-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" aria-describedby="email-feedback" required>
+            <p class="input-group__feedback" id="email-feedback" aria-live="polite">We send one rainscape, nothing else.</p>
+          </div>
+          <button class="btn btn--primary" id="cta-submit" type="submit">
+            <span class="material-symbols-outlined btn__spinner" aria-hidden="true">progress_activity</span>
+            <span class="btn__label">Send my rain</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <a class="brand" href="#top"><span class="material-symbols-outlined" aria-hidden="true">rainy</span>Petrichor</a>
+        <p>Real rain, recorded on real windows, for focus and sleep.</p>
+      </div>
+      <div class="footer__col">
+        <h3>Product</h3>
+        <a class="footer__link" href="#features">Features</a>
+        <a class="footer__link" href="#pricing">Pricing</a>
+        <a class="footer__link" href="#faq">FAQ</a>
+      </div>
+      <div class="footer__col">
+        <h3>Company</h3>
+        <a class="footer__link" href="#stories">Listener stories</a>
+        <a class="footer__link" href="#how">How it works</a>
+        <a class="footer__link" href="#cta">Contact</a>
+      </div>
+      <div class="footer__col">
+        <h3>Legal</h3>
+        <a class="footer__link" href="#top">Privacy</a>
+        <a class="footer__link" href="#top">Terms</a>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span>&copy; 2026 Petrichor Audio. All rights reserved.</span>
+      <span>Recorded in eleven cities, mixed in the rain.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  /* Theme toggle */
+  var root=document.documentElement;
+  var toggle=document.getElementById("theme-toggle");
+  function syncToggle(){
+    var dark=root.dataset.theme==="dark";
+    toggle.setAttribute("aria-pressed",String(dark));
+    toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+  }
+  syncToggle();
+  toggle.addEventListener("click",function(){
+    var next=root.dataset.theme==="dark"?"light":"dark";
+    root.dataset.theme=next;
+    localStorage.setItem("theme",next);
+    syncToggle();
+  });
+
+  /* Mobile menu */
+  var menuBtn=document.getElementById("menu-btn");
+  var nav=document.getElementById("site-nav");
+  var iconMenu=menuBtn.querySelector(".icon-menu");
+  var iconClose=menuBtn.querySelector(".icon-close");
+  function setMenu(open){
+    nav.classList.toggle("is-open",open);
+    menuBtn.setAttribute("aria-expanded",String(open));
+    menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");
+    iconMenu.hidden=open;
+    iconClose.hidden=!open;
+  }
+  menuBtn.addEventListener("click",function(){
+    setMenu(menuBtn.getAttribute("aria-expanded")!=="true");
+  });
+  nav.addEventListener("click",function(e){
+    if(e.target.closest(".nav__link")){setMenu(false);}
+  });
+  document.addEventListener("keydown",function(e){
+    if(e.key==="Escape"&&nav.classList.contains("is-open")){setMenu(false);menuBtn.focus();}
+  });
+
+  /* FAQ accordion */
+  var triggers=document.querySelectorAll(".faq__trigger");
+  triggers.forEach(function(btn){
+    btn.addEventListener("click",function(){
+      var open=btn.getAttribute("aria-expanded")==="true";
+      triggers.forEach(function(b){b.setAttribute("aria-expanded","false");});
+      btn.setAttribute("aria-expanded",String(!open));
+    });
+  });
+
+  /* Reveal on scroll */
+  var revealEls=document.querySelectorAll(".reveal");
+  if("IntersectionObserver" in window){
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){
+          var el=entry.target;
+          var idx=Array.prototype.indexOf.call(revealEls,el);
+          el.style.transitionDelay=(idx%3)*70+"ms";
+          el.classList.add("is-visible");
+          io.unobserve(el);
+        }
+      });
+    },{threshold:.15});
+    revealEls.forEach(function(el){io.observe(el);});
+  }else{
+    revealEls.forEach(function(el){el.classList.add("is-visible");});
+  }
+
+  /* CTA form */
+  var form=document.getElementById("cta-form");
+  var group=document.getElementById("email-group");
+  var input=document.getElementById("cta-email");
+  var feedback=document.getElementById("email-feedback");
+  var submitBtn=document.getElementById("cta-submit");
+  var label=submitBtn.querySelector(".btn__label");
+  var emailRe=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  function setState(state,msg){
+    group.classList.remove("is-valid","is-invalid");
+    if(state){group.classList.add(state==="valid"?"is-valid":"is-invalid");}
+    feedback.textContent=msg;
+  }
+  input.addEventListener("input",function(){
+    setState(null,"We send one rainscape, nothing else.");
+    submitBtn.classList.remove("is-success","is-error");
+  });
+  form.addEventListener("submit",function(e){
+    e.preventDefault();
+    var val=input.value.trim();
+    if(!emailRe.test(val)){
+      setState("invalid","Please enter a valid email address, like you@example.com.");
+      submitBtn.classList.add("is-error");
+      input.focus();
+      return;
+    }
+    submitBtn.classList.remove("is-error","is-success");
+    submitBtn.classList.add("is-loading");
+    submitBtn.setAttribute("aria-busy","true");
+    label.textContent="Sending";
+    window.setTimeout(function(){
+      submitBtn.classList.remove("is-loading");
+      submitBtn.removeAttribute("aria-busy");
+      submitBtn.classList.add("is-success");
+      label.textContent="Rain sent";
+      setState("valid","Your first rainscape is on its way to "+val+".");
+      input.value="";
+    },1200);
+  });
+})();
+</script>
+</body>
+</html>

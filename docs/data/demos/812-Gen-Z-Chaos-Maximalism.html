@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nimbus - Be Normal About The Internet (Challenge: Failed)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet">
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<style>
+:root{
+  --neon-magenta:#FF00FF;--neon-green:#00FF00;--neon-yellow:#FFFF00;--neon-blue:#0000FF;
+  --primary:#FF00FF;--secondary:#0000FF;
+  --bg-primary:#FDF6EC;--bg-secondary:#FFFFFF;
+  --text-primary:#0A0A0A;--text-secondary:#3D3A34;
+  --text-success:#0B7A2A;--text-error:#C40000;
+  --border-default:#0A0A0A;--border-error:#C40000;--border-success:#0B7A2A;
+  --on-neon:#0A0A0A;--on-blue:#FEFEFE;
+  --radius-sm:6px;--radius-md:12px;--radius-lg:20px;
+  --shadow-sm:3px 3px 0 #0A0A0A;--shadow-md:6px 6px 0 #0A0A0A;
+  --spacing-gap:1.5rem;
+  --transition-fast:140ms;--transition-normal:260ms;--ease-standard:cubic-bezier(.22,1,.36,1);
+  --z-dropdown:50;--z-modal:100;--z-toast:200;
+  --font-display:"Bungee",system-ui,sans-serif;--font-base:"Space Grotesk",system-ui,sans-serif;
+  --blob-opacity:.5;
+}
+:root[data-theme="dark"]{
+  --primary:#FF00FF;--secondary:#4D6BFF;
+  --bg-primary:#0A0A0A;--bg-secondary:#161616;
+  --text-primary:#FEFEFE;--text-secondary:#C9C4BA;
+  --text-success:#4ADE80;--text-error:#FF6B6B;
+  --border-default:#FEFEFE;--border-error:#FF6B6B;--border-success:#4ADE80;
+  --on-neon:#0A0A0A;--on-blue:#FEFEFE;
+  --shadow-sm:3px 3px 0 #FEFEFE;--shadow-md:6px 6px 0 #FF00FF;
+  --blob-opacity:.35;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{overflow-x:clip;scroll-behavior:smooth}
+body{
+  font-family:var(--font-base);font-size:1rem;line-height:1.6;
+  background:var(--bg-primary);color:var(--text-primary);
+  overflow-x:clip;min-height:100dvh;
+  transition:background var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard);
+}
+body::before{
+  content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background:
+    radial-gradient(circle at 12% 18%,var(--neon-magenta) 0%,transparent 26%),
+    radial-gradient(circle at 88% 12%,var(--neon-yellow) 0%,transparent 24%),
+    radial-gradient(circle at 82% 85%,var(--neon-green) 0%,transparent 22%),
+    radial-gradient(circle at 8% 88%,var(--neon-blue) 0%,transparent 20%);
+  opacity:var(--blob-opacity);filter:saturate(150%);
+}
+body::after{
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(0,0,0,.04) 3px 4px);
+}
+:root[data-theme="dark"] body::after{background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(255,255,255,.05) 3px 4px)}
+h1,h2,h3{font-family:var(--font-display);line-height:1.1;letter-spacing:-0.01em;font-weight:400}
+p{max-width:65ch}
+a{color:inherit}
+button{font-family:inherit}
+:focus-visible{outline:3px solid var(--secondary);outline-offset:3px;border-radius:2px}
+.skip-link{position:absolute;left:1rem;top:-4rem;z-index:var(--z-toast);background:var(--neon-yellow);color:var(--on-neon);padding:.6rem 1rem;border:3px solid var(--border-default);font-weight:700;transition:top var(--transition-fast) var(--ease-standard)}
+.skip-link:focus{top:1rem}
+.container{max-width:1200px;margin-inline:auto;padding-inline:1.25rem}
+@media(min-width:768px){.container{padding-inline:2rem}}
+section{padding-block:clamp(4rem,8vw,7rem);position:relative}
+.material-symbols-rounded{font-variation-settings:"FILL" 1,"wght" 400,"GRAD" 0,"opsz" 24;line-height:1}
+
+/* ---------- rotation utilities ---------- */
+.rotate-1{--rot:-6deg}.rotate-2{--rot:3deg}.rotate-3{--rot:-2deg}.rotate-4{--rot:5deg}.rotate-5{--rot:-1.5deg}.rotate-6{--rot:1deg}.rotate-7{--rot:-4deg}.rotate-8{--rot:2deg}
+
+/* ---------- header ---------- */
+.site-header{
+  position:sticky;top:0;z-index:var(--z-dropdown);
+  background:var(--bg-primary);border-bottom:3px solid var(--border-default);
+}
+.site-header__inner{display:flex;align-items:center;justify-content:space-between;gap:1rem;height:68px}
+.wordmark{
+  font-family:var(--font-display);font-size:1.35rem;text-decoration:none;
+  background:var(--neon-yellow);color:var(--on-neon);padding:.15rem .6rem;
+  border:3px solid var(--border-default);box-shadow:var(--shadow-sm);
+  transform:rotate(-2deg);animation:jitter 4s ease-in-out infinite;
+}
+.nav{display:flex;align-items:center;gap:1.25rem}
+.nav__links{display:flex;align-items:center;gap:1.25rem;list-style:none}
+.nav__link{font-weight:700;text-decoration:none;padding:.4rem .2rem;border-bottom:3px solid transparent}
+@media(hover:hover) and (pointer:fine){.nav__link:hover{border-bottom-color:var(--primary)}}
+.nav__toggle{display:none;align-items:center;justify-content:center;width:44px;height:44px;background:var(--neon-green);color:var(--on-neon);border:3px solid var(--border-default);box-shadow:var(--shadow-sm);cursor:pointer;border-radius:var(--radius-sm)}
+.theme-toggle{
+  display:flex;align-items:center;justify-content:center;width:44px;height:44px;
+  background:var(--neon-magenta);color:var(--on-neon);border:3px solid var(--border-default);
+  box-shadow:var(--shadow-sm);cursor:pointer;border-radius:50%;transform:rotate(3deg);
+  transition:transform var(--transition-fast) var(--ease-standard);
+}
+.theme-toggle:active{transform:scale(.97) rotate(3deg)}
+.theme-toggle .icon-moon{display:none}
+:root[data-theme="dark"] .theme-toggle{background:var(--neon-blue);color:var(--on-blue)}
+:root[data-theme="dark"] .theme-toggle .icon-sun{display:none}
+:root[data-theme="dark"] .theme-toggle .icon-moon{display:block}
+@media(max-width:767px){
+  .nav__toggle{display:flex}
+  .nav__links{
+    display:none;position:absolute;top:68px;left:0;right:0;flex-direction:column;align-items:stretch;
+    background:var(--bg-primary);border-bottom:3px solid var(--border-default);padding:1rem 1.25rem;gap:.25rem;
+  }
+  .nav__links.is-open{display:flex}
+  .nav__link{display:block;padding:.7rem .5rem}
+}
+
+/* ---------- buttons ---------- */
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:.5rem;
+  min-height:44px;min-width:44px;padding:.7rem 1.4rem;
+  font-family:var(--font-base);font-weight:700;font-size:1rem;text-decoration:none;
+  border:3px solid var(--border-default);border-radius:var(--radius-sm);
+  box-shadow:var(--shadow-sm);cursor:pointer;white-space:nowrap;
+  transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard),filter var(--transition-fast) var(--ease-standard);
+}
+.btn:active{transform:scale(.97)}
+.btn--primary{background:var(--neon-magenta);color:var(--on-neon);transform:rotate(-1deg)}
+.btn--secondary{background:var(--bg-secondary);color:var(--text-primary);transform:rotate(1deg)}
+.btn--danger{background:var(--text-error);color:#FEFEFE}
+@media(hover:hover) and (pointer:fine){
+  .btn:hover{filter:brightness(1.08);box-shadow:var(--shadow-md)}
+}
+.btn:disabled,.btn.is-disabled{opacity:.5;filter:grayscale(1);cursor:not-allowed}
+.btn.is-loading{pointer-events:none}
+.btn .spinner{animation:spin 1s linear infinite}
+.btn--success{background:var(--neon-green);color:var(--on-neon);border-color:var(--border-success)}
+.btn--error{background:var(--bg-secondary);color:var(--text-error);border-color:var(--border-error)}
+
+/* ---------- stickers ---------- */
+.sticker{
+  position:absolute;display:flex;align-items:center;gap:.35rem;
+  font-family:var(--font-display);font-size:.8rem;padding:.4rem .7rem;
+  border:3px solid var(--border-default);box-shadow:var(--shadow-sm);
+  transform:rotate(var(--rot,0deg));pointer-events:none;z-index:1;
+  animation:jitter 5s ease-in-out infinite;
+}
+.sticker--yellow{background:var(--neon-yellow);color:var(--on-neon)}
+.sticker--green{background:var(--neon-green);color:var(--on-neon)}
+.sticker--magenta{background:var(--neon-magenta);color:var(--on-neon)}
+.sticker--blue{background:var(--neon-blue);color:var(--on-blue)}
+.sticker--white{background:var(--bg-secondary);color:var(--text-primary)}
+.sticker--star{clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);border:none;box-shadow:none;padding:1.6rem 1.4rem;animation:spin 14s linear infinite}
+@keyframes jitter{0%,100%{transform:rotate(var(--rot,0deg)) translate(0,0)}25%{transform:rotate(calc(var(--rot,0deg) + .5deg)) translate(1px,-1px)}75%{transform:rotate(calc(var(--rot,0deg) - .5deg)) translate(-1px,1px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---------- hero ---------- */
+.hero{padding-top:clamp(3rem,6vw,5rem)}
+.hero__inner{display:flex;align-items:center;gap:2.5rem;flex-wrap:wrap}
+.hero__copy{flex:1 1 480px;display:flex;flex-direction:column;align-items:flex-start;gap:1.25rem}
+.hero__title{
+  font-size:clamp(2.4rem,6vw,4.4rem);text-transform:uppercase;
+  background:linear-gradient(100deg,var(--neon-magenta),var(--neon-blue) 45%,var(--neon-magenta) 90%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  background-size:200% 100%;animation:gradshift 6s linear infinite;
+  text-shadow:none;
+}
+:root[data-theme="dark"] .hero__title{
+  background:linear-gradient(100deg,var(--neon-magenta),var(--neon-green) 45%,var(--neon-yellow) 90%);
+  -webkit-background-clip:text;background-clip:text;
+  filter:drop-shadow(2px 0 0 rgba(255,0,255,.6)) drop-shadow(-2px 0 0 rgba(0,255,255,.5));
+}
+@keyframes gradshift{to{background-position:200% 0}}
+.hero__sub{font-size:1.125rem;color:var(--text-secondary);max-width:34ch}
+.hero__ctas{display:flex;gap:1rem;flex-wrap:wrap}
+.hero__visual{flex:1 1 380px;position:relative;min-height:340px;display:flex;align-items:center;justify-content:center}
+.hero__collage{position:relative;width:100%;max-width:440px;aspect-ratio:1/1}
+.collage__tile{position:absolute;border:3px solid var(--border-default);box-shadow:var(--shadow-md);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);text-align:center}
+.collage__tile--a{inset:6% 30% 46% 4%;background:var(--neon-yellow);color:var(--on-neon);transform:rotate(-5deg);font-size:1.6rem}
+.collage__tile--b{inset:12% 4% 52% 56%;background:var(--neon-blue);color:var(--on-blue);transform:rotate(4deg);font-size:1.1rem}
+.collage__tile--c{inset:52% 44% 8% 10%;background:var(--neon-magenta);color:var(--on-neon);transform:rotate(3deg);font-size:1.2rem}
+.collage__tile--d{inset:56% 6% 4% 62%;background:var(--neon-green);color:var(--on-neon);transform:rotate(-3deg);font-size:1rem}
+.collage__icon{font-size:3rem}
+
+/* ---------- marquee ---------- */
+.marquee{overflow:hidden;border-block:3px solid var(--border-default);padding:.6rem 0;position:relative}
+.marquee--a{background:var(--neon-yellow);color:var(--on-neon);transform:rotate(-1.2deg)}
+.marquee--b{background:var(--neon-blue);color:var(--on-blue);transform:rotate(1deg)}
+.marquee__track{display:flex;gap:2.5rem;width:max-content;animation:marquee 22s linear infinite;font-family:var(--font-display);font-size:1rem;white-space:nowrap}
+@keyframes marquee{to{transform:translateX(-50%)}}
+
+/* ---------- section headers ---------- */
+.section-head{display:flex;flex-direction:column;gap:.75rem;margin-bottom:2.5rem}
+.section-head h2{font-size:clamp(1.8rem,4vw,2.8rem);text-transform:uppercase}
+.section-head p{color:var(--text-secondary);font-size:1.05rem}
+.eyebrow{display:inline-flex;align-self:flex-start;font-family:var(--font-display);font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;background:var(--neon-green);color:var(--on-neon);border:3px solid var(--border-default);box-shadow:var(--shadow-sm);padding:.3rem .7rem;transform:rotate(-2deg)}
+
+/* ---------- cards ---------- */
+.card{
+  display:flex;flex-direction:column;gap:.9rem;position:relative;
+  background:var(--bg-secondary);border:3px solid var(--border-default);
+  border-radius:var(--radius-md);box-shadow:var(--shadow-md);padding:1.75rem;
+  transform:rotate(var(--rot,0deg));
+  transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard);
+}
+@media(hover:hover) and (pointer:fine){
+  .card:hover{transform:rotate(var(--rot,0deg)) translateY(-4px);box-shadow:9px 9px 0 var(--border-default)}
+}
+.card:focus-within{border-color:var(--secondary)}
+.card__title{font-size:1.25rem}
+.card__body{color:var(--text-secondary)}
+.card__badge{position:absolute;top:-18px;right:-12px;z-index:2}
+.card__icon{width:56px;height:56px;display:flex;align-items:center;justify-content:center;border:3px solid var(--border-default);border-radius:var(--radius-sm);font-size:1.8rem;box-shadow:var(--shadow-sm)}
+.card__icon--m{background:var(--neon-magenta);color:var(--on-neon)}
+.card__icon--g{background:var(--neon-green);color:var(--on-neon)}
+.card__icon--y{background:var(--neon-yellow);color:var(--on-neon)}
+.card--skeleton .sk{background:linear-gradient(90deg,var(--bg-secondary) 25%,var(--bg-primary) 50%,var(--bg-secondary) 75%);background-size:200% 100%;animation:shimmer 1.4s linear infinite;border-radius:var(--radius-sm);min-height:1rem}
+@keyframes shimmer{to{background-position:-200% 0}}
+.card--empty{align-items:center;text-align:center;border-style:dashed}
+.card--empty .material-symbols-rounded{font-size:2.5rem;color:var(--text-secondary)}
+
+.grid-3{display:grid;grid-template-columns:1fr;gap:var(--spacing-gap)}
+@media(min-width:768px){.grid-3{grid-template-columns:repeat(3,1fr)}}
+
+/* ---------- steps ---------- */
+.card--step{border-style:dashed;border-width:3px}
+.card__num{font-family:var(--font-display);font-size:3rem;line-height:1;color:var(--neon-blue)}
+:root[data-theme="dark"] .card__num{color:var(--neon-yellow)}
+.steps-wrap{position:relative}
+.steps-divider{margin-block:2.5rem}
+
+/* ---------- testimonials ---------- */
+.card--quote{gap:.75rem}
+.card--quote blockquote{font-size:1.05rem;font-weight:500}
+.card--quote blockquote::before{content:"\201C "}
+.card--quote blockquote::after{content:" \201D"}
+.quote__meta{display:flex;align-items:center;gap:.75rem;margin-top:auto}
+.quote__avatar{width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:.9rem;border:3px solid var(--border-default);border-radius:50%}
+.quote__handle{font-weight:700;font-size:.95rem}
+.quote__role{font-size:.85rem;color:var(--text-secondary)}
+.quote__stars{color:var(--neon-blue);display:flex;font-size:1.1rem}
+:root[data-theme="dark"] .quote__stars{color:var(--neon-yellow)}
+.card--quote-a{background:var(--neon-yellow);color:var(--on-neon)}
+.card--quote-a .quote__role{color:#3A3A00}
+.card--quote-a .quote__stars{color:var(--neon-blue)}
+.card--quote-c{background:var(--neon-magenta);color:var(--on-neon)}
+.card--quote-c .quote__role{color:#4A004A}
+.card--quote-c .quote__stars{color:var(--neon-blue)}
+
+/* ---------- pricing ---------- */
+.card--pricing{gap:1rem}
+.price{font-family:var(--font-display);font-size:2.4rem}
+.price span{font-family:var(--font-base);font-size:.95rem;font-weight:500;color:var(--text-secondary)}
+.price-list{list-style:none;display:flex;flex-direction:column;gap:.6rem}
+.price-list li{display:flex;align-items:center;gap:.6rem}
+.price-list .material-symbols-rounded{color:var(--text-success)}
+.card--featured{background:var(--neon-green);color:var(--on-neon);transform:rotate(-1deg) scale(1.03);border-width:4px}
+:root[data-theme="dark"] .card--featured{background:var(--neon-green);color:var(--on-neon);box-shadow:6px 6px 0 var(--neon-magenta)}
+.card--featured .price span,.card--featured .card__body{color:#0A3D00}
+.card--featured .price-list .material-symbols-rounded{color:#0A3D00}
+
+/* ---------- FAQ ---------- */
+.faq{max-width:760px;margin-inline:auto;display:flex;flex-direction:column;gap:1rem}
+.faq__item{background:var(--bg-secondary);border:3px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm)}
+.faq__item:nth-child(odd){transform:rotate(-.6deg)}
+.faq__item:nth-child(even){transform:rotate(.6deg)}
+.faq__btn{
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;width:100%;
+  min-height:44px;padding:1.1rem 1.25rem;background:none;border:none;cursor:pointer;
+  font-family:var(--font-base);font-weight:700;font-size:1.05rem;color:var(--text-primary);text-align:left;
+}
+.faq__btn .material-symbols-rounded{transition:transform var(--transition-normal) var(--ease-standard);flex:none}
+.faq__btn[aria-expanded="true"] .material-symbols-rounded{transform:rotate(180deg)}
+.faq__panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--transition-normal) var(--ease-standard)}
+.faq__panel.is-open{grid-template-rows:1fr}
+.faq__panel-inner{overflow:hidden}
+.faq__panel p{padding:0 1.25rem 1.25rem;color:var(--text-secondary)}
+
+/* ---------- CTA ---------- */
+.cta-band{
+  background:var(--neon-blue);color:var(--on-blue);border-block:4px solid var(--border-default);
+  position:relative;overflow:hidden;
+}
+.cta-band h2{font-size:clamp(1.9rem,4.5vw,3.2rem);text-transform:uppercase}
+.cta-band__inner{display:flex;flex-direction:column;gap:1.25rem;max-width:680px}
+.cta-band p{color:#DCDCDC}
+.input-group{display:flex;flex-direction:column;gap:.5rem}
+.input-group label{font-weight:700}
+.field-row{display:flex;gap:.75rem;flex-wrap:wrap}
+.field{flex:1 1 240px;display:flex;flex-direction:column;gap:.4rem}
+.field input{
+  min-height:48px;padding:.7rem 1rem;font-family:var(--font-base);font-size:1rem;
+  border:3px solid var(--border-default);border-radius:var(--radius-sm);
+  background:var(--bg-secondary);color:var(--text-primary);
+}
+.field input:focus-visible{outline:3px solid var(--neon-yellow);outline-offset:2px}
+.field input:disabled{opacity:.5;cursor:not-allowed}
+.field input[readonly]{background:var(--bg-primary);border-style:dashed}
+.field--valid input{border-color:var(--border-success)}
+.field--error input{border-color:var(--border-error)}
+.field__msg{font-size:.9rem;min-height:1.3em;display:flex;align-items:center;gap:.35rem}
+.field--valid .field__msg{color:var(--neon-green)}
+.field--error .field__msg{color:var(--neon-yellow)}
+.cta-band .field label{color:var(--on-blue)}
+
+/* ---------- footer ---------- */
+.site-footer{border-top:3px solid var(--border-default);background:var(--bg-secondary);padding-block:3rem}
+.site-footer__inner{display:flex;flex-direction:column;gap:1.5rem;align-items:flex-start}
+.footer-links{display:flex;flex-wrap:wrap;gap:1.5rem;list-style:none}
+.footer-links a{font-weight:600;text-decoration:none;border-bottom:2px solid transparent}
+@media(hover:hover) and (pointer:fine){.footer-links a:hover{border-bottom-color:var(--primary)}}
+.socials{display:flex;gap:.75rem}
+.socials a{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border:3px solid var(--border-default);border-radius:50%;background:var(--neon-yellow);color:var(--on-neon);box-shadow:var(--shadow-sm);text-decoration:none;transition:transform var(--transition-fast) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.socials a:hover{transform:rotate(-6deg)}}
+.socials a:active{transform:scale(.97)}
+.smallprint{font-size:.85rem;color:var(--text-secondary)}
+
+/* ---------- scatter positions ---------- */
+.hero .sticker:nth-of-type(1){top:-14px;left:38%}
+.hero .sticker:nth-of-type(2){top:22%;right:-8px}
+.hero .sticker:nth-of-type(3){bottom:8%;left:-10px}
+.hero .sticker:nth-of-type(4){bottom:-16px;right:24%}
+.hero .sticker:nth-of-type(5){top:48%;left:44%}
+@media(max-width:640px){.hero .sticker:nth-of-type(5){display:none}}
+
+/* ---------- reduced motion ---------- */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  .marquee__track{animation:none;transform:none}
+  .hero__title{animation:none}
+  html{scroll-behavior:auto}
+}
+@media(prefers-reduced-transparency:reduce){body::before{opacity:.15}}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a class="wordmark" href="#top">NIMBUS</a>
+    <nav class="nav" aria-label="Primary">
+      <ul class="nav__links" id="nav-links">
+        <li><a class="nav__link" href="#features">Features</a></li>
+        <li><a class="nav__link" href="#how">How It Works</a></li>
+        <li><a class="nav__link" href="#pricing">Pricing</a></li>
+        <li><a class="nav__link" href="#faq">FAQ</a></li>
+      </ul>
+      <button class="nav__toggle" id="nav-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">
+        <span class="material-symbols-rounded" aria-hidden="true">menu</span>
+      </button>
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-rounded icon-sun" aria-hidden="true">light_mode</span>
+        <span class="material-symbols-rounded icon-moon" aria-hidden="true">dark_mode</span>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+<!-- HERO -->
+<section class="hero" id="top">
+  <span class="sticker sticker--yellow rotate-2" aria-hidden="true">NEW!</span>
+  <span class="sticker sticker--magenta rotate-1" aria-hidden="true"><span class="material-symbols-rounded" aria-hidden="true">bolt</span>100% REAL</span>
+  <span class="sticker sticker--green rotate-4" aria-hidden="true">no thoughts</span>
+  <span class="sticker sticker--blue rotate-3" aria-hidden="true">certified unhinged</span>
+  <span class="sticker sticker--white rotate-7" aria-hidden="true"><span class="material-symbols-rounded" aria-hidden="true">star</span>as seen online</span>
+  <div class="container hero__inner">
+    <div class="hero__copy">
+      <h1 class="hero__title">Be normal about the internet (challenge: failed)</h1>
+      <p class="hero__sub">Nimbus is the feed organizer for people who have 47 tabs open and zero regrets. Chaos in, slightly less chaos out.</p>
+      <div class="hero__ctas">
+        <a class="btn btn--primary" href="#cta">Get Unhinged</a>
+        <a class="btn btn--secondary" href="#how">How It Works</a>
+      </div>
+    </div>
+    <div class="hero__visual" aria-hidden="true">
+      <div class="hero__collage">
+        <div class="collage__tile collage__tile--a">UR FEED,<br>FIXED-ish</div>
+        <div class="collage__tile collage__tile--b"><span class="material-symbols-rounded collage__icon">wifi</span></div>
+        <div class="collage__tile collage__tile--c">zero chill<br>guaranteed</div>
+        <div class="collage__tile collage__tile--d"><span class="material-symbols-rounded collage__icon">mood</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="marquee marquee--a" aria-hidden="true">
+  <div class="marquee__track">
+    <span>TOO ONLINE</span><span>NO NOTES</span><span>MAIN CHARACTER ENERGY</span><span>TAB HOARDER SAFE SPACE</span><span>TOO ONLINE</span><span>NO NOTES</span><span>MAIN CHARACTER ENERGY</span><span>TAB HOARDER SAFE SPACE</span>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">The Goods</span>
+      <h2>Features nobody asked for</h2>
+      <p>We built three things. They slap. That is the entire pitch.</p>
+    </div>
+    <div class="grid-3">
+      <article class="card card--feature rotate-5">
+        <span class="sticker sticker--magenta rotate-4 card__badge" aria-hidden="true">HOT</span>
+        <span class="card__icon card__icon--m"><span class="material-symbols-rounded" aria-hidden="true">dashboard_customize</span></span>
+        <h3 class="card__title">Chaos Sorting</h3>
+        <p class="card__body">Dump every link, meme, and 3am thought into one pile. Nimbus sorts it by vibe, not logic. Accuracy not promised.</p>
+      </article>
+      <article class="card card--feature rotate-6">
+        <span class="card__icon card__icon--g"><span class="material-symbols-rounded" aria-hidden="true">notifications_active</span></span>
+        <h3 class="card__title">Doomscroll Brake</h3>
+        <p class="card__body">A gentle alarm when you have scrolled for 4 hours straight. Gentle means it yells. You needed it.</p>
+      </article>
+      <article class="card card--feature rotate-3">
+        <span class="sticker sticker--yellow rotate-2 card__badge" aria-hidden="true">WOW</span>
+        <span class="card__icon card__icon--y"><span class="material-symbols-rounded" aria-hidden="true">group</span></span>
+        <h3 class="card__title">Mutuals Mode</h3>
+        <p class="card__body">Share curated chaos piles with your mutuals. Judgment-free zone. Mostly. No promises after midnight.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="container steps-wrap">
+    <div class="section-head">
+      <h2>How it works, allegedly</h2>
+      <p>Three steps. If you can open a tab, you are overqualified.</p>
+    </div>
+    <div class="grid-3">
+      <article class="card card--step rotate-6">
+        <span class="card__num">01</span>
+        <h3 class="card__title">Dump everything</h3>
+        <p class="card__body">Paste links, screenshots, unhinged drafts. All of it goes in the pile.</p>
+      </article>
+      <article class="card card--step rotate-5">
+        <span class="card__num">02</span>
+        <h3 class="card__title">Let it cook</h3>
+        <p class="card__body">Nimbus groups your chaos into piles that almost make sense.</p>
+      </article>
+      <article class="card card--step rotate-2">
+        <span class="card__num">03</span>
+        <h3 class="card__title">Touch grass</h3>
+        <p class="card__body">Close the tabs. All of them. Feel the sunlight. Incredible.</p>
+      </article>
+    </div>
+    <div class="marquee marquee--b steps-divider" aria-hidden="true">
+      <div class="marquee__track">
+        <span>STEP BY STEP</span><span>NO SKIPPING</span><span>TRUST THE PROCESS</span><span>STEP BY STEP</span><span>NO SKIPPING</span><span>TRUST THE PROCESS</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testimonials">
+  <div class="container">
+    <div class="section-head">
+      <h2>The timeline has spoken</h2>
+      <p>Real quotes from real users who definitely exist and said these things.</p>
+    </div>
+    <div class="grid-3">
+      <article class="card card--quote card--quote-a rotate-3">
+        <div class="quote__stars" aria-label="Rated 5 out of 5 stars">
+          <span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span>
+        </div>
+        <blockquote>I closed 200 tabs in one sitting. My laptop fan finally stopped screaming. We both healed.</blockquote>
+        <div class="quote__meta">
+          <span class="quote__avatar" style="background:var(--neon-green);color:var(--on-neon)" aria-hidden="true">MK</span>
+          <div><div class="quote__handle">@mara_keys</div><div class="quote__role">Mara Kessler, Community Lead at Fernhouse</div></div>
+        </div>
+      </article>
+      <article class="card card--quote rotate-6">
+        <div class="quote__stars" aria-label="Rated 5 out of 5 stars">
+          <span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span>
+        </div>
+        <blockquote>The Doomscroll Brake yelled at me at 2am and honestly? Valid. I went to bed. First time in weeks.</blockquote>
+        <div class="quote__meta">
+          <span class="quote__avatar" style="background:var(--neon-magenta);color:var(--on-neon)" aria-hidden="true">DO</span>
+          <div><div class="quote__handle">@dev.online</div><div class="quote__role">Dev Okafor, Frontend Engineer at Loopwire</div></div>
+        </div>
+      </article>
+      <article class="card card--quote card--quote-c rotate-7">
+        <div class="quote__stars" aria-label="Rated 4 out of 5 stars">
+          <span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star_half</span>
+        </div>
+        <blockquote>Shared my chaos pile with my mutuals. Three friendships ended, two began. Net positive. Four stars.</blockquote>
+        <div class="quote__meta">
+          <span class="quote__avatar" style="background:var(--neon-yellow);color:var(--on-neon)" aria-hidden="true">JT</span>
+          <div><div class="quote__handle">@juno_typing</div><div class="quote__role">Juno Tran, Content Strategist at Papertrail</div></div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="container">
+    <div class="section-head">
+      <h2>Pay us or don't, whatever</h2>
+      <p>Three tiers. One is clearly the correct choice. We will let you guess which.</p>
+    </div>
+    <div class="grid-3">
+      <article class="card card--pricing rotate-6">
+        <h3 class="card__title">Lurker</h3>
+        <p class="price">$0 <span>/ forever</span></p>
+        <ul class="price-list">
+          <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>1 chaos pile</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Basic vibe sorting</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Doomscroll Brake (polite mode)</li>
+        </ul>
+        <a class="btn btn--secondary" href="#cta">Start Free</a>
+      </article>
+      <article class="card card--pricing card--featured">
+        <span class="sticker sticker--magenta rotate-2 card__badge" aria-hidden="true">THE MAIN CHARACTER</span>
+        <h3 class="card__title">Chronically Online</h3>
+        <p class="price">$6 <span>/ month</span></p>
+        <ul class="price-list">
+          <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Unlimited chaos piles</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Mutuals Mode included</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Doomscroll Brake (yell mode)</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Priority meme archiving</li>
+        </ul>
+        <a class="btn btn--primary" href="#cta">Go Main Character</a>
+      </article>
+      <article class="card card--pricing rotate-5">
+        <h3 class="card__title">Touch Grass</h3>
+        <p class="price">$12 <span>/ month</span></p>
+        <ul class="price-list">
+          <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Everything in Online</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Weekly offline report</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>A real plant, mailed to you</li>
+        </ul>
+        <a class="btn btn--secondary" href="#cta">Go Outside</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="container">
+    <div class="section-head">
+      <h2>Questions you were too afraid to ask</h2>
+      <p>Answered honestly, which is rare for a landing page.</p>
+    </div>
+    <div class="faq">
+      <div class="faq__item">
+        <h3><button class="faq__btn" aria-expanded="false" aria-controls="faq-p1" id="faq-b1">Is this a real product or a bit?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button></h3>
+        <div class="faq__panel" id="faq-p1" role="region" aria-labelledby="faq-b1"><div class="faq__panel-inner"><p>Yes. It sorts your links, yells at you to sleep, and mails you a plant on the top tier. All of that really happens.</p></div></div>
+      </div>
+      <div class="faq__item">
+        <h3><button class="faq__btn" aria-expanded="false" aria-controls="faq-p2" id="faq-b2">Will it judge my 3am searches?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button></h3>
+        <div class="faq__panel" id="faq-p2" role="region" aria-labelledby="faq-b2"><div class="faq__panel-inner"><p>No. Nimbus stores your chaos locally and never reads it. Your 3am spiral stays between you and your search bar.</p></div></div>
+      </div>
+      <div class="faq__item">
+        <h3><button class="faq__btn" aria-expanded="false" aria-controls="faq-p3" id="faq-b3">Can I cancel anytime?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button></h3>
+        <div class="faq__panel" id="faq-p3" role="region" aria-labelledby="faq-b3"><div class="faq__panel-inner"><p>Yes, in two clicks, with no guilt-trip screen. We will miss you, but we will be normal about it.</p></div></div>
+      </div>
+      <div class="faq__item">
+        <h3><button class="faq__btn" aria-expanded="false" aria-controls="faq-p4" id="faq-b4">What if I have more than 47 tabs?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button></h3>
+        <div class="faq__panel" id="faq-p4" role="region" aria-labelledby="faq-b4"><div class="faq__panel-inner"><p>Our record is 1,204 tabs from one user. The pile held. The user cried. Both are fine now.</p></div></div>
+      </div>
+      <div class="faq__item">
+        <h3><button class="faq__btn" aria-expanded="false" aria-controls="faq-p5" id="faq-b5">Is the plant real?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button></h3>
+        <div class="faq__panel" id="faq-p5" role="region" aria-labelledby="faq-b5"><div class="faq__panel-inner"><p>Extremely. Touch Grass subscribers get a small succulent with a care card. Its name is Gerald. All of them are named Gerald.</p></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="cta-band" id="cta">
+  <div class="container cta-band__inner">
+    <h2>Join the pile. Resistance is mid.</h2>
+    <p>Drop your email and we will send one invite. One. We are not monsters.</p>
+    <form class="input-group" id="cta-form" novalidate>
+      <div class="field-row">
+        <div class="field" id="email-field">
+          <label for="cta-email">Email address</label>
+          <input type="email" id="cta-email" name="email" autocomplete="email" placeholder="you@chronically.online" aria-describedby="cta-msg" required>
+        </div>
+        <button class="btn btn--primary" type="submit" id="cta-btn">
+          <span class="btn__label">Send It</span>
+        </button>
+      </div>
+      <p class="field__msg" id="cta-msg" aria-live="polite">We send one email. Unsubscribe is one click, no exit survey.</p>
+    </form>
+  </div>
+</section>
+</main>
+
+<footer class="site-footer">
+  <div class="container site-footer__inner">
+    <a class="wordmark" href="#top">NIMBUS</a>
+    <ul class="footer-links">
+      <li><a href="#top">About</a></li>
+      <li><a href="#cta">Contact</a></li>
+      <li><a href="#faq">Privacy</a></li>
+      <li><a href="#faq">Terms</a></li>
+    </ul>
+    <div class="socials">
+      <a href="#top" aria-label="Nimbus on social video"><span class="material-symbols-rounded" aria-hidden="true">play_circle</span></a>
+      <a href="#top" aria-label="Nimbus photo feed"><span class="material-symbols-rounded" aria-hidden="true">photo_camera</span></a>
+      <a href="#top" aria-label="Nimbus chat community"><span class="material-symbols-rounded" aria-hidden="true">forum</span></a>
+    </div>
+    <p class="smallprint">© 2026 Nimbus Industries. Made with zero chill and one succulent named Gerald. Go drink some water.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var root=document.documentElement;
+
+  /* Theme toggle */
+  var toggle=document.getElementById("theme-toggle");
+  function syncToggle(){
+    var dark=root.dataset.theme==="dark";
+    toggle.setAttribute("aria-pressed",String(dark));
+    toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+  }
+  syncToggle();
+  toggle.addEventListener("click",function(){
+    root.dataset.theme=root.dataset.theme==="dark"?"light":"dark";
+    localStorage.setItem("theme",root.dataset.theme);
+    syncToggle();
+  });
+
+  /* Mobile nav */
+  var navToggle=document.getElementById("nav-toggle");
+  var navLinks=document.getElementById("nav-links");
+  function closeNav(){
+    navLinks.classList.remove("is-open");
+    navToggle.setAttribute("aria-expanded","false");
+    navToggle.setAttribute("aria-label","Open menu");
+  }
+  navToggle.addEventListener("click",function(){
+    var open=navLinks.classList.toggle("is-open");
+    navToggle.setAttribute("aria-expanded",String(open));
+    navToggle.setAttribute("aria-label",open?"Close menu":"Open menu");
+  });
+  navLinks.addEventListener("click",function(e){if(e.target.closest("a"))closeNav();});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape")closeNav();});
+
+  /* FAQ accordion */
+  var faqBtns=document.querySelectorAll(".faq__btn");
+  faqBtns.forEach(function(btn){
+    btn.addEventListener("click",function(){
+      var panel=document.getElementById(btn.getAttribute("aria-controls"));
+      var open=btn.getAttribute("aria-expanded")==="true";
+      btn.setAttribute("aria-expanded",String(!open));
+      panel.classList.toggle("is-open",!open);
+    });
+  });
+
+  /* CTA form */
+  var form=document.getElementById("cta-form");
+  var field=document.getElementById("email-field");
+  var input=document.getElementById("cta-email");
+  var msg=document.getElementById("cta-msg");
+  var btn=document.getElementById("cta-btn");
+  var busy=false;
+  function setState(state,text){
+    field.classList.remove("field--valid","field--error");
+    btn.classList.remove("btn--success","btn--error","is-loading");
+    if(state==="valid"){field.classList.add("field--valid");btn.classList.add("btn--success");}
+    if(state==="error"){field.classList.add("field--error");btn.classList.add("btn--error");}
+    msg.textContent=text;
+  }
+  form.addEventListener("submit",function(e){
+    e.preventDefault();
+    if(busy)return;
+    var val=input.value.trim();
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)){
+      setState("error","That email looks fake. We respect it, but try again.");
+      btn.querySelector(".btn__label").textContent="Try Again";
+      input.focus();
+      return;
+    }
+    busy=true;
+    btn.classList.add("is-loading");
+    btn.innerHTML='<span class="material-symbols-rounded spinner" aria-hidden="true">progress_activity</span><span class="btn__label">Sending</span>';
+    msg.textContent="Cooking your invite. Hold tight.";
+    window.setTimeout(function(){
+      busy=false;
+      btn.innerHTML='<span class="material-symbols-rounded" aria-hidden="true">check_circle</span><span class="btn__label">You\'re In</span>';
+      setState("valid","Invite sent to "+val+". Check spam, we are probably there.");
+      input.value="";
+    },1400);
+  });
+})();
+</script>
+</body>
+</html>

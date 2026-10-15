@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nimbus - Cloud Cost Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet">
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";}document.documentElement.dataset.theme=t;})();
+</script>
+<style>
+:root{
+  --primary:#00D4FF;--secondary:#E0AAFF;
+  --bg-primary:#1A1A2E;--bg-secondary:#232344;
+  --text-primary:#FFFFFF;--text-secondary:rgba(255,255,255,0.72);
+  --text-success:#4ADE80;--text-error:#FF6B9D;
+  --border-default:rgba(255,255,255,0.15);
+  --border-error:rgba(255,107,157,0.65);--border-success:rgba(74,222,128,0.65);
+  --accent-pink:#FFB6FF;--accent-rose:#FF6B9D;--accent-purple:#9D4EDD;--accent-deep-purple:#3A0CA3;
+  --glow-cyan:0 0 24px rgba(0,212,255,0.35);--glow-purple:0 0 24px rgba(157,78,221,0.35);
+  --neon-text-shadow:0 0 18px rgba(0,212,255,0.45),0 0 42px rgba(224,170,255,0.25);
+  --glass-bg:rgba(255,255,255,0.08);--glass-border:rgba(255,255,255,0.15);
+  --glass-shadow:0 8px 32px rgba(0,0,0,0.3);--glass-blur:blur(20px) saturate(150%);
+  --radius-sm:8px;--radius-md:16px;--radius-lg:24px;
+  --shadow-sm:0 2px 8px rgba(0,0,0,0.25);--shadow-md:0 12px 40px rgba(0,0,0,0.35);
+  --spacing-gap:1.5rem;
+  --transition-fast:150ms;--transition-normal:300ms;
+  --ease-standard:cubic-bezier(0.4,0,0.2,1);
+  --z-dropdown:100;--z-modal:200;--z-toast:300;
+  --font-display:"Sora",sans-serif;--font-base:"Inter",sans-serif;
+  --btn-primary-text:#0B1020;
+  --orb-opacity:1;
+}
+:root[data-theme="light"]{
+  --bg-primary:#EEF1F8;--bg-secondary:#FFFFFF;
+  --text-primary:#14142B;--text-secondary:rgba(20,20,43,0.72);
+  --border-default:rgba(20,20,43,0.14);
+  --glass-bg:rgba(255,255,255,0.55);--glass-border:rgba(20,20,43,0.12);
+  --glass-shadow:0 8px 32px rgba(20,20,60,0.12);
+  --shadow-sm:0 2px 8px rgba(20,20,60,0.08);--shadow-md:0 12px 40px rgba(20,20,60,0.14);
+  --neon-text-shadow:0 0 14px rgba(0,150,200,0.25);
+  --glow-cyan:0 0 24px rgba(0,150,200,0.25);--glow-purple:0 0 24px rgba(157,78,221,0.22);
+  --orb-opacity:0.5;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth;scroll-padding-top:5.5rem}
+body{
+  font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);
+  line-height:1.6;overflow-x:hidden;min-height:100dvh;
+  transition:background var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard);
+}
+/* Ambient background layer */
+.ambient{position:fixed;inset:0;z-index:-1;overflow:hidden;background:
+  radial-gradient(60rem 40rem at 85% -10%,rgba(0,212,255,0.14),transparent 60%),
+  radial-gradient(50rem 36rem at -10% 30%,rgba(157,78,221,0.16),transparent 60%),
+  radial-gradient(46rem 34rem at 70% 90%,rgba(58,12,163,0.22),transparent 60%),
+  radial-gradient(34rem 26rem at 30% 70%,rgba(224,170,255,0.08),transparent 60%),
+  var(--bg-primary);}
+.orb{position:absolute;border-radius:50%;filter:blur(90px);opacity:var(--orb-opacity);animation:drift 26s ease-in-out infinite alternate}
+.orb--cyan{width:34rem;height:34rem;background:rgba(0,212,255,0.20);top:-8rem;right:-6rem}
+.orb--purple{width:30rem;height:30rem;background:rgba(157,78,221,0.22);bottom:-10rem;left:-8rem;animation-delay:-8s}
+.orb--pink{width:22rem;height:22rem;background:rgba(255,182,255,0.14);top:40%;left:45%;animation-delay:-16s}
+@keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(4rem,-3rem) scale(1.12)}}
+/* Typography */
+h1,h2,h3{font-family:var(--font-display);line-height:1.1;letter-spacing:-0.02em;font-weight:700}
+h1{font-size:clamp(2.25rem,5vw,3.75rem)}
+h2{font-size:clamp(1.75rem,3.5vw,2.5rem);margin-bottom:0.75rem}
+h3{font-size:1.25rem}
+p{color:var(--text-secondary);max-width:65ch}
+a{color:inherit}
+.section{padding:clamp(4rem,8vw,7rem) 0}
+.container{max-width:1200px;margin:0 auto;padding:0 1.25rem}
+@media(min-width:768px){.container{padding:0 2rem}}
+.section-head{margin-bottom:3rem}
+.section-head p{margin-top:0.25rem}
+.eyebrow{display:inline-block;font-size:0.75rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--primary);margin-bottom:0.75rem}
+.grad-text{background:linear-gradient(100deg,var(--primary),var(--secondary));-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:var(--neon-text-shadow)}
+/* Glass primitives */
+.glass{background:var(--glass-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow);border-radius:var(--radius-lg)}
+/* Nav */
+.nav{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--glass-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border-bottom:1px solid var(--glass-border)}
+.nav__inner{max-width:1200px;margin:0 auto;height:4.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:0 1.25rem}
+@media(min-width:768px){.nav__inner{padding:0 2rem}}
+.nav__logo{display:flex;align-items:center;gap:0.5rem;font-family:var(--font-display);font-weight:800;font-size:1.15rem;text-decoration:none;letter-spacing:-0.02em}
+.nav__logo .material-symbols-rounded{color:var(--primary);text-shadow:var(--neon-text-shadow)}
+.nav__links{display:none;align-items:center;gap:1.75rem;list-style:none}
+.nav__links a{text-decoration:none;color:var(--text-secondary);font-size:0.925rem;font-weight:500;transition:color var(--transition-fast)}
+.nav__actions{display:flex;align-items:center;gap:0.75rem}
+.menu-btn{display:flex;align-items:center;justify-content:center;width:44px;height:44px;background:transparent;border:1px solid var(--glass-border);border-radius:var(--radius-sm);color:var(--text-primary);cursor:pointer}
+.mobile-panel{display:none;flex-direction:column;gap:0.25rem;padding:1rem 1.25rem 1.5rem;border-top:1px solid var(--glass-border)}
+.mobile-panel a{display:block;padding:0.75rem 0.5rem;text-decoration:none;color:var(--text-secondary);font-weight:500;border-radius:var(--radius-sm)}
+.mobile-panel.is-open{display:flex}
+@media(min-width:768px){.nav__links{display:flex}.menu-btn{display:none}.mobile-panel{display:none!important}}
+@media(hover:hover) and (pointer:fine){.nav__links a:hover{color:var(--primary)}}
+/* Theme toggle */
+#theme-toggle{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-sm);border:1px solid var(--glass-border);background:var(--glass-bg);color:var(--text-primary);cursor:pointer;transition:box-shadow var(--transition-normal)}
+#theme-toggle .icon-sun{display:none}
+:root[data-theme="light"] #theme-toggle .icon-sun{display:block}
+:root[data-theme="light"] #theme-toggle .icon-moon{display:none}
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;min-height:44px;padding:0.7rem 1.5rem;border-radius:var(--radius-md);font-family:var(--font-base);font-weight:600;font-size:0.95rem;text-decoration:none;cursor:pointer;border:1px solid transparent;transition:box-shadow var(--transition-normal) var(--ease-standard),transform var(--transition-fast),filter var(--transition-normal);white-space:nowrap}
+.btn--primary{background:linear-gradient(100deg,var(--primary),var(--accent-purple));color:var(--btn-primary-text);box-shadow:var(--glow-cyan)}
+.btn--glass{background:var(--glass-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border-color:var(--glass-border);color:var(--text-primary)}
+.btn:active{transform:scale(0.97)}
+.btn:focus-visible,#theme-toggle:focus-visible,.menu-btn:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.btn[disabled]{opacity:0.5;filter:grayscale(0.6);cursor:not-allowed}
+.btn.is-loading{pointer-events:none}
+.btn.is-loading .btn__label{visibility:hidden}
+.btn.is-loading::after{content:"";position:absolute;width:1.15rem;height:1.15rem;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.7s linear infinite}
+.btn{position:relative}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(hover:hover) and (pointer:fine){
+  .btn--primary:hover{box-shadow:0 0 34px rgba(0,212,255,0.55),0 0 60px rgba(157,78,221,0.3);filter:brightness(1.08)}
+  .btn--glass:hover{box-shadow:var(--glow-purple)}
+  #theme-toggle:hover{box-shadow:var(--glow-cyan)}
+}
+/* Hero */
+.hero{padding:clamp(3.5rem,6vw,6rem) 0 clamp(4rem,7vw,6rem)}
+.hero__grid{display:grid;grid-template-columns:1fr;gap:3rem;align-items:center}
+@media(min-width:900px){.hero__grid{grid-template-columns:1.05fr 1fr}}
+.hero__copy p{margin:1.25rem 0 1.75rem;font-size:1.075rem}
+.hero__ctas{display:flex;flex-wrap:wrap;gap:0.875rem}
+.hero__chips{display:flex;flex-wrap:wrap;gap:0.75rem;margin-top:2rem}
+.chip{display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-radius:999px;font-size:0.85rem;font-weight:600}
+.chip .material-symbols-rounded{font-size:1.1rem;color:var(--primary)}
+.chip strong{font-family:var(--font-display)}
+/* Hero visual: stacked infographic panels */
+.hero__visual{position:relative;display:flex;flex-direction:column;gap:1rem}
+.stat-panel{display:flex;align-items:center;gap:1rem;padding:1.25rem 1.5rem}
+.stat-panel__icon{display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:var(--radius-md);flex-shrink:0;background:linear-gradient(135deg,rgba(0,212,255,0.25),rgba(157,78,221,0.25));border:1px solid var(--glass-border);box-shadow:var(--glow-cyan)}
+.stat-panel__icon .material-symbols-rounded{color:var(--primary)}
+.stat-panel__body{flex:1}
+.stat-panel__num{font-family:var(--font-display);font-weight:800;font-size:1.5rem;letter-spacing:-0.02em}
+.stat-panel__label{font-size:0.85rem;color:var(--text-secondary)}
+.stat-panel__bar{height:6px;border-radius:999px;background:rgba(255,255,255,0.1);margin-top:0.5rem;overflow:hidden}
+.stat-panel__bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--primary),var(--secondary))}
+.stat-panel:nth-child(2){margin-left:clamp(0rem,4vw,2.5rem)}
+.stat-panel:nth-child(3){margin-left:clamp(0rem,8vw,5rem)}
+@media(max-width:640px){.stat-panel:nth-child(2),.stat-panel:nth-child(3){margin-left:0}}
+/* Cards */
+.grid-3{display:grid;grid-template-columns:1fr;gap:var(--spacing-gap)}
+@media(min-width:768px){.grid-3{grid-template-columns:repeat(3,1fr)}}
+.glass-card{display:flex;flex-direction:column;gap:0.75rem;padding:1.75rem;border-radius:var(--radius-lg);background:var(--glass-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow);transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal),border-color var(--transition-normal)}
+.glass-card:focus-within{border-color:rgba(0,212,255,0.5)}
+@media(hover:hover) and (pointer:fine){.glass-card:hover{transform:translateY(-2px);box-shadow:var(--glass-shadow),var(--glow-cyan)}}
+.card-badge{display:flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:var(--radius-md);background:linear-gradient(135deg,rgba(0,212,255,0.22),rgba(157,78,221,0.22));border:1px solid var(--glass-border);box-shadow:var(--glow-purple)}
+.card-badge .material-symbols-rounded{color:var(--secondary);font-size:1.5rem}
+.glass-card p{font-size:0.95rem}
+/* Steps */
+.steps{position:relative;display:grid;grid-template-columns:1fr;gap:var(--spacing-gap)}
+@media(min-width:768px){.steps{grid-template-columns:repeat(3,1fr)}
+.steps::before{content:"";position:absolute;top:3.4rem;left:12%;right:12%;height:2px;background:linear-gradient(90deg,var(--primary),var(--accent-purple),var(--secondary));opacity:0.5;box-shadow:var(--glow-cyan)}}
+.step{position:relative;padding:1.75rem}
+.step__num{font-family:var(--font-display);font-weight:800;font-size:2rem;background:linear-gradient(100deg,var(--primary),var(--secondary));-webkit-background-clip:text;background-clip:text;color:transparent}
+.step .card-badge{margin:0.75rem 0}
+.step p{font-size:0.95rem}
+/* Testimonials */
+.quote-card{position:relative;padding:1.75rem}
+.quote-card__icon{position:absolute;top:1.25rem;right:1.5rem;color:var(--accent-purple);opacity:0.6;font-size:1.75rem}
+.quote-card blockquote{font-size:0.975rem;color:var(--text-primary);margin-bottom:1.25rem}
+.quote-card__person{display:flex;align-items:center;gap:0.875rem}
+.avatar{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;font-family:var(--font-display);font-weight:700;font-size:0.85rem;color:var(--btn-primary-text);background:linear-gradient(135deg,var(--primary),var(--accent-purple));box-shadow:var(--glow-cyan);flex-shrink:0}
+.quote-card__name{font-weight:600;font-size:0.9rem}
+.quote-card__role{font-size:0.8rem;color:var(--text-secondary)}
+/* Pricing */
+.price-card{padding:2rem;align-items:stretch}
+.price-card__name{font-family:var(--font-display);font-weight:700;font-size:1.1rem}
+.price-card__price{font-family:var(--font-display);font-weight:800;font-size:2.5rem;letter-spacing:-0.03em;margin:0.5rem 0 0.25rem}
+.price-card__price span{font-size:0.95rem;font-weight:500;color:var(--text-secondary);letter-spacing:0}
+.price-card ul{list-style:none;display:flex;flex-direction:column;gap:0.65rem;margin:1.25rem 0 1.75rem;flex:1}
+.price-card li{display:flex;align-items:center;gap:0.6rem;font-size:0.9rem;color:var(--text-secondary)}
+.price-card li .material-symbols-rounded{color:var(--text-success);font-size:1.15rem}
+.glass-card--featured{position:relative;border:1px solid transparent;background:linear-gradient(var(--bg-secondary),var(--bg-secondary)) padding-box,linear-gradient(135deg,var(--primary),var(--accent-purple),var(--secondary)) border-box;box-shadow:var(--glass-shadow),0 0 44px rgba(0,212,255,0.22);transform:scale(1.02)}
+:root[data-theme="light"] .glass-card--featured{background:linear-gradient(rgba(255,255,255,0.85),rgba(255,255,255,0.85)) padding-box,linear-gradient(135deg,var(--primary),var(--accent-purple),var(--secondary)) border-box}
+@media(max-width:767px){.glass-card--featured{transform:none}}
+.badge{position:absolute;top:-0.8rem;left:50%;transform:translateX(-50%);padding:0.3rem 1rem;border-radius:999px;font-size:0.72rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;background:linear-gradient(100deg,var(--primary),var(--accent-purple));color:var(--btn-primary-text);box-shadow:var(--glow-cyan);white-space:nowrap}
+/* FAQ */
+.faq{display:flex;flex-direction:column;gap:0.875rem;max-width:760px;margin:0 auto}
+.faq-item{border-radius:var(--radius-md);overflow:hidden}
+.faq-item summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.15rem 1.5rem;cursor:pointer;list-style:none;font-weight:600;font-size:0.975rem;min-height:44px}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-item summary .material-symbols-rounded{transition:transform var(--transition-normal) var(--ease-standard);color:var(--primary);flex-shrink:0}
+.faq-item[open] summary .material-symbols-rounded{transform:rotate(180deg)}
+.faq-item__body{padding:0 1.5rem 1.25rem;font-size:0.925rem;color:var(--text-secondary)}
+/* Final CTA */
+.cta-panel{padding:clamp(2.5rem,6vw,4.5rem);text-align:center;animation:pulseGlow 5s ease-in-out infinite}
+@keyframes pulseGlow{0%,100%{box-shadow:var(--glass-shadow),0 0 30px rgba(0,212,255,0.15)}50%{box-shadow:var(--glass-shadow),0 0 55px rgba(157,78,221,0.3)}}
+.cta-panel h2{margin-bottom:0.5rem}
+.cta-panel>p{margin:0 auto 2rem}
+.cta-form{display:flex;flex-direction:column;gap:0.75rem;max-width:480px;margin:0 auto}
+@media(min-width:600px){.cta-form{flex-direction:row;align-items:flex-start}}
+.input-group{display:flex;flex-direction:column;gap:0.375rem;flex:1;text-align:left}
+.input-group label{font-size:0.85rem;font-weight:600}
+.input-wrap{position:relative;display:flex;align-items:center}
+.input-wrap input{width:100%;min-height:48px;padding:0.75rem 2.75rem 0.75rem 1rem;border-radius:var(--radius-md);border:1px solid var(--glass-border);background:var(--glass-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);color:var(--text-primary);font-family:var(--font-base);font-size:0.95rem;transition:border-color var(--transition-fast),box-shadow var(--transition-fast)}
+.input-wrap input::placeholder{color:var(--text-secondary)}
+.input-wrap input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(0,212,255,0.25)}
+.input-group--valid input{border-color:var(--border-success)}
+.input-group--invalid input{border-color:var(--border-error)}
+.input-wrap .field-icon{position:absolute;right:0.85rem;font-size:1.2rem;display:none}
+.input-group--valid .field-icon--ok{display:block;color:var(--text-success)}
+.input-group--invalid .field-icon--err{display:block;color:var(--text-error)}
+.input-msg{font-size:0.8rem;min-height:1.2em;display:flex;align-items:center;gap:0.35rem}
+.input-group--invalid .input-msg{color:var(--text-error)}
+.input-group--valid .input-msg{color:var(--text-success)}
+/* Footer */
+.footer{border-top:1px solid var(--glass-border);background:var(--glass-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);padding:3.5rem 0 2rem}
+.footer__grid{display:grid;grid-template-columns:1fr;gap:2.5rem}
+@media(min-width:768px){.footer__grid{grid-template-columns:1.5fr 1fr 1fr 1fr}}
+.footer h4{font-family:var(--font-display);font-size:0.9rem;margin-bottom:0.875rem}
+.footer ul{list-style:none;display:flex;flex-direction:column;gap:0.5rem}
+.footer ul a{text-decoration:none;color:var(--text-secondary);font-size:0.875rem;transition:color var(--transition-fast)}
+@media(hover:hover) and (pointer:fine){.footer ul a:hover{color:var(--primary)}}
+.footer__social{display:flex;gap:0.625rem;margin-top:1.25rem}
+.footer__social a{display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:var(--radius-sm);border:1px solid var(--glass-border);color:var(--text-secondary);text-decoration:none;transition:color var(--transition-fast),box-shadow var(--transition-normal)}
+@media(hover:hover) and (pointer:fine){.footer__social a:hover{color:var(--primary);box-shadow:var(--glow-cyan)}}
+.footer__bottom{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1rem;margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--glass-border);font-size:0.825rem;color:var(--text-secondary)}
+.back-top{display:inline-flex;align-items:center;gap:0.4rem;text-decoration:none;font-weight:600;color:var(--text-primary);min-height:44px}
+/* Reveal */
+.reveal{opacity:0;transform:translateY(24px);filter:blur(6px);transition:opacity 600ms var(--ease-standard),transform 600ms var(--ease-standard),filter 600ms var(--ease-standard);transition-delay:calc(var(--i,0)*90ms)}
+.reveal.is-visible{opacity:1;transform:none;filter:blur(0)}
+.skip-link{position:absolute;left:-999px;top:0;padding:0.75rem 1.25rem;background:var(--bg-secondary);color:var(--text-primary);z-index:var(--z-toast);border-radius:0 0 var(--radius-sm) 0}
+.skip-link:focus{left:0}
+@media (prefers-reduced-motion: reduce){
+  .orb{animation:none}
+  .cta-panel{animation:none}
+  .reveal{transition:opacity 200ms ease;transform:none!important;filter:none!important}
+  html{scroll-behavior:auto}
+  *{transition-duration:150ms!important}
+}
+@media (prefers-reduced-transparency: reduce){
+  .glass,.glass-card,.nav,.footer,.chip,.btn--glass,.input-wrap input{background:var(--bg-secondary);-webkit-backdrop-filter:none;backdrop-filter:none}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="ambient" aria-hidden="true">
+  <div class="orb orb--cyan"></div>
+  <div class="orb orb--purple"></div>
+  <div class="orb orb--pink"></div>
+</div>
+
+<header class="nav">
+  <div class="nav__inner">
+    <a class="nav__logo" href="#top"><span class="material-symbols-rounded" aria-hidden="true">deployed_code</span>Nimbus</a>
+    <nav aria-label="Primary">
+      <ul class="nav__links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+    </nav>
+    <div class="nav__actions">
+      <button id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to light mode">
+        <span class="material-symbols-rounded icon-moon" aria-hidden="true">dark_mode</span>
+        <span class="material-symbols-rounded icon-sun" aria-hidden="true">light_mode</span>
+      </button>
+      <a class="btn btn--primary" href="#cta">Start free</a>
+      <button class="menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="mobile-panel" aria-label="Open menu">
+        <span class="material-symbols-rounded" aria-hidden="true">menu</span>
+      </button>
+    </div>
+  </div>
+  <nav class="mobile-panel" id="mobile-panel" aria-label="Mobile">
+    <a href="#features">Features</a>
+    <a href="#how">How it works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#faq">FAQ</a>
+  </nav>
+</header>
+
+<main id="main">
+  <!-- Hero -->
+  <section class="hero" id="top" aria-labelledby="hero-title">
+    <div class="container hero__grid">
+      <div class="hero__copy">
+        <h1 id="hero-title">See where every <span class="grad-text">cloud dollar</span> goes</h1>
+        <p>Nimbus maps spend across your entire stack in real time, flags waste before it bills, and shows exactly what to fix first.</p>
+        <div class="hero__ctas">
+          <a class="btn btn--primary" href="#cta">Start free</a>
+          <a class="btn btn--glass" href="#how"><span class="material-symbols-rounded" aria-hidden="true">play_circle</span>See how it works</a>
+        </div>
+        <div class="hero__chips">
+          <span class="chip glass"><span class="material-symbols-rounded" aria-hidden="true">savings</span><strong>31%</strong>&nbsp;avg. cost cut</span>
+          <span class="chip glass"><span class="material-symbols-rounded" aria-hidden="true">speed</span><strong>4 min</strong>&nbsp;setup time</span>
+          <span class="chip glass"><span class="material-symbols-rounded" aria-hidden="true">cloud_done</span><strong>3</strong>&nbsp;clouds supported</span>
+        </div>
+      </div>
+      <div class="hero__visual" aria-hidden="true">
+        <div class="stat-panel glass reveal" style="--i:0">
+          <div class="stat-panel__icon"><span class="material-symbols-rounded">monitoring</span></div>
+          <div class="stat-panel__body">
+            <div class="stat-panel__num">$1.24M</div>
+            <div class="stat-panel__label">Spend tracked this month</div>
+            <div class="stat-panel__bar"><i style="width:78%"></i></div>
+          </div>
+        </div>
+        <div class="stat-panel glass reveal" style="--i:1">
+          <div class="stat-panel__icon"><span class="material-symbols-rounded">warning</span></div>
+          <div class="stat-panel__body">
+            <div class="stat-panel__num">142</div>
+            <div class="stat-panel__label">Idle resources flagged</div>
+            <div class="stat-panel__bar"><i style="width:46%"></i></div>
+          </div>
+        </div>
+        <div class="stat-panel glass reveal" style="--i:2">
+          <div class="stat-panel__icon"><span class="material-symbols-rounded">trending_down</span></div>
+          <div class="stat-panel__body">
+            <div class="stat-panel__num">$38.6K</div>
+            <div class="stat-panel__label">Projected monthly savings</div>
+            <div class="stat-panel__bar"><i style="width:64%"></i></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="section" id="features" aria-labelledby="features-title">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Capabilities</span>
+        <h2 id="features-title">Built for teams that ship on cloud</h2>
+        <p>Three core systems working together so finance and engineering finally read the same numbers.</p>
+      </div>
+      <div class="grid-3">
+        <article class="glass-card reveal" style="--i:0">
+          <div class="card-badge"><span class="material-symbols-rounded" aria-hidden="true">query_stats</span></div>
+          <h3>Live cost mapping</h3>
+          <p>Every service, region, and tag rendered as a live spend graph. Drill from account level down to a single function invocation.</p>
+        </article>
+        <article class="glass-card reveal" style="--i:1">
+          <div class="card-badge"><span class="material-symbols-rounded" aria-hidden="true">notification_important</span></div>
+          <h3>Anomaly alerts</h3>
+          <p>Baseline models learn your traffic patterns and page the right owner within minutes when spend drifts outside the norm.</p>
+        </article>
+        <article class="glass-card reveal" style="--i:2">
+          <div class="card-badge"><span class="material-symbols-rounded" aria-hidden="true">auto_fix_high</span></div>
+          <h3>One-click rightsizing</h3>
+          <p>Recommendations ranked by savings and risk. Apply safe fixes directly or export a ticket with full context attached.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="section" id="how" aria-labelledby="how-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="how-title">From connection to savings in three steps</h2>
+        <p>No agents to install, no tags to backfill before you see value.</p>
+      </div>
+      <div class="steps">
+        <article class="step glass reveal" style="--i:0">
+          <div class="step__num">01</div>
+          <div class="card-badge"><span class="material-symbols-rounded" aria-hidden="true">link</span></div>
+          <h3>Connect your clouds</h3>
+          <p>Read-only access to AWS, Azure, or GCP through a scoped role. First data appears in under five minutes.</p>
+        </article>
+        <article class="step glass reveal" style="--i:1">
+          <div class="step__num">02</div>
+          <div class="card-badge"><span class="material-symbols-rounded" aria-hidden="true">travel_explore</span></div>
+          <h3>Review the findings</h3>
+          <p>Nimbus ranks waste by dollar impact: idle databases, oversized instances, orphaned storage, and stale snapshots.</p>
+        </article>
+        <article class="step glass reveal" style="--i:2">
+          <div class="step__num">03</div>
+          <div class="card-badge"><span class="material-symbols-rounded" aria-hidden="true">task_alt</span></div>
+          <h3>Apply and verify</h3>
+          <p>Push approved changes, then watch the savings curve confirm each fix against your historical baseline.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="section" id="testimonials" aria-labelledby="testimonials-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="testimonials-title">Teams that stopped guessing</h2>
+      </div>
+      <div class="grid-3">
+        <article class="glass-card quote-card reveal" style="--i:0">
+          <span class="material-symbols-rounded quote-card__icon" aria-hidden="true">format_quote</span>
+          <blockquote>We found a forgotten GPU cluster burning eleven thousand a month. Nimbus paid for itself in the first afternoon.</blockquote>
+          <div class="quote-card__person">
+            <span class="avatar" aria-hidden="true">MR</span>
+            <div><div class="quote-card__name">Mara Reyes</div><div class="quote-card__role">Platform Lead, Vantage Health</div></div>
+          </div>
+        </article>
+        <article class="glass-card quote-card reveal" style="--i:1">
+          <span class="material-symbols-rounded quote-card__icon" aria-hidden="true">format_quote</span>
+          <blockquote>Finance finally trusts our numbers. The shared dashboard ended the monthly argument about whose team spent what.</blockquote>
+          <div class="quote-card__person">
+            <span class="avatar" aria-hidden="true">DK</span>
+            <div><div class="quote-card__name">Devon Kaur</div><div class="quote-card__role">VP Engineering, Lattice Freight</div></div>
+          </div>
+        </article>
+        <article class="glass-card quote-card reveal" style="--i:2">
+          <span class="material-symbols-rounded quote-card__icon" aria-hidden="true">format_quote</span>
+          <blockquote>The anomaly alerts caught a misconfigured autoscaler before our invoice did. That one save covered a year of the bill.</blockquote>
+          <div class="quote-card__person">
+            <span class="avatar" aria-hidden="true">TO</span>
+            <div><div class="quote-card__name">Tomas Okafor</div><div class="quote-card__role">SRE Manager, Brightcart</div></div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section class="section" id="pricing" aria-labelledby="pricing-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="pricing-title">Pricing that scales with your bill, not your headcount</h2>
+        <p>Every plan includes unlimited viewers and all three cloud providers.</p>
+      </div>
+      <div class="grid-3">
+        <article class="glass-card price-card reveal" style="--i:0">
+          <div class="price-card__name">Starter</div>
+          <div class="price-card__price">$0<span> /month</span></div>
+          <p>For a first look at where your spend actually goes.</p>
+          <ul>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>One cloud account</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Daily cost mapping</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Top 10 waste findings</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>30-day history</li>
+          </ul>
+          <a class="btn btn--glass" href="#cta">Start free</a>
+        </article>
+        <article class="glass-card price-card glass-card--featured reveal" style="--i:1">
+          <span class="badge">Most Popular</span>
+          <div class="price-card__name">Growth</div>
+          <div class="price-card__price">$249<span> /month</span></div>
+          <p>For teams actively driving spend down quarter over quarter.</p>
+          <ul>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Up to 10 cloud accounts</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Real-time anomaly alerts</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>One-click rightsizing</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Slack and PagerDuty routing</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>13-month history</li>
+          </ul>
+          <a class="btn btn--primary" href="#cta">Start free</a>
+        </article>
+        <article class="glass-card price-card reveal" style="--i:2">
+          <div class="price-card__name">Enterprise</div>
+          <div class="price-card__price">Custom</div>
+          <p>For organizations with compliance and scale requirements.</p>
+          <ul>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Unlimited accounts</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>SSO and SCIM provisioning</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Custom data retention</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Dedicated success engineer</li>
+          </ul>
+          <a class="btn btn--glass" href="#cta">Talk to sales</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq" aria-labelledby="faq-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="faq-title">Common questions</h2>
+      </div>
+      <div class="faq">
+        <details class="faq-item glass reveal" style="--i:0">
+          <summary>How does Nimbus access my cloud accounts?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <div class="faq-item__body">Through a read-only IAM role you create with our scoped policy template. Nimbus can never modify, start, or stop any resource. You can revoke access at any time from your own console.</div>
+        </details>
+        <details class="faq-item glass reveal" style="--i:1">
+          <summary>How long until I see real findings?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <div class="faq-item__body">The first cost map renders in under five minutes. Waste findings appear within the hour, and anomaly detection reaches full accuracy after about two weeks of baseline learning.</div>
+        </details>
+        <details class="faq-item glass reveal" style="--i:2">
+          <summary>Does Nimbus work with Kubernetes spend?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <div class="faq-item__body">Yes. Nimbus breaks cluster costs down by namespace, workload, and label on EKS, AKS, and GKE, so shared clusters stop being a black box on the invoice.</div>
+        </details>
+        <details class="faq-item glass reveal" style="--i:3">
+          <summary>Can I export data to my own tools?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <div class="faq-item__body">Every view exports to CSV, and the full API is available on Growth and Enterprise plans. Native integrations cover Slack, PagerDuty, Jira, and Terraform Cloud.</div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="section" id="cta" aria-labelledby="cta-title">
+    <div class="container">
+      <div class="cta-panel glass">
+        <h2 id="cta-title">Find your first savings this week</h2>
+        <p>Connect a cloud account and get a ranked waste report before your next invoice arrives.</p>
+        <form class="cta-form" id="cta-form" novalidate>
+          <div class="input-group" id="email-group">
+            <label for="email">Work email</label>
+            <div class="input-wrap">
+              <input type="email" id="email" name="email" placeholder="you@company.com" autocomplete="email" aria-describedby="email-msg" required>
+              <span class="material-symbols-rounded field-icon field-icon--ok" aria-hidden="true">check_circle</span>
+              <span class="material-symbols-rounded field-icon field-icon--err" aria-hidden="true">error</span>
+            </div>
+            <p class="input-msg" id="email-msg" aria-live="polite">We send one setup link. No spam, ever.</p>
+          </div>
+          <button class="btn btn--primary" id="cta-submit" type="submit"><span class="btn__label">Start free</span></button>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div>
+        <a class="nav__logo" href="#top"><span class="material-symbols-rounded" aria-hidden="true">deployed_code</span>Nimbus</a>
+        <p style="margin-top:0.875rem;font-size:0.875rem">Cloud cost intelligence for engineering teams that would rather build than audit invoices.</p>
+        <div class="footer__social">
+          <a href="#top" aria-label="Nimbus on X"><span class="material-symbols-rounded" aria-hidden="true">share</span></a>
+          <a href="#top" aria-label="Nimbus on LinkedIn"><span class="material-symbols-rounded" aria-hidden="true">groups</span></a>
+          <a href="#top" aria-label="Nimbus on GitHub"><span class="material-symbols-rounded" aria-hidden="true">code</span></a>
+        </div>
+      </div>
+      <div>
+        <h4>Product</h4>
+        <ul>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+          <li><a href="#how">How it works</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#testimonials">Customers</a></li>
+          <li><a href="#top">Careers</a></li>
+          <li><a href="#top">Press kit</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Support</h4>
+        <ul>
+          <li><a href="#faq">FAQ</a></li>
+          <li><a href="#top">Documentation</a></li>
+          <li><a href="#top">Status</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span>&copy; 2026 Nimbus Systems, Inc. All rights reserved.</span>
+      <a class="back-top" href="#top">Back to top<span class="material-symbols-rounded" aria-hidden="true">arrow_upward</span></a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  /* Theme toggle */
+  var toggle=document.getElementById("theme-toggle");
+  function syncToggle(){
+    var dark=document.documentElement.dataset.theme==="dark";
+    toggle.setAttribute("aria-pressed",String(!dark));
+    toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+  }
+  syncToggle();
+  toggle.addEventListener("click",function(){
+    var next=document.documentElement.dataset.theme==="dark"?"light":"dark";
+    document.documentElement.dataset.theme=next;
+    localStorage.setItem("theme",next);
+    syncToggle();
+  });
+
+  /* Mobile menu */
+  var menuBtn=document.getElementById("menu-btn");
+  var panel=document.getElementById("mobile-panel");
+  function closeMenu(){
+    panel.classList.remove("is-open");
+    menuBtn.setAttribute("aria-expanded","false");
+    menuBtn.setAttribute("aria-label","Open menu");
+    menuBtn.querySelector(".material-symbols-rounded").textContent="menu";
+  }
+  menuBtn.addEventListener("click",function(){
+    var open=panel.classList.toggle("is-open");
+    menuBtn.setAttribute("aria-expanded",String(open));
+    menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");
+    menuBtn.querySelector(".material-symbols-rounded").textContent=open?"close":"menu";
+  });
+  panel.addEventListener("click",function(e){if(e.target.tagName==="A")closeMenu();});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape")closeMenu();});
+
+  /* Scroll reveal */
+  var reveals=document.querySelectorAll(".reveal");
+  if("IntersectionObserver" in window){
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){en.target.classList.add("is-visible");io.unobserve(en.target);}
+      });
+    },{threshold:0.15});
+    reveals.forEach(function(el){io.observe(el);});
+  }else{
+    reveals.forEach(function(el){el.classList.add("is-visible");});
+  }
+
+  /* Email form */
+  var form=document.getElementById("cta-form");
+  var group=document.getElementById("email-group");
+  var input=document.getElementById("email");
+  var msg=document.getElementById("email-msg");
+  var submitBtn=document.getElementById("cta-submit");
+  var EMAIL_RE=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  form.addEventListener("submit",function(e){
+    e.preventDefault();
+    var val=input.value.trim();
+    group.classList.remove("input-group--valid","input-group--invalid");
+    if(!EMAIL_RE.test(val)){
+      group.classList.add("input-group--invalid");
+      msg.textContent="Enter a valid work email, for example you@company.com.";
+      input.focus();
+      return;
+    }
+    submitBtn.classList.add("is-loading");
+    submitBtn.setAttribute("aria-busy","true");
+    msg.textContent="Sending your setup link...";
+    setTimeout(function(){
+      submitBtn.classList.remove("is-loading");
+      submitBtn.removeAttribute("aria-busy");
+      group.classList.add("input-group--valid");
+      msg.textContent="Check your inbox. Your setup link is on its way.";
+      form.reset();
+    },1200);
+  });
+  input.addEventListener("input",function(){
+    if(group.classList.contains("input-group--invalid")&&EMAIL_RE.test(input.value.trim())){
+      group.classList.remove("input-group--invalid");
+      msg.textContent="We send one setup link. No spam, ever.";
+    }
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,617 +1,582 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<title>Comparative Analysis Dashboard – Nimbus</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nimbus Compare | Side-by-Side Analytics</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
 <style>
 :root{
-  --primary:#2563eb;
-  --secondary:#f97316;
-  --bg-primary:#f6f8fb;
-  --bg-secondary:#ffffff;
-  --text-primary:#111827;
-  --text-secondary:#6b7280;
-  --text-success:#10b981;
-  --text-error:#ef4444;
-  --border-default:#e5e7eb;
-  --border-success:#10b981;
-  --border-error:#ef4444;
-  --radius-sm:0.25rem;
-  --radius-md:0.5rem;
-  --radius-lg:0.75rem;
-  --shadow-sm:0 1px 2px rgba(0,0,0,0.05);
-  --shadow-md:0 4px 6px -1px rgba(0,0,0,0.1),0 2px 4px -2px rgba(0,0,0,0.1);
+  --primary:#2563eb;--primary-strong:#1d4ed8;--on-primary:#ffffff;
+  --secondary:#f97316;--on-secondary:#ffffff;
+  --bg-primary:#f6f8fb;--bg-secondary:#fefefe;--bg-tertiary:#eef2f8;
+  --text-primary:#1a2332;--text-secondary:#4b5a6e;--text-muted:#64748b;
+  --text-success:#15803d;--text-error:#dc2626;
+  --bg-success:#dcfce7;--bg-error:#fee2e2;
+  --border-default:#dde4ee;--border-success:#86efac;--border-error:#fca5a5;
+  --radius-sm:8px;--radius-md:12px;--radius-lg:18px;
+  --shadow-sm:0 1px 3px rgba(30,45,80,.08);--shadow-md:0 10px 28px rgba(30,45,80,.14);
   --spacing-gap:1.5rem;
-  --transition-fast:150ms;
-  --transition-normal:300ms;
-  --ease-standard:ease;
-  --z-dropdown:1000;
-  --z-modal:2000;
-  --z-toast:3000;
-  --font-base:'Inter',sans-serif;
-  --font-mono:'Roboto Mono',monospace;
+  --transition-fast:140ms;--transition-normal:240ms;--ease-standard:cubic-bezier(.22,.61,.36,1);
+  --z-dropdown:50;--z-modal:100;--z-toast:200;
+  --font-base:'Inter',system-ui,sans-serif;--font-mono:'Roboto Mono',monospace;
+  --nav-bg:rgba(246,248,251,.85);
 }
-html.dark{
-  --bg-primary:#111827;
-  --bg-secondary:#1f2937;
-  --text-primary:#f9fafb;
-  --text-secondary:#d1d5db;
-  --border-default:#374151;
-  --border-success:#10b981;
-  --border-error:#ef4444;
+:root[data-theme="dark"]{
+  --primary:#5b8cff;--primary-strong:#7ba2ff;--on-primary:#0b1220;
+  --secondary:#fb923c;--on-secondary:#1a0e02;
+  --bg-primary:#0e1420;--bg-secondary:#161f30;--bg-tertiary:#1c2740;
+  --text-primary:#e8edf6;--text-secondary:#a8b4c8;--text-muted:#7d8aa0;
+  --text-success:#4ade80;--text-error:#f87171;
+  --bg-success:rgba(34,197,94,.14);--bg-error:rgba(248,113,113,.14);
+  --border-default:#2a3852;--border-success:#166534;--border-error:#7f1d1d;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.4);--shadow-md:0 10px 28px rgba(0,0,0,.5);
+  --nav-bg:rgba(14,20,32,.85);
 }
-*{box-sizing:border-box;margin:0;padding:0}
-body{
-  font-family:var(--font-base);
-  background:var(--bg-primary);
-  color:var(--text-primary);
-  line-height:1.6
-}
-a{color:inherit;text-decoration:none}
-button,.btn{cursor:pointer}
+*{margin:0;padding:0;box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;font-size:1rem;overflow-x:hidden;transition:background var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard)}
 img{max-width:100%;display:block}
-.hidden{display:none}
-.visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
-.reduce-motion *{animation-duration:0.001ms!important;transition-duration:0.001ms!important;animation-iteration-count:1!important}
-.nav{
-  position:sticky;
-  top:0;
-  background:var(--bg-secondary);
-  border-bottom:1px solid var(--border-default);
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:0.75rem var(--spacing-gap);
-  z-index:var(--z-dropdown)
+a{color:var(--primary);text-decoration:none}
+.container{max-width:1200px;margin:0 auto;padding:0 1.25rem}
+@media(min-width:768px){.container{padding:0 2rem}}
+section{padding:clamp(4rem,8vw,7rem) 0}
+.mono{font-family:var(--font-mono)}
+.material-symbols-rounded{font-size:1.25rem;line-height:1;vertical-align:middle}
+
+/* ---------- Buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;min-width:44px;padding:.7rem 1.5rem;border-radius:var(--radius-md);border:1px solid transparent;font-family:var(--font-base);font-size:.95rem;font-weight:600;cursor:pointer;transition:filter var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard),transform var(--transition-fast) var(--ease-standard),background var(--transition-fast) var(--ease-standard);white-space:nowrap}
+.btn:active{transform:scale(.97)}
+.btn:focus-visible{outline:3px solid var(--primary);outline-offset:2px}
+.btn-primary{background:var(--primary);color:var(--on-primary)}
+.btn-outline{background:transparent;color:var(--primary);border-color:var(--primary)}
+.btn-danger{background:var(--text-error);color:#fff}
+.btn:disabled,.btn.is-disabled{opacity:.5;filter:grayscale(.6);cursor:not-allowed;pointer-events:none}
+.btn.is-loading{opacity:.7;pointer-events:none;position:relative}
+.btn.is-loading .btn__label{visibility:hidden}
+.btn.is-loading::after{content:"";position:absolute;width:1.1rem;height:1.1rem;border:2.5px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(hover:hover) and (pointer:fine){
+  .btn-primary:hover{filter:brightness(1.1);box-shadow:var(--shadow-md)}
+  .btn-outline:hover{background:var(--primary);color:var(--on-primary)}
+  .btn-danger:hover{filter:brightness(1.1)}
 }
-.nav-logo{font-weight:600;font-size:1.25rem;color:var(--primary)}
-.nav-links{display:flex;gap:1.5rem}
-.nav-links a{font-weight:500}
-.nav-links a:hover{color:var(--primary)}
-.theme-toggle{
-  background:none;
-  border:none;
-  font-size:1.5rem;
-  color:var(--text-primary);
-  padding:0.25rem;
-  border-radius:var(--radius-sm);
-  display:flex;
-  align-items:center;
-  justify-content:center
+
+/* ---------- Nav ---------- */
+.nav{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--nav-bg);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--border-default)}
+.nav__inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:1rem}
+.nav__brand{display:flex;align-items:center;gap:.55rem;font-weight:800;font-size:1.1rem;color:var(--text-primary);letter-spacing:-.02em}
+.nav__logo{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;color:#fff}
+.nav__logo .material-symbols-rounded{font-size:1.15rem;color:#fff}
+.nav__links{display:flex;align-items:center;gap:1.75rem;list-style:none}
+.nav__links a{color:var(--text-secondary);font-weight:500;font-size:.92rem;transition:color var(--transition-fast)}
+@media(hover:hover) and (pointer:fine){.nav__links a:hover{color:var(--primary)}}
+.nav__actions{display:flex;align-items:center;gap:.6rem}
+.theme-toggle{width:44px;height:44px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color var(--transition-fast),background var(--transition-fast)}
+.theme-toggle:focus-visible{outline:3px solid var(--primary);outline-offset:2px}
+@media(hover:hover) and (pointer:fine){.theme-toggle:hover{border-color:var(--primary)}}
+.theme-toggle .icon-sun{display:none}
+:root[data-theme="dark"] .theme-toggle .icon-sun{display:block}
+:root[data-theme="dark"] .theme-toggle .icon-moon{display:none}
+.nav__menu-btn{display:none;width:44px;height:44px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);align-items:center;justify-content:center;cursor:pointer}
+@media(max-width:767px){
+  .nav__menu-btn{display:flex}
+  .nav__links{position:absolute;top:68px;left:0;right:0;flex-direction:column;align-items:stretch;background:var(--bg-secondary);border-bottom:1px solid var(--border-default);padding:1rem 1.25rem;gap:.25rem;box-shadow:var(--shadow-md)}
+  .nav__links[hidden]{display:none}
+  .nav__links a{display:block;padding:.7rem .5rem;min-height:44px}
+  .nav__cta{display:none}
 }
-.theme-toggle:hover{background:var(--border-default)}
-.theme-toggle:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
-.theme-toggle[aria-pressed="true"] .moon,
-.theme-toggle[aria-pressed="false"] .sun{display:none}
-.hero{
-  display:grid;
-  gap:var(--spacing-gap);
-  padding:var(--spacing-gap);
-  text-align:center
+
+/* ---------- Hero ---------- */
+.hero{padding:clamp(3rem,6vw,5.5rem) 0 clamp(4rem,7vw,6rem)}
+.hero__grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(2rem,4vw,4rem);align-items:center}
+.hero__eyebrow{display:inline-flex;align-items:center;gap:.4rem;font-size:.78rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--primary);margin-bottom:1rem}
+.hero__title{font-size:clamp(2.25rem,4.6vw,3.6rem);font-weight:800;line-height:1.08;letter-spacing:-.03em;margin-bottom:1.1rem}
+.hero__title em{font-style:italic;color:var(--primary)}
+.hero__sub{color:var(--text-secondary);font-size:1.08rem;max-width:44ch;margin-bottom:1.75rem}
+.hero__ctas{display:flex;gap:.8rem;flex-wrap:wrap}
+/* Comparison widget */
+.widget{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);padding:1.4rem}
+.widget__head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem}
+.widget__title{font-weight:700;font-size:.95rem}
+.widget__range{font-family:var(--font-mono);font-size:.72rem;color:var(--text-muted);background:var(--bg-tertiary);padding:.25rem .6rem;border-radius:999px}
+.widget__cards{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:1.2rem}
+.metric{background:var(--bg-tertiary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:.9rem 1rem}
+.metric--win{border-color:var(--border-success)}
+.metric__label{font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:.3rem}
+.metric__value{font-family:var(--font-mono);font-size:1.45rem;font-weight:700;letter-spacing:-.02em}
+.delta{display:inline-flex;align-items:center;gap:.2rem;font-family:var(--font-mono);font-size:.75rem;font-weight:700;padding:.2rem .5rem;border-radius:999px;margin-top:.45rem}
+.delta--up{color:var(--text-success);background:var(--bg-success)}
+.delta--down{color:var(--text-error);background:var(--bg-error)}
+.delta .material-symbols-rounded{font-size:.95rem}
+/* Bar chart */
+.chart{display:flex;flex-direction:column;gap:.7rem}
+.chart__row{display:grid;grid-template-columns:86px 1fr 52px;align-items:center;gap:.7rem}
+.chart__label{font-size:.75rem;font-weight:600;color:var(--text-secondary)}
+.chart__track{height:14px;background:var(--bg-tertiary);border-radius:999px;overflow:hidden;position:relative}
+.chart__bar{height:100%;border-radius:999px;width:0;animation:grow 1s var(--ease-standard) forwards}
+.chart__bar--a{background:var(--primary)}
+.chart__bar--b{background:var(--secondary)}
+.chart__val{font-family:var(--font-mono);font-size:.72rem;font-weight:600;color:var(--text-secondary);text-align:right}
+@keyframes grow{from{width:0}to{width:var(--w)}}
+.widget__legend{display:flex;gap:1.2rem;margin-top:1rem;font-size:.72rem;color:var(--text-muted)}
+.widget__legend span{display:flex;align-items:center;gap:.35rem}
+.dot{width:9px;height:9px;border-radius:3px}
+.dot--a{background:var(--primary)}.dot--b{background:var(--secondary)}
+
+/* ---------- Section headers ---------- */
+.section-head{max-width:640px;margin-bottom:2.75rem}
+.section-head h2{font-size:clamp(1.7rem,3.2vw,2.4rem);font-weight:800;letter-spacing:-.025em;line-height:1.15;margin-bottom:.7rem}
+.section-head p{color:var(--text-secondary);max-width:60ch}
+
+/* ---------- Cards ---------- */
+.card{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:1.6rem;transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),border-color var(--transition-normal)}
+.card:focus-within{border-color:var(--primary)}
+@media(hover:hover) and (pointer:fine){.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}}
+.card.is-loading{pointer-events:none}
+.card.is-loading .skel{display:block;height:.9rem;border-radius:6px;background:linear-gradient(90deg,var(--bg-tertiary) 25%,var(--border-default) 50%,var(--bg-tertiary) 75%);background-size:200% 100%;animation:shimmer 1.2s linear infinite}
+@keyframes shimmer{to{background-position:-200% 0}}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--spacing-gap)}
+@media(max-width:900px){.grid-3{grid-template-columns:1fr}}
+.feature__icon{width:44px;height:44px;border-radius:var(--radius-md);background:var(--bg-tertiary);color:var(--primary);display:flex;align-items:center;justify-content:center;margin-bottom:1rem}
+.feature h3{font-size:1.1rem;font-weight:700;margin-bottom:.45rem;letter-spacing:-.01em}
+.feature p{color:var(--text-secondary);font-size:.92rem;margin-bottom:1.1rem}
+.feature__viz{border-top:1px dashed var(--border-default);padding-top:1rem}
+.ab-badge{display:flex;align-items:center;gap:.5rem;font-family:var(--font-mono);font-size:.72rem;font-weight:700}
+.ab-badge .ab{padding:.25rem .55rem;border-radius:6px}
+.ab--a{background:var(--primary);color:var(--on-primary)}
+.ab--b{background:var(--bg-tertiary);color:var(--text-secondary);border:1px solid var(--border-default)}
+.bench{position:relative;height:34px;background:var(--bg-tertiary);border-radius:8px;overflow:hidden}
+.bench__fill{position:absolute;inset:0 auto 0 0;width:64%;background:color-mix(in srgb,var(--primary) 22%,transparent)}
+.bench__line{position:absolute;top:0;bottom:0;left:78%;border-left:2px dashed var(--secondary)}
+.bench__tag{position:absolute;top:50%;left:78%;transform:translate(6px,-50%);font-size:.62rem;font-weight:700;color:var(--secondary);font-family:var(--font-mono)}
+
+/* ---------- Steps ---------- */
+.steps{display:flex;gap:var(--spacing-gap);counter-reset:step}
+.step{flex:1;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:1.6rem;position:relative}
+.step__num{font-family:var(--font-mono);font-size:.8rem;font-weight:700;color:var(--on-primary);background:var(--primary);width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:1rem}
+.step h3{font-size:1.05rem;font-weight:700;margin-bottom:.4rem}
+.step p{color:var(--text-secondary);font-size:.92rem}
+@media(max-width:767px){.steps{flex-direction:column}}
+
+/* ---------- Testimonials ---------- */
+.testimonial{display:flex;flex-direction:column;gap:1rem}
+.testimonial__quote{font-size:1rem;line-height:1.6;color:var(--text-primary)}
+.testimonial__quote::before{content:"\201C";color:var(--primary);font-weight:800}
+.testimonial__quote::after{content:"\201D";color:var(--primary);font-weight:800}
+.testimonial__foot{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-top:auto}
+.testimonial__who{display:flex;align-items:center;gap:.7rem}
+.avatar{width:42px;height:42px;border-radius:50%;background:var(--primary);color:var(--on-primary);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;flex-shrink:0}
+.avatar--alt{background:var(--secondary);color:var(--on-secondary)}
+.testimonial__name{font-weight:700;font-size:.9rem}
+.testimonial__role{font-size:.78rem;color:var(--text-muted)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:var(--spacing-gap)}
+@media(max-width:767px){.grid-2{grid-template-columns:1fr}}
+
+/* ---------- Pricing ---------- */
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--spacing-gap);align-items:stretch}
+@media(max-width:900px){.pricing-grid{grid-template-columns:1fr;max-width:440px;margin:0 auto}}
+.pricing-card{display:flex;flex-direction:column;position:relative}
+:root[data-theme="dark"] .pricing-card--featured,.pricing-card--featured{border:2px solid var(--primary);box-shadow:var(--shadow-md)}
+.pricing-card__badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--primary);color:var(--on-primary);font-size:.72rem;font-weight:700;padding:.3rem .9rem;border-radius:999px;white-space:nowrap}
+.pricing-card__tier{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);margin-bottom:.5rem}
+.pricing-card__price{font-family:var(--font-mono);font-size:2.3rem;font-weight:700;letter-spacing:-.03em}
+.pricing-card__price small{font-size:.85rem;font-weight:500;color:var(--text-muted);font-family:var(--font-base)}
+.pricing-card__desc{font-size:.88rem;color:var(--text-secondary);margin:.6rem 0 1.2rem}
+.pricing-card__list{list-style:none;display:flex;flex-direction:column;gap:.6rem;margin-bottom:1.5rem;font-size:.9rem;color:var(--text-secondary)}
+.pricing-card__list li{display:flex;align-items:center;gap:.55rem}
+.pricing-card__list .material-symbols-rounded{color:var(--text-success);font-size:1.1rem}
+.pricing-card .btn{margin-top:auto;width:100%}
+
+/* ---------- FAQ ---------- */
+.faq{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:.8rem}
+.faq details{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);overflow:hidden;transition:border-color var(--transition-fast)}
+.faq details[open]{border-color:var(--primary)}
+.faq summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.05rem 1.25rem;font-weight:600;font-size:.98rem;cursor:pointer;list-style:none;min-height:44px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary:focus-visible{outline:3px solid var(--primary);outline-offset:-3px}
+.faq summary .material-symbols-rounded{transition:transform var(--transition-normal) var(--ease-standard);color:var(--text-muted)}
+.faq details[open] summary .material-symbols-rounded{transform:rotate(180deg)}
+.faq__body{padding:0 1.25rem 1.1rem;color:var(--text-secondary);font-size:.92rem;animation:fadeIn var(--transition-normal) var(--ease-standard)}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+/* ---------- CTA band ---------- */
+.cta-band{background:linear-gradient(120deg,var(--primary),var(--primary-strong));border-radius:var(--radius-lg);padding:clamp(2.5rem,5vw,4rem);text-align:center;color:var(--on-primary)}
+.cta-band h2{font-size:clamp(1.6rem,3vw,2.3rem);font-weight:800;letter-spacing:-.025em;margin-bottom:.7rem}
+.cta-band p{opacity:.9;max-width:52ch;margin:0 auto 1.6rem}
+.cta-band .btn-primary{background:var(--bg-secondary);color:var(--primary)}
+@media(hover:hover) and (pointer:fine){.cta-band .btn-primary:hover{filter:none;transform:translateY(-1px)}}
+
+/* ---------- Footer ---------- */
+.footer{border-top:1px solid var(--border-default);padding:2.5rem 0;color:var(--text-muted);font-size:.88rem}
+.footer__inner{display:flex;align-items:center;justify-content:space-between;gap:1.5rem;flex-wrap:wrap}
+.footer__links{display:flex;gap:1.5rem;list-style:none;flex-wrap:wrap}
+.footer__links a{color:var(--text-muted);transition:color var(--transition-fast)}
+@media(hover:hover) and (pointer:fine){.footer__links a:hover{color:var(--primary)}}
+
+/* ---------- Reveal ---------- */
+.reveal{opacity:0;transform:translateY(14px);transition:opacity .5s var(--ease-standard),transform .5s var(--ease-standard)}
+.reveal.is-visible{opacity:1;transform:none}
+
+@media(max-width:900px){.hero__grid{grid-template-columns:1fr}.hero{padding-top:2.5rem}}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.15s!important}
+  .chart__bar{animation:none;width:var(--w)}
+  .reveal{opacity:1;transform:none}
+  html{scroll-behavior:auto}
 }
-@media(min-width:640px){
-  .hero{grid-template-columns:1fr 1fr;align-items:center;text-align:left}
+@media (prefers-reduced-transparency: reduce){
+  .nav{background:var(--bg-primary);backdrop-filter:none;-webkit-backdrop-filter:none}
 }
-.hero__title{font-size:2rem;font-weight:600;margin-bottom:0.5rem}
-.hero__subtitle{font-size:1.125rem;color:var(--text-secondary);margin-bottom:1.5rem}
-.hero__cta{display:inline-block}
-.hero__widget{
-  margin-top:2rem;
-  display:flex;
-  gap:1.5rem;
-  justify-content:center
-}
-.widget-card{
-  background:var(--bg-secondary);
-  border:1px solid var(--border-default);
-  border-radius:var(--radius-md);
-  padding:1rem;
-  text-align:center;
-  flex:1;
-  max-width:200px
-}
-.widget-card__label{font-size:0.875rem;color:var(--text-secondary);margin-bottom:0.5rem}
-.widget-card__value{font-family:var(--font-mono);font-size:1.5rem;font-weight:600;margin-bottom:0.5rem}
-.widget-card__delta{font-size:0.875rem;font-weight:500}
-.bar-chart{
-  margin-top:1rem;
-  height:1.5rem;
-  background:var(--border-default);
-  border-radius:var(--radius-sm);
-  overflow:hidden
-}
-.bar{
-  height:100%;
-  background:var(--secondary);
-  width:0;
-  transition:width var(--transition-normal) var(--ease-standard)
-}
-.bar.animate{width:var(--bar-width)}
-.bar--70{--bar-width:70%}
-.bar--55{--bar-width:55%}
-.delta{
-  display:inline-flex;
-  align-items:center;
-  gap:0.25rem;
-  font-size:0.875rem;
-  padding:0.25rem 0.5rem;
-  border-radius:var(--radius-sm)
-}
-.delta.up{background:rgba(16,185,129,0.1);color:var(--text-success);border:1px solid var(--border-success)}
-.delta.down{background:rgba(239,68,68,0.1);color:var(--text-error);border:1px solid var(--border-error)}
-.features{
-  padding:var(--spacing-gap);
-  display:grid;
-  gap:var(--spacing-gap)
-}
-@media(min-width:640px){
-  .features{grid-template-columns:repeat(3,1fr)}
-}
-.card{
-  background:var(--bg-secondary);
-  border:1px solid var(--border-default);
-  border-radius:var(--radius-md);
-  padding:1.5rem;
-  transition:transform var(--transition-normal),box-shadow var(--transition-normal)
-}
-.card:hover{
-  transform:translateY(-2px);
-  box-shadow:var(--shadow-md)
-}
-.card:focus-within{border-color:var(--primary);box-shadow:0 0 0 2px rgba(37,99,235,0.2)}
-.features__title{font-size:1.5rem;font-weight:600;margin-bottom:1rem;text-align:center}
-.feature__icon{
-  width:2rem;height:2rem;
-  background:var(--border-default);
-  border-radius:var(--radius-sm);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  margin-bottom:1rem
-}
-.feature__icon .material-symbols-outlined{font-size:1.5rem;color:var(--primary)}
-.feature__title{font-size:1.25rem;font-weight:600;margin-bottom:0.5rem}
-.feature__desc{color:var(--text-secondary);font-size:0.95rem;margin-bottom:1rem}
-.feature__compare{
-  display:flex;
-  align-items:center;
-  gap:0.5rem;
-  font-size:0.875rem
-}
-.feature__compare .material-symbols-outlined{font-size:1rem}
-.how{
-  padding:var(--spacing-gap);
-  display:grid;
-  gap:var(--spacing-gap)
-}
-@media(min-width:640px){
-  .how{grid-template-columns:repeat(3,1fr)}
-}
-.step{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  text-align:center;
-  gap:0.75rem
-}
-.step__number{
-  width:2.5rem;height:2.5rem;
-  background:var(--primary);
-  color:#fff;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight:600;
-  font-size:1.125rem
-}
-.step__title{font-weight:600;font-size:1.125rem}
-.step__desc{color:var(--text-secondary);font-size:0.9rem}
-.testimonials{
-  padding:var(--spacing-gap);
-  display:grid;
-  gap:var(--spacing-gap)
-}
-@media(min-width:640px){
-  .testimonials{grid-template-columns:repeat(2,1fr)}
-}
-.testimonial-card{
-  background:var(--bg-secondary);
-  border:1px solid var(--border-default);
-  border-radius:var(--radius-md);
-  padding:1.5rem
-}
-.testimonial__quote{font-style:italic;color:var(--text-secondary);margin-bottom:1rem}
-.testimonial__author{display:flex;align-items:center;gap:0.75rem;margin-top:1rem}
-.testimonial__avatar{
-  width:2.5rem;height:2.5rem;
-  background:var(--border-default);
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:var(--text-primary);
-  font-weight:600
-}
-.testimonial__info{}
-.testimonial__name{font-weight:600}
-.testimonial__role{font-size:0.875rem;color:var(--text-secondary)}
-.testimonial__delta{margin-top:0.5rem;display:inline-flex;align-items:center;gap:0.25rem;font-size:0.875rem}
-.pricing{
-  padding:var(--spacing-gap);
-  display:grid;
-  gap:var(--spacing-gap)
-}
-@media(min-width:640px){
-  .pricing{grid-template-columns:repeat(3,1fr)}
-}
-.pricing-card{
-  background:var(--bg-secondary);
-  border:1px solid var(--border-default);
-  border-radius:var(--radius-lg);
-  padding:2rem;
-  position:relative
-}
-.pricing-card--highlighted{
-  border-color:var(--border-success);
-  box-shadow:var(--shadow-md)
-}
-.pricing-card__title{font-size:1.25rem;font-weight:600;margin-bottom:0.5rem}
-.pricing-card__price{font-family:var(--font-mono);font-size:2rem;font-weight:600;margin-bottom:0.5rem}
-.pricing-card__price span{font-size:1rem;opacity:0.7}
-.pricing-card__list{margin:1.5rem 0}
-.pricing-card__list li{margin-bottom:0.5rem;color:var(--text-secondary);display:flex;align-items:center;gap:0.5rem}
-.pricing-card__list li .material-symbols-outlined{font-size:1rem;color:var(--text-success)}
-.pricing-card__badge{
-  position:absolute;
-  top:-0.5rem;
-  right:-0.5rem;
-  background:var(--border-success);
-  color:#fff;
-  padding:0.25rem 0.75rem;
-  border-radius:var(--radius-sm);
-  font-size:0.875rem;
-  font-weight:600
-}
-.btn{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:0.5rem;
-  padding:0.75rem 1.5rem;
-  font-size:0.95rem;
-  font-weight:500;
-  border-radius:var(--radius-md);
-  border:none;
-  cursor:pointer;
-  transition:background var(--transition-normal),color var(--transition-normal),transform var(--transition-normal)
-}
-.btn-primary{
-  background:var(--primary);
-  color:#fff
-}
-.btn-primary:hover{background:#1d4ed8}
-.btn-primary:active{transform:scale(0.97)}
-.btn-outline{
-  background:transparent;
-  border:1px solid var(--primary);
-  color:var(--primary)
-}
-.btn-outline:hover{background:var(--border-default);color:var(--primary)}
-.btn-outline:active{transform:scale(0.97)}
-.btn-danger{
-  background:var(--text-error);
-  color:#fff
-}
-.btn-danger:hover{background:#dc2626}
-.btn-danger:active{transform:scale(0.97)}
-.btn.is-loading{
-  opacity:0.7;
-  pointer-events:none
-}
-.btn.is-loading .spinner{
-  width:1rem;height:1rem;
-  border:2px solid currentColor;
-  border-top-color:transparent;
-  border-radius:50%;
-  animation:spin 0.8s linear infinite
-}
-@keyframes spin{
-  to{transform:rotate(360deg)}
-}
-.faq{
-  padding:var(--spacing-gap)
-}
-.faq__title{font-size:1.5rem;font-weight:600;margin-bottom:1.5rem;text-align:center}
-.faq-item{
-  border-bottom:1px solid var(--border-default)
-}
-.faq-item:last-child{border-bottom:none}
-.faq-item summary{
-  padding:1rem 0;
-  cursor:pointer;
-  font-weight:600;
-  display:flex;
-  align-items:center;
-  justify-content:space-between
-}
-.faq-item summary::-webkit-details-marker{display:none}
-.faq-item summary::after{
-  content:"▾";
-  font-size:0.75rem;
-  transition:transform var(--transition-normal)
-}
-.faq-item[open] summary::after{transform:rotate(180deg)}
-.faq-item[open] summary{border-bottom:1px solid var(--border-default);margin-bottom:-1px}
-.faq-item .faq-content{
-  padding:0 1rem 1rem;
-  color:var(--text-secondary);
-  font-size:0.95rem;
-  max-height:0;
-  overflow:hidden;
-  transition:max-height var(--transition-normal) var(--ease-standard)
-}
-.faq-item[open] .faq-content{max-height:200px}
-.cta{
-  background:var(--bg-secondary);
-  border-top:1px solid var(--border-default);
-  padding:var(--spacing-gap);
-  text-align:center
-}
-.cta__title{font-size:1.5rem;font-weight:600;margin-bottom:1rem}
-.cta__desc{color:var(--text-secondary);margin-bottom:1.5rem;max-width:400px;margin-left:auto;margin-right:auto}
-.footer{
-  border-top:1px solid var(--border-default);
-  padding:var(--spacing-gap);
-  display:flex;
-  flex-wrap:wrap;
-  justify-content:space-between;
-  gap:1rem;
-  font-size:0.875rem;
-  color:var(--text-secondary)
-}
-.footer__links{display:flex;gap:1.5rem;flex-wrap:wrap}
-.footer__links a:hover{color:var(--text-primary)}
-.footer__copyright{margin-top:1rem}
 </style>
 </head>
 <body>
+
 <header class="nav">
-  <div class="nav-logo">Nimbus</div>
-  <nav class="nav-links">
-    <a href="#features">Features</a>
-    <a href="#how">How It Works</a>
-    <a href="#pricing">Pricing</a>
-    <a href="#faq">FAQ</a>
-  </nav>
-  <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" aria-pressed="false">
-    <span class="sun material-symbols-outlined">brightness_6</span>
-    <span class="moon material-symbols-outlined">nightlight_round</span>
-  </button>
+  <div class="container nav__inner">
+    <a href="#" class="nav__brand">
+      <span class="nav__logo"><span class="material-symbols-rounded">compare_arrows</span></span>
+      Nimbus Compare
+    </a>
+    <nav aria-label="Primary">
+      <ul class="nav__links" id="nav-links" hidden>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how">How It Works</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+    </nav>
+    <div class="nav__actions">
+      <button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-rounded icon-moon" aria-hidden="true">dark_mode</span>
+        <span class="material-symbols-rounded icon-sun" aria-hidden="true">light_mode</span>
+      </button>
+      <a href="#pricing" class="btn btn-primary nav__cta"><span class="btn__label">Start Free</span></a>
+      <button class="nav__menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">
+        <span class="material-symbols-rounded" aria-hidden="true">menu</span>
+      </button>
+    </div>
+  </div>
 </header>
 
 <main>
-<section class="hero" id="hero">
-  <div>
-    <h1 class="hero__title">Compare Any Two Periods Side by Side</h1>
-    <p class="hero__subtitle">Instantly see trends, spot outliers, and make data‑driven decisions with our comparative analytics dashboard.</p>
-    <a href="#pricing" class="btn btn-primary">Start Free Trial</a>
-  </div>
-  <div class="hero__widget">
-    <div class="widget-card">
-      <div class="widget-card__label">This Month</div>
-      <div class="widget-card__value">12,430</div>
-      <div class="widget-card__delta delta up"><span class="material-symbols-outlined">trending_up</span>+12.4%</div>
-    </div>
-    <div class="widget-card">
-      <div class="widget-card__label">Last Month</div>
-      <div class="widget-card__value">11,050</div>
-      <div class="widget-card__delta delta down"><span class="material-symbols-outlined">trending_down</span>-3.1%</div>
-    </div>
-  </div>
-  <div class="hero__widget" style="margin-top:2rem;">
-    <div class="bar-chart"><div class="bar bar--70"></div></div>
-    <div class="bar-chart" style="margin-left:1rem;"><div class="bar bar--55"></div></div>
-  </div>
-</section>
-
-<section class="features" id="features">
-  <h2 class="features__title">Key Features</h2>
-  <div class="card">
-    <div class="feature__icon"><span class="material-symbols-outlined">show_chart</span></div>
-    <h3 class="feature__title">Side‑by‑Side Comparison</h3>
-    <p class="feature__desc">View two periods, campaigns, or segments simultaneously.</p>
-    <div class="feature__compare">
-      <span class="material-symbols-outlined">compare_arrows</span>
-      <span>A vs B</span>
-    </div>
-  </div>
-  <div class="card">
-    <div class="feature__icon"><span class="material-symbols-outlined">analytics</span></div>
-    <h3 class="feature__title">Delta Highlighting</h3>
-    <p class="feature__desc">Green/red indicators with icons show wins and losses.</p>
-    <div class="feature__compare">
-      <span class="material-symbols-outlined">trending_up</span>
-      <span>+8.2% growth</span>
-    </div>
-  </div>
-  <div class="card">
-    <div class="feature__icon"><span class="material-symbols-outlined">timeline</span></div>
-    <h3 class="feature__title">Trend Forecast</h3>
-    <p class="feature__desc">Project future performance based on historical deltas.</p>
-    <div class="feature__compare">
-      <span class="material-symbols-outlined">forecast</span>
-      <span>Projected +5%</span>
-    </div>
-  </div>
-</section>
-
-<section class="how" id="how">
-  <h2 class="features__title" style="text-align:center;">How It Works</h2>
-  <div class="step">
-    <div class="step__number">1</div>
-    <h3 class="step__title">Select Periods</h3>
-    <p class="step__desc">Choose any two date ranges to compare.</p>
-  </div>
-  <div class="step">
-    <div class="step__number">2</div>
-    <h3 class="step__title">Pick Metrics</h3>
-    <p class="step__desc">Add KPIs, revenue, conversions, or custom events.</p>
-  </div>
-  <div class="step">
-    <div class="step__number">3</div>
-    <h3 class="step__title">Get Insights</h3>
-    <p class="step__desc">See side‑by‑side charts, delta badges, and exportable reports.</p>
-  </div>
-</section>
-
-<section class="testimonials" id="testimonials">
-  <h2 class="features__title" style="text-align:center;">What Customers Say</h2>
-  <div class="testimonial-card">
-    <p class="testimonial__quote">“Nimbus cut our reporting time by half and revealed a 38% conversion lift in the latest campaign.”</p>
-    <div class="testimonial__author">
-      <div class="testimonial__avatar">JS</div>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container hero__grid">
       <div>
-        <p class="testimonial__name">Jordan Smith</p>
-        <p class="testimonial__role">Marketing Director</p>
+        <span class="hero__eyebrow"><span class="material-symbols-rounded" aria-hidden="true">monitoring</span>Comparative Analytics</span>
+        <h1 class="hero__title">Compare any two periods <em>side by side</em></h1>
+        <p class="hero__sub">Nimbus puts this month next to last month, this campaign next to the last one, and tells you exactly what moved and why.</p>
+        <div class="hero__ctas">
+          <a href="#pricing" class="btn btn-primary"><span class="btn__label">Start Free</span><span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+          <a href="#how" class="btn btn-outline"><span class="btn__label">See How It Works</span></a>
+        </div>
+      </div>
+      <div class="widget reveal" aria-label="Example comparison widget">
+        <div class="widget__head">
+          <span class="widget__title">Revenue Overview</span>
+          <span class="widget__range">Oct vs Sep 2026</span>
+        </div>
+        <div class="widget__cards">
+          <div class="metric metric--win">
+            <div class="metric__label">This Month</div>
+            <div class="metric__value">$84,210</div>
+            <span class="delta delta--up"><span class="material-symbols-rounded" aria-hidden="true">trending_up</span>+12.4%</span>
+          </div>
+          <div class="metric">
+            <div class="metric__label">Last Month</div>
+            <div class="metric__value">$74,920</div>
+            <span class="delta delta--down"><span class="material-symbols-rounded" aria-hidden="true">trending_down</span>-3.1%</span>
+          </div>
+        </div>
+        <div class="chart">
+          <div class="chart__row">
+            <span class="chart__label">This Month</span>
+            <div class="chart__track"><div class="chart__bar chart__bar--a" style="--w:88%"></div></div>
+            <span class="chart__val">88.2k</span>
+          </div>
+          <div class="chart__row">
+            <span class="chart__label">Last Month</span>
+            <div class="chart__track"><div class="chart__bar chart__bar--b" style="--w:71%"></div></div>
+            <span class="chart__val">71.4k</span>
+          </div>
+          <div class="chart__row">
+            <span class="chart__label">Target</span>
+            <div class="chart__track"><div class="chart__bar chart__bar--a" style="--w:80%"></div></div>
+            <span class="chart__val">80.0k</span>
+          </div>
+        </div>
+        <div class="widget__legend">
+          <span><span class="dot dot--a"></span>Current period</span>
+          <span><span class="dot dot--b"></span>Comparison period</span>
+        </div>
       </div>
     </div>
-    <div class="testimonial__delta delta up"><span class="material-symbols-outlined">trending_up</span>+38% conversion</div>
-  </div>
-  <div class="testimonial-card">
-    <p class="testimonial__quote>“The side‑by‑side view helped us spot a 12% drop in churn after adjusting our onboarding flow.”</p>
-    <div class="testimonial__author">
-      <div class="testimonial__avatar">AL</div>
-      <div>
-        <p class="testimonial__name">Alex Lee</p>
-        <p class="testimonial__role">Product Lead</p>
+  </section>
+
+  <!-- Features -->
+  <section id="features">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2>Built for side-by-side thinking</h2>
+        <p>Every view in Nimbus is a comparison. No isolated numbers without context.</p>
+      </div>
+      <div class="grid-3">
+        <article class="card feature reveal">
+          <div class="feature__icon"><span class="material-symbols-rounded" aria-hidden="true">compare</span></div>
+          <h3>Period-over-period deltas</h3>
+          <p>Pick any two date ranges and get signed deltas on every metric, with trend arrows so direction is never color-only.</p>
+          <div class="feature__viz">
+            <span class="delta delta--up"><span class="material-symbols-rounded" aria-hidden="true">trending_up</span>+8.7% sessions</span>
+          </div>
+        </article>
+        <article class="card feature reveal">
+          <div class="feature__icon"><span class="material-symbols-rounded" aria-hidden="true">science</span></div>
+          <h3>A/B result scoring</h3>
+          <p>Score variants against each other with confidence intervals, and see the winner called out the moment it is significant.</p>
+          <div class="feature__viz ab-badge">
+            <span class="ab ab--a">A wins</span>
+            <span class="ab ab--b">B -4.2%</span>
+          </div>
+        </article>
+        <article class="card feature reveal">
+          <div class="feature__icon"><span class="material-symbols-rounded" aria-hidden="true">straighten</span></div>
+          <h3>Benchmark lines</h3>
+          <p>Overlay team targets or industry medians on any chart so performance is always read against a reference point.</p>
+          <div class="feature__viz">
+            <div class="bench">
+              <div class="bench__fill"></div>
+              <div class="bench__line"></div>
+              <span class="bench__tag">Target</span>
+            </div>
+          </div>
+        </article>
       </div>
     </div>
-    <div class="testimonial__delta delta up"><span class="material-symbols-outlined">trending_down</span>-12% churn</div>
-  </div>
-</section>
+  </section>
 
-<section class="pricing" id="pricing">
-  <h2 class="features__title" style="text-align:center;">Pricing</h2>
-  <div class="pricing-card">
-    <h3 class="pricing-card__title>Basic</h3>
-    <div class="pricing-card__price>$19<span>/mo</span></div>
-    <ul class="pricing-card__list">
-      <li><span class="material-symbols-outlined">check</span>Up to 5 dashboards</li>
-      <li><span class="material-symbols-outlined">check</span>Email support</li>
-      <li><span class="material-symbols-outlined">check</span>Export CSV</li>
-    </ul>
-    <a href="#" class="btn btn-primary">Choose Plan</a>
-  </div>
-  <div class="pricing-card pricing-card--highlighted">
-    <div class="pricing-card__badge>Most Popular</div>
-    <h3 class="pricing-card__title>Pro</h3>
-    <div class="pricing-card__price>$49<span>/mo</span></div>
-    <ul class="pricing-card__list">
-      <li><span class="material-symbols-outlined">check</span>Unlimited dashboards</li>
-      <li><span class="material-symbols-outlined">check</span>Priority support</li>
-      <li><span class="material-symbols-outlined">check</span>Scheduled exports</li>
-      <li><span class="material-symbols-outlined">check</span>API access</li>
-    </ul>
-    <a href="#" class="btn btn-primary">Choose Plan</a>
-  </div>
-  <div class="pricing-card">
-    <h3 class="pricing-card__title>Enterprise</h3>
-    <div class="pricing-card__price>Custom<span>/mo</span></div>
-    <ul class="pricing-card__list">
-      <li><span class="material-symbols-outlined">check</span>Custom SLAs</li>
-      <li><span class="material-symbols-outlined">check</span>Dedicated manager</li>
-      <li><span class="material-symbols-outlined">check</span>On‑premise option</li>
-    </ul>
-    <a href="#" class="btn btn-outline">Contact Sales</a>
-  </div>
-</section>
+  <!-- How it works -->
+  <section id="how" style="background:var(--bg-tertiary)">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2>From data to decision in three steps</h2>
+        <p>Connect a source, pick two periods, and read the delta. That is the whole workflow.</p>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <span class="step__num">1</span>
+          <h3>Connect your sources</h3>
+          <p>Link your warehouse, spreadsheet, or ad platform in minutes. Nimbus normalizes the metrics for you.</p>
+        </div>
+        <div class="step reveal">
+          <span class="step__num">2</span>
+          <h3>Choose two periods</h3>
+          <p>Select any pair of date ranges, cohorts, or campaigns. Both render side by side on every chart.</p>
+        </div>
+        <div class="step reveal">
+          <span class="step__num">3</span>
+          <h3>Read the deltas</h3>
+          <p>Signed, icon-tagged deltas highlight what improved and what slipped, ranked by impact.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<section class="faq" id="faq">
-  <h2 class="faq__title>Frequently Asked Questions</h2>
-  <div class="faq-item">
-    <summary>What data sources can I connect?</summary>
-    <div class="faq-content">
-      Nimbus supports CSV upload, Google Sheets, SQL databases, and popular SaaS APIs out of the box.
+  <!-- Testimonials -->
+  <section id="testimonials">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2>Teams that stopped guessing</h2>
+        <p>Analysts and operators who run their reviews on Nimbus comparisons.</p>
+      </div>
+      <div class="grid-2">
+        <article class="card testimonial reveal">
+          <p class="testimonial__quote">Our weekly review used to be an argument about whose spreadsheet was right. Now we open one comparison view and the discussion starts from the deltas.</p>
+          <div class="testimonial__foot">
+            <div class="testimonial__who">
+              <span class="avatar" aria-hidden="true">MR</span>
+              <div>
+                <div class="testimonial__name">Marta Reyes</div>
+                <div class="testimonial__role">Head of Growth, Fieldstone Retail</div>
+              </div>
+            </div>
+            <span class="delta delta--up"><span class="material-symbols-rounded" aria-hidden="true">trending_up</span>+38% conversion</span>
+          </div>
+        </article>
+        <article class="card testimonial reveal">
+          <p class="testimonial__quote">The benchmark lines changed how we set targets. We compare every launch against the previous one, and the red deltas tell us where to dig first.</p>
+          <div class="testimonial__foot">
+            <div class="testimonial__who">
+              <span class="avatar avatar--alt" aria-hidden="true">DK</span>
+              <div>
+                <div class="testimonial__name">Daniel Kwon</div>
+                <div class="testimonial__role">Analytics Lead, Harborline Software</div>
+              </div>
+            </div>
+            <span class="delta delta--up"><span class="material-symbols-rounded" aria-hidden="true">trending_up</span>-22% reporting time</span>
+          </div>
+        </article>
+      </div>
     </div>
-  </div>
-  <div class="faq-item">
-    <summary>Is there a limit on the number of comparisons?</summary>
-    <div class="faq-content">
-      No. You can run unlimited side‑by‑side comparisons on all paid plans.
-    </div>
-  </div>
-  <div class="faq-item">
-    <summary>How secure is my data?</summary>
-    <div class="faq-content">
-      All data is encrypted in transit and at rest. We are SOC 2 Type II compliant and GDPR ready.
-    </div>
-  </div>
-</section>
+  </section>
 
-<section class="cta">
-  <h2 class="cta__title>Ready to Compare?</h2>
-  <p class="cta__desc>Start your free trial and see the difference in minutes.</p>
-  <a href="#" class="btn btn-primary>Get Started Free</a>
-</section>
+  <!-- Pricing -->
+  <section id="pricing" style="background:var(--bg-tertiary)">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2>Pricing that scales with your team</h2>
+        <p>Every plan includes unlimited period comparisons. Upgrade for more sources and seats.</p>
+      </div>
+      <div class="pricing-grid">
+        <article class="card pricing-card reveal">
+          <div class="pricing-card__tier">Starter</div>
+          <div class="pricing-card__price">$0<small>/mo</small></div>
+          <p class="pricing-card__desc">For individuals exploring their first comparisons.</p>
+          <ul class="pricing-card__list">
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>2 data sources</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Unlimited comparisons</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>7-day history</li>
+          </ul>
+          <a href="#" class="btn btn-outline"><span class="btn__label">Start Free</span></a>
+        </article>
+        <article class="card pricing-card pricing-card--featured reveal">
+          <span class="pricing-card__badge">Most Popular</span>
+          <div class="pricing-card__tier">Team</div>
+          <div class="pricing-card__price">$49<small>/mo</small></div>
+          <p class="pricing-card__desc">For teams running weekly performance reviews.</p>
+          <ul class="pricing-card__list">
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>15 data sources</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Benchmark lines and targets</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>A/B result scoring</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Unlimited history</li>
+          </ul>
+          <a href="#" class="btn btn-primary"><span class="btn__label">Start Free</span></a>
+        </article>
+        <article class="card pricing-card reveal">
+          <div class="pricing-card__tier">Enterprise</div>
+          <div class="pricing-card__price">$199<small>/mo</small></div>
+          <p class="pricing-card__desc">For organizations with governance and scale needs.</p>
+          <ul class="pricing-card__list">
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Unlimited sources</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>SSO and audit logs</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Dedicated support</li>
+          </ul>
+          <a href="#" class="btn btn-outline"><span class="btn__label">Contact Sales</span></a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq">
+    <div class="container">
+      <div class="section-head reveal" style="margin-left:auto;margin-right:auto;text-align:center;max-width:560px">
+        <h2>Common questions</h2>
+        <p>Everything else, our support team answers within a day.</p>
+      </div>
+      <div class="faq reveal">
+        <details>
+          <summary>Which data sources does Nimbus support?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <div class="faq__body">Postgres, BigQuery, Snowflake, Google Sheets, Stripe, and the major ad platforms. CSV upload works on every plan for one-off comparisons.</div>
+        </details>
+        <details>
+          <summary>Can I compare more than two periods at once?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <div class="faq__body">Yes. Two periods render side by side by default, and Team plans can stack up to four periods with deltas computed against your chosen baseline.</div>
+        </details>
+        <details>
+          <summary>Is there a free trial for paid plans?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <div class="faq__body">Every paid plan starts with a 14-day trial, no card required. You keep full access to your dashboards if you downgrade to Starter afterward.</div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section>
+    <div class="container">
+      <div class="cta-band reveal">
+        <h2>Stop reading numbers in isolation</h2>
+        <p>Start your first side-by-side comparison in under five minutes. Free plan included, no card required.</p>
+        <a href="#pricing" class="btn btn-primary"><span class="btn__label">Start Free</span><span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+      </div>
+    </div>
+  </section>
 </main>
 
 <footer class="footer">
-  <div>
-    <h4 style="font-size:0.9rem; margin-bottom:0.5rem;">Product</h4>
-    <div class="footer__links">
-      <a href="#">Features</a>
-      <a href="#">Integrations</a>
-      <a href="#">Security</a>
-      <a href="#">Changelog</a>
-    </div>
-  </div>
-  <div>
-    <h4 style="font-size:0.9rem; margin-bottom:0.5rem;">Company</h4>
-    <div class="footer__links">
-      <a href="#">About</a>
-      <a href="#">Careers</a>
-      <a href="#">Blog</a>
-      <a href="#">Contact</a>
-    </div>
-  </div>
-  <div class="footer__copyright">
-    © 2026 Nimbus Analytics, Inc. All rights reserved.
+  <div class="container footer__inner">
+    <span>&copy; 2026 Nimbus Compare. All rights reserved.</span>
+    <ul class="footer__links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#">Privacy</a></li>
+      <li><a href="#">Terms</a></li>
+      <li><a href="#">Status</a></li>
+    </ul>
   </div>
 </footer>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  const htmlEl = document.documentElement;
-  const themeBtn = document.getElementById('themeToggle');
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
-
-  const savedTheme = localStorage.getItem('theme');
-  if (savedTheme === 'dark' || (!savedTheme && prefersDark.matches)) {
-    htmlEl.classList.add('dark');
-    themeBtn.setAttribute('aria-pressed', 'true');
-  } else {
-    htmlEl.classList.remove('dark');
-    themeBtn.setAttribute('aria-pressed', 'false');
+(function(){
+  "use strict";
+  var toggle=document.getElementById("theme-toggle");
+  function syncToggle(){
+    var dark=document.documentElement.dataset.theme==="dark";
+    toggle.setAttribute("aria-pressed",String(dark));
+    toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
   }
-
-  themeBtn.addEventListener('click', function() {
-    const isDark = htmlEl.classList.toggle('dark');
-    themeBtn.setAttribute('aria-pressed', isDark);
-    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  toggle.addEventListener("click",function(){
+    var next=document.documentElement.dataset.theme==="dark"?"light":"dark";
+    document.documentElement.dataset.theme=next;
+    localStorage.setItem("theme",next);
+    syncToggle();
   });
+  syncToggle();
 
-  setTimeout(() => {
-    document.querySelectorAll('.bar').forEach(bar => bar.classList.add('animate'));
-  }, 300);
-
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    htmlEl.classList.add('reduce-motion');
+  var menuBtn=document.getElementById("menu-btn");
+  var links=document.getElementById("nav-links");
+  function setMenu(open){
+    links.hidden=!open;
+    menuBtn.setAttribute("aria-expanded",String(open));
+    menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");
+    menuBtn.querySelector(".material-symbols-rounded").textContent=open?"close":"menu";
   }
-});
+  function syncMenuForWidth(){
+    if(window.innerWidth>=768){links.hidden=false;menuBtn.setAttribute("aria-expanded","false");}
+    else{links.hidden=true;}
+  }
+  menuBtn.addEventListener("click",function(){setMenu(links.hidden);});
+  links.addEventListener("click",function(e){if(e.target.tagName==="A"&&window.innerWidth<768){setMenu(false);}});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape"&&window.innerWidth<768&&!links.hidden){setMenu(false);menuBtn.focus();}});
+  window.addEventListener("resize",syncMenuForWidth);
+  syncMenuForWidth();
+
+  var reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var items=document.querySelectorAll(".reveal");
+  if(reduced||!("IntersectionObserver" in window)){
+    items.forEach(function(el){el.classList.add("is-visible");});
+  }else{
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){
+          var el=entry.target;
+          var idx=Array.prototype.indexOf.call(el.parentNode.children,el);
+          el.style.transitionDelay=(Math.min(idx,5)*60)+"ms";
+          el.classList.add("is-visible");
+          io.unobserve(el);
+        }
+      });
+    },{threshold:.15});
+    items.forEach(function(el){io.observe(el);});
+  }
+})();
 </script>
 </body>
 </html>

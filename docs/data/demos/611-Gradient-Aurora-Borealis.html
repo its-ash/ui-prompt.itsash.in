@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nimbus - Aurora-Powered Analytics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<style>
+:root{
+--primary:#00D9FF;--secondary:#7928CA;
+--aurora-cyan:#00D9FF;--aurora-mint:#00FF88;--aurora-pink:#FF006E;--aurora-sky:#00C9FF;--aurora-purple:#7928CA;--aurora-teal:#50E3C2;
+--bg-primary:#F2F8FA;--bg-secondary:#FFFFFF;--bg-elevated:#FFFFFF;
+--text-primary:#12202B;--text-secondary:#45596A;
+--text-on-accent:#04222B;--text-success:#0B7A4B;--text-error:#B4232F;
+--border-default:#D5E3E8;--border-error:#E5A0A6;--border-success:#9AD8BC;
+--shadow-sm:0 2px 10px rgba(10,40,60,.08);--shadow-md:0 12px 32px rgba(10,40,60,.14);
+--radius-sm:.5rem;--radius-md:.875rem;--radius-lg:1.25rem;
+--spacing-gap:1.5rem;--transition-fast:150ms;--transition-normal:260ms;--ease-standard:cubic-bezier(.22,.61,.36,1);
+--z-dropdown:50;--z-modal:100;--z-toast:200;
+--font-base:"Inter",system-ui,sans-serif;--font-display:"Poppins",var(--font-base);
+--nav-bg:rgba(242,248,250,.82);
+--glow-cyan:rgba(0,217,255,.35);
+}
+:root[data-theme="dark"]{
+--bg-primary:#0A0E27;--bg-secondary:#12173A;--bg-elevated:#181E48;
+--text-primary:#E8F4F8;--text-secondary:#A9BCD4;
+--text-on-accent:#04222B;--text-success:#4ADE9B;--text-error:#FF7A85;
+--border-default:#26305E;--border-error:#7A2E3A;--border-success:#1F5C44;
+--shadow-sm:0 2px 12px rgba(0,0,0,.35);--shadow-md:0 14px 40px rgba(0,0,0,.5);
+--nav-bg:rgba(10,14,39,.75);
+--glow-cyan:rgba(0,217,255,.5);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;font-size:1rem;overflow-x:hidden;transition:background var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard)}
+img{max-width:100%;display:block}
+h1,h2,h3{font-family:var(--font-display);line-height:1.12;letter-spacing:-.025em;font-weight:600}
+a{color:inherit}
+button{font:inherit}
+:focus-visible{outline:2px solid var(--primary);outline-offset:3px;border-radius:var(--radius-sm)}
+.material-symbols-rounded{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;font-size:1.35rem;line-height:1}
+.container{max-width:1200px;margin:0 auto;padding-left:1.25rem;padding-right:1.25rem}
+@media(min-width:768px){.container{padding-left:2rem;padding-right:2rem}}
+section{padding:clamp(4rem,8vw,7rem) 0}
+.section-head{max-width:46rem;margin:0 auto 3rem;text-align:center}
+.section-title{font-size:clamp(1.75rem,3.5vw,2.5rem);margin-bottom:.75rem}
+.section-sub{color:var(--text-secondary);max-width:60ch;margin:0 auto}
+/* Aurora backdrop */
+.aurora{position:fixed;inset:-20%;z-index:-2;pointer-events:none;filter:blur(90px);opacity:.55;
+background:
+radial-gradient(38% 30% at 18% 22%,var(--aurora-cyan),transparent 70%),
+radial-gradient(34% 28% at 82% 18%,var(--aurora-purple),transparent 70%),
+radial-gradient(30% 26% at 70% 78%,var(--aurora-pink),transparent 70%),
+radial-gradient(36% 30% at 25% 82%,var(--aurora-mint),transparent 70%);
+background-size:180% 180%;animation:aurora-flow 18s ease-in-out infinite alternate}
+:root[data-theme="dark"] .aurora{opacity:.4;mix-blend-mode:screen}
+@keyframes aurora-flow{0%{background-position:0% 0%,100% 0%,100% 100%,0% 100%}100%{background-position:60% 40%,40% 60%,30% 60%,70% 30%}}
+#particles{position:fixed;inset:0;z-index:-1;pointer-events:none}
+/* Nav */
+.nav{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--nav-bg);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--border-default)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;height:4.25rem}
+.brand{display:flex;align-items:center;gap:.55rem;text-decoration:none;font-family:var(--font-display);font-weight:700;font-size:1.15rem;letter-spacing:-.02em}
+.brand-mark{width:2rem;height:2rem;border-radius:var(--radius-sm);background:conic-gradient(from 210deg,var(--aurora-cyan),var(--aurora-mint),var(--aurora-pink),var(--aurora-purple),var(--aurora-cyan));box-shadow:0 0 14px var(--glow-cyan)}
+.nav-links{display:flex;align-items:center;gap:1.75rem;list-style:none}
+.nav-links a{text-decoration:none;color:var(--text-secondary);font-weight:500;font-size:.95rem;transition:color var(--transition-fast) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.nav-links a:hover{color:var(--primary)}}
+.nav-actions{display:flex;align-items:center;gap:.5rem}
+.icon-btn{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);cursor:pointer;transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast)}
+.icon-btn:active{transform:scale(.95)}
+#theme-toggle .moon{display:none}
+:root[data-theme="dark"] #theme-toggle .sun{display:none}
+:root[data-theme="dark"] #theme-toggle .moon{display:block}
+.menu-btn{display:none}
+@media(max-width:767px){
+.menu-btn{display:flex}
+.nav-links{position:absolute;top:4.25rem;left:0;right:0;flex-direction:column;align-items:stretch;gap:0;background:var(--bg-secondary);border-bottom:1px solid var(--border-default);padding:.5rem 1.25rem 1rem;box-shadow:var(--shadow-md)}
+.nav-links[hidden]{display:none}
+.nav-links a{display:block;padding:.8rem 0}
+}
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:.7rem 1.5rem;border-radius:var(--radius-md);border:1px solid transparent;font-weight:600;font-size:.95rem;text-decoration:none;cursor:pointer;transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast),filter var(--transition-fast)}
+.btn:active{transform:scale(.97)}
+.btn:disabled,.btn[aria-disabled="true"]{opacity:.5;filter:grayscale(.6);cursor:not-allowed}
+.btn-primary{background:linear-gradient(120deg,var(--aurora-cyan),var(--aurora-mint) 55%,var(--aurora-teal));color:var(--text-on-accent);box-shadow:0 0 22px var(--glow-cyan);animation:pulse-glow 3.2s ease-in-out infinite}
+@keyframes pulse-glow{0%,100%{box-shadow:0 0 16px var(--glow-cyan)}50%{box-shadow:0 0 34px var(--glow-cyan)}}
+@media(hover:hover) and (pointer:fine){.btn-primary:hover{filter:brightness(1.08)}.btn-ghost:hover{border-color:var(--primary);color:var(--primary)}.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}}
+.btn-ghost{background:transparent;border-color:var(--border-default);color:var(--text-primary)}
+/* Hero */
+.hero{padding-top:clamp(3rem,6vw,5.5rem)}
+.hero-grid{display:flex;align-items:center;gap:clamp(2rem,5vw,4rem)}
+.hero-copy{flex:1 1 52%}
+.hero h1{font-size:clamp(2.25rem,5vw,3.75rem);margin-bottom:1.1rem}
+:root[data-theme="dark"] .hero h1{text-shadow:0 0 28px rgba(0,217,255,.35),0 0 60px rgba(0,255,136,.18)}
+.hero h1 em{font-style:italic;font-weight:700;background:linear-gradient(100deg,var(--aurora-cyan),var(--aurora-mint),var(--aurora-pink));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:var(--text-secondary);font-size:1.1rem;max-width:34rem;margin-bottom:1.75rem}
+.hero-ctas{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.hero-visual{flex:1 1 44%;display:flex;align-items:center;justify-content:center}
+.orb-wrap{position:relative;width:min(100%,26rem);aspect-ratio:1}
+.orb{position:absolute;inset:12%;border-radius:50%;background:conic-gradient(from 120deg,var(--aurora-cyan),var(--aurora-purple),var(--aurora-pink),var(--aurora-mint),var(--aurora-cyan));filter:blur(2px);box-shadow:0 0 60px var(--glow-cyan),inset 0 0 60px rgba(255,255,255,.15);animation:orb-spin 22s linear infinite}
+@keyframes orb-spin{to{transform:rotate(360deg)}}
+.orb-ring{position:absolute;inset:4%;border-radius:50%;border:1px dashed var(--border-default)}
+.orb-chip{position:absolute;display:flex;align-items:center;gap:.5rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:.55rem .9rem;font-size:.82rem;font-weight:600;box-shadow:var(--shadow-sm)}
+.orb-chip .material-symbols-rounded{color:var(--primary)}
+.chip-a{top:6%;left:2%}.chip-b{bottom:10%;right:0}.chip-c{top:44%;right:-4%}
+@media(max-width:820px){.hero-grid{flex-direction:column}.hero-visual{width:100%}.chip-c{right:0}}
+/* Cards */
+.grid-3{display:flex;gap:var(--spacing-gap);align-items:stretch}
+.grid-3>*{flex:1 1 0}
+@media(max-width:767px){.grid-3{flex-direction:column}}
+.card{display:flex;flex-direction:column;align-items:flex-start;gap:.9rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:1.75rem;box-shadow:var(--shadow-sm);transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal)}
+.card:focus-within{border-color:var(--primary)}
+.card-icon{display:flex;align-items:center;justify-content:center;width:3rem;height:3rem;border-radius:var(--radius-md);background:linear-gradient(135deg,rgba(0,217,255,.18),rgba(121,40,202,.18));color:var(--primary)}
+.card h3{font-size:1.2rem}
+.card p{color:var(--text-secondary);font-size:.95rem}
+/* Steps */
+.steps{display:flex;gap:var(--spacing-gap);align-items:stretch;counter-reset:step}
+.step{flex:1 1 0;display:flex;flex-direction:column;align-items:flex-start;gap:.8rem;padding:1.75rem;border-radius:var(--radius-lg);border:1px solid var(--border-default);background:var(--bg-secondary);position:relative}
+.step-num{display:flex;align-items:center;justify-content:center;width:2.75rem;height:2.75rem;border-radius:50%;font-family:var(--font-display);font-weight:700;color:var(--text-on-accent);background:linear-gradient(135deg,var(--aurora-cyan),var(--aurora-purple));box-shadow:0 0 18px var(--glow-cyan)}
+.step h3{font-size:1.1rem}.step p{color:var(--text-secondary);font-size:.93rem}
+@media(max-width:767px){.steps{flex-direction:column}}
+/* Testimonials */
+.quote-card blockquote{font-size:1.02rem;line-height:1.55}
+.quote-card blockquote::before{content:"\201C"}.quote-card blockquote::after{content:"\201D"}
+.quote-who{display:flex;align-items:center;gap:.8rem;margin-top:auto}
+.monogram{display:flex;align-items:center;justify-content:center;width:2.6rem;height:2.6rem;border-radius:50%;font-weight:700;font-size:.85rem;color:var(--text-on-accent);background:linear-gradient(135deg,var(--aurora-mint),var(--aurora-cyan))}
+.quote-who small{display:block;color:var(--text-secondary)}
+/* Pricing */
+.price-card{align-items:stretch;text-align:left}
+.price-card .tier{font-family:var(--font-display);font-weight:600;font-size:1.05rem}
+.price{font-family:var(--font-display);font-size:2.4rem;font-weight:700;letter-spacing:-.03em}
+.price span{font-size:.95rem;font-weight:500;color:var(--text-secondary)}
+.price-list{list-style:none;display:flex;flex-direction:column;gap:.6rem;font-size:.93rem;color:var(--text-secondary);margin-bottom:.5rem}
+.price-list li{display:flex;align-items:center;gap:.55rem}
+.price-list .material-symbols-rounded{color:var(--text-success);font-size:1.15rem}
+.price-card .btn{margin-top:auto;width:100%}
+.price-featured{border-color:var(--primary);background:linear-gradient(160deg,var(--bg-secondary),var(--bg-elevated));box-shadow:0 0 34px var(--glow-cyan);position:relative}
+:root[data-theme="dark"] .price-featured{border-color:var(--aurora-cyan)}
+.badge{align-self:flex-start;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-on-accent);background:linear-gradient(90deg,var(--aurora-cyan),var(--aurora-mint));padding:.3rem .7rem;border-radius:999px}
+/* FAQ */
+.faq{max-width:46rem;margin:0 auto;display:flex;flex-direction:column;gap:.9rem}
+details{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);overflow:hidden;transition:border-color var(--transition-fast)}
+details[open]{border-color:var(--primary)}
+summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;cursor:pointer;list-style:none;padding:1.1rem 1.4rem;font-weight:600;font-family:var(--font-display);font-size:1rem;min-height:44px}
+summary::-webkit-details-marker{display:none}
+summary .material-symbols-rounded{transition:transform var(--transition-normal) var(--ease-standard);color:var(--primary)}
+details[open] summary .material-symbols-rounded{transform:rotate(180deg)}
+details .faq-body{padding:0 1.4rem 1.2rem;color:var(--text-secondary);font-size:.95rem}
+/* CTA band */
+.cta-band{background:linear-gradient(120deg,#0A0E27,#1A1050 55%,#0A0E27);border-radius:var(--radius-lg);padding:clamp(2.5rem,6vw,4.5rem);text-align:center;color:#E8F4F8;position:relative;overflow:hidden}
+.cta-band::before{content:"";position:absolute;inset:-40%;background:radial-gradient(40% 50% at 30% 40%,rgba(0,217,255,.35),transparent 70%),radial-gradient(35% 45% at 75% 65%,rgba(255,0,110,.28),transparent 70%);filter:blur(50px);pointer-events:none}
+.cta-band>*{position:relative}
+.cta-band h2{font-size:clamp(1.75rem,3.5vw,2.5rem);margin-bottom:.8rem;text-shadow:0 0 24px rgba(0,217,255,.4)}
+.cta-band p{color:#B9CCE0;max-width:38rem;margin:0 auto 1.75rem}
+.news-form{display:flex;gap:.75rem;max-width:30rem;margin:0 auto;align-items:flex-start}
+.news-field{flex:1;display:flex;flex-direction:column;gap:.35rem;text-align:left}
+.news-field label{font-size:.85rem;font-weight:600}
+.news-field input{min-height:44px;padding:.65rem .9rem;border-radius:var(--radius-md);border:1px solid #3A4470;background:rgba(255,255,255,.06);color:#E8F4F8;font:inherit;transition:border-color var(--transition-fast),box-shadow var(--transition-fast)}
+.news-field input:focus{outline:none;border-color:var(--aurora-cyan);box-shadow:0 0 0 3px rgba(0,217,255,.25)}
+.news-field input[aria-invalid="true"]{border-color:var(--text-error)}
+.field-msg{font-size:.82rem;min-height:1.2em;display:flex;align-items:center;gap:.35rem}
+.field-msg.error{color:#FF9AA2}.field-msg.ok{color:#7CF5C0}
+@media(max-width:560px){.news-form{flex-direction:column}.news-form .btn{width:100%}}
+/* Footer */
+footer{border-top:1px solid var(--border-default);padding:3rem 0 2rem;background:var(--bg-secondary)}
+.footer-grid{display:flex;justify-content:space-between;gap:2rem;flex-wrap:wrap;align-items:flex-start}
+.footer-links{display:flex;gap:3rem;flex-wrap:wrap}
+.footer-links h4{font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-secondary);margin-bottom:.8rem;font-family:var(--font-base)}
+.footer-links ul{list-style:none;display:flex;flex-direction:column;gap:.5rem}
+.footer-links a{text-decoration:none;color:var(--text-secondary);font-size:.92rem;transition:color var(--transition-fast)}
+@media(hover:hover) and (pointer:fine){.footer-links a:hover{color:var(--primary)}}
+.copyright{margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid var(--border-default);color:var(--text-secondary);font-size:.85rem;text-align:center}
+/* Reveal */
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .5s var(--ease-standard),transform .5s var(--ease-standard)}
+.reveal.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){
+.aurora,.orb,.btn-primary{animation:none!important}
+.reveal{transition:opacity .2s ease;transform:none!important}
+html{scroll-behavior:auto}
+*{transition-duration:.01ms!important}
+}
+@media(prefers-reduced-transparency:reduce){.nav{background:var(--bg-primary);backdrop-filter:none}}
+</style>
+</head>
+<body>
+<div class="aurora" aria-hidden="true"></div>
+<canvas id="particles" aria-hidden="true"></canvas>
+
+<header class="nav">
+<div class="container nav-inner">
+<a class="brand" href="#top"><span class="brand-mark" aria-hidden="true"></span>Nimbus</a>
+<nav aria-label="Primary">
+<ul class="nav-links" id="nav-links">
+<li><a href="#features">Features</a></li>
+<li><a href="#how">How It Works</a></li>
+<li><a href="#pricing">Pricing</a></li>
+<li><a href="#faq">FAQ</a></li>
+</ul>
+</nav>
+<div class="nav-actions">
+<button id="theme-toggle" class="icon-btn" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+<span class="material-symbols-rounded sun" aria-hidden="true">light_mode</span>
+<span class="material-symbols-rounded moon" aria-hidden="true">dark_mode</span>
+</button>
+<button class="icon-btn menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">
+<span class="material-symbols-rounded" aria-hidden="true">menu</span>
+</button>
+</div>
+</div>
+</header>
+
+<main id="top">
+<section class="hero">
+<div class="container hero-grid">
+<div class="hero-copy">
+<h1>Your data, lit up like the <em>northern sky</em></h1>
+<p>Nimbus turns raw metrics into living dashboards that surface what matters, the moment it changes.</p>
+<div class="hero-ctas">
+<a class="btn btn-primary" href="#pricing">Start free<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+<a class="btn btn-ghost" href="#how">See how it works</a>
+</div>
+</div>
+<div class="hero-visual" aria-hidden="true">
+<div class="orb-wrap">
+<div class="orb-ring"></div>
+<div class="orb"></div>
+<div class="orb-chip chip-a"><span class="material-symbols-rounded">bolt</span>Live sync</div>
+<div class="orb-chip chip-b"><span class="material-symbols-rounded">monitoring</span>Real-time alerts</div>
+<div class="orb-chip chip-c"><span class="material-symbols-rounded">shield</span>SOC 2 ready</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="features">
+<div class="container">
+<div class="section-head reveal">
+<h2 class="section-title">Built for teams that watch the sky</h2>
+<p class="section-sub">Three capabilities that keep every decision grounded in fresh, trustworthy data.</p>
+</div>
+<div class="grid-3">
+<article class="card reveal">
+<span class="card-icon"><span class="material-symbols-rounded" aria-hidden="true">auto_graph</span></span>
+<h3>Streaming dashboards</h3>
+<p>Charts update the instant your sources do. No refresh button, no stale exports, no guessing which number is current.</p>
+</article>
+<article class="card reveal">
+<span class="card-icon"><span class="material-symbols-rounded" aria-hidden="true">notifications_active</span></span>
+<h3>Anomaly alerts</h3>
+<p>Nimbus learns your normal ranges and pings the right channel when a metric drifts, with context attached.</p>
+</article>
+<article class="card reveal">
+<span class="card-icon"><span class="material-symbols-rounded" aria-hidden="true">hub</span></span>
+<h3>One-click connectors</h3>
+<p>Wire up warehouses, spreadsheets, and APIs in minutes. Forty-plus sources, all mapped to a shared model.</p>
+</article>
+</div>
+</div>
+</section>
+
+<section id="how">
+<div class="container">
+<div class="section-head reveal">
+<h2 class="section-title">From raw data to insight in three steps</h2>
+<p class="section-sub">Most teams connect their first source and see a live dashboard within the same afternoon.</p>
+</div>
+<div class="steps">
+<article class="step reveal">
+<span class="step-num">1</span>
+<h3>Connect</h3>
+<p>Pick a source, authenticate, and choose the tables or events you want to track.</p>
+</article>
+<article class="step reveal">
+<span class="step-num">2</span>
+<h3>Compose</h3>
+<p>Drag metrics onto a board, set thresholds, and group views by team or project.</p>
+</article>
+<article class="step reveal">
+<span class="step-num">3</span>
+<h3>Share</h3>
+<p>Publish a link or schedule digests. Stakeholders see live data, never screenshots.</p>
+</article>
+</div>
+</div>
+</section>
+
+<section id="testimonials">
+<div class="container">
+<div class="section-head reveal">
+<h2 class="section-title">Teams that made the switch</h2>
+</div>
+<div class="grid-3" style="align-items:stretch">
+<article class="card quote-card reveal">
+<blockquote>We killed our Monday reporting meeting. The board just opens Nimbus and the numbers are already there.</blockquote>
+<div class="quote-who"><span class="monogram" aria-hidden="true">MR</span><div><strong>Mara Reyes</strong><small>Head of Operations, Fieldline</small></div></div>
+</article>
+<article class="card quote-card reveal">
+<blockquote>The anomaly alerts caught a billing bug within an hour of deploy. That alone paid for the year.</blockquote>
+<div class="quote-who"><span class="monogram" aria-hidden="true">TO</span><div><strong>Tunde Okafor</strong><small>Engineering Lead, Cartwright Labs</small></div></div>
+</article>
+</div>
+</div>
+</section>
+
+<section id="pricing">
+<div class="container">
+<div class="section-head reveal">
+<h2 class="section-title">Simple pricing, no surprises</h2>
+<p class="section-sub">Start free, upgrade when your data grows. Every plan includes unlimited viewers.</p>
+</div>
+<div class="grid-3">
+<article class="card price-card reveal">
+<span class="tier">Starter</span>
+<p class="price">$0<span>/mo</span></p>
+<ul class="price-list">
+<li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>3 data sources</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>5 live dashboards</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Daily refresh</li>
+</ul>
+<a class="btn btn-ghost" href="#cta">Start free</a>
+</article>
+<article class="card price-card price-featured reveal">
+<span class="badge">Most popular</span>
+<span class="tier">Growth</span>
+<p class="price">$49<span>/mo</span></p>
+<ul class="price-list">
+<li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Unlimited sources</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Anomaly alerts</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Real-time streaming</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Priority support</li>
+</ul>
+<a class="btn btn-primary" href="#cta">Start free</a>
+</article>
+<article class="card price-card reveal">
+<span class="tier">Enterprise</span>
+<p class="price">Custom</p>
+<ul class="price-list">
+<li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>SSO and audit logs</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Private deployment</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Dedicated success manager</li>
+</ul>
+<a class="btn btn-ghost" href="#cta">Start free</a>
+</article>
+</div>
+</div>
+</section>
+
+<section id="faq">
+<div class="container">
+<div class="section-head reveal">
+<h2 class="section-title">Frequently asked questions</h2>
+</div>
+<div class="faq reveal">
+<details>
+<summary>How long does setup take?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+<div class="faq-body">Most teams connect their first source in under ten minutes. Pre-built dashboard templates mean you see useful charts the same day, not after a consulting engagement.</div>
+</details>
+<details>
+<summary>Is my data stored by Nimbus?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+<div class="faq-body">By default Nimbus queries your warehouse in place and caches only aggregated results. Enterprise plans can run fully inside your own cloud with no data leaving your network.</div>
+</details>
+<details>
+<summary>Can I cancel or change plans anytime?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+<div class="faq-body">Yes. Plans are month to month, upgrades apply instantly, and downgrades take effect at the next billing cycle. Your dashboards stay readable on the free tier forever.</div>
+</details>
+</div>
+</div>
+</section>
+
+<section id="cta">
+<div class="container">
+<div class="cta-band reveal">
+<h2>See your numbers in a new light</h2>
+<p>Join the newsletter for product updates and a free Starter workspace. No spam, unsubscribe anytime.</p>
+<form class="news-form" id="news-form" novalidate>
+<div class="news-field">
+<label for="news-email">Work email</label>
+<input id="news-email" name="email" type="email" autocomplete="email" placeholder="you@company.com" aria-describedby="news-msg" required>
+<p class="field-msg" id="news-msg" aria-live="polite"></p>
+</div>
+<button class="btn btn-primary" type="submit" id="news-btn">Subscribe</button>
+</form>
+</div>
+</div>
+</section>
+</main>
+
+<footer>
+<div class="container">
+<div class="footer-grid">
+<a class="brand" href="#top"><span class="brand-mark" aria-hidden="true"></span>Nimbus</a>
+<nav class="footer-links" aria-label="Footer">
+<div>
+<h4>Company</h4>
+<ul><li><a href="#top">About</a></li><li><a href="#top">Contact</a></li><li><a href="#top">Careers</a></li></ul>
+</div>
+<div>
+<h4>Legal</h4>
+<ul><li><a href="#top">Privacy</a></li><li><a href="#top">Terms</a></li><li><a href="#top">Security</a></li></ul>
+</div>
+<div>
+<h4>Social</h4>
+<ul><li><a href="#top">GitHub</a></li><li><a href="#top">LinkedIn</a></li><li><a href="#top">YouTube</a></li></ul>
+</div>
+</nav>
+</div>
+<p class="copyright">© 2026 Nimbus Analytics, Inc. All rights reserved.</p>
+</div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+/* Theme toggle */
+var root=document.documentElement,toggle=document.getElementById("theme-toggle");
+function syncToggle(){var dark=root.dataset.theme==="dark";toggle.setAttribute("aria-pressed",String(dark));toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");}
+syncToggle();
+toggle.addEventListener("click",function(){var next=root.dataset.theme==="dark"?"light":"dark";root.dataset.theme=next;localStorage.setItem("theme",next);syncToggle();});
+/* Mobile menu */
+var menuBtn=document.getElementById("menu-btn"),navLinks=document.getElementById("nav-links");
+function closeMenu(){navLinks.setAttribute("hidden","");menuBtn.setAttribute("aria-expanded","false");}
+if(window.matchMedia("(max-width: 767px)").matches){closeMenu();}
+menuBtn.addEventListener("click",function(){var open=navLinks.hasAttribute("hidden");if(open){navLinks.removeAttribute("hidden");}else{navLinks.setAttribute("hidden","");}menuBtn.setAttribute("aria-expanded",String(open));});
+navLinks.addEventListener("click",function(e){if(e.target.closest("a")){closeMenu();}});
+document.addEventListener("keydown",function(e){if(e.key==="Escape"){closeMenu();}});
+/* Reveal on scroll */
+var reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+var items=document.querySelectorAll(".reveal");
+if(reduce||!("IntersectionObserver" in window)){items.forEach(function(el){el.classList.add("in");});}
+else{var io=new IntersectionObserver(function(entries){entries.forEach(function(en,i){if(en.isIntersecting){en.target.style.transitionDelay=(i%3*70)+"ms";en.target.classList.add("in");io.unobserve(en.target);}});},{threshold:.15});items.forEach(function(el){io.observe(el);});}
+/* Particles */
+var canvas=document.getElementById("particles");
+if(!reduce&&canvas.getContext){
+var ctx=canvas.getContext("2d"),parts=[],colors=["#00D9FF","#00FF88","#FF006E","#50E3C2"];
+function size(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+size();window.addEventListener("resize",size);
+for(var i=0;i<70;i++){parts.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*1.6+.4,c:colors[i%4],vx:(Math.random()-.5)*.25,vy:(Math.random()-.5)*.25,p:Math.random()*Math.PI*2});}
+(function loop(){
+ctx.clearRect(0,0,canvas.width,canvas.height);
+parts.forEach(function(pt){pt.x+=pt.vx;pt.y+=pt.vy;pt.p+=.02;
+if(pt.x<0)pt.x=canvas.width;if(pt.x>canvas.width)pt.x=0;if(pt.y<0)pt.y=canvas.height;if(pt.y>canvas.height)pt.y=0;
+ctx.globalAlpha=.35+Math.sin(pt.p)*.3;ctx.fillStyle=pt.c;ctx.beginPath();ctx.arc(pt.x,pt.y,pt.r,0,Math.PI*2);ctx.fill();});
+requestAnimationFrame(loop);})();
+}
+/* Newsletter form */
+var form=document.getElementById("news-form"),email=document.getElementById("news-email"),msg=document.getElementById("news-msg"),btn=document.getElementById("news-btn");
+form.addEventListener("submit",function(e){
+e.preventDefault();
+var val=email.value.trim();
+msg.className="field-msg";
+if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val)){
+email.setAttribute("aria-invalid","true");
+msg.classList.add("error");
+msg.innerHTML='<span class="material-symbols-rounded" aria-hidden="true">error</span>Enter a valid email address.';
+return;
+}
+email.removeAttribute("aria-invalid");
+btn.disabled=true;btn.textContent="Subscribing";
+setTimeout(function(){
+btn.disabled=false;btn.textContent="Subscribe";
+msg.classList.add("ok");
+msg.innerHTML='<span class="material-symbols-rounded" aria-hidden="true">check_circle</span>You are on the list. Welcome aboard.';
+form.reset();
+},900);
+});
+})();
+</script>
+</body>
+</html>

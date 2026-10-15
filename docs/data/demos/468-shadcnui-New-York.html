@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relay - Deploy previews that keep pace with your team</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet">
+<style>
+:root{
+  --color-bg:#ffffff;--color-surface:#ffffff;--color-surface-strong:#f4f4f5;
+  --color-border:#e4e4e7;--color-text:#09090b;--color-text-muted:#71717a;
+  --color-primary:#18181b;--color-accent:#2563eb;--color-ring:#a1a1aa;
+  --color-primary-fg:#fafafa;--color-primary-hover:#3f3f46;--color-surface-active:#e4e4e7;
+  --color-accent-text:#1d4ed8;--color-danger:#dc2626;--color-danger-fg:#ffffff;
+  --radius-sm:0.375rem;--radius-md:0.5rem;--radius-lg:0.75rem;--radius-pill:999px;
+  --shadow-sm:0 1px 2px 0 rgb(9 9 11 / 0.05);
+  --shadow-md:0 4px 6px -1px rgb(9 9 11 / 0.07),0 2px 4px -2px rgb(9 9 11 / 0.07);
+  --shadow-lg:0 10px 15px -3px rgb(9 9 11 / 0.08),0 4px 6px -4px rgb(9 9 11 / 0.08);
+  --ring-offset:0 0 0 2px var(--color-bg);
+  --ring:0 0 0 2px var(--color-ring);
+  --font-sans:"Geist","Inter",system-ui,sans-serif;
+  --font-mono:"Geist Mono",ui-monospace,monospace;
+  --font-base:var(--font-sans);
+  --primary:var(--color-primary);--secondary:var(--color-surface-strong);
+  --bg-primary:var(--color-bg);--bg-secondary:var(--color-surface-strong);
+  --text-primary:var(--color-text);--text-secondary:var(--color-text-muted);
+  --text-success:#15803d;--text-error:#dc2626;
+  --border-default:var(--color-border);--border-success:#15803d;--border-error:#dc2626;
+  --spacing-gap:1rem;--transition-fast:150ms;--transition-normal:200ms;
+  --z-dropdown:1000;--z-modal:1100;--z-toast:1200;
+  --ease-standard:cubic-bezier(0.16,1,0.3,1);
+  --space-6:1.5rem;
+}
+:root[data-theme="dark"]{
+  --color-bg:#09090b;--color-surface:#09090b;--color-surface-strong:#27272a;
+  --color-border:#27272a;--color-text:#fafafa;--color-text-muted:#a1a1aa;
+  --color-primary:#fafafa;--color-primary-fg:#18181b;--color-primary-hover:#e4e4e7;
+  --color-accent:#60a5fa;--color-ring:#a1a1aa;--color-surface-active:#3f3f46;
+  --color-accent-text:#60a5fa;--color-danger:#ef4444;--color-danger-fg:#09090b;
+  --text-success:#4ade80;--text-error:#f87171;--border-success:#4ade80;--border-error:#f87171;
+  --shadow-sm:0 1px 2px 0 rgb(0 0 0 / 0.4);
+  --shadow-md:0 4px 6px -1px rgb(0 0 0 / 0.5),0 2px 4px -2px rgb(0 0 0 / 0.5);
+  --shadow-lg:0 10px 15px -3px rgb(0 0 0 / 0.5),0 4px 6px -4px rgb(0 0 0 / 0.5);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;font-size:1rem;-webkit-font-smoothing:antialiased;transition:background var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard)}
+img{max-width:100%}
+a{color:inherit;text-decoration:none}
+.container{max-width:1152px;margin-inline:auto;padding-inline:1.25rem}
+@media(min-width:768px){.container{padding-inline:2rem}}
+.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;font-size:1.25rem;line-height:1;user-select:none}
+.skip-link{position:absolute;left:-9999px;top:0;background:var(--color-primary);color:var(--color-primary-fg);padding:0.75rem 1.25rem;border-radius:var(--radius-md);z-index:var(--z-toast)}
+.skip-link:focus{left:1rem;top:1rem}
+/* ---------- Buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;font-family:var(--font-base);font-weight:500;font-size:0.9375rem;min-height:44px;padding:0.625rem 1.25rem;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--color-surface);color:var(--text-primary);box-shadow:var(--shadow-sm);cursor:pointer;transition:background var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard),transform var(--transition-fast) var(--ease-standard),opacity var(--transition-fast) var(--ease-standard)}
+.btn:focus-visible{outline:none;box-shadow:var(--ring-offset),var(--ring)}
+.btn:active{transform:scale(0.97)}
+.btn--primary{background:var(--color-primary);color:var(--color-primary-fg);border-color:var(--color-primary)}
+.btn--secondary{background:var(--color-surface);color:var(--text-primary)}
+.btn--ghost{background:transparent;box-shadow:none;border-color:transparent}
+.btn--danger{background:var(--color-danger);color:var(--color-danger-fg);border-color:var(--color-danger)}
+.btn--success{border-color:var(--border-success);color:var(--text-success);background:var(--color-surface)}
+.btn--error{border-color:var(--border-error);color:var(--text-error);background:var(--color-surface)}
+.btn:disabled,.btn.is-disabled{opacity:0.5;filter:grayscale(0.6);cursor:not-allowed;transform:none;box-shadow:var(--shadow-sm)}
+.btn.is-loading{pointer-events:none;opacity:0.85}
+.btn__spinner{width:1rem;height:1rem;border-radius:50%;border:2px solid currentColor;border-top-color:transparent;animation:spin 700ms linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(hover:hover) and (pointer:fine){
+  .btn--primary:hover:not(:disabled):not(.is-loading){background:var(--color-primary-hover);box-shadow:var(--shadow-md)}
+  .btn--secondary:hover:not(:disabled),.btn--ghost:hover:not(:disabled){background:var(--bg-secondary);box-shadow:var(--shadow-md)}
+  .btn--danger:hover:not(:disabled){filter:brightness(1.08);box-shadow:var(--shadow-md)}
+}
+/* ---------- Nav ---------- */
+.nav{position:sticky;top:0;z-index:var(--z-dropdown);background:color-mix(in srgb,var(--color-bg) 85%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--border-default)}
+.nav__inner{display:flex;align-items:center;justify-content:space-between;height:64px;gap:1rem}
+.nav__brand{display:flex;align-items:center;gap:0.5rem;font-weight:600;font-size:1.0625rem;letter-spacing:-0.01em}
+.nav__brand .material-symbols-outlined{color:var(--color-accent-text)}
+.nav__links{display:none;align-items:center;gap:0.25rem}
+.nav__link{padding:0.5rem 0.75rem;border-radius:var(--radius-md);font-size:0.9375rem;color:var(--text-secondary);transition:background var(--transition-fast),color var(--transition-fast)}
+.nav__link:focus-visible{outline:none;box-shadow:var(--ring-offset),var(--ring)}
+@media(hover:hover) and (pointer:fine){.nav__link:hover{background:var(--bg-secondary);color:var(--text-primary)}}
+.nav__actions{display:flex;align-items:center;gap:0.5rem}
+.nav__toggle{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--color-surface);color:var(--text-primary);cursor:pointer;transition:background var(--transition-fast)}
+.nav__toggle:focus-visible{outline:none;box-shadow:var(--ring-offset),var(--ring)}
+@media(hover:hover) and (pointer:fine){.nav__toggle:hover{background:var(--bg-secondary)}}
+.nav__menu-btn{display:inline-flex}
+.nav__panel{display:none;flex-direction:column;align-items:stretch;gap:0.25rem;padding:0.75rem 1.25rem 1rem;border-bottom:1px solid var(--border-default);background:var(--color-bg)}
+.nav__panel.is-open{display:flex;animation:panelIn var(--transition-normal) var(--ease-standard)}
+@keyframes panelIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.nav__panel .nav__link{padding:0.75rem}
+@media(min-width:768px){
+  .nav__links{display:flex}
+  .nav__menu-btn{display:none}
+  .nav__panel{display:none!important}
+}
+/* ---------- Hero ---------- */
+.hero{padding-top:4rem;padding-bottom:clamp(4rem,8vw,6rem)}
+.hero__grid{display:flex;flex-direction:column;gap:3rem;align-items:center}
+.hero__copy{display:flex;flex-direction:column;align-items:flex-start;gap:1.25rem;max-width:36rem}
+.hero__badge{display:inline-flex;align-items:center;gap:0.5rem;padding:0.375rem 0.875rem;border-radius:var(--radius-pill);border:1px solid var(--border-default);background:var(--bg-secondary);font-size:0.8125rem;font-weight:500;color:var(--text-secondary)}
+.hero__badge .material-symbols-outlined{font-size:1rem;color:var(--color-accent-text)}
+.hero h1{font-size:clamp(2.25rem,5vw,3.5rem);line-height:1.08;letter-spacing:-0.03em;font-weight:700}
+.hero__sub{font-size:1.0625rem;color:var(--text-secondary);max-width:32rem}
+.hero__ctas{display:flex;flex-wrap:wrap;gap:0.75rem;align-items:center}
+.hero__trust{display:flex;flex-wrap:wrap;align-items:center;gap:0.5rem 1.5rem;margin-top:0.5rem}
+.hero__trust-label{font-size:0.75rem;color:var(--text-secondary);width:100%}
+.hero__wordmark{font-family:var(--font-mono);font-size:0.875rem;font-weight:500;color:var(--text-secondary);letter-spacing:0.02em}
+/* Hero mockup */
+.hero__visual{width:100%;max-width:34rem}
+.mockup{background:var(--color-surface);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);overflow:hidden}
+.mockup__chrome{display:flex;align-items:center;gap:0.5rem;padding:0.625rem 0.875rem;border-bottom:1px solid var(--border-default);background:var(--bg-secondary)}
+.mockup__dot{width:10px;height:10px;border-radius:50%;background:var(--color-surface-active);border:1px solid var(--border-default)}
+.mockup__url{flex:1;margin-inline:0.5rem;font-family:var(--font-mono);font-size:0.75rem;color:var(--text-secondary);background:var(--color-surface);border:1px solid var(--border-default);border-radius:var(--radius-sm);padding:0.25rem 0.625rem;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.mockup__body{padding:1rem;display:flex;flex-direction:column;align-items:stretch;gap:0.75rem}
+.mockup__row{display:flex;align-items:center;gap:0.75rem}
+.mockup__tile{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:var(--radius-md);background:var(--bg-secondary);border:1px solid var(--border-default);flex-shrink:0}
+.mockup__tile .material-symbols-outlined{font-size:1.125rem;color:var(--color-accent-text)}
+.mockup__meta{display:flex;flex-direction:column;align-items:flex-start;gap:0.125rem;flex:1;min-width:0}
+.mockup__title{font-size:0.875rem;font-weight:500}
+.mockup__sub{font-size:0.75rem;color:var(--text-secondary);font-family:var(--font-mono)}
+.badge{display:inline-flex;align-items:center;gap:0.25rem;padding:0.25rem 0.625rem;border-radius:var(--radius-pill);border:1px solid var(--border-default);background:var(--bg-secondary);font-size:0.75rem;font-weight:500;color:var(--text-secondary)}
+.badge--ok{color:var(--text-success);border-color:var(--border-success);background:transparent}
+.badge .material-symbols-outlined{font-size:0.875rem}
+.skeleton{position:relative;overflow:hidden;background:var(--bg-secondary);border-radius:var(--radius-sm);min-height:0.875rem}
+.skeleton::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgb(255 255 255 / 0.35),transparent);transform:translateX(-100%);animation:shimmer 1.2s ease-in-out infinite}
+:root[data-theme="dark"] .skeleton::after{background:linear-gradient(90deg,transparent,rgb(255 255 255 / 0.08),transparent)}
+@keyframes shimmer{to{transform:translateX(100%)}}
+@media(min-width:1024px){
+  .hero__grid{flex-direction:row;justify-content:space-between;gap:4rem}
+  .hero__copy{flex:1}
+  .hero__visual{flex:1;max-width:32rem}
+}
+/* ---------- Sections ---------- */
+.section{padding-block:clamp(4rem,8vw,7rem)}
+.section--alt{background:var(--bg-secondary);border-block:1px solid var(--border-default)}
+.section__head{display:flex;flex-direction:column;align-items:flex-start;gap:0.75rem;max-width:42rem;margin-bottom:3rem}
+.section__title{font-size:clamp(1.75rem,3.5vw,2.5rem);line-height:1.15;letter-spacing:-0.025em;font-weight:700}
+.section__sub{color:var(--text-secondary);font-size:1.0625rem;max-width:65ch}
+/* Cards */
+.cards{display:flex;flex-wrap:wrap;gap:var(--spacing-gap)}
+.card{display:flex;flex-direction:column;align-items:flex-start;gap:0.75rem;flex:1 1 16rem;background:var(--color-surface);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:var(--space-6);transition:box-shadow var(--transition-fast) var(--ease-standard),transform var(--transition-fast) var(--ease-standard),border-color var(--transition-fast)}
+.card:focus-within{border-color:var(--color-ring)}
+.card__icon{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-md);background:var(--bg-secondary);border:1px solid var(--border-default)}
+.card__icon .material-symbols-outlined{color:var(--color-accent-text)}
+.card__title{font-size:1.0625rem;font-weight:600;letter-spacing:-0.01em}
+.card__text{font-size:0.9375rem;color:var(--text-secondary)}
+@media(hover:hover) and (pointer:fine){.card--lift:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}}
+/* Steps */
+.steps{display:flex;flex-direction:column;gap:2rem;counter-reset:step}
+.step{display:flex;align-items:flex-start;gap:1.25rem;flex:1;position:relative}
+.step__num{font-family:var(--font-mono);font-size:0.875rem;font-weight:500;color:var(--color-accent-text);border:1px solid var(--border-default);background:var(--color-surface);border-radius:var(--radius-pill);padding:0.375rem 0.875rem;flex-shrink:0}
+.step__body{display:flex;flex-direction:column;align-items:flex-start;gap:0.375rem}
+.step__title{font-weight:600;font-size:1.0625rem}
+.step__text{color:var(--text-secondary);font-size:0.9375rem}
+@media(min-width:768px){
+  .steps{flex-direction:row;align-items:flex-start}
+  .step{flex-direction:column}
+  .step:not(:last-child)::after{content:"";position:absolute;top:1.125rem;left:4.5rem;right:-1rem;height:1px;background:var(--border-default)}
+}
+/* Testimonials */
+.quotes{display:flex;flex-wrap:wrap;gap:var(--spacing-gap)}
+.quote{flex:1 1 16rem}
+.quote__text{font-size:0.9375rem;color:var(--text-primary)}
+.quote__text::before{content:"\201C"}
+.quote__text::after{content:"\201D"}
+.quote__by{display:flex;align-items:center;gap:0.75rem;margin-top:0.5rem}
+.avatar{display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;background:var(--bg-secondary);border:1px solid var(--border-default);font-size:0.8125rem;font-weight:600;color:var(--text-primary);flex-shrink:0}
+.quote__name{font-size:0.875rem;font-weight:500}
+.quote__role{font-size:0.8125rem;color:var(--text-secondary)}
+/* Pricing */
+.billing{display:inline-flex;align-items:center;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-pill);padding:0.25rem;gap:0.25rem}
+.billing__opt{border:none;background:transparent;color:var(--text-secondary);font-family:var(--font-base);font-weight:500;font-size:0.875rem;padding:0.5rem 1rem;border-radius:var(--radius-pill);cursor:pointer;min-height:40px;transition:background var(--transition-fast),color var(--transition-fast)}
+.billing__opt[aria-pressed="true"]{background:var(--color-surface);color:var(--text-primary);box-shadow:var(--shadow-sm)}
+.billing__opt:focus-visible{outline:none;box-shadow:var(--ring-offset),var(--ring)}
+.tiers{display:flex;flex-wrap:wrap;gap:var(--spacing-gap);align-items:stretch}
+.tier{position:relative;flex:1 1 16rem}
+.tier--featured{border-color:var(--color-primary);box-shadow:var(--shadow-md)}
+:root[data-theme="dark"] .tier--featured{border-color:var(--color-primary)}
+.tier__flag{position:absolute;top:-0.75rem;left:50%;transform:translateX(-50%);background:var(--color-primary);color:var(--color-primary-fg);font-size:0.75rem;font-weight:600;padding:0.25rem 0.75rem;border-radius:var(--radius-pill);white-space:nowrap}
+.tier__name{font-size:1.0625rem;font-weight:600}
+.tier__price{font-size:2.25rem;font-weight:700;letter-spacing:-0.03em;line-height:1.1}
+.tier__per{font-size:0.875rem;color:var(--text-secondary);font-weight:400;letter-spacing:0}
+.tier__list{list-style:none;display:flex;flex-direction:column;align-items:stretch;gap:0.625rem;margin-block:0.5rem 1rem}
+.tier__list li{display:flex;align-items:flex-start;gap:0.5rem;font-size:0.9375rem;color:var(--text-secondary)}
+.tier__list .material-symbols-outlined{font-size:1.125rem;color:var(--text-success);flex-shrink:0;margin-top:0.15rem}
+.tier .btn{width:100%;margin-top:auto}
+/* FAQ */
+.faq{max-width:44rem;display:flex;flex-direction:column;gap:0.75rem}
+.faq__item{border:1px solid var(--border-default);border-radius:var(--radius-lg);background:var(--color-surface);overflow:hidden}
+.faq__item summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1rem 1.25rem;font-weight:500;font-size:0.9375rem;cursor:pointer;list-style:none;min-height:44px}
+.faq__item summary::-webkit-details-marker{display:none}
+.faq__item summary:focus-visible{outline:none;box-shadow:var(--ring-offset),var(--ring)}
+.faq__chev{transition:transform var(--transition-normal) var(--ease-standard);color:var(--text-secondary)}
+.faq__item[open] .faq__chev{transform:rotate(180deg)}
+.faq__body{padding:0 1.25rem 1.25rem;color:var(--text-secondary);font-size:0.9375rem}
+/* CTA band */
+.cta-band{background:var(--bg-secondary);border-block:1px solid var(--border-default)}
+.cta-band__inner{display:flex;flex-direction:column;align-items:flex-start;gap:1.5rem;max-width:40rem}
+.cta-band h2{font-size:clamp(1.75rem,3.5vw,2.5rem);letter-spacing:-0.025em;line-height:1.15;font-weight:700}
+.cta-band p{color:var(--text-secondary)}
+/* Form */
+.input-group{display:flex;flex-direction:column;align-items:stretch;gap:0.375rem;width:100%}
+.input-group label{font-size:0.875rem;font-weight:500}
+.input-group__row{display:flex;flex-direction:column;gap:0.75rem;width:100%}
+.input{font-family:var(--font-base);font-size:0.9375rem;width:100%;min-height:44px;padding:0.625rem 0.875rem;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--color-surface);color:var(--text-primary);box-shadow:var(--shadow-sm);transition:border-color var(--transition-fast),box-shadow var(--transition-fast)}
+.input::placeholder{color:var(--text-secondary)}
+.input:focus{outline:none;border-color:var(--color-ring);box-shadow:var(--ring-offset),var(--ring)}
+.input--valid{border-color:var(--border-success)}
+.input--invalid{border-color:var(--border-error)}
+.input:disabled{opacity:0.5;cursor:not-allowed;background:var(--bg-secondary)}
+.input:read-only{background:var(--bg-secondary)}
+.input-group__hint{font-size:0.8125rem;color:var(--text-secondary)}
+.input-group__error{display:flex;align-items:center;gap:0.375rem;font-size:0.8125rem;color:var(--text-error)}
+.input-group__error .material-symbols-outlined{font-size:1rem}
+.input-group__ok{display:flex;align-items:center;gap:0.375rem;font-size:0.875rem;color:var(--text-success);font-weight:500}
+.input-group__ok .material-symbols-outlined{font-size:1rem}
+@media(min-width:640px){.input-group__row{flex-direction:row;align-items:flex-start}.input-group__row .input{flex:1}}
+/* Footer */
+.footer{border-top:1px solid var(--border-default);padding-block:3rem 2rem}
+.footer__grid{display:flex;flex-wrap:wrap;gap:2.5rem}
+.footer__brand{display:flex;flex-direction:column;align-items:flex-start;gap:0.75rem;flex:1 1 14rem}
+.footer__tag{color:var(--text-secondary);font-size:0.9375rem;max-width:22rem}
+.footer__cols{display:flex;flex-wrap:wrap;gap:2.5rem;flex:2 1 24rem}
+.footer__col{display:flex;flex-direction:column;align-items:flex-start;gap:0.625rem;flex:1 1 8rem}
+.footer__col h3{font-size:0.8125rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-secondary)}
+.footer__col a{font-size:0.9375rem;color:var(--text-secondary);transition:color var(--transition-fast);padding-block:0.125rem}
+.footer__col a:focus-visible{outline:none;box-shadow:var(--ring-offset),var(--ring);border-radius:var(--radius-sm)}
+@media(hover:hover) and (pointer:fine){.footer__col a:hover{color:var(--text-primary)}}
+.footer__legal{margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid var(--border-default);font-size:0.8125rem;color:var(--text-secondary)}
+/* Reveal */
+.reveal{opacity:1}
+.js .reveal{opacity:0;transform:translateY(12px);transition:opacity 400ms var(--ease-standard),transform 400ms var(--ease-standard)}
+.js .reveal.is-visible{opacity:1;transform:none}
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:150ms!important}
+  .skeleton::after{display:none}
+  .js .reveal{transform:none;transition:opacity 200ms ease}
+  .faq__chev{transition:none}
+}
+@media (prefers-reduced-transparency: reduce){
+  .nav{background:var(--color-bg);backdrop-filter:none}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="nav">
+  <div class="container nav__inner">
+    <a class="nav__brand" href="#top" aria-label="Relay home">
+      <span class="material-symbols-outlined" aria-hidden="true">deployed_code</span>
+      Relay
+    </a>
+    <nav class="nav__links" aria-label="Primary">
+      <a class="nav__link" href="#features">Features</a>
+      <a class="nav__link" href="#how">How it works</a>
+      <a class="nav__link" href="#pricing">Pricing</a>
+      <a class="nav__link" href="#faq">FAQ</a>
+    </nav>
+    <div class="nav__actions">
+      <button class="nav__toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-outlined" id="theme-icon" aria-hidden="true">dark_mode</span>
+      </button>
+      <a class="btn btn--primary" href="#cta">Start free</a>
+      <button class="nav__toggle nav__menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="menu-panel" aria-label="Open menu">
+        <span class="material-symbols-outlined" aria-hidden="true">menu</span>
+      </button>
+    </div>
+  </div>
+  <nav class="nav__panel" id="menu-panel" aria-label="Mobile">
+    <a class="nav__link" href="#features">Features</a>
+    <a class="nav__link" href="#how">How it works</a>
+    <a class="nav__link" href="#pricing">Pricing</a>
+    <a class="nav__link" href="#faq">FAQ</a>
+  </nav>
+</header>
+
+<main id="main">
+  <!-- Hero -->
+  <section class="hero" id="top" aria-labelledby="hero-title">
+    <div class="container hero__grid">
+      <div class="hero__copy">
+        <span class="hero__badge"><span class="material-symbols-outlined" aria-hidden="true">bolt</span>Preview deploys now ship in under 40 seconds</span>
+        <h1 id="hero-title">Preview every branch before it ships</h1>
+        <p class="hero__sub">Relay builds an isolated preview for every pull request, so your team reviews real software instead of screenshots.</p>
+        <div class="hero__ctas">
+          <a class="btn btn--primary" href="#cta">Start free</a>
+          <a class="btn btn--secondary" href="#how">See how it works</a>
+        </div>
+        <div class="hero__trust">
+          <span class="hero__trust-label">Trusted by engineering teams at</span>
+          <span class="hero__wordmark">hexlab</span>
+          <span class="hero__wordmark">Ferrous&nbsp;Co</span>
+          <span class="hero__wordmark">driftline</span>
+          <span class="hero__wordmark">OPENSIGNAL</span>
+        </div>
+      </div>
+      <div class="hero__visual">
+        <div class="mockup" aria-label="Relay dashboard preview">
+          <div class="mockup__chrome">
+            <span class="mockup__dot"></span><span class="mockup__dot"></span><span class="mockup__dot"></span>
+            <span class="mockup__url">relay.dev/acme-storefront/previews</span>
+          </div>
+          <div class="mockup__body" id="mockup-body">
+            <div class="mockup__row">
+              <span class="mockup__tile"><span class="material-symbols-outlined" aria-hidden="true">account_tree</span></span>
+              <div class="mockup__meta">
+                <span class="mockup__title">feat/checkout-redesign</span>
+                <span class="mockup__sub">#482 · opened by mtorres</span>
+              </div>
+              <span class="badge badge--ok"><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>Live</span>
+            </div>
+            <div class="mockup__row">
+              <span class="mockup__tile"><span class="material-symbols-outlined" aria-hidden="true">account_tree</span></span>
+              <div class="mockup__meta">
+                <span class="mockup__title">fix/cart-total-rounding</span>
+                <span class="mockup__sub">#481 · opened by jokafor</span>
+              </div>
+              <span class="badge"><span class="material-symbols-outlined" aria-hidden="true">progress_activity</span>Building</span>
+            </div>
+            <div class="mockup__row">
+              <span class="mockup__tile"><span class="material-symbols-outlined" aria-hidden="true">account_tree</span></span>
+              <div class="mockup__meta">
+                <span class="mockup__title">chore/upgrade-node-22</span>
+                <span class="mockup__sub">#479 · opened by sduarte</span>
+              </div>
+              <span class="badge badge--ok"><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>Live</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="section section--alt" id="features" aria-labelledby="features-title">
+    <div class="container">
+      <div class="section__head">
+        <h2 class="section__title" id="features-title">Built for the way teams review</h2>
+        <p class="section__sub">Every preview is a full environment with its own URL, logs, and data seed, ready the moment a pull request opens.</p>
+      </div>
+      <div class="cards">
+        <article class="card card--lift reveal">
+          <span class="card__icon"><span class="material-symbols-outlined" aria-hidden="true">rocket_launch</span></span>
+          <h3 class="card__title">Instant environments</h3>
+          <p class="card__text">Each branch gets a production-grade copy with seeded data and secrets injected from your vault. No shared staging, no collisions.</p>
+        </article>
+        <article class="card card--lift reveal">
+          <span class="card__icon"><span class="material-symbols-outlined" aria-hidden="true">forum</span></span>
+          <h3 class="card__title">Comments on the page</h3>
+          <p class="card__text">Reviewers pin feedback directly onto the running preview. Threads sync back to the pull request so nothing gets lost.</p>
+        </article>
+        <article class="card card--lift reveal">
+          <span class="card__icon"><span class="material-symbols-outlined" aria-hidden="true">monitoring</span></span>
+          <h3 class="card__title">Preview analytics</h3>
+          <p class="card__text">See which previews get reviewed, how long they stay open, and where reviewers drop off. Shorten the path from PR to merge.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="section" id="how" aria-labelledby="how-title">
+    <div class="container">
+      <div class="section__head">
+        <h2 class="section__title" id="how-title">Three steps to your first preview</h2>
+        <p class="section__sub">Connect a repository and Relay handles builds, environments, and teardown automatically.</p>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <span class="step__num">01</span>
+          <div class="step__body">
+            <h3 class="step__title">Connect your repo</h3>
+            <p class="step__text">Install the Relay GitHub or GitLab app. We detect your framework and build settings automatically.</p>
+          </div>
+        </div>
+        <div class="step reveal">
+          <span class="step__num">02</span>
+          <div class="step__body">
+            <h3 class="step__title">Open a pull request</h3>
+            <p class="step__text">Relay builds the branch, seeds the database, and posts the preview URL as a PR comment.</p>
+          </div>
+        </div>
+        <div class="step reveal">
+          <span class="step__num">03</span>
+          <div class="step__body">
+            <h3 class="step__title">Review and merge</h3>
+            <p class="step__text">Your team reviews the live preview. On merge, the environment is torn down and logs archived.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="section section--alt" id="testimonials" aria-labelledby="testimonials-title">
+    <div class="container">
+      <div class="section__head">
+        <h2 class="section__title" id="testimonials-title">Teams ship with more confidence</h2>
+      </div>
+      <div class="quotes">
+        <article class="card quote reveal">
+          <p class="quote__text">Design reviews used to mean a week of screenshots in Slack. Now reviewers open the preview and leave comments the same day.</p>
+          <div class="quote__by">
+            <span class="avatar" aria-hidden="true">MT</span>
+            <div>
+              <p class="quote__name">Marina Torres</p>
+              <p class="quote__role">Engineering Lead, Ferrous Co</p>
+            </div>
+          </div>
+        </article>
+        <article class="card quote reveal">
+          <p class="quote__text">We killed our shared staging server entirely. Every branch gets its own environment and the cost is lower than what we paid before.</p>
+          <div class="quote__by">
+            <span class="avatar" aria-hidden="true">JO</span>
+            <div>
+              <p class="quote__name">Jerome Okafor</p>
+              <p class="quote__role">Platform Engineer, Driftline</p>
+            </div>
+          </div>
+        </article>
+        <article class="card quote reveal">
+          <p class="quote__text">The seeded data is the killer feature. Our QA team tests against realistic content on every single pull request.</p>
+          <div class="quote__by">
+            <span class="avatar" aria-hidden="true">SD</span>
+            <div>
+              <p class="quote__name">Sofia Duarte</p>
+              <p class="quote__role">QA Manager, Hexlab</p>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section class="section" id="pricing" aria-labelledby="pricing-title">
+    <div class="container">
+      <div class="section__head">
+        <h2 class="section__title" id="pricing-title">Pricing that scales with your team</h2>
+        <p class="section__sub">Start free, upgrade when you need more concurrent previews or team controls.</p>
+        <div class="billing" role="group" aria-label="Billing period">
+          <button class="billing__opt" type="button" id="bill-monthly" aria-pressed="true">Monthly</button>
+          <button class="billing__opt" type="button" id="bill-annual" aria-pressed="false">Annual (save 20%)</button>
+        </div>
+      </div>
+      <div class="tiers" aria-live="polite" id="pricing-live">
+        <article class="card tier reveal">
+          <h3 class="tier__name">Starter</h3>
+          <p class="tier__price"><span data-monthly="$0" data-annual="$0">$0</span><span class="tier__per"> /mo</span></p>
+          <ul class="tier__list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>3 concurrent previews</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>GitHub and GitLab apps</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Community support</li>
+          </ul>
+          <a class="btn btn--secondary" href="#cta">Start free</a>
+        </article>
+        <article class="card tier tier--featured reveal">
+          <span class="tier__flag">Most popular</span>
+          <h3 class="tier__name">Team</h3>
+          <p class="tier__price"><span data-monthly="$24" data-annual="$19">$24</span><span class="tier__per"> /user/mo</span></p>
+          <ul class="tier__list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Unlimited previews</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Seeded databases and vault secrets</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>On-page review comments</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Preview analytics</li>
+          </ul>
+          <a class="btn btn--primary" href="#cta">Start free</a>
+        </article>
+        <article class="card tier reveal">
+          <h3 class="tier__name">Enterprise</h3>
+          <p class="tier__price"><span data-monthly="Custom" data-annual="Custom">Custom</span></p>
+          <ul class="tier__list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>SSO and SCIM provisioning</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Self-hosted runners</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Audit logs and SLA</li>
+          </ul>
+          <a class="btn btn--secondary" href="#cta">Contact sales</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section section--alt" id="faq" aria-labelledby="faq-title">
+    <div class="container">
+      <div class="section__head">
+        <h2 class="section__title" id="faq-title">Frequently asked questions</h2>
+      </div>
+      <div class="faq">
+        <details class="faq__item">
+          <summary>How long does a preview take to build?<span class="material-symbols-outlined faq__chev" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__body">Most previews are live in under a minute. Relay caches your dependencies and build layers, so repeat builds on the same branch are nearly instant.</p>
+        </details>
+        <details class="faq__item">
+          <summary>Can I use my own database seed?<span class="material-symbols-outlined faq__chev" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__body">Yes. You can upload a sanitized snapshot or point Relay at a seed script in your repo. Each preview gets an isolated copy that resets on every rebuild.</p>
+        </details>
+        <details class="faq__item">
+          <summary>What happens to previews after a merge?<span class="material-symbols-outlined faq__chev" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__body">Environments are torn down automatically when the pull request closes. Build logs and review threads are archived and searchable for 90 days.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="section cta-band" id="cta" aria-labelledby="cta-title">
+    <div class="container cta-band__inner">
+      <h2 id="cta-title">Ship your first preview today</h2>
+      <p>Join the waitlist for team workspaces or start a free Starter account with your repository.</p>
+      <form class="input-group" id="signup-form" novalidate>
+        <label for="email">Work email</label>
+        <div class="input-group__row">
+          <input class="input" id="email" name="email" type="email" placeholder="you@company.com" autocomplete="email" aria-describedby="email-hint email-error">
+          <button class="btn btn--primary" id="signup-btn" type="submit">Get started</button>
+        </div>
+        <p class="input-group__hint" id="email-hint">We will send one confirmation email. No spam.</p>
+        <p class="input-group__error" id="email-error" role="alert" hidden>
+          <span class="material-symbols-outlined" aria-hidden="true">error</span>
+          <span>Enter a valid work email address.</span>
+        </p>
+        <p class="input-group__ok" id="email-ok" aria-live="polite" hidden>
+          <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+          <span>You are on the list. Check your inbox to confirm.</span>
+        </p>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <a class="nav__brand" href="#top"><span class="material-symbols-outlined" aria-hidden="true">deployed_code</span>Relay</a>
+        <p class="footer__tag">Preview environments for every pull request, built for teams that review real software.</p>
+      </div>
+      <div class="footer__cols">
+        <div class="footer__col">
+          <h3>Product</h3>
+          <a href="#features">Features</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#how">How it works</a>
+        </div>
+        <div class="footer__col">
+          <h3>Company</h3>
+          <a href="#">About</a>
+          <a href="#">Careers</a>
+          <a href="#">Blog</a>
+        </div>
+        <div class="footer__col">
+          <h3>Resources</h3>
+          <a href="#">Documentation</a>
+          <a href="#">Changelog</a>
+          <a href="#faq">FAQ</a>
+        </div>
+        <div class="footer__col">
+          <h3>Legal</h3>
+          <a href="#">Privacy</a>
+          <a href="#">Terms</a>
+          <a href="#">Security</a>
+        </div>
+      </div>
+    </div>
+    <p class="footer__legal">© 2026 Relay Systems, Inc. All rights reserved.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  document.documentElement.classList.add("js");
+
+  /* Theme toggle */
+  var toggle=document.getElementById("theme-toggle");
+  var icon=document.getElementById("theme-icon");
+  function applyTheme(t){
+    document.documentElement.dataset.theme=t;
+    var dark=t==="dark";
+    toggle.setAttribute("aria-pressed",String(dark));
+    toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+    icon.textContent=dark?"light_mode":"dark_mode";
+  }
+  applyTheme(document.documentElement.dataset.theme==="dark"?"dark":"light");
+  toggle.addEventListener("click",function(){
+    var next=document.documentElement.dataset.theme==="dark"?"light":"dark";
+    localStorage.setItem("theme",next);
+    applyTheme(next);
+  });
+
+  /* Mobile menu */
+  var menuBtn=document.getElementById("menu-btn");
+  var panel=document.getElementById("menu-panel");
+  function closeMenu(returnFocus){
+    panel.classList.remove("is-open");
+    menuBtn.setAttribute("aria-expanded","false");
+    menuBtn.setAttribute("aria-label","Open menu");
+    if(returnFocus){menuBtn.focus();}
+  }
+  menuBtn.addEventListener("click",function(){
+    var open=panel.classList.toggle("is-open");
+    menuBtn.setAttribute("aria-expanded",String(open));
+    menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");
+    if(open){var first=panel.querySelector("a");if(first){first.focus();}}
+  });
+  panel.addEventListener("click",function(e){if(e.target.closest("a")){closeMenu(false);}});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape"&&panel.classList.contains("is-open")){closeMenu(true);}});
+  document.addEventListener("click",function(e){
+    if(panel.classList.contains("is-open")&&!e.target.closest("#menu-panel")&&!e.target.closest("#menu-btn")){closeMenu(false);}
+  });
+
+  /* Hero skeleton shimmer on first load */
+  var body=document.getElementById("mockup-body");
+  var rows=body.querySelectorAll(".mockup__row");
+  rows.forEach(function(row){
+    var title=row.querySelector(".mockup__title");
+    var sub=row.querySelector(".mockup__sub");
+    var badge=row.querySelector(".badge");
+    [title,sub].forEach(function(el){
+      el.dataset.text=el.textContent;
+      el.textContent="";
+      el.classList.add("skeleton");
+      el.style.width=el===title?"9rem":"12rem";
+    });
+    if(badge){badge.style.visibility="hidden";}
+  });
+  setTimeout(function(){
+    rows.forEach(function(row){
+      var title=row.querySelector(".mockup__title");
+      var sub=row.querySelector(".mockup__sub");
+      [title,sub].forEach(function(el){
+        el.classList.remove("skeleton");
+        el.style.width="";
+        el.textContent=el.dataset.text;
+      });
+      var badge=row.querySelector(".badge");
+      if(badge){badge.style.visibility="";}
+    });
+  },600);
+
+  /* Reveal on scroll */
+  var revealEls=document.querySelectorAll(".reveal");
+  if("IntersectionObserver" in window){
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){
+          var el=entry.target;
+          var idx=Array.prototype.indexOf.call(el.parentNode.children,el);
+          el.style.transitionDelay=(Math.min(idx,5)*60)+"ms";
+          el.classList.add("is-visible");
+          io.unobserve(el);
+        }
+      });
+    },{threshold:0.15});
+    revealEls.forEach(function(el){io.observe(el);});
+  }else{
+    revealEls.forEach(function(el){el.classList.add("is-visible");});
+  }
+
+  /* Pricing toggle */
+  var mBtn=document.getElementById("bill-monthly");
+  var aBtn=document.getElementById("bill-annual");
+  var prices=document.querySelectorAll("#pricing-live [data-monthly]");
+  function setBilling(annual){
+    mBtn.setAttribute("aria-pressed",String(!annual));
+    aBtn.setAttribute("aria-pressed",String(annual));
+    prices.forEach(function(p){p.textContent=annual?p.dataset.annual:p.dataset.monthly;});
+  }
+  mBtn.addEventListener("click",function(){setBilling(false);});
+  aBtn.addEventListener("click",function(){setBilling(true);});
+
+  /* FAQ: one open at a time */
+  var faqItems=document.querySelectorAll(".faq__item");
+  faqItems.forEach(function(item){
+    item.addEventListener("toggle",function(){
+      if(item.open){
+        faqItems.forEach(function(other){if(other!==item){other.open=false;}});
+      }
+    });
+  });
+
+  /* Newsletter form */
+  var form=document.getElementById("signup-form");
+  var email=document.getElementById("email");
+  var err=document.getElementById("email-error");
+  var ok=document.getElementById("email-ok");
+  var submitBtn=document.getElementById("signup-btn");
+  var btnLabel=submitBtn.innerHTML;
+  form.addEventListener("submit",function(e){
+    e.preventDefault();
+    ok.hidden=true;
+    var val=email.value.trim();
+    var valid=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val);
+    if(!valid){
+      email.classList.remove("input--valid");
+      email.classList.add("input--invalid");
+      email.setAttribute("aria-invalid","true");
+      err.hidden=false;
+      email.focus();
+      return;
+    }
+    email.classList.remove("input--invalid");
+    email.classList.add("input--valid");
+    email.removeAttribute("aria-invalid");
+    err.hidden=true;
+    submitBtn.classList.add("is-loading");
+    submitBtn.setAttribute("aria-busy","true");
+    submitBtn.disabled=true;
+    submitBtn.innerHTML='<span class="btn__spinner" aria-hidden="true"></span>Sending';
+    setTimeout(function(){
+      submitBtn.classList.remove("is-loading");
+      submitBtn.removeAttribute("aria-busy");
+      submitBtn.classList.add("btn--success");
+      submitBtn.innerHTML='<span class="material-symbols-outlined" aria-hidden="true">check</span>Done';
+      ok.hidden=false;
+      email.readOnly=true;
+    },800);
+  });
+  email.addEventListener("input",function(){
+    if(email.classList.contains("input--invalid")){
+      email.classList.remove("input--invalid");
+      email.removeAttribute("aria-invalid");
+      err.hidden=true;
+    }
+  });
+})();
+</script>
+</body>
+</html>

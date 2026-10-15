@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paperfold - Cut, fold, create</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<style>
+:root{
+  --color-bg:#fbf3e7; --color-surface:#fff9f0; --color-surface-strong:#ffe8cc;
+  --color-border:#e3c9a3; --color-text:#3b2c22; --color-text-muted:#6b5847;
+  --color-primary:#e8623d; --color-on-primary:#fff9f0; --color-accent:#4f9c8e;
+  --color-on-accent:#fff9f0; --color-torn-shadow:rgba(59,44,34,0.18);
+  --color-error:#c0392b; --color-success:#3d7a6f;
+  --bg-primary:var(--color-bg); --bg-secondary:var(--color-surface);
+  --text-primary:var(--color-text); --text-secondary:var(--color-text-muted);
+  --border-default:var(--color-border); --primary:var(--color-primary); --secondary:var(--color-accent);
+  --nav-bg:rgba(255,249,240,0.92);
+  --radius-sm:4px; --radius-md:8px; --radius-lg:14px; --radius-pill:999px;
+  --shadow-sm:2px 3px 0 rgba(59,44,34,0.12),0 2px 6px rgba(59,44,34,0.1);
+  --shadow-md:4px 6px 0 rgba(59,44,34,0.14),0 6px 14px rgba(59,44,34,0.12);
+  --shadow-lg:6px 10px 0 rgba(59,44,34,0.16),0 12px 28px rgba(59,44,34,0.14);
+  --transition-fast:0.15s; --transition-normal:0.25s;
+  --ease-standard:cubic-bezier(0.34,1.56,0.64,1);
+  --font-sans:'Quicksand','Comic Neue',system-ui,sans-serif;
+  --font-display:'Caveat','Comic Neue',cursive;
+  --torn-edge-clip:polygon(0% 2%,3% 0%,8% 3%,14% 0%,20% 2%,27% 0%,34% 3%,41% 0%,48% 2%,55% 0%,62% 3%,69% 0%,76% 2%,83% 0%,90% 3%,97% 0%,100% 2%,100% 98%,96% 100%,90% 98%,83% 100%,76% 98%,69% 100%,62% 98%,55% 100%,48% 98%,41% 100%,34% 98%,27% 100%,20% 98%,14% 100%,8% 98%,3% 100%,0% 98%);
+  --fold-line:linear-gradient(90deg,transparent 0%,rgba(59,44,34,0.08) 50%,transparent 100%);
+}
+:root[data-theme="dark"]{
+  --color-bg:#241a13; --color-surface:#2f2219; --color-surface-strong:#3b2c22;
+  --color-border:#5a4636; --color-text:#f5e9d8; --color-text-muted:#c4b09a;
+  --color-primary:#f07b57; --color-on-primary:#241a13; --color-accent:#6fbdb0;
+  --color-on-accent:#241a13; --color-torn-shadow:rgba(0,0,0,0.4);
+  --color-error:#e88; --color-success:#6fbdb0;
+  --nav-bg:rgba(47,34,25,0.92);
+  --shadow-sm:2px 3px 0 rgba(0,0,0,0.3),0 2px 6px rgba(0,0,0,0.25);
+  --shadow-md:4px 6px 0 rgba(0,0,0,0.32),0 6px 14px rgba(0,0,0,0.28);
+  --shadow-lg:6px 10px 0 rgba(0,0,0,0.36),0 12px 28px rgba(0,0,0,0.3);
+  --fold-line:linear-gradient(90deg,transparent 0%,rgba(245,233,216,0.08) 50%,transparent 100%);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-sans);background:var(--color-bg);color:var(--color-text);line-height:1.6;font-size:1rem;overflow-x:hidden;transition:background var(--transition-normal),color var(--transition-normal)}
+img{max-width:100%;display:block}
+h1,h2,h3{font-family:var(--font-display);font-weight:700;line-height:1.1;letter-spacing:-0.01em;color:var(--color-text)}
+h1{font-size:clamp(2.6rem,6vw,4.2rem)}
+h2{font-size:clamp(2rem,4.5vw,3rem);margin-bottom:0.75rem}
+h3{font-size:1.6rem}
+p{color:var(--color-text-muted);max-width:65ch}
+a{color:var(--color-primary)}
+.container{max-width:1200px;margin:0 auto;padding:0 1.25rem}
+@media(min-width:768px){.container{padding:0 2rem}}
+section{padding:clamp(4rem,8vw,7rem) 0}
+.section-head{text-align:center;margin-bottom:3rem}
+.section-head p{margin:0 auto}
+.material-symbols-rounded{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;font-size:1.25em;line-height:1}
+/* NAV */
+.nav{position:sticky;top:0;z-index:10;background:var(--nav-bg);backdrop-filter:blur(8px);border-bottom:2px dashed var(--color-border)}
+.nav__inner{display:flex;align-items:center;justify-content:space-between;height:68px;max-width:1200px;margin:0 auto;padding:0 1.25rem}
+.nav__logo{display:flex;align-items:center;gap:0.5rem;font-family:var(--font-display);font-size:1.7rem;font-weight:700;color:var(--color-text);text-decoration:none}
+.nav__logo .material-symbols-rounded{color:var(--color-primary);font-size:1.5rem}
+.nav__links{display:none;align-items:center;gap:1.75rem;list-style:none}
+.nav__links a{color:var(--color-text);text-decoration:none;font-weight:600;font-size:0.95rem;transition:color var(--transition-fast)}
+.nav__links a:hover{color:var(--color-primary)}
+.nav__actions{display:flex;align-items:center;gap:0.75rem}
+#theme-toggle{width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:var(--color-surface);border:2px solid var(--color-border);border-radius:var(--radius-pill);color:var(--color-text);cursor:pointer;box-shadow:var(--shadow-sm);transition:transform var(--transition-fast) var(--ease-standard)}
+#theme-toggle:active{transform:scale(0.95)}
+#theme-toggle .icon-sun{display:none}
+:root[data-theme="dark"] #theme-toggle .icon-sun{display:block}
+:root[data-theme="dark"] #theme-toggle .icon-moon{display:none}
+.menu-btn{display:flex;width:44px;height:44px;align-items:center;justify-content:center;background:var(--color-surface);border:2px solid var(--color-border);border-radius:var(--radius-md);color:var(--color-text);cursor:pointer}
+@media(min-width:768px){.nav__links{display:flex}.menu-btn{display:none}}
+.mobile-panel{display:none;flex-direction:column;gap:0.25rem;padding:0.75rem 1.25rem 1rem;background:var(--color-surface);border-bottom:2px dashed var(--color-border)}
+.mobile-panel.open{display:flex}
+.mobile-panel a{padding:0.75rem;color:var(--color-text);text-decoration:none;font-weight:600;border-radius:var(--radius-md)}
+.mobile-panel a:hover{background:var(--color-surface-strong)}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;min-height:44px;padding:0.7rem 1.6rem;font-family:var(--font-sans);font-weight:700;font-size:1rem;border-radius:var(--radius-md);border:2px solid var(--color-text);cursor:pointer;text-decoration:none;box-shadow:var(--shadow-sm);transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast);white-space:nowrap}
+.btn--primary{background:var(--color-primary);color:var(--color-on-primary);border-color:var(--color-primary)}
+.btn--ghost{background:var(--color-surface);color:var(--color-text);border-color:var(--color-border)}
+.btn--danger{background:var(--color-error);color:#fff9f0;border-color:var(--color-error)}
+.btn:focus-visible{outline:2px solid var(--color-primary);outline-offset:2px}
+.btn:active{transform:scale(0.97)}
+.btn:disabled{opacity:0.5;cursor:not-allowed}
+@media(hover:hover) and (pointer:fine){
+  .btn:hover{transform:translateY(-2px) rotate(-1deg);box-shadow:var(--shadow-md)}
+}
+/* HERO */
+.hero{padding-top:clamp(2.5rem,5vw,4.5rem)}
+.hero__grid{display:flex;flex-direction:column;gap:2.5rem;align-items:center}
+@media(min-width:900px){.hero__grid{flex-direction:row;gap:3rem}.hero__text{flex:1.1}.hero__visual{flex:1}}
+.hero__text{display:flex;flex-direction:column;gap:1.25rem;align-items:flex-start}
+.hero__text p{font-size:1.1rem}
+.hero__ctas{display:flex;gap:1rem;flex-wrap:wrap}
+.hero__visual{position:relative;width:100%;max-width:520px}
+.hero__panel{position:relative;background:var(--color-surface);clip-path:var(--torn-edge-clip);padding:0.75rem;transform:rotate(1.2deg)}
+.hero__panel::before{content:"";position:absolute;inset:6px -6px -8px 8px;background:var(--color-torn-shadow);clip-path:var(--torn-edge-clip);z-index:-1}
+.hero__panel img{width:100%;height:auto;clip-path:var(--torn-edge-clip)}
+.badge{display:inline-flex;align-items:center;gap:0.4rem;background:var(--color-accent);color:var(--color-on-accent);font-weight:700;font-size:0.85rem;padding:0.35rem 1rem;border-radius:var(--radius-pill);box-shadow:var(--shadow-sm)}
+.badge--float{position:absolute;top:-14px;right:8%;transform:rotate(2deg);background:var(--color-primary);color:var(--color-on-primary)}
+.badge--float2{position:absolute;bottom:-12px;left:6%;transform:rotate(-2deg)}
+/* CARDS */
+.card{position:relative;background:var(--color-surface);clip-path:var(--torn-edge-clip);padding:2rem 1.75rem;box-shadow:var(--shadow-md);display:flex;flex-direction:column;gap:0.75rem;transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal)}
+.card:focus-within{outline:2px solid var(--color-primary);outline-offset:3px}
+.card .material-symbols-rounded{font-size:2rem;color:var(--color-primary)}
+.card h3{margin-bottom:0.15rem}
+@media(hover:hover) and (pointer:fine){.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}}
+.card-row{display:flex;flex-direction:column;gap:1.5rem}
+@media(min-width:768px){.card-row{flex-direction:row;align-items:stretch}.card-row>.card{flex:1}}
+/* STEPS */
+.steps{display:flex;flex-direction:column;gap:2rem;counter-reset:step}
+@media(min-width:768px){.steps{flex-direction:row;align-items:stretch}.steps>.step{flex:1}}
+.step{background:var(--color-surface);border:2px dashed var(--color-border);border-radius:var(--radius-lg);padding:2rem 1.5rem 1.75rem;display:flex;flex-direction:column;gap:0.6rem;position:relative;box-shadow:var(--shadow-sm)}
+.step__number{position:absolute;top:-18px;left:1.25rem;width:44px;height:44px;border-radius:50%;background:var(--color-primary);color:var(--color-on-primary);font-family:var(--font-display);font-size:1.5rem;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-sm);transform:rotate(-2deg)}
+.step:nth-child(2) .step__number{transform:rotate(2deg);background:var(--color-accent);color:var(--color-on-accent)}
+/* TESTIMONIALS */
+.testimonials{background:var(--fold-line),var(--color-surface-strong)}
+.testimonial-row{display:flex;flex-direction:column;gap:1.75rem;max-width:900px;margin:0 auto}
+@media(min-width:768px){.testimonial-row{flex-direction:row;align-items:stretch}.testimonial-row>.card{flex:1}}
+.quote{font-size:1.05rem;color:var(--color-text)}
+.quote::before{content:"\201C";font-family:var(--font-display);font-size:2.4rem;color:var(--color-primary);line-height:0;display:block;margin-bottom:0.4rem}
+.attribution{display:flex;align-items:center;gap:0.85rem;margin-top:auto;padding-top:0.75rem}
+.avatar{width:48px;height:48px;border-radius:50%;background:var(--color-accent);color:var(--color-on-accent);display:flex;align-items:center;justify-content:center;font-weight:700;box-shadow:var(--shadow-sm);flex-shrink:0}
+.attribution strong{display:block;font-family:var(--font-display);font-size:1.25rem;color:var(--color-text);line-height:1.2}
+.attribution span{font-size:0.85rem;color:var(--color-text-muted)}
+/* PRICING */
+.card--pricing{align-items:stretch;text-align:left}
+.card--featured{background:var(--color-surface-strong);box-shadow:var(--shadow-lg)}
+:root[data-theme="dark"] .card--featured{background:var(--color-surface-strong);box-shadow:var(--shadow-lg)}
+.price{font-family:var(--font-display);font-size:2.8rem;font-weight:700;color:var(--color-text)}
+.price small{font-family:var(--font-sans);font-size:0.9rem;color:var(--color-text-muted);font-weight:600}
+.price-list{list-style:none;display:flex;flex-direction:column;gap:0.55rem;margin:0.5rem 0 1.25rem}
+.price-list li{display:flex;align-items:center;gap:0.5rem;color:var(--color-text-muted);font-size:0.95rem}
+.price-list .material-symbols-rounded{color:var(--color-accent);font-size:1.2rem}
+.card--pricing .btn{margin-top:auto}
+.badge--popular{align-self:flex-start;transform:rotate(-1.5deg)}
+/* FAQ */
+.faq-list{display:flex;flex-direction:column;gap:1rem;max-width:760px;margin:0 auto}
+.faq{background:var(--color-surface);clip-path:var(--torn-edge-clip);box-shadow:var(--shadow-sm)}
+.faq summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.1rem 1.5rem;cursor:pointer;font-weight:700;font-size:1.05rem;list-style:none;min-height:44px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary:focus-visible{outline:2px solid var(--color-primary);outline-offset:2px}
+.faq summary .material-symbols-rounded{transition:transform var(--transition-normal) var(--ease-standard);color:var(--color-primary);flex-shrink:0}
+.faq[open] summary .material-symbols-rounded{transform:rotate(180deg)}
+.faq__body{padding:0 1.5rem 1.25rem}
+.faq__body p{font-size:0.97rem}
+/* CTA */
+.cta-band{background:var(--color-primary);clip-path:var(--torn-edge-clip);padding:clamp(3.5rem,7vw,5.5rem) 0}
+.cta-band h2,.cta-band p{color:var(--color-on-primary)}
+.cta-band .section-head{margin-bottom:2rem}
+.signup{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:0.5rem}
+.signup label{font-weight:700;color:var(--color-on-primary)}
+.signup__row{display:flex;flex-direction:column;gap:0.75rem}
+@media(min-width:560px){.signup__row{flex-direction:row;align-items:flex-start}.signup__row .input{flex:1}}
+.input{min-height:48px;padding:0.7rem 1rem;border-radius:var(--radius-md);border:2px solid var(--color-border);background:var(--color-surface);color:var(--color-text);font-family:var(--font-sans);font-size:1rem;width:100%;transition:border-color var(--transition-fast),box-shadow var(--transition-fast)}
+.input::placeholder{color:var(--color-text-muted)}
+.input:focus{outline:none;border-color:var(--color-primary);box-shadow:0 0 0 3px rgba(232,98,61,0.25)}
+.input:disabled{opacity:0.5;cursor:not-allowed}
+.input.is-valid{border-color:var(--color-accent)}
+.input.is-invalid{border-color:var(--color-error)}
+.field-msg{font-size:0.85rem;min-height:1.3em;display:flex;align-items:center;gap:0.35rem}
+.field-msg--error{color:#ffd9d2}
+.field-msg--ok{color:#d8f3ee}
+.cta-band .btn--ghost{background:var(--color-surface);color:var(--color-text);border-color:transparent}
+/* FOOTER */
+footer{border-top:2px dashed var(--color-border);padding:2.5rem 0}
+.footer__inner{display:flex;flex-direction:column;gap:1.25rem;align-items:center;text-align:center}
+@media(min-width:768px){.footer__inner{flex-direction:row;justify-content:space-between;text-align:left}}
+.footer__links{display:flex;gap:1.5rem;list-style:none;flex-wrap:wrap;justify-content:center}
+.footer__links a{color:var(--color-text-muted);text-decoration:none;font-weight:600;font-size:0.9rem}
+.footer__links a:hover{color:var(--color-primary)}
+footer small{color:var(--color-text-muted)}
+/* Reveal */
+.reveal{opacity:0;transform:translateY(14px) scale(0.97);transition:opacity 0.4s ease-out,transform 0.4s ease-out}
+.reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{transition-duration:0.01ms!important;animation-duration:0.01ms!important}
+  .reveal{transform:none;transition:opacity 0.2s ease}
+  .btn:hover,.card:hover{transform:none}
+  html{scroll-behavior:auto}
+}
+@media (prefers-reduced-transparency: reduce){
+  .nav{background:var(--color-surface);backdrop-filter:none}
+}
+@media(max-width:640px){.hero__panel{transform:none}.badge--float,.badge--float2{position:static;transform:none;margin-top:0.75rem}}
+</style>
+</head>
+<body>
+<header>
+<nav class="nav" aria-label="Main navigation">
+  <div class="nav__inner">
+    <a class="nav__logo" href="#top"><span class="material-symbols-rounded" aria-hidden="true">content_cut</span>Paperfold</a>
+    <ul class="nav__links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+    <div class="nav__actions">
+      <button id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-rounded icon-moon" aria-hidden="true">dark_mode</span>
+        <span class="material-symbols-rounded icon-sun" aria-hidden="true">light_mode</span>
+      </button>
+      <button class="menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="mobile-panel" aria-label="Open menu">
+        <span class="material-symbols-rounded" aria-hidden="true">menu</span>
+      </button>
+    </div>
+  </div>
+  <div class="mobile-panel" id="mobile-panel">
+    <a href="#features">Features</a>
+    <a href="#how">How it works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#faq">FAQ</a>
+  </div>
+</nav>
+</header>
+<main id="top">
+<section class="hero">
+  <div class="container hero__grid">
+    <div class="hero__text">
+      <span class="badge"><span class="material-symbols-rounded" aria-hidden="true">auto_awesome</span>Craft kit for the web</span>
+      <h1>Cut, fold, and ship something handmade</h1>
+      <p>Paperfold turns flat pages into layered, tactile sites with torn edges, fold lines, and paper depth, no scissors required.</p>
+      <div class="hero__ctas">
+        <a class="btn btn--primary" href="#cta">Start crafting</a>
+        <a class="btn btn--ghost" href="#how">See how it works</a>
+      </div>
+    </div>
+    <div class="hero__visual">
+      <div class="hero__panel">
+        <img src="https://picsum.photos/seed/paper-craft-desk/960/640" alt="A desk layered with cut paper shapes, scissors, and folded cards" width="960" height="640">
+      </div>
+      <span class="badge badge--float">100% paper feel</span>
+      <span class="badge badge--float2">No glue sticks</span>
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="container">
+    <div class="section-head">
+      <h2>Everything cut from one sheet</h2>
+      <p>Three building blocks that give every page a warm, hand-assembled character.</p>
+    </div>
+    <div class="card-row">
+      <article class="card reveal">
+        <span class="material-symbols-rounded" aria-hidden="true">content_cut</span>
+        <h3>Torn edges</h3>
+        <p>Every card, panel, and band gets a deckled, hand-torn silhouette generated from a single clip-path token.</p>
+      </article>
+      <article class="card reveal">
+        <span class="material-symbols-rounded" aria-hidden="true">layers</span>
+        <h3>Paper depth</h3>
+        <p>Offset shadows stack surfaces like real paper on a desk, with three elevation levels that stay consistent sitewide.</p>
+      </article>
+      <article class="card reveal">
+        <span class="material-symbols-rounded" aria-hidden="true">fold</span>
+        <h3>Fold lines</h3>
+        <p>Subtle crease gradients mark section breaks and card accents, so layouts read like a folded letter.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="container">
+    <div class="section-head">
+      <h2>From flat sheet to finished page</h2>
+      <p>Three steps, about as long as a good craft afternoon.</p>
+    </div>
+    <div class="steps">
+      <div class="step reveal">
+        <span class="step__number" aria-hidden="true">1</span>
+        <h3>Pick your paper</h3>
+        <p>Choose a warm stock palette and radius system. Tokens cascade to every surface, border, and shadow.</p>
+      </div>
+      <div class="step reveal">
+        <span class="step__number" aria-hidden="true">2</span>
+        <h3>Tear and layer</h3>
+        <p>Drop in cards, bands, and badges. Torn clips and stacked shadows are applied automatically.</p>
+      </div>
+      <div class="step reveal">
+        <span class="step__number" aria-hidden="true">3</span>
+        <h3>Press and publish</h3>
+        <p>Ship a single accessible page with dark mode, keyboard support, and reduced-motion fallbacks built in.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="testimonials" id="testimonials">
+  <div class="container">
+    <div class="section-head">
+      <h2>Makers who folded with us</h2>
+    </div>
+    <div class="testimonial-row">
+      <article class="card reveal">
+        <p class="quote">Our launch page finally feels like something a person made, not a template. Signups doubled in the first week.</p>
+        <div class="attribution">
+          <span class="avatar" aria-hidden="true">MR</span>
+          <div><strong>Mara Reyes</strong><span>Founder, Kindling Studio</span></div>
+        </div>
+      </article>
+      <article class="card reveal">
+        <p class="quote">The torn-edge system is one variable and it just works everywhere. Dark mode took us an afternoon, not a sprint.</p>
+        <div class="attribution">
+          <span class="avatar" aria-hidden="true">TO</span>
+          <div><strong>Tunde Okafor</strong><span>Design Lead, Fieldnote Press</span></div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="pricing">
+  <div class="container">
+    <div class="section-head">
+      <h2>Simple pricing, no paper cuts</h2>
+      <p>Start free, upgrade when your stack of pages grows.</p>
+    </div>
+    <div class="card-row">
+      <article class="card card--pricing reveal">
+        <h3>Sketchbook</h3>
+        <p class="price">$0 <small>/ forever</small></p>
+        <ul class="price-list">
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>3 published pages</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Core paper tokens</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Community support</li>
+        </ul>
+        <a class="btn btn--ghost" href="#cta">Start free</a>
+      </article>
+      <article class="card card--pricing card--featured reveal">
+        <span class="badge badge--popular">Most popular</span>
+        <h3>Studio</h3>
+        <p class="price">$12 <small>/ month</small></p>
+        <ul class="price-list">
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Unlimited pages</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Custom palettes and fonts</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Form handling included</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Priority support</li>
+        </ul>
+        <a class="btn btn--primary" href="#cta">Start crafting</a>
+      </article>
+      <article class="card card--pricing reveal">
+        <h3>Bindery</h3>
+        <p class="price">$39 <small>/ month</small></p>
+        <ul class="price-list">
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Everything in Studio</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Team workspaces</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Custom domains and SSL</li>
+        </ul>
+        <a class="btn btn--ghost" href="#cta">Contact sales</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="container">
+    <div class="section-head">
+      <h2>Questions from the craft table</h2>
+    </div>
+    <div class="faq-list">
+      <details class="faq reveal">
+        <summary>Do I need to know CSS to use Paperfold?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+        <div class="faq__body"><p>No. Palettes, torn edges, and shadows are driven by tokens you set once in a visual editor. Editing the CSS variables directly is always available if you want finer control.</p></div>
+      </details>
+      <details class="faq reveal">
+        <summary>Does dark mode really come built in?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+        <div class="faq__body"><p>Yes. Every palette ships with a matched dark set using deep warm browns and cream text, checked for WCAG AA contrast in both directions. The toggle persists across visits.</p></div>
+      </details>
+      <details class="faq reveal">
+        <summary>Can I export my pages?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+        <div class="faq__body"><p>Studio and Bindery plans export a single self-contained HTML file with all styles and scripts inline, ready to host anywhere with no build step.</p></div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="cta-band" id="cta">
+  <div class="container">
+    <div class="section-head">
+      <h2>Ready to make something by hand?</h2>
+      <p>Leave your email and we will send your first paper kit today.</p>
+    </div>
+    <form class="signup" id="signup-form" novalidate>
+      <label for="email">Email address</label>
+      <div class="signup__row">
+        <input class="input" id="email" name="email" type="email" placeholder="you@studio.com" autocomplete="email" required aria-describedby="email-msg">
+        <button class="btn btn--ghost" type="submit" id="signup-btn">Get the kit</button>
+      </div>
+      <p class="field-msg" id="email-msg" aria-live="polite">We send one kit, never spam.</p>
+    </form>
+  </div>
+</section>
+</main>
+<footer>
+  <div class="container footer__inner">
+    <a class="nav__logo" href="#top"><span class="material-symbols-rounded" aria-hidden="true">content_cut</span>Paperfold</a>
+    <ul class="footer__links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#faq">FAQ</a></li>
+      <li><a href="#top">Privacy</a></li>
+    </ul>
+    <small>&copy; 2026 Paperfold. Folded with care.</small>
+  </div>
+</footer>
+<script>
+(function(){
+  var toggle=document.getElementById("theme-toggle");
+  function syncToggle(){
+    var dark=document.documentElement.dataset.theme==="dark";
+    toggle.setAttribute("aria-pressed",String(dark));
+    toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+  }
+  syncToggle();
+  toggle.addEventListener("click",function(){
+    var next=document.documentElement.dataset.theme==="dark"?"light":"dark";
+    document.documentElement.dataset.theme=next;
+    localStorage.setItem("theme",next);
+    syncToggle();
+  });
+
+  var menuBtn=document.getElementById("menu-btn");
+  var panel=document.getElementById("mobile-panel");
+  function closeMenu(){panel.classList.remove("open");menuBtn.setAttribute("aria-expanded","false");}
+  menuBtn.addEventListener("click",function(){
+    var open=panel.classList.toggle("open");
+    menuBtn.setAttribute("aria-expanded",String(open));
+  });
+  panel.querySelectorAll("a").forEach(function(a){a.addEventListener("click",closeMenu);});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape")closeMenu();});
+
+  var form=document.getElementById("signup-form");
+  var email=document.getElementById("email");
+  var msg=document.getElementById("email-msg");
+  var btn=document.getElementById("signup-btn");
+  form.addEventListener("submit",function(e){
+    e.preventDefault();
+    var val=email.value.trim();
+    var ok=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+    email.classList.remove("is-valid","is-invalid");
+    if(!ok){
+      email.classList.add("is-invalid");
+      msg.className="field-msg field-msg--error";
+      msg.innerHTML='<span class="material-symbols-rounded" aria-hidden="true">error</span>Please enter a valid email address.';
+      email.focus();
+      return;
+    }
+    email.classList.add("is-valid");
+    btn.disabled=true;
+    btn.textContent="Folding...";
+    setTimeout(function(){
+      msg.className="field-msg field-msg--ok";
+      msg.innerHTML='<span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Your kit is on its way. Check your inbox.';
+      btn.textContent="Sent";
+      email.disabled=true;
+    },700);
+  });
+
+  if("IntersectionObserver" in window){
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){en.target.classList.add("in");io.unobserve(en.target);}
+      });
+    },{threshold:0.15});
+    document.querySelectorAll(".reveal").forEach(function(el,i){
+      el.style.transitionDelay=(i%3)*60+"ms";
+      io.observe(el);
+    });
+  }else{
+    document.querySelectorAll(".reveal").forEach(function(el){el.classList.add("in");});
+  }
+})();
+</script>
+</body>
+</html>

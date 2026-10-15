@@ -1,607 +1,684 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<title>Nimbus – The Barely-There UI</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meridian - AI Analytics Copilot</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,100..300,0,0&display=block" rel="stylesheet">
 <style>
 :root{
-  --fg:#000000;
-  --bg:#FFFFFF;
+  --ink:#000000;
+  --bg-primary:#FFFFFF;
   --bg-secondary:#F5F5F5;
+  --text-primary:rgba(0,0,0,1);
+  --text-body:rgba(0,0,0,0.87);
+  --text-secondary:rgba(0,0,0,0.7);
+  --text-tertiary:rgba(0,0,0,0.6);
+  --text-quaternary:rgba(0,0,0,0.6);
+  --on-ink:#FFFFFF;
+  --border-default:rgba(0,0,0,0.1);
+  --border-strong:rgba(0,0,0,0.6);
+  --border-focus:rgba(0,0,0,1);
+  --grid-line:rgba(0,0,0,0.05);
+  --radius-sm:0;--radius-md:0;--radius-lg:0;
+  --shadow-sm:none;--shadow-md:none;
   --spacing-gap:3rem;
-  --transition-normal:300ms;
   --transition-fast:150ms;
-  --ease-standard: ease-in-out;
-  --opacity-heading:1;
-  --opacity-body:0.87;
-  --opacity-secondary:0.7;
-  --opacity-tertiary:0.6;
-  --radius-sm:0;
-  --radius-md:0;
-  --radius-lg:0;
+  --transition-normal:300ms;
+  --ease-standard:cubic-bezier(0.4,0,0.2,1);
+  --z-dropdown:100;--z-modal:200;--z-toast:300;
   --font-base:'Inter',system-ui,sans-serif;
 }
-@media (prefers-color-scheme: dark){
-  :root{
-    --fg:#FFFFFF;
-    --bg:#000000;
-    --bg-secondary:#0A0A0A;
-  }
-}
-.dark{
-  --fg:#FFFFFF;
-  --bg:#000000;
+:root[data-theme="dark"]{
+  --ink:#FFFFFF;
+  --bg-primary:#000000;
   --bg-secondary:#0A0A0A;
+  --text-primary:rgba(255,255,255,1);
+  --text-body:rgba(255,255,255,0.87);
+  --text-secondary:rgba(255,255,255,0.7);
+  --text-tertiary:rgba(255,255,255,0.6);
+  --text-quaternary:rgba(255,255,255,0.6);
+  --on-ink:#000000;
+  --border-default:rgba(255,255,255,0.14);
+  --border-strong:rgba(255,255,255,0.6);
+  --border-focus:rgba(255,255,255,1);
+  --grid-line:rgba(255,255,255,0.06);
 }
-*,*:before,*:after{box-sizing:border-box;}
-html{font-size:100%;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
 body{
-  margin:0;
   font-family:var(--font-base);
-  background:var(--bg);
-  color:var(--fg);
+  background:var(--bg-primary);
+  color:var(--text-body);
+  font-weight:300;
+  letter-spacing:-0.02em;
   line-height:1.6;
-  letter-spacing:-0.02em;
+  -webkit-font-smoothing:antialiased;
+  transition:background-color var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard);
+  overflow-x:hidden;
 }
-.container{max-width:1200px;margin:0 auto;padding:0 1rem;}
-.section{padding:4rem 0;}
+h1,h2,h3{color:var(--text-primary);font-weight:200;letter-spacing:-0.03em;line-height:1.1;transition:color var(--transition-normal) var(--ease-standard)}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;background:none;border:none;color:inherit}
+img{max-width:100%}
+.container{max-width:1200px;margin:0 auto;padding-left:2rem;padding-right:2rem}
+section{padding-top:4rem;padding-bottom:4rem}
+.material-symbols-outlined{font-variation-settings:'wght' 200;vertical-align:middle}
+.num{font-variant-numeric:tabular-nums}
+:focus-visible{outline:1px solid var(--border-focus);outline-offset:2px}
+
+/* ---------- Header ---------- */
+.header{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--bg-primary);border-bottom:1px solid var(--border-default);transition:background-color var(--transition-normal) var(--ease-standard),border-color var(--transition-normal) var(--ease-standard)}
+.header__inner{display:flex;align-items:center;justify-content:space-between;height:64px}
+.wordmark{font-weight:200;font-size:1.125rem;color:var(--text-primary);letter-spacing:-0.02em}
+.nav{display:flex;align-items:center;gap:2rem}
+.nav__link{font-size:0.875rem;color:var(--text-secondary);transition:color var(--transition-normal) var(--ease-standard);min-height:44px;display:flex;align-items:center}
+@media (hover:hover) and (pointer:fine){.nav__link:hover{color:var(--text-primary)}}
+.header__actions{display:flex;align-items:center;gap:0.5rem}
+.menu-btn{display:none;width:44px;height:44px;align-items:center;justify-content:center;color:var(--text-primary)}
+
+/* ---------- Theme toggle ---------- */
+#theme-toggle{width:44px;height:44px;display:flex;align-items:center;justify-content:center;color:var(--text-primary);transition:opacity var(--transition-normal) var(--ease-standard)}
+#theme-toggle .icon-sun,#theme-toggle .icon-moon{transition:opacity var(--transition-fast) var(--ease-standard)}
+:root[data-theme="light"] #theme-toggle .icon-sun{display:none}
+:root[data-theme="dark"] #theme-toggle .icon-moon{display:none}
+
+/* ---------- Buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;min-height:44px;min-width:44px;padding:0.75rem 1.75rem;font-weight:300;font-size:0.9375rem;letter-spacing:-0.02em;border-radius:0;transition:opacity var(--transition-normal) var(--ease-standard),background-color var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard),border-color var(--transition-normal) var(--ease-standard),transform var(--transition-fast) var(--ease-standard)}
+.btn:active{transform:scale(0.97)}
+.btn-primary{background:var(--ink);color:var(--on-ink);border:1px solid var(--ink)}
+.btn-secondary{background:transparent;color:var(--text-primary);border:1px solid var(--border-strong)}
+@media (hover:hover) and (pointer:fine){
+  .btn-primary:hover{opacity:0.8}
+  .btn-secondary:hover{border-color:var(--border-focus)}
+}
+.btn[disabled]{opacity:0.5;cursor:not-allowed;transform:none}
+.btn[aria-busy="true"]{pointer-events:none}
+.spinner{width:16px;height:16px;border:1px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 800ms linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---------- Hero ---------- */
+.hero{padding-top:4rem}
+.hero__grid{display:flex;align-items:center;gap:var(--spacing-gap)}
+.hero__text{flex:1;min-width:0}
+.hero__text h1{font-size:clamp(2.5rem,6vw,4.5rem);font-weight:100}
+.hero__sub{margin-top:1.5rem;max-width:60ch;font-size:1.0625rem;color:var(--text-body)}
+.hero__ctas{margin-top:2rem;display:flex;gap:1rem;flex-wrap:wrap}
+.hero__viz{flex:1;min-width:0}
+.viz{background:var(--bg-secondary);border:1px solid var(--border-default);padding:2rem;transition:background-color var(--transition-normal) var(--ease-standard),border-color var(--transition-normal) var(--ease-standard)}
+.viz__chart{width:100%;height:auto;display:block}
+.viz__caption{margin-top:1rem;font-size:0.8125rem;color:var(--text-tertiary)}
+.viz__metrics{margin-top:1.5rem;display:flex;gap:2.5rem;border-top:1px solid var(--border-default);padding-top:1.5rem}
+.metric__value{font-size:1.5rem;font-weight:200;color:var(--text-primary);font-variant-numeric:tabular-nums}
+.metric__label{font-size:0.75rem;color:var(--text-tertiary);margin-top:0.125rem}
+.chart-line{stroke:var(--ink);stroke-width:1;fill:none;stroke-dasharray:600;stroke-dashoffset:600;transition:stroke-dashoffset 1600ms var(--ease-standard)}
+.chart-line--drawn{stroke-dashoffset:0}
+.chart-grid{stroke:var(--grid-line);stroke-width:1}
+.chart-area{fill:var(--ink);opacity:0.03}
+.chart-label{font-family:var(--font-base);font-size:10px;fill:var(--text-tertiary);font-variant-numeric:tabular-nums;letter-spacing:0}
+.chart-dot{fill:var(--ink)}
+
+/* ---------- Section headers ---------- */
+.section-head{margin-bottom:var(--spacing-gap)}
+.section-head h2{font-size:clamp(1.75rem,4vw,2.75rem);font-weight:100}
+.section-head p{margin-top:1rem;max-width:60ch;color:var(--text-body)}
+
+/* ---------- Features ---------- */
+.features__row{display:flex;gap:var(--spacing-gap);align-items:stretch}
+.card{flex:1;display:flex;flex-direction:column;background:var(--bg-secondary);border:1px solid var(--border-default);padding:2.5rem;transition:transform var(--transition-normal) var(--ease-standard),border-color var(--transition-normal) var(--ease-standard),background-color var(--transition-normal) var(--ease-standard)}
+@media (hover:hover) and (pointer:fine){.card:hover{transform:translateY(-2px);border-color:var(--border-strong)}}
+.card:focus-within{border-color:var(--border-strong)}
+.card__icon{color:var(--text-secondary);font-size:1.75rem}
+.card__title{margin-top:1.5rem;font-size:1.25rem;font-weight:200}
+.card__body{margin-top:0.75rem;font-size:0.9375rem;color:var(--text-body)}
+.card__viz{margin-top:auto;padding-top:2rem}
+.spark{width:100%;height:auto;display:block}
+.bars{display:flex;align-items:flex-end;gap:0.5rem;height:48px}
+.bars span{flex:1;background:var(--ink);opacity:0.85}
+.bigstat{font-size:2.5rem;font-weight:100;color:var(--text-primary);font-variant-numeric:tabular-nums;line-height:1}
+.bigstat__label{font-size:0.75rem;color:var(--text-tertiary);margin-top:0.375rem}
+
+/* ---------- Steps ---------- */
+.steps__row{display:flex;gap:var(--spacing-gap);align-items:flex-start}
+.step{flex:1;border-top:1px solid var(--border-default);padding-top:2rem}
+.step__num{font-size:3.5rem;font-weight:100;color:var(--text-tertiary);line-height:1;font-variant-numeric:tabular-nums}
+.step__title{margin-top:1.25rem;font-size:1.125rem;font-weight:300;color:var(--text-primary)}
+.step__body{margin-top:0.5rem;font-size:0.9375rem;color:var(--text-body)}
+
+/* ---------- Testimonials ---------- */
+.quotes{display:flex;flex-direction:column}
+.quote{padding:2.5rem 0;border-top:1px solid var(--border-default);display:flex;gap:var(--spacing-gap);align-items:flex-start}
+.quote:last-child{border-bottom:1px solid var(--border-default)}
+.quote__text{flex:1;font-size:clamp(1.125rem,2.5vw,1.5rem);font-weight:200;color:var(--text-body);line-height:1.4}
+.quote__meta{min-width:200px}
+.quote__name{font-size:0.9375rem;color:var(--text-secondary)}
+.quote__role{font-size:0.8125rem;color:var(--text-tertiary);margin-top:0.125rem}
+.quote__metric{margin-top:1rem;font-size:1.25rem;font-weight:200;color:var(--text-primary);font-variant-numeric:tabular-nums}
+
+/* ---------- Pricing ---------- */
+.pricing__row{display:flex;gap:var(--spacing-gap);align-items:stretch}
+.tier{flex:1;display:flex;flex-direction:column;background:var(--bg-secondary);border:1px solid var(--border-default);padding:2.5rem;transition:border-color var(--transition-normal) var(--ease-standard),background-color var(--transition-normal) var(--ease-standard)}
+.card--featured,.tier--featured{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+:root[data-theme="dark"] .tier--featured{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+.tier--featured .tier__name,:root[data-theme="dark"] .tier--featured .tier__name{color:rgba(255,255,255,0.7)}
+:root[data-theme="dark"] .tier--featured .tier__name{color:rgba(0,0,0,0.7)}
+.tier--featured .tier__price,:root[data-theme="dark"] .tier--featured .tier__price{color:var(--on-ink)}
+.tier--featured .tier__item,:root[data-theme="dark"] .tier--featured .tier__item{color:rgba(255,255,255,0.87)}
+:root[data-theme="dark"] .tier--featured .tier__item{color:rgba(0,0,0,0.87)}
+.tier--featured .tier__item .material-symbols-outlined,:root[data-theme="dark"] .tier--featured .tier__item .material-symbols-outlined{color:inherit;opacity:0.7}
+.tier--featured .btn-primary{background:var(--on-ink);color:var(--ink);border-color:var(--on-ink)}
+:root[data-theme="dark"] .tier--featured .btn-primary{background:var(--on-ink);color:var(--ink);border-color:var(--on-ink)}
+.tier__name{font-size:0.875rem;color:var(--text-secondary)}
+.tier__price{margin-top:1rem;font-size:3rem;font-weight:100;color:var(--text-primary);font-variant-numeric:tabular-nums;line-height:1}
+.tier__price small{font-size:0.875rem;font-weight:300;color:inherit;opacity:0.6}
+.tier__list{margin-top:2rem;list-style:none;display:flex;flex-direction:column;gap:0.75rem;flex:1}
+.tier__item{display:flex;align-items:center;gap:0.625rem;font-size:0.9375rem;color:var(--text-body)}
+.tier__item .material-symbols-outlined{font-size:1.125rem;color:var(--text-secondary)}
+.tier .btn{margin-top:2rem;width:100%}
+
+/* ---------- FAQ ---------- */
+.faq__item{border-top:1px solid var(--border-default)}
+.faq__item:last-child{border-bottom:1px solid var(--border-default)}
+.faq__q{width:100%;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.5rem 0;font-size:1.0625rem;font-weight:300;color:var(--text-primary);text-align:left;min-height:44px;transition:opacity var(--transition-normal) var(--ease-standard)}
+.faq__q .material-symbols-outlined{color:var(--text-secondary);transition:transform var(--transition-normal) var(--ease-standard);flex-shrink:0}
+.faq__q[aria-expanded="true"] .material-symbols-outlined{transform:rotate(180deg)}
+.faq__a{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--transition-normal) var(--ease-standard)}
+.faq__a-inner{overflow:hidden}
+.faq__a p{padding-bottom:1.5rem;max-width:65ch;color:var(--text-body);font-size:0.9375rem}
+.faq__item--open .faq__a{grid-template-rows:1fr}
+
+/* ---------- Final CTA ---------- */
+.cta-band{border-top:1px solid var(--border-default)}
+.cta-band h2{font-size:clamp(1.75rem,4vw,3rem);font-weight:100}
+.cta-band__sub{margin-top:1rem;color:var(--text-body);max-width:60ch}
+.cta-form{margin-top:2.5rem;display:flex;gap:1.5rem;align-items:flex-end;max-width:560px}
+.input-group{flex:1;display:flex;flex-direction:column;gap:0.375rem}
+.input-group label{font-size:0.8125rem;font-weight:300;color:var(--text-secondary)}
+.input-group input{background:transparent;border:none;border-bottom:1px solid rgba(0,0,0,0.3);padding:0.625rem 0;font:inherit;font-size:1rem;color:var(--text-primary);border-radius:0;min-height:44px;transition:border-color var(--transition-normal) var(--ease-standard)}
+:root[data-theme="dark"] .input-group input{border-bottom-color:rgba(255,255,255,0.3)}
+.input-group input:focus{outline:none;border-bottom-color:var(--border-focus)}
+.input-group input:disabled{opacity:0.5}
+.input-group__error{font-size:0.8125rem;color:var(--text-primary);min-height:1.25rem;display:flex;align-items:center;gap:0.375rem}
+.input-group__error .material-symbols-outlined{font-size:1rem}
+.cta-success{display:flex;align-items:center;gap:0.75rem;margin-top:2.5rem;font-size:1.0625rem;color:var(--text-primary)}
+.cta-success .material-symbols-outlined{font-size:1.5rem}
+
+/* ---------- Footer ---------- */
+.footer{border-top:1px solid var(--border-default);padding:3rem 0 2rem}
+.footer__top{display:flex;justify-content:space-between;gap:var(--spacing-gap);align-items:flex-start}
+.footer__groups{display:flex;gap:var(--spacing-gap)}
+.footer__group h4{font-size:0.75rem;font-weight:300;color:var(--text-tertiary);margin-bottom:0.875rem;letter-spacing:0}
+.footer__group ul{list-style:none;display:flex;flex-direction:column;gap:0.5rem}
+.footer__group a{font-size:0.875rem;color:var(--text-secondary);transition:color var(--transition-normal) var(--ease-standard)}
+@media (hover:hover) and (pointer:fine){.footer__group a:hover{color:var(--text-primary)}}
+.footer__bottom{margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--border-default);font-size:0.8125rem;color:var(--text-tertiary)}
+
+/* ---------- Reveal ---------- */
+.reveal{opacity:0;transform:translateY(12px);transition:opacity 500ms var(--ease-standard),transform 500ms var(--ease-standard)}
+.reveal--in{opacity:1;transform:none}
+
+/* ---------- Responsive ---------- */
+@media (max-width:900px){
+  .hero__grid{flex-direction:column;align-items:flex-start}
+  .hero__viz{width:100%}
+  .features__row,.pricing__row,.steps__row{flex-direction:column}
+  .quote{flex-direction:column;gap:1rem}
+  .footer__top{flex-direction:column}
+  .footer__groups{flex-wrap:wrap}
+}
 @media (max-width:768px){
-  .section{padding:2rem 0;}
+  section{padding-top:2rem;padding-bottom:2rem}
+  .container{padding-left:1.25rem;padding-right:1.25rem}
+  :root{--spacing-gap:2rem}
+  .menu-btn{display:flex}
+  .nav{position:absolute;top:64px;left:0;right:0;flex-direction:column;align-items:flex-start;gap:0;background:var(--bg-primary);border-bottom:1px solid var(--border-default);padding:0.5rem 1.25rem 1rem;display:none}
+  .nav--open{display:flex}
+  .nav__link{width:100%}
+  .cta-form{flex-direction:column;align-items:stretch}
+  .cta-form .btn{width:100%}
 }
-.heading{opacity:var(--opacity-heading);font-weight:200;}
-.body-text{opacity:var(--opacity-body);font-weight:300;}
-.secondary-text{opacity:var(--opacity-secondary);font-weight:300;}
-.tertiary-text{opacity:var(--opacity-tertiary);font-weight:300;}
-.btn{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:0.5rem;
-  height:3rem;
-  min-height:44px;
-  min-width:44px;
-  font-weight:300;
-  letter-spacing:-0.02em;
-  text-decoration:none;
-  transition:var(--transition-normal);
-  cursor:pointer;
-}
-.btn-primary{
-  background:var(--fg);
-  color:var(--bg);
-}
-.btn-secondary{
-  background:transparent;
-  color:var(--fg);
-  border:1px solid currentColor;
-}
-.btn:hover{opacity:0.9;}
-.btn-secondary:hover{opacity:1;}
-.btn:focus-visible{
-  outline:2px solid currentColor;
-  outline-offset:2px;
-}
-.header{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  height:4rem;
-}
-.wordmark{
-  font-size:1.125rem;
-  font-weight:200;
-  letter-spacing:-0.02em;
-}
-.nav{
-  display:flex;
-  gap:2rem;
-}
-.nav a{
-  font-size:0.875rem;
-  font-weight:300;
-  text-decoration:none;
-}
-.nav a:hover{opacity:var(--opacity-heading);}
-.theme-toggle{
-  background:none;
-  border:none;
-  cursor:pointer;
-  font-size:1.125rem;
-  padding:0.25rem;
-}
-.theme-toggle:hover{opacity:var(--opacity-heading);}
-.hero{
-  display:flex;
-  align-items:center;
-  gap:var(--spacing-gap);
-  flex-wrap:wrap;
-}
-.hero-text{flex:1 1 400px;}
-.hero h1{
-  font-size:clamp(2.5rem,6vw,5rem);
-  margin:0 0 1rem;
-}
-.hero p{
-  max-width:60ch;
-  margin-bottom:1.5rem;
-}
-.cta-group{
-  display:flex;
-  gap:1rem;
-  flex-wrap:wrap;
-}
-.hero-chart{
-  flex:0 0 280px;
-  height:120px;
-}
-.features{
-  display:flex;
-  gap:var(--spacing-gap);
-  flex-wrap:wrap;
-}
-.card{
-  background:var(--bg-secondary);
-  padding:2rem;
-  flex:1 1 200px;
-  display:flex;
-  flex-direction:column;
-  gap:1rem;
-}
-.card .icon{font-size:2rem;}
-.card h3{margin:0;}
-.steps{
-  display:flex;
-  gap:var(--spacing-gap);
-  flex-wrap:wrap;
-}
-.step{
-  flex:1 1 200px;
-  display:flex;
-  align-items:flex-start;
-  gap:1rem;
-}
-.step-number{
-  font-size:3rem;
-  font-weight:100;
-  opacity:var(--opacity-tertiary);
-}
-.step-content{flex:1;}
-.testimonials{
-  display:flex;
-  gap:var(--spacing-gap);
-  flex-wrap:wrap;
-}
-.testimonial{
-  flex:1 1 280px;
-  position:relative;
-  padding-top:2rem;
-}
-.testimonial::before{
-  content:"";
-  position:absolute;
-  left:0;top:0;
-  width:100%;height:1px;
-  background:currentColor;
-  opacity:var(--opacity-secondary);
-}
-.testimonial blockquote{
-  margin:0;
-  font-size:1.125rem;
-  font-weight:200;
-}
-.attribution{
-  margin-top:1rem;
-  display:flex;
-  flex-direction:column;
-  gap:0.25rem;
-}
-.pricing{
-  display:flex;
-  gap:var(--spacing-gap);
-  flex-wrap:wrap;
-}
-.tier{
-  flex:1 1 280px;
-  background:var(--bg-secondary);
-  padding:2rem;
-  display:flex;
-  flex-direction:column;
-  gap:1.5rem;
-}
-.tier--featured{
-  background:var(--fg);
-  color:var(--bg);
-}
-.tier h3{margin:0;}
-.tier .price{
-  font-size:2.2rem;
-  font-weight:100;
-}
-.tier .price::before{content:"$";}
-.features-list{
-  list-style:none;
-  padding:0;margin:0;
-  display:flex;
-  flex-direction:column;
-  gap:0.5rem;
-}
-.features-list li{
-  display:flex;
-  align-items:center;
-  gap:0.5rem;
-}
-.features-list li .material-symbols-outlined{
-  font-variation-settings:'FILL' 1,'wght' 200;
-}
-.faq-item{
-  border-top:1px solid currentColor;
-  opacity:var(--opacity-secondary);
-  padding:1.5rem 0;
-}
-.faq-item:first-child{border-top:none;}
-.faq-button{
-  width:100%;
-  text-align:left;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  background:none;
-  border:none;
-  font-weight:300;
-  font-size:1rem;
-}
-.faq-button[aria-expanded="true"] .material-symbols-outlined{transform:rotate(180deg);}
-.faq-panel{max-height:0;overflow:hidden;transition:max-height var(--transition-normal) var(--ease-standard);}
-.faq-item.open .faq-panel{max-height:20rem;}
-.cta-band{
-  background:var(--bg-secondary);
-  padding:3rem 0;
-  text-align:center;
-}
-.cta-band h2{margin-bottom:1rem;}
-.cta-band p{
-  max-width:40ch;
-  margin:0 auto 1.5rem;
-}
-.input-group{
-  display:flex;
-  gap:0.5rem;
-  flex-wrap:wrap;
-}
-.input-group input{
-  flex:1 1 200px;
-  padding:0.75rem 0;
-  border:none;
-  border-bottom:2px solid transparent;
-  background:transparent;
-  font:inherit;
-  transition:border-bottom-color var(--transition-normal);
-}
-.input-group input:focus{
-  outline:none;
-  border-bottom-color:currentColor;
-}
-.input-group .btn{
-  flex-shrink:0;
-}
-.success-message{
-  display:none;
-  margin-top:1rem;
-}
-.success-message.show{display:block;}
-.footer{
-  border-top:1px solid currentColor;
-  opacity:var(--opacity-secondary);
-  padding:2rem 0;
-  display:flex;
-  flex-wrap:wrap;
-  gap:2rem;
-  justify-content:space-between;
-}
-.footer .wordmark{font-size:1.125rem;font-weight:200;}
-.footer-links{
-  display:flex;
-  gap:2rem;
-}
-.footer-links a{
-  text-decoration:none;
-}
-.footer-links a:hover{opacity:var(--opacity-heading);}
-.footer-bottom{
-  margin-top:1.5rem;
-  font-size:0.875rem;
-  opacity:var(--opacity-tertiary);
-}
-@media (prefers-reduced-motion: reduce){
-  *{transition:none !important;animation:none !important;}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition-duration:0.01ms!important;animation-duration:0.01ms!important}
+  .reveal{opacity:1;transform:none}
+  .chart-line{stroke-dashoffset:0}
+  .spinner{animation:none}
+  html{scroll-behavior:auto}
 }
 </style>
 </head>
 <body>
-<script>
-  (function(){
-    const stored = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const dark = stored === 'dark' || (!stored && prefersDark);
-    if(dark) document.documentElement.classList.add('dark');
-  })();
-</script>
 
-<header class="header container">
-  <div class="wordmark heading">nimbus</div>
-  <nav class="nav">
-    <a href="#features" class="secondary-text">Features</a>
-    <a href="#how" class="secondary-text">How it works</a>
-    <a href="#pricing" class="secondary-text">Pricing</a>
-  </nav>
-  <button id="theme-toggle" class="theme-toggle secondary-text" aria-pressed="false" aria-label="Toggle dark mode">
-    <span class="material-symbols-outlined">light_mode</span>
-  </button>
+<header class="header">
+  <div class="container header__inner">
+    <a href="#top" class="wordmark">meridian</a>
+    <nav class="nav" id="nav" aria-label="Primary">
+      <a class="nav__link" href="#features">Product</a>
+      <a class="nav__link" href="#how">Method</a>
+      <a class="nav__link" href="#pricing">Pricing</a>
+      <a class="nav__link" href="#faq">FAQ</a>
+    </nav>
+    <div class="header__actions">
+      <button id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-outlined icon-moon" aria-hidden="true">dark_mode</span>
+        <span class="material-symbols-outlined icon-sun" aria-hidden="true">light_mode</span>
+      </button>
+      <button class="menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="nav" aria-label="Open menu">
+        <span class="material-symbols-outlined" aria-hidden="true">menu</span>
+      </button>
+    </div>
+  </div>
 </header>
 
-<main>
-  <section class="hero section" id="hero">
-    <div class="container">
-      <div class="hero">
-        <div class="hero-text">
-          <h1 class="heading">Instant answers, zero latency</h1>
-          <p class="body-text">Ask anything and get trusted, sourced responses in milliseconds.</p>
-          <div class="cta-group">
-            <a href="#try" class="btn btn-primary">Try for free</a>
-            <a href="#learn" class="btn btn-secondary">Learn more</a>
-          </div>
-        </div>
-        <svg class="hero-chart" width="280" height="120" aria-label="Latency trend" role="img">
-          <path d="M10,100 C40,20 80,150 120,80 S180,30 220,90 S260,150 270,110"
-                fill="none" stroke="currentColor" stroke-width="2"
-                opacity="0.7"/>
-        </svg>
-      </div>
-    </div>
-  </section>
+<main id="top">
 
-  <section class="features section" id="features">
-    <div class="container">
-      <div class="features">
-        <div class="card">
-          <span class="material-symbols-outlined icon secondary-text">speed</span>
-          <h3 class="heading">Ultra‑low latency</h3>
-          <p class="body-text">Sub‑millisecond response times powered by edge inference.</p>
-          <svg width="60" height="20" aria-label="sparkline" role="img">
-            <path d="M2,18 Q6,2 10,18 T18,18 T26,18 T34,18 T42,18 T50,18 T58,18"
-                  fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.7"/>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container hero__grid">
+      <div class="hero__text">
+        <h1>Answers from your data, in milliseconds.</h1>
+        <p class="hero__sub">Meridian is an AI analytics copilot that queries your warehouse directly and returns cited, verifiable answers. No dashboards to build. No SQL to write.</p>
+        <div class="hero__ctas">
+          <a class="btn btn-primary" href="#cta">Start free</a>
+          <a class="btn btn-secondary" href="#how">See how it works</a>
+        </div>
+      </div>
+      <div class="hero__viz">
+        <div class="viz">
+          <svg class="viz__chart" viewBox="0 0 480 220" role="img" aria-label="Line chart showing median query latency falling from 480ms to 1.2ms over twelve weeks">
+            <line class="chart-grid" x1="40" y1="40" x2="460" y2="40"/>
+            <line class="chart-grid" x1="40" y1="90" x2="460" y2="90"/>
+            <line class="chart-grid" x1="40" y1="140" x2="460" y2="140"/>
+            <line class="chart-grid" x1="40" y1="190" x2="460" y2="190"/>
+            <text class="chart-label" x="4" y="44">500</text>
+            <text class="chart-label" x="4" y="94">375</text>
+            <text class="chart-label" x="4" y="144">250</text>
+            <text class="chart-label" x="4" y="194">125</text>
+            <text class="chart-label" x="40" y="212">W1</text>
+            <text class="chart-label" x="230" y="212">W6</text>
+            <text class="chart-label" x="440" y="212">W12</text>
+            <path class="chart-area" d="M40,52 L118,84 L196,120 L274,150 L352,172 L430,186 L460,188 L460,190 L40,190 Z"/>
+            <path class="chart-line" id="hero-line" d="M40,52 L118,84 L196,120 L274,150 L352,172 L430,186 L460,188"/>
+            <circle class="chart-dot" cx="460" cy="188" r="3"/>
           </svg>
-        </div>
-        <div class="card">
-          <span class="material-symbols-outlined icon secondary-text">security</span>
-          <h3 class="heading">Enterprise grade</h3>
-          <p class="body-text">SOC‑2, ISO‑27001, end‑to‑end encryption.</p>
-          <svg width="60" height="20" aria-label="sparkline" role="img">
-            <path d="M2,2 Q6,18 10,2 T18,2 T26,2 T34,2 T42,2 T50,2 T58,2"
-                  fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.7"/>
-          </svg>
-        </div>
-        <div class="card">
-          <span class="material-symbols-outlined icon secondary-text">analytics</span>
-          <h3 class="heading">Built‑in insights</h3>
-          <p class="body-text">Real‑time usage metrics and cost attribution.</p>
-          <svg width="60" height="20" aria-label="sparkline" role="img">
-            <path d="M2,10 Q6,2 10,10 T18,10 T26,10 T34,10 T42,10 T50,10 T58,10"
-                  fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.7"/>
-          </svg>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="how section" id="how">
-    <div class="container">
-      <div class="steps">
-        <div class="step">
-          <div class="step-number tertiary-text">01</div>
-          <div class="step-content">
-            <h3 class="heading">Ask</h3>
-            <p class="body-text">Type your question in plain language.</p>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-number tertiary-text">02</div>
-          <div class="step-content">
-            <h3 class="heading">Retrieve</h3>
-            <p class="body-text">Our engine fetches verified sources in real time.</p>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-number tertiary-text">03</div>
-          <div class="step-content">
-            <h3 class="heading">Answer</h3>
-            <p class="body-text">Receive a concise, cited response instantly.</p>
+          <p class="viz__caption">Median query latency, ms. Twelve-week rolling window, production tenants.</p>
+          <div class="viz__metrics">
+            <div class="metric">
+              <div class="metric__value num" data-count="1.2" data-suffix="ms">0ms</div>
+              <div class="metric__label">Median latency</div>
+            </div>
+            <div class="metric">
+              <div class="metric__value num" data-count="99.98" data-suffix="%">0%</div>
+              <div class="metric__label">Uptime, 90 days</div>
+            </div>
+            <div class="metric">
+              <div class="metric__value num" data-count="4.1" data-suffix="M">0M</div>
+              <div class="metric__label">Queries per day</div>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="testimonials section">
+  <!-- Features -->
+  <section id="features">
     <div class="container">
-      <div class="testimonials">
-        <div class="testimonial">
-          <blockquote class="body-text">“Nimbus cut our research time by 80% while improving accuracy.”</blockquote>
-          <div class="attribution">
-            <div class="name secondary-text">Alexandra Lee</div>
-            <div class="role tertiary-text">Head of Research, Vertex Labs</div>
+      <div class="section-head reveal">
+        <h2>Built for precision.</h2>
+        <p>Three systems working together so every answer is fast, sourced, and reproducible.</p>
+      </div>
+      <div class="features__row">
+        <article class="card reveal">
+          <span class="material-symbols-outlined card__icon" aria-hidden="true">bolt</span>
+          <h3 class="card__title">Direct warehouse queries</h3>
+          <p class="card__body">Meridian compiles questions into optimized SQL against Snowflake, BigQuery, or Postgres. Results stream back without extracts or copies.</p>
+          <div class="card__viz">
+            <svg class="spark" viewBox="0 0 200 48" role="img" aria-label="Sparkline of query throughput rising steadily">
+              <path d="M0,40 L25,34 L50,36 L75,26 L100,28 L125,18 L150,20 L175,10 L200,6" fill="none" stroke="currentColor" stroke-width="1" style="color:var(--ink)"/>
+            </svg>
           </div>
+        </article>
+        <article class="card reveal">
+          <span class="material-symbols-outlined card__icon" aria-hidden="true">verified</span>
+          <h3 class="card__title">Cited answers</h3>
+          <p class="card__body">Every response links to the exact tables, columns, and time ranges used. Reviewers can replay the query and audit each figure.</p>
+          <div class="card__viz">
+            <div class="bars" role="img" aria-label="Bar chart of citation coverage at 72, 89, and 98 percent">
+              <span style="height:72%"></span><span style="height:89%"></span><span style="height:98%"></span>
+            </div>
+          </div>
+        </article>
+        <article class="card reveal">
+          <span class="material-symbols-outlined card__icon" aria-hidden="true">monitoring</span>
+          <h3 class="card__title">Continuous evaluation</h3>
+          <p class="card__body">A held-out benchmark suite runs against every model update. Accuracy regressions block deployment before they reach your team.</p>
+          <div class="card__viz">
+            <div class="bigstat num">98.4%</div>
+            <div class="bigstat__label">Benchmark accuracy, current release</div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section id="how">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2>Three steps to an answer.</h2>
+      </div>
+      <div class="steps__row">
+        <div class="step reveal">
+          <div class="step__num">01</div>
+          <h3 class="step__title">Connect</h3>
+          <p class="step__body">Point Meridian at your warehouse with read-only credentials. Schema indexing completes in under ten minutes.</p>
         </div>
-        <div class="testimonial">
-          <blockquote class="body-text">“The latency is indistinguishable from local inference.”</blockquote>
-          <div class="attribution">
-            <div class="name secondary-text">Mikhail Petrov</div>
-            <div class="role tertiary-text">Lead Engineer, Orion AI</div>
-          </div>
+        <div class="step reveal">
+          <div class="step__num">02</div>
+          <h3 class="step__title">Ask</h3>
+          <p class="step__body">Type a question in plain language. The planner resolves metrics, filters, and time windows against your schema.</p>
+        </div>
+        <div class="step reveal">
+          <div class="step__num">03</div>
+          <h3 class="step__title">Verify</h3>
+          <p class="step__body">Read the answer with its citations, inspect the generated SQL, and share a reproducible link with your team.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="pricing section" id="pricing">
+  <!-- Testimonials -->
+  <section id="testimonials">
     <div class="container">
-      <div class="pricing">
-        <div class="tier">
-          <h3 class="secondary-text">Free</h3>
-          <div class="price heading">$0<span class="tertiary-text">/mo</span></div>
-          <ul class="features-list">
-            <li><span class="material-symbols-outlined">check</span> 10K queries/month</li>
-            <li><span class="material-symbols-outlined">check</span> Community support</li>
-            <li><span class="material-symbols-outlined">check</span> Basic analytics</li>
+      <div class="section-head reveal">
+        <h2>What teams report.</h2>
+      </div>
+      <div class="quotes">
+        <blockquote class="quote reveal">
+          <p class="quote__text">&ldquo;We retired forty internal dashboards in the first quarter. Analysts now spend their time on questions that actually need a human.&rdquo;</p>
+          <div class="quote__meta">
+            <div class="quote__name">Priya Raman</div>
+            <div class="quote__role">Head of Data, Lattice Freight</div>
+            <div class="quote__metric num">-63% dashboard maintenance</div>
+          </div>
+        </blockquote>
+        <blockquote class="quote reveal">
+          <p class="quote__text">&ldquo;The citations are what sold our finance team. Every number traces back to a query they can inspect and rerun themselves.&rdquo;</p>
+          <div class="quote__meta">
+            <div class="quote__name">Tomas Eriksen</div>
+            <div class="quote__role">VP Analytics, Northwind Health</div>
+            <div class="quote__metric num">1.2ms median latency</div>
+          </div>
+        </blockquote>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section id="pricing">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2>Pricing that scales with questions.</h2>
+        <p>Every plan includes unlimited seats, citations, and the full evaluation suite.</p>
+      </div>
+      <div class="pricing__row">
+        <div class="tier reveal">
+          <div class="tier__name">Starter</div>
+          <div class="tier__price num">$0<small> /mo</small></div>
+          <ul class="tier__list">
+            <li class="tier__item"><span class="material-symbols-outlined" aria-hidden="true">check</span>500 queries per month</li>
+            <li class="tier__item"><span class="material-symbols-outlined" aria-hidden="true">check</span>1 warehouse connection</li>
+            <li class="tier__item"><span class="material-symbols-outlined" aria-hidden="true">check</span>Community support</li>
           </ul>
-          <a href="#try" class="btn btn-secondary">Get started</a>
+          <a class="btn btn-secondary" href="#cta">Start free</a>
         </div>
-        <div class="tier tier--featured">
-          <h3 class="secondary-text">Pro</h3>
-          <div class="price heading">$49<span class="tertiary-text">/mo</span></div>
-          <ul class="features-list">
-            <li><span class="material-symbols-outlined">check</span> 1M queries/month</li>
-            <li><span class="material-symbols-outlined">check</span> Priority support</li>
-            <li><span class="material-symbols-outlined">check</span> Advanced analytics</li>
-            <li><span class="material-symbols-outlined">check</span> SLA 99.9%</li>
+        <div class="tier tier--featured reveal">
+          <div class="tier__name">Team</div>
+          <div class="tier__price num">$490<small> /mo</small></div>
+          <ul class="tier__list">
+            <li class="tier__item"><span class="material-symbols-outlined" aria-hidden="true">check</span>50,000 queries per month</li>
+            <li class="tier__item"><span class="material-symbols-outlined" aria-hidden="true">check</span>Unlimited connections</li>
+            <li class="tier__item"><span class="material-symbols-outlined" aria-hidden="true">check</span>SSO and role-based access</li>
+            <li class="tier__item"><span class="material-symbols-outlined" aria-hidden="true">check</span>Priority support, 4h response</li>
           </ul>
-          <a href="#try" class="btn btn-primary">Get started</a>
+          <a class="btn btn-primary" href="#cta">Start free</a>
         </div>
-        <div class="tier">
-          <h3 class="secondary-text">Enterprise</h3>
-          <div class="price heading">Custom<span class="tertiary-text">/mo</span></div>
-          <ul class="features-list">
-            <li><span class="material-symbols-outlined">check</span> Unlimited</li>
-            <li><span class="material-symbols-outlined">check</span> Dedicated engineer</li>
-            <li><span class="material-symbols-outlined">check</span> On‑prem VPC</li>
+        <div class="tier reveal">
+          <div class="tier__name">Enterprise</div>
+          <div class="tier__price num">Custom</div>
+          <ul class="tier__list">
+            <li class="tier__item"><span class="material-symbols-outlined" aria-hidden="true">check</span>Unlimited queries</li>
+            <li class="tier__item"><span class="material-symbols-outlined" aria-hidden="true">check</span>Private deployment</li>
+            <li class="tier__item"><span class="material-symbols-outlined" aria-hidden="true">check</span>Custom evaluation suites</li>
+            <li class="tier__item"><span class="material-symbols-outlined" aria-hidden="true">check</span>Dedicated engineer</li>
           </ul>
-          <a href="#try" class="btn btn-secondary">Contact us</a>
+          <a class="btn btn-secondary" href="#cta">Contact sales</a>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="faq section">
+  <!-- FAQ -->
+  <section id="faq">
     <div class="container">
-      <h2 class="heading mb-2">Frequently asked questions</h2>
-      <div class="faq">
-        <div class="faq-item">
-          <button class="faq-button heading" aria-expanded="false" aria-controls="faq1">
-            How does Nimbus ensure data privacy?
-            <span class="material-symbols-outlined">expand_more</span>
+      <div class="section-head reveal">
+        <h2>Questions, answered.</h2>
+      </div>
+      <div class="reveal">
+        <div class="faq__item">
+          <button class="faq__q" type="button" aria-expanded="false" aria-controls="faq-a1" id="faq-q1">
+            <span>Does Meridian store a copy of our data?</span>
+            <span class="material-symbols-outlined" aria-hidden="true">expand_more</span>
           </button>
-          <div id="faq1" class="faq-panel" aria-hidden="true">
-            <p class="body-text">All data is encrypted in transit and at rest. We never store raw queries longer than necessary for processing.</p>
+          <div class="faq__a" role="region" aria-labelledby="faq-q1" id="faq-a1">
+            <div class="faq__a-inner"><p>No. Queries run against your warehouse with read-only credentials and results stream through memory. Only query text, generated SQL, and metadata are retained, and you can set retention to zero.</p></div>
           </div>
         </div>
-        <div class="faq-item">
-          <button class="faq-button heading" aria-expanded="false" aria-controls="faq2">
-            Can I integrate with my existing stack?
-            <span class="material-symbols-outlined">expand_more</span>
+        <div class="faq__item">
+          <button class="faq__q" type="button" aria-expanded="false" aria-controls="faq-a2" id="faq-q2">
+            <span>How accurate are the answers?</span>
+            <span class="material-symbols-outlined" aria-hidden="true">expand_more</span>
           </button>
-          <div id="faq2" class="faq-panel" aria-hidden="true">
-            <p class="body-text">Yes. We provide REST and GraphQL SDKs for Python, Node.js, and Go, plus webhook support.</p>
+          <div class="faq__a" role="region" aria-labelledby="faq-q2" id="faq-a2">
+            <div class="faq__a-inner"><p>The current release scores 98.4% on our held-out benchmark of 12,000 real analytics questions. Every answer ships with citations and the underlying SQL, so accuracy is verifiable rather than asserted.</p></div>
           </div>
         </div>
-        <div class="faq-item">
-          <button class="faq-button heading" aria-expanded="false" aria-controls="faq3">
-            What is the uptime guarantee?
-            <span class="material-symbols-outlined">expand_more</span>
+        <div class="faq__item">
+          <button class="faq__q" type="button" aria-expanded="false" aria-controls="faq-a3" id="faq-q3">
+            <span>Which warehouses are supported?</span>
+            <span class="material-symbols-outlined" aria-hidden="true">expand_more</span>
           </button>
-          <div id="faq3" class="faq-panel" aria-hidden="true">
-            <p class="body-text">99.9% uptime SLA for Pro and Enterprise tiers, backed by multi‑region failover.</p>
+          <div class="faq__a" role="region" aria-labelledby="faq-q3" id="faq-a3">
+            <div class="faq__a-inner"><p>Snowflake, BigQuery, Databricks SQL, Postgres, and Redshift are supported today. Connections use least-privilege roles and can be scoped to specific schemas.</p></div>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="cta-band section">
+  <!-- Final CTA -->
+  <section class="cta-band" id="cta">
     <div class="container">
-      <h2 class="heading">Ready to experience instant answers?</h2>
-      <p class="body-text">Join thousands of teams that trust Nimbus for low‑latency AI.</p>
-      <form id="cta-form" class="input-group" novalidate>
-        <input type="email" name="email" placeholder="you@company.com" required>
-        <button type="submit" class="btn btn-primary">Notify me</button>
+      <h2 class="reveal">Ask your first question today.</h2>
+      <p class="cta-band__sub reveal">Connect a warehouse and get a cited answer in under ten minutes. No credit card required.</p>
+      <form class="cta-form reveal" id="cta-form" novalidate>
+        <div class="input-group">
+          <label for="email">Work email</label>
+          <input type="email" id="email" name="email" autocomplete="email" required aria-describedby="email-error">
+          <div class="input-group__error" id="email-error" aria-live="polite"></div>
+        </div>
+        <button class="btn btn-primary" type="submit" id="cta-submit">Start free</button>
       </form>
-      <div id="cta-success" class="success-message">
-        <span class="material-symbols-outlined">check_circle</span>
-        <span class="body-text">Thanks! We’ll be in touch.</span>
+      <div class="cta-success" id="cta-success" hidden aria-live="polite">
+        <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+        <span>Request received. Check your inbox for a setup link.</span>
       </div>
     </div>
   </section>
+
 </main>
 
-<footer class="footer container">
-  <div class="wordmark heading">nimbus</div>
-  <div class="footer-links">
-    <a href="#features" class="secondary-text">Features</a>
-    <a href="#how" class="secondary-text">How it works</a>
-    <a href="#pricing" class="secondary-text">Pricing</a>
-    <a href="#faq" class="secondary-text">FAQ</a>
-  </div>
-  <div class="footer-bottom">
-    © 2026 Nimbus. All rights reserved.
+<footer class="footer">
+  <div class="container">
+    <div class="footer__top">
+      <a href="#top" class="wordmark">meridian</a>
+      <div class="footer__groups">
+        <div class="footer__group">
+          <h4>Product</h4>
+          <ul>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#pricing">Pricing</a></li>
+            <li><a href="#faq">FAQ</a></li>
+          </ul>
+        </div>
+        <div class="footer__group">
+          <h4>Company</h4>
+          <ul>
+            <li><a href="#testimonials">Customers</a></li>
+            <li><a href="#how">Method</a></li>
+          </ul>
+        </div>
+        <div class="footer__group">
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="#cta">Privacy</a></li>
+            <li><a href="#cta">Terms</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="footer__bottom">&copy; 2026 Meridian Systems, Inc. All rights reserved.</div>
   </div>
 </footer>
 
 <script>
-  // Theme toggle persistence
-  const themeToggle = document.getElementById('theme-toggle');
-  const rootEl = document.documentElement;
-  function updateTheme(isDark){
-    if(isDark){
-      rootEl.classList.add('dark');
-      themeToggle.setAttribute('aria-pressed','true');
-      themeToggle.innerHTML = '<span class="material-symbols-outlined">dark_mode</span>';
-      themeToggle.setAttribute('aria-label','Switch to light mode');
-    }else{
-      rootEl.classList.remove('dark');
-      themeToggle.setAttribute('aria-pressed','false');
-      themeToggle.innerHTML = '<span class="material-symbols-outlined">light_mode</span>';
-      themeToggle.setAttribute('aria-label','Switch to dark mode');
-    }
-    localStorage.setItem('theme', isDark?'dark':'light');
-  }
-  // initial state from storage or prefers
-  (function(){
-    const stored = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const isDark = stored === 'dark' || (!stored && prefersDark);
-    updateTheme(isDark);
-  })();
-  themeToggle.addEventListener('click',()=>{
-    const isDark = rootEl.classList.contains('dark');
-    updateTheme(!isDark);
-  });
+(function(){
+  "use strict";
+  var reduceMotion=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  // FAQ accordion
-  document.querySelectorAll('.faq-button').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      const item = btn.parentElement;
-      const expanded = btn.getAttribute('aria-expanded') === 'true';
-      btn.setAttribute('aria-expanded', String(!expanded));
-      const panel = item.querySelector('.faq-panel');
-      panel.setAttribute('aria-hidden', String(expanded));
-      item.classList.toggle('open');
+  /* Theme toggle */
+  var toggle=document.getElementById("theme-toggle");
+  function syncToggle(){
+    var dark=document.documentElement.dataset.theme==="dark";
+    toggle.setAttribute("aria-pressed",String(dark));
+    toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+  }
+  toggle.addEventListener("click",function(){
+    var next=document.documentElement.dataset.theme==="dark"?"light":"dark";
+    document.documentElement.dataset.theme=next;
+    localStorage.setItem("theme",next);
+    syncToggle();
+  });
+  syncToggle();
+
+  /* Mobile menu */
+  var menuBtn=document.getElementById("menu-btn");
+  var nav=document.getElementById("nav");
+  function closeMenu(){nav.classList.remove("nav--open");menuBtn.setAttribute("aria-expanded","false");}
+  menuBtn.addEventListener("click",function(){
+    var open=nav.classList.toggle("nav--open");
+    menuBtn.setAttribute("aria-expanded",String(open));
+  });
+  nav.addEventListener("click",function(e){if(e.target.closest("a"))closeMenu();});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape")closeMenu();});
+
+  /* FAQ accordion */
+  var faqButtons=document.querySelectorAll(".faq__q");
+  faqButtons.forEach(function(btn){
+    btn.addEventListener("click",function(){
+      var expanded=btn.getAttribute("aria-expanded")==="true";
+      faqButtons.forEach(function(b){
+        b.setAttribute("aria-expanded","false");
+        b.closest(".faq__item").classList.remove("faq__item--open");
+      });
+      if(!expanded){
+        btn.setAttribute("aria-expanded","true");
+        btn.closest(".faq__item").classList.add("faq__item--open");
+      }
     });
   });
 
-  // CTA form handling
-  const form = document.getElementById('cta-form');
-  const success = document.getElementById('cta-success');
-  form.addEventListener('submit',e=>{
+  /* Reveal + chart + count-up via IntersectionObserver */
+  var revealEls=document.querySelectorAll(".reveal");
+  var heroLine=document.getElementById("hero-line");
+  var counted=new WeakSet();
+  function countUp(el){
+    if(counted.has(el))return;
+    counted.add(el);
+    var target=parseFloat(el.dataset.count);
+    var suffix=el.dataset.suffix||"";
+    if(reduceMotion){el.textContent=target+suffix;return;}
+    var start=null,dur=1200;
+    function frame(ts){
+      if(!start)start=ts;
+      var p=Math.min((ts-start)/dur,1);
+      var eased=1-Math.pow(1-p,3);
+      var val=target*eased;
+      el.textContent=(target%1!==0?val.toFixed(1):Math.round(val))+suffix;
+      if(p<1)requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+  if("IntersectionObserver" in window && !reduceMotion){
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(entry,i){
+        if(!entry.isIntersecting)return;
+        var el=entry.target;
+        setTimeout(function(){el.classList.add("reveal--in");},(i%4)*70);
+        if(el.querySelector&&el.classList.contains("viz")){}
+        io.unobserve(el);
+      });
+    },{threshold:0.15});
+    revealEls.forEach(function(el){io.observe(el);});
+    var vizEl=document.querySelector(".viz");
+    if(vizEl){
+      var vio=new IntersectionObserver(function(entries){
+        entries.forEach(function(entry){
+          if(!entry.isIntersecting)return;
+          if(heroLine)heroLine.classList.add("chart-line--drawn");
+          vizEl.querySelectorAll("[data-count]").forEach(countUp);
+          vio.disconnect();
+        });
+      },{threshold:0.3});
+      vio.observe(vizEl);
+    }
+  }else{
+    revealEls.forEach(function(el){el.classList.add("reveal--in");});
+    if(heroLine)heroLine.classList.add("chart-line--drawn");
+    document.querySelectorAll("[data-count]").forEach(countUp);
+  }
+
+  /* Email form */
+  var form=document.getElementById("cta-form");
+  var email=document.getElementById("email");
+  var errorBox=document.getElementById("email-error");
+  var submitBtn=document.getElementById("cta-submit");
+  var success=document.getElementById("cta-success");
+  form.addEventListener("submit",function(e){
     e.preventDefault();
-    const email = form.email.value.trim();
-    if(!email){return;}
-    // fake success
-    form.reset();
-    form.style.display='none';
-    success.classList.add('show');
-    // announce via aria-live (the success message is already visible)
+    errorBox.textContent="";
+    var val=email.value.trim();
+    var valid=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val);
+    if(!valid){
+      errorBox.innerHTML='<span class="material-symbols-outlined" aria-hidden="true">error</span><span>Enter a valid work email address.</span>';
+      email.focus();
+      return;
+    }
+    submitBtn.setAttribute("aria-busy","true");
+    submitBtn.innerHTML='<span class="spinner" aria-hidden="true"></span><span>Sending</span>';
+    setTimeout(function(){
+      form.hidden=true;
+      success.hidden=false;
+    },900);
   });
+})();
 </script>
 </body>
 </html>

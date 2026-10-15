@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+<title>RockWorks - Stone-Age Workflow Tools</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;700&family=Rock+Salt&family=Kalam:wght@400;700&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet">
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --bg-primary:#d8c9a8; --bg-secondary:#cabb96; --bg-strong:#b8a67d;
+  --text-primary:#2c2013; --text-secondary:#52422b;
+  --text-on-primary:#f4e9cf;
+  --primary:#8a3b1f; --secondary:#4a6b4a; --ochre:#b5772b; --char:#2c2013;
+  --border-default:#7a6242; --border-success:#4a6b4a; --border-error:#9a2b16;
+  --text-success:#3d5a3d; --text-error:#9a2b16;
+  --radius-sm:2px; --radius-md:5px; --radius-lg:9px; --radius-pill:999px;
+  --shadow-sm:0 2px 3px rgba(44,32,19,0.35);
+  --shadow-md:0 5px 10px rgba(44,32,19,0.4);
+  --shadow-lg:0 12px 22px rgba(44,32,19,0.45);
+  --shadow-carve:inset 0 2px 3px rgba(44,32,19,0.4), inset 0 -1px 0 rgba(255,247,224,0.15);
+  --daub-texture:repeating-linear-gradient(115deg, rgba(44,32,19,0.06) 0 2px, transparent 2px 6px);
+  --char-mark:linear-gradient(180deg, rgba(44,32,19,0.08), transparent 60%);
+  --font-base:'Roboto Slab','Rockwell',Georgia,serif;
+  --font-display:'Rock Salt','Kalam',cursive;
+  --font-mono:'Courier Prime',ui-monospace,monospace;
+  --transition-fast:120ms; --transition-normal:240ms;
+  --ease-standard:cubic-bezier(0.4,0,0.2,1);
+  --z-header:40; --z-modal:200;
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --bg-primary:#1f1710; --bg-secondary:#2c2013; --bg-strong:#3b2c1c;
+  --text-primary:#f2e8d0; --text-secondary:#c7b58e;
+  --primary:#d06a3a; --text-on-primary:#241a10;
+  --secondary:#8fb08c; --ochre:#d18f3e; --char:#f2e8d0;
+  --border-default:#5a4a33; --border-success:#8fb08c; --border-error:#e58a74;
+  --text-success:#9ccf9c; --text-error:#e58a74;
+  --shadow-sm:0 2px 3px rgba(0,0,0,0.5);
+  --shadow-md:0 5px 10px rgba(0,0,0,0.55);
+  --shadow-lg:0 12px 22px rgba(0,0,0,0.6);
+  --shadow-carve:inset 0 2px 3px rgba(0,0,0,0.6), inset 0 -1px 0 rgba(244,233,207,0.12);
+  --daub-texture:repeating-linear-gradient(115deg, rgba(244,233,207,0.05) 0 2px, transparent 2px 6px);
+  --char-mark:linear-gradient(180deg, rgba(244,233,207,0.07), transparent 60%);
+  color-scheme:dark;
+}
+/* ============ BASE ============ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font-base);font-size:1rem;line-height:1.6;
+  color:var(--text-primary);background:var(--bg-primary);
+  background-image:var(--daub-texture);
+  transition:background-color var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard);
+  overflow-x:hidden;
+}
+img{max-width:100%}
+h1,h2,h3{font-family:var(--font-display);line-height:1.3;letter-spacing:-0.01em;font-weight:400}
+h1{font-size:clamp(1.6rem,3.4vw,2.6rem)}
+h2{font-size:clamp(1.3rem,2.6vw,1.9rem);margin-bottom:0.75rem}
+h3{font-size:1.05rem;margin-bottom:0.5rem}
+p{max-width:65ch}
+a{color:var(--primary);text-decoration:none}
+a:hover{text-decoration:underline}
+:focus-visible{outline:3px solid var(--secondary);outline-offset:2px;border-radius:var(--radius-sm)}
+.material-symbols-rounded{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;font-size:1.4em;line-height:1;vertical-align:middle}
+.skip-link{position:absolute;left:-9999px;top:0;background:var(--primary);color:var(--text-on-primary);padding:0.75rem 1.25rem;z-index:var(--z-modal);border-radius:var(--radius-md)}
+.skip-link:focus{left:1rem;top:1rem}
+.container{max-width:1200px;margin:0 auto;padding-left:1.25rem;padding-right:1.25rem}
+@media(min-width:768px){.container{padding-left:2rem;padding-right:2rem}}
+section{padding-top:clamp(4rem,8vw,7rem);padding-bottom:clamp(4rem,8vw,7rem);scroll-margin-top:5.5rem}
+.section-head{max-width:60ch;margin-bottom:2.5rem}
+.section-head p{color:var(--text-secondary)}
+/* ============ BUTTONS ============ */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;
+  min-height:44px;min-width:44px;padding:0.7rem 1.4rem;
+  font-family:var(--font-display);font-size:0.85rem;font-weight:400;
+  color:var(--text-primary);background:var(--bg-strong);background-image:var(--daub-texture);
+  border:2px solid var(--border-default);border-radius:var(--radius-md);
+  box-shadow:var(--shadow-sm),var(--shadow-carve);cursor:pointer;
+  transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),filter var(--transition-fast) var(--ease-standard),background-color var(--transition-normal) var(--ease-standard);
+}
+.btn:hover{filter:brightness(1.06);box-shadow:var(--shadow-md),var(--shadow-carve);transform:translateY(-1px);text-decoration:none}
+.btn:active{transform:scale(0.97)}
+.btn[disabled],.btn.is-disabled{opacity:0.5;filter:grayscale(0.7);cursor:not-allowed;transform:none}
+.btn--primary{background:var(--primary);color:var(--text-on-primary);border-color:var(--primary)}
+:root[data-theme="dark"] .btn--primary{background:var(--primary);color:var(--text-on-primary);border-color:var(--primary)}
+.btn--ghost{background:transparent;color:var(--text-primary);border-color:var(--border-default)}
+.btn--danger{background:var(--border-error);color:var(--text-on-primary);border-color:var(--border-error)}
+.btn--lg{min-height:52px;padding:0.9rem 1.8rem;font-size:0.95rem}
+.btn.is-loading{pointer-events:none;opacity:0.85}
+.btn.is-loading .material-symbols-rounded{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* ============ NAV ============ */
+.nav{
+  position:sticky;top:0;z-index:var(--z-header);
+  background:var(--bg-secondary);background-image:var(--daub-texture);
+  border-bottom:2px solid var(--border-default);box-shadow:var(--shadow-carve);
+  transition:background-color var(--transition-normal) var(--ease-standard);
+}
+.nav__inner{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:64px;flex-wrap:wrap;padding-top:0.4rem;padding-bottom:0.4rem}
+.nav__brand{display:flex;align-items:center;gap:0.5rem;font-family:var(--font-display);font-size:1rem;color:var(--text-primary)}
+.nav__brand:hover{text-decoration:none}
+.nav__brand .material-symbols-rounded{color:var(--primary);font-size:1.6em}
+.nav__links{display:flex;align-items:center;gap:0.25rem;list-style:none;flex-wrap:wrap}
+.nav__link{display:inline-flex;align-items:center;min-height:44px;padding:0.4rem 0.75rem;color:var(--text-primary);font-weight:700;font-size:0.95rem;position:relative}
+.nav__link::after{content:"";position:absolute;left:0.75rem;right:0.75rem;bottom:6px;height:3px;background:var(--ochre);border-radius:var(--radius-pill);transform:scaleX(0);transform-origin:left;transition:transform var(--transition-normal) var(--ease-standard)}
+.nav__link:hover{text-decoration:none}
+.nav__link:hover::after{transform:scaleX(1)}
+.nav__actions{display:flex;align-items:center;gap:0.5rem}
+.nav__toggle{
+  display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;
+  background:var(--bg-strong);background-image:var(--daub-texture);color:var(--text-primary);
+  border:2px solid var(--border-default);border-radius:var(--radius-md);
+  box-shadow:var(--shadow-carve);cursor:pointer;
+  transition:transform var(--transition-fast) var(--ease-standard),filter var(--transition-fast) var(--ease-standard);
+}
+.nav__toggle:hover{filter:brightness(1.08)}
+.nav__toggle:active{transform:scale(0.95)}
+.nav__menu-btn{display:none}
+@media(max-width:767px){
+  .nav__menu-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;background:var(--bg-strong);border:2px solid var(--border-default);border-radius:var(--radius-md);color:var(--text-primary);cursor:pointer;box-shadow:var(--shadow-carve)}
+  .nav__links{display:none;flex-basis:100%;flex-direction:column;align-items:stretch;padding-bottom:0.5rem}
+  .nav__links.is-open{display:flex}
+}
+/* ============ BADGE ============ */
+.badge{
+  display:inline-flex;align-items:center;gap:0.4rem;padding:0.35rem 0.9rem;
+  font-family:var(--font-display);font-size:0.7rem;color:var(--text-on-primary);
+  background:var(--ochre);border:2px solid var(--border-default);border-radius:var(--radius-pill);
+  box-shadow:var(--shadow-sm),var(--shadow-carve);
+}
+:root[data-theme="dark"] .badge{color:#241a10}
+/* ============ HERO ============ */
+.hero{padding-top:clamp(2.5rem,5vw,5rem);padding-bottom:clamp(3rem,6vw,6rem)}
+.hero__inner{display:flex;align-items:center;gap:2.5rem;flex-wrap:wrap}
+.hero__copy{flex:1 1 320px;display:flex;flex-direction:column;align-items:flex-start;gap:1.1rem}
+.hero__sub{color:var(--text-secondary);font-size:1.05rem}
+.hero__ctas{display:flex;gap:0.75rem;flex-wrap:wrap}
+.hero__stats{display:flex;gap:1.5rem;flex-wrap:wrap;font-family:var(--font-mono);font-size:0.9rem;color:var(--text-secondary);margin-top:0.5rem}
+.hero__stats strong{display:block;font-size:1.3rem;color:var(--text-primary)}
+.hero__panel{
+  flex:1 1 340px;min-height:300px;position:relative;overflow:hidden;
+  background:var(--bg-secondary);background-image:var(--daub-texture);
+  border:2px solid var(--border-default);border-radius:12px 9px 13px 8px;
+  box-shadow:var(--shadow-md),var(--shadow-carve);
+  display:flex;align-items:center;justify-content:center;
+}
+.hero__panel::before{content:"";position:absolute;inset:0;background:var(--char-mark)}
+.hero__panel::after{
+  content:"";position:absolute;left:8%;right:8%;top:12%;height:26%;
+  background:repeating-linear-gradient(90deg,var(--ochre) 0 14px,transparent 14px 34px);
+  opacity:0.5;border-radius:var(--radius-sm);
+}
+.hero__glyphs{display:flex;gap:2.2rem;color:var(--primary);opacity:0.85;position:relative;z-index:1}
+.hero__glyphs .material-symbols-rounded{font-size:3.2rem;transform:rotate(-8deg)}
+.hero__glyphs .material-symbols-rounded:nth-child(2){transform:rotate(6deg);color:var(--ochre)}
+.hero__glyphs .material-symbols-rounded:nth-child(3){transform:rotate(-4deg);color:var(--secondary)}
+/* ============ CARDS ============ */
+.card{
+  display:flex;flex-direction:column;gap:0.6rem;padding:1.5rem;
+  background:var(--bg-secondary);background-image:var(--daub-texture);
+  border:2px solid var(--border-default);border-radius:9px 7px 10px 6px;
+  box-shadow:var(--shadow-md),var(--shadow-carve);
+  transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),border-color var(--transition-normal) var(--ease-standard),background-color var(--transition-normal) var(--ease-standard);
+}
+.card--interactive:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg),var(--shadow-carve)}
+.card:focus-within{border-color:var(--ochre)}
+.card__chip{
+  display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;
+  background:var(--bg-strong);border:2px solid var(--border-default);border-radius:var(--radius-md);
+  box-shadow:var(--shadow-carve);color:var(--primary);margin-bottom:0.4rem;
+}
+.card__chip .material-symbols-rounded{font-size:1.8rem}
+.card p{color:var(--text-secondary);font-size:0.95rem}
+.card__link{display:inline-flex;align-items:center;gap:0.3rem;font-weight:700;min-height:44px}
+.grid-3{display:flex;gap:1.5rem;flex-wrap:wrap}
+.grid-3>*{flex:1 1 260px}
+/* ============ STEPS ============ */
+.steps{display:flex;gap:1.5rem;flex-wrap:wrap;position:relative}
+.steps::before{content:"";position:absolute;top:38px;left:8%;right:8%;border-top:3px dashed var(--border-default);z-index:0}
+.step{flex:1 1 240px;display:flex;flex-direction:column;align-items:flex-start;gap:0.6rem;position:relative;z-index:1}
+.step__disc{
+  display:flex;align-items:center;justify-content:center;width:76px;height:76px;
+  font-family:var(--font-mono);font-weight:700;font-size:1.3rem;color:var(--text-on-primary);
+  background:var(--primary);border:2px solid var(--border-default);border-radius:50% 46% 52% 48%;
+  box-shadow:var(--shadow-md),var(--shadow-carve);
+}
+.step .material-symbols-rounded{color:var(--ochre);font-size:1.8rem}
+.step p{color:var(--text-secondary);font-size:0.95rem}
+@media(max-width:767px){
+  .steps{flex-direction:column}
+  .steps::before{top:5%;bottom:5%;left:38px;right:auto;border-top:none;border-left:3px dashed var(--border-default)}
+}
+/* ============ TESTIMONIALS ============ */
+.quote__mark{font-family:var(--font-display);font-size:2rem;color:var(--ochre);line-height:1}
+.quote__text{font-size:1rem}
+.quote__foot{display:flex;align-items:center;gap:0.8rem;margin-top:auto;padding-top:0.75rem}
+.quote__avatar{
+  display:flex;align-items:center;justify-content:center;width:48px;height:48px;flex:none;
+  font-family:var(--font-display);font-size:0.8rem;color:var(--text-on-primary);
+  background:var(--secondary);border:2px solid var(--border-default);border-radius:50% 44% 50% 46%;
+  box-shadow:var(--shadow-carve);
+}
+:root[data-theme="dark"] .quote__avatar{color:#241a10}
+.quote__who{font-size:0.85rem;color:var(--text-secondary)}
+.quote__who strong{display:block;color:var(--text-primary);font-size:0.95rem}
+/* ============ PRICING ============ */
+.card--pricing{position:relative}
+.card--pricing .price{font-family:var(--font-mono);font-size:2rem;font-weight:700}
+.card--pricing .price span{font-size:0.9rem;color:var(--text-secondary);font-weight:400}
+.card--pricing ul{list-style:none;display:flex;flex-direction:column;gap:0.5rem;margin:0.5rem 0 1rem}
+.card--pricing li{display:flex;align-items:center;gap:0.5rem;font-size:0.92rem;color:var(--text-secondary)}
+.card--pricing li .material-symbols-rounded{color:var(--secondary);font-size:1.2rem}
+.card--pricing .btn{margin-top:auto}
+.card--featured{border-color:var(--ochre);transform:scale(1.02);box-shadow:var(--shadow-lg),var(--shadow-carve)}
+:root[data-theme="dark"] .card--featured{border-color:var(--ochre)}
+.card--featured:hover{transform:scale(1.02) translateY(-2px)}
+.card--featured .badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);white-space:nowrap}
+.pricing__note{text-align:center;margin-top:2rem;font-family:var(--font-mono);font-size:0.9rem;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;gap:0.5rem;flex-wrap:wrap}
+/* ============ FAQ ============ */
+.faq__list{display:flex;flex-direction:column;gap:0.9rem;max-width:820px}
+.faq details{
+  background:var(--bg-secondary);background-image:var(--daub-texture);
+  border:2px solid var(--border-default);border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-sm),var(--shadow-carve);overflow:hidden;
+}
+.faq summary{
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;
+  min-height:56px;padding:0.9rem 1.2rem;cursor:pointer;font-weight:700;list-style:none;
+}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary .material-symbols-rounded{color:var(--ochre);transition:transform var(--transition-normal) var(--ease-standard)}
+.faq details[open] summary .material-symbols-rounded{transform:rotate(180deg)}
+.faq__body{padding:0 1.2rem 1.1rem;color:var(--text-secondary);font-size:0.95rem}
+/* ============ CTA ============ */
+.cta{background:var(--char);color:#f4e9cf;background-image:var(--daub-texture)}
+:root[data-theme="dark"] .cta{background:var(--bg-strong);color:var(--text-primary)}
+.cta h2{color:inherit}
+.cta p{color:inherit;opacity:0.85}
+.cta__inner{display:flex;flex-direction:column;gap:1.25rem;align-items:flex-start}
+.form-group{display:flex;flex-direction:column;gap:0.4rem;flex:1 1 280px}
+.form-group label{font-weight:700;font-size:0.9rem}
+.form-group__helper{font-size:0.8rem;opacity:0.75}
+.form-group__error{font-size:0.85rem;color:#ffb4a2;display:flex;align-items:center;gap:0.3rem;min-height:1.3em}
+:root[data-theme="dark"] .form-group__error{color:var(--text-error)}
+.input{
+  min-height:48px;padding:0.7rem 1rem;font-family:var(--font-base);font-size:1rem;
+  color:var(--text-primary);background:var(--bg-primary);
+  border:2px solid var(--border-default);border-radius:var(--radius-md);
+  box-shadow:var(--shadow-carve);width:100%;
+  transition:border-color var(--transition-fast) var(--ease-standard),background-color var(--transition-normal) var(--ease-standard);
+}
+.input:focus{outline:none;border-color:var(--ochre);box-shadow:var(--shadow-carve),0 0 0 3px color-mix(in srgb,var(--ochre) 35%,transparent)}
+.input.is-valid{border-color:var(--border-success)}
+.input.is-invalid{border-color:var(--border-error)}
+.cta__form{display:flex;gap:1rem;align-items:flex-end;flex-wrap:wrap;width:100%}
+.form-success{display:flex;align-items:center;gap:0.6rem;font-weight:700;padding:0.9rem 0}
+.form-success .material-symbols-rounded{color:var(--text-success)}
+/* ============ FOOTER ============ */
+.footer{
+  background:var(--bg-secondary);background-image:var(--daub-texture);
+  border-top:2px solid var(--border-default);box-shadow:var(--shadow-carve);
+  padding:3rem 0 2rem;
+}
+.footer__grid{display:flex;gap:2.5rem;flex-wrap:wrap;justify-content:space-between}
+.footer__brand{flex:1 1 240px;display:flex;flex-direction:column;gap:0.6rem}
+.footer__col{flex:1 1 150px;display:flex;flex-direction:column;gap:0.4rem}
+.footer__col h3{font-size:0.85rem}
+.footer__col a{display:inline-flex;align-items:center;min-height:36px;color:var(--text-secondary);font-size:0.92rem}
+.footer__col a:hover{color:var(--primary)}
+.footer__social{display:flex;gap:0.5rem;margin-top:0.4rem}
+.footer__social a{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;color:var(--text-primary);background:var(--bg-strong);border:2px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-carve)}
+.footer__social a:hover{filter:brightness(1.08)}
+.footer__bottom{margin-top:2.5rem;padding-top:1.25rem;border-top:2px dashed var(--border-default);display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;font-family:var(--font-mono);font-size:0.85rem;color:var(--text-secondary)}
+/* ============ MOTION PREFS ============ */
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:120ms!important}
+  .btn:active,.btn:hover,.card--interactive:hover{transform:none}
+}
+@media(prefers-reduced-transparency:reduce){.nav{backdrop-filter:none}}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="nav">
+  <div class="container nav__inner">
+    <a class="nav__brand" href="#top" aria-label="RockWorks home">
+      <span class="material-symbols-rounded" aria-hidden="true">terrain</span>
+      RockWorks
+    </a>
+    <button class="nav__menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">
+      <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
+    </button>
+    <ul class="nav__links" id="nav-links">
+      <li><a class="nav__link" href="#features">Features</a></li>
+      <li><a class="nav__link" href="#how">How It Works</a></li>
+      <li><a class="nav__link" href="#pricing">Pricing</a></li>
+      <li><a class="nav__link" href="#faq">FAQ</a></li>
+    </ul>
+    <div class="nav__actions">
+      <button class="nav__toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-rounded" id="theme-icon" aria-hidden="true">dark_mode</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <!-- HERO -->
+  <section class="hero" id="top" aria-labelledby="hero-title">
+    <div class="container hero__inner">
+      <div class="hero__copy">
+        <span class="badge"><span class="material-symbols-rounded" aria-hidden="true">rocket_launch</span>Now with 100% more wheel</span>
+        <h1 id="hero-title">Workflow tools carved from solid rock.</h1>
+        <p class="hero__sub">RockWorks is the project toolkit for tribes who ship. Track hunts, assign chores, and move boulders, all on one slab.</p>
+        <div class="hero__ctas">
+          <a class="btn btn--primary btn--lg" href="#pricing"><span class="material-symbols-rounded" aria-hidden="true">handyman</span>Start Carving</a>
+          <a class="btn btn--ghost btn--lg" href="#how">See How</a>
+        </div>
+        <div class="hero__stats" aria-label="Product statistics">
+          <div><strong>4,000</strong>tribes on board</div>
+          <div><strong>12</strong>boulders moved daily</div>
+          <div><strong>0</strong>wheels reinvented</div>
+        </div>
+      </div>
+      <div class="hero__panel" aria-hidden="true">
+        <div class="hero__glyphs">
+          <span class="material-symbols-rounded">front_hand</span>
+          <span class="material-symbols-rounded">fireplace</span>
+          <span class="material-symbols-rounded">forest</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features" aria-labelledby="features-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="features-title">Built for the modern cave dweller</h2>
+        <p>Primitive materials, suspiciously advanced results. Every feature is hewn by hand and tested against actual mammoths.</p>
+      </div>
+      <div class="grid-3">
+        <article class="card card--interactive">
+          <span class="card__chip"><span class="material-symbols-rounded" aria-hidden="true">construction</span></span>
+          <h3>Slab Boards</h3>
+          <p>Drag tasks across stone columns. Each slab holds up to forty cave paintings of work in progress before it cracks.</p>
+          <a class="card__link" href="#pricing">Learn more<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></a>
+        </article>
+        <article class="card card--interactive">
+          <span class="card__chip"><span class="material-symbols-rounded" aria-hidden="true">camping</span></span>
+          <h3>Tribe Chat</h3>
+          <p>Send smoke signals that arrive instantly. Channels for every cave, direct grunts for sensitive negotiations.</p>
+          <a class="card__link" href="#pricing">Learn more<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></a>
+        </article>
+        <article class="card card--interactive">
+          <span class="card__chip"><span class="material-symbols-rounded" aria-hidden="true">history_edu</span></span>
+          <h3>Tally Reports</h3>
+          <p>Weekly progress etched into the wall forever. Great for reviews, terrible for quietly deleting your mistakes.</p>
+          <a class="card__link" href="#pricing">Learn more<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="how" aria-labelledby="how-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="how-title">Three steps to a sharper tribe</h2>
+        <p>No fire required. Setup takes less time than sharpening a flint, and the results last considerably longer.</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <span class="step__disc" aria-hidden="true">01</span>
+          <span class="material-symbols-rounded" aria-hidden="true">cabin</span>
+          <h3>Claim your cave</h3>
+          <p>Pick a workspace name and invite your tribe by drumbeat or email, whichever reaches them first.</p>
+        </div>
+        <div class="step">
+          <span class="step__disc" aria-hidden="true">02</span>
+          <span class="material-symbols-rounded" aria-hidden="true">front_hand</span>
+          <h3>Paint the plan</h3>
+          <p>Sketch hunts, chores, and launches on the wall. Assign each mark to the hunter responsible.</p>
+        </div>
+        <div class="step">
+          <span class="step__disc" aria-hidden="true">03</span>
+          <span class="material-symbols-rounded" aria-hidden="true">rocket_launch</span>
+          <h3>Move the boulder</h3>
+          <p>Track progress in real time and celebrate each milestone with a ceremonial wheel roll.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section id="testimonials" aria-labelledby="quotes-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="quotes-title">Word travels fast by mammoth</h2>
+        <p>Tribes across the valley have strong opinions, and they painted them on our wall.</p>
+      </div>
+      <div class="grid-3">
+        <article class="card">
+          <span class="quote__mark" aria-hidden="true">&ldquo;</span>
+          <p class="quote__text">We planned an entire mammoth migration on Slab Boards. Only two hunters got lost, a new record.</p>
+          <div class="quote__foot">
+            <span class="quote__avatar" aria-hidden="true">UG</span>
+            <p class="quote__who"><strong>Ugga Flint</strong>Hunt Coordinator, Bedrock Clan</p>
+          </div>
+        </article>
+        <article class="card">
+          <span class="quote__mark" aria-hidden="true">&ldquo;</span>
+          <p class="quote__text">Tally Reports ended our weekly arguing circle. The wall remembers everything, so nobody has to.</p>
+          <div class="quote__foot">
+            <span class="quote__avatar" aria-hidden="true">BR</span>
+            <p class="quote__who"><strong>Bram Rubble</strong>Chief of Chores, Slate Hollow</p>
+          </div>
+        </article>
+        <article class="card">
+          <span class="quote__mark" aria-hidden="true">&ldquo;</span>
+          <p class="quote__text">Tribe Chat replaced our smoke signals. The old signals still work, but now nobody coughs in meetings.</p>
+          <div class="quote__foot">
+            <span class="quote__avatar" aria-hidden="true">NA</span>
+            <p class="quote__who"><strong>Nala Ashdown</strong>Signal Keeper, Ember Valley</p>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section id="pricing" aria-labelledby="pricing-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="pricing-title">Pricing, carved in stone</h2>
+        <p>One price per moon. No hidden pebbles. Cancel anytime by rolling your slab into the river.</p>
+      </div>
+      <div class="grid-3">
+        <article class="card card--pricing">
+          <h3>Pebble</h3>
+          <p class="price">0 shells <span>/ per moon</span></p>
+          <ul>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>1 cave workspace</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Up to 5 tribe members</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Basic tally reports</li>
+          </ul>
+          <button class="btn" type="button" data-demo-btn>Choose Pebble</button>
+        </article>
+        <article class="card card--pricing card--featured">
+          <span class="badge">Most Popular</span>
+          <h3>Boulder</h3>
+          <p class="price">12 shells <span>/ per moon</span></p>
+          <ul>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Unlimited cave workspaces</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Up to 40 tribe members</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Tribe Chat and smoke relay</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Priority fire support</li>
+          </ul>
+          <button class="btn btn--primary" type="button" data-demo-btn>Choose Boulder</button>
+        </article>
+        <article class="card card--pricing">
+          <h3>Mountain</h3>
+          <p class="price">30 shells <span>/ per moon</span></p>
+          <ul>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Everything in Boulder</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Unlimited tribe members</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Dedicated shaman support</li>
+          </ul>
+          <button class="btn" type="button" data-demo-btn>Choose Mountain</button>
+        </article>
+      </div>
+      <p class="pricing__note"><span class="material-symbols-rounded" aria-hidden="true">history_edu</span>Every plan comes with our carved-in-stone guarantee: if it breaks, we re-chisel it free.</p>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="faq" aria-labelledby="faq-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="faq-title">Questions from the fire circle</h2>
+        <p>Everything tribes ask before trading their shells. Still curious? Send a raven to our support cave.</p>
+      </div>
+      <div class="faq__list">
+        <details>
+          <summary>Do I need to invent the wheel first?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__body">No. RockWorks ships with two wheels included, pre-rounded. You may admire them, roll them ceremonially, or use them for actual transport.</p>
+        </details>
+        <details>
+          <summary>What happens if my stone slab cracks?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__body">Every board is backed up to a second, secret slab stored in a dry cave. Cracks affect only the aesthetic, never your data.</p>
+        </details>
+        <details>
+          <summary>Can I pay in something other than shells?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__body">We accept shells, polished bones, and all major credit cards. Livestock is considered on a case-by-case basis at the Mountain tier.</p>
+        </details>
+        <details>
+          <summary>Is there a free trial of the paid tiers?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__body">Yes. Boulder and Mountain include a full moon cycle of free use. If you are not moving more boulders by the next full moon, pay nothing.</p>
+        </details>
+        <details>
+          <summary>How do smoke signals work in the rain?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__body">Tribe Chat automatically reroutes messages through our waterproof drum network during storms. Delivery times may vary with drum enthusiasm.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="cta" id="join" aria-labelledby="cta-title">
+    <div class="container cta__inner">
+      <h2 id="cta-title">Join the tribe before the next moon</h2>
+      <p>Get one carved dispatch per moon: product updates, cave productivity tips, and the occasional wheel joke.</p>
+      <form class="cta__form" id="newsletter-form" novalidate>
+        <div class="form-group">
+          <label for="email">Email address</label>
+          <input class="input" id="email" name="email" type="email" autocomplete="email" placeholder="ugga@bedrock.stone" aria-describedby="email-helper email-error">
+          <p class="form-group__helper" id="email-helper">We never share your address with rival tribes.</p>
+          <p class="form-group__error" id="email-error" aria-live="polite"></p>
+        </div>
+        <button class="btn btn--primary" id="newsletter-submit" type="submit">
+          <span class="material-symbols-rounded" aria-hidden="true">send</span>Subscribe
+        </button>
+      </form>
+      <p class="form-success" id="form-success" hidden>
+        <span class="material-symbols-rounded" aria-hidden="true">check</span>
+        Carved in stone. Your first dispatch arrives with the next moon.
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <a class="nav__brand" href="#top">
+          <span class="material-symbols-rounded" aria-hidden="true">terrain</span>
+          RockWorks
+        </a>
+        <p style="color:var(--text-secondary);font-size:0.92rem">Stone-age tools for suspiciously modern results. Hewn with pride since 10,000 BC, rebranded last Tuesday.</p>
+        <div class="footer__social">
+          <a href="#top" aria-label="RockWorks on the cave wall"><span class="material-symbols-rounded" aria-hidden="true">front_hand</span></a>
+          <a href="#top" aria-label="RockWorks smoke signal channel"><span class="material-symbols-rounded" aria-hidden="true">fireplace</span></a>
+          <a href="#top" aria-label="Email the tribe"><span class="material-symbols-rounded" aria-hidden="true">mail</span></a>
+        </div>
+      </div>
+      <nav class="footer__col" aria-label="Product links">
+        <h3>Product</h3>
+        <a href="#features">Features</a>
+        <a href="#how">How It Works</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+      <nav class="footer__col" aria-label="Tribe links">
+        <h3>The Tribe</h3>
+        <a href="#testimonials">Wall of Praise</a>
+        <a href="#join">Newsletter</a>
+        <a href="#top">Cave Careers</a>
+      </nav>
+      <nav class="footer__col" aria-label="Legal links">
+        <h3>Cave Legal</h3>
+        <a href="#top">Stone Tablet Terms</a>
+        <a href="#top">Privacy Petroglyphs</a>
+        <a href="#top">Cookie Crumbs Policy</a>
+      </nav>
+    </div>
+    <div class="footer__bottom">
+      <span>&copy; 2026 RockWorks Quarry Co. No dinosaurs were consulted.</span>
+      <span>Carved by hand. Rendered by browser.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  /* ---- Theme toggle ---- */
+  var root=document.documentElement;
+  var toggle=document.getElementById("theme-toggle");
+  var icon=document.getElementById("theme-icon");
+  function applyTheme(t){
+    root.dataset.theme=t;
+    var dark=t==="dark";
+    toggle.setAttribute("aria-pressed",String(dark));
+    toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+    icon.textContent=dark?"light_mode":"dark_mode";
+  }
+  applyTheme(root.dataset.theme==="dark"?"dark":"light");
+  toggle.addEventListener("click",function(){
+    var next=root.dataset.theme==="dark"?"light":"dark";
+    localStorage.setItem("theme",next);
+    applyTheme(next);
+  });
+
+  /* ---- Mobile nav disclosure ---- */
+  var menuBtn=document.getElementById("menu-btn");
+  var navLinks=document.getElementById("nav-links");
+  menuBtn.addEventListener("click",function(){
+    var open=navLinks.classList.toggle("is-open");
+    menuBtn.setAttribute("aria-expanded",String(open));
+    menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");
+  });
+  navLinks.addEventListener("click",function(e){
+    if(e.target.closest("a")){navLinks.classList.remove("is-open");menuBtn.setAttribute("aria-expanded","false");}
+  });
+  document.addEventListener("keydown",function(e){
+    if(e.key==="Escape"&&navLinks.classList.contains("is-open")){
+      navLinks.classList.remove("is-open");menuBtn.setAttribute("aria-expanded","false");menuBtn.focus();
+    }
+  });
+
+  /* ---- Pricing demo buttons: loading state ---- */
+  var demoBtns=document.querySelectorAll("[data-demo-btn]");
+  demoBtns.forEach(function(btn){
+    btn.addEventListener("click",function(){
+      if(btn.classList.contains("is-loading"))return;
+      var original=btn.innerHTML;
+      btn.classList.add("is-loading");
+      btn.innerHTML='<span class="material-symbols-rounded" aria-hidden="true">progress_activity</span>Carving...';
+      setTimeout(function(){
+        btn.classList.remove("is-loading");
+        btn.innerHTML='<span class="material-symbols-rounded" aria-hidden="true">check</span>Slab Reserved';
+        setTimeout(function(){btn.innerHTML=original;},2200);
+      },1200);
+    });
+  });
+
+  /* ---- Newsletter form ---- */
+  var form=document.getElementById("newsletter-form");
+  var email=document.getElementById("email");
+  var error=document.getElementById("email-error");
+  var submitBtn=document.getElementById("newsletter-submit");
+  var success=document.getElementById("form-success");
+  form.addEventListener("submit",function(e){
+    e.preventDefault();
+    var val=email.value.trim();
+    error.textContent="";
+    email.classList.remove("is-valid","is-invalid");
+    if(!val){
+      error.innerHTML='<span class="material-symbols-rounded" aria-hidden="true">error</span>Please carve your email address first.';
+      email.classList.add("is-invalid");email.focus();return;
+    }
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)){
+      error.innerHTML='<span class="material-symbols-rounded" aria-hidden="true">error</span>That address looks like it was chiseled wrong. Check it and retry.';
+      email.classList.add("is-invalid");email.focus();return;
+    }
+    email.classList.add("is-valid");
+    submitBtn.classList.add("is-loading");
+    submitBtn.disabled=true;
+    submitBtn.innerHTML='<span class="material-symbols-rounded" aria-hidden="true">progress_activity</span>Sending raven...';
+    setTimeout(function(){
+      form.hidden=true;
+      success.hidden=false;
+    },1400);
+  });
+})();
+</script>
+</body>
+</html>

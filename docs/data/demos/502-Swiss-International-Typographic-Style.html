@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GRID - A Disciplined Layout System for Editorial Teams</title>
+<meta name="description" content="GRID is a grid-based layout tool for editorial and product teams. Twelve columns, one baseline, consistent output.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --bg-primary:#ffffff;
+  --bg-secondary:#f2f2f2;
+  --primary:#e2001a;
+  --primary-contrast:#ffffff;
+  --secondary:#000000;
+  --text-primary:#111111;
+  --text-secondary:#555555;
+  --text-success:#1a7f37;
+  --text-error:#e2001a;
+  --border-default:#111111;
+  --border-success:#1a7f37;
+  --border-error:#e2001a;
+  --color-grid:#d9d9d9;
+  --radius-sm:0px;--radius-md:0px;--radius-lg:0px;--radius-pill:0px;
+  --shadow-none:none;
+  --shadow-sm:0 1px 2px rgba(17,17,17,0.08);
+  --shadow-md:0 4px 16px rgba(17,17,17,0.14);
+  --spacing-gap:16px;
+  --transition-fast:120ms;
+  --transition-normal:240ms;
+  --ease-standard:cubic-bezier(0.4,0,0.2,1);
+  --z-dropdown:100;--z-modal:200;--z-toast:300;
+  --baseline:8px;
+  --columns:12;
+  --font-sans:'Inter','Helvetica Neue',Helvetica,Arial,sans-serif;
+  --font-display:'Inter','Helvetica Neue',Helvetica,Arial,sans-serif;
+  --text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;
+  --text-xl:1.333rem;--text-2xl:1.777rem;--text-3xl:2.369rem;--text-4xl:3.157rem;
+  --text-5xl:clamp(2.5rem,6vw,4.209rem);
+  --space-1:0.5rem;--space-2:1rem;--space-3:1.5rem;--space-4:2rem;--space-5:2.5rem;--space-6:3rem;--space-8:4rem;--space-10:5rem;--space-12:6rem;--space-16:8rem;
+}
+:root[data-theme="dark"]{
+  --bg-primary:#111111;
+  --bg-secondary:#1e1e1e;
+  --primary:#ff4d5e;
+  --primary-contrast:#111111;
+  --secondary:#fefefe;
+  --text-primary:#fefefe;
+  --text-secondary:#a6a6a6;
+  --text-success:#4ade80;
+  --text-error:#ff4d5e;
+  --border-default:#fefefe;
+  --border-success:#4ade80;
+  --border-error:#ff4d5e;
+  --color-grid:#3a3a3a;
+  --shadow-sm:0 1px 2px rgba(0,0,0,0.5);
+  --shadow-md:0 4px 16px rgba(0,0,0,0.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg-primary:#111111;--bg-secondary:#1e1e1e;--primary:#ff4d5e;--primary-contrast:#111111;
+    --secondary:#fefefe;--text-primary:#fefefe;--text-secondary:#a6a6a6;--text-success:#4ade80;
+    --text-error:#ff4d5e;--border-default:#fefefe;--border-success:#4ade80;--border-error:#ff4d5e;
+    --color-grid:#3a3a3a;--shadow-sm:0 1px 2px rgba(0,0,0,0.5);--shadow-md:0 4px 16px rgba(0,0,0,0.5);
+  }
+}
+/* ============ BASE ============ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-sans);font-size:var(--text-base);line-height:1.6;color:var(--text-primary);background:var(--bg-primary);text-align:left;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+h1,h2,h3{font-family:var(--font-display);font-weight:900;line-height:1.05;letter-spacing:-0.03em}
+h2{font-size:var(--text-3xl);margin-bottom:var(--space-3)}
+h3{font-size:var(--text-xl);letter-spacing:-0.02em}
+p{max-width:65ch;color:var(--text-secondary)}
+.material-symbols-outlined{font-size:1.25em;vertical-align:middle;color:currentColor;user-select:none}
+.skip-link{position:absolute;left:-9999px;top:0;background:var(--primary);color:var(--primary-contrast);padding:var(--space-2);z-index:var(--z-toast);font-weight:700}
+.skip-link:focus{left:0}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.container{max-width:1200px;margin:0 auto;padding-left:1.25rem;padding-right:1.25rem}
+@media(min-width:768px){.container{padding-left:2rem;padding-right:2rem}}
+.section{padding-top:clamp(4rem,8vw,7rem);padding-bottom:clamp(4rem,8vw,7rem)}
+.grid12{display:grid;grid-template-columns:repeat(12,1fr);gap:var(--spacing-gap)}
+.label{font-size:var(--text-xs);font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-secondary)}
+/* ============ BUTTONS ============ */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;min-height:44px;min-width:44px;padding:0.65rem 1.5rem;font-family:var(--font-sans);font-size:var(--text-base);font-weight:700;border:2px solid var(--border-default);border-radius:var(--radius-sm);background:var(--bg-primary);color:var(--text-primary);cursor:pointer;transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard),filter var(--transition-fast) var(--ease-standard),background var(--transition-fast) var(--ease-standard)}
+.btn:active{transform:scale(0.97)}
+.btn--primary{background:var(--primary);border-color:var(--primary);color:var(--primary-contrast)}
+.btn--secondary{background:transparent;color:var(--text-primary)}
+.btn--danger{background:transparent;border-color:var(--border-error);color:var(--text-error)}
+.btn:disabled,.btn--loading{opacity:0.5;cursor:not-allowed;transform:none;pointer-events:none}
+.btn--success{background:transparent;border-color:var(--border-success);color:var(--text-success)}
+.btn--error{background:transparent;border-color:var(--border-error);color:var(--text-error)}
+@media(hover:hover) and (pointer:fine){
+  .btn:hover{transform:translateY(-1px);filter:brightness(0.96);box-shadow:var(--shadow-sm)}
+}
+.btn__spinner{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* ============ HEADER ============ */
+.header{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--bg-primary);border-bottom:2px solid var(--border-default);backdrop-filter:blur(6px)}
+.header__inner{display:flex;align-items:center;justify-content:space-between;height:64px;gap:var(--space-2)}
+.wordmark{font-weight:900;font-size:var(--text-xl);letter-spacing:-0.02em;display:flex;align-items:center;gap:0.5rem}
+.wordmark::before{content:"";width:14px;height:14px;background:var(--primary);display:inline-block}
+.nav{display:flex;align-items:center;gap:var(--space-3)}
+.nav__link{font-size:var(--text-sm);font-weight:500;padding:0.5rem 0.25rem;border-bottom:2px solid transparent;transition:border-color var(--transition-fast) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.nav__link:hover{border-color:var(--primary)}}
+.header__actions{display:flex;align-items:center;gap:var(--space-1)}
+#theme-toggle{display:flex;align-items:center;justify-content:center;width:44px;height:44px;background:transparent;border:2px solid var(--border-default);color:var(--text-primary);cursor:pointer;transition:transform var(--transition-fast) var(--ease-standard)}
+#theme-toggle:active{transform:scale(0.97)}
+#theme-toggle .icon-sun{display:none}
+:root[data-theme="dark"] #theme-toggle .icon-sun{display:block}
+:root[data-theme="dark"] #theme-toggle .icon-moon{display:none}
+.menu-btn{display:none;align-items:center;justify-content:center;width:44px;height:44px;background:transparent;border:2px solid var(--border-default);color:var(--text-primary);cursor:pointer}
+@media(max-width:767px){
+  .menu-btn{display:flex}
+  .nav{position:absolute;top:64px;left:0;right:0;flex-direction:column;align-items:stretch;background:var(--bg-primary);border-bottom:2px solid var(--border-default);padding:var(--space-2) 1.25rem;display:none}
+  .nav--open{display:flex}
+  .nav__link{padding:0.75rem 0;font-size:var(--text-base)}
+  .header .btn--primary{display:none}
+}
+/* ============ HERO ============ */
+.hero{padding-top:var(--space-8);padding-bottom:var(--space-10)}
+.hero__grid{display:grid;grid-template-columns:repeat(12,1fr);gap:var(--spacing-gap);align-items:center}
+.hero__text{grid-column:1/7}
+.hero__visual{grid-column:7/13;position:relative}
+.hero h1{font-size:var(--text-5xl);margin-bottom:var(--space-3)}
+.hero h1 .accent{color:var(--primary)}
+.hero p{font-size:var(--text-lg);margin-bottom:var(--space-4)}
+.hero__ctas{display:flex;gap:var(--space-2);flex-wrap:wrap}
+.hero__img{filter:grayscale(1) contrast(1.05);width:100%;height:auto;border:2px solid var(--border-default)}
+.hero__bar{position:absolute;left:-16px;top:24px;width:16px;height:72px;background:var(--primary)}
+@media(max-width:767px){
+  .hero{padding-top:var(--space-6)}
+  .hero__text,.hero__visual{grid-column:1/13}
+  .hero__bar{display:none}
+}
+/* ============ FEATURES ============ */
+.features{background:var(--bg-secondary);border-top:2px solid var(--border-default);border-bottom:2px solid var(--border-default)}
+.features__head{margin-bottom:var(--space-6)}
+.card{display:flex;flex-direction:column;gap:var(--space-2);background:var(--bg-primary);border:2px solid var(--border-default);border-radius:var(--radius-md);padding:var(--space-6);grid-column:span 4;transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),border-color var(--transition-normal) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}}
+.card:focus-within{border-color:var(--primary)}
+.card .material-symbols-outlined{font-size:2rem;color:var(--primary)}
+@media(max-width:767px){.card{grid-column:1/13}}
+/* ============ STEPS ============ */
+.steps__list{display:flex;flex-direction:column}
+.step{display:grid;grid-template-columns:repeat(12,1fr);gap:var(--spacing-gap);align-items:center;padding:var(--space-5) 0;border-top:2px solid var(--color-grid)}
+.step:last-child{border-bottom:2px solid var(--color-grid)}
+.step__num{grid-column:1/4;font-size:var(--text-4xl);font-weight:900;letter-spacing:-0.03em;color:var(--primary);line-height:1}
+.step__body{grid-column:4/13}
+@media(max-width:767px){.step__num{grid-column:1/13}.step__body{grid-column:1/13}}
+/* ============ TESTIMONIALS ============ */
+.testimonials{background:var(--bg-secondary);border-top:2px solid var(--border-default);border-bottom:2px solid var(--border-default)}
+.quote{grid-column:span 4;display:flex;flex-direction:column;gap:var(--space-3);border-left:4px solid var(--primary);padding-left:var(--space-3)}
+.quote p{color:var(--text-primary);font-size:var(--text-lg);font-weight:500;line-height:1.45}
+.quote p::before{content:"\201C"}
+.quote p::after{content:"\201D"}
+.quote cite{font-style:normal;font-size:var(--text-sm);color:var(--text-secondary)}
+@media(max-width:767px){.quote{grid-column:1/13}}
+/* ============ PRICING ============ */
+.tier{grid-column:span 4;display:flex;flex-direction:column;gap:var(--space-3);background:var(--bg-secondary);border:2px solid var(--border-default);padding:var(--space-6);position:relative}
+.tier--featured{border-color:var(--primary)}
+.tier__badge{position:absolute;top:-14px;left:var(--space-6);background:var(--primary);color:var(--primary-contrast);font-size:var(--text-xs);font-weight:700;text-transform:uppercase;letter-spacing:0.12em;padding:0.25rem 0.75rem}
+.tier__price{font-size:var(--text-3xl);font-weight:900;letter-spacing:-0.03em}
+.tier__price span{font-size:var(--text-sm);font-weight:500;color:var(--text-secondary);letter-spacing:0}
+.tier ul{list-style:none;display:flex;flex-direction:column;gap:var(--space-1);flex:1}
+.tier li{display:flex;align-items:center;gap:0.5rem;font-size:var(--text-sm);color:var(--text-secondary)}
+.tier li .material-symbols-outlined{font-size:1rem;color:var(--text-success)}
+@media(max-width:767px){.tier{grid-column:1/13}}
+/* ============ FAQ ============ */
+.faq__item{border-top:2px solid var(--color-grid)}
+.faq__item:last-child{border-bottom:2px solid var(--color-grid)}
+.faq__trigger{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:44px;padding:var(--space-3) 0;background:none;border:none;font-family:var(--font-sans);font-size:var(--text-lg);font-weight:700;color:var(--text-primary);text-align:left;cursor:pointer;gap:var(--space-2)}
+.faq__trigger .material-symbols-outlined{transition:transform var(--transition-normal) var(--ease-standard);flex-shrink:0}
+.faq__trigger[aria-expanded="true"] .material-symbols-outlined{transform:rotate(180deg)}
+.faq__panel{overflow:hidden;max-height:0;opacity:0;transition:max-height var(--transition-normal) var(--ease-standard),opacity var(--transition-normal) var(--ease-standard)}
+.faq__panel--open{max-height:300px;opacity:1}
+.faq__panel p{padding-bottom:var(--space-3)}
+/* ============ FINAL CTA ============ */
+.cta-band{background:var(--secondary);color:var(--bg-primary);border-top:2px solid var(--border-default)}
+:root[data-theme="dark"] .cta-band{background:var(--bg-secondary);color:var(--text-primary)}
+.cta-band h2{color:inherit;max-width:20ch}
+.cta-band .label{color:inherit;opacity:0.7}
+.form{margin-top:var(--space-5);max-width:520px}
+.input-group{display:flex;flex-direction:column;gap:0.5rem}
+.input-group label{font-size:var(--text-sm);font-weight:700}
+.form__row{display:flex;gap:var(--space-2);flex-wrap:wrap}
+.input{flex:1;min-width:220px;min-height:44px;padding:0.65rem 1rem;font-family:var(--font-sans);font-size:var(--text-base);color:var(--text-primary);background:var(--bg-primary);border:2px solid var(--border-default);border-radius:var(--radius-sm)}
+.input::placeholder{color:var(--text-secondary)}
+.input:focus{outline:2px solid var(--primary);outline-offset:2px}
+.input--valid{border-color:var(--border-success)}
+.input--invalid{border-color:var(--border-error)}
+.form__msg{display:flex;align-items:center;gap:0.5rem;font-size:var(--text-sm);min-height:1.5rem}
+.form__msg--error{color:var(--text-error)}
+.form__msg--success{color:var(--text-success)}
+:root[data-theme="dark"] .cta-band .input{background:var(--bg-primary)}
+/* ============ FOOTER ============ */
+.footer{border-top:2px solid var(--border-default);padding:var(--space-8) 0 var(--space-4)}
+.footer__cols{display:grid;grid-template-columns:repeat(12,1fr);gap:var(--spacing-gap);margin-bottom:var(--space-8)}
+.footer__brand{grid-column:1/6}
+.footer__col{grid-column:span 2}
+.footer__col h4{font-size:var(--text-sm);font-weight:700;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:var(--space-2)}
+.footer__col ul{list-style:none;display:flex;flex-direction:column;gap:0.5rem}
+.footer__col a{font-size:var(--text-sm);color:var(--text-secondary)}
+@media(hover:hover) and (pointer:fine){.footer__col a:hover{color:var(--primary)}}
+.footer__legal{font-size:var(--text-xs);color:var(--text-secondary);border-top:2px solid var(--color-grid);padding-top:var(--space-3)}
+@media(max-width:767px){.footer__brand{grid-column:1/13}.footer__col{grid-column:span 6}}
+/* ============ REVEAL / MOTION ============ */
+.reveal{opacity:0;transform:translateY(12px);transition:opacity var(--transition-normal) var(--ease-standard),transform var(--transition-normal) var(--ease-standard)}
+.reveal--in{opacity:1;transform:none}
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{transition-duration:0.01ms!important;animation-duration:0.01ms!important}
+  .reveal{transform:none}
+  .btn__spinner{animation:none}
+}
+@media (prefers-reduced-transparency: reduce){
+  .header{backdrop-filter:none}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="header">
+  <div class="container header__inner">
+    <a class="wordmark" href="#top">GRID</a>
+    <nav class="nav" id="nav" aria-label="Primary">
+      <a class="nav__link" href="#features">Features</a>
+      <a class="nav__link" href="#how">Process</a>
+      <a class="nav__link" href="#pricing">Pricing</a>
+      <a class="nav__link" href="#faq">FAQ</a>
+    </nav>
+    <div class="header__actions">
+      <button id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-outlined icon-moon" aria-hidden="true">dark_mode</span>
+        <span class="material-symbols-outlined icon-sun" aria-hidden="true">light_mode</span>
+      </button>
+      <button class="menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="nav" aria-label="Open menu">
+        <span class="material-symbols-outlined" aria-hidden="true">menu</span>
+      </button>
+      <a class="btn btn--primary" href="#contact">Start free</a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <!-- HERO -->
+  <section class="hero" id="top">
+    <div class="container hero__grid">
+      <div class="hero__text">
+        <h1>Layout is a system, <span class="accent">not a guess.</span></h1>
+        <p>GRID gives editorial teams a twelve-column foundation, one baseline rhythm, and consistent pages at every breakpoint.</p>
+        <div class="hero__ctas">
+          <a class="btn btn--primary" href="#contact">Start free</a>
+          <a class="btn btn--secondary" href="#how">See the process</a>
+        </div>
+      </div>
+      <div class="hero__visual">
+        <span class="hero__bar" aria-hidden="true"></span>
+        <img class="hero__img" src="https://picsum.photos/seed/swiss-grid-desk/880/620" alt="Grayscale photograph of a designer's desk with printed grid layouts and a ruler" width="880" height="620">
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section features" id="features">
+    <div class="container">
+      <div class="features__head">
+        <p class="label">Capabilities</p>
+        <h2>Three functions. No decoration.</h2>
+      </div>
+      <div class="grid12">
+        <article class="card reveal">
+          <span class="material-symbols-outlined" aria-hidden="true">grid_on</span>
+          <h3>Twelve columns</h3>
+          <p>Every page is composed on the same twelve-column grid. Elements align by default, across templates and teams.</p>
+        </article>
+        <article class="card reveal">
+          <span class="material-symbols-outlined" aria-hidden="true">format_line_spacing</span>
+          <h3>One baseline</h3>
+          <p>An 8px baseline governs all vertical spacing. Headlines, body text, and images share a single rhythm.</p>
+        </article>
+        <article class="card reveal">
+          <span class="material-symbols-outlined" aria-hidden="true">publish</span>
+          <h3>Direct export</h3>
+          <p>Finished layouts export to print-ready PDF and responsive HTML. No manual rework between formats.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="section" id="how">
+    <div class="container">
+      <p class="label">Process</p>
+      <h2>How it works</h2>
+      <div class="steps__list">
+        <div class="step reveal">
+          <div class="step__num">01</div>
+          <div class="step__body">
+            <h3>Define the grid</h3>
+            <p>Set columns, gutters, and margins once. The grid becomes the shared reference for every page in the publication.</p>
+          </div>
+        </div>
+        <div class="step reveal">
+          <div class="step__num">02</div>
+          <div class="step__body">
+            <h3>Place the content</h3>
+            <p>Drop text and photography into grid cells. Alignment and spacing are enforced automatically as you work.</p>
+          </div>
+        </div>
+        <div class="step reveal">
+          <div class="step__num">03</div>
+          <div class="step__body">
+            <h3>Publish the page</h3>
+            <p>Export to PDF or HTML in one step. The output matches the layout exactly, at every screen size.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="section testimonials">
+    <div class="container">
+      <p class="label">References</p>
+      <h2>What teams report</h2>
+      <div class="grid12">
+        <blockquote class="quote reveal">
+          <p>Page production time dropped from two days to four hours. The grid removes most layout debates before they start.</p>
+          <cite>Marta Keller, Art Director, Werkhaus Verlag</cite>
+        </blockquote>
+        <blockquote class="quote reveal">
+          <p>Our print and web editions finally match. Exporting both from one file ended a long source of errors.</p>
+          <cite>Daniel Roth, Production Lead, Kanton Press</cite>
+        </blockquote>
+        <blockquote class="quote reveal">
+          <p>New designers produce consistent pages on their first day. The system carries the discipline, not the individual.</p>
+          <cite>Sofia Lindqvist, Editor, Nordform Studio</cite>
+        </blockquote>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="section" id="pricing">
+    <div class="container">
+      <p class="label">Pricing</p>
+      <h2>Three tiers. One grid.</h2>
+      <div class="grid12">
+        <div class="tier reveal">
+          <h3>Solo</h3>
+          <p class="tier__price">$12 <span>/ month</span></p>
+          <ul>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>1 user, 3 projects</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>PDF and HTML export</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Standard grid presets</li>
+          </ul>
+          <a class="btn btn--secondary" href="#contact">Start free</a>
+        </div>
+        <div class="tier tier--featured reveal">
+          <span class="tier__badge">Most used</span>
+          <h3>Studio</h3>
+          <p class="tier__price">$36 <span>/ month</span></p>
+          <ul>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>5 users, unlimited projects</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Custom grids and baselines</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Shared template library</li>
+          </ul>
+          <a class="btn btn--primary" href="#contact">Start free</a>
+        </div>
+        <div class="tier reveal">
+          <h3>House</h3>
+          <p class="tier__price">$90 <span>/ month</span></p>
+          <ul>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>25 users, single sign-on</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Version history and roles</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Priority support</li>
+          </ul>
+          <a class="btn btn--secondary" href="#contact">Start free</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq">
+    <div class="container">
+      <p class="label">Questions</p>
+      <h2>Frequently asked</h2>
+      <div class="faq">
+        <div class="faq__item">
+          <button class="faq__trigger" aria-expanded="false" aria-controls="faq-1" id="faq-t1">
+            Can I change the number of columns?
+            <span class="material-symbols-outlined" aria-hidden="true">expand_more</span>
+          </button>
+          <div class="faq__panel" id="faq-1" role="region" aria-labelledby="faq-t1">
+            <p>Yes. Twelve is the default, but Studio and House plans allow any column count, gutter width, and margin set per project.</p>
+          </div>
+        </div>
+        <div class="faq__item">
+          <button class="faq__trigger" aria-expanded="false" aria-controls="faq-2" id="faq-t2">
+            Does GRID work for print documents?
+            <span class="material-symbols-outlined" aria-hidden="true">expand_more</span>
+          </button>
+          <div class="faq__panel" id="faq-2" role="region" aria-labelledby="faq-t2">
+            <p>Yes. Pages export as print-ready PDF with crop marks and bleed settings. The same file also exports responsive HTML.</p>
+          </div>
+        </div>
+        <div class="faq__item">
+          <button class="faq__trigger" aria-expanded="false" aria-controls="faq-3" id="faq-t3">
+            Can I import existing brand fonts?
+            <span class="material-symbols-outlined" aria-hidden="true">expand_more</span>
+          </button>
+          <div class="faq__panel" id="faq-3" role="region" aria-labelledby="faq-t3">
+            <p>You can upload licensed font files on all paid plans. GRID maps them to the type scale so hierarchy stays consistent.</p>
+          </div>
+        </div>
+        <div class="faq__item">
+          <button class="faq__trigger" aria-expanded="false" aria-controls="faq-4" id="faq-t4">
+            Is there a free trial?
+            <span class="material-symbols-outlined" aria-hidden="true">expand_more</span>
+          </button>
+          <div class="faq__panel" id="faq-4" role="region" aria-labelledby="faq-t4">
+            <p>Every plan starts with 14 days of full access. No card is required, and projects carry over if you subscribe.</p>
+          </div>
+        </div>
+        <div class="faq__item">
+          <button class="faq__trigger" aria-expanded="false" aria-controls="faq-5" id="faq-t5">
+            How does team collaboration work?
+            <span class="material-symbols-outlined" aria-hidden="true">expand_more</span>
+          </button>
+          <div class="faq__panel" id="faq-5" role="region" aria-labelledby="faq-t5">
+            <p>Studio and House plans include a shared template library, commenting, and role-based editing permissions.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="section cta-band" id="contact">
+    <div class="container">
+      <p class="label">Begin</p>
+      <h2>Put your pages on the grid.</h2>
+      <form class="form" id="signup-form" novalidate>
+        <div class="input-group">
+          <label for="email">Work email</label>
+          <div class="form__row">
+            <input class="input" type="email" id="email" name="email" placeholder="name@studio.com" autocomplete="email" required aria-describedby="form-msg">
+            <button class="btn btn--primary" type="submit" id="submit-btn">Start free</button>
+          </div>
+          <p class="form__msg" id="form-msg" aria-live="polite"></p>
+        </div>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__cols">
+      <div class="footer__brand">
+        <a class="wordmark" href="#top">GRID</a>
+        <p style="margin-top:1rem">A layout system for editorial teams. Designed in the tradition of the Basel and Zurich schools.</p>
+      </div>
+      <div class="footer__col">
+        <h4>Product</h4>
+        <ul>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#top">About</a></li>
+          <li><a href="#contact">Contact</a></li>
+          <li><a href="#top">Careers</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="#top">Privacy</a></li>
+          <li><a href="#top">Terms</a></li>
+          <li><a href="#top">Imprint</a></li>
+        </ul>
+      </div>
+    </div>
+    <p class="footer__legal">© 2026 GRID Systems GmbH. All rights reserved.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  /* Theme toggle */
+  var toggle = document.getElementById("theme-toggle");
+  function syncToggle(){
+    var dark = document.documentElement.dataset.theme === "dark";
+    toggle.setAttribute("aria-pressed", String(dark));
+    toggle.setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode");
+  }
+  toggle.addEventListener("click", function(){
+    var next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = next;
+    localStorage.setItem("theme", next);
+    syncToggle();
+  });
+  syncToggle();
+
+  /* Mobile nav */
+  var menuBtn = document.getElementById("menu-btn");
+  var nav = document.getElementById("nav");
+  function closeNav(){
+    nav.classList.remove("nav--open");
+    menuBtn.setAttribute("aria-expanded", "false");
+    menuBtn.setAttribute("aria-label", "Open menu");
+  }
+  menuBtn.addEventListener("click", function(){
+    var open = nav.classList.toggle("nav--open");
+    menuBtn.setAttribute("aria-expanded", String(open));
+    menuBtn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+  });
+  nav.addEventListener("click", function(e){
+    if (e.target.closest(".nav__link")) closeNav();
+  });
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape") closeNav();
+  });
+
+  /* FAQ accordion */
+  var triggers = document.querySelectorAll(".faq__trigger");
+  triggers.forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var panel = document.getElementById(btn.getAttribute("aria-controls"));
+      var open = btn.getAttribute("aria-expanded") === "true";
+      btn.setAttribute("aria-expanded", String(!open));
+      panel.classList.toggle("faq__panel--open", !open);
+    });
+  });
+
+  /* Email form */
+  var form = document.getElementById("signup-form");
+  var email = document.getElementById("email");
+  var msg = document.getElementById("form-msg");
+  var submitBtn = document.getElementById("submit-btn");
+  var originalLabel = submitBtn.textContent;
+
+  function setMsg(text, type, icon){
+    msg.textContent = "";
+    msg.className = "form__msg" + (type ? " form__msg--" + type : "");
+    if (icon){
+      var span = document.createElement("span");
+      span.className = "material-symbols-outlined";
+      span.setAttribute("aria-hidden", "true");
+      span.textContent = icon;
+      msg.appendChild(span);
+    }
+    msg.appendChild(document.createTextNode(text));
+  }
+
+  form.addEventListener("submit", function(e){
+    e.preventDefault();
+    var value = email.value.trim();
+    var valid = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value);
+    email.classList.remove("input--valid", "input--invalid");
+    if (!valid){
+      email.classList.add("input--invalid");
+      setMsg("Enter a valid email address, for example name@studio.com.", "error", "error");
+      email.focus();
+      return;
+    }
+    email.classList.add("input--valid");
+    submitBtn.classList.add("btn--loading");
+    submitBtn.innerHTML = '<span class="material-symbols-outlined btn__spinner" aria-hidden="true">progress_activity</span> Sending';
+    setMsg("", null, null);
+    setTimeout(function(){
+      submitBtn.classList.remove("btn--loading");
+      submitBtn.classList.add("btn--success");
+      submitBtn.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">check_circle</span> Registered';
+      setMsg("Thank you. Your trial link is on its way to " + value + ".", "success", "check_circle");
+      form.reset();
+      email.classList.remove("input--valid");
+      setTimeout(function(){
+        submitBtn.classList.remove("btn--success");
+        submitBtn.textContent = originalLabel;
+      }, 4000);
+    }, 1200);
+  });
+
+  /* Scroll reveal with stagger */
+  var reveals = document.querySelectorAll(".reveal");
+  if ("IntersectionObserver" in window){
+    var observer = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if (entry.isIntersecting){
+          var el = entry.target;
+          var siblings = Array.prototype.slice.call(el.parentElement.querySelectorAll(".reveal"));
+          var index = siblings.indexOf(el);
+          setTimeout(function(){ el.classList.add("reveal--in"); }, Math.max(index, 0) * 70);
+          observer.unobserve(el);
+        }
+      });
+    }, { threshold: 0.15 });
+    reveals.forEach(function(el){ observer.observe(el); });
+  } else {
+    reveals.forEach(function(el){ el.classList.add("reveal--in"); });
+  }
+})();
+</script>
+</body>
+</html>

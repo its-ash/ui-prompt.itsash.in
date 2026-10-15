@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Between Stations - a night radio</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<style>
+:root{
+--font-display:'Fraunces',serif;--font-base:'Inter',sans-serif;--font-mono:'Space Mono',monospace;
+--bg-primary:#f4ead9;--bg-secondary:#ece0c9;--bg-inset:#e6d8be;
+--primary:#5a3f26;--secondary:#4a3320;--accent-glow:#c9884a;
+--text-primary:#17120c;--text-secondary:#5a3f26;--text-on-primary:#f4ead9;
+--text-success:#2e6b4f;--text-error:#a63d2f;
+--border-default:rgba(90,63,38,.28);--border-success:rgba(46,107,79,.55);--border-error:rgba(166,61,47,.55);
+--nm-out:8px 8px 18px rgba(14,10,7,.18),-8px -8px 18px rgba(254,254,254,.85);
+--nm-in:inset 6px 6px 12px rgba(14,10,7,.16),inset -6px -6px 12px rgba(254,254,254,.70);
+--glow-sm:0 0 12px rgba(201,136,74,.35);--glow-md:0 0 28px rgba(201,136,74,.50);
+--gradient-warm:linear-gradient(135deg,#5a3f26,#2c1e10);
+--gradient-glow:linear-gradient(135deg,#c9884a,#5a3f26);
+--radius-sm:8px;--radius-md:14px;--radius-lg:24px;
+--shadow-sm:0 1px 3px rgba(14,10,7,.14);--shadow-md:0 6px 18px rgba(14,10,7,.18);
+--grain-opacity:.05;
+--transition-fast:150ms;--transition-normal:300ms;
+--ease-standard:cubic-bezier(.4,0,.2,1);
+--z-grain:60;--z-dropdown:100;--z-modal:1000;--z-toast:1100;
+}
+:root[data-theme="dark"]{
+--bg-primary:#0e0a07;--bg-secondary:#17120c;--bg-inset:#0a0705;
+--primary:#c9884a;--secondary:#8a6a45;
+--text-primary:#f4ead9;--text-secondary:#c9a87e;--text-on-primary:#17120c;
+--text-success:#6fbf8f;--text-error:#e08a7a;
+--border-default:rgba(201,136,74,.30);
+--nm-out:8px 8px 18px rgba(0,0,0,.60),-8px -8px 18px rgba(90,63,38,.14);
+--nm-in:inset 6px 6px 12px rgba(0,0,0,.65),inset -6px -6px 12px rgba(90,63,38,.12);
+--glow-sm:0 0 14px rgba(201,136,74,.45);--glow-md:0 0 32px rgba(201,136,74,.60);
+--gradient-warm:linear-gradient(135deg,#2c1e10,#17120c);
+--shadow-sm:0 1px 3px rgba(0,0,0,.4);--shadow-md:0 6px 18px rgba(0,0,0,.5);
+--grain-opacity:.08;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;font-size:1rem;overflow-x:hidden;transition:background var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard)}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:var(--z-grain);opacity:var(--grain-opacity);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+h1,h2,h3{font-family:var(--font-display);font-weight:600;line-height:1.1;letter-spacing:-.02em;color:var(--text-primary)}
+h1{font-size:clamp(2.4rem,5.5vw,3.9rem)}
+h2{font-size:clamp(1.8rem,3.5vw,2.6rem);margin-bottom:.75rem}
+h3{font-size:1.25rem}
+p{max-width:65ch}
+a{color:var(--text-secondary)}
+.container{max-width:1200px;margin:0 auto;padding-left:1.25rem;padding-right:1.25rem}
+@media(min-width:768px){.container{padding-left:2rem;padding-right:2rem}}
+section{padding:clamp(4rem,8vw,7rem) 0}
+.section-head{text-align:center;margin-bottom:clamp(2.5rem,5vw,4rem)}
+.section-head p{color:var(--text-secondary);margin:0 auto;font-size:1.05rem}
+.mono{font-family:var(--font-mono)}
+.icon{font-family:'Material Symbols Rounded';font-weight:normal;font-style:normal;font-size:24px;line-height:1;display:inline-block;text-transform:none;letter-spacing:normal;word-wrap:normal;white-space:nowrap;direction:ltr;-webkit-font-smoothing:antialiased}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.skip-link{position:absolute;left:1rem;top:-4rem;background:var(--primary);color:var(--text-on-primary);padding:.75rem 1.25rem;border-radius:var(--radius-sm);z-index:var(--z-toast);transition:top var(--transition-fast) var(--ease-standard);text-decoration:none;font-weight:600}
+.skip-link:focus{top:1rem}
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:.7rem 1.5rem;border-radius:var(--radius-md);font-family:var(--font-base);font-weight:600;font-size:.95rem;text-decoration:none;border:1px solid transparent;cursor:pointer;transition:box-shadow var(--transition-fast) var(--ease-standard),transform var(--transition-fast) var(--ease-standard),filter var(--transition-fast) var(--ease-standard);white-space:nowrap}
+.btn--primary{background:var(--gradient-warm);color:var(--text-on-primary);border:none}
+.btn--ghost{background:var(--bg-secondary);color:var(--text-primary);border-color:var(--border-default);box-shadow:var(--nm-out)}
+.btn--sm{min-height:40px;padding:.45rem 1.1rem;font-size:.88rem}
+.btn:active{transform:scale(.97)}
+.btn:focus-visible{outline:2px solid var(--accent-glow);outline-offset:3px;box-shadow:var(--glow-sm)}
+.btn:disabled,.btn.is-loading{opacity:.6;pointer-events:none}
+.btn .icon{font-size:20px}
+@media(hover:hover) and (pointer:fine){
+.btn--primary:hover{filter:brightness(1.12);box-shadow:var(--glow-sm)}
+.btn--ghost:hover{box-shadow:var(--nm-out),var(--glow-sm)}
+}
+/* Header */
+.header{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--bg-primary);border-bottom:1px solid var(--border-default)}
+.header__inner{display:flex;align-items:center;gap:1rem;height:68px}
+.brand{display:flex;align-items:center;gap:.5rem;text-decoration:none;font-family:var(--font-display);font-weight:700;font-size:1.05rem;letter-spacing:.04em;color:var(--text-primary)}
+.brand .icon{color:var(--accent-glow);font-size:22px}
+.nav{margin-left:auto;display:flex;align-items:center;gap:1.5rem}
+.nav__link{text-decoration:none;color:var(--text-secondary);font-weight:500;font-size:.92rem;transition:color var(--transition-fast)}
+.nav__link:focus-visible{outline:2px solid var(--accent-glow);outline-offset:3px;border-radius:4px}
+@media(hover:hover) and (pointer:fine){.nav__link:hover{color:var(--text-primary)}}
+.header__actions{display:flex;align-items:center;gap:.75rem;margin-left:auto}
+.nav--desktop{margin-left:2rem}
+.nav--desktop+.header__actions{margin-left:auto}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);cursor:pointer;box-shadow:var(--nm-out);transition:box-shadow var(--transition-fast),transform var(--transition-fast)}
+.icon-btn:active{transform:scale(.95)}
+.icon-btn:focus-visible{outline:2px solid var(--accent-glow);outline-offset:3px}
+#theme-toggle .icon--moon{display:none}
+:root[data-theme="dark"] #theme-toggle .icon--sun{display:none}
+:root[data-theme="dark"] #theme-toggle .icon--moon{display:inline-block}
+.menu-btn{display:none}
+@media(max-width:900px){
+.nav--desktop{display:none}
+.menu-btn{display:inline-flex}
+}
+.mobile-nav{display:none;position:absolute;top:68px;left:0;right:0;background:var(--bg-primary);border-bottom:1px solid var(--border-default);padding:1rem 1.25rem 1.5rem;flex-direction:column;gap:.25rem;z-index:var(--z-dropdown)}
+.mobile-nav.is-open{display:flex}
+.mobile-nav a{padding:.8rem .5rem;text-decoration:none;color:var(--text-primary);font-weight:500;border-radius:var(--radius-sm)}
+.mobile-nav a:focus-visible{outline:2px solid var(--accent-glow)}
+/* Hero */
+.hero{position:relative;padding-top:clamp(3rem,6vw,5.5rem);overflow:hidden}
+.hero::before{content:"";position:absolute;inset:-20% -10%;background:radial-gradient(ellipse 60% 55% at 70% 40%,rgba(201,136,74,.28),transparent 70%);pointer-events:none}
+.hero__inner{position:relative;display:flex;align-items:center;gap:clamp(2rem,5vw,4rem);flex-wrap:wrap}
+.hero__copy{flex:1 1 340px;min-width:0}
+.hero__copy p{color:var(--text-secondary);font-size:1.1rem;margin:1.1rem 0 1.75rem;max-width:44ch}
+.hero__ctas{display:flex;gap:.9rem;flex-wrap:wrap;align-items:center}
+.freq-strip{margin-top:2rem;font-family:var(--font-mono);font-size:.8rem;letter-spacing:.08em;color:var(--text-secondary);border-top:1px solid var(--border-default);padding-top:1rem}
+/* Tuner card */
+.tuner{flex:1 1 380px;min-width:0;max-width:520px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--nm-out);padding:1.75rem}
+.tuner__top{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
+.onair{display:inline-flex;align-items:center;gap:.5rem;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.14em;font-weight:700;color:var(--text-error);border:1px solid var(--border-error);border-radius:999px;padding:.3rem .8rem}
+.onair__dot{width:8px;height:8px;border-radius:50%;background:var(--text-error);animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
+.tuner__freq{font-family:var(--font-mono);font-size:1.5rem;font-weight:700;color:var(--text-primary);text-shadow:var(--glow-sm)}
+.tuner__dial{position:relative;background:var(--bg-inset);border-radius:var(--radius-md);box-shadow:var(--nm-in);padding:1.5rem 1.25rem 1rem;margin-bottom:1.25rem}
+.tuner__ticks{height:34px;background:repeating-linear-gradient(90deg,var(--text-secondary) 0 1px,transparent 1px 9%),repeating-linear-gradient(90deg,var(--text-secondary) 0 2px,transparent 2px 25%);background-size:100% 12px,100% 22px;background-repeat:no-repeat;background-position:bottom;opacity:.55}
+.tuner__labels{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:.68rem;color:var(--text-secondary);margin-top:.5rem}
+.tuner__needle{position:absolute;top:8px;bottom:26px;left:38%;width:3px;border-radius:2px;background:var(--gradient-glow);box-shadow:var(--glow-md);animation:drift 9s ease-in-out infinite alternate}
+@keyframes drift{from{left:30%}to{left:64%}}
+.tuner__wave{display:flex;align-items:flex-end;justify-content:center;gap:8px;height:52px;margin-bottom:1.25rem}
+.tuner__bar{width:8px;border-radius:4px;background:var(--gradient-glow);box-shadow:var(--glow-sm);transform-origin:bottom;animation:wave 1.1s ease-in-out infinite alternate}
+.tuner__bar:nth-child(1){height:30%;animation-delay:0s}
+.tuner__bar:nth-child(2){height:65%;animation-delay:.15s}
+.tuner__bar:nth-child(3){height:90%;animation-delay:.3s}
+.tuner__bar:nth-child(4){height:55%;animation-delay:.45s}
+.tuner__bar:nth-child(5){height:80%;animation-delay:.6s}
+.tuner__bar:nth-child(6){height:40%;animation-delay:.75s}
+@keyframes wave{from{transform:scaleY(.35)}to{transform:scaleY(1)}}
+.tuner__meta{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:.72rem;color:var(--text-secondary)}
+/* Cards */
+.card{display:flex;flex-direction:column;align-items:flex-start;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--nm-out);padding:2rem;transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),border-color var(--transition-normal)}
+.card:focus-within{border-color:var(--accent-glow)}
+@media(hover:hover) and (pointer:fine){.card:hover{transform:translateY(-2px);box-shadow:var(--nm-out),var(--glow-sm)}}
+.card__chip{display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:var(--radius-md);background:var(--bg-secondary);box-shadow:var(--nm-out);color:var(--accent-glow);margin-bottom:1.25rem}
+.card h3{margin-bottom:.5rem}
+.card p{color:var(--text-secondary);font-size:.95rem}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(1.25rem,3vw,2rem)}
+@media(max-width:800px){.grid-3{grid-template-columns:1fr}}
+/* Steps */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(1.5rem,3vw,2.5rem);position:relative}
+.steps::before{content:"";position:absolute;top:34px;left:12%;right:12%;height:2px;background:var(--gradient-glow);opacity:.5}
+.step{display:flex;flex-direction:column;align-items:flex-start;position:relative}
+.step__dial{display:flex;align-items:center;justify-content:center;width:68px;height:68px;border-radius:50%;background:var(--bg-secondary);box-shadow:var(--nm-out);border:1px solid var(--border-default);font-family:var(--font-mono);font-weight:700;color:var(--accent-glow);margin-bottom:1.25rem}
+.step h3{margin-bottom:.5rem}
+.step p{color:var(--text-secondary);font-size:.95rem}
+@media(max-width:800px){.steps{grid-template-columns:1fr}.steps::before{display:none}}
+/* Testimonials */
+.quote__stars{display:flex;gap:2px;color:var(--accent-glow);margin-bottom:1rem}
+.quote__stars .icon{font-size:18px;font-variation-settings:'FILL' 1}
+.quote blockquote{font-family:var(--font-display);font-style:italic;font-size:1.1rem;line-height:1.45;margin-bottom:1.25rem;color:var(--text-primary)}
+.quote figcaption{font-size:.88rem;color:var(--text-secondary)}
+.quote figcaption strong{color:var(--text-primary);font-weight:600}
+/* Pricing */
+.pricing .card{align-items:stretch}
+.price__name{font-family:var(--font-mono);font-size:.8rem;letter-spacing:.14em;color:var(--text-secondary);text-transform:uppercase}
+.price__amount{font-family:var(--font-display);font-size:2.4rem;font-weight:700;margin:.4rem 0 .2rem}
+.price__amount span{font-family:var(--font-base);font-size:.9rem;font-weight:400;color:var(--text-secondary)}
+.price__list{list-style:none;margin:1.25rem 0 1.75rem;display:flex;flex-direction:column;gap:.65rem;flex:1}
+.price__list li{display:flex;align-items:center;gap:.6rem;font-size:.92rem;color:var(--text-primary)}
+.price__list .icon{font-size:20px;color:var(--text-success)}
+.price__list li.is-off{color:var(--text-secondary);opacity:.65}
+.price__list li.is-off .icon{color:var(--text-secondary)}
+.card--featured{position:relative;border:2px solid transparent;background:linear-gradient(var(--bg-secondary),var(--bg-secondary)) padding-box,var(--gradient-glow) border-box;box-shadow:var(--nm-out),var(--glow-md);transform:scale(1.03)}
+@media(hover:hover) and (pointer:fine){.card--featured:hover{transform:scale(1.03) translateY(-2px)}}
+.card__badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--gradient-glow);color:var(--text-on-primary);font-family:var(--font-mono);font-size:.68rem;font-weight:700;letter-spacing:.14em;padding:.35rem .9rem;border-radius:999px;box-shadow:var(--glow-sm);white-space:nowrap}
+@media(max-width:800px){.card--featured{transform:none}.card--featured:hover{transform:translateY(-2px)}}
+/* FAQ */
+.faq{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:1rem}
+.faq details{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);overflow:hidden}
+.faq summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:56px;padding:1rem 1.4rem;cursor:pointer;font-weight:600;font-size:1rem;list-style:none;color:var(--text-primary)}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary .icon{transition:transform var(--transition-normal) var(--ease-standard);color:var(--accent-glow);flex-shrink:0}
+.faq details[open] summary .icon{transform:rotate(180deg)}
+.faq summary:focus-visible{outline:2px solid var(--accent-glow);outline-offset:-2px}
+.faq details p{padding:0 1.4rem 1.25rem;color:var(--text-secondary);font-size:.95rem}
+/* CTA band */
+.cta-band{position:relative;background:var(--gradient-warm);color:var(--text-on-primary);text-align:center;overflow:hidden}
+.cta-band::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 50% 60% at 50% 100%,rgba(201,136,74,.4),transparent 70%);pointer-events:none}
+.cta-band .container{position:relative}
+.cta-band h2{color:var(--text-on-primary)}
+.cta-band p{color:rgba(244,234,217,.85);margin:0 auto 2rem}
+.cta-form{display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap;max-width:520px;margin:0 auto}
+.input-group{display:flex;flex-direction:column;gap:.4rem;flex:1 1 260px;min-width:0;text-align:left}
+.input-group label{font-size:.85rem;font-weight:600;color:var(--text-on-primary)}
+.input-group input{min-height:48px;padding:.7rem 1rem;border-radius:var(--radius-md);border:1px solid rgba(244,234,217,.4);background:rgba(14,10,7,.35);color:var(--text-on-primary);font-family:var(--font-base);font-size:1rem;width:100%;transition:border-color var(--transition-fast),box-shadow var(--transition-fast)}
+.input-group input::placeholder{color:rgba(244,234,217,.55)}
+.input-group input:focus{outline:none;border-color:var(--accent-glow);box-shadow:var(--glow-sm)}
+.input-group input.input--error{border-color:var(--text-error)}
+.input-group input.input--valid{border-color:var(--text-success)}
+.input-group__hint{font-size:.78rem;color:rgba(244,234,217,.7)}
+.input-group__error{font-size:.82rem;min-height:1.2em;color:#f0a89a}
+.input-group__error.is-success{color:#8fd6ae}
+.cta-form .btn{align-self:flex-start;margin-top:1.55rem}
+@media(max-width:560px){.cta-form .btn{margin-top:0;width:100%}}
+/* Footer */
+.footer{border-top:1px solid var(--border-default);padding:3.5rem 0 2rem;background:var(--bg-secondary)}
+.footer__grid{display:flex;flex-wrap:wrap;gap:2.5rem;align-items:flex-start}
+.footer__brand{flex:1 1 260px;min-width:0}
+.footer__brand p{color:var(--text-secondary);font-size:.9rem;margin-top:.75rem;max-width:32ch}
+.footer__col{flex:1 1 140px;min-width:120px}
+.footer__col h4{font-size:.8rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-secondary);margin-bottom:.9rem;font-family:var(--font-mono);font-weight:700}
+.footer__col ul{list-style:none;display:flex;flex-direction:column;gap:.55rem}
+.footer__col a{text-decoration:none;color:var(--text-primary);font-size:.9rem}
+.footer__col a:focus-visible{outline:2px solid var(--accent-glow);outline-offset:2px;border-radius:3px}
+@media(hover:hover) and (pointer:fine){.footer__col a:hover{color:var(--accent-glow)}}
+.footer__bottom{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--border-default);font-size:.82rem;color:var(--text-secondary)}
+.social{display:flex;gap:.5rem}
+.social a{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-md);color:var(--text-secondary);border:1px solid var(--border-default);transition:color var(--transition-fast),box-shadow var(--transition-fast)}
+.social a:focus-visible{outline:2px solid var(--accent-glow);outline-offset:2px}
+@media(hover:hover) and (pointer:fine){.social a:hover{color:var(--accent-glow);box-shadow:var(--glow-sm)}}
+/* Reveal */
+.reveal{opacity:0;transform:translateY(18px);transition:opacity 500ms var(--ease-standard),transform 500ms var(--ease-standard)}
+.reveal.is-visible{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){
+html{scroll-behavior:auto}
+*,*::before,*::after{animation:none!important;transition-duration:.01ms!important}
+.reveal{opacity:1;transform:none}
+}
+@media(prefers-reduced-transparency:reduce){body::after{opacity:.02}}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="header">
+<div class="container header__inner">
+<a class="brand" href="#top"><span class="icon" aria-hidden="true">graphic_eq</span>BETWEEN STATIONS</a>
+<nav class="nav nav--desktop" aria-label="Primary">
+<a class="nav__link" href="#frequencies">Frequencies</a>
+<a class="nav__link" href="#how">How It Works</a>
+<a class="nav__link" href="#pricing">Pricing</a>
+<a class="nav__link" href="#faq">FAQ</a>
+</nav>
+<div class="header__actions">
+<button id="theme-toggle" class="icon-btn" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+<span class="icon icon--sun" aria-hidden="true">light_mode</span>
+<span class="icon icon--moon" aria-hidden="true">dark_mode</span>
+</button>
+<a class="btn btn--primary btn--sm" href="#listen">Listen Now</a>
+<button class="icon-btn menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="mobile-nav" aria-label="Open menu"><span class="icon" aria-hidden="true">menu</span></button>
+</div>
+</div>
+<nav class="mobile-nav" id="mobile-nav" aria-label="Mobile">
+<a href="#frequencies">Frequencies</a>
+<a href="#how">How It Works</a>
+<a href="#pricing">Pricing</a>
+<a href="#faq">FAQ</a>
+</nav>
+</header>
+<main id="main">
+<section class="hero" id="top" aria-labelledby="hero-title">
+<div class="container hero__inner">
+<div class="hero__copy">
+<h1 id="hero-title">For the hours nobody claims.</h1>
+<p>Hand-tuned music, warm static, and low-voiced hosts, broadcasting through the small hours for anyone still awake.</p>
+<div class="hero__ctas">
+<a class="btn btn--primary" href="#listen" id="listen"><span class="icon" aria-hidden="true">play_arrow</span>Tune in free</a>
+<a class="btn btn--ghost" href="#frequencies">Browse frequencies</a>
+</div>
+<p class="freq-strip">87.7 NIGHT DRIVE &middot; 91.3 STATIC GARDEN &middot; 98.1 LAST CALL &middot; 104.1 FIRST LIGHT</p>
+</div>
+<div class="tuner" aria-label="Now playing on 91.3 Static Garden">
+<div class="tuner__top">
+<span class="onair"><span class="onair__dot" aria-hidden="true"></span>ON AIR<span class="sr-only">, live now</span></span>
+<span class="tuner__freq">91.3 <span class="mono" style="font-size:.8rem"></span>MHz</span>
+</div>
+<div class="tuner__dial" aria-hidden="true">
+<div class="tuner__ticks"></div>
+<div class="tuner__needle"></div>
+<div class="tuner__labels"><span>87</span><span>92</span><span>98</span><span>104</span><span>108</span></div>
+</div>
+<div class="tuner__wave" aria-hidden="true">
+<span class="tuner__bar"></span><span class="tuner__bar"></span><span class="tuner__bar"></span><span class="tuner__bar"></span><span class="tuner__bar"></span><span class="tuner__bar"></span>
+</div>
+<div class="tuner__meta"><span>NOW: STATIC GARDEN</span><span>03:12 AM</span></div>
+</div>
+</div>
+</section>
+<section id="frequencies" aria-labelledby="feat-title">
+<div class="container">
+<div class="section-head reveal">
+<h2 id="feat-title">Built for the awake</h2>
+<p>Three things we obsess over so your nights sound right.</p>
+</div>
+<div class="grid-3">
+<article class="card reveal">
+<span class="card__chip"><span class="icon" aria-hidden="true">tune</span></span>
+<h3>Hand-tuned frequencies</h3>
+<p>Every block is sequenced by a human host, not a queue. Records chosen for 2 AM, introduced in a low voice.</p>
+</article>
+<article class="card reveal">
+<span class="card__chip"><span class="icon" aria-hidden="true">noise_aware</span></span>
+<h3>A warm static bed</h3>
+<p>A soft layer of tape hiss and room tone sits under every broadcast, so the silence between songs never feels empty.</p>
+</article>
+<article class="card reveal">
+<span class="card__chip"><span class="icon" aria-hidden="true">bedtime</span></span>
+<h3>Drift-off timer</h3>
+<p>Set a window and the station slowly lowers itself, fading the broadcast out as you fall asleep.</p>
+</article>
+</div>
+</div>
+</section>
+<section id="how" aria-labelledby="how-title">
+<div class="container">
+<div class="section-head reveal">
+<h2 id="how-title">How it works</h2>
+<p>No accounts to configure, no playlists to build. Just a dial.</p>
+</div>
+<div class="steps">
+<div class="step reveal">
+<span class="step__dial">01</span>
+<h3>Pick your hour</h3>
+<p>Choose a frequency block that matches your night, from late drives to first light.</p>
+</div>
+<div class="step reveal">
+<span class="step__dial">02</span>
+<h3>Press play, let it run</h3>
+<p>The broadcast carries itself. Skips and shuffles are off by design; the drift is the point.</p>
+</div>
+<div class="step reveal">
+<span class="step__dial">03</span>
+<h3>Set the drift-off</h3>
+<p>When you are ready to sleep, the station signs off with you, fading to quiet static.</p>
+</div>
+</div>
+</div>
+</section>
+<section aria-labelledby="voices-title">
+<div class="container">
+<div class="section-head reveal">
+<h2 id="voices-title">Voices from the night</h2>
+<p>Listeners who keep the dial warm.</p>
+</div>
+<div class="grid-3">
+<figure class="card quote reveal">
+<div class="quote__stars" aria-hidden="true"><span class="icon">star</span><span class="icon">star</span><span class="icon">star</span><span class="icon">star</span><span class="icon">star</span></div>
+<span class="sr-only">Rated 5 out of 5</span>
+<blockquote>&ldquo;After a twelve-hour shift, the drive home at 4 AM used to feel endless. Now it feels like someone is riding along.&rdquo;</blockquote>
+<figcaption><strong>Mara Okafor</strong><br>ER nurse, night rotation</figcaption>
+</figure>
+<figure class="card quote reveal">
+<div class="quote__stars" aria-hidden="true"><span class="icon">star</span><span class="icon">star</span><span class="icon">star</span><span class="icon">star</span><span class="icon">star</span></div>
+<span class="sr-only">Rated 5 out of 5</span>
+<blockquote>&ldquo;Eight hundred miles of interstate and the only thing that keeps me company is 87.7. The hosts talk like they know the road too.&rdquo;</blockquote>
+<figcaption><strong>Dale Whitfield</strong><br>Long-haul driver</figcaption>
+</figure>
+<figure class="card quote reveal">
+<div class="quote__stars" aria-hidden="true"><span class="icon">star</span><span class="icon">star</span><span class="icon">star</span><span class="icon">star</span><span class="icon">star</span></div>
+<span class="sr-only">Rated 5 out of 5</span>
+<blockquote>&ldquo;I write until dawn, and Static Garden is the only thing that has never broken a sentence for me. It just hums along.&rdquo;</blockquote>
+<figcaption><strong>Ines Vidal</strong><br>Novelist</figcaption>
+</figure>
+</div>
+</div>
+</section>
+<section class="pricing" id="pricing" aria-labelledby="pricing-title">
+<div class="container">
+<div class="section-head reveal">
+<h2 id="pricing-title">Choose your signal</h2>
+<p>Start free. Stay as long as the night does.</p>
+</div>
+<div class="grid-3">
+<article class="card reveal">
+<p class="price__name">Static</p>
+<p class="price__amount">$0 <span>/ forever</span></p>
+<ul class="price__list">
+<li><span class="icon" aria-hidden="true">check</span>One frequency, rotating weekly</li>
+<li><span class="icon" aria-hidden="true">check</span>30-minute drift-off timer</li>
+<li><span class="icon" aria-hidden="true">check</span>Live broadcast stream</li>
+<li class="is-off"><span class="icon" aria-hidden="true">close</span>Downloads and archive</li>
+</ul>
+<a class="btn btn--ghost" href="#listen">Start free</a>
+</article>
+<article class="card card--featured reveal">
+<span class="card__badge">MOST TUNED-IN</span>
+<p class="price__name">Signal</p>
+<p class="price__amount">$6 <span>/ month</span></p>
+<ul class="price__list">
+<li><span class="icon" aria-hidden="true">check</span>All four frequencies, always on</li>
+<li><span class="icon" aria-hidden="true">check</span>Offline downloads</li>
+<li><span class="icon" aria-hidden="true">check</span>Unlimited drift-off timer</li>
+<li><span class="icon" aria-hidden="true">check</span>Host request line</li>
+</ul>
+<a class="btn btn--primary" href="#listen">Get Signal</a>
+</article>
+<article class="card reveal">
+<p class="price__name">Shortwave</p>
+<p class="price__amount">$60 <span>/ year</span></p>
+<ul class="price__list">
+<li><span class="icon" aria-hidden="true">check</span>Everything in Signal</li>
+<li><span class="icon" aria-hidden="true">check</span>Full broadcast archive</li>
+<li><span class="icon" aria-hidden="true">check</span>Lossless stream quality</li>
+<li><span class="icon" aria-hidden="true">check</span>Two months free, yearly</li>
+</ul>
+<a class="btn btn--ghost" href="#listen">Go Shortwave</a>
+</article>
+</div>
+</div>
+</section>
+<section id="faq" aria-labelledby="faq-title">
+<div class="container">
+<div class="section-head reveal">
+<h2 id="faq-title">Common questions</h2>
+<p>Asked by listeners, answered by the booth.</p>
+</div>
+<div class="faq reveal">
+<details>
+<summary>Is it really free?<span class="icon" aria-hidden="true">expand_more</span></summary>
+<p>Yes. The Static tier costs nothing and asks for no card. One rotating frequency, the live stream, and a 30-minute drift-off timer, for as long as you like.</p>
+</details>
+<details>
+<summary>What plays at 3 AM?<span class="icon" aria-hidden="true">expand_more</span></summary>
+<p>The deepest block of the night: slow records, long ambient pieces, and the quietest host segments. Around 4 AM the dial warms back up toward First Light.</p>
+</details>
+<details>
+<summary>Can I download broadcasts?<span class="icon" aria-hidden="true">expand_more</span></summary>
+<p>Signal and Shortwave listeners can save any broadcast for offline listening. Downloads stay in the app and travel with you, no connection required.</p>
+</details>
+<details>
+<summary>How does the drift-off timer work?<span class="icon" aria-hidden="true">expand_more</span></summary>
+<p>Pick a window from 15 minutes to 2 hours. The volume lowers gradually, the music thins to static, and the stream closes itself so you never wake to a dead phone.</p>
+</details>
+<details>
+<summary>Which devices are supported?<span class="icon" aria-hidden="true">expand_more</span></summary>
+<p>Any modern browser, plus iOS and Android apps. CarPlay and Android Auto are supported, and Shortwave adds a lossless desktop player.</p>
+</details>
+</div>
+</div>
+</section>
+<section class="cta-band" aria-labelledby="cta-title">
+<div class="container">
+<h2 id="cta-title">The night is long. Stay tuned.</h2>
+<p>Leave an email and we will send you the frequency schedule, once a week, after dark.</p>
+<form class="cta-form" id="cta-form" novalidate>
+<div class="input-group">
+<label for="email">Email address</label>
+<input type="email" id="email" name="email" autocomplete="email" placeholder="you@nightmail.com" aria-describedby="email-hint email-error" required>
+<span class="input-group__hint" id="email-hint">One email a week. Unsubscribe anytime.</span>
+<span class="input-group__error" id="email-error" role="status" aria-live="polite"></span>
+</div>
+<button class="btn btn--primary" id="cta-submit" type="submit"><span class="icon" aria-hidden="true" id="cta-icon">podcasts</span><span id="cta-label">Get the schedule</span></button>
+</form>
+</div>
+</section>
+</main>
+<footer class="footer">
+<div class="container">
+<div class="footer__grid">
+<div class="footer__brand">
+<a class="brand" href="#top"><span class="icon" aria-hidden="true">graphic_eq</span>BETWEEN STATIONS</a>
+<p>Broadcasting nightly from somewhere between midnight and morning.</p>
+</div>
+<div class="footer__col">
+<h4>Station</h4>
+<ul><li><a href="#">Frequencies</a></li><li><a href="#">Schedule</a></li><li><a href="#">Archive</a></li></ul>
+</div>
+<div class="footer__col">
+<h4>Company</h4>
+<ul><li><a href="#">About</a></li><li><a href="#">Hosts</a></li><li><a href="#">Careers</a></li><li><a href="#">Press</a></li></ul>
+</div>
+<div class="footer__col">
+<h4>Support</h4>
+<ul><li><a href="#">Help</a></li><li><a href="#">Privacy</a></li><li><a href="#">Terms</a></li><li><a href="#">Cookies</a></li></ul>
+</div>
+</div>
+<div class="footer__bottom">
+<span>&copy; <span id="year">2026</span> Between Stations. All rights reserved.</span>
+<div class="social">
+<a href="#" aria-label="RSS feed"><span class="icon" aria-hidden="true">rss_feed</span></a>
+<a href="#" aria-label="Podcast"><span class="icon" aria-hidden="true">podcasts</span></a>
+<a href="#" aria-label="Email us"><span class="icon" aria-hidden="true">mail</span></a>
+<a href="#" aria-label="Web stream"><span class="icon" aria-hidden="true">public</span></a>
+</div>
+</div>
+</div>
+</footer>
+<script>
+(function(){
+var root=document.documentElement;
+var toggle=document.getElementById("theme-toggle");
+function applyTheme(t){root.dataset.theme=t;var dark=t==="dark";toggle.setAttribute("aria-pressed",String(dark));toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");}
+applyTheme(root.dataset.theme==="dark"?"dark":"light");
+toggle.addEventListener("click",function(){var next=root.dataset.theme==="dark"?"light":"dark";localStorage.setItem("theme",next);applyTheme(next);});
+var menuBtn=document.getElementById("menu-btn");
+var mobileNav=document.getElementById("mobile-nav");
+function closeMenu(){mobileNav.classList.remove("is-open");menuBtn.setAttribute("aria-expanded","false");menuBtn.setAttribute("aria-label","Open menu");}
+menuBtn.addEventListener("click",function(){var open=mobileNav.classList.toggle("is-open");menuBtn.setAttribute("aria-expanded",String(open));menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");});
+mobileNav.addEventListener("click",function(e){if(e.target.tagName==="A")closeMenu();});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")closeMenu();});
+document.getElementById("year").textContent=new Date().getFullYear();
+var form=document.getElementById("cta-form");
+var email=document.getElementById("email");
+var err=document.getElementById("email-error");
+var submit=document.getElementById("cta-submit");
+var label=document.getElementById("cta-label");
+var icon=document.getElementById("cta-icon");
+form.addEventListener("submit",function(e){
+e.preventDefault();
+var val=email.value.trim();
+email.classList.remove("input--error","input--valid");
+err.classList.remove("is-success");
+if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val)){
+email.classList.add("input--error");
+err.textContent="That address does not look right. Check it and try again.";
+email.focus();
+return;
+}
+submit.classList.add("is-loading");
+label.textContent="Tuning in";
+icon.textContent="progress_activity";
+err.textContent="";
+setTimeout(function(){
+submit.classList.remove("is-loading");
+email.classList.add("input--valid");
+icon.textContent="check";
+label.textContent="You're on the frequency";
+err.classList.add("is-success");
+err.textContent="Confirmed. The first schedule arrives after dark.";
+},800);
+});
+var reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+if(!reduced&&"IntersectionObserver" in window){
+var els=document.querySelectorAll(".reveal");
+var io=new IntersectionObserver(function(entries){
+entries.forEach(function(en,i){
+if(en.isIntersecting){
+en.target.style.transitionDelay=(i%3)*70+"ms";
+en.target.classList.add("is-visible");
+io.unobserve(en.target);
+}
+});
+},{threshold:.12});
+els.forEach(function(el){io.observe(el);});
+}else{
+document.querySelectorAll(".reveal").forEach(function(el){el.classList.add("is-visible");});
+}
+})();
+</script>
+</body>
+</html>

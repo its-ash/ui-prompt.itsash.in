@@ -1,715 +1,633 @@
 <!DOCTYPE html>
-<html lang="en" class="light">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<title>Nimbus PCB Prototyping</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Traceboard | Rapid PCB Prototyping Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
 <style>
 :root{
-  --font-base:'Inter',sans-serif;
-  --font-heading:'Space Grotesk',sans-serif;
-  --font-mono:'IBM Plex Mono',monospace;
-  --radius-sm:2px;
-  --radius-md:4px;
-  --radius-lg:8px;
-  --shadow-sm:0 1px 2px rgba(0,0,0,0.08);
-  --shadow-md:0 4px 6px rgba(0,0,0,0.12);
-  --transition-fast:150ms;
-  --transition-normal:300ms;
+  --primary:#0F3B2C; --secondary:#C17817;
+  --bg-primary:#EAD0AC; --bg-secondary:#F2E3C8;
+  --surface:#E4C79C; --text-primary:#0F3B2C; --text-secondary:#2D5C4E;
+  --text-success:#1B6E4A; --text-error:#A93B26;
+  --border-default:rgba(193,120,23,0.45); --border-success:#1B6E4A; --border-error:#A93B26;
+  --on-primary:#EAD0AC; --glow:rgba(193,120,23,0.35);
+  --radius-sm:2px; --radius-md:4px; --radius-lg:8px;
+  --shadow-sm:3px 3px 0 rgba(15,59,44,0.18); --shadow-md:6px 6px 0 rgba(15,59,44,0.22);
+  --spacing-gap:1.5rem;
+  --transition-fast:150ms; --transition-normal:300ms;
   --ease-standard:cubic-bezier(0.4,0,0.2,1);
-  --spacing-gap:1rem;
-  --z-dropdown:1000;
-  --z-modal:2000;
-  --z-toast:3000;
-  /* Light theme – FR-4 Datasheet */
-  --bg-primary:#EAD0AC;
-  --bg-secondary:#F2E3C8;
-  --text-primary:#0F3B2C;
-  --text-secondary:#2D5C4E;
-  --primary:#0F3B2C;
-  --secondary:#C17817;
-  --border-default:rgba(193,120,23,0.45);
-  --text-success:#1B6E4A;
-  --text-error:#A93B26;
-  --border-success:rgba(27,110,74,0.45);
-  --border-error:rgba(169,59,38,0.45);
-  --secondary-rgb:193,120,23;
+  --z-dropdown:100; --z-modal:200; --z-toast:300;
+  --font-base:'Inter',sans-serif; --font-heading:'Space Grotesk',sans-serif; --font-mono:'IBM Plex Mono',monospace;
 }
-.dark{
-  /* Dark theme – Solder Side */
-  --bg-primary:#0F3B2C;
-  --bg-secondary:#2D5C4E;
-  --text-primary:#EAD0AC;
-  --text-secondary:#C9B48E;
-  --primary:#D98C53;
-  --secondary:#B8BCC0;
-  --border-default:rgba(217,140,83,0.4);
-  --text-success:#7BC496;
-  --text-error:#E5735F;
-  --border-success:rgba(123,196,150,0.4);
-  --border-error:rgba(229,115,95,0.4);
-  --secondary-rgb:217,140,83;
+:root[data-theme="dark"]{
+  --primary:#D98C53; --secondary:#B8BCC0;
+  --bg-primary:#0F3B2C; --bg-secondary:#2D5C4E;
+  --surface:#1A4A38; --text-primary:#EAD0AC; --text-secondary:#C9B48E;
+  --text-success:#7BC496; --text-error:#E5735F;
+  --border-default:rgba(217,140,83,0.4); --border-success:#7BC496; --border-error:#E5735F;
+  --on-primary:#0F3B2C; --glow:rgba(217,140,83,0.45);
+  --shadow-sm:3px 3px 0 rgba(0,0,0,0.35); --shadow-md:6px 6px 0 rgba(0,0,0,0.4);
 }
-*,::before,::after{box-sizing:border-box;}
-html{font-size:16px;}
+*{margin:0;padding:0;box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
 body{
-  margin:0;
-  min-height:100vh;
-  font-family:var(--font-base);
-  background:var(--bg-primary);
-  color:var(--text-primary);
-  line-height:1.5;
-  overflow-x:hidden;
+  font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);
+  line-height:1.6;overflow-x:clip;transition:background var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard);
+  background-image:radial-gradient(var(--border-default) 1px,transparent 1px);
+  background-size:28px 28px;
 }
-a{color:inherit;text-decoration:none;}
-ul{list-style:none;margin:0;padding:0;}
-button,cursor{font:inherit;}
-button{cursor:pointer;}
-img{max-width:100%;display:block;}
-.visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;}
-/* Utilities */
-.container{width:90%;max-width:1200px;margin-inline:auto;}
-.flex{display:flex;}
-.flex-col{flex-direction:column;}
-.items-center{align-items:center;}
-.justify-between{justify-content:space-between;}
-.gap-*{gap:var(--spacing-gap);}
-.text-center{text-align:center;}
-.text-heading{font-family:var(--font-heading);font-weight:600;}
-.text-mono{font-family:var(--font-mono);}
-.btn{
-  display:inline-flex;
-  height:3rem;
-  padding:0 1.5rem;
-  border-radius:var(--radius-md);
-  font-weight:500;
-  align-items:center;
-  justify-content:center;
-  gap:0.5rem;
-  transition:background-color var(--transition-normal),box-shadow var(--transition-normal),transform var(--transition-fast);
-  font-size:0.95rem;
+h1,h2,h3{font-family:var(--font-heading);letter-spacing:-0.02em;line-height:1.1}
+img,svg{max-width:100%}
+a{color:inherit}
+.container{max-width:1200px;margin:0 auto;padding:0 1.25rem}
+.mono{font-family:var(--font-mono)}
+.eyebrow{font-family:var(--font-mono);font-size:0.78rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--secondary);margin-bottom:1rem}
+.section{padding:clamp(4rem,8vw,7rem) 0}
+.section__head{max-width:65ch;margin-bottom:3rem}
+.section__head h2{font-size:clamp(1.75rem,3.5vw,2.5rem);margin-bottom:0.75rem}
+.section__head p{color:var(--text-secondary);font-size:1.05rem;max-width:60ch}
+.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;user-select:none}
+
+/* ---------- Buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;min-height:44px;padding:0.7rem 1.4rem;font-family:var(--font-heading);font-weight:600;font-size:0.95rem;border-radius:var(--radius-md);border:1px solid transparent;cursor:pointer;text-decoration:none;transition:all var(--transition-fast) var(--ease-standard);position:relative}
+.btn--primary{background:var(--primary);color:var(--on-primary)}
+.btn--secondary{background:transparent;color:var(--text-primary);border-color:var(--border-default)}
+.btn--danger{background:transparent;color:var(--text-error);border-color:var(--border-error)}
+.btn:active{transform:scale(0.97)}
+.btn:focus-visible{outline:2px solid var(--secondary);outline-offset:3px}
+.btn:disabled,.btn--disabled{opacity:0.5;filter:grayscale(0.6);cursor:not-allowed}
+.btn .spinner{animation:spin 1s linear infinite}
+@media (hover:hover) and (pointer:fine){
+  .btn--primary:hover{box-shadow:0 0 18px var(--glow),var(--shadow-sm);filter:brightness(1.08)}
+  .btn--secondary:hover{border-color:var(--secondary);background:var(--bg-secondary)}
+  .btn--danger:hover{background:var(--border-error);color:var(--bg-primary)}
 }
-.btn--primary{
-  background:var(--primary);
-  color:var(--bg-primary);
-  border:none;
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---------- Header ---------- */
+.header{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--bg-primary);border-bottom:1px solid var(--border-default);backdrop-filter:blur(8px)}
+.header__inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:1rem}
+.logo{display:flex;align-items:center;gap:0.55rem;text-decoration:none;font-family:var(--font-heading);font-weight:700;font-size:1.2rem}
+.logo__pad{width:14px;height:14px;border-radius:50%;background:var(--secondary);box-shadow:0 0 8px var(--glow);flex:none}
+.nav{display:flex;align-items:center;gap:1.75rem}
+.nav a{text-decoration:none;font-size:0.92rem;font-weight:500;color:var(--text-secondary);transition:color var(--transition-fast) var(--ease-standard)}
+@media (hover:hover){.nav a:hover{color:var(--secondary)}}
+.header__actions{display:flex;align-items:center;gap:0.75rem}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:transparent;color:var(--text-primary);cursor:pointer;transition:all var(--transition-fast) var(--ease-standard)}
+.icon-btn:focus-visible{outline:2px solid var(--secondary);outline-offset:2px}
+@media (hover:hover){.icon-btn:hover{border-color:var(--secondary);color:var(--secondary)}}
+.menu-btn{display:none}
+.theme-icon--sun{display:none}
+:root[data-theme="dark"] .theme-icon--sun{display:block}
+:root[data-theme="dark"] .theme-icon--moon{display:none}
+
+/* ---------- Hero ---------- */
+.hero{position:relative;padding-top:clamp(3rem,6vw,5rem);padding-bottom:clamp(4rem,7vw,6rem);overflow:clip}
+.hero__grid{display:flex;align-items:center;gap:3rem}
+.hero__copy{flex:1 1 52%}
+.hero__copy h1{font-size:clamp(2.25rem,5vw,3.75rem);margin-bottom:1.1rem}
+.hero__copy p{color:var(--text-secondary);font-size:1.08rem;max-width:46ch;margin-bottom:1.75rem}
+.hero__ctas{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.hero__visual{flex:1 1 44%;display:flex;align-items:center;justify-content:center}
+.board{width:100%;max-width:460px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);padding:1.5rem;position:relative}
+.board__label{font-family:var(--font-mono);font-size:0.7rem;color:var(--text-secondary);letter-spacing:0.12em;margin-bottom:0.9rem;display:flex;justify-content:space-between}
+.board__chip{background:var(--surface);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:1rem 1.1rem;margin-bottom:0.9rem;position:relative}
+.board__chip::before{content:"";position:absolute;top:-1px;left:14px;right:14px;height:1px;background:var(--secondary);opacity:0.6}
+.board__chip-title{font-family:var(--font-mono);font-size:0.72rem;color:var(--secondary);letter-spacing:0.1em;margin-bottom:0.3rem}
+.board__chip-text{font-size:0.88rem;color:var(--text-secondary)}
+.board__row{display:flex;gap:0.9rem}
+.board__row .board__chip{flex:1;margin-bottom:0}
+.traces{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.traces path{stroke:var(--secondary);stroke-width:1.5;fill:none;opacity:0.55;stroke-dasharray:600;stroke-dashoffset:600;animation:draw 2.4s var(--ease-standard) forwards}
+.traces circle{fill:var(--secondary);opacity:0.7}
+.traces .pulse{fill:var(--secondary);opacity:0;animation:signal 3s linear infinite;filter:drop-shadow(0 0 4px var(--glow))}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes signal{0%{opacity:0;offset-distance:0%}8%{opacity:1}92%{opacity:1}100%{opacity:0;offset-distance:100%}}
+
+/* ---------- Cards (IC chips) ---------- */
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--spacing-gap)}
+.chip-card{display:flex;flex-direction:column;align-items:flex-start;gap:0.8rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:1.75rem 1.5rem;position:relative;box-shadow:var(--shadow-sm);transition:transform var(--transition-normal) var(--ease-standard),border-color var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard)}
+/* pin notches via pseudo-elements */
+.chip-card::before{content:"";position:absolute;left:-1px;top:18%;bottom:18%;width:3px;background:repeating-linear-gradient(to bottom,var(--secondary) 0 6px,transparent 6px 14px);opacity:0.55;transition:opacity var(--transition-normal)}
+.chip-card::after{content:"";position:absolute;right:-1px;top:18%;bottom:18%;width:3px;background:repeating-linear-gradient(to bottom,var(--secondary) 0 6px,transparent 6px 14px);opacity:0.55;transition:opacity var(--transition-normal)}
+.chip-card__designator{font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.12em;color:var(--secondary);border:1px solid var(--border-default);border-radius:var(--radius-sm);padding:0.15rem 0.5rem}
+.chip-card__icon{display:flex;align-items:center;justify-content:center;width:48px;height:48px;border:1px solid var(--border-default);border-radius:var(--radius-md);color:var(--secondary)}
+.chip-card h3{font-size:1.2rem}
+.chip-card p{color:var(--text-secondary);font-size:0.94rem}
+.chip-card:focus-within{border-color:var(--secondary)}
+@media (hover:hover){
+  .chip-card:hover{transform:translateY(-2px);border-color:var(--secondary);box-shadow:0 0 20px var(--glow),var(--shadow-md)}
+  .chip-card:hover::before,.chip-card:hover::after{opacity:1}
 }
-.btn--primary:hover{background:color-mix(in srgb, var(--primary) 90%, black);}
-.btn--primary:focus-visible{outline:2px solid var(--primary);outline-offset:2px;}
-.btn--primary:active{transform:scale(0.97);}
-.btn--secondary{
-  background:transparent;
-  border:2px solid var(--border-default);
-  color:var(--text-primary);
+
+/* ---------- Steps ---------- */
+.steps{display:flex;align-items:stretch;gap:var(--spacing-gap);position:relative}
+.step{flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:0.7rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:1.6rem 1.4rem;position:relative;z-index:1}
+.step__node{display:flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:50%;border:2px solid var(--secondary);background:var(--bg-primary);font-family:var(--font-mono);font-weight:600;color:var(--secondary);transition:box-shadow var(--transition-normal)}
+@media (hover:hover){.step:hover .step__node{box-shadow:0 0 14px var(--glow)}}
+.step h3{font-size:1.15rem;display:flex;align-items:center;gap:0.5rem}
+.step h3 .material-symbols-outlined{color:var(--secondary)}
+.step p{color:var(--text-secondary);font-size:0.93rem}
+.steps__trace{position:absolute;top:calc(1.6rem + 26px);left:8%;right:8%;height:2px;background:repeating-linear-gradient(to right,var(--secondary) 0 10px,transparent 10px 18px);opacity:0.5;z-index:0}
+
+/* ---------- Testimonials ---------- */
+.quote-card{display:flex;flex-direction:column;align-items:flex-start;gap:1rem;background:var(--bg-secondary);border:1px dashed var(--border-default);border-radius:var(--radius-md);padding:1.6rem 1.5rem}
+.quote-card .material-symbols-outlined{color:var(--secondary)}
+.quote-card blockquote{font-size:0.98rem;color:var(--text-primary)}
+.quote-card__attr{font-family:var(--font-mono);font-size:0.75rem;color:var(--text-secondary);letter-spacing:0.06em}
+.quote-card__attr strong{color:var(--text-primary)}
+
+/* ---------- Pricing ---------- */
+.price-card{display:flex;flex-direction:column;align-items:flex-start;gap:1rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:2rem 1.6rem;box-shadow:var(--shadow-sm);position:relative}
+.price-card--featured{border:2px solid var(--secondary);box-shadow:0 0 24px var(--glow),var(--shadow-md)}
+:root[data-theme="dark"] .price-card--featured{border-color:var(--primary)}
+.price-card__badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);font-family:var(--font-mono);font-size:0.68rem;letter-spacing:0.14em;background:var(--secondary);color:var(--on-primary);padding:0.25rem 0.8rem;border-radius:var(--radius-sm)}
+:root[data-theme="dark"] .price-card__badge{background:var(--primary);color:var(--on-primary)}
+.price-card__tier{font-family:var(--font-mono);font-size:0.75rem;letter-spacing:0.12em;color:var(--secondary)}
+.price-card__price{font-family:var(--font-heading);font-size:2.4rem;font-weight:700}
+.price-card__price span{font-size:0.9rem;font-weight:400;color:var(--text-secondary)}
+.price-card ul{list-style:none;display:flex;flex-direction:column;align-items:flex-start;gap:0.55rem;margin-bottom:0.5rem}
+.price-card li{display:flex;align-items:center;gap:0.5rem;font-size:0.92rem;color:var(--text-secondary)}
+.price-card li .material-symbols-outlined{color:var(--text-success);font-size:1.1rem}
+.price-card .btn{width:100%;margin-top:auto}
+
+/* ---------- FAQ ---------- */
+.faq{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:0.75rem}
+.faq details{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);overflow:hidden}
+.faq summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;cursor:pointer;padding:1.1rem 1.3rem;font-family:var(--font-heading);font-weight:600;font-size:1rem;list-style:none;min-height:44px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary .material-symbols-outlined{color:var(--secondary);transition:transform var(--transition-normal) var(--ease-standard)}
+.faq details[open] summary .material-symbols-outlined{transform:rotate(180deg)}
+.faq summary:focus-visible{outline:2px solid var(--secondary);outline-offset:-2px}
+.faq__body{padding:0 1.3rem 1.2rem;color:var(--text-secondary);font-size:0.94rem}
+
+/* ---------- CTA ---------- */
+.cta{background:var(--bg-secondary);border-top:1px solid var(--border-default);border-bottom:1px solid var(--border-default);position:relative;overflow:clip}
+.cta__inner{display:flex;flex-direction:column;align-items:center;text-align:center;gap:1.2rem;max-width:620px;margin:0 auto;position:relative;z-index:1}
+.cta h2{font-size:clamp(1.9rem,4vw,2.8rem)}
+.cta p{color:var(--text-secondary)}
+.cta__pad{width:18px;height:18px;border-radius:50%;background:var(--secondary);box-shadow:0 0 16px var(--glow)}
+.form{display:flex;flex-direction:column;align-items:stretch;gap:0.5rem;width:100%;max-width:440px}
+.form__label{font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.12em;color:var(--secondary);text-align:left}
+.form__row{display:flex;gap:0.6rem}
+.form__field{flex:1;display:flex;align-items:center;position:relative}
+.form input{flex:1;min-height:48px;padding:0 1rem;font-family:var(--font-base);font-size:0.95rem;color:var(--text-primary);background:var(--bg-primary);border:1px solid var(--border-default);border-radius:var(--radius-md);transition:border-color var(--transition-fast),box-shadow var(--transition-fast)}
+.form input::placeholder{color:var(--text-secondary);opacity:0.7}
+.form input:focus{outline:none;border-color:var(--secondary);box-shadow:0 0 0 3px var(--glow)}
+.form input.is-valid{border-color:var(--border-success)}
+.form input.is-invalid{border-color:var(--border-error)}
+.form__feedback{font-size:0.82rem;min-height:1.3em;text-align:left;display:flex;align-items:center;gap:0.35rem}
+.form__feedback--error{color:var(--text-error)}
+.form__feedback--success{color:var(--text-success)}
+.cta__traces{position:absolute;inset:0;pointer-events:none}
+.cta__traces path{stroke:var(--secondary);stroke-width:1.5;fill:none;opacity:0.4}
+
+/* ---------- Footer ---------- */
+.footer{padding:3.5rem 0 2rem}
+.footer__grid{display:flex;align-items:flex-start;gap:2.5rem;flex-wrap:wrap}
+.footer__brand{flex:1 1 240px;display:flex;flex-direction:column;align-items:flex-start;gap:0.8rem}
+.footer__brand p{color:var(--text-secondary);font-size:0.9rem;max-width:34ch}
+.footer__col{flex:1 1 140px;display:flex;flex-direction:column;align-items:flex-start;gap:0.55rem}
+.footer__col h4{font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--secondary);margin-bottom:0.3rem}
+.footer__col a{text-decoration:none;font-size:0.9rem;color:var(--text-secondary);transition:color var(--transition-fast)}
+@media (hover:hover){.footer__col a:hover{color:var(--secondary)}}
+.footer__bottom{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--border-default)}
+.footer__fine{font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.1em;color:var(--text-secondary)}
+.footer__social{display:flex;gap:0.5rem}
+
+/* ---------- Reveal ---------- */
+.reveal{opacity:0;transform:translateY(14px);transition:opacity 500ms var(--ease-standard),transform 500ms var(--ease-standard)}
+.reveal.is-visible{opacity:1;transform:none}
+
+/* ---------- Responsive ---------- */
+@media (max-width:900px){
+  .hero__grid{flex-direction:column;align-items:flex-start}
+  .hero__visual{width:100%}
+  .grid-3{grid-template-columns:1fr}
+  .steps{flex-direction:column}
+  .steps__trace{display:none}
 }
-.btn--secondary:hover{background:rgba(var(--secondary-rgb),0.1);}
-.btn--secondary:focus-visible{outline:2px solid var(--secondary);outline-offset:2px;}
-.btn--secondary:active{transform:scale(0.97);}
-.btn--loading{pointer-events:none;opacity:0.7;position:relative;}
-.btn--loading::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  margin:auto;
-  width:1.5rem;
-  height:1.5rem;
-  border:2px solid currentColor;
-  border-radius:50%;
-  border-top-color:transparent;
-  animation:spin 0.8s linear infinite;
+@media (max-width:768px){
+  .menu-btn{display:inline-flex}
+  .nav{position:absolute;top:68px;left:0;right:0;flex-direction:column;align-items:stretch;background:var(--bg-primary);border-bottom:1px solid var(--border-default);padding:1rem 1.25rem;gap:0.25rem;display:none}
+  .nav.is-open{display:flex}
+  .nav a{padding:0.7rem 0.25rem;font-size:1rem}
+  .header__cta{display:none}
+  .form__row{flex-direction:column}
 }
-@keyframes spin{to{transform:rotate(360deg);}}
-.btn[disabled]{opacity:0.5;filter:grayscale(0.5);cursor:not-allowed;}
-.card{
-  background:var(--bg-secondary);
-  border:1px solid var(--border-default);
-  border-radius:var(--radius-md);
-  padding:1.5rem;
-  position:relative;
-  transition:border-color var(--transition-normal),transform var(--transition-fast),box-shadow var(--transition-normal);
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.15s!important}
+  .traces path{stroke-dashoffset:0;animation:none}
+  .traces .pulse{display:none}
+  .reveal{transition:opacity 200ms ease;transform:none!important}
 }
-.card:hover{
-  border-color:var(--secondary);
-  transform:translateY(-2px);
-  box-shadow:var(--shadow-md);
+@media (prefers-reduced-transparency:reduce){
+  .header{backdrop-filter:none}
 }
-.card[data-designator]::before{
-  content:attr(data-designator);
-  position:absolute;
-  top:-0.5rem;
-  left:1rem;
-  font-family:var(--font-mono);
-  font-size:0.75rem;
-  color:var(--text-secondary);
-}
-.icon{font-size:2rem;height:2rem;width:2rem;display:flex;align-items:center;justify-content:center;color:var(--primary);}
-.input-group{display:flex;flex-direction:column;gap:0.25rem;}
-.input-group label{font-size:0.75rem;font-family:var(--font-mono);color:var(--text-secondary);}
-.input-group input{
-  padding:0.5rem 0.75rem;
-  border:2px solid var(--border-default);
-  border-radius:var(--radius-sm);
-  background:var(--bg-primary);
-  color:var(--text-primary);
-  font:inherit;
-  transition:border-color var(--transition-normal),box-shadow var(--transition-normal);
-}
-.input-group input:focus{
-  outline:none;
-  border-color:var(--secondary);
-  box-shadow:0 0 0 2px rgba(var(--secondary-rgb),0.25);
-}
-.input-group input.valid{border-color:var(--border-success);}
-.input-group input.invalid{border-color:var(--border-error);}
-.feedback{font-size:0.75rem;height:1.25rem;display:flex;align-items:center;gap:0.25rem;}
-.feedback.valid{color:var(--text-success);}
-.feedback.invalid{color:var(--text-error);}
-.feedback.invalid::before{
-  font-family:"Material Icons Outlined";
-  font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;
-  content:"\e000"; /* error */
-}
-.feedback.success::before{
-  font-family:"Material Icons Outlined";
-  font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;
-  content:"\e86d"; /* check_circle */
-}
-.site-header{
-  position:sticky;
-  top:0;
-  z-index:var(--z-dropdown);
-  background:var(--bg-primary);
-  padding:0.75rem 0;
-  border-bottom:1px solid var(--border-default);
-}
-.site-header .logo{font-family:var(--font-heading);font-size:1.25rem;}
-.site-header nav{display:none;gap:1.5rem;}
-@media(min-width:640px){
-  .site-header nav{display:flex;}
-}
-.menu-toggle,.theme-toggle{background:none;border:none;font-size:1.5rem;color:var(--text-primary);cursor:pointer;}
-.menu-toggle{display:flex;}
-@media(min-width:640px){
-  .menu-toggle{display:none;}
-}
-.site-header[data-menu-open="true"] nav{display:flex;flex-direction:column;position:absolute;top:100%;left:0;right:0;background:var(--bg-primary);padding:1rem;border-top:1px solid var(--border-default);gap:0.5rem;}
-.hero{
-  min-height:80vh;
-  position:relative;
-  overflow:hidden;
-  padding:4rem 0;
-}
-.hero .trace{position:absolute;inset:0;pointer-events:none;}
-.hero .trace path{
-  fill:none;
-  stroke:var(--secondary);
-  stroke-width:2;
-  stroke-dasharray:8;
-  stroke-dashoffset:8;
-  animation:draw 2s forwards;
-}
-@keyframes draw{to{stroke-dashoffset:0;}}
-.hero .pulse{
-  position:absolute;
-  top:50%;left:50%;
-  width:12px;height:12px;
-  background:var(--secondary);
-  border-radius:50%;
-  transform:translate(-50%,-50%);
-  animation:pulseMove 4s ease-in-out infinite;
-}
-@keyframes pulseMove{
-  0%{transform:translate(-50%,-50%) translate(-80px,0);}
-  50%{transform:translate(-50%,-50%) translate(80px,0);}
-  100%{transform:translate(-50%,-50%) translate(-80px,0);}
-}
-.hero-content{position:relative;z-index:2;text-align:center;}
-.hero .eyebrow{font-family:var(--font-mono);font-size:0.875rem;letter-spacing:0.05em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:0.5rem;}
-.hero h1{font-size:2.25rem;margin:0.5rem 0;}
-.hero p{font-size:1.125rem;margin-bottom:1.5rem;max-width:32ch;margin-inline:auto;}
-.hero .cta-group{display:flex;flex-wrap:wrap;gap:0.75rem;justify-content:center;}
-.features{
-  padding:4rem 0;
-  position:relative;
-}
-.features .trace{position:absolute;inset:0;pointer-events:none;}
-.features .trace path{fill:none;stroke:var(--secondary);stroke-width:2;stroke-dasharray:6;stroke-dashoffset:6;animation:draw 2s forwards;}
-.features-grid{
-  display:grid;
-  gap:var(--spacing-gap);
-  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-}
-.feature-card{text-align:center;}
-.feature-card .icon{margin-bottom:1rem;}
-.feature-card h3{margin:0.5rem 0;font-size:1.25rem;}
-.features .designator{position:absolute;top:-0.5rem;left:1rem;font-family:var(--font-mono);font-size:0.75rem;color:var(--text-secondary);}
-.how-it-works{
-  padding:4rem 0;
-  position:relative;
-}
-.how-it-works .trace{position:absolute;inset:0;pointer-events:none;}
-.how-it-works .trace path{fill:none;stroke:var(--secondary);stroke-width:2;stroke-dasharray:10;stroke-dashoffset:10;animation:draw 2s forwards;}
-.steps{
-  display:grid;
-  gap:var(--spacing-gap);
-  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-}
-.step{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:0.75rem;
-}
-.step-number{
-  width:2.5rem;height:2.5rem;
-  background:var(--secondary);
-  color:var(--bg-primary);
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight:600;
-}
-.step .icon{font-size:1.75rem;color:var(--primary);}
-.testimonials{
-  padding:4rem 0;
-  background:var(--bg-secondary);
-}
-.testimonials-grid{
-  display:grid;
-  gap:var(--spacing-gap);
-  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
-}
-.testimonial{
-  background:var(--bg-primary);
-  border-left:4px solid var(--secondary);
-  padding:1.5rem;
-  border-radius:var(--radius-sm);
-}
-.testimonial p{font-style:italic;margin:0 0 1rem;}
-.testimonial .author{display:flex;align-items:center;gap:0.75rem;font-size:0.875rem;color:var(--text-secondary);}
-.testimonial .author::before{
-  font-family:"Material Icons Outlined";
-  font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;
-  content:"\e8f7"; /* format_quote */
-}
-.pricing{
-  padding:4rem 0;
-  position:relative;
-}
-.pricing .trace{position:absolute;inset:0;pointer-events:none;}
-.pricing .trace path{fill:none;stroke:var(--secondary);stroke-width:2;stroke-dasharray:8;stroke-dashoffset:8;animation:draw 2s forwards;}
-.pricing-grid{
-  display:grid;
-  gap:var(--spacing-gap);
-  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-}
-.tier{
-  border:2px solid var(--border-default);
-  border-radius:var(--radius-lg);
-  padding:2rem;
-  position:relative;
-}
-.tier--highlighted{
-  border-color:var(--secondary);
-  background:color-mix(in srgb, var(--secondary) 5%, transparent);
-}
-.tier .badge{
-  position:absolute;
-  top:-0.75rem;
-  left:1rem;
-  background:var(--secondary);
-  color:var(--bg-primary);
-  padding:0.25rem 0.5rem;
-  border-radius:var(--radius-sm);
-  font-size:0.75rem;
-  font-family:var(--font-mono);
-  text-transform:uppercase;
-}
-.tier h3{margin:0 0 0.5rem;font-size:1.5rem;}
-.tier .price{font-size:2rem;font-weight:600;margin:0.5rem 0;}
-.tier .price span{font-size:1rem;opacity:0.7;}
-.tier ul{margin:1.5rem 0;padding-left:1.2rem;}
-.tier li{margin:0.25rem 0;display:flex;align-items:center;gap:0.5rem;}
-.tier li::before{
-  font-family:"Material Icons Outlined";
-  font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;
-  content:"\e86d"; /* check */
-}
-.faq{
-  padding:4rem 0;
-}
-.faq-details{margin-bottom:1rem;border:1px solid var(--border-default);border-radius:var(--radius-md);overflow:hidden;}
-.faq-details summary{
-  padding:1rem;
-  font-weight:600;
-  cursor:pointer;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  list-style:none;
-}
-.faq-details summary::-webkit-details-marker{display:none;}
-.faq-details summary::after{
-  font-family:"Material Icons Outlined";
-  font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;
-  content:"\e5cf"; /* expand_more */
-  transition:transform var(--transition-normal);
-}
-.faq-details[open] summary::after{transform:rotate(180deg);}
-.faq-details[p] {padding:1rem;}
-.final-cta{
-  padding:4rem 0;
-  position:relative;
-  text-align:center;
-}
-.final-cta .trace{position:absolute;inset:0;pointer-events:none;}
-.final-cta .trace path{fill:none;stroke:var(--secondary);stroke-width:2;stroke-dasharray:12;stroke-dashoffset:12;animation:draw 2s forwards;}
-.final-cta .pad{
-  position:absolute;
-  inset:50%;
-  width:24px;height:24px;
-  margin:-12px 0 0 -12px;
-  background:var(--secondary);
-  border-radius:50%;
-}
-.final-cta form{
-  display:flex;
-  flex-direction:column;
-  gap:0.75rem;
-  max-width:360px;
-  margin-inline:auto;
-}
-.final-cta .input-group{width:100%;}
-.final-cta .btn{width:100%;}
-footer{
-  background:var(--bg-secondary);
-  color:var(--text-secondary);
-  padding:2rem 0;
-  font-size:0.875rem;
-}
-.footer-grid{
-  display:grid;
-  gap:var(--spacing-gap);
-  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-}
-.footer-grid h4{margin:0 0 0.5rem;font-size:1rem;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.05em;}
-.footer-grid a{display:block;margin:0.25rem 0;}
-.footer-bottom{
-  margin-top:2rem;
-  padding-top:1.5rem;
-  border-top:1px solid var(--border-default);
-  font-size:0.75rem;
-  text-align:center;
-  font-family:var(--font-mono);
-}
-.material-icons{font-family:"Material Icons Outlined";font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;}
-/* Reduced motion */
-@media(prefers-reduced-motion:reduce){
-  *,::before,::after{animation-duration:0.001ms !important;transition-duration:0.001ms !important;}
+@media (prefers-contrast:more){
+  :root{--border-default:rgba(120,70,5,0.8)}
+  :root[data-theme="dark"]{--border-default:rgba(230,170,110,0.85)}
 }
 </style>
 </head>
 <body>
-<header class="site-header flex items-center justify-between container" data-menu-open="false">
-  <div class="logo flex items-center gap-2">
-    <span class="material-icons">electronics</span>
-    <span>Nimbus</span>
+
+<header class="header">
+  <div class="container header__inner">
+    <a class="logo" href="#top"><span class="logo__pad" aria-hidden="true"></span>Traceboard</a>
+    <button class="icon-btn menu-btn" id="menu-toggle" aria-expanded="false" aria-controls="main-nav" aria-label="Open menu">
+      <span class="material-symbols-outlined">menu</span>
+    </button>
+    <nav class="nav" id="main-nav" aria-label="Main navigation">
+      <a href="#features">Features</a>
+      <a href="#how">How It Works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="header__actions">
+      <button class="icon-btn" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-outlined theme-icon--moon">dark_mode</span>
+        <span class="material-symbols-outlined theme-icon--sun">light_mode</span>
+      </button>
+      <a class="btn btn--primary header__cta" href="#cta">Start Building</a>
+    </div>
   </div>
-  <button class="menu-toggle material-icons" aria-label="Open menu" aria-controls="nav-menu">menu</button>
-  <nav id="nav-menu" class="flex items-center gap-4">
-    <a href="#features">Features</a>
-    <a href="#how-it-works">How It Works</a>
-    <a href="#testimonials">Testimonials</a>
-    <a href="#pricing">Pricing</a>
-    <a href="#faq">FAQ</a>
-    <a href="#final-cta">Get Started</a>
-  </nav>
-  <button class="theme-toggle material-icons" id="theme-toggle" aria-label="Toggle dark mode" aria-pressed="false">dark_mode</button>
 </header>
 
-<main>
-<section class="hero" id="hero">
-  <svg class="trace" width="100%" height="100%" viewBox="0 0 800 400" preserveAspectRatio="none">
-    <path d="M50 200 C150 50, 300 50, 400 200 S650 350, 750 200"/>
-  </svg>
-  <div class="pulse" aria-hidden="true"></div>
-  <div class="container flex flex-col items-center hero-content">
-    <div class="eyebrow">// SYSTEM ONLINE — REV 2.4</div>
-    <h1 class="text-heading">Rapid PCB Prototyping Platform</h1>
-    <p>Turn your schematics into fabricated boards in days, not weeks. Upload, review, and receive fully assembled PCBs with integrated testing.</p>
-    <div class="cta-group flex gap-*">
-      <button class="btn btn--primary">Start Free Trial</button>
-      <button class="btn btn--secondary">Watch Demo</button>
-    </div>
-    <div class="trust-strip text-mono text-center mt-6">
-      TRUSTED BY 4,000+ HARDWARE TEAMS
-    </div>
-  </div>
-</section>
+<main id="top">
 
-<section class="features" id="features">
-  <svg class="trace" width="100%" height="100%" viewBox="0 0 800 400" preserveAspectRatio="none">
-    <path d="M100 200 Q200 100 300 200 T500 200 T700 200"/>
-  </svg>
-  <div class="container">
-    <h2 class="text-heading text-center mb-6">Features</h2>
-    <div class="features-grid">
-      <article class="card" data-designator="U1">
-        <span class="icon material-icons">settings</span>
-        <h3>Design Rule Check</h3>
-        <p>Automated validation against industry standards to catch errors before fabrication.</p>
-      </article>
-      <article class="card" data-designator="U2">
-        <span class="icon material-icons">precision_manufacturing</span>
-        <h3>Fast Turnaround</h3>
-        <p>24‑hour express service for urgent projects, with real‑time status tracking.</p>
-      </article>
-      <article class="card" data-designator="U3">
-        <span class="icon material-icons">verified</span>
-        <h3>Quality Assurance</h3>
-        <p>Electrical testing and visual inspection on every board before shipment.</p>
-      </article>
-    </div>
-  </div>
-</section>
-
-<section class="how-it-works" id="how-it-works">
-  <svg class="trace" width="100%" height="100%" viewBox="0 0 800 400" preserveAspectRatio="none">
-    <path d="M100 200 L300 200 L500 200 L700 200"/>
-  </svg>
-  <div class="container">
-    <h2 class="text-heading text-center mb-6">How It Works</h2>
-    <div class="steps">
-      <div class="step">
-        <div class="step-number">01</div>
-        <span class="icon material-icons">upload_file</span>
-        <h3>Upload Your Gerbers</h3>
-        <p>Drag‑and‑drop your design files; our viewer lets you inspect every layer.</p>
-      </div>
-      <div class="step">
-        <div class="step-number">02</div>
-        <span class="icon material-icons">build</span>
-        <h3>Review & Approve</h3>
-        <p>Add notes, select finishes, and confirm the bill of materials with one click.</p>
-      </div>
-      <div class="step">
-        <div class="step-number">03</div>
-        <span class="icon material-icons">delivery_dining</span>
-        <h3>Receive Your Boards</h3>
-        <p>Boards are fabricated, tested, and shipped directly to your door.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="testimonials" id="testimonials">
-  <div class="container">
-    <h2 class="text-heading text-center mb-6">What Engineers Say</h2>
-    <div class="testimonials-grid">
-      <div class="testimonial">
-        <p>“Nimbus cut our prototype cycle from three weeks to just two days. The interface feels like a schematic come to life.”</p>
-        <div class="author">
-          <div>Alex Rivera</div>
-          <div>Hardware Lead, AeroDynamics</div>
+  <!-- HERO -->
+  <section class="hero">
+    <svg class="traces" viewBox="0 0 1200 520" preserveAspectRatio="none" aria-hidden="true">
+      <path id="t1" d="M0,80 H300 L360,140 H700"/>
+      <path id="t2" d="M0,440 H220 L290,370 H640"/>
+      <path id="t3" d="M1200,120 H900 L830,190 H560"/>
+      <circle cx="300" cy="80" r="5"/><circle cx="290" cy="370" r="5"/><circle cx="900" cy="120" r="5"/>
+      <circle class="pulse" r="4" style="offset-path:path('M0,80 H300 L360,140 H700')"/>
+      <circle class="pulse" r="4" style="offset-path:path('M1200,120 H900 L830,190 H560');animation-delay:1.4s"/>
+    </svg>
+    <div class="container hero__grid">
+      <div class="hero__copy">
+        <p class="eyebrow">// SYSTEM ONLINE, REV 2.4</p>
+        <h1>From schematic to shipped board in days.</h1>
+        <p>Traceboard pairs a constraint-driven PCB editor with same-week fabrication, so hardware teams iterate at software speed.</p>
+        <div class="hero__ctas">
+          <a class="btn btn--primary" href="#cta">Start Building</a>
+          <a class="btn btn--secondary" href="#how">See How It Works</a>
         </div>
       </div>
-      <div class="testimonial">
-        <p>“The automated DRC caught a spacing error that would have caused a costly re‑spin. Saved us thousands.”</p>
-        <div class="author">
-          <div>Priya Mehta</div>
-          <div>Senior PCB Designer, MedTech Inc.</div>
+      <div class="hero__visual">
+        <div class="board" role="img" aria-label="Stylized circuit board preview showing routed design blocks">
+          <div class="board__label"><span>TB-2040 MAIN</span><span>REV C</span></div>
+          <div class="board__chip">
+            <p class="board__chip-title">U1, ROUTER ENGINE</p>
+            <p class="board__chip-text">Auto-routed 1,204 nets. Zero rule violations across 6 layers.</p>
+          </div>
+          <div class="board__row">
+            <div class="board__chip">
+              <p class="board__chip-title">DRC</p>
+              <p class="board__chip-text">Passed</p>
+            </div>
+            <div class="board__chip">
+              <p class="board__chip-title">FAB SLOT</p>
+              <p class="board__chip-text">Thu 09:00</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<section class="pricing" id="pricing">
-  <svg class="trace" width="100%" height="100%" viewBox="0 0 800 400" preserveAspectRatio="none">
-    <path d="M100 200 Q200 100 300 200 T500 200 T700 200"/>
-  </svg>
-  <div class="container">
-    <h2 class="text-heading text-center mb-6">Pricing</h2>
-    <div class="pricing-grid">
-      <div class="tier">
-        <h3>Basic</h3>
-        <div class="price"><span>$</span>0<span>/mo</span></div>
-        <ul>
-          <li>Up to 2 layer boards</li>
-          <li>Standard FR‑4</li>
-          <li>Email support</li>
-        </ul>
-        <button class="btn btn--primary w-full">Choose Plan</button>
+  <!-- FEATURES -->
+  <section class="section" id="features">
+    <div class="container">
+      <div class="section__head">
+        <p class="eyebrow">// CAPABILITIES</p>
+        <h2>Every layer of the stack, on one board.</h2>
+        <p>Design, verify, and order without exporting a single file or leaving your browser.</p>
       </div>
-      <div class="tier tier--highlighted">
-        <div class="badge">MOST POPULAR</div>
-        <h3>Pro</h3>
-        <div class="price"><span>$</span>49<span>/mo</span></div>
-        <ul>
-          <li>Up to 6 layer boards</li>
-          <li>Advanced materials</li>
-          <li>Priority support</li>
-          <li>Design review</li>
-        </ul>
-        <button class="btn btn--primary w-full">Choose Plan</button>
-      </div>
-      <div class="tier">
-        <h3>Enterprise</h3>
-        <div class="price"><span>$</span>199<span>/mo</span></div>
-        <ul>
-          <li>Unlimited layers</li>
-          <li>Custom stack‑up</li>
-          <li>Dedicated engineer</li>
-          <li>SLA uptime</li>
-        </ul>
-        <button class="btn btn--primary w-full">Contact Sales</button>
+      <div class="grid-3">
+        <article class="chip-card reveal">
+          <span class="chip-card__designator">U1 · EDITOR</span>
+          <span class="chip-card__icon"><span class="material-symbols-outlined">memory</span></span>
+          <h3>Constraint-Driven Editor</h3>
+          <p>Set clearance, impedance, and via rules once. The router respects them on every net, flagging conflicts before they reach copper.</p>
+        </article>
+        <article class="chip-card reveal">
+          <span class="chip-card__designator">U2 · VERIFY</span>
+          <span class="chip-card__icon"><span class="material-symbols-outlined">rule</span></span>
+          <h3>Live DRC and Simulation</h3>
+          <p>Design-rule checks and signal-integrity estimates run as you route, not as a report you read after the fact.</p>
+        </article>
+        <article class="chip-card reveal">
+          <span class="chip-card__designator">U3 · FAB</span>
+          <span class="chip-card__icon"><span class="material-symbols-outlined">precision_manufacturing</span></span>
+          <h3>Same-Week Fabrication</h3>
+          <p>One click sends panelized Gerbers to a vetted fab. Boards arrive in five business days with full test reports.</p>
+        </article>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<section class="faq" id="faq">
-  <div class="container">
-    <h2 class="text-heading text-center mb-6">Frequently Asked Questions</h2>
-    <details class="faq-details">
-      <summary>What file formats do you accept?</summary>
-      <p>We accept Gerber RS‑274X, ODB++, and IPC‑2581. Zip files containing drill files are also supported.</p>
-    </details>
-    <details class="faq-details">
-      <summary>How fast is the turnaround?</summary>
-      <p>Standard service ships in 5‑7 business days. Express options are available for 24‑hour or 48‑hour delivery.</p>
-    </details>
-    <details class="faq-details">
-      <summary>Do you offer assembly services?</summary>
-      <p>Yes. We provide SMT and through‑hole assembly with optional functional testing.</p>
-    </details>
-  </div>
-</section>
-
-<section class="final-cta" id="final-cta">
-  <svg class="trace" width="100%" height="100%" viewBox="0 0 800 400" preserveAspectRatio="none">
-    <path d="M100 200 Q200 100 400 200 T700 200"/>
-  </svg>
-  <div class="pad" aria-hidden="true"></div>
-  <div class="container">
-    <h2 class="text-heading mb-4">Ready to Bring Your Design to Life?</h2>
-    <p class="mb-6">Join thousands of engineers who trust Nimbus for fast, reliable PCB fabrication.</p>
-    <form id="cta-form" class="flex flex-col items-stretch">
-      <div class="input-group w-full">
-        <label for="cta-email">Email address</label>
-        <input type="email" id="cta-email" placeholder="you@example.com" required autocomplete="email">
-        <div class="feedback" id="cta-feedback" aria-live="polite"></div>
+  <!-- HOW IT WORKS -->
+  <section class="section" id="how" style="background:var(--bg-secondary);border-top:1px solid var(--border-default);border-bottom:1px solid var(--border-default)">
+    <div class="container">
+      <div class="section__head">
+        <h2>Three steps from netlist to hardware.</h2>
+        <p>A single signal path carries your design from first schematic sheet to tested boards at your door.</p>
       </div>
-      <button type="submit" class="btn btn--primary w-full" id="cta-submit">Get Early Access</button>
-    </form>
-  </div>
-</section>
+      <div class="steps">
+        <div class="steps__trace" aria-hidden="true"></div>
+        <article class="step reveal">
+          <span class="step__node">01</span>
+          <h3><span class="material-symbols-outlined">schema</span>Capture</h3>
+          <p>Draw your schematic with a shared component library, or import KiCad and Altium projects directly.</p>
+        </article>
+        <article class="step reveal">
+          <span class="step__node">02</span>
+          <h3><span class="material-symbols-outlined">route</span>Route</h3>
+          <p>Auto-route under your constraints, then hand-tune critical nets with real-time rule feedback.</p>
+        </article>
+        <article class="step reveal">
+          <span class="step__node">03</span>
+          <h3><span class="material-symbols-outlined">local_shipping</span>Fabricate</h3>
+          <p>Lock the revision, pick a fab slot, and track production and electrical test from the same dashboard.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="section" id="testimonials">
+    <div class="container">
+      <div class="section__head">
+        <h2>Measured at the test points.</h2>
+        <p>Hardware leads on what changed when their board flow moved to Traceboard.</p>
+      </div>
+      <div class="grid-3">
+        <article class="quote-card reveal">
+          <span class="material-symbols-outlined">format_quote</span>
+          <blockquote>We cut our prototype loop from six weeks to nine days. The live DRC caught a via-in-pad issue that used to slip to fab review.</blockquote>
+          <p class="quote-card__attr"><strong>Mara Ellison</strong> · TP-01 · Lead EE, Kestrel Robotics</p>
+        </article>
+        <article class="quote-card reveal">
+          <span class="material-symbols-outlined">format_quote</span>
+          <blockquote>Importing our Altium libraries just worked. The team stopped emailing Gerbers around within the first sprint.</blockquote>
+          <p class="quote-card__attr"><strong>Devon Achebe</strong> · TP-02 · Hardware Director, Fieldline Sensors</p>
+        </article>
+        <article class="quote-card reveal">
+          <span class="material-symbols-outlined">format_quote</span>
+          <blockquote>Boards arrive with test reports attached to the exact revision we locked. Our bring-up notes finally match what is on the bench.</blockquote>
+          <p class="quote-card__attr"><strong>Ingrid Sato</strong> · TP-03 · Founder, Northloop Audio</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="section" id="pricing" style="background:var(--bg-secondary);border-top:1px solid var(--border-default);border-bottom:1px solid var(--border-default)">
+    <div class="container">
+      <div class="section__head">
+        <h2>Pricing, silkscreened in plain text.</h2>
+        <p>Every tier includes unlimited private projects and the full editor. Fabrication billed per board.</p>
+      </div>
+      <div class="grid-3">
+        <article class="price-card reveal">
+          <span class="price-card__tier">PROTO</span>
+          <p class="price-card__price">$0<span> /mo</span></p>
+          <ul>
+            <li><span class="material-symbols-outlined">check</span>2-layer boards up to 100x80mm</li>
+            <li><span class="material-symbols-outlined">check</span>Standard 10-day fabrication</li>
+            <li><span class="material-symbols-outlined">check</span>Community component library</li>
+          </ul>
+          <a class="btn btn--secondary" href="#cta">Start Free</a>
+        </article>
+        <article class="price-card price-card--featured reveal">
+          <span class="price-card__badge">MOST POPULAR</span>
+          <span class="price-card__tier">GOLD PIN</span>
+          <p class="price-card__price">$49<span> /mo</span></p>
+          <ul>
+            <li><span class="material-symbols-outlined">check</span>Up to 6 layers, HDI vias</li>
+            <li><span class="material-symbols-outlined">check</span>5-day fabrication with e-test</li>
+            <li><span class="material-symbols-outlined">check</span>Signal-integrity estimates</li>
+            <li><span class="material-symbols-outlined">check</span>Team revision locking</li>
+          </ul>
+          <a class="btn btn--primary" href="#cta">Start Building</a>
+        </article>
+        <article class="price-card reveal">
+          <span class="price-card__tier">PRODUCTION</span>
+          <p class="price-card__price">$199<span> /mo</span></p>
+          <ul>
+            <li><span class="material-symbols-outlined">check</span>Unlimited layers and panelization</li>
+            <li><span class="material-symbols-outlined">check</span>Priority fab slots, 3-day turns</li>
+            <li><span class="material-symbols-outlined">check</span>Dedicated process engineer</li>
+          </ul>
+          <a class="btn btn--secondary" href="#cta">Contact Sales</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq">
+    <div class="container">
+      <div class="section__head">
+        <h2>Frequently probed questions.</h2>
+      </div>
+      <div class="faq">
+        <details>
+          <summary>Which file formats can I import?<span class="material-symbols-outlined">expand_more</span></summary>
+          <p class="faq__body">Traceboard imports KiCad 6 and 7 projects, Altium Designer schematics and layouts, and standard IPC-2581 and ODB++ packages. Gerber-only imports open as read-only reference layers.</p>
+        </details>
+        <details>
+          <summary>How fast is same-week fabrication, really?<span class="material-symbols-outlined">expand_more</span></summary>
+          <p class="faq__body">Orders locked before Tuesday 14:00 UTC ship Friday of the same week on the Gold Pin tier. Electrical test and inspection reports are attached to your revision before dispatch.</p>
+        </details>
+        <details>
+          <summary>Do you support controlled impedance?<span class="material-symbols-outlined">expand_more</span></summary>
+          <p class="faq__body">Yes. Pick a stackup from the fab library, enter target impedances per net class, and the editor computes trace widths and checks them continuously as you route.</p>
+        </details>
+        <details>
+          <summary>Who owns my design data?<span class="material-symbols-outlined">expand_more</span></summary>
+          <p class="faq__body">You do, always. Projects export at any time as open formats, and deleting a project purges it from our storage within 30 days. We never use customer designs for training or marketing.</p>
+        </details>
+        <details>
+          <summary>Can I assemble boards as well as fabricate them?<span class="material-symbols-outlined">expand_more</span></summary>
+          <p class="faq__body">Turnkey assembly is available on Gold Pin and Production tiers for BOMs sourced from our partnered distributors. You approve the final pick-and-place file before anything runs.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="section cta" id="cta">
+    <svg class="cta__traces" viewBox="0 0 1200 400" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0,60 H420 L520,160"/><path d="M0,340 H420 L520,240"/>
+      <path d="M1200,60 H780 L680,160"/><path d="M1200,340 H780 L680,240"/>
+    </svg>
+    <div class="container cta__inner">
+      <span class="cta__pad" aria-hidden="true"></span>
+      <h2>Power up your next revision.</h2>
+      <p>Join the waitlist for the Rev 2.5 beta and get two prototype boards fabricated free.</p>
+      <form class="form" id="cta-form" novalidate>
+        <label class="form__label" for="cta-email">EMAIL // WORK ADDRESS</label>
+        <div class="form__row">
+          <div class="form__field">
+            <input type="email" id="cta-email" name="email" placeholder="you@hardwarelab.com" autocomplete="email" required aria-describedby="cta-feedback">
+          </div>
+          <button class="btn btn--primary" id="cta-submit" type="submit">Request Access</button>
+        </div>
+        <p class="form__feedback" id="cta-feedback" aria-live="polite"></p>
+      </form>
+    </div>
+  </section>
+
 </main>
 
-<footer class="site-footer">
-  <div class="container footer-grid">
-    <div>
-      <h4>Product</h4>
-      <a href="#features">Features</a>
-      <a href="#how-it-works">How It Works</a>
-      <a href="#pricing">Pricing</a>
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <a class="logo" href="#top"><span class="logo__pad" aria-hidden="true"></span>Traceboard</a>
+        <p>Constraint-driven PCB design and same-week fabrication for teams that ship hardware.</p>
+      </div>
+      <div class="footer__col">
+        <h4>Product</h4>
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#how">Fabrication</a>
+      </div>
+      <div class="footer__col">
+        <h4>Company</h4>
+        <a href="#testimonials">Customers</a>
+        <a href="#cta">Careers</a>
+        <a href="#cta">Contact</a>
+      </div>
+      <div class="footer__col">
+        <h4>Resources</h4>
+        <a href="#faq">FAQ</a>
+        <a href="#cta">Stackup Library</a>
+        <a href="#cta">Design Rules</a>
+      </div>
+      <div class="footer__col">
+        <h4>Legal</h4>
+        <a href="#cta">Privacy</a>
+        <a href="#cta">Terms</a>
+      </div>
     </div>
-    <div>
-      <h4>Company</h4>
-      <a href="#">About Us</a>
-      <a href="#">Careers</a>
-      <a href="#">Blog</a>
+    <div class="footer__bottom">
+      <p class="footer__fine">© 2026 TRACEBOARD SYSTEMS, ASSEMBLED WITH FR-4 · REV C · SN 2026-0117</p>
+      <div class="footer__social">
+        <a class="icon-btn" href="#cta" aria-label="Traceboard on GitHub"><span class="material-symbols-outlined">code</span></a>
+        <a class="icon-btn" href="#cta" aria-label="Traceboard community forum"><span class="material-symbols-outlined">forum</span></a>
+        <a class="icon-btn" href="#cta" aria-label="Traceboard video channel"><span class="material-symbols-outlined">play_circle</span></a>
+      </div>
     </div>
-    <div>
-      <h4>Resources</h4>
-      <a href="#">Documentation</a>
-      <a href="#">Webinars</a>
-      <a href="#">Community Forum</a>
-    </div>
-    <div>
-      <h4>Legal</h4>
-      <a href="#">Terms of Service</a>
-      <a href="#">Privacy Policy</a>
-      <a href="#">Cookie Settings</a>
-    </div>
-  </div>
-  <div class="footer-bottom">
-    © 2026 Nimbus — Assembled with FR‑4
   </div>
 </footer>
 
 <script>
-/* Theme persistence */
-const htmlEl = document.documentElement;
-const themeToggle = document.getElementById('theme-toggle');
-const storedTheme = localStorage.getItem('theme');
-if (storedTheme) {
-  htmlEl.classList.remove('light','dark');
-  htmlEl.classList.add(storedTheme);
-  themeToggle.setAttribute('aria-pressed', storedTheme === 'dark');
-} else {
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  htmlEl.classList.add(prefersDark ? 'dark' : 'light');
-  themeToggle.setAttribute('aria-pressed', prefersDark);
-}
-themeToggle.addEventListener('click', () => {
-  const isDark = htmlEl.classList.toggle('dark');
-  htmlEl.classList.toggle('light', !isDark);
-  themeToggle.setAttribute('aria-pressed', isDark);
-  localStorage.setItem('theme', isDark ? 'dark' : 'light');
-});
+(function(){
+  "use strict";
 
-/* Mobile menu */
-const menuBtn = document.querySelector('.menu-toggle');
-const header = document.querySelector('.site-header');
-menuBtn.addEventListener('click', () => {
-  const open = header.getAttribute('data-menu-open') === 'true';
-  header.setAttribute('data-menu-open', String(!open));
-  menuBtn.setAttribute('aria-expanded', String(!open));
-});
-
-/* Trace drawing animation on scroll */
-const observerOptions = { rootMargin: '0px', threshold: 0.1 };
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('active');
-    }
-  });
-}, observerOptions);
-document.querySelectorAll('.trace').forEach(svg => observer.observe(svg));
-
-/* Form handling */
-const form = document.getElementById('cta-form');
-const submitBtn = document.getElementById('cta-submit');
-const feedback = document.getElementById('cta-feedback');
-form.addEventListener('submit', e => {
-  e.preventDefault();
-  submitBtn.classList.add('btn--loading');
-  feedback.textContent = '';
-  const email = form.elements['cta-email'].value.trim();
-  // simple validation
-  if (!email.includes('@')) {
-    feedback.className = 'feedback invalid';
-    feedback.textContent = 'Please enter a valid email address.';
-    submitBtn.classList.remove('btn--loading');
-    return;
+  /* Theme toggle */
+  var toggle=document.getElementById("theme-toggle");
+  function syncToggle(){
+    var dark=document.documentElement.dataset.theme==="dark";
+    toggle.setAttribute("aria-pressed",String(dark));
+    toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
   }
-  // simulate success
-  setTimeout(() => {
-    feedback.className = 'feedback valid';
-    feedback.textContent = 'Thanks! We’ll be in touch shortly.';
-    form.reset();
-    submitBtn.classList.remove('btn--loading');
-  }, 800);
-});
+  toggle.addEventListener("click",function(){
+    var next=document.documentElement.dataset.theme==="dark"?"light":"dark";
+    document.documentElement.dataset.theme=next;
+    localStorage.setItem("theme",next);
+    syncToggle();
+  });
+  syncToggle();
 
-/* Add reduce-motion class if needed */
-if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-  htmlEl.classList.add('reduce-motion');
-}
+  /* Mobile menu */
+  var menuBtn=document.getElementById("menu-toggle");
+  var nav=document.getElementById("main-nav");
+  function closeMenu(){
+    nav.classList.remove("is-open");
+    menuBtn.setAttribute("aria-expanded","false");
+    menuBtn.setAttribute("aria-label","Open menu");
+  }
+  menuBtn.addEventListener("click",function(){
+    var open=nav.classList.toggle("is-open");
+    menuBtn.setAttribute("aria-expanded",String(open));
+    menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");
+  });
+  nav.addEventListener("click",function(e){if(e.target.tagName==="A")closeMenu();});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape")closeMenu();});
+
+  /* Scroll reveal with stagger */
+  var reveals=document.querySelectorAll(".reveal");
+  if("IntersectionObserver" in window){
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){
+          var el=entry.target;
+          var idx=Array.prototype.indexOf.call(el.parentNode.children,el);
+          el.style.transitionDelay=(idx*70)+"ms";
+          el.classList.add("is-visible");
+          io.unobserve(el);
+        }
+      });
+    },{threshold:0.15});
+    reveals.forEach(function(el){io.observe(el);});
+  }else{
+    reveals.forEach(function(el){el.classList.add("is-visible");});
+  }
+
+  /* CTA form states */
+  var form=document.getElementById("cta-form");
+  var input=document.getElementById("cta-email");
+  var feedback=document.getElementById("cta-feedback");
+  var submitBtn=document.getElementById("cta-submit");
+  var originalLabel=submitBtn.textContent;
+
+  function setFeedback(type,msg,icon){
+    feedback.className="form__feedback form__feedback--"+type;
+    feedback.innerHTML='<span class="material-symbols-outlined" aria-hidden="true">'+icon+'</span>'+msg;
+  }
+  input.addEventListener("input",function(){
+    input.classList.remove("is-valid","is-invalid");
+    feedback.className="form__feedback";
+    feedback.textContent="";
+  });
+  form.addEventListener("submit",function(e){
+    e.preventDefault();
+    var val=input.value.trim();
+    var valid=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val);
+    if(!valid){
+      input.classList.add("is-invalid");
+      input.classList.remove("is-valid");
+      setFeedback("error","Enter a valid work email to request access.","error");
+      input.focus();
+      return;
+    }
+    input.classList.remove("is-invalid");
+    submitBtn.disabled=true;
+    submitBtn.innerHTML='<span class="material-symbols-outlined spinner">progress_activity</span>Routing';
+    setTimeout(function(){
+      submitBtn.disabled=false;
+      submitBtn.textContent=originalLabel;
+      input.classList.add("is-valid");
+      setFeedback("success","Request received. Check your inbox for a confirmation.","check_circle");
+      form.reset();
+    },1200);
+  });
+})();
 </script>
 </body>
 </html>

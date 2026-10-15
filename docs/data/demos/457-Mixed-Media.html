@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Papercut Studio - Digital Mixed-Media Collage Tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Caveat:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --primary:#B5854B; --secondary:#2C3E6B;
+  --bg-primary:#F5F0E8; --bg-secondary:#FAFAF5;
+  --text-primary:#2C2C2C; --text-secondary:#2C3E6B;
+  --text-success:#2E7D32; --text-error:#B03A3A;
+  --border-default:#B5854B; --border-error:#D94F4F; --border-success:#4CAF50;
+  --accent-red:#D94F4F; --tape-yellow:#E8D5A0; --ink-blue:#2C3E6B;
+  --torn-white:#FAFAF5; --marker-green:#4CAF50;
+  --on-accent:#F5F0E8; --on-danger:#F5F0E8;
+  --nav-bg:rgba(245,240,232,.88);
+  --font-base:'Inter',sans-serif; --font-serif:'Libre Baskerville',serif; --font-hand:'Caveat',cursive;
+  --radius-sm:2px; --radius-md:4px; --radius-lg:8px;
+  --shadow-sm:2px 2px 5px rgba(0,0,0,.1); --shadow-md:4px 6px 14px rgba(0,0,0,.16);
+  --spacing-gap:1.5rem;
+  --transition-fast:150ms; --transition-normal:300ms;
+  --ease-standard:cubic-bezier(.4,0,.2,1);
+  --tilt-a:-2deg; --tilt-b:1.5deg; --tilt-c:-.75deg;
+  --z-dropdown:1000; --z-modal:2000; --z-toast:3000;
+  --torn-1:polygon(0 3%,4% 0,15% 2%,30% 0,52% 3%,71% 0,88% 2%,100% 0,99% 25%,100% 55%,98% 80%,100% 100%,82% 98%,60% 100%,38% 97%,18% 100%,0 96%,2% 70%,0 40%);
+  --torn-2:polygon(2% 0,12% 3%,26% 0,44% 2%,63% 0,80% 3%,96% 0,100% 18%,98% 42%,100% 66%,98% 90%,100% 100%,78% 97%,55% 100%,33% 98%,12% 100%,0 97%,1% 72%,0 48%,2% 22%);
+  --torn-3:polygon(0 0,10% 2%,24% 0,41% 3%,58% 0,76% 2%,93% 0,100% 4%,99% 30%,100% 58%,98% 84%,100% 98%,85% 100%,64% 97%,42% 100%,20% 98%,0 100%,2% 76%,0 50%,1% 24%);
+}
+:root[data-theme="dark"]{
+  --primary:#D4A86A; --secondary:#8FA3D9;
+  --bg-primary:#211E1A; --bg-secondary:#2C2823;
+  --text-primary:#F5F0E8; --text-secondary:#D9B98A;
+  --text-success:#81C98C; --text-error:#F08A8A;
+  --border-default:#8A6F45; --border-error:#E4686D; --border-success:#66BB6A;
+  --accent-red:#E4686D; --marker-green:#66BB6A;
+  --on-accent:#211E1A; --on-danger:#211E1A;
+  --nav-bg:rgba(33,30,26,.88);
+  --shadow-sm:2px 2px 5px rgba(0,0,0,.4); --shadow-md:4px 6px 14px rgba(0,0,0,.5);
+}
+/* ============ BASE ============ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font-base);font-size:1rem;line-height:1.6;color:var(--text-primary);
+  background-color:var(--bg-primary);overflow-x:clip;
+  background-image:repeating-linear-gradient(0deg,rgba(0,0,0,.015) 0 1px,transparent 1px 3px),repeating-linear-gradient(90deg,rgba(0,0,0,.012) 0 1px,transparent 1px 4px);
+  transition:background-color var(--transition-fast) var(--ease-standard),color var(--transition-fast) var(--ease-standard);
+}
+img{max-width:100%;display:block}
+a{color:var(--text-secondary);text-decoration-thickness:1px;text-underline-offset:3px}
+h1,h2,h3{font-family:var(--font-serif);line-height:1.12;letter-spacing:-.02em;color:var(--text-primary)}
+section{scroll-margin-top:5.5rem;padding-block:clamp(4rem,8vw,7rem)}
+.wrap{max-width:1200px;margin-inline:auto;padding-inline:1.25rem}
+@media(min-width:768px){.wrap{padding-inline:2rem}}
+.mso{font-family:'Material Symbols Outlined';font-weight:normal;font-style:normal;font-size:1.25rem;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;word-wrap:normal;direction:ltr;-webkit-font-smoothing:antialiased}
+.visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.skip-link{position:absolute;left:1rem;top:-4rem;z-index:var(--z-toast);background:var(--secondary);color:var(--on-accent);padding:.75rem 1.25rem;border-radius:var(--radius-md);transition:top var(--transition-fast) var(--ease-standard)}
+.skip-link:focus{top:1rem}
+:focus-visible{outline:3px solid var(--secondary);outline-offset:3px;box-shadow:0 0 0 6px rgba(44,62,107,.18);border-radius:var(--radius-sm)}
+/* ============ TAPE & PIN ============ */
+.tape{position:absolute;width:6.5rem;height:1.75rem;background:rgba(232,213,160,.85);background-image:repeating-linear-gradient(90deg,rgba(0,0,0,.04) 0 2px,transparent 2px 5px);box-shadow:var(--shadow-sm);clip-path:polygon(0 15%,3% 0,97% 5%,100% 20%,98% 85%,96% 100%,4% 95%,0 80%);pointer-events:none}
+.pin{position:absolute;width:1.1rem;height:1.1rem;border-radius:50%;background:radial-gradient(circle at 32% 30%,#f2b8b8,var(--accent-red) 55%,#8f2f2f);box-shadow:2px 3px 4px rgba(0,0,0,.3);pointer-events:none}
+.pin--blue{background:radial-gradient(circle at 32% 30%,#b9c6e8,var(--ink-blue) 55%,#16224a)}
+.pin--green{background:radial-gradient(circle at 32% 30%,#b9e2bb,var(--marker-green) 55%,#256b28)}
+/* ============ BUTTONS ============ */
+.btn{display:flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;min-width:44px;padding:.7rem 1.5rem;font-family:var(--font-base);font-weight:600;font-size:1rem;border:none;border-radius:var(--radius-md);cursor:pointer;text-decoration:none;position:relative;transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard),filter var(--transition-fast) var(--ease-standard),background-color var(--transition-fast) var(--ease-standard)}
+.btn--primary{background:var(--secondary);color:var(--on-accent);box-shadow:var(--shadow-sm)}
+.btn--secondary{background:transparent;color:var(--text-secondary);outline:2px solid var(--secondary);outline-offset:-2px}
+.btn--danger{background:var(--accent-red);color:var(--on-danger);box-shadow:var(--shadow-sm)}
+.btn:active{transform:scale(.97)}
+.btn.is-disabled,.btn:disabled{opacity:.5;filter:grayscale(.6);cursor:not-allowed}
+.btn.is-loading{pointer-events:none}
+.btn.is-loading .btn__label{visibility:hidden}
+.btn.is-loading::after{content:"";position:absolute;width:1.25rem;height:1.25rem;border:3px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(hover:hover) and (pointer:fine){
+  .btn--primary:hover,.btn--danger:hover{filter:brightness(1.1);box-shadow:var(--shadow-md)}
+  .btn--secondary:hover{background:var(--secondary);color:var(--on-accent)}
+}
+/* ============ NAV ============ */
+.nav{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--nav-bg);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:2px dashed var(--border-default);transition:background-color var(--transition-fast) var(--ease-standard)}
+.nav__inner{display:flex;align-items:center;justify-content:space-between;gap:1rem;height:4.25rem;max-width:1200px;margin-inline:auto;padding-inline:1.25rem}
+@media(min-width:768px){.nav__inner{padding-inline:2rem}}
+.nav__brand{display:flex;align-items:baseline;gap:.4rem;text-decoration:none;font-family:var(--font-serif);font-weight:700;font-size:1.25rem;color:var(--text-primary)}
+.nav__brand em{font-family:var(--font-hand);font-style:normal;font-size:1.35rem;color:var(--primary)}
+.nav__links{display:none;align-items:center;gap:1.75rem;list-style:none}
+.nav__links a{font-weight:500;font-size:.95rem;text-decoration:none;color:var(--text-primary);position:relative}
+.nav__links a::after{content:"";position:absolute;left:0;bottom:-4px;width:0;height:2px;background:var(--primary);transition:width var(--transition-fast) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.nav__links a:hover::after{width:100%}}
+.nav__actions{display:flex;align-items:center;gap:.5rem}
+.nav__toggle,.nav__menu-btn{display:flex;align-items:center;justify-content:center;width:44px;height:44px;background:transparent;border:2px solid var(--border-default);border-radius:var(--radius-md);color:var(--text-primary);cursor:pointer;transition:background-color var(--transition-fast) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.nav__toggle:hover,.nav__menu-btn:hover{background:var(--tape-yellow)}}
+.nav__menu-btn .mso,.nav__toggle .mso{font-size:1.4rem}
+.nav__panel{display:none;flex-direction:column;gap:.25rem;padding:1rem 1.25rem 1.5rem;background:var(--bg-secondary);border-bottom:2px dashed var(--border-default)}
+.nav__panel.is-open{display:flex}
+.nav__panel a{padding:.75rem .5rem;font-weight:500;text-decoration:none;color:var(--text-primary);border-bottom:1px dashed var(--border-default)}
+@media(min-width:768px){.nav__links{display:flex}.nav__menu-btn{display:none}.nav__panel{display:none!important}}
+/* ============ HERO ============ */
+.hero{position:relative;padding-top:clamp(3rem,6vw,5rem);padding-bottom:clamp(4rem,8vw,6rem);overflow:clip}
+.hero__grid{display:flex;flex-direction:column;gap:3rem;align-items:center}
+@media(min-width:900px){.hero__grid{flex-direction:row;gap:2.5rem}}
+.hero__text{flex:1 1 52%;position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:1.25rem}
+.hero__eyebrow{font-family:var(--font-hand);font-size:1.4rem;color:var(--text-secondary);background:var(--tape-yellow);padding:.15rem 1rem;transform:rotate(var(--tilt-c));box-shadow:var(--shadow-sm)}
+.hero__title{font-size:clamp(2.4rem,5.5vw,4rem);background:var(--bg-secondary);padding:1.5rem 1.75rem;clip-path:var(--torn-1);box-shadow:var(--shadow-md);transform:rotate(var(--tilt-c));position:relative;transition:background-color var(--transition-fast) var(--ease-standard)}
+.hero__title .accent{color:var(--primary);font-style:italic}
+.hero__sub{max-width:34rem;color:var(--text-primary);font-size:1.05rem;padding-left:.5rem}
+.hero__ctas{display:flex;flex-wrap:wrap;gap:1rem;align-items:center;padding-left:.5rem;position:relative}
+.hero__note{font-family:var(--font-hand);font-size:1.35rem;color:var(--text-secondary);transform:rotate(-3deg);display:flex;align-items:center;gap:.25rem}
+.hero__note .mso{transform:rotate(45deg)}
+.hero__visual{flex:1 1 44%;position:relative;min-height:22rem;width:100%}
+.scrap{position:absolute;box-shadow:var(--shadow-md)}
+.scrap--photo{top:0;right:4%;width:62%;aspect-ratio:4/3;background:linear-gradient(135deg,#c9a06a,#8FA3D9 55%,#5a6f9e);background-blend-mode:multiply;transform:rotate(2.5deg);clip-path:var(--torn-2)}
+.scrap--photo::after{content:"";position:absolute;inset:0;background:repeating-radial-gradient(circle at 30% 40%,rgba(250,250,245,.14) 0 2px,transparent 2px 6px)}
+.scrap--paint{bottom:8%;left:2%;width:52%;aspect-ratio:1/1;background:var(--accent-red);background-image:repeating-linear-gradient(45deg,rgba(0,0,0,.08) 0 3px,transparent 3px 9px);clip-path:var(--torn-3);transform:rotate(var(--tilt-a))}
+.scrap--note{bottom:0;right:8%;width:44%;background:var(--bg-secondary);clip-path:var(--torn-1);transform:rotate(1.5deg);padding:1.5rem 1.25rem 1.25rem;font-family:var(--font-hand);font-size:1.3rem;color:var(--text-secondary);line-height:1.3}
+.hero__visual .tape--a{top:-.6rem;right:22%;transform:rotate(-6deg);z-index:3}
+.hero__visual .tape--b{bottom:22%;left:-1rem;transform:rotate(10deg);z-index:3}
+.hero__visual .pin--a{top:6%;left:30%;z-index:4}
+/* ============ SECTION HEADINGS ============ */
+.sec-head{display:flex;flex-direction:column;align-items:flex-start;gap:.9rem;margin-bottom:3rem}
+.sec-head__eyebrow{font-family:var(--font-hand);font-size:1.35rem;color:var(--text-secondary);background:var(--tape-yellow);padding:.1rem .9rem;transform:rotate(var(--tilt-c));box-shadow:var(--shadow-sm)}
+.sec-head__title{font-size:clamp(1.75rem,3.5vw,2.6rem);background:var(--bg-secondary);padding:.9rem 1.5rem;clip-path:var(--torn-2);box-shadow:var(--shadow-sm);transition:background-color var(--transition-fast) var(--ease-standard)}
+.sec-head__sub{max-width:38rem;color:var(--text-primary)}
+/* ============ CARDS ============ */
+.card{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:.9rem;background:var(--bg-secondary);padding:2.25rem 1.75rem 1.75rem;box-shadow:var(--shadow-sm);border:none;transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),background-color var(--transition-fast) var(--ease-standard)}
+.card--t1{clip-path:var(--torn-1)}.card--t2{clip-path:var(--torn-2)}.card--t3{clip-path:var(--torn-3)}
+.card:focus-within{outline:3px solid var(--secondary);outline-offset:3px}
+@media(hover:hover) and (pointer:fine){.card:hover{transform:translateY(-2px) rotate(0deg);box-shadow:var(--shadow-md)}}
+.card__chip{display:flex;align-items:center;justify-content:center;width:3rem;height:3rem;background:var(--tape-yellow);box-shadow:var(--shadow-sm);transform:rotate(-4deg)}
+.card__chip .mso{font-size:1.5rem;color:var(--ink-blue)}
+.card__title{font-size:1.3rem}
+.card__body{color:var(--text-primary);font-size:.98rem}
+.card .tape{top:-.7rem;left:50%;margin-left:-3.25rem;transform:rotate(-3deg)}
+/* ============ FEATURES ============ */
+.features__grid{display:flex;flex-direction:column;gap:2rem}
+@media(min-width:768px){
+  .features__grid{flex-direction:row;align-items:flex-start;gap:var(--spacing-gap)}
+  .features__grid .card{flex:1}
+  .features__grid .card:nth-child(1){transform:rotate(var(--tilt-a));margin-top:0}
+  .features__grid .card:nth-child(2){transform:rotate(var(--tilt-b));margin-top:2.5rem}
+  .features__grid .card:nth-child(3){transform:rotate(var(--tilt-c));margin-top:.75rem}
+}
+/* ============ STEPS ============ */
+.steps__row{display:flex;flex-direction:column;gap:2.5rem;position:relative}
+@media(min-width:768px){
+  .steps__row{flex-direction:row;align-items:stretch;gap:var(--spacing-gap)}
+  .steps__row::before{content:"";position:absolute;top:2.4rem;left:8%;right:8%;border-top:2px dashed var(--primary);z-index:0}
+}
+.step{position:relative;flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:.75rem;background:var(--bg-secondary);clip-path:var(--torn-3);box-shadow:var(--shadow-sm);padding:2rem 1.5rem 1.5rem;z-index:1;transition:background-color var(--transition-fast) var(--ease-standard)}
+.step__num{font-family:var(--font-hand);font-weight:700;font-size:1.6rem;color:var(--text-secondary);background:var(--tape-yellow);padding:.05rem .9rem;box-shadow:var(--shadow-sm);transform:rotate(-2deg)}
+.step__title{font-size:1.15rem}
+.step__body{font-size:.95rem}
+.step .mso{color:var(--primary);font-size:1.6rem}
+/* ============ TESTIMONIALS ============ */
+.quotes__grid{display:flex;flex-direction:column;gap:2rem}
+@media(min-width:768px){.quotes__grid{flex-direction:row;align-items:flex-start;gap:var(--spacing-gap)}.quotes__grid .quote{flex:1}}
+.quote{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:.85rem;background:var(--bg-secondary);clip-path:var(--torn-2);box-shadow:var(--shadow-sm);padding:2.5rem 1.6rem 1.6rem;transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),background-color var(--transition-fast) var(--ease-standard)}
+@media(min-width:768px){.quote:nth-child(1){transform:rotate(var(--tilt-a))}.quote:nth-child(2){transform:rotate(var(--tilt-b));margin-top:1.5rem}.quote:nth-child(3){transform:rotate(var(--tilt-c))}}
+@media(hover:hover) and (pointer:fine){.quote:hover{transform:translateY(-2px) rotate(0deg);box-shadow:var(--shadow-md)}}
+.quote__photo{width:100%;aspect-ratio:16/7;background:linear-gradient(120deg,#d9b98a,#8FA3D9);background-image:repeating-linear-gradient(0deg,rgba(0,0,0,.06) 0 2px,transparent 2px 5px),linear-gradient(120deg,#d9b98a,#8FA3D9);box-shadow:var(--shadow-sm)}
+.quote__photo--b{background-image:repeating-linear-gradient(90deg,rgba(0,0,0,.06) 0 2px,transparent 2px 5px),linear-gradient(120deg,#c98a8a,#d9b98a)}
+.quote__photo--c{background-image:repeating-linear-gradient(45deg,rgba(0,0,0,.05) 0 2px,transparent 2px 6px),linear-gradient(120deg,#9db98a,#8FA3D9)}
+.quote__stars{display:flex;gap:.15rem;color:var(--marker-green)}
+.quote__stars .mso{font-size:1.1rem;font-variation-settings:'FILL' 1}
+.quote__text{font-family:var(--font-serif);font-size:1rem;line-height:1.55}
+.quote__sig{font-family:var(--font-hand);font-size:1.3rem;color:var(--text-secondary)}
+.quote__role{font-size:.85rem;color:var(--text-primary);opacity:.85;margin-top:-.5rem}
+.quote .tape{top:-.7rem;left:50%;margin-left:-3.25rem;transform:rotate(2deg)}
+/* ============ PRICING ============ */
+.pricing__grid{display:flex;flex-direction:column;gap:2.5rem}
+@media(min-width:900px){.pricing__grid{flex-direction:row;align-items:center;gap:var(--spacing-gap)}.pricing__grid .tier{flex:1}}
+.tier{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:1rem;background:var(--bg-secondary);clip-path:var(--torn-1);box-shadow:var(--shadow-sm);padding:2.5rem 1.75rem 2rem;transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),background-color var(--transition-fast) var(--ease-standard)}
+.tier--featured{clip-path:var(--torn-2);box-shadow:var(--shadow-md);z-index:5}
+@media(min-width:900px){.tier--featured{transform:scale(1.05) rotate(var(--tilt-c))}.tier:nth-child(1){transform:rotate(var(--tilt-a))}.tier:nth-child(3){transform:rotate(var(--tilt-b))}}
+@media(hover:hover) and (pointer:fine){.tier:hover{transform:translateY(-2px) rotate(0deg);box-shadow:var(--shadow-md)}.tier--featured:hover{transform:translateY(-2px) scale(1.05)}}
+.tier__badge{position:absolute;top:-.9rem;left:50%;margin-left:-4.5rem;width:9rem;text-align:center;font-family:var(--font-hand);font-size:1.25rem;color:var(--text-secondary);background:var(--tape-yellow);padding:.2rem .5rem;box-shadow:var(--shadow-sm);transform:rotate(-3deg);z-index:6}
+.tier__name{font-size:1.35rem}
+.tier__price{font-family:var(--font-serif);font-size:2.4rem;font-weight:700;letter-spacing:-.03em}
+.tier__price span{font-family:var(--font-base);font-size:.9rem;font-weight:400;color:var(--text-secondary)}
+.tier__list{list-style:none;display:flex;flex-direction:column;align-items:flex-start;gap:.55rem;font-size:.95rem}
+.tier__list li{display:flex;align-items:center;gap:.5rem}
+.tier__list .mso{color:var(--marker-green);font-size:1.2rem;font-variation-settings:'FILL' 1}
+.tier .btn{margin-top:.5rem;width:100%}
+/* ============ FAQ ============ */
+.faq__list{display:flex;flex-direction:column;gap:1.25rem;max-width:52rem}
+.faq{position:relative;background:var(--bg-secondary);clip-path:var(--torn-3);box-shadow:var(--shadow-sm);transition:background-color var(--transition-fast) var(--ease-standard)}
+.faq__question{display:flex;align-items:center;justify-content:space-between;gap:1rem;width:100%;min-height:44px;padding:1.35rem 1.5rem;background:transparent;border:none;font-family:var(--font-base);font-weight:600;font-size:1.02rem;color:var(--text-primary);text-align:left;cursor:pointer}
+.faq__question .mso{transition:transform var(--transition-normal) var(--ease-standard);color:var(--text-secondary);flex-shrink:0}
+.faq__question[aria-expanded="true"] .mso{transform:rotate(180deg)}
+.faq__answer{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--transition-normal) var(--ease-standard)}
+.faq__answer>div{overflow:hidden}
+.faq__answer p{padding:0 1.5rem 1.4rem;font-size:.95rem;max-width:60ch}
+.faq .tape{top:-.6rem;left:2rem;width:4.5rem;height:1.4rem;transform:rotate(-4deg)}
+/* ============ CTA BAND ============ */
+.cta{position:relative;background:var(--ink-blue);background-image:repeating-linear-gradient(-35deg,rgba(0,0,0,.08) 0 4px,transparent 4px 12px);clip-path:polygon(0 4%,8% 1%,22% 3%,38% 0,55% 3%,72% 1%,88% 3%,100% 0,100% 96%,90% 100%,74% 97%,56% 100%,38% 98%,20% 100%,6% 97%,0 100%);color:var(--on-accent);padding-block:clamp(5rem,9vw,7.5rem)}
+.cta h2{color:var(--on-accent);font-size:clamp(1.9rem,4vw,3rem);max-width:20ch}
+.cta h2 em{font-family:var(--font-hand);font-style:normal;font-size:1.15em;color:var(--tape-yellow)}
+.cta p{color:var(--on-accent);opacity:.92;max-width:40ch;margin-top:1rem}
+.cta__inner{display:flex;flex-direction:column;align-items:flex-start;gap:1.5rem}
+.cta .pin--a{top:1.2rem;left:6%}
+.cta .pin--b{bottom:1.4rem;right:8%}
+/* ============ FORM ============ */
+.form{display:flex;flex-direction:column;align-items:flex-start;gap:.5rem;width:100%;max-width:30rem;margin-top:.5rem}
+.form__label{font-weight:600;font-size:.95rem;color:var(--on-accent)}
+.form__row{display:flex;flex-wrap:wrap;gap:.75rem;width:100%;align-items:flex-start}
+.form__field{flex:1 1 16rem;display:flex;flex-direction:column;gap:.4rem}
+.form__input{min-height:48px;padding:.7rem 1rem;font-family:var(--font-base);font-size:1rem;color:var(--text-primary);background:var(--bg-secondary);background-image:repeating-linear-gradient(0deg,transparent 0 1.55rem,rgba(44,62,107,.18) 1.55rem calc(1.55rem + 1px));border:2px solid var(--border-default);border-radius:var(--radius-sm);transition:border-color var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard)}
+.form__input:focus{outline:3px solid var(--tape-yellow);outline-offset:2px}
+.form__input.is-valid{border-color:var(--border-success)}
+.form__input.is-invalid{border-color:var(--border-error)}
+.form__helper{font-size:.82rem;color:var(--on-accent);opacity:.85}
+.form__msg{display:flex;align-items:center;gap:.4rem;font-size:.9rem;min-height:1.4rem;font-weight:500}
+.form__msg--error{color:#F8B4B4}
+.form__msg--success{color:#B7E4BC}
+.form .btn--primary{background:var(--tape-yellow);color:#211E1A}
+@media(hover:hover) and (pointer:fine){.form .btn--primary:hover{filter:brightness(1.05)}}
+/* ============ FOOTER ============ */
+.footer{background:#2C2C2C;color:#F5F0E8;clip-path:polygon(0 6%,10% 2%,25% 5%,42% 1%,60% 4%,78% 1%,92% 4%,100% 2%,100% 100%,0 100%);padding:5rem 0 2.5rem;transition:background-color var(--transition-fast) var(--ease-standard)}
+:root[data-theme="dark"] .footer{background:#171411}
+.footer__grid{display:flex;flex-direction:column;gap:2.5rem}
+@media(min-width:768px){.footer__grid{flex-direction:row;align-items:flex-start;justify-content:space-between;gap:2rem}}
+.footer__brand{display:flex;flex-direction:column;align-items:flex-start;gap:.75rem;max-width:18rem}
+.footer__brand .nav__brand{color:#F5F0E8}
+.footer__brand p{font-size:.9rem;opacity:.85}
+.footer__cols{display:flex;flex-wrap:wrap;gap:2.5rem}
+.footer__col{display:flex;flex-direction:column;align-items:flex-start;gap:.6rem}
+.footer__col h3{font-family:var(--font-base);font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:#D4A86A}
+.footer__col a{color:#F5F0E8;opacity:.85;text-decoration:none;font-size:.92rem;padding:.15rem 0}
+@media(hover:hover) and (pointer:fine){.footer__col a:hover{opacity:1;text-decoration:underline;text-underline-offset:3px}}
+.footer__bottom{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1rem;margin-top:3rem;padding-top:1.5rem;border-top:1px dashed rgba(245,240,232,.3);font-size:.85rem;opacity:.9}
+.footer__social{display:flex;gap:.5rem}
+.footer__social a{display:flex;align-items:center;justify-content:center;width:44px;height:44px;color:#F5F0E8;border:1px solid rgba(245,240,232,.35);border-radius:var(--radius-md);text-decoration:none;transition:background-color var(--transition-fast) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.footer__social a:hover{background:rgba(245,240,232,.12)}}
+/* ============ REVEAL ============ */
+.reveal{opacity:0;transform:translateY(14px) scale(.97);transition:opacity .5s var(--ease-standard),transform .5s var(--ease-standard)}
+.reveal.is-visible{opacity:1;transform:none}
+/* ============ REDUCED MOTION ============ */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.15s!important;scroll-behavior:auto!important}
+  :root{--tilt-a:0deg;--tilt-b:0deg;--tilt-c:0deg}
+  .reveal{transform:none;transition:opacity .2s ease}
+  .hero__title,.hero__eyebrow,.hero__note,.scrap,.quote,.tier,.features__grid .card{transform:none!important}
+}
+@media(prefers-reduced-transparency:reduce){
+  .nav{background:var(--bg-primary);backdrop-filter:none;-webkit-backdrop-filter:none}
+  .tape{background:var(--tape-yellow)}
+}
+@media(max-width:640px){
+  .hero__visual{min-height:18rem}
+  .hero__note{display:none}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<header class="nav">
+  <div class="nav__inner">
+    <a class="nav__brand" href="#top">Papercut <em>studio</em></a>
+    <nav aria-label="Primary">
+      <ul class="nav__links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how">How It Works</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+    </nav>
+    <div class="nav__actions">
+      <button id="theme-toggle" class="nav__toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="mso" id="theme-icon" aria-hidden="true">dark_mode</span>
+      </button>
+      <button class="nav__menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="nav-panel" aria-label="Open menu">
+        <span class="mso" aria-hidden="true">menu</span>
+      </button>
+    </div>
+  </div>
+  <nav class="nav__panel" id="nav-panel" aria-label="Mobile">
+    <a href="#features">Features</a>
+    <a href="#how">How It Works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#faq">FAQ</a>
+  </nav>
+</header>
+
+<main id="main">
+<!-- HERO -->
+<section class="hero" id="top" aria-labelledby="hero-title">
+  <div class="wrap hero__grid">
+    <div class="hero__text">
+      <span class="hero__eyebrow">a digital collage workbench</span>
+      <h1 class="hero__title" id="hero-title">Glue photos, paint and paper into <span class="accent">one canvas</span></h1>
+      <p class="hero__sub">Papercut Studio is a browser-based mixed-media tool for layering torn paper, brush textures, snapshots and type into artwork that feels handmade.</p>
+      <div class="hero__ctas">
+        <a class="btn btn--primary" href="#pricing"><span class="btn__label">Start Collaging</span></a>
+        <a class="btn btn--secondary" href="#how"><span class="btn__label">See How It Works</span></a>
+        <span class="hero__note" aria-hidden="true"><span class="mso">arrow_downward</span> try it free</span>
+      </div>
+    </div>
+    <div class="hero__visual" aria-hidden="true">
+      <div class="scrap scrap--photo"></div>
+      <div class="scrap scrap--paint"></div>
+      <div class="scrap scrap--note">every layer stays editable, like real scraps you can still move</div>
+      <span class="tape tape--a"></span>
+      <span class="tape tape--b"></span>
+      <span class="pin pin--a"></span>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features" aria-labelledby="features-title">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-head__eyebrow">what's in the box</span>
+      <h2 class="sec-head__title" id="features-title">Tools that behave like real materials</h2>
+      <p class="sec-head__sub">Every brush, scrap and strip of tape follows the physics of the studio table, not the spreadsheet grid.</p>
+    </div>
+    <div class="features__grid">
+      <article class="card card--t1 reveal">
+        <span class="tape" aria-hidden="true"></span>
+        <span class="card__chip" aria-hidden="true"><span class="mso">content_cut</span></span>
+        <h3 class="card__title">Tear, don't crop</h3>
+        <p class="card__body">Rip any image or paper swatch along a freehand edge. Fibers, roughness and shadow are generated automatically, so no two tears look alike.</p>
+      </article>
+      <article class="card card--t2 reveal">
+        <span class="pin" aria-hidden="true" style="top:.9rem;left:50%;margin-left:-.55rem"></span>
+        <span class="card__chip" aria-hidden="true"><span class="mso">layers</span></span>
+        <h3 class="card__title">Stacked like a desk</h3>
+        <p class="card__body">Drag scraps over each other, nudge rotation, and pin pieces down. Layer order works the way a pile of paper does: what you touch comes to the top.</p>
+      </article>
+      <article class="card card--t3 reveal">
+        <span class="tape" aria-hidden="true"></span>
+        <span class="card__chip" aria-hidden="true"><span class="mso">palette</span></span>
+        <h3 class="card__title">Paint that stays wet</h3>
+        <p class="card__body">Gouache, ink and marker swatches blend into whatever sits beneath them until you flatten the piece. Recolor a stroke hours later without starting over.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" aria-labelledby="how-title">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-head__eyebrow">from blank page to wall</span>
+      <h2 class="sec-head__title" id="how-title">Three steps, no instructions needed</h2>
+    </div>
+    <div class="steps__row">
+      <article class="step reveal">
+        <span class="step__num">01</span>
+        <span class="mso" aria-hidden="true">upload</span>
+        <h3 class="step__title">Gather your scraps</h3>
+        <p class="step__body">Drop in photos, scan old paper, or pick from 400 included textures: kraft, newsprint, linen, graph and more.</p>
+      </article>
+      <article class="step reveal">
+        <span class="step__num">02</span>
+        <span class="mso" aria-hidden="true">gesture</span>
+        <h3 class="step__title">Arrange and glue</h3>
+        <p class="step__body">Tear, rotate and overlap pieces on the canvas. Add tape strips, pins and handwritten captions with one click.</p>
+      </article>
+      <article class="step reveal">
+        <span class="step__num">03</span>
+        <span class="mso" aria-hidden="true">ios_share</span>
+        <h3 class="step__title">Export or print</h3>
+        <p class="step__body">Save print-ready files up to 600 DPI, animated process videos, or layered source files you can reopen anytime.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="stories" aria-labelledby="stories-title">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-head__eyebrow">notes from the studio wall</span>
+      <h2 class="sec-head__title" id="stories-title">Artists keep it pinned up</h2>
+    </div>
+    <div class="quotes__grid">
+      <figure class="quote reveal">
+        <span class="tape" aria-hidden="true"></span>
+        <div class="quote__photo" aria-hidden="true"></div>
+        <div class="quote__stars" aria-hidden="true"><span class="mso">star</span><span class="mso">star</span><span class="mso">star</span><span class="mso">star</span><span class="mso">star</span></div>
+        <span class="visually-hidden">Rated 5 out of 5</span>
+        <blockquote class="quote__text">&ldquo;I storyboard client work in Papercut now. The torn edges sell the idea before I touch real paper.&rdquo;</blockquote>
+        <figcaption class="quote__sig">Marta Kowalczyk</figcaption>
+        <span class="quote__role">Illustrator, Studio Brzask</span>
+      </figure>
+      <figure class="quote reveal">
+        <span class="tape" aria-hidden="true"></span>
+        <div class="quote__photo quote__photo--b" aria-hidden="true"></div>
+        <div class="quote__stars" aria-hidden="true"><span class="mso">star</span><span class="mso">star</span><span class="mso">star</span><span class="mso">star</span><span class="mso">star</span></div>
+        <span class="visually-hidden">Rated 5 out of 5</span>
+        <blockquote class="quote__text">&ldquo;My zine covers went from flat scans to layered collages in one afternoon. The tape tool is absurdly satisfying.&rdquo;</blockquote>
+        <figcaption class="quote__sig">Devon Achebe</figcaption>
+        <span class="quote__role">Zine publisher, Risograph Club</span>
+      </figure>
+      <figure class="quote reveal">
+        <span class="tape" aria-hidden="true"></span>
+        <div class="quote__photo quote__photo--c" aria-hidden="true"></div>
+        <div class="quote__stars" aria-hidden="true"><span class="mso">star</span><span class="mso">star</span><span class="mso">star</span><span class="mso">star</span><span class="mso">star</span></div>
+        <span class="visually-hidden">Rated 5 out of 5</span>
+        <blockquote class="quote__text">&ldquo;I teach collage remotely, and this is the first tool where students' work keeps its handmade character on screen.&rdquo;</blockquote>
+        <figcaption class="quote__sig">Ingrid Sorensen</figcaption>
+        <span class="quote__role">Workshop lead, Paper School Oslo</span>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" aria-labelledby="pricing-title">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-head__eyebrow">pick a plan</span>
+      <h2 class="sec-head__title" id="pricing-title">Pay for glue, not for air</h2>
+      <p class="sec-head__sub">Every plan includes the full material library and unlimited canvases. Cancel anytime with one click.</p>
+    </div>
+    <div class="pricing__grid">
+      <article class="tier reveal" aria-labelledby="tier-starter">
+        <h3 class="tier__name" id="tier-starter">Sketchbook</h3>
+        <p class="tier__price">$0 <span>/ forever</span></p>
+        <ul class="tier__list">
+          <li><span class="mso" aria-hidden="true">check</span>3 active canvases</li>
+          <li><span class="mso" aria-hidden="true">check</span>120 core paper textures</li>
+          <li><span class="mso" aria-hidden="true">check</span>Web-resolution export</li>
+          <li><span class="mso" aria-hidden="true">check</span>Community gallery access</li>
+        </ul>
+        <a class="btn btn--secondary" href="#cta"><span class="btn__label">Start Collaging</span></a>
+      </article>
+      <article class="tier tier--featured reveal" aria-labelledby="tier-studio">
+        <span class="tier__badge">most popular</span>
+        <h3 class="tier__name" id="tier-studio">Studio</h3>
+        <p class="tier__price">$12 <span>/ month</span></p>
+        <ul class="tier__list">
+          <li><span class="mso" aria-hidden="true">check</span>Unlimited canvases and layers</li>
+          <li><span class="mso" aria-hidden="true">check</span>Full 400-texture library</li>
+          <li><span class="mso" aria-hidden="true">check</span>600 DPI print export</li>
+          <li><span class="mso" aria-hidden="true">check</span>Process video recording</li>
+          <li><span class="mso" aria-hidden="true">check</span>Custom tape and pin sets</li>
+        </ul>
+        <a class="btn btn--primary" href="#cta"><span class="btn__label">Start Collaging</span></a>
+      </article>
+      <article class="tier reveal" aria-labelledby="tier-atelier">
+        <h3 class="tier__name" id="tier-atelier">Atelier</h3>
+        <p class="tier__price">$29 <span>/ month</span></p>
+        <ul class="tier__list">
+          <li><span class="mso" aria-hidden="true">check</span>Everything in Studio</li>
+          <li><span class="mso" aria-hidden="true">check</span>5 team seats included</li>
+          <li><span class="mso" aria-hidden="true">check</span>Shared material libraries</li>
+          <li><span class="mso" aria-hidden="true">check</span>Commercial license</li>
+        </ul>
+        <a class="btn btn--secondary" href="#cta"><span class="btn__label">Start Collaging</span></a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" aria-labelledby="faq-title">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-head__eyebrow">loose ends</span>
+      <h2 class="sec-head__title" id="faq-title">Questions we hear a lot</h2>
+    </div>
+    <div class="faq__list">
+      <div class="faq reveal">
+        <span class="tape" aria-hidden="true"></span>
+        <button class="faq__question" type="button" aria-expanded="false" aria-controls="faq-a1" id="faq-q1">
+          Do I need a drawing tablet to use Papercut Studio?
+          <span class="mso" aria-hidden="true">expand_more</span>
+        </button>
+        <div class="faq__answer" id="faq-a1" role="region" aria-labelledby="faq-q1"><div><p>No. Every tool works with a mouse or trackpad, and tearing is guided by your pointer. A tablet adds pressure-sensitive paint strokes, but it is entirely optional.</p></div></div>
+      </div>
+      <div class="faq reveal">
+        <span class="tape" aria-hidden="true"></span>
+        <button class="faq__question" type="button" aria-expanded="false" aria-controls="faq-a2" id="faq-q2">
+          Can I use my own scanned paper and photos?
+          <span class="mso" aria-hidden="true">expand_more</span>
+        </button>
+        <div class="faq__answer" id="faq-a2" role="region" aria-labelledby="faq-q2"><div><p>Yes. Import JPG, PNG or TIFF files up to 100 MB. Scans keep their original grain, and you can build personal libraries of your favorite materials.</p></div></div>
+      </div>
+      <div class="faq reveal">
+        <span class="tape" aria-hidden="true"></span>
+        <button class="faq__question" type="button" aria-expanded="false" aria-controls="faq-a3" id="faq-q3">
+          Who owns the artwork I make?
+          <span class="mso" aria-hidden="true">expand_more</span>
+        </button>
+        <div class="faq__answer" id="faq-a3" role="region" aria-labelledby="faq-q3"><div><p>You do, always. Paid plans add a commercial license for client and resale work. The free plan covers personal and portfolio use.</p></div></div>
+      </div>
+      <div class="faq reveal">
+        <span class="tape" aria-hidden="true"></span>
+        <button class="faq__question" type="button" aria-expanded="false" aria-controls="faq-a4" id="faq-q4">
+          Does it work offline?
+          <span class="mso" aria-hidden="true">expand_more</span>
+        </button>
+        <div class="faq__answer" id="faq-a4" role="region" aria-labelledby="faq-q4"><div><p>Your open canvases keep working offline and sync when you reconnect. Browsing the texture library requires a connection.</p></div></div>
+      </div>
+      <div class="faq reveal">
+        <span class="tape" aria-hidden="true"></span>
+        <button class="faq__question" type="button" aria-expanded="false" aria-controls="faq-a5" id="faq-q5">
+          Can I switch or cancel my plan later?
+          <span class="mso" aria-hidden="true">expand_more</span>
+        </button>
+        <div class="faq__answer" id="faq-a5" role="region" aria-labelledby="faq-q5"><div><p>Anytime, from your account page, with no emails or phone calls. Downgrading keeps every canvas intact; nothing is deleted.</p></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="cta" id="cta" aria-labelledby="cta-title">
+  <span class="pin pin--a pin--green" aria-hidden="true"></span>
+  <span class="pin pin--b" aria-hidden="true"></span>
+  <div class="wrap cta__inner">
+    <h2 id="cta-title">Get one fresh texture pack <em>every friday</em></h2>
+    <p>Join the studio letter: new paper drops, artist process videos and collage prompts. No noise, unsubscribe anytime.</p>
+    <form class="form" id="newsletter-form" novalidate>
+      <label class="form__label" for="email">Email address</label>
+      <div class="form__row">
+        <div class="form__field">
+          <input class="form__input" type="email" id="email" name="email" autocomplete="email" placeholder="you@example.com" aria-describedby="email-helper email-msg" required>
+        </div>
+        <button class="btn btn--primary" type="submit" id="submit-btn"><span class="btn__label">Subscribe</span></button>
+      </div>
+      <p class="form__helper" id="email-helper">We send one email per week, never more.</p>
+      <p class="form__msg" id="email-msg" aria-live="polite"></p>
+    </form>
+  </div>
+</section>
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <a class="nav__brand" href="#top">Papercut <em>studio</em></a>
+        <p>A digital mixed-media workbench for people who miss the smell of glue sticks.</p>
+      </div>
+      <div class="footer__cols">
+        <div class="footer__col">
+          <h3>Product</h3>
+          <a href="#features">Features</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#how">How It Works</a>
+        </div>
+        <div class="footer__col">
+          <h3>Company</h3>
+          <a href="#stories">Stories</a>
+          <a href="#cta">Newsletter</a>
+          <a href="#faq">FAQ</a>
+        </div>
+        <div class="footer__col">
+          <h3>Resources</h3>
+          <a href="#how">Tutorials</a>
+          <a href="#features">Texture Library</a>
+          <a href="#faq">Support</a>
+        </div>
+        <div class="footer__col">
+          <h3>Legal</h3>
+          <a href="#faq">Privacy</a>
+          <a href="#faq">Terms</a>
+          <a href="#faq">Licenses</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span>&copy; 2026 Papercut Studio. All scraps reserved.</span>
+      <div class="footer__social">
+        <a href="#top" aria-label="Papercut on the web"><span class="mso" aria-hidden="true">public</span></a>
+        <a href="#top" aria-label="Papercut community"><span class="mso" aria-hidden="true">groups</span></a>
+        <a href="#top" aria-label="Papercut video channel"><span class="mso" aria-hidden="true">play_circle</span></a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  /* Theme toggle */
+  var root=document.documentElement;
+  var toggle=document.getElementById("theme-toggle");
+  var icon=document.getElementById("theme-icon");
+  function applyTheme(t){
+    root.dataset.theme=t;
+    var dark=t==="dark";
+    toggle.setAttribute("aria-pressed",String(dark));
+    toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+    icon.textContent=dark?"light_mode":"dark_mode";
+  }
+  applyTheme(root.dataset.theme==="dark"?"dark":"light");
+  toggle.addEventListener("click",function(){
+    var next=root.dataset.theme==="dark"?"light":"dark";
+    localStorage.setItem("theme",next);
+    applyTheme(next);
+  });
+
+  /* Mobile menu */
+  var menuBtn=document.getElementById("menu-btn");
+  var panel=document.getElementById("nav-panel");
+  function closeMenu(){panel.classList.remove("is-open");menuBtn.setAttribute("aria-expanded","false");menuBtn.setAttribute("aria-label","Open menu");}
+  menuBtn.addEventListener("click",function(){
+    var open=panel.classList.toggle("is-open");
+    menuBtn.setAttribute("aria-expanded",String(open));
+    menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");
+  });
+  panel.addEventListener("click",function(e){if(e.target.tagName==="A"){closeMenu();}});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape"){closeMenu();}});
+
+  /* FAQ accordion */
+  var questions=document.querySelectorAll(".faq__question");
+  questions.forEach(function(q){
+    q.addEventListener("click",function(){
+      var expanded=q.getAttribute("aria-expanded")==="true";
+      questions.forEach(function(other){
+        other.setAttribute("aria-expanded","false");
+        document.getElementById(other.getAttribute("aria-controls")).style.gridTemplateRows="0fr";
+      });
+      if(!expanded){
+        q.setAttribute("aria-expanded","true");
+        document.getElementById(q.getAttribute("aria-controls")).style.gridTemplateRows="1fr";
+      }
+    });
+  });
+
+  /* Newsletter form */
+  var form=document.getElementById("newsletter-form");
+  var email=document.getElementById("email");
+  var msg=document.getElementById("email-msg");
+  var submitBtn=document.getElementById("submit-btn");
+  form.addEventListener("submit",function(e){
+    e.preventDefault();
+    var val=email.value.trim();
+    msg.className="form__msg";msg.textContent="";
+    email.classList.remove("is-valid","is-invalid");
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val)){
+      email.classList.add("is-invalid");
+      msg.classList.add("form__msg--error");
+      msg.innerHTML='<span class="mso" aria-hidden="true">error</span> Please enter a valid email address.';
+      email.focus();
+      return;
+    }
+    submitBtn.classList.add("is-loading");
+    submitBtn.setAttribute("aria-disabled","true");
+    setTimeout(function(){
+      submitBtn.classList.remove("is-loading");
+      submitBtn.removeAttribute("aria-disabled");
+      email.classList.add("is-valid");
+      msg.classList.add("form__msg--success");
+      msg.innerHTML='<span class="mso" aria-hidden="true">check_circle</span> You are on the list. First pack arrives Friday.';
+      form.reset();
+    },1200);
+  });
+  email.addEventListener("input",function(){
+    email.classList.remove("is-valid","is-invalid");
+    msg.className="form__msg";msg.textContent="";
+  });
+
+  /* Scroll reveal with stagger */
+  var revealEls=document.querySelectorAll(".reveal");
+  if("IntersectionObserver" in window){
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){
+          var el=entry.target;
+          var siblings=Array.prototype.slice.call(el.parentElement.children).filter(function(c){return c.classList.contains("reveal");});
+          var idx=siblings.indexOf(el);
+          setTimeout(function(){el.classList.add("is-visible");},Math.max(0,idx)*70);
+          io.unobserve(el);
+        }
+      });
+    },{threshold:.15});
+    revealEls.forEach(function(el){io.observe(el);});
+  }else{
+    revealEls.forEach(function(el){el.classList.add("is-visible");});
+  }
+})();
+</script>
+</body>
+</html>

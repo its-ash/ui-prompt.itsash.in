@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f6f8fa">
+<title>Forgebase - Code review and CI for shipping teams</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<style>
+:root{
+--primary:#1f883d;--secondary:#0969da;--bg-primary:#f6f8fa;--bg-secondary:#ffffff;--text-primary:#1f2328;--text-secondary:#59636e;--text-success:#1a7f37;--text-error:#cf222e;--border-default:#d0d7de;--border-error:#cf222e;--border-success:#1f883d;
+--color-bg:#f6f8fa;--color-surface:#ffffff;--color-surface-strong:#f6f8fa;--color-border:#d0d7de;--color-text:#1f2328;--color-text-muted:#59636e;--color-primary:#1f883d;--color-accent:#0969da;--color-danger:#cf222e;--color-on-accent:#ffffff;
+--radius-sm:6px;--radius-md:6px;--radius-lg:12px;--radius-pill:999px;
+--shadow-sm:0 1px 0 rgba(31,35,40,0.04);--shadow-md:0 3px 6px rgba(140,149,159,0.15);--shadow-lg:0 8px 24px rgba(140,149,159,0.2);
+--font-sans:-apple-system,'Segoe UI','Noto Sans','Helvetica Neue',sans-serif;--font-display:-apple-system,'Segoe UI',sans-serif;--font-mono:ui-monospace,'SFMono-Regular','Consolas',monospace;--font-base:var(--font-sans);
+--text-xs:0.75rem;--text-sm:0.8125rem;--text-base:0.875rem;--text-lg:1rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:2rem;--text-4xl:2.5rem;--text-5xl:3.25rem;
+--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-6:20px;--space-8:28px;--space-12:40px;--space-16:56px;--space-24:80px;
+--ease-standard:cubic-bezier(0.4,0,0.2,1);--focus-ring:0 0 0 3px rgba(9,105,218,0.3);--code-diff-add:#d1f4dc;
+--spacing-gap:var(--space-6);--transition-fast:120ms;--transition-normal:200ms;
+--z-header:900;--z-dropdown:1000;--z-modal:1100;--z-toast:1200;--header-height:64px;
+--btn-bg:#f6f8fa;--btn-hover-bg:#eef1f4;--btn-active-bg:#e2e6ea;--btn-hover-border:#b6bec6;--btn-primary-hover-bg:#1a7f37;
+--badge-bg:#ddf4e4;--badge-text:#1a7f37;--tint-bg:#ddf4e4;--tint-accent-bg:#ddf0ff;--tint-danger-bg:#ffebe9;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+--primary:#238636;--secondary:#388bfd;--bg-primary:#0d1117;--bg-secondary:#161b22;--text-primary:#e6edf3;--text-secondary:#7d8590;--text-success:#3fb950;--text-error:#f85149;--border-default:#30363d;--border-error:#f85149;--border-success:#2ea043;
+--color-bg:#0d1117;--color-surface:#161b22;--color-surface-strong:#21262d;--color-border:#30363d;--color-text:#e6edf3;--color-text-muted:#7d8590;--color-primary:#238636;--color-accent:#388bfd;--color-danger:#f85149;--color-on-accent:#ffffff;
+--shadow-sm:0 1px 0 rgba(1,4,9,0.4);--shadow-md:0 3px 6px rgba(1,4,9,0.5);--shadow-lg:0 8px 24px rgba(1,4,9,0.6);
+--focus-ring:0 0 0 3px rgba(56,139,253,0.4);--code-diff-add:rgba(46,160,67,0.15);
+--btn-bg:#21262d;--btn-hover-bg:#30363d;--btn-active-bg:#3d444d;--btn-hover-border:#8b949e;--btn-primary-hover-bg:#2ea043;
+--badge-bg:rgba(46,160,67,0.15);--badge-text:#3fb950;--tint-bg:rgba(46,160,67,0.15);--tint-accent-bg:rgba(56,139,253,0.15);--tint-danger-bg:rgba(248,81,73,0.15);
+}}
+:root[data-theme="dark"]{
+--primary:#238636;--secondary:#388bfd;--bg-primary:#0d1117;--bg-secondary:#161b22;--text-primary:#e6edf3;--text-secondary:#7d8590;--text-success:#3fb950;--text-error:#f85149;--border-default:#30363d;--border-error:#f85149;--border-success:#2ea043;
+--color-bg:#0d1117;--color-surface:#161b22;--color-surface-strong:#21262d;--color-border:#30363d;--color-text:#e6edf3;--color-text-muted:#7d8590;--color-primary:#238636;--color-accent:#388bfd;--color-danger:#f85149;--color-on-accent:#ffffff;
+--shadow-sm:0 1px 0 rgba(1,4,9,0.4);--shadow-md:0 3px 6px rgba(1,4,9,0.5);--shadow-lg:0 8px 24px rgba(1,4,9,0.6);
+--focus-ring:0 0 0 3px rgba(56,139,253,0.4);--code-diff-add:rgba(46,160,67,0.15);
+--btn-bg:#21262d;--btn-hover-bg:#30363d;--btn-active-bg:#3d444d;--btn-hover-border:#8b949e;--btn-primary-hover-bg:#2ea043;
+--badge-bg:rgba(46,160,67,0.15);--badge-text:#3fb950;--tint-bg:rgba(46,160,67,0.15);--tint-accent-bg:rgba(56,139,253,0.15);--tint-danger-bg:rgba(248,81,73,0.15);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);font-size:var(--text-lg);line-height:1.55;color:var(--color-text);background:var(--color-bg);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+h1,h2,h3{font-family:var(--font-display);letter-spacing:-0.02em;line-height:1.15;color:var(--color-text)}
+h1{font-size:clamp(2rem,4.5vw,var(--text-5xl));font-weight:700}
+h2{font-size:clamp(1.5rem,3vw,var(--text-3xl));font-weight:600}
+h3{font-size:var(--text-xl);font-weight:600}
+a{color:var(--color-accent);text-decoration:none}
+a:hover{text-decoration:underline}
+section{scroll-margin-top:var(--header-height);padding:var(--space-24) 0}
+.container{max-width:1200px;margin:0 auto;padding:0 var(--space-4)}
+@media(min-width:768px){.container{padding:0 var(--space-8)}}
+.section-head{max-width:65ch;margin-bottom:var(--space-12)}
+.section-head p{color:var(--color-text-muted);margin-top:var(--space-3);max-width:60ch}
+.skip-link{position:absolute;left:-9999px;top:0;background:var(--color-surface);color:var(--color-accent);padding:var(--space-2) var(--space-4);border:1px solid var(--color-border);border-radius:var(--radius-md);z-index:var(--z-toast)}
+.skip-link:focus{left:var(--space-4);top:var(--space-4)}
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;min-height:44px;min-width:44px;padding:var(--space-2) var(--space-4);font-family:var(--font-base);font-size:var(--text-base);font-weight:500;color:var(--color-text);background:var(--btn-bg);border:1px solid var(--color-border);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);cursor:pointer;transition:background var(--transition-fast) var(--ease-standard),border-color var(--transition-fast) var(--ease-standard),transform var(--transition-fast) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.btn:hover{background:var(--btn-hover-bg);border-color:var(--btn-hover-border);text-decoration:none}}
+.btn:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+.btn:active{transform:scale(0.97);background:var(--btn-active-bg)}
+.btn--primary{background:var(--color-primary);border-color:rgba(31,35,40,0.15);color:var(--color-on-accent)}
+@media(hover:hover) and (pointer:fine){.btn--primary:hover{background:var(--btn-primary-hover-bg);border-color:rgba(31,35,40,0.15)}}
+.btn--danger{background:var(--color-danger);border-color:rgba(31,35,40,0.15);color:var(--color-on-accent)}
+.btn:disabled,.btn.is-disabled{opacity:0.5;cursor:not-allowed;transform:none}
+.btn.is-loading{pointer-events:none}
+.btn.is-loading .btn__spinner{display:inline-block}
+.btn__spinner{display:none;width:16px;height:16px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite}
+.btn.is-success{border-color:var(--border-success);color:var(--text-success)}
+.btn.is-error{border-color:var(--border-error);color:var(--text-error)}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* Badge */
+.badge{display:inline-flex;align-items:center;gap:var(--space-1);padding:2px var(--space-2);font-size:var(--text-xs);font-weight:500;color:var(--badge-text);background:var(--badge-bg);border:1px solid var(--border-success);border-radius:var(--radius-pill)}
+/* Header */
+.nav{position:sticky;top:0;z-index:var(--z-header);background:var(--color-surface);border-bottom:1px solid var(--color-border)}
+.nav__inner{display:flex;align-items:center;gap:var(--space-4);height:var(--header-height);max-width:1200px;margin:0 auto;padding:0 var(--space-4)}
+@media(min-width:768px){.nav__inner{padding:0 var(--space-8)}}
+.nav__brand{display:flex;align-items:center;gap:var(--space-2);font-weight:600;font-size:var(--text-lg);color:var(--color-text)}
+.nav__brand:hover{text-decoration:none}
+.nav__links{display:flex;align-items:center;gap:var(--space-4);margin-left:var(--space-6)}
+.nav__links a{color:var(--color-text);font-size:var(--text-base)}
+.nav__links a:hover{color:var(--color-accent)}
+.nav__actions{display:flex;align-items:center;gap:var(--space-2);margin-left:auto}
+.nav__menu-btn{display:none}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;color:var(--color-text);background:transparent;border:1px solid transparent;border-radius:var(--radius-md);cursor:pointer;transition:background var(--transition-fast) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.icon-btn:hover{background:var(--btn-hover-bg)}}
+.icon-btn:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+.octicon{width:16px;height:16px;fill:currentColor;flex-shrink:0}
+.octicon--lg{width:20px;height:20px}
+@media(max-width:767px){
+.nav__menu-btn{display:inline-flex}
+.nav__links{display:none;position:absolute;top:var(--header-height);left:0;right:0;flex-direction:column;align-items:stretch;gap:0;background:var(--color-surface);border-bottom:1px solid var(--color-border);padding:var(--space-2);z-index:var(--z-dropdown);margin-left:0;box-shadow:var(--shadow-lg)}
+.nav__links.is-open{display:flex}
+.nav__links a{padding:var(--space-3) var(--space-4);border-radius:var(--radius-md)}
+.nav__signup{display:none}
+}
+/* Hero */
+.hero{padding:var(--space-16) 0 var(--space-24)}
+.hero__grid{display:grid;grid-template-columns:1fr;gap:var(--space-12);align-items:center}
+@media(min-width:900px){.hero__grid{grid-template-columns:1.05fr 1fr}}
+.hero__copy h1{margin:var(--space-3) 0 var(--space-4)}
+.hero__copy p{color:var(--color-text-muted);font-size:var(--text-xl);max-width:52ch}
+.hero__ctas{display:flex;flex-wrap:wrap;gap:var(--space-3);margin-top:var(--space-6)}
+.hero__trust{margin-top:var(--space-4);font-size:var(--text-sm);color:var(--color-text-muted)}
+.code-window{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);overflow:hidden}
+.code-window__bar{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--color-border);background:var(--color-surface-strong)}
+.code-window__dot{width:10px;height:10px;border-radius:50%;border:1px solid var(--color-border)}
+.code-window__dot--r{background:var(--color-danger)}.code-window__dot--y{background:#bf8700}.code-window__dot--g{background:var(--color-primary)}
+.code-window__title{margin-left:var(--space-2);font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted)}
+.code-window__body{padding:var(--space-4);font-family:var(--font-mono);font-size:var(--text-sm);line-height:1.7;overflow-x:auto}
+.code-window__line{display:block;white-space:pre;color:var(--color-text)}
+.code-window__line--add{background:var(--code-diff-add);margin:0 calc(-1 * var(--space-4));padding:0 var(--space-4)}
+.tok-k{color:var(--color-danger)}.tok-s{color:var(--color-accent)}.tok-c{color:var(--color-text-muted)}.tok-f{color:#8250df}
+/* Cards */
+.card{display:flex;flex-direction:column;align-items:stretch;background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:var(--space-6);transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),border-color var(--transition-normal) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.card--hover:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}}
+.card:focus-within{border-color:var(--color-accent)}
+.card__icon{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:var(--radius-md);border:1px solid var(--color-border);margin-bottom:var(--space-4)}
+.card__icon--green{background:var(--tint-bg);color:var(--text-success)}
+.card__icon--blue{background:var(--tint-accent-bg);color:var(--color-accent)}
+.card__icon--red{background:var(--tint-danger-bg);color:var(--color-danger)}
+.card h3{margin-bottom:var(--space-2)}
+.card p{color:var(--color-text-muted);font-size:var(--text-base)}
+.card__link{margin-top:var(--space-4);font-size:var(--text-base);font-weight:500;display:inline-flex;align-items:center;gap:var(--space-1)}
+.grid-3{display:grid;grid-template-columns:1fr;gap:var(--spacing-gap)}
+@media(min-width:768px){.grid-3{grid-template-columns:repeat(3,1fr)}}
+/* Steps */
+.steps__list{display:grid;grid-template-columns:1fr;gap:var(--space-8);counter-reset:step}
+@media(min-width:768px){.steps__list{grid-template-columns:repeat(3,1fr)}}
+.step{display:flex;flex-direction:column;align-items:flex-start;position:relative}
+.step__num{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;border:1px solid var(--border-success);background:var(--tint-bg);color:var(--text-success);font-weight:600;font-size:var(--text-base);margin-bottom:var(--space-4)}
+.step h3{font-size:var(--text-lg);margin-bottom:var(--space-2)}
+.step p{color:var(--color-text-muted);font-size:var(--text-base)}
+@media(min-width:768px){.step:not(:last-child)::after{content:"";position:absolute;top:18px;left:44px;right:calc(-1 * var(--space-8) + 8px);height:1px;background:var(--color-border)}}
+/* Testimonials */
+.testimonial__quote{font-size:var(--text-lg);color:var(--color-text)}
+.testimonial__quote::before{content:"\201C"}.testimonial__quote::after{content:"\201D"}
+.testimonial__meta{display:flex;align-items:center;gap:var(--space-3);margin-top:var(--space-4)}
+.avatar{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;background:var(--tint-accent-bg);color:var(--color-accent);font-weight:600;font-size:var(--text-sm);border:1px solid var(--color-border)}
+.testimonial__name{font-weight:600;font-size:var(--text-base)}
+.testimonial__role{color:var(--color-text-muted);font-size:var(--text-sm)}
+.card--skeleton{aria-busy:true}
+.skel{display:block;height:12px;border-radius:var(--radius-sm);background:linear-gradient(90deg,var(--color-surface-strong) 25%,var(--color-border) 50%,var(--color-surface-strong) 75%);background-size:200% 100%;animation:shimmer 1.4s linear infinite;margin-bottom:var(--space-3)}
+@keyframes shimmer{to{background-position:-200% 0}}
+.card--empty{align-items:center;text-align:center;color:var(--color-text-muted)}
+/* Pricing */
+.billing-toggle{display:inline-flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-8);font-size:var(--text-base)}
+.billing-toggle__opt{padding:var(--space-2) var(--space-4);border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text-muted);cursor:pointer;font-size:var(--text-base);font-weight:500;min-height:44px}
+.billing-toggle__opt:first-child{border-radius:var(--radius-md) 0 0 var(--radius-md)}
+.billing-toggle__opt:last-child{border-radius:0 var(--radius-md) var(--radius-md) 0;margin-left:-1px}
+.billing-toggle__opt[aria-pressed="true"]{background:var(--color-surface-strong);color:var(--color-text);border-color:var(--color-accent);z-index:1;position:relative}
+.billing-toggle__opt:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+.price{font-size:var(--text-4xl);font-weight:700;letter-spacing:-0.03em;margin:var(--space-2) 0}
+.price small{font-size:var(--text-base);font-weight:400;color:var(--color-text-muted)}
+.price-list{list-style:none;margin:var(--space-4) 0 var(--space-6);display:flex;flex-direction:column;gap:var(--space-2);flex:1}
+.price-list li{display:flex;align-items:center;gap:var(--space-2);font-size:var(--text-base);color:var(--color-text)}
+.price-list .octicon{color:var(--text-success)}
+.card--popular{border-color:var(--color-primary);box-shadow:var(--shadow-md);position:relative}
+:root[data-theme="dark"] .card--popular{border-color:var(--color-primary)}
+.card--popular .badge{position:absolute;top:-12px;left:var(--space-6)}
+/* FAQ */
+.faq__item{border-bottom:1px solid var(--color-border)}
+.faq__item:first-child{border-top:1px solid var(--color-border)}
+.faq__summary{display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);padding:var(--space-4) var(--space-2);cursor:pointer;font-weight:600;font-size:var(--text-lg);list-style:none;min-height:44px}
+.faq__summary::-webkit-details-marker{display:none}
+.faq__summary:focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-md)}
+.faq__summary .octicon{transition:transform var(--transition-normal) var(--ease-standard);color:var(--color-text-muted)}
+.faq__item[open] .faq__summary .octicon{transform:rotate(180deg)}
+.faq__body{padding:0 var(--space-2) var(--space-4);color:var(--color-text-muted);max-width:70ch}
+/* CTA final */
+.cta-final{background:var(--color-surface-strong);border-top:1px solid var(--color-border);border-bottom:1px solid var(--color-border)}
+.cta-final__inner{max-width:640px;margin:0 auto;text-align:center}
+.cta-final__inner p{color:var(--color-text-muted);margin:var(--space-3) 0 var(--space-6)}
+.input-group{display:flex;flex-direction:column;gap:var(--space-2);text-align:left}
+.input-group label{font-weight:600;font-size:var(--text-base)}
+.input{width:100%;min-height:44px;padding:var(--space-2) var(--space-3);font-family:var(--font-mono);font-size:var(--text-base);color:var(--color-text);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);transition:border-color var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard)}
+.input:focus{outline:none;border-color:var(--color-accent);box-shadow:var(--focus-ring)}
+.input.is-valid{border-color:var(--border-success)}
+.input.is-invalid{border-color:var(--border-error)}
+.input:disabled{opacity:0.5;cursor:not-allowed}
+.input-group__helper{font-size:var(--text-sm);color:var(--color-text-muted)}
+.input-group__error{font-size:var(--text-sm);color:var(--text-error);display:flex;align-items:center;gap:var(--space-1)}
+.cta-form{display:flex;flex-direction:column;gap:var(--space-3)}
+@media(min-width:640px){.cta-form{flex-direction:row;align-items:flex-end}.cta-form .input-group{flex:1}}
+.form-success{display:flex;align-items:center;justify-content:center;gap:var(--space-2);color:var(--text-success);font-weight:500;margin-top:var(--space-3)}
+/* Footer */
+.footer{padding:var(--space-16) 0 var(--space-8);font-size:var(--text-base)}
+.footer__grid{display:grid;grid-template-columns:1fr;gap:var(--space-8)}
+@media(min-width:768px){.footer__grid{grid-template-columns:2fr 1fr 1fr 1fr 1fr}}
+.footer__brand p{color:var(--color-text-muted);margin-top:var(--space-2);max-width:32ch}
+.footer h4{font-size:var(--text-base);font-weight:600;margin-bottom:var(--space-3)}
+.footer ul{list-style:none;display:flex;flex-direction:column;gap:var(--space-2)}
+.footer ul a{color:var(--color-text-muted)}
+.footer ul a:hover{color:var(--color-accent)}
+.footer__bottom{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--space-4);margin-top:var(--space-12);padding-top:var(--space-6);border-top:1px solid var(--color-border);color:var(--color-text-muted);font-size:var(--text-sm)}
+.footer__social{display:flex;gap:var(--space-2)}
+.footer__social a{color:var(--color-text-muted);display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px}
+.footer__social a:hover{color:var(--color-text)}
+/* Reveal */
+.reveal{opacity:0;transform:translateY(12px);transition:opacity 300ms var(--ease-standard),transform 300ms var(--ease-standard)}
+.reveal.is-visible{opacity:1;transform:none}
+@media (prefers-reduced-motion: reduce){
+html{scroll-behavior:auto}
+*,*::before,*::after{animation:none!important;transition:opacity 200ms ease!important}
+.reveal{opacity:1;transform:none}
+.btn:active{transform:none}
+.card--hover:hover{transform:none}
+}
+@media (prefers-reduced-transparency: reduce){.nav{background:var(--color-surface)}}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="nav">
+  <div class="nav__inner">
+    <a class="nav__brand" href="#" aria-label="Forgebase home">
+      <svg class="octicon octicon--lg" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/></svg>
+      Forgebase
+    </a>
+    <nav class="nav__links" id="nav-links" aria-label="Primary">
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="nav__actions">
+      <button class="icon-btn nav__menu-btn" id="menu-btn" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">
+        <svg class="octicon octicon--lg" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 2.75A.75.75 0 0 1 1.75 2h12.5a.75.75 0 0 1 0 1.5H1.75A.75.75 0 0 1 1 2.75Zm0 5A.75.75 0 0 1 1.75 7h12.5a.75.75 0 0 1 0 1.5H1.75A.75.75 0 0 1 1 7.75ZM1.75 12h12.5a.75.75 0 0 1 0 1.5H1.75a.75.75 0 0 1 0-1.5Z"/></svg>
+      </button>
+      <button class="icon-btn" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark theme">
+        <svg class="octicon octicon--lg icon-sun" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 12a4 4 0 1 1 0-8 4 4 0 0 1 0 8ZM8 0a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0V.75A.75.75 0 0 1 8 0Zm0 13a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 8 13ZM2.343 2.343a.75.75 0 0 1 1.061 0l1.06 1.061a.75.75 0 0 1-1.06 1.06l-1.06-1.06a.75.75 0 0 1 0-1.061Zm9.193 9.193a.75.75 0 0 1 1.06 0l1.061 1.06a.75.75 0 0 1-1.06 1.061l-1.061-1.06a.75.75 0 0 1 0-1.061ZM16 8a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5A.75.75 0 0 1 16 8ZM3 8a.75.75 0 0 1-.75.75H.75a.75.75 0 0 1 0-1.5h1.5A.75.75 0 0 1 3 8Zm10.657-5.657a.75.75 0 0 1 0 1.061l-1.061 1.06a.75.75 0 1 1-1.06-1.06l1.06-1.06a.75.75 0 0 1 1.06 0Zm-9.193 9.193a.75.75 0 0 1 0 1.06l-1.06 1.061a.75.75 0 1 1-1.061-1.06l1.06-1.061a.75.75 0 0 1 1.061 0Z"/></svg>
+        <svg class="octicon octicon--lg icon-moon" viewBox="0 0 16 16" aria-hidden="true" focusable="false" hidden><path d="M9.598 1.591a.749.749 0 0 1 .785-.175 7.001 7.001 0 1 1-8.967 8.967.75.75 0 0 1 .961-.96 5.5 5.5 0 0 0 7.046-7.046.75.75 0 0 1 .175-.786Zm1.616 1.945a7 7 0 0 1-7.678 7.678 5.499 5.499 0 1 0 7.678-7.678Z"/></svg>
+      </button>
+      <a class="btn btn--primary nav__signup" href="#cta">Sign up</a>
+    </div>
+  </div>
+</header>
+<main id="main">
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="container hero__grid">
+      <div class="hero__copy">
+        <span class="badge">Now with merge queues</span>
+        <h1 id="hero-title">Review code and ship with confidence</h1>
+        <p>Forgebase combines pull request review, CI, and merge automation in one calm workspace your whole team can read.</p>
+        <div class="hero__ctas">
+          <a class="btn btn--primary" href="#cta">Get started</a>
+          <a class="btn" href="#how-it-works">View documentation</a>
+        </div>
+        <p class="hero__trust">Free for open source. No credit card required.</p>
+      </div>
+      <div class="code-window" aria-label="Example pipeline configuration">
+        <div class="code-window__bar">
+          <span class="code-window__dot code-window__dot--r"></span>
+          <span class="code-window__dot code-window__dot--y"></span>
+          <span class="code-window__dot code-window__dot--g"></span>
+          <span class="code-window__title">forgebase.yml</span>
+        </div>
+        <div class="code-window__body">
+<span class="code-window__line"><span class="tok-k">pipeline</span>: <span class="tok-s">release</span></span>
+<span class="code-window__line"><span class="tok-k">on</span>: [pull_request]</span>
+<span class="code-window__line"><span class="tok-k">steps</span>:</span>
+<span class="code-window__line">  - <span class="tok-f">run</span>: npm test</span>
+<span class="code-window__line code-window__line--add">+ - <span class="tok-f">run</span>: forgebase review --auto</span>
+<span class="code-window__line">  - <span class="tok-f">run</span>: npm run build</span>
+<span class="code-window__line"><span class="tok-c"># merge when checks pass</span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="features" aria-labelledby="features-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="features-title">Built for review-heavy teams</h2>
+        <p>Everything around the pull request, designed to stay out of your way.</p>
+      </div>
+      <div class="grid-3">
+        <article class="card card--hover reveal">
+          <span class="card__icon card__icon--green"><svg class="octicon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1.5 3.25a2.25 2.25 0 1 1 3 2.122v5.256a2.251 2.251 0 1 1-1.5 0V5.372A2.25 2.25 0 0 1 1.5 3.25Zm5.677-.177L9.573.677A.25.25 0 0 1 10 .854V2.5h1A2.5 2.5 0 0 1 13.5 5v5.628a2.251 2.251 0 1 1-1.5 0V5a1 1 0 0 0-1-1h-1v1.646a.25.25 0 0 1-.427.177L7.177 3.427a.25.25 0 0 1 0-.354Z"/></svg></span>
+          <h3>Stacked pull requests</h3>
+          <p>Break large changes into reviewable stacks. Each branch stays small, and reviewers see exactly what changed where.</p>
+          <a class="card__link" href="#faq">Learn more <svg class="octicon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8.22 2.97a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06l2.97-2.97H3.75a.75.75 0 0 1 0-1.5h7.44L8.22 4.03a.75.75 0 0 1 0-1.06Z"/></svg></a>
+        </article>
+        <article class="card card--hover reveal">
+          <span class="card__icon card__icon--blue"><svg class="octicon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Z"/></svg></span>
+          <h3>Checks that explain themselves</h3>
+          <p>Failed CI comes with the failing line, the likely cause, and a suggested fix, right inside the review thread.</p>
+          <a class="card__link" href="#faq">Learn more <svg class="octicon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8.22 2.97a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06l2.97-2.97H3.75a.75.75 0 0 1 0-1.5h7.44L8.22 4.03a.75.75 0 0 1 0-1.06Z"/></svg></a>
+        </article>
+        <article class="card card--hover reveal">
+          <span class="card__icon card__icon--red"><svg class="octicon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 0 1-.22.53l-4.25 4.25a.749.749 0 0 1-.53.22H5a.749.749 0 0 1-.53-.22L.22 11.53A.749.749 0 0 1 0 11V5c0-.199.079-.389.22-.53Zm.84 1.28L1.5 5.31v5.38l3.81 3.81h5.38l3.81-3.81V5.31L10.69 1.5ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/></svg></span>
+          <h3>Branch protection, minus the drama</h3>
+          <p>Require reviews, green checks, and linear history with rules that are readable by everyone, not just admins.</p>
+          <a class="card__link" href="#faq">Learn more <svg class="octicon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8.22 2.97a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06l2.97-2.97H3.75a.75.75 0 0 1 0-1.5h7.44L8.22 4.03a.75.75 0 0 1 0-1.06Z"/></svg></a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="how-it-works" aria-labelledby="steps-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="steps-title">From commit to merge in three steps</h2>
+        <p>Connect your repository once. Forgebase handles the routine so reviewers handle the judgment.</p>
+      </div>
+      <div class="steps__list">
+        <div class="step reveal">
+          <span class="step__num" aria-hidden="true">1</span>
+          <h3>Connect your repo</h3>
+          <p>Install the Forgebase app on GitHub or GitLab. Existing branch rules and CI are imported automatically.</p>
+        </div>
+        <div class="step reveal">
+          <span class="step__num" aria-hidden="true">2</span>
+          <h3>Open a pull request</h3>
+          <p>Reviewers get a focused diff view with inline CI results, ownership hints, and suggested reviewers.</p>
+        </div>
+        <div class="step reveal">
+          <span class="step__num" aria-hidden="true">3</span>
+          <h3>Queue and merge</h3>
+          <p>Approved changes enter the merge queue, are rebased and retested, then land on main in order.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="testimonials" aria-labelledby="testimonials-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="testimonials-title">Teams that stopped babysitting merges</h2>
+        <p>What engineers say after their first quarter on Forgebase.</p>
+      </div>
+      <div class="grid-3">
+        <article class="card reveal">
+          <p class="testimonial__quote">Our review turnaround dropped from two days to a few hours. The merge queue alone ended our Friday deploy freezes.</p>
+          <div class="testimonial__meta">
+            <span class="avatar" aria-hidden="true">MK</span>
+            <div><div class="testimonial__name">Mara Kessler</div><div class="testimonial__role">Staff Engineer, Loomfield</div></div>
+          </div>
+        </article>
+        <article class="card reveal">
+          <p class="testimonial__quote">CI failures finally come with an explanation. Junior engineers fix their own pipelines now instead of paging the platform team.</p>
+          <div class="testimonial__meta">
+            <span class="avatar" aria-hidden="true">DA</span>
+            <div><div class="testimonial__name">Devon Achebe</div><div class="testimonial__role">Platform Lead, Northwind Labs</div></div>
+          </div>
+        </article>
+        <article class="card reveal">
+          <p class="testimonial__quote">Stacked PRs changed how we write features. Reviews are smaller, comments are sharper, and main stays green.</p>
+          <div class="testimonial__meta">
+            <span class="avatar" aria-hidden="true">SR</span>
+            <div><div class="testimonial__name">Sofia Reyes</div><div class="testimonial__role">Engineering Manager, Cartwright</div></div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing" aria-labelledby="pricing-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="pricing-title">Pricing that scales with your team</h2>
+        <p>Start free. Pay when your review traffic grows.</p>
+      </div>
+      <div class="billing-toggle" role="group" aria-label="Billing period">
+        <button class="billing-toggle__opt" id="bill-monthly" type="button" aria-pressed="true">Monthly</button>
+        <button class="billing-toggle__opt" id="bill-annual" type="button" aria-pressed="false">Annual</button>
+      </div>
+      <p id="billing-status" class="visually-hidden" aria-live="polite" style="position:absolute;left:-9999px"></p>
+      <div class="grid-3">
+        <article class="card reveal">
+          <h3>Starter</h3>
+          <p class="price">$0<small> / developer / mo</small></p>
+          <ul class="price-list">
+            <li><svg class="octicon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"/></svg>Unlimited public repositories</li>
+            <li><svg class="octicon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"/></svg>Core review and diff tools</li>
+            <li><svg class="octicon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"/></svg>Community support</li>
+          </ul>
+          <a class="btn" href="#cta">Get started</a>
+        </article>
+        <article class="card card--popular reveal">
+          <span class="badge">Popular</span>
+          <h3>Team</h3>
+          <p class="price"><span class="price-amount" data-monthly="$12" data-annual="$10">$12</span><small> / developer / mo</small></p>
+          <ul class="price-list">
+            <li><svg class="octicon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"/></svg>Everything in Starter</li>
+            <li><svg class="octicon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"/></svg>Merge queue and stacked PRs</li>
+            <li><svg class="octicon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"/></svg>CI failure explanations</li>
+            <li><svg class="octicon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"/></svg>Email support, next business day</li>
+          </ul>
+          <a class="btn btn--primary" href="#cta">Get started</a>
+        </article>
+        <article class="card reveal">
+          <h3>Enterprise</h3>
+          <p class="price"><span class="price-amount" data-monthly="$39" data-annual="$33">$39</span><small> / developer / mo</small></p>
+          <ul class="price-list">
+            <li><svg class="octicon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"/></svg>Everything in Team</li>
+            <li><svg class="octicon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"/></svg>SAML SSO and audit logs</li>
+            <li><svg class="octicon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"/></svg>Self-hosted runners</li>
+            <li><svg class="octicon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"/></svg>Dedicated support engineer</li>
+          </ul>
+          <a class="btn" href="#cta">Contact sales</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq" aria-labelledby="faq-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="faq-title">Frequently asked questions</h2>
+        <p>Short answers to the questions teams ask before migrating.</p>
+      </div>
+      <div class="faq">
+        <details class="faq__item">
+          <summary class="faq__summary">Does Forgebase replace our CI provider?<svg class="octicon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M12.78 5.22a.749.749 0 0 1 0 1.06l-4.25 4.25a.749.749 0 0 1-1.06 0L3.22 6.28a.749.749 0 1 1 1.06-1.06L8 8.939l3.72-3.719a.749.749 0 0 1 1.06 0Z"/></svg></summary>
+          <div class="faq__body">No. Forgebase sits on top of your existing CI. It reads check results from GitHub Actions, GitLab CI, Buildkite, or CircleCI and presents them inside the review.</div>
+        </details>
+        <details class="faq__item">
+          <summary class="faq__summary">How does the merge queue handle conflicts?<svg class="octicon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M12.78 5.22a.749.749 0 0 1 0 1.06l-4.25 4.25a.749.749 0 0 1-1.06 0L3.22 6.28a.749.749 0 1 1 1.06-1.06L8 8.939l3.72-3.719a.749.749 0 0 1 1.06 0Z"/></svg></summary>
+          <div class="faq__body">Each entry is rebased onto the latest main and retested before merging. If a rebase conflicts, the author is notified with the conflicting files and the queue continues with the next entry.</div>
+        </details>
+        <details class="faq__item">
+          <summary class="faq__summary">Can we keep our existing branch protection rules?<svg class="octicon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M12.78 5.22a.749.749 0 0 1 0 1.06l-4.25 4.25a.749.749 0 0 1-1.06 0L3.22 6.28a.749.749 0 1 1 1.06-1.06L8 8.939l3.72-3.719a.749.749 0 0 1 1.06 0Z"/></svg></summary>
+          <div class="faq__body">Yes. Rules are imported on install and stay in sync. You can manage them in Forgebase or in your Git host; both views show the same source of truth.</div>
+        </details>
+        <details class="faq__item">
+          <summary class="faq__summary">Is there a self-hosted option?<svg class="octicon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M12.78 5.22a.749.749 0 0 1 0 1.06l-4.25 4.25a.749.749 0 0 1-1.06 0L3.22 6.28a.749.749 0 1 1 1.06-1.06L8 8.939l3.72-3.719a.749.749 0 0 1 1.06 0Z"/></svg></summary>
+          <div class="faq__body">Enterprise customers can run Forgebase runners inside their own network. The control plane stays hosted by us, and no source code leaves your infrastructure.</div>
+        </details>
+        <details class="faq__item">
+          <summary class="faq__summary">What does the free tier include?<svg class="octicon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M12.78 5.22a.749.749 0 0 1 0 1.06l-4.25 4.25a.749.749 0 0 1-1.06 0L3.22 6.28a.749.749 0 1 1 1.06-1.06L8 8.939l3.72-3.719a.749.749 0 0 1 1.06 0Z"/></svg></summary>
+          <div class="faq__body">Starter covers unlimited public repositories with the full review experience. Private repositories, merge queues, and stacked PRs are part of the Team tier.</div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-final" id="cta" aria-labelledby="cta-title">
+    <div class="container cta-final__inner">
+      <h2 id="cta-title">Start shipping calmer releases</h2>
+      <p>Leave your work email and we will send a workspace invite within one business day.</p>
+      <form class="cta-form" id="cta-form" novalidate>
+        <div class="input-group">
+          <label for="email">Work email</label>
+          <input class="input" id="email" name="email" type="email" autocomplete="email" placeholder="you@company.com" aria-describedby="email-helper email-error" required>
+          <span class="input-group__helper" id="email-helper">We only use this to send your invite.</span>
+          <span class="input-group__error" id="email-error" aria-live="polite" hidden>
+            <svg class="octicon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M2.343 13.657A8 8 0 1 1 13.658 2.343 8 8 0 0 1 2.343 13.657ZM6.03 4.97a.751.751 0 0 0-1.042.018.751.751 0 0 0-.018 1.042L6.94 8 4.97 9.97a.749.749 0 0 0 .326 1.275.749.749 0 0 0 .734-.215L8 9.06l1.97 1.97a.749.749 0 0 0 1.275-.326.749.749 0 0 0-.215-.734L9.06 8l1.97-1.97a.749.749 0 0 0-.326-1.275.749.749 0 0 0-.734.215L8 6.94Z"/></svg>
+            <span id="email-error-text">Enter a valid email address.</span>
+          </span>
+        </div>
+        <button class="btn btn--primary" id="cta-submit" type="submit">
+          <span class="btn__spinner" aria-hidden="true"></span>
+          <span class="btn__label">Request invite</span>
+        </button>
+      </form>
+      <p class="form-success" id="form-success" aria-live="polite" hidden>
+        <svg class="octicon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 16A8 8 0 1 1 8 0a8 8 0 0 1 0 16Zm3.78-9.72a.751.751 0 0 0-.018-1.042.751.751 0 0 0-1.042-.018L6.75 9.19 5.28 7.72a.751.751 0 0 0-1.042.018.751.751 0 0 0-.018 1.042l2 2a.75.75 0 0 0 1.06 0Z"/></svg>
+        Invite requested. Check your inbox shortly.
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <a class="nav__brand" href="#" aria-label="Forgebase home">
+          <svg class="octicon octicon--lg" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/></svg>
+          Forgebase
+        </a>
+        <p>Code review, CI, and merge automation for teams that read their diffs.</p>
+      </div>
+      <div>
+        <h4>Product</h4>
+        <ul><li><a href="#features">Features</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#how-it-works">Integrations</a></li><li><a href="#faq">Changelog</a></li></ul>
+      </div>
+      <div>
+        <h4>Resources</h4>
+        <ul><li><a href="#how-it-works">Documentation</a></li><li><a href="#faq">API reference</a></li><li><a href="#faq">Status</a></li><li><a href="#faq">Community</a></li></ul>
+      </div>
+      <div>
+        <h4>Company</h4>
+        <ul><li><a href="#testimonials">About</a></li><li><a href="#testimonials">Blog</a></li><li><a href="#cta">Careers</a></li><li><a href="#cta">Contact</a></li></ul>
+      </div>
+      <div>
+        <h4>Legal</h4>
+        <ul><li><a href="#cta">Privacy</a></li><li><a href="#cta">Terms</a></li><li><a href="#cta">Security</a></li><li><a href="#cta">DPA</a></li></ul>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span>&copy; 2026 Forgebase Systems, Inc.</span>
+      <div class="footer__social">
+        <a href="#" aria-label="Forgebase on GitHub"><svg class="octicon octicon--lg" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/></svg></a>
+        <a href="#" aria-label="Forgebase on X"><svg class="octicon octicon--lg" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M9.52 6.77 15.44 0h-1.4L8.9 5.88 4.76 0H0l6.21 9.05L0 16h1.4l5.44-6.32L11.24 16H16L9.52 6.77Zm-1.92 2.23-.63-.9L1.96 1.04h2.15l4.05 5.79.63.9 5.25 7.51h-2.15L7.6 9Z"/></svg></a>
+        <a href="#" aria-label="Forgebase on LinkedIn"><svg class="octicon octicon--lg" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M13.63 2H2.37C2.17 2 2 2.16 2 2.36v11.28c0 .2.16.36.37.36h11.26c.2 0 .37-.16.37-.36V2.36c0-.2-.16-.36-.37-.36ZM5.37 12.26H3.6V6.5h1.77v5.76ZM4.49 5.6a1.03 1.03 0 1 1 0-2.05 1.03 1.03 0 0 1 0 2.05Zm7.77 6.66h-1.77V9.4c0-.66-.01-1.51-.92-1.51-.92 0-1.07.72-1.07 1.46v2.9H6.74V6.5h1.7v.78h.02c.24-.45.81-.92 1.67-.92 1.79 0 2.12 1.18 2.12 2.71v3.19Z"/></svg></a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+var root=document.documentElement;
+var toggle=document.getElementById("theme-toggle");
+var sun=toggle.querySelector(".icon-sun");
+var moon=toggle.querySelector(".icon-moon");
+var metaTheme=document.querySelector('meta[name="theme-color"]');
+function applyTheme(t){
+  root.dataset.theme=t;
+  var dark=t==="dark";
+  toggle.setAttribute("aria-pressed",String(dark));
+  toggle.setAttribute("aria-label",dark?"Switch to light theme":"Switch to dark theme");
+  sun.hidden=dark;moon.hidden=!dark;
+  metaTheme.setAttribute("content",dark?"#0d1117":"#f6f8fa");
+}
+applyTheme(root.dataset.theme==="dark"?"dark":"light");
+toggle.addEventListener("click",function(){
+  var next=root.dataset.theme==="dark"?"light":"dark";
+  localStorage.setItem("theme",next);
+  applyTheme(next);
+});
+
+var menuBtn=document.getElementById("menu-btn");
+var navLinks=document.getElementById("nav-links");
+function closeMenu(){navLinks.classList.remove("is-open");menuBtn.setAttribute("aria-expanded","false");menuBtn.setAttribute("aria-label","Open menu");}
+menuBtn.addEventListener("click",function(){
+  var open=navLinks.classList.toggle("is-open");
+  menuBtn.setAttribute("aria-expanded",String(open));
+  menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");
+});
+navLinks.addEventListener("click",function(e){if(e.target.tagName==="A")closeMenu();});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")closeMenu();});
+document.addEventListener("click",function(e){
+  if(navLinks.classList.contains("is-open")&&!navLinks.contains(e.target)&&!menuBtn.contains(e.target))closeMenu();
+});
+
+var bm=document.getElementById("bill-monthly");
+var ba=document.getElementById("bill-annual");
+var status=document.getElementById("billing-status");
+function setBilling(annual){
+  bm.setAttribute("aria-pressed",String(!annual));
+  ba.setAttribute("aria-pressed",String(annual));
+  var amounts=document.querySelectorAll(".price-amount");
+  for(var i=0;i<amounts.length;i++){
+    amounts[i].textContent=annual?amounts[i].dataset.annual:amounts[i].dataset.monthly;
+  }
+  status.textContent=annual?"Prices updated to annual billing.":"Prices updated to monthly billing.";
+}
+bm.addEventListener("click",function(){setBilling(false);});
+ba.addEventListener("click",function(){setBilling(true);});
+
+var form=document.getElementById("cta-form");
+var email=document.getElementById("email");
+var errBox=document.getElementById("email-error");
+var errText=document.getElementById("email-error-text");
+var submitBtn=document.getElementById("cta-submit");
+var success=document.getElementById("form-success");
+var emailRe=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+function validate(){
+  var v=email.value.trim();
+  if(!v){showError("Email is required.");return false;}
+  if(!emailRe.test(v)){showError("Enter a valid email address.");return false;}
+  errBox.hidden=true;email.classList.remove("is-invalid");email.classList.add("is-valid");email.removeAttribute("aria-invalid");
+  return true;
+}
+function showError(msg){
+  errText.textContent=msg;errBox.hidden=false;
+  email.classList.add("is-invalid");email.classList.remove("is-valid");email.setAttribute("aria-invalid","true");
+}
+email.addEventListener("blur",function(){if(email.value.trim())validate();});
+email.addEventListener("input",function(){if(!errBox.hidden)validate();});
+form.addEventListener("submit",function(e){
+  e.preventDefault();
+  if(!validate()){email.focus();return;}
+  submitBtn.classList.add("is-loading");
+  submitBtn.setAttribute("aria-busy","true");
+  submitBtn.querySelector(".btn__label").textContent="Sending";
+  setTimeout(function(){
+    submitBtn.classList.remove("is-loading");
+    submitBtn.removeAttribute("aria-busy");
+    submitBtn.classList.add("is-success");
+    submitBtn.querySelector(".btn__label").textContent="Invite sent";
+    submitBtn.disabled=true;
+    email.disabled=true;
+    success.hidden=false;
+  },1000);
+});
+
+if("IntersectionObserver" in window&&!window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+  var items=document.querySelectorAll(".reveal");
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){
+        var el=en.target;
+        var idx=Array.prototype.indexOf.call(el.parentNode.children,el);
+        el.style.transitionDelay=(idx%3)*60+"ms";
+        el.classList.add("is-visible");
+        io.unobserve(el);
+      }
+    });
+  },{threshold:0.15});
+  items.forEach(function(el){io.observe(el);});
+}else{
+  document.querySelectorAll(".reveal").forEach(function(el){el.classList.add("is-visible");});
+}
+})();
+</script>
+</body>
+</html>

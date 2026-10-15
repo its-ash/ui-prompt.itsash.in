@@ -1,738 +1,641 @@
 <!DOCTYPE html>
-<html lang="en" class="light">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
-<title>Nimbus – Real‑Time Performance Analytics</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pulseboard - Real-Time Performance Analytics</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";}document.documentElement.dataset.theme=t;})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet">
 <style>
 :root{
-  --primary:#00CEC9;
-  --secondary:#0984E3;
-  --bg-primary:#F5F6FA;
-  --bg-secondary:#fefefe;
-  --text-primary:#1E272E;
-  --text-secondary:rgba(30,39,46,0.68);
-  --text-success:#27AE60;
-  --text-error:#E74C3C;
-  --border-default:rgba(30,39,46,0.12);
-  --border-error:rgba(231,76,60,0.2);
-  --border-success:rgba(39,174,96,0.2);
-  --radius-sm:6px;
-  --radius-md:10px;
-  --radius-lg:16px;
-  --shadow-sm:0 2px 6px rgba(0,0,0,0.08);
-  --shadow-md:0 4px 12px rgba(0,0,0,0.15);
-  --shadow-lg:0 0 0 1px rgba(0,206,201,0.15),0 8px 24px rgba(0,0,0,0.35);
-  --transition-fast:180ms;
-  --transition-normal:220ms;
-  --ease-standard:ease;
-  --font-heading:'Space Grotesk',sans-serif;
-  --font-base:'Inter',sans-serif;
-  --font-mono:'JetBrains Mono',monospace;
-  --z-dropdown:100;
-  --z-modal:200;
-  --z-toast:300;
+  --primary:#00CEC9; --secondary:#0984E3;
+  --bg-primary:#F5F6FA; --bg-secondary:#fefefe;
+  --text-primary:#1E272E; --text-secondary:rgba(30,39,46,0.68);
+  --on-primary:#1E272E; --on-blue:#ffffff;
+  --text-success:#0e8a4f; --text-error:#c0392b;
+  --border-default:rgba(30,39,46,0.12); --border-error:rgba(192,57,43,0.55); --border-success:rgba(14,138,79,0.55);
+  --ring:rgba(0,206,201,0.35);
+  --radius-sm:6px; --radius-md:10px; --radius-lg:16px;
+  --shadow-sm:0 1px 3px rgba(30,39,46,0.08);
+  --shadow-md:0 8px 24px rgba(30,39,46,0.12);
+  --tech-border:0 0 0 1px rgba(9,132,227,0.18);
+  --glow:0 0 0 1px rgba(0,206,201,0.25),0 8px 24px rgba(30,39,46,0.10);
+  --font-heading:"Space Grotesk",sans-serif; --font-base:"Inter",sans-serif; --font-mono:"JetBrains Mono",monospace;
+  --spacing-gap:1.5rem; --transition-fast:180ms; --transition-normal:220ms; --ease-standard:ease;
+  --z-dropdown:100; --z-modal:200; --z-toast:300;
+  --nav-bg:rgba(245,246,250,0.85);
+  --star:#e6a817;
 }
-.dark{
-  --bg-primary:#1E272E;
-  --bg-secondary:#26333C;
-  --text-primary:#F5F6FA;
-  --text-secondary:rgba(245,246,250,0.68);
-  --border-default:rgba(245,246,250,0.12);
-  --border-error:rgba(231,76,60,0.15);
-  --border-success:rgba(39,174,96,0.15);
+:root[data-theme="dark"]{
+  --bg-primary:#1E272E; --bg-secondary:#26333C;
+  --text-primary:#F5F6FA; --text-secondary:rgba(245,246,250,0.68);
+  --on-primary:#1E272E;
+  --text-success:#2fd48a; --text-error:#ff6b5e;
+  --border-default:rgba(245,246,250,0.12); --border-error:rgba(255,107,94,0.55); --border-success:rgba(47,212,138,0.55);
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md:0 8px 24px rgba(0,0,0,0.35);
+  --tech-border:0 0 0 1px rgba(0,206,201,0.15);
+  --glow:0 0 0 1px rgba(0,206,201,0.15),0 8px 24px rgba(0,0,0,0.35);
+  --nav-bg:rgba(30,39,46,0.85);
+  --star:#f6c945;
 }
-html{box-sizing:border-box;font-size:100%}
-*,*:before,*:after{box-sizing:inherit}
-body{
-  margin:0;
-  font-family:var(--font-base);
-  background:var(--bg-primary);
-  color:var(--text-primary);
-  line-height:1.6;
-}
-a{color:inherit;text-decoration:none}
-button{cursor:pointer;font:inherit}
+*{margin:0;padding:0;box-sizing:border-box}
 [hidden]{display:none!important}
-.skip-to-content{
-  position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden
-}
-.skip-to-content:focus{
-  left:0;top:0;width:auto;height:auto;background:var(--bg-secondary);color:var(--text-primary);
-  padding:1rem;z-index:var(--z-toast);
-}
-header{
-  position:sticky;top:0;z-index:var(--z-dropdown);
-  background:var(--bg-primary);
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0.75rem 1.5rem;
-  border-bottom:1px solid var(--border-default);
-}
-.header.scrolled{box-shadow:var(--shadow-sm)}
-.header__logo{
-  display:flex;align-items:center;gap:0.5rem;
-  font-family:var(--font-heading);font-weight:700;font-size:1.25rem;
-}
-.header__logo .material-symbols-outlined{font-variation-settings:'FILL' 0;color:var(--primary)}
-.header__nav{
-  display:flex;gap:2rem;align-items:center;
-}
-.header__nav-link{
-  font-size:0.95rem;font-weight:500;position:relative;
-}
-.header__nav-link::after{
-  content:'';position:absolute;left:0;bottom:-3px;width:0;height:2px;
-  background:var(--primary);transition:width var(--transition-normal) var(--ease-standard);
-}
-.header__nav-link:hover::after,.header__nav-link[aria-current="page"]::after{width:100%}
-.header__btn{margin-left:auto}
-.header__theme-toggle{
-  background:none;border:none;color:var(--text-primary);font-size:1.25rem;
-  padding:0.25rem;display:flex;align-items:center;justify-content:center;
-  cursor:pointer;position:relative;
-}
-.header__theme-toggle[aria-pressed="true"] .material-symbols-outlined{content:"dark_mode"}
-.header__theme-toggle[aria-pressed="false"] .material-symbols-outlined{content:"light_mode"}
-/* Mobile nav */
-.header__menu-btn{
-  display:none;background:none;border:none;color:var(--text-primary);font-size:1.5rem;
-  padding:0.25rem;
-}
-.header__nav-panel{
-  position:fixed;top:0;right:-100%;height:100%;width:280px;
-  background:var(--bg-secondary);flex-direction:column;align-items:flex-start;
-  padding:2rem;gap:2rem;transition:right var(--transition-normal) var(--ease-standard);
-  z-index:var(--z-modal);
-}
-.header__nav-panel[aria-expanded="true"]{right:0}
-.header__nav-panel .header__nav-link{font-size:1.1rem;padding:0.25rem 0;width:100%}
-.header__nav-panel .header__nav-link::after{display:none}
-.header__close-btn{
-  align-self:flex-end;background:none;border:none;font-size:1.5rem;color:var(--text-secondary);
-  padding:0.25rem;
-}
-.btn{
-  display:flex;align-items:center;justify-content:center;gap:0.5rem;
-  height:3rem;min-width:8rem;border:none;border-radius:var(--radius-md);
-  font-weight:600;transition:background-color var(--transition-fast),color var(--transition-fast),
-          box-shadow var(--transition-fast),transform var(--transition-fast);
-}
-.btn:focus-visible{outline:none;box-shadow:0 0 0 2px var(--primary),var(--shadow-sm)}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;font-size:1rem;overflow-x:hidden;transition:background-color var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard)}
+h1,h2,h3{font-family:var(--font-heading);letter-spacing:-0.02em;line-height:1.1;font-weight:700}
+h1{font-size:clamp(2.25rem,5vw,3.5rem)}
+h2{font-size:clamp(1.75rem,3.5vw,2.5rem)}
+h3{font-size:1.2rem;letter-spacing:-0.01em}
+p{color:var(--text-secondary);max-width:65ch}
+a{color:inherit;text-decoration:none}
+img{max-width:100%}
+section{scroll-margin-top:5rem}
+.wrap{max-width:1200px;margin:0 auto;padding-left:1.25rem;padding-right:1.25rem}
+@media(min-width:768px){.wrap{padding-left:2rem;padding-right:2rem}}
+.section{padding-top:clamp(4rem,8vw,7rem);padding-bottom:clamp(4rem,8vw,7rem)}
+.eyebrow{font-family:var(--font-mono);font-size:0.78rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--primary);margin-bottom:0.9rem}
+.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;font-size:1.35rem;line-height:1}
+.skip{position:absolute;left:-999px;top:0;background:var(--primary);color:var(--on-primary);padding:0.6rem 1rem;border-radius:var(--radius-sm);z-index:var(--z-toast)}
+.skip:focus{left:1rem;top:1rem}
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;min-height:44px;padding:0.65rem 1.4rem;border-radius:var(--radius-md);font-family:var(--font-base);font-size:1rem;font-weight:600;border:1px solid transparent;cursor:pointer;transition:background-color var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard),border-color var(--transition-fast) var(--ease-standard),transform var(--transition-fast) var(--ease-standard),color var(--transition-fast) var(--ease-standard);white-space:nowrap}
 .btn:active{transform:scale(0.97)}
-.btn--primary{
-  background:var(--primary);color:#1E272E;
-  box-shadow:var(--shadow-lg);
+.btn:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.btn--primary{background:var(--primary);color:var(--on-primary);box-shadow:0 0 0 1px rgba(0,206,201,0.15)}
+.btn--secondary{background:var(--secondary);color:var(--on-blue)}
+.btn--ghost{background:transparent;border-color:var(--border-default);color:var(--text-primary)}
+.btn:disabled,.btn.is-loading{opacity:0.6;cursor:not-allowed;pointer-events:none}
+@media(hover:hover) and (pointer:fine){
+  .btn--primary:hover{box-shadow:0 0 0 1px rgba(0,206,201,0.5),0 6px 20px rgba(0,206,201,0.25);filter:brightness(1.06)}
+  .btn--secondary:hover{filter:brightness(1.1)}
+  .btn--ghost:hover{border-color:var(--primary);color:var(--primary)}
 }
-.btn--primary:hover{background:#00e6d6}
-.btn--secondary{
-  background:var(--secondary);color:#fff;
+/* Header */
+.header{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--nav-bg);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid transparent;transition:border-color var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard)}
+.header.is-scrolled{border-bottom-color:var(--border-default);box-shadow:var(--shadow-sm)}
+.nav{display:flex;align-items:center;justify-content:space-between;height:68px;gap:1rem}
+.nav__brand{display:flex;align-items:center;gap:0.55rem;font-family:var(--font-heading);font-weight:700;font-size:1.15rem;letter-spacing:-0.02em}
+.nav__brand .material-symbols-outlined{color:var(--primary)}
+.nav__links{display:none;align-items:center;gap:1.75rem;list-style:none}
+.nav__links a{font-size:0.95rem;font-weight:500;color:var(--text-secondary);transition:color var(--transition-fast) var(--ease-standard)}
+.nav__links a:hover,.nav__links a:focus-visible{color:var(--text-primary)}
+.nav__actions{display:flex;align-items:center;gap:0.6rem}
+.nav__toggle,.nav__menu-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:transparent;color:var(--text-primary);cursor:pointer;transition:border-color var(--transition-fast) var(--ease-standard),color var(--transition-fast) var(--ease-standard)}
+.nav__toggle:hover,.nav__menu-btn:hover{border-color:var(--primary);color:var(--primary)}
+.nav__toggle:focus-visible,.nav__menu-btn:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.nav__menu-btn .icon-close{display:none}
+.nav__menu-btn[aria-expanded="true"] .icon-menu{display:none}
+.nav__menu-btn[aria-expanded="true"] .icon-close{display:block}
+.nav .btn--primary{display:none}
+.mobile-panel{display:none;flex-direction:column;gap:0.25rem;padding:0.75rem 1.25rem 1.25rem;border-top:1px solid var(--border-default);background:var(--bg-primary)}
+.mobile-panel.is-open{display:flex}
+.mobile-panel a{padding:0.7rem 0.5rem;border-radius:var(--radius-sm);font-weight:500;color:var(--text-secondary)}
+.mobile-panel a:hover{color:var(--text-primary);background:var(--bg-secondary)}
+@media(min-width:900px){
+  .nav__links{display:flex}
+  .nav .btn--primary{display:inline-flex}
+  .nav__menu-btn{display:none}
+  .mobile-panel{display:none!important}
 }
-.btn--secondary:hover{background:#0a92ff}
-.btn--ghost{
-  background:transparent;border:1px solid var(--border-default);color:var(--text-primary);
+/* Hero */
+.hero{padding-top:clamp(3rem,6vw,5rem);padding-bottom:clamp(4rem,7vw,6rem)}
+.hero__grid{display:flex;flex-direction:column;gap:2.5rem;align-items:center}
+.hero__copy{display:flex;flex-direction:column;align-items:flex-start;gap:1.1rem}
+.hero__copy h1{max-width:14ch}
+.hero__sub{font-size:1.08rem;max-width:44ch}
+.hero__ctas{display:flex;flex-wrap:wrap;gap:0.8rem;margin-top:0.3rem}
+.hero__trust{display:flex;flex-wrap:wrap;gap:1.5rem;margin-top:1.2rem;font-family:var(--font-mono);font-size:0.82rem;color:var(--text-secondary)}
+.hero__trust strong{color:var(--primary);font-weight:700}
+/* Dashboard mockup */
+.mockup{width:100%;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--glow);padding:1.1rem;display:flex;flex-direction:column;gap:0.9rem}
+.mockup__bar{display:flex;align-items:center;gap:0.5rem;border-bottom:1px solid var(--border-default);padding-bottom:0.7rem}
+.mockup__dot{width:9px;height:9px;border-radius:50%;background:var(--border-default)}
+.mockup__dot--live{background:var(--primary)}
+.mockup__title{margin-left:auto;font-family:var(--font-mono);font-size:0.72rem;color:var(--text-secondary)}
+.mockup__stats{display:flex;gap:0.7rem;flex-wrap:wrap}
+.stat{flex:1 1 120px;background:var(--bg-primary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:0.75rem 0.9rem;display:flex;flex-direction:column;gap:0.15rem;align-items:flex-start}
+.stat__label{font-size:0.72rem;color:var(--text-secondary)}
+.stat__value{font-family:var(--font-mono);font-weight:700;font-size:1.15rem}
+.stat__delta{font-family:var(--font-mono);font-size:0.72rem;color:var(--text-success)}
+.stat__delta--down{color:var(--text-error)}
+.chart{background:var(--bg-primary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:1rem;display:flex;flex-direction:column;gap:0.6rem}
+.chart__head{display:flex;justify-content:space-between;align-items:center;font-size:0.78rem;color:var(--text-secondary)}
+.chart__head span:last-child{font-family:var(--font-mono);color:var(--primary)}
+.chart__bars{display:flex;align-items:flex-end;gap:5px;height:110px}
+.chart__bar{flex:1;border-radius:3px 3px 0 0;background:linear-gradient(180deg,var(--secondary),rgba(9,132,227,0.25));min-height:8%}
+.chart__bar--hi{background:linear-gradient(180deg,var(--primary),rgba(0,206,201,0.25))}
+@media(min-width:960px){.hero__grid{flex-direction:row}.hero__copy{flex:1 1 46%}.hero__visual{flex:1 1 54%}}
+/* Section headers */
+.sec-head{display:flex;flex-direction:column;gap:0.8rem;margin-bottom:2.75rem;max-width:640px}
+/* Cards */
+.grid-3{display:grid;grid-template-columns:1fr;gap:var(--spacing-gap)}
+@media(min-width:768px){.grid-3{grid-template-columns:repeat(3,1fr)}}
+.card{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--tech-border);padding:1.75rem;display:flex;flex-direction:column;gap:0.9rem;align-items:flex-start;transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),border-color var(--transition-normal) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.card--hover:hover{transform:translateY(-2px);box-shadow:0 0 0 1px rgba(0,206,201,0.35),var(--shadow-md)}}
+.card:focus-within{border-color:var(--primary)}
+.icon-tile{display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-primary);color:var(--primary)}
+.card p{font-size:0.95rem}
+/* Steps */
+.steps{display:flex;flex-direction:column;gap:2.25rem;position:relative}
+.step{display:flex;flex-direction:column;gap:0.6rem;align-items:flex-start;position:relative}
+.step__num{font-family:var(--font-mono);font-weight:700;font-size:0.95rem;color:var(--primary);letter-spacing:0.08em}
+.step__icon{color:var(--secondary);font-size:1.6rem}
+:root[data-theme="dark"] .step__icon{color:var(--primary)}
+@media(min-width:768px){
+  .steps{flex-direction:row;gap:2.5rem}
+  .steps::before{content:"";position:absolute;top:0.55rem;left:2rem;right:2rem;height:1px;background:var(--border-default)}
+  .step{flex:1}
+  .step__num{background:var(--bg-primary);padding-right:1rem;position:relative;z-index:1}
 }
-.btn--ghost:hover{background:rgba(0,206,201,0.08);color:var(--text-primary)}
-.btn--danger{
-  background:#E74C3C;color:#fff;
+/* Testimonials */
+.stars{display:flex;gap:2px;color:var(--star)}
+.stars .material-symbols-outlined{font-size:1.1rem;font-variation-settings:'FILL' 1}
+.quote{font-size:0.98rem;color:var(--text-primary);line-height:1.55}
+.person{display:flex;align-items:center;gap:0.8rem;margin-top:auto}
+.avatar{width:42px;height:42px;border-radius:50%;background:var(--secondary);color:var(--on-blue);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:700;font-size:0.85rem;flex-shrink:0}
+.person__name{font-weight:600;font-size:0.92rem}
+.person__role{font-size:0.8rem;color:var(--text-secondary)}
+/* Pricing */
+.card--pricing{gap:1.1rem}
+.tier{font-family:var(--font-heading);font-weight:600;font-size:1.05rem}
+.price{font-family:var(--font-mono);font-size:2.1rem;font-weight:700;letter-spacing:-0.02em}
+.price small{font-size:0.85rem;font-weight:500;color:var(--text-secondary)}
+.feat-list{list-style:none;display:flex;flex-direction:column;gap:0.55rem;width:100%}
+.feat-list li{display:flex;align-items:center;gap:0.55rem;font-size:0.92rem;color:var(--text-secondary)}
+.feat-list .material-symbols-outlined{color:var(--primary);font-size:1.15rem}
+.card--pricing .btn{width:100%;margin-top:auto}
+.card--featured{border-color:var(--primary);box-shadow:var(--glow);position:relative}
+.badge{position:absolute;top:-0.8rem;left:50%;transform:translateX(-50%);background:var(--primary);color:var(--on-primary);font-family:var(--font-mono);font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:0.3rem 0.85rem;border-radius:999px;white-space:nowrap}
+/* FAQ */
+.faq{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:0.75rem}
+.faq-item{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);overflow:hidden}
+.faq-item summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;cursor:pointer;padding:1.1rem 1.25rem;font-weight:600;font-size:0.98rem;list-style:none;min-height:44px;transition:color var(--transition-fast) var(--ease-standard)}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-item summary:hover{color:var(--primary)}
+.faq-item summary:focus-visible{outline:2px solid var(--primary);outline-offset:-2px}
+.faq-item summary .material-symbols-outlined{transition:transform var(--transition-normal) var(--ease-standard);color:var(--text-secondary);flex-shrink:0}
+.faq-item[open] summary .material-symbols-outlined{transform:rotate(180deg);color:var(--primary)}
+.faq-item__body{padding:0 1.25rem 1.2rem;font-size:0.94rem;color:var(--text-secondary)}
+/* CTA band */
+.cta-band{background:var(--bg-secondary);border-top:1px solid var(--border-default);border-bottom:1px solid var(--border-default)}
+.cta-panel{background:var(--bg-primary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--glow);padding:clamp(2rem,5vw,3.5rem);display:flex;flex-direction:column;align-items:center;text-align:center;gap:1rem}
+.cta-panel p{margin:0 auto}
+.signup{display:flex;flex-direction:column;gap:0.5rem;width:100%;max-width:460px;margin-top:0.5rem}
+.signup__row{display:flex;flex-direction:column;gap:0.6rem;width:100%}
+@media(min-width:560px){.signup__row{flex-direction:row}.signup__row .btn{flex-shrink:0}}
+.signup label{font-size:0.85rem;font-weight:600;text-align:left}
+.signup input{flex:1;min-height:44px;padding:0.65rem 1rem;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);font-family:var(--font-base);font-size:1rem;transition:border-color var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard)}
+.signup input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--ring)}
+.signup input.is-invalid{border-color:var(--border-error)}
+.signup input.is-valid{border-color:var(--border-success)}
+.signup__hint{font-size:0.8rem;color:var(--text-secondary);text-align:left}
+.signup__msg{font-size:0.88rem;text-align:left;display:flex;align-items:center;gap:0.4rem;min-height:1.4rem}
+.signup__msg.is-error{color:var(--text-error)}
+.signup__msg.is-success{color:var(--text-success)}
+/* Footer */
+.footer{border-top:1px solid var(--border-default);padding:3rem 0 1.5rem}
+.footer__grid{display:flex;flex-direction:column;gap:2rem}
+@media(min-width:768px){.footer__grid{flex-direction:row;justify-content:space-between}}
+.footer__brand{display:flex;flex-direction:column;gap:0.6rem;max-width:260px}
+.footer__brand p{font-size:0.88rem}
+.footer__cols{display:flex;flex-wrap:wrap;gap:2.5rem}
+.footer__col{display:flex;flex-direction:column;gap:0.55rem;align-items:flex-start}
+.footer__col h4{font-family:var(--font-mono);font-size:0.75rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:0.3rem}
+.footer__col a{font-size:0.9rem;color:var(--text-secondary);transition:color var(--transition-fast) var(--ease-standard)}
+.footer__col a:hover,.footer__col a:focus-visible{color:var(--primary)}
+.footer__bar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:0.75rem;margin-top:2.5rem;padding-top:1.25rem;border-top:1px solid var(--border-default);font-size:0.82rem;color:var(--text-secondary)}
+.footer__bar a{color:var(--text-secondary)}
+.footer__bar a:hover{color:var(--primary)}
+/* Reveal */
+.reveal{opacity:0;transform:translateY(14px);transition:opacity 400ms ease-out,transform 400ms ease-out}
+.reveal.in-view{opacity:1;transform:none}
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{transition-duration:0.01ms!important;animation:none!important}
+  .reveal{opacity:1;transform:none}
+  .card--hover:hover{transform:none}
+  .btn:active{transform:none}
 }
-.btn--danger:hover{background:#c0392b}
-.btn.is-loading{
-  pointer-events:none;opacity:0.7;
-}
-.btn.is-loading::after{
-  content:"";display:inline-block;width:1rem;height:1rem;border:2px solid currentColor;
-  border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;
-}
-@keyframes spin{to{transform:rotate(360deg)}}
-.card{
-  background:var(--bg-secondary);border:1px solid var(--border-default);
-  border-radius:var(--radius-lg);padding:1.5rem;
-  display:flex;flex-direction:column;gap:1rem;
-  transition:transform var(--transition-normal),border-color var(--transition-normal);
-}
-.card:hover{transform:translateY(-2px);border-color:var(--primary)}
-.card__icon{
-  width:2.5rem;height:2.5rem;background:rgba(0,206,201,0.1);
-  border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;
-  color:var(--primary);
-}
-.card__title{font-family:var(--font-heading);font-size:1.25rem;margin:0}
-.card__text{font-size:0.95rem;color:var(--text-secondary);margin:0}
-.card--featured{
-  border:2px solid var(--primary);box-shadow:var(--shadow-lg);
-}
-.step{
-  display:flex;align-items:flex-start;gap:1rem;
-}
-.step__number{
-  font-family:var(--font-mono);font-weight:600;font-size:1.5rem;
-  color:var(--primary);min-width:2.5rem;text-align:center;
-}
-.step__icon{
-  width:2.5rem;height:2.5rem;background:rgba(0,206,201,0.1);
-  border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;
-  color:var(--primary);
-}
-.step__title{font-family:var(--font-heading);font-size:1.125rem;margin:0}
-.step__text{font-size:0.95rem;color:var(--text-secondary);margin:0}
-.testimonial{
-  background:var(--bg-secondary);border:1px solid var(--border-default);
-  border-radius:var(--radius-lg);padding:1.5rem;
-  display:flex;flex-direction:column;gap:1rem;
-}
-.testimonial__quote{font-style:italic;font-size:0.95rem;color:var(--text-secondary);margin:0}
-.testimonial__rating{
-  display:flex;gap:0.25rem;align-items:center;
-}
-.testimonial__rating .material-symbols-outlined{font-variation-settings:'FILL' 1;color:#f1c40f}
-.testimonial__avatar{
-  width:2.5rem;height:2.5rem;background:var(--secondary);color:#fff;
-  border-radius:50%;display:flex;align-items:center;justify-content:center;
-  font-family:var(--font-mono);font-weight:600;font-size:0.875rem;
-}
-.testimonial__name{font-weight:600;margin:0.25rem 0 0}
-.testimonial__role{font-size:0.875rem;color:var(--text-secondary);margin:0}
-.pricing{
-  display:flex;gap:1.5rem;
-}
-.pricing__tier{
-  flex:1;background:var(--bg-secondary);border:1px solid var(--border-default);
-  border-radius:var(--radius-lg);padding:1.5rem;
-  display:flex;flex-direction:column;gap:1rem;
-}
-.pricing__tier:hover{transform:translateY(-2px);border-color:var(--primary)}
-.pricing__tier--featured{border:2px solid var(--primary);box-shadow:var(--shadow-lg)}
-.pricing__name{font-family:var(--font-heading);font-size:1.25rem;margin:0;text-align:center}
-.pricing__price{
-  font-family:var(--font-mono);font-size:2rem;font-weight:600;text-align:center;
-  color:var(--primary);
-}
-.pricing__desc{font-size:0.95rem;color:var(--text-secondary);text-align:center;margin:0}
-.pricing__features{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:0.5rem}
-.pricing__features li{
-  display:flex;align-items:center;gap:0.5rem;font-size:0.9rem;
-  color:var(--text-secondary);
-}
-.pricing__features .material-symbols-outlined{font-variation-settings:'FILL' 1;color:var(--primary)}
-.pricing__cta{margin-top:auto;align-self:flex-start}
-.faq{
-  border:1px solid var(--border-default);border-radius:var(--radius-lg);overflow:hidden;
-}
-.faq-item{
-  border-bottom:1px solid var(--border-default);
-}
-.faq-item:last-child{border-bottom:none}
-.faq-item__question{
-  width:100%;padding:1.25rem;background:none;border:none;
-  text-align:left;font-family:var(--font-heading);font-size:1.1rem;
-  color:var(--text-primary);display:flex;align-items:center;justify-content:space-between;
-}
-.faq-item__question[aria-expanded="true"]{background:var(--bg-secondary)}
-.faq-item__question .material-symbols-outlined{transition:transform var(--transition-normal)}
-.faq-item__question[aria-expanded="true"] .material-symbols-outlined{transform:rotate(180deg)}
-.faq-item__answer{
-  max-height:0;overflow:hidden;transition:max-height var(--transition-normal);
-  background:var(--bg-secondary);padding:0 1.25rem;
-}
-.faq-item[aria-expanded="true"] .faq-item__answer{max-height:9rem;padding-top:0.5rem;padding-bottom:0.5rem}
-.cta-band{
-  background:var(--bg-secondary);color:var(--text-primary);
-  padding:2rem 1.5rem;text-align:center;
-  display:flex;flex-direction:column;align-items:center;gap:1.5rem;
-}
-.cta-band__title{font-family:var(--font-heading);font-size:1.75rem;margin:0}
-.cta-band__desc{font-size:0.95rem;color:var(--text-secondary);max-width:400px;line-height:1.5;margin:0}
-.cta-band__form{
-  display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;
-}
-.cta-band__input{
-  flex:1 1 200px;min-width:120px;padding:0.75rem 1rem;border:1px solid var(--border-default);
-  border-radius:var(--radius-md);font-family:var(--font-base);background:var(--bg-secondary);
-  color:var(--text-primary);
-}
-.cta-band__input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 2px rgba(0,206,201,0.25)}
-.cta-band__error{
-  color:var(--text-error);font-size:0.875rem;min-height:1.25rem;
-}
-footer{
-  background:var(--bg-secondary);color:var(--text-secondary);
-  padding:2rem 1.5rem;font-size:0.9rem;
-}
-.footer__grid{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1.5rem;
-}
-.footer__col h3{font-family:var(--font-heading);font-size:1.1rem;margin-bottom:0.75rem;color:var(--text-primary)}
-.footer__col a{display:block;margin-bottom:0.35rem;transition:color var(--transition-fast)}
-.footer__col a:hover{color:var(--text-primary)}
-.footer__bottom{
-  margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border-default);
-  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;
-}
-.footer__bottom p{margin:0;font-size:0.85rem}
-.footer__top-link{
-  background:none;border:none;color:var(--text-secondary);font-size:0.9rem;
-  text-decoration:underline;transition:color var(--transition-fast)
-}
-.footer__top-link:hover{color:var(--text-primary)}
-@media (prefers-reduced-motion:reduce){
-  *{animation-duration:0s!important;transition-duration:0s!important;scroll-behavior:auto!important}
-}
-@media (max-width:768px){
-  .header__nav{display:none}
-  .header__menu-btn{display:block}
-  .pricing{flex-direction:column}
+@media (prefers-reduced-transparency: reduce){
+  .header{background:var(--bg-primary);backdrop-filter:none;-webkit-backdrop-filter:none}
 }
 </style>
 </head>
 <body>
-<a href="#main" class="skip-to-content">Skip to content</a>
-<header class="header">
-  <div class="header__logo">
-    <span class="material-symbols-outlined">monitoring</span>
-    Nimbus
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="header" id="site-header">
+  <div class="wrap">
+    <nav class="nav" aria-label="Main navigation">
+      <a class="nav__brand" href="#top" aria-label="Pulseboard home">
+        <span class="material-symbols-outlined" aria-hidden="true">monitoring</span>
+        Pulseboard
+      </a>
+      <ul class="nav__links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how">How It Works</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+      <div class="nav__actions">
+        <button class="nav__toggle" id="theme-toggle" type="button" aria-pressed="true" aria-label="Switch to light theme">
+          <span class="material-symbols-outlined icon-sun" aria-hidden="true">light_mode</span>
+          <span class="material-symbols-outlined icon-moon" aria-hidden="true" hidden>dark_mode</span>
+        </button>
+        <a class="btn btn--primary" href="#cta">Get Started</a>
+        <button class="nav__menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="mobile-panel" aria-label="Toggle menu">
+          <span class="material-symbols-outlined icon-menu" aria-hidden="true">menu</span>
+          <span class="material-symbols-outlined icon-close" aria-hidden="true">close</span>
+        </button>
+      </div>
+    </nav>
   </div>
-  <nav class="header__nav" id="headerNav">
-    <a href="#features" class="header__nav-link">Features</a>
-    <a href="#how" class="header__nav-link">How It Works</a>
-    <a href="#pricing" class="header__nav-link">Pricing</a>
-    <a href="#faq" class="header__nav-link">FAQ</a>
-  </nav>
-  <button class="header__btn btn--primary" id="getStartedBtn">Get Started</button>
-  <button class="header__theme-toggle" id="themeToggle" aria-pressed="false" aria-label="Switch to dark theme">
-    <span class="material-symbols-outlined">dark_mode</span>
-  </button>
-  <button class="header__menu-btn" id="menuBtn" aria-label="Open menu" aria-controls="headerNavPanel" aria-expanded="false">
-    <span class="material-symbols-outlined">menu</span>
-  </button>
+  <div class="mobile-panel" id="mobile-panel">
+    <a href="#features">Features</a>
+    <a href="#how">How It Works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#faq">FAQ</a>
+    <a href="#cta">Get Started</a>
+  </div>
 </header>
-<nav class="header__nav-panel" id="headerNavPanel" aria-labelledby="headerNavPanelLabel" hidden>
-  <h2 id="headerNavPanelLabel" class="visually-hidden">Menu</h2>
-  <button class="header__close-btn" id="menuCloseBtn" aria-label="Close menu">
-    <span class="material-symbols-outlined">close</span>
-  </button>
-  <a href="#features" class="header__nav-link">Features</a>
-  <a href="#how" class="header__nav-link">How It Works</a>
-  <a href="#pricing" class="header__nav-link">Pricing</a>
-  <a href="#faq" class="header__nav-link">FAQ</a>
-</nav>
 
-<section id="hero">
-  <div class="hero" style="text-align:center;padding:4rem 1.5rem;position:relative;overflow:hidden;">
-    <div class="hero__eyebrow" style="font-family:var(--font-mono);font-size:0.875rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--primary);">
-      REAL‑TIME ANALYTICS
-    </div>
-    <h1 style="font-family:var(--font-heading);font-size:clamp(2rem,5vw,3rem);margin:1rem 0;line-height:1.2;">
-      Turn live data into instant insight
-    </h1>
-    <p style="font-size:1.125rem;color:var(--text-secondary);max-width:38rem;margin:0 auto 2rem;">
-      Monitor, alert, and act on performance metrics across your stack with zero‑lag dashboards.
-    </p>
-    <div class="hero__cta" style="display:flex;flex-wrap:wrap;gap:1rem;justify-content:center;">
-      <button class="btn btn--primary" id="startTrialBtn">Start Free Trial</button>
-      <button class="btn btn--ghost" id="howWorksBtn">
-        See How It Works <span class="material-symbols-outlined">arrow_forward</span>
-      </button>
-    </div>
-    <div class="hero__mockup" style="position:relative;width:100%;max-width:38rem;margin:0 auto;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:1.5rem;box-shadow:var(--shadow-lg);">
-      <div style="display:flex;gap:1rem;margin-bottom:1rem;">
-        <div style="flex:1;background:rgba(0,206,201,0.1);border-radius:var(--radius-md);padding:0.75rem;">
-          <div style="font-family:var(--font-mono);font-size:0.875rem;color:var(--primary);">Uptime</div>
-          <div style="font-family:var(--font-mono);font-size:1.5rem;font-weight:600;">99.98%</div>
+<main id="main">
+  <!-- Hero -->
+  <section class="hero" id="top">
+    <div class="wrap hero__grid">
+      <div class="hero__copy">
+        <p class="eyebrow">Real-Time Performance Analytics</p>
+        <h1>See slowdowns before your users do.</h1>
+        <p class="hero__sub">Pulseboard streams latency, errors, and saturation from every service into one live view your whole team can act on.</p>
+        <div class="hero__ctas">
+          <a class="btn btn--primary" href="#cta">Start Free Trial</a>
+          <a class="btn btn--ghost" href="#how">See How It Works <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span></a>
         </div>
-        <div style="flex:1;background:rgba(0,206,201,0.1);border-radius:var(--radius-md);padding:0.75rem;">
-          <div style="font-family:var(--font-mono);font-size:0.875rem;color:var(--primary);">Throughput</div>
-          <div style="font-family:var(--font-mono);font-size:1.5rem;font-weight:600;">3.4 Mb/s</div>
-        </div>
-        <div style="flex:1;background:rgba(0,206,201,0.1);border-radius:var(--radius-md);padding:0.75rem;">
-          <div style="font-family:var(--font-mono);font-size:0.875rem;color:var(--primary);">Latency</div>
-          <div style="font-family:var(--font-mono);font-size:1.5rem;font-weight:600;">12 ms</div>
+        <div class="hero__trust">
+          <span><strong>4,200+</strong> teams onboard</span>
+          <span><strong>38ms</strong> median ingest delay</span>
+          <span><strong>99.99%</strong> pipeline uptime</span>
         </div>
       </div>
-      <div style="height:4rem;background:linear-gradient(90deg,transparent,rgba(0,206,201,0.2),transparent);position:relative;">
-        <div style="position:absolute;left:0;top:0;height:100%;width:30%;background:var(--primary);border-radius:2px;animation:move 2s ease-in-out infinite;"></div>
+      <div class="hero__visual">
+        <div class="mockup" role="img" aria-label="Preview of the Pulseboard live dashboard with latency stats and a traffic chart">
+          <div class="mockup__bar">
+            <span class="mockup__dot mockup__dot--live"></span>
+            <span class="mockup__dot"></span>
+            <span class="mockup__dot"></span>
+            <span class="mockup__title">pulseboard / production</span>
+          </div>
+          <div class="mockup__stats">
+            <div class="stat"><span class="stat__label">P95 Latency</span><span class="stat__value">182ms</span><span class="stat__delta">-12% vs 1h</span></div>
+            <div class="stat"><span class="stat__label">Error Rate</span><span class="stat__value">0.04%</span><span class="stat__delta">-0.02 pts</span></div>
+            <div class="stat"><span class="stat__label">Throughput</span><span class="stat__value">8.4k/s</span><span class="delta stat__delta stat__delta--down">+3% vs 1h</span></div>
+          </div>
+          <div class="chart">
+            <div class="chart__head"><span>Requests per second</span><span>LIVE</span></div>
+            <div class="chart__bars" aria-hidden="true">
+              <span class="chart__bar" style="height:32%"></span><span class="chart__bar" style="height:45%"></span><span class="chart__bar" style="height:38%"></span><span class="chart__bar" style="height:56%"></span><span class="chart__bar" style="height:49%"></span><span class="chart__bar" style="height:64%"></span><span class="chart__bar" style="height:58%"></span><span class="chart__bar chart__bar--hi" style="height:82%"></span><span class="chart__bar" style="height:71%"></span><span class="chart__bar" style="height:66%"></span><span class="chart__bar chart__bar--hi" style="height:90%"></span><span class="chart__bar" style="height:74%"></span><span class="chart__bar" style="height:62%"></span><span class="chart__bar" style="height:55%"></span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-    <p style="font-family:var(--font-mono);font-size:0.875rem;color:var(--text-secondary);margin-top:1.5rem;">
-      Trusted by <span style="font-weight:600;">4,000+</span> teams worldwide
-    </p>
-  </div>
-</section>
+  </section>
 
-<section id="features" style="padding:4rem 1.5rem;">
-  <div style="text-align:center;max-width:38rem;margin:0 auto 2rem;">
-    <p style="font-family:var(--font-mono);font-size:0.875rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--primary);">WHY NIMBUS</p>
-    <h2 style="font-family:var(--font-heading);font-size:2rem;margin:0.5rem 0;">Features built for speed</h2>
-    <p style="color:var(--text-secondary);max-width:28rem;margin:0 auto;">Instant dashboards, intelligent alerts, and seamless integrations keep you ahead of incidents.</p>
-  </div>
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.5rem;">
-    <div class="card">
-      <div class="card__icon"><span class="material-symbols-outlined">show_chart</span></div>
-      <h3 class="card__title">Live Dashboards</h3>
-      <p class="card__text">Build custom views with drag‑and‑drop widgets that update every second.</p>
+  <!-- Features -->
+  <section class="section" id="features">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <p class="eyebrow">Features</p>
+        <h2>Everything on one live board</h2>
+        <p>Three capabilities that replace a stack of dashboards, cron-check scripts, and screenshot threads.</p>
+      </div>
+      <div class="grid-3">
+        <article class="card card--hover reveal">
+          <span class="icon-tile"><span class="material-symbols-outlined" aria-hidden="true">bolt</span></span>
+          <h3>Sub-second streaming</h3>
+          <p>Metrics land on screen in under a second from any region, so incident response starts from facts, not guesses.</p>
+        </article>
+        <article class="card card--hover reveal">
+          <span class="icon-tile"><span class="material-symbols-outlined" aria-hidden="true">troubleshoot</span></span>
+          <h3>Anomaly detection</h3>
+          <p>Baselines learn your traffic shape per service and flag drift early, with plain-language explanations attached.</p>
+        </article>
+        <article class="card card--hover reveal">
+          <span class="icon-tile"><span class="material-symbols-outlined" aria-hidden="true">forum</span></span>
+          <h3>Shared incident views</h3>
+          <p>Pin a time range, annotate the spike, and hand a single link to support, engineering, and leadership at once.</p>
+        </article>
+      </div>
     </div>
-    <div class="card">
-      <div class="card__icon"><span class="material-symbols-outlined">notification_important</span></div>
-      <h3 class="card__title">Smart Alerts</h3>
-      <p class="card__text">Threshold‑based and anomaly‑detected alerts routed via Slack, email, or webhook.</p>
-    </div>
-    <div class="card">
-      <div class="card__icon"><span class="material-symbols-outlined">settings_applications</span></div>
-      <h3 class="card__title">One‑Click Integrations</h3>
-      <p class="card__text">Pre‑built connectors for AWS, Kubernetes, Docker, and more.</p>
-    </div>
-  </div>
-</section>
+  </section>
 
-<section id="how" style="background:var(--bg-secondary);padding:4rem 1.5rem;">
-  <div style="text-align:center;max-width:38rem;margin:0 auto 2rem;">
-    <p style="font-family:var(--font-mono);font-size:0.875rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--primary);">HOW IT WORKS</p>
-    <h2 style="font-family:var(--font-heading);font-size:2rem;margin:0.5rem 0;">From data to decision in three steps</h2>
-  </div>
-  <div style="display:flex;flex-wrap:wrap;gap:2.5rem;justify-content:center;align-items:flex-start;">
-    <div class="step">
-      <div class="step__number">01</div>
-      <div class="step__icon"><span class="material-symbols-outlined">upload_file</span></div>
-      <div>
-        <h3 class="step__title">Connect Sources</h3>
-        <p class="step__text">Link your logs, metrics, and traces via API or agent in under a minute.</p>
+  <!-- How it works -->
+  <section class="section" id="how">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <h2>Live in an afternoon</h2>
+        <p>No agents to babysit and no schema design. Three steps from install to your first alert.</p>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <span class="step__num">01</span>
+          <span class="material-symbols-outlined step__icon" aria-hidden="true">cable</span>
+          <h3>Connect your stack</h3>
+          <p>Drop in the SDK or forward existing OpenTelemetry data. Most teams see their first metrics in under ten minutes.</p>
+        </div>
+        <div class="step reveal">
+          <span class="step__num">02</span>
+          <span class="material-symbols-outlined step__icon" aria-hidden="true">dashboard_customize</span>
+          <h3>Shape your boards</h3>
+          <p>Start from templates for web, API, and queue workloads, then drag panels into the view your team actually checks.</p>
+        </div>
+        <div class="step reveal">
+          <span class="step__num">03</span>
+          <span class="material-symbols-outlined step__icon" aria-hidden="true">notifications_active</span>
+          <h3>Route the alerts</h3>
+          <p>Send anomalies to Slack, PagerDuty, or email with severity rules, so the right person hears about it first.</p>
+        </div>
       </div>
     </div>
-    <div class="step">
-      <div class="step__number">02</div>
-      <div class="step__icon"><span class="material-symbols-outlined">psychology</span></div>
-      <div>
-        <h3 class="step__title">Visualize & Alert</h3>
-        <p class="step__text">Create dashboards, set thresholds, and watch anomalies surface instantly.</p>
-      </div>
-    </div>
-    <div class="step">
-      <div class="step__number">03</div>
-      <div class="step__icon"><span class="material-symbols-outlined">rocket_launch</span></div>
-      <div>
-        <h3 class="step__title">Act & Optimize</h3>
-        <p class="step__text">Trigger automated workflows or dive deep with root‑cause analysis.</p>
-      </div>
-    </div>
-  </div>
-</section>
+  </section>
 
-<section id="testimonials" style="padding:4rem 1.5rem;">
-  <div style="text-align:center;max-width:38rem;margin:0 auto 2rem;">
-    <p style="font-family:var(--font-mono);font-size:0.875rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--primary);">WHAT PEOPLE SAY</p>
-    <h2 style="font-family:var(--font-heading);font-size:2rem;margin:0.5rem 0;">Real results from real teams</h2>
-  </div>
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem;">
-    <div class="testimonial">
-      <p class="testimonial__quote">“Nimbus cut our MTTR by 40% — the live dashboards are a game‑changer.”</p>
-      <div class="testimonial__rating">
-        <span class="material-symbols-outlined">star</span>
-        <span class="material-symbols-outlined">star</span>
-        <span class="material-symbols-outlined">star</span>
-        <span class="material-symbols-outlined">star</span>
-        <span class="material-symbols-outlined">star</span>
+  <!-- Testimonials -->
+  <section class="section" id="testimonials">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <h2>Teams that stopped guessing</h2>
+        <p>What engineers and operators say after their first incident on Pulseboard.</p>
       </div>
-      <div class="testimonial__avatar">JD</div>
-      <p class="testimonial__name">Jordan Diaz</p>
-      <p class="testimonial__role">Site Reliability Engineer</p>
-    </div>
-    <div class="testimonial">
-      <p class="testimonial__quote">“The alert routing saved us from a costly outage during Black Friday.”</p>
-      <div class="testimonial__rating">
-        <span class="material-symbols-outlined">star</span>
-        <span class="material-symbols-outlined">star</span>
-        <span class="material-symbols-outlined">star</span>
-        <span class="material-symbols-outlined">star</span>
-        <span class="material-symbols-outlined">star</span>
+      <div class="grid-3">
+        <article class="card reveal">
+          <div class="stars" role="img" aria-label="Rated 5 out of 5">
+            <span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span>
+          </div>
+          <p class="quote">&ldquo;We caught a connection pool leak 20 minutes before it would have taken checkout down. That one catch paid for the year.&rdquo;</p>
+          <div class="person">
+            <span class="avatar" aria-hidden="true">MK</span>
+            <div><div class="person__name">Mara Kessler</div><div class="person__role">Staff Engineer, Northwind Retail</div></div>
+          </div>
+        </article>
+        <article class="card reveal">
+          <div class="stars" role="img" aria-label="Rated 5 out of 5">
+            <span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span>
+          </div>
+          <p class="quote">&ldquo;Support and engineering finally look at the same screen during incidents. The shared timeline ended the screenshot wars.&rdquo;</p>
+          <div class="person">
+            <span class="avatar" aria-hidden="true">DO</span>
+            <div><div class="person__name">David Okafor</div><div class="person__role">Head of Reliability, Clearline</div></div>
+          </div>
+        </article>
+        <article class="card reveal">
+          <div class="stars" role="img" aria-label="Rated 5 out of 5">
+            <span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span>
+          </div>
+          <p class="quote">&ldquo;Setup genuinely took one afternoon. The anomaly notes are clear enough that our on-call rotation trusts them without a second dashboard.&rdquo;</p>
+          <div class="person">
+            <span class="avatar" aria-hidden="true">SR</span>
+            <div><div class="person__name">Sofia Ramirez</div><div class="person__role">Platform Lead, Vantage Health</div></div>
+          </div>
+        </article>
       </div>
-      <div class="testimonial__avatar">ML</div>
-      <p class="testimonial__name">Mia Lopez</p>
-      <p class="testimonial__role">DevOps Lead</p>
     </div>
-    <div class="testimonial">
-      <p class="testimonial__quote">“Onboarding was painless and the UI feels like a native monitoring tool.”</p>
-      <div class="testimonial__rating">
-        <span class="material-symbols-outlined">star</span>
-        <span class="material-symbols-outlined">star</span>
-        <span class="material-symbols-outlined">star</span>
-        <span class="material-symbols-outlined">star</span>
-        <span class="material-symbols-outlined">star</span>
-      </div>
-      <div class="testimonial__avatar">AK</div>
-      <p class="testimonial__name">Arjun Kapoor</p>
-      <p class="testimonial__role">CTO, SaaS Startup</p>
-    </div>
-  </div>
-</section>
+  </section>
 
-<section id="pricing" style="padding:4rem 1.5rem;">
-  <div style="text-align:center;max-width:38rem;margin:0 auto 2rem;">
-    <p style="font-family:var(--font-mono);font-size:0.875rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--primary);">PRICING</p>
-    <h2 style="font-family:var(--font-heading);font-size:2rem;margin:0.5rem 0;">Simple plans for teams of any size</h2>
-  </div>
-  <div class="pricing">
-    <div class="pricing__tier">
-      <h3 class="pricing__name">Starter</h3>
-      <div class="pricing__price">$0</div>
-      <p class="pricing__desc">Ideal for individuals testing the platform</p>
-      <ul class="pricing__features">
-        <li><span class="material-symbols-outlined">check_circle</span>Up to 5 sources</li>
-        <li><span class="material-symbols-outlined">check_circle</span>Basic dashboards</li>
-        <li><span class="material-symbols-outlined">check_circle</span>Email support</li>
-      </ul>
-      <button class="btn btn--secondary">Get Started</button>
+  <!-- Pricing -->
+  <section class="section" id="pricing">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <h2>Pricing that scales with traffic</h2>
+        <p>Start free, upgrade when your event volume does. Every plan includes unlimited seats and boards.</p>
+      </div>
+      <div class="grid-3">
+        <article class="card card--pricing reveal">
+          <span class="tier">Starter</span>
+          <p class="price">$0<small> /mo</small></p>
+          <p>For side projects and early prototypes.</p>
+          <ul class="feat-list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>1M events per month</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>7-day data retention</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>Email alerts</li>
+          </ul>
+          <a class="btn btn--ghost" href="#cta">Start Free</a>
+        </article>
+        <article class="card card--pricing card--featured reveal">
+          <span class="badge">Most Popular</span>
+          <span class="tier">Team</span>
+          <p class="price">$49<small> /mo</small></p>
+          <p>For product teams running production services.</p>
+          <ul class="feat-list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>50M events per month</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>13-month data retention</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>Anomaly detection</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>Slack and PagerDuty routing</li>
+          </ul>
+          <a class="btn btn--primary" href="#cta">Start Free Trial</a>
+        </article>
+        <article class="card card--pricing reveal">
+          <span class="tier">Enterprise</span>
+          <p class="price">Custom</p>
+          <p>For regulated or high-volume platforms.</p>
+          <ul class="feat-list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>Unlimited events</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>SSO and audit logs</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>Dedicated support engineer</li>
+          </ul>
+          <a class="btn btn--secondary" href="#cta">Talk to Sales</a>
+        </article>
+      </div>
     </div>
-    <div class="pricing__tier pricing__tier--featured">
-      <h3 class="pricing__name">Professional</h3>
-      <div class="pricing__price">$49</div>
-      <p class="pricing__desc">Most popular – full feature set</p>
-      <ul class="pricing__features">
-        <li><span class="material-symbols-outlined">check_circle</span>Unlimited sources</li>
-        <li><span class="material-symbols-outlined">check_circle</span>Advanced alerts & AI insights</li>
-        <li><span class="material-symbols-outlined">check_circle</span>Slack & webhook integrations</li>
-        <li><span class="material-symbols-outlined">check_circle</span>Priority support</li>
-      </ul>
-      <button class="btn btn--primary">Start Free Trial</button>
-      <span style="background:var(--primary);color:#1E272E;padding:0.2rem 0.5rem;border-radius:var(--radius-sm);font-size:0.75rem;position:relative;top:-0.5rem;">Most Popular</span>
-    </div>
-    <div class="pricing__tier">
-      <h3 class="pricing__name">Enterprise</h3>
-      <div class="pricing__price">Custom</div>
-      <p class="pricing__desc">Tailored for large organizations</p>
-      <ul class="pricing__features">
-        <li><span class="material-symbols-outlined">check_circle</span>Everything in Professional</li>
-        <li><span class="material-symbols-outlined">check_circle</span>SSO & audit logs</li>
-        <li><span class="material-symbols-outlined">check_circle</span>Dedicated account manager</li>
-        <li><span class="material-symbols-outlined">check_circle</span>On‑premises option</li>
-      </ul>
-      <button class="btn btn--secondary">Contact Sales</button>
-    </div>
-  </div>
-</section>
+  </section>
 
-<section id="faq" style="padding:4rem 1.5rem;">
-  <div style="text-align:center;max-width:38rem;margin:0 auto 2rem;">
-    <p style="font-family:var(--font-mono);font-size:0.875rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--primary);">QUESTIONS</p>
-    <h2 style="font-family:var(--font-heading);font-size:2rem;margin:0.5rem 0;">Frequently asked questions</h2>
-  </div>
-  <div class="faq" style="max-width:38rem;margin:0 auto;">
-    <div class="faq-item">
-      <button class="faq-item__question" aria-expanded="false" aria-controls="answer1">
-        How does the free trial work?
-        <span class="material-symbols-outlined">expand_more</span>
-      </button>
-      <div class="faq-item__answer" id="answer1" hidden>
-        You get full access to the Professional plan for 14 days. No credit card required.
+  <!-- FAQ -->
+  <section class="section" id="faq">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <h2>Common questions</h2>
+        <p>Answers to what teams usually ask before their trial.</p>
+      </div>
+      <div class="faq">
+        <details class="faq-item">
+          <summary>How long does setup actually take?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></summary>
+          <div class="faq-item__body">Most teams stream their first metrics within ten minutes using the SDK or an existing OpenTelemetry collector. Prebuilt board templates mean you skip dashboard design entirely on day one.</div>
+        </details>
+        <details class="faq-item">
+          <summary>Does Pulseboard replace my APM tool?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></summary>
+          <div class="faq-item__body">For latency, error, and saturation monitoring, yes. Pulseboard focuses on live operational signals rather than deep tracing, and it ingests data from the tools you already run if you want to keep them.</div>
+        </details>
+        <details class="faq-item">
+          <summary>What happens if I exceed my event limit?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></summary>
+          <div class="faq-item__body">Nothing breaks. We keep ingesting your data and notify you before any overage charge. You can set a hard cap in billing settings if you prefer a strict ceiling.</div>
+        </details>
+        <details class="faq-item">
+          <summary>Is my data used to train models?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></summary>
+          <div class="faq-item__body">No. Anomaly baselines are computed per account and never shared or pooled. Your telemetry stays in your region and is deleted within 30 days of account closure.</div>
+        </details>
+        <details class="faq-item">
+          <summary>Can I export my data?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></summary>
+          <div class="faq-item__body">Yes. Every plan includes a full export API and scheduled S3 or GCS delivery, so your historical metrics are never locked in.</div>
+        </details>
       </div>
     </div>
-    <div class="faq-item">
-      <button class="faq-item__question" aria-expanded="false" aria-controls="answer2">
-        Can I export my data?
-        <span class="material-symbols-outlined">expand_more</span>
-      </button>
-      <div class="faq-item__answer" id="answer2" hidden>
-        Yes. All dashboards and raw metrics can be exported as CSV or JSON via the API.
-      </div>
-    </div>
-    <div class="faq-item">
-      <button class="faq-item__question" aria-expanded="false" aria-controls="answer3">
-        What is the uptime SLA?
-        <span class="material-symbols-outlined">expand_more</span>
-      </button>
-      <div class="faq-item__answer" id="answer3" hidden>
-        We guarantee 99.9% uptime for Professional and Enterprise plans.
-      </div>
-    </div>
-    <div class="faq-item">
-      <button class="faq-item__question" aria-expanded="false" aria-controls="answer4">
-        Is my data encrypted?
-        <span class="material-symbols-outlined">expand_more</span>
-      </button>
-      <div class="faq-item__answer" id="answer4" hidden>
-        Data is encrypted in transit with TLS 1.3 and at rest using AES‑256.
-      </div>
-    </div>
-    <div class="faq-item">
-      <button class="faq-item__question" aria-expanded="false" aria-controls="answer5">
-        How do I cancel?
-        <span class="material-symbols-outlined">expand_more</span>
-      </button>
-      <div class="faq-item__answer" id="answer5" hidden>
-        You can cancel anytime from the billing page. Access continues until the end of the paid period.
-      </div>
-    </div>
-  </div>
-</section>
+  </section>
 
-<section class="cta-band" id="cta">
-  <h2 class="cta-band__title">Ready to try Nimbus?</h2>
-  <p class="cta-band__desc">Enter your work email and we’ll send you a link to start your free trial.</p>
-  <form id="ctaForm" novalidate>
-    <input type="email" class="cta-band__input" id="ctaEmail" placeholder="you@company.com" required>
-    <button type="submit" class="btn btn--primary" id="ctaSubmit">Get Started Free</button>
-    <div class="cta-band__error" id="ctaError" aria-live="polite"></div>
-  </form>
-</section>
+  <!-- Final CTA -->
+  <section class="section cta-band" id="cta">
+    <div class="wrap">
+      <div class="cta-panel reveal">
+        <h2>Start watching your stack tonight.</h2>
+        <p>Fourteen days of the Team plan, no card required. Leave your email and we will send your workspace link.</p>
+        <form class="signup" id="signup-form" novalidate>
+          <label for="signup-email">Work email</label>
+          <div class="signup__row">
+            <input type="email" id="signup-email" name="email" autocomplete="email" placeholder="you@company.com" aria-describedby="signup-hint signup-msg" required>
+            <button class="btn btn--primary" id="signup-btn" type="submit">Get Started</button>
+          </div>
+          <p class="signup__hint" id="signup-hint">We send one setup email. No newsletters, no spam.</p>
+          <p class="signup__msg" id="signup-msg" aria-live="polite"></p>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
 
-<footer>
-  <div class="footer__grid">
-    <div class="footer__col">
-      <h3>Nimbus</h3>
-      <p>Real‑time performance analytics for modern teams.</p>
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <a class="nav__brand" href="#top"><span class="material-symbols-outlined" aria-hidden="true">monitoring</span>Pulseboard</a>
+        <p>Live performance analytics for teams that ship.</p>
+      </div>
+      <div class="footer__cols">
+        <div class="footer__col">
+          <h4>Product</h4>
+          <a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#how">How It Works</a>
+        </div>
+        <div class="footer__col">
+          <h4>Company</h4>
+          <a href="#">About</a><a href="#">Careers</a><a href="#">Blog</a>
+        </div>
+        <div class="footer__col">
+          <h4>Resources</h4>
+          <a href="#">Documentation</a><a href="#">Status</a><a href="#">Changelog</a>
+        </div>
+        <div class="footer__col">
+          <h4>Legal</h4>
+          <a href="#">Privacy</a><a href="#">Terms</a><a href="#">Security</a>
+        </div>
+      </div>
     </div>
-    <div class="footer__col">
-      <h3>Product</h3>
-      <a href="#features">Features</a>
-      <a href="#how">How It Works</a>
-      <a href="#pricing">Pricing</a>
-      <a href="#faq">FAQ</a>
+    <div class="footer__bar">
+      <span>&copy; 2026 Pulseboard Systems, Inc. All rights reserved.</span>
+      <a href="#top">Back to top</a>
     </div>
-    <div class="footer__col">
-      <h3>Company</h3>
-      <a href="#">About</a>
-      <a href="#">Careers</a>
-      <a href="#">Blog</a>
-      <a href="#">Contact</a>
-    </div>
-    <div class="footer__col">
-      <h3>Resources</h3>
-      <a href="#">Docs</a>
-      <a href="#">Webinars</a>
-      <a href="#">Case Studies</a>
-      <a href="#">Status</a>
-    </div>
-  </div>
-  <div class="footer__bottom">
-    <p>&nbsp;<span id="year"></span> Nimbus. All rights reserved.</p>
-    <a href="#hero" class="footer__top-link" id="topLink">Back to top</a>
   </div>
 </footer>
 
 <script>
-/* Theme toggle & persistence */
-const htmlEl = document.documentElement;
-const themeToggle = document.getElementById('themeToggle');
-const stored = localStorage.getItem('theme');
-if (stored) {
-  htmlEl.classList.toggle('dark', stored === 'dark');
-  themeToggle.setAttribute('aria-pressed', stored === 'dark');
-} else {
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  htmlEl.classList.toggle('dark', prefersDark);
-  themeToggle.setAttribute('aria-pressed', prefersDark);
-}
-themeToggle.addEventListener('click', () => {
-  const dark = htmlEl.classList.toggle('dark');
-  themeToggle.setAttribute('aria-pressed', dark);
-  localStorage.setItem('theme', dark ? 'dark' : 'light');
-});
+(function(){
+  "use strict";
+  var root=document.documentElement;
 
-/* Mobile nav */
-const menuBtn = document.getElementById('menuBtn');
-const menuCloseBtn = document.getElementById('menuCloseBtn');
-const navPanel = document.getElementById('headerNavPanel');
-menuBtn.addEventListener('click', () => {
-  navPanel.hidden = false;
-  menuBtn.setAttribute('aria-expanded', 'true');
-});
-menuCloseBtn.addEventListener('click', () => {
-  navPanel.hidden = true;
-  menuBtn.setAttribute('aria-expanded', 'false');
-});
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && !navPanel.hidden) {
-    navPanel.hidden = true;
-    menuBtn.setAttribute('aria-expanded', 'false');
+  /* Theme toggle */
+  var toggle=document.getElementById("theme-toggle");
+  var sun=toggle.querySelector(".icon-sun");
+  var moon=toggle.querySelector(".icon-moon");
+  function applyTheme(t){
+    root.dataset.theme=t;
+    var dark=t==="dark";
+    toggle.setAttribute("aria-pressed",String(dark));
+    toggle.setAttribute("aria-label",dark?"Switch to light theme":"Switch to dark theme");
+    sun.hidden=!dark; moon.hidden=dark;
   }
-});
-/* Close nav when a link is clicked */
-document.querySelectorAll('.header__nav-link').forEach(link => {
-  link.addEventListener('click', () => {
-    if (!navPanel.hidden) {
-      navPanel.hidden = true;
-      menuBtn.setAttribute('aria-expanded', 'false');
+  applyTheme(root.dataset.theme==="light"?"light":"dark");
+  toggle.addEventListener("click",function(){
+    var next=root.dataset.theme==="dark"?"light":"dark";
+    localStorage.setItem("theme",next);
+    applyTheme(next);
+  });
+
+  /* Sticky header */
+  var header=document.getElementById("site-header");
+  var onScroll=function(){header.classList.toggle("is-scrolled",window.scrollY>8);};
+  window.addEventListener("scroll",onScroll,{passive:true});
+  onScroll();
+
+  /* Mobile nav */
+  var menuBtn=document.getElementById("menu-btn");
+  var panel=document.getElementById("mobile-panel");
+  function closeMenu(){menuBtn.setAttribute("aria-expanded","false");panel.classList.remove("is-open");}
+  menuBtn.addEventListener("click",function(){
+    var open=menuBtn.getAttribute("aria-expanded")==="true";
+    menuBtn.setAttribute("aria-expanded",String(!open));
+    panel.classList.toggle("is-open",!open);
+  });
+  panel.addEventListener("click",function(e){if(e.target.tagName==="A")closeMenu();});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape")closeMenu();});
+
+  /* FAQ single-open */
+  var faqItems=document.querySelectorAll(".faq-item");
+  faqItems.forEach(function(item){
+    item.addEventListener("toggle",function(){
+      if(item.open){faqItems.forEach(function(o){if(o!==item)o.open=false;});}
+    });
+  });
+
+  /* Signup form */
+  var form=document.getElementById("signup-form");
+  var email=document.getElementById("signup-email");
+  var btn=document.getElementById("signup-btn");
+  var msg=document.getElementById("signup-msg");
+  var emailRe=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  form.addEventListener("submit",function(e){
+    e.preventDefault();
+    msg.className="signup__msg"; msg.textContent="";
+    email.classList.remove("is-invalid","is-valid");
+    if(!emailRe.test(email.value.trim())){
+      email.classList.add("is-invalid");
+      msg.classList.add("is-error");
+      msg.innerHTML='<span class="material-symbols-outlined" aria-hidden="true">error</span> Enter a valid work email, like you@company.com.';
+      email.focus();
+      return;
     }
+    email.classList.add("is-valid");
+    btn.classList.add("is-loading");
+    btn.innerHTML='<span class="material-symbols-outlined" aria-hidden="true">progress_activity</span> Sending';
+    setTimeout(function(){
+      btn.classList.remove("is-loading");
+      btn.textContent="Get Started";
+      msg.classList.add("is-success");
+      msg.innerHTML='<span class="material-symbols-outlined" aria-hidden="true">check_circle</span> You are on the list. Check your inbox for the workspace link.';
+      form.reset();
+      email.classList.remove("is-valid");
+    },900);
   });
-});
 
-/* Sticky header */
-const header = document.querySelector('.header');
-let lastScroll = 0;
-window.addEventListener('scroll', () => {
-  const scrolled = window.scrollY > 100;
-  if (scrolled) header.classList.add('scrolled');
-  else header.classList.remove('scrolled');
-});
-
-/* FAQ accordion */
-document.querySelectorAll('.faq-item__question').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const expanded = btn.getAttribute('aria-expanded') === 'true';
-    btn.setAttribute('aria-expanded', !expanded);
-    const answer = document.getElementById(btn.getAttribute('aria-controls'));
-    answer.hidden = expanded;
-  });
-});
-
-/* Form validation */
-const form = document.getElementById('ctaForm');
-const emailInput = document.getElementById('ctaEmail');
-const submitBtn = document.getElementById('ctaSubmit');
-const errorDiv = document.getElementById('ctaError');
-function showError(msg) {
-  errorDiv.textContent = msg;
-  emailInput.setAttribute('aria-invalid', 'true');
-}
-function clearError() {
-  errorDiv.textContent = '';
-  emailInput.removeAttribute('aria-invalid');
-}
-form.addEventListener('submit', e => {
-  e.preventDefault();
-  const email = emailInput.value.trim();
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    showError('Please enter a valid email address');
-    return;
-  }
-  clearError();
-  submitBtn.classList.add('is-loading');
-  submitBtn.disabled = true;
-  // Simulate async
-  setTimeout(() => {
-    submitBtn.classList.remove('is-loading');
-    submitBtn.disabled = false;
-    form.reset();
-    // Show success message
-    const success = document.createElement('p');
-    success.style.color = 'var(--text-success)';
-    success.style.marginTop = '1rem';
-    success.textContent = "You're on the list — check your inbox!";
-    form.appendChild(success);
-    // Remove after 3s
-    setTimeout(() => success.remove(), 3000);
-  }, 1500);
-});
-
-/* Dynamic year */
-document.getElementById('year').textContent = new Date().getFullYear();
-
-/* Smooth scroll for anchor links */
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-  anchor.addEventListener('click', function (e) {
-    const target = document.querySelector(this.getAttribute('href'));
-    if (target) {
-      e.preventDefault();
-      window.scrollTo({
-        top: target.offsetTop - header.offsetTop,
-        behavior: 'smooth'
+  /* Scroll reveal */
+  var reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var reveals=document.querySelectorAll(".reveal");
+  if(reduce||!("IntersectionObserver" in window)){
+    reveals.forEach(function(el){el.classList.add("in-view");});
+  }else{
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(en,i){
+        if(en.isIntersecting){
+          en.target.style.transitionDelay=(i%3)*60+"ms";
+          en.target.classList.add("in-view");
+          io.unobserve(en.target);
+        }
       });
-    }
-  });
-});
+    },{threshold:0.12});
+    reveals.forEach(function(el){io.observe(el);});
+  }
+})();
 </script>
 </body>
 </html>

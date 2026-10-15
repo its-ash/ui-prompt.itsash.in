@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OFFSET - Editorial layout tool for designers</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --color-bg:#f5f4f0;--color-surface:#fefefe;--color-surface-strong:#101010;
+  --color-border:#101010;--color-text:#101010;--color-text-muted:#55534c;
+  --color-primary:#ff3d1a;--color-accent:#1a1aff;--color-on-accent:#fefefe;
+  --color-on-strong:#f5f4f0;--color-on-primary:#101010;
+  --text-success:#0e7a44;--text-error:#c0180c;--border-success:#0e7a44;--border-error:#c0180c;
+  --primary:var(--color-primary);--secondary:var(--color-accent);
+  --bg-primary:var(--color-bg);--bg-secondary:var(--color-surface);
+  --text-primary:var(--color-text);--text-secondary:var(--color-text-muted);
+  --border-default:var(--color-border);
+  --radius-sm:0px;--radius-md:0px;--radius-lg:0px;--radius-pill:999px;
+  --shadow-sm:4px 4px 0 rgba(16,16,16,0.9);--shadow-md:8px 8px 0 rgba(16,16,16,0.9);--shadow-lg:14px 14px 0 rgba(16,16,16,0.9);
+  --accent-shadow:4px 4px 0 rgba(26,26,255,0.4);
+  --spacing-gap:24px;--transition-fast:120ms;--transition-normal:240ms;
+  --ease-standard:cubic-bezier(0.7,0,0.3,1);
+  --z-dropdown:1000;--z-modal:1100;--z-toast:1200;
+  --font-sans:'Archivo','Helvetica Neue',Arial,sans-serif;
+  --font-base:var(--font-sans);--font-display:var(--font-sans);
+  --font-mono:'JetBrains Mono',ui-monospace,monospace;
+  --text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;
+  --text-xl:1.375rem;--text-2xl:1.75rem;--text-3xl:2.25rem;--text-4xl:3rem;--text-5xl:4rem;
+  --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-6:24px;--space-8:32px;--space-12:48px;--space-16:64px;--space-24:96px;
+  --tilt-1:rotate(-1.4deg);--tilt-2:rotate(1.1deg);--overlap:-14px;
+}
+:root[data-theme="dark"]{
+  --color-bg:#101010;--color-surface:#1a1a19;--color-surface-strong:#f5f4f0;
+  --color-border:#f5f4f0;--color-text:#f5f4f0;--color-text-muted:#a6a29a;
+  --color-primary:#ff3d1a;--color-accent:#6f6fff;--color-on-accent:#101010;
+  --color-on-strong:#101010;--color-on-primary:#101010;
+  --text-success:#58c98b;--text-error:#ff6b5e;--border-success:#58c98b;--border-error:#ff6b5e;
+  --shadow-sm:4px 4px 0 rgba(245,244,240,0.9);--shadow-md:8px 8px 0 rgba(245,244,240,0.9);--shadow-lg:14px 14px 0 rgba(245,244,240,0.9);
+  --accent-shadow:4px 4px 0 rgba(111,111,255,0.4);
+}
+/* ============ BASE ============ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);background:var(--color-bg);color:var(--color-text);line-height:1.55;overflow-x:clip;font-size:var(--text-base)}
+img{max-width:100%;display:block}
+h1,h2,h3{font-family:var(--font-display);letter-spacing:-0.03em;line-height:1.05;font-weight:900}
+a{color:inherit}
+.mono{font-family:var(--font-mono);letter-spacing:0.08em;text-transform:uppercase;font-size:var(--text-xs)}
+.wrap{max-width:1200px;margin:0 auto;padding-left:1.25rem;padding-right:1.25rem}
+.skip{position:absolute;left:-9999px;top:0;background:var(--color-primary);color:var(--color-on-primary);padding:var(--space-3) var(--space-4);z-index:var(--z-toast);font-weight:700}
+.skip:focus{left:var(--space-4);top:var(--space-4)}
+.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;font-size:1.25em;line-height:1}
+/* ============ NAV ============ */
+.nav{position:sticky;top:0;z-index:var(--z-dropdown);display:flex;align-items:center;gap:var(--space-4);padding:var(--space-3) var(--space-6);background:var(--color-surface);border-bottom:3px solid var(--color-border)}
+.nav__brand{font-weight:900;font-size:var(--text-xl);letter-spacing:-0.02em;text-decoration:none;transform:var(--tilt-1)}
+.nav__brand span{color:var(--color-primary)}
+.nav__links{display:flex;align-items:center;gap:var(--space-6);margin-left:auto;list-style:none}
+.nav__link{text-decoration:none;font-weight:600;font-size:var(--text-sm);padding:var(--space-2) 0}
+.nav__link:hover{text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:2px}
+.nav__link:focus-visible,.btn:focus-visible,.theme-toggle:focus-visible,summary:focus-visible,.input:focus-visible,a:focus-visible{outline:3px solid var(--color-accent);outline-offset:3px}
+.theme-toggle{display:flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;background:var(--color-surface);border:2px solid var(--color-border);box-shadow:var(--shadow-sm);cursor:pointer;color:var(--color-text);transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard)}
+.theme-toggle:hover{transform:translate(-2px,-2px);box-shadow:var(--shadow-md)}
+.theme-toggle:active{transform:scale(0.97)}
+.theme-toggle .icon-sun{display:none}
+:root[data-theme="dark"] .theme-toggle .icon-sun{display:block}
+:root[data-theme="dark"] .theme-toggle .icon-moon{display:none}
+.nav__toggle{display:none;align-items:center;justify-content:center;min-width:44px;min-height:44px;background:var(--color-surface);border:2px solid var(--color-border);box-shadow:var(--shadow-sm);cursor:pointer;color:var(--color-text)}
+/* ============ BUTTONS ============ */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;min-height:44px;min-width:44px;padding:var(--space-3) var(--space-6);border:2px solid var(--color-border);box-shadow:var(--shadow-sm);transform:var(--tilt-1);font-weight:800;font-size:var(--text-base);font-family:var(--font-base);border-radius:var(--radius-md);background:var(--color-surface);color:var(--color-text);text-decoration:none;cursor:pointer;transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard)}
+.btn:hover{transform:translate(-2px,-2px) var(--tilt-1);box-shadow:var(--shadow-md)}
+.btn:active{transform:translate(0,0) scale(0.97) var(--tilt-1);box-shadow:var(--shadow-sm)}
+.btn--primary{background:var(--color-primary);color:var(--color-on-primary)}
+.btn--sm{padding:var(--space-2) var(--space-4);font-size:var(--text-sm)}
+.btn--loading{pointer-events:none}
+.btn--loading .btn__label{visibility:hidden}
+.btn--loading::after{content:"";position:absolute;width:20px;height:20px;border:3px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite}
+.btn{position:relative}
+.btn--success{border-color:var(--border-success);color:var(--text-success)}
+.btn--error{border-color:var(--border-error);color:var(--text-error)}
+.btn:disabled{opacity:0.5;filter:grayscale(1);cursor:not-allowed;transform:none;box-shadow:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* ============ BADGE ============ */
+.badge{display:inline-flex;align-items:center;gap:var(--space-2);border-radius:var(--radius-pill);border:2px solid var(--color-border);background:var(--color-surface);padding:var(--space-2) var(--space-4);font-family:var(--font-mono);font-size:var(--text-xs);letter-spacing:0.12em;text-transform:uppercase;font-weight:700;transform:var(--tilt-1);box-shadow:var(--shadow-sm)}
+.badge--primary{background:var(--color-primary);color:var(--color-on-primary)}
+/* ============ CARDS ============ */
+.card{display:flex;flex-direction:column;gap:var(--space-3);background:var(--color-surface);border:3px solid var(--color-border);box-shadow:var(--shadow-md);padding:var(--space-6);transform:var(--tilt-2);transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),border-color var(--transition-normal) var(--ease-standard)}
+.card:hover{transform:translate(-2px,-2px) var(--tilt-2);box-shadow:var(--shadow-lg)}
+.card:focus-within{border-color:var(--color-accent)}
+.card--inverted{background:var(--color-surface-strong);color:var(--color-on-strong)}
+.card--inverted .muted{color:var(--color-on-strong);opacity:0.75}
+.muted{color:var(--color-text-muted)}
+.chip{display:flex;align-items:center;justify-content:center;width:52px;height:52px;border:2px solid var(--color-border);background:var(--color-primary);color:var(--color-on-primary);box-shadow:var(--shadow-sm)}
+.chip--accent{background:var(--color-accent);color:var(--color-on-accent)}
+.chip--plain{background:var(--color-surface);color:var(--color-text)}
+/* ============ SECTIONS ============ */
+section{padding:clamp(4rem,8vw,7rem) 0}
+.sec-label{display:inline-block;transform:var(--tilt-1);margin-bottom:var(--space-4);color:var(--color-text-muted);font-weight:700}
+.sec-title{font-size:clamp(1.9rem,4vw,var(--text-3xl));text-transform:uppercase;margin-bottom:var(--space-8)}
+/* HERO */
+.hero{padding-top:clamp(3rem,6vw,5rem)}
+.hero__grid{display:flex;align-items:center;gap:var(--space-12)}
+.hero__text{flex:1 1 52%;display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-5,20px)}
+.hero__text>*+*{margin-top:var(--space-4)}
+.hero h1{font-size:clamp(2.5rem,7vw,var(--text-5xl));text-transform:uppercase}
+.hero h1 em{font-style:italic;color:var(--color-primary)}
+.hero__sub{color:var(--color-text-muted);font-size:var(--text-lg);max-width:34ch}
+.hero__ctas{display:flex;gap:var(--space-4);flex-wrap:wrap}
+.hero__media{flex:1 1 42%;position:relative;z-index:2;margin-left:var(--overlap)}
+.hero__media img{width:100%;height:auto;border:3px solid var(--color-border);box-shadow:var(--shadow-lg);transform:var(--tilt-1);filter:grayscale(1) contrast(1.1)}
+.hero__media .badge{position:absolute;top:-16px;right:-8px;z-index:3;transform:var(--tilt-2)}
+/* FEATURES */
+.features__row{display:flex;align-items:flex-start;gap:var(--spacing-gap)}
+.features__row .card{flex:1}
+.features__row .card:nth-of-type(2){transform:var(--tilt-1);margin-top:var(--space-8)}
+.features__row .card:nth-of-type(3){margin-top:calc(var(--space-8)*2)}
+.card h3{font-size:var(--text-xl);font-weight:800}
+/* STEPS */
+.steps__row{display:flex;align-items:flex-start;gap:var(--spacing-gap)}
+.step{flex:1;display:flex;flex-direction:column;gap:var(--space-3);align-items:flex-start}
+.step:nth-of-type(2){margin-top:var(--space-12)}
+.step:nth-of-type(3){margin-top:calc(var(--space-12)*2)}
+.step__num{font-family:var(--font-mono);font-weight:700;font-size:var(--text-lg);border:2px solid var(--color-border);background:var(--color-surface);box-shadow:var(--shadow-sm);padding:var(--space-2) var(--space-4);transform:var(--tilt-1)}
+.step h3{font-size:var(--text-xl);font-weight:800}
+.step .material-symbols-outlined{color:var(--color-primary);font-size:1.75rem}
+/* TESTIMONIALS */
+.testi{position:relative}
+.testi__cluster{display:flex;align-items:flex-start;gap:var(--spacing-gap);position:relative}
+.testi__big{flex:1.3;z-index:3;font-size:var(--text-xl);font-weight:700;line-height:1.35;transform:var(--tilt-1)}
+.testi__side{flex:1;display:flex;flex-direction:column;gap:var(--space-6);margin-left:var(--overlap);margin-top:var(--space-12)}
+.testi__attr{display:flex;align-items:center;gap:var(--space-3);margin-top:var(--space-3)}
+.testi__avatar{width:44px;height:44px;border:2px solid var(--color-border);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:700;background:var(--color-primary);color:var(--color-on-primary);flex-shrink:0}
+.testi__avatar--alt{background:var(--color-accent);color:var(--color-on-accent)}
+/* PRICING */
+.pricing__row{display:flex;align-items:stretch;gap:var(--spacing-gap)}
+.pricing__row .card{flex:1}
+.card--pricing .price{font-size:var(--text-4xl);font-weight:900;letter-spacing:-0.03em}
+.card--pricing ul{list-style:none;display:flex;flex-direction:column;gap:var(--space-2);margin:var(--space-3) 0 var(--space-4)}
+.card--pricing li{display:flex;align-items:center;gap:var(--space-2);font-size:var(--text-sm)}
+.card--pricing li .material-symbols-outlined{color:var(--text-success);font-size:1.1rem}
+.card--pricing .btn{margin-top:auto}
+.card--featured{transform:var(--tilt-1) translateY(-14px);box-shadow:var(--shadow-lg);z-index:2;position:relative}
+.card--featured:hover{transform:translate(-2px,-16px) var(--tilt-1)}
+.card--featured .badge{position:absolute;top:-16px;right:12px;transform:var(--tilt-2)}
+/* FAQ */
+.faq__inner{max-width:760px;margin-left:clamp(0px,8vw,120px)}
+details{border:2px solid var(--color-border);background:var(--color-surface);box-shadow:var(--shadow-sm);margin-bottom:var(--space-4)}
+details:nth-of-type(2n){transform:var(--tilt-1);margin-left:var(--space-6)}
+summary{display:flex;align-items:center;gap:var(--space-3);cursor:pointer;padding:var(--space-4) var(--space-6);font-weight:700;list-style:none;min-height:44px}
+summary::-webkit-details-marker{display:none}
+summary .mono{color:var(--color-primary);flex-shrink:0}
+summary .material-symbols-outlined{margin-left:auto;transition:transform var(--transition-normal) var(--ease-standard)}
+details[open] summary .material-symbols-outlined{transform:rotate(180deg)}
+details[open] summary{border-bottom:2px solid var(--color-border)}
+details .faq__a{padding:var(--space-4) var(--space-6);color:var(--color-text-muted)}
+summary:hover{background:var(--color-bg)}
+/* CTA */
+.cta__panel{background:var(--color-surface-strong);color:var(--color-on-strong);border:3px solid var(--color-border);box-shadow:var(--shadow-lg);padding:clamp(2.5rem,6vw,5rem);transform:var(--tilt-1);position:relative}
+.cta__panel h2{font-size:clamp(2rem,5vw,var(--text-4xl));text-transform:uppercase;margin-bottom:var(--space-4)}
+.cta__panel .lead{opacity:0.8;max-width:48ch;margin-bottom:var(--space-8)}
+.cta__form{display:flex;gap:var(--space-4);flex-wrap:wrap;align-items:flex-start;max-width:560px}
+.input-group{display:flex;flex-direction:column;gap:var(--space-2);flex:1;min-width:240px}
+.input-group label{font-family:var(--font-mono);font-size:var(--text-xs);letter-spacing:0.1em;text-transform:uppercase;font-weight:700}
+.input{min-height:48px;padding:var(--space-3) var(--space-4);border:2px solid var(--color-border);background:var(--color-surface);color:var(--color-text);font-family:var(--font-base);font-size:var(--text-base);border-radius:var(--radius-sm);width:100%}
+.input:focus{border-color:var(--color-accent);box-shadow:var(--accent-shadow);outline:none}
+.input--error{border-color:var(--border-error)}
+.input__msg{font-size:var(--text-sm);min-height:1.4em}
+.input__msg--error{color:var(--text-error)}
+.input__msg--ok{color:var(--text-success)}
+.cta__panel .input__msg--ok{color:var(--text-success)}
+.cta__trust{margin-top:var(--space-4);opacity:0.7}
+.cta__panel .badge{position:absolute;bottom:-14px;right:24px;transform:var(--tilt-2)}
+/* FOOTER */
+footer{border-top:3px solid var(--color-border);padding:var(--space-12) 0 var(--space-8);background:var(--color-surface)}
+.footer__grid{display:flex;align-items:flex-start;gap:var(--space-12);flex-wrap:wrap}
+.footer__brand{flex:1.4;min-width:220px}
+.footer__brand p{color:var(--color-text-muted);font-size:var(--text-sm);margin-top:var(--space-3);max-width:32ch}
+.footer__col h4{font-family:var(--font-mono);font-size:var(--text-xs);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:var(--space-3)}
+.footer__col ul{list-style:none;display:flex;flex-direction:column;gap:var(--space-2)}
+.footer__col a{color:var(--color-text-muted);text-decoration:none;font-size:var(--text-sm)}
+.footer__col a:hover{text-decoration:underline;text-underline-offset:3px;color:var(--color-text)}
+.footer__bottom{display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);flex-wrap:wrap;margin-top:var(--space-12);padding-top:var(--space-6);border-top:2px solid var(--color-border)}
+.social{display:flex;gap:var(--space-3)}
+.social a{display:flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;border:2px solid var(--color-border);box-shadow:var(--shadow-sm);color:var(--color-text);transition:transform var(--transition-fast) var(--ease-standard)}
+.social a:hover{transform:translate(-2px,-2px);box-shadow:var(--shadow-md)}
+/* reveal */
+.reveal{opacity:1}
+.js .reveal{opacity:0;transform:translateY(18px)}
+.js .reveal.is-in{opacity:1;transform:none;transition:opacity 400ms ease-out,transform 400ms ease-out}
+/* ============ RESPONSIVE ============ */
+@media (max-width:900px){
+  .hero__grid{flex-direction:column;align-items:flex-start}
+  .hero__media{margin-left:0;width:100%;max-width:520px}
+  .features__row,.steps__row,.pricing__row{flex-direction:column}
+  .features__row .card:nth-of-type(2),.features__row .card:nth-of-type(3){margin-top:0}
+  .step:nth-of-type(2),.step:nth-of-type(3){margin-top:0}
+  .testi__cluster{flex-direction:column}
+  .testi__side{margin-left:0;margin-top:0}
+  .card--featured{transform:var(--tilt-1)}
+  .card--featured:hover{transform:translate(-2px,-2px) var(--tilt-1)}
+  .faq__inner{margin-left:0}
+  details:nth-of-type(2n){margin-left:0}
+}
+@media (max-width:768px){
+  .nav{flex-wrap:wrap}
+  .nav__toggle{display:flex;margin-left:auto}
+  .nav__links{display:none;flex-direction:column;align-items:flex-start;gap:var(--space-3);width:100%;margin-left:0;padding:var(--space-4) 0}
+  .nav__links.is-open{display:flex}
+  .nav__cta{display:none}
+  .card,.cta__panel,.hero__media img{transform:none}
+  .card:hover{transform:translate(-2px,-2px)}
+  .btn,.badge,.sec-label,.step__num,.nav__brand{transform:none}
+  .btn:hover{transform:translate(-2px,-2px)}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{transition:opacity 200ms ease!important;animation:none!important;transform:none!important}
+  .js .reveal{opacity:1;transform:none}
+}
+@media (prefers-reduced-transparency:reduce){
+  .nav{background:var(--color-surface)}
+}
+@media (prefers-contrast:more){
+  .muted,.hero__sub,.footer__col a{color:var(--color-text)}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="nav">
+  <a class="nav__brand" href="#top">OFF<span>SET</span></a>
+  <button class="nav__toggle" id="nav-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu"><span class="material-symbols-outlined">menu</span></button>
+  <ul class="nav__links" id="nav-links">
+    <li><a class="nav__link" href="#features">Features</a></li>
+    <li><a class="nav__link" href="#how">How it works</a></li>
+    <li><a class="nav__link" href="#pricing">Pricing</a></li>
+    <li><a class="nav__link" href="#faq">FAQ</a></li>
+  </ul>
+  <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+    <span class="material-symbols-outlined icon-moon">dark_mode</span>
+    <span class="material-symbols-outlined icon-sun">light_mode</span>
+  </button>
+  <a class="btn btn--primary btn--sm nav__cta" href="#cta">Start free</a>
+</header>
+
+<main id="main">
+<!-- HERO -->
+<section class="hero" id="top" aria-labelledby="hero-title">
+  <div class="wrap hero__grid">
+    <div class="hero__text">
+      <span class="badge">Editorial layout tool</span>
+      <h1 id="hero-title">Break the grid. <em>Keep the reader.</em></h1>
+      <p class="hero__sub">OFFSET gives design teams a canvas built for tension, overlap, and deliberate asymmetry.</p>
+      <div class="hero__ctas">
+        <a class="btn btn--primary" href="#cta">Start free <span class="material-symbols-outlined">arrow_forward</span></a>
+        <a class="btn" href="#how">See how it works</a>
+      </div>
+    </div>
+    <div class="hero__media">
+      <span class="badge badge--primary">New: overlap engine</span>
+      <img src="https://picsum.photos/seed/offset-editorial-layout/880/620" width="880" height="620" alt="Editorial spread composed with offset columns and overlapping image blocks">
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features" aria-labelledby="features-title">
+  <div class="wrap">
+    <span class="sec-label mono">01, Features</span>
+    <h2 class="sec-title" id="features-title">Tools for intentional chaos</h2>
+    <div class="features__row">
+      <article class="card card--feature reveal">
+        <span class="chip"><span class="material-symbols-outlined">grid_off</span></span>
+        <h3>Off-grid snapping</h3>
+        <p class="muted">Snap to tension points, not columns. OFFSET suggests offsets that keep compositions balanced but never boring.</p>
+      </article>
+      <article class="card card--feature reveal">
+        <span class="chip chip--accent"><span class="material-symbols-outlined">layers</span></span>
+        <h3>Layered depth control</h3>
+        <p class="muted">Manage overlaps, shadows, and stacking order visually. Every layer stays readable and accessible by default.</p>
+      </article>
+      <article class="card card--feature reveal">
+        <span class="chip chip--plain"><span class="material-symbols-outlined">groups</span></span>
+        <h3>Live team critique</h3>
+        <p class="muted">Comment directly on rotated elements and overlaps. Resolve threads without flattening the layout.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" aria-labelledby="how-title">
+  <div class="wrap">
+    <span class="sec-label mono">02, Process</span>
+    <h2 class="sec-title" id="how-title">Three steps off the axis</h2>
+    <div class="steps__row">
+      <div class="step reveal">
+        <span class="step__num">01</span>
+        <h3>Drop your content</h3>
+        <p class="muted">Import copy, images, and brand tokens. OFFSET builds a raw grid you are meant to break.</p>
+        <span class="material-symbols-outlined">south_east</span>
+      </div>
+      <div class="step reveal">
+        <span class="step__num">02</span>
+        <h3>Push and rotate</h3>
+        <p class="muted">Drag blocks off-axis within safe rotation limits. Legibility guards warn you before anything tips too far.</p>
+        <span class="material-symbols-outlined">south_east</span>
+      </div>
+      <div class="step reveal">
+        <span class="step__num">03</span>
+        <h3>Publish the spread</h3>
+        <p class="muted">Export responsive pages where the asymmetry survives every breakpoint, from desktop to 320px.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testimonials" aria-labelledby="testi-title">
+  <div class="wrap testi">
+    <span class="sec-label mono">03, Voices</span>
+    <h2 class="sec-title" id="testi-title">Designers who left the grid</h2>
+    <div class="testi__cluster">
+      <blockquote class="card card--inverted testi__big reveal">
+        <p>&ldquo;Our lookbook layouts finally feel like the print work we admire. OFFSET made asymmetry a system, not an accident.&rdquo;</p>
+        <footer class="testi__attr">
+          <span class="testi__avatar">MK</span>
+          <span class="mono">Mara Kessler · Art Director, Fieldnote Studio</span>
+        </footer>
+      </blockquote>
+      <div class="testi__side">
+        <blockquote class="card card--testimonial reveal">
+          <p>&ldquo;The overlap engine caught contrast issues we used to ship. Bold layouts, zero accessibility regressions.&rdquo;</p>
+          <footer class="testi__attr">
+            <span class="testi__avatar testi__avatar--alt">DR</span>
+            <span class="mono">Devon Ruiz · Lead Designer, Parcel &amp; Co</span>
+          </footer>
+        </blockquote>
+        <blockquote class="card card--testimonial reveal">
+          <p>&ldquo;We prototype editorial pages in an afternoon now. Clients think we hired a print studio.&rdquo;</p>
+          <footer class="testi__attr">
+            <span class="testi__avatar">AS</span>
+            <span class="mono">Ana Sousa · Founder, Bureau Norte</span>
+          </footer>
+        </blockquote>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" aria-labelledby="pricing-title">
+  <div class="wrap">
+    <span class="sec-label mono">04, Pricing</span>
+    <h2 class="sec-title" id="pricing-title">Pick your degree of tilt</h2>
+    <div class="pricing__row">
+      <article class="card card--pricing reveal">
+        <h3>Draft</h3>
+        <p class="price">$0 <span class="mono muted">/ forever</span></p>
+        <ul>
+          <li><span class="material-symbols-outlined">check</span>3 active projects</li>
+          <li><span class="material-symbols-outlined">check</span>Core off-grid canvas</li>
+          <li><span class="material-symbols-outlined">check</span>Community templates</li>
+        </ul>
+        <a class="btn" href="#cta">Start free</a>
+      </article>
+      <article class="card card--pricing card--inverted card--featured reveal">
+        <span class="badge badge--primary">Most popular</span>
+        <h3>Studio</h3>
+        <p class="price">$16 <span class="mono muted">/ mo per seat</span></p>
+        <ul>
+          <li><span class="material-symbols-outlined">check</span>Unlimited projects</li>
+          <li><span class="material-symbols-outlined">check</span>Overlap engine + depth control</li>
+          <li><span class="material-symbols-outlined">check</span>Contrast and legibility guards</li>
+          <li><span class="material-symbols-outlined">check</span>Responsive export</li>
+        </ul>
+        <a class="btn btn--primary" href="#cta">Start free</a>
+      </article>
+      <article class="card card--pricing reveal">
+        <h3>Team</h3>
+        <p class="price">$39 <span class="mono muted">/ mo per seat</span></p>
+        <ul>
+          <li><span class="material-symbols-outlined">check</span>Everything in Studio</li>
+          <li><span class="material-symbols-outlined">check</span>Live critique and threads</li>
+          <li><span class="material-symbols-outlined">check</span>Shared brand token libraries</li>
+          <li><span class="material-symbols-outlined">check</span>Priority support</li>
+        </ul>
+        <a class="btn" href="#cta">Start free</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" aria-labelledby="faq-title">
+  <div class="wrap faq__inner">
+    <span class="sec-label mono">05, FAQ</span>
+    <h2 class="sec-title" id="faq-title">Straight answers, crooked layout</h2>
+    <details>
+      <summary><span class="mono">Q1</span>Does OFFSET work for beginners?<span class="material-symbols-outlined">expand_more</span></summary>
+      <p class="faq__a">Yes. The canvas starts from a normal grid and suggests safe offsets, so you learn asymmetry with guardrails instead of guesswork.</p>
+    </details>
+    <details>
+      <summary><span class="mono">Q2</span>Will rotated elements break on mobile?<span class="material-symbols-outlined">expand_more</span></summary>
+      <p class="faq__a">No. Tilts and overlaps are reduced automatically below tablet widths, and every export is checked for horizontal overflow down to 320px.</p>
+    </details>
+    <details>
+      <summary><span class="mono">Q3</span>Can I use my own fonts and tokens?<span class="material-symbols-outlined">expand_more</span></summary>
+      <p class="faq__a">Studio and Team plans let you upload brand fonts and define color, spacing, and shadow tokens that apply across every project.</p>
+    </details>
+    <details>
+      <summary><span class="mono">Q4</span>How does the legibility guard work?<span class="material-symbols-outlined">expand_more</span></summary>
+      <p class="faq__a">It flags rotations past 1.5 degrees on body text, overlaps covering interactive elements, and contrast below WCAG AA, before you publish.</p>
+    </details>
+    <details>
+      <summary><span class="mono">Q5</span>Can I export to code?<span class="material-symbols-outlined">expand_more</span></summary>
+      <p class="faq__a">Yes. Export clean HTML and CSS with custom properties, or hand off specs to developers with exact offset and rotation values.</p>
+    </details>
+    <details>
+      <summary><span class="mono">Q6</span>What is the cancellation policy?<span class="material-symbols-outlined">expand_more</span></summary>
+      <p class="faq__a">Cancel anytime from your billing page. Paid plans stay active until the end of the cycle, and your projects remain accessible on the Draft plan.</p>
+    </details>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section id="cta" aria-labelledby="cta-title">
+  <div class="wrap">
+    <div class="cta__panel">
+      <h2 id="cta-title">Your next spread starts off-center</h2>
+      <p class="lead">Join the waitlist for early access and get three editorial templates at launch.</p>
+      <form class="cta__form" id="cta-form" novalidate>
+        <div class="input-group">
+          <label for="cta-email">Work email</label>
+          <input class="input" id="cta-email" name="email" type="email" autocomplete="email" placeholder="you@studio.com" required>
+          <p class="input__msg" id="cta-msg" aria-live="polite"></p>
+        </div>
+        <button class="btn btn--primary" id="cta-btn" type="submit"><span class="btn__label">Get access</span></button>
+      </form>
+      <p class="cta__trust mono">No credit card · Cancel anytime</p>
+      <span class="badge">Launching soon</span>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <a class="nav__brand" href="#top">OFF<span>SET</span></a>
+        <p>An editorial layout tool for designers who treat the grid as a starting point, not a cage.</p>
+      </div>
+      <nav class="footer__col" aria-label="Product">
+        <h4>Product</h4>
+        <ul>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+          <li><a href="#how">How it works</a></li>
+        </ul>
+      </nav>
+      <nav class="footer__col" aria-label="Company">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#testimonials">Customers</a></li>
+          <li><a href="#faq">FAQ</a></li>
+          <li><a href="#cta">Contact</a></li>
+        </ul>
+      </nav>
+      <nav class="footer__col" aria-label="Legal">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="#top">Privacy</a></li>
+          <li><a href="#top">Terms</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="footer__bottom">
+      <p class="mono muted">© 2026 OFFSET Systems. All rights reserved.</p>
+      <div class="social">
+        <a href="#top" aria-label="OFFSET on Instagram"><span class="material-symbols-outlined">photo_camera</span></a>
+        <a href="#top" aria-label="OFFSET on Mastodon"><span class="material-symbols-outlined">forum</span></a>
+        <a href="#top" aria-label="OFFSET on RSS"><span class="material-symbols-outlined">rss_feed</span></a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  document.documentElement.classList.add("js");
+  /* theme toggle */
+  var root=document.documentElement;
+  var toggle=document.getElementById("theme-toggle");
+  function syncToggle(){
+    var dark=root.dataset.theme==="dark";
+    toggle.setAttribute("aria-pressed",dark?"true":"false");
+    toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+  }
+  syncToggle();
+  toggle.addEventListener("click",function(){
+    root.dataset.theme=root.dataset.theme==="dark"?"light":"dark";
+    localStorage.setItem("theme",root.dataset.theme);
+    syncToggle();
+  });
+  /* mobile nav */
+  var navToggle=document.getElementById("nav-toggle");
+  var navLinks=document.getElementById("nav-links");
+  navToggle.addEventListener("click",function(){
+    var open=navLinks.classList.toggle("is-open");
+    navToggle.setAttribute("aria-expanded",open?"true":"false");
+    navToggle.setAttribute("aria-label",open?"Close menu":"Open menu");
+  });
+  navLinks.addEventListener("click",function(e){
+    if(e.target.closest("a")){navLinks.classList.remove("is-open");navToggle.setAttribute("aria-expanded","false");}
+  });
+  document.addEventListener("keydown",function(e){
+    if(e.key==="Escape"){navLinks.classList.remove("is-open");navToggle.setAttribute("aria-expanded","false");}
+  });
+  /* scroll reveal */
+  var reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var items=document.querySelectorAll(".reveal");
+  if(reduce||!("IntersectionObserver" in window)){
+    items.forEach(function(el){el.classList.add("is-in");});
+  }else{
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){en.target.classList.add("is-in");io.unobserve(en.target);}
+      });
+    },{threshold:0.15});
+    items.forEach(function(el,i){el.style.transitionDelay=(i%3)*60+"ms";io.observe(el);});
+  }
+  /* newsletter form */
+  var form=document.getElementById("cta-form");
+  var email=document.getElementById("cta-email");
+  var msg=document.getElementById("cta-msg");
+  var btn=document.getElementById("cta-btn");
+  form.addEventListener("submit",function(e){
+    e.preventDefault();
+    btn.classList.remove("btn--success","btn--error");
+    var val=email.value.trim();
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val)){
+      email.classList.add("input--error");
+      msg.textContent="Please enter a valid email address.";
+      msg.className="input__msg input__msg--error";
+      email.focus();
+      return;
+    }
+    email.classList.remove("input--error");
+    msg.textContent="";
+    btn.classList.add("btn--loading");
+    btn.setAttribute("aria-busy","true");
+    setTimeout(function(){
+      btn.classList.remove("btn--loading");
+      btn.removeAttribute("aria-busy");
+      btn.classList.add("btn--success");
+      btn.querySelector(".btn__label").textContent="You're in";
+      msg.textContent="Check your inbox for a confirmation link.";
+      msg.className="input__msg input__msg--ok";
+      form.reset();
+    },1200);
+  });
+})();
+</script>
+</body>
+</html>

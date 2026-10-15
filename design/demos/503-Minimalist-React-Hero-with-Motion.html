@@ -1,785 +1,530 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nimbus | Minimalist Management</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-    <script>
-        (function() {
-            const theme = localStorage.getItem('theme') || 
-                (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-            document.documentElement.dataset.theme = theme;
-        })();
-    </script>
-    <style>
-        :root {
-            --primary: #ffffff;
-            --accent: #1a1a1a;
-            --text-primary: #373a46;
-            --text-secondary: #64748b;
-            --bg-primary: #fcfcfc;
-            --bg-secondary: #f3f4f6;
-            --border-default: rgba(0,0,0,0.08);
-            --radius-sm: 8px;
-            --radius-md: 16px;
-            --radius-lg: 32px;
-            --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
-            --shadow-md: 0px 10px 40px 5px rgba(194,194,194,0.25);
-            --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
-            --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
-            --nav-height: 72px;
-        }
-
-        :root[data-theme="dark"] {
-            --primary: #1a1a1a;
-            --accent: #ffffff;
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --bg-primary: #0f172a;
-            --bg-secondary: #1e293b;
-            --border-default: rgba(255,255,255,0.1);
-            --shadow-md: 0px 10px 40px 5px rgba(0,0,0,0.4);
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        [hidden] { display: none !important; }
-
-        body {
-            font-family: 'Geist', sans-serif;
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            line-height: 1.6;
-            -webkit-font-smoothing: antialiased;
-            overflow-x: hidden;
-        }
-
-        h1, h2, h3 { 
-            font-weight: 500; 
-            letter-spacing: -0.04em; 
-            line-height: 1.1; 
-        }
-
-        .serif-italic { 
-            font-family: 'Instrument Serif', serif; 
-            font-style: italic; 
-            font-weight: 400; 
-        }
-
-        /* Layout Components */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 2rem;
-        }
-
-        .section-padding {
-            padding: clamp(4rem, 8vw, 7rem) 0;
-        }
-
-        /* Navigation */
-        nav {
-            height: var(--nav-height);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: rgba(var(--bg-primary), 0.8);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border-default);
-            display: flex;
-            align-items: center;
-        }
-
-        .nav-content {
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            align-items: center;
-        }
-
-        .nav-links a {
-            text-decoration: none;
-            color: var(--text-primary);
-            font-size: 0.9375rem;
-            font-weight: 500;
-            transition: opacity var(--transition-normal);
-        }
-
-        .nav-links a:hover { opacity: 0.7; }
-
-        #theme-toggle {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            border: 1px solid var(--border-default);
-            background: transparent;
-            color: var(--text-primary);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background var(--transition-normal);
-        }
-
-        #theme-toggle:hover { background: var(--bg-secondary); }
-
-        /* Hero Section */
-        .hero {
-            position: relative;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding-top: 100px;
-            overflow: hidden;
-        }
-
-        .hero-video {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transform: scaleY(-1);
-            z-index: -2;
-            pointer-events: none;
-        }
-
-        .hero-overlay {
-            position: absolute;
-            inset: 0;
-            z-index: -1;
-            background: linear-gradient(to bottom, 
-                rgba(var(--bg-primary), 0) 26%, 
-                var(--bg-primary) 67%);
-        }
-
-        :root[data-theme="dark"] .hero-overlay {
-            background: linear-gradient(to bottom, 
-                rgba(15, 23, 42, 0) 26%, 
-                #0f172a 67%);
-        }
-
-        .hero-content {
-            max-width: 800px;
-            z-index: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2rem;
-        }
-
-        .hero-title {
-            font-size: clamp(2.5rem, 6vw, 5rem);
-            max-width: 900px;
-        }
-
-        .hero-title .serif-italic {
-            font-size: clamp(3rem, 7vw, 6rem);
-            display: block;
-        }
-
-        .hero-subtext {
-            font-size: 1.125rem;
-            color: var(--text-secondary);
-            max-width: 554px;
-            opacity: 0.8;
-        }
-
-        .hero-form {
-            display: flex;
-            background: var(--bg-primary);
-            padding: 6px;
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border-default);
-            box-shadow: var(--shadow-md);
-            width: 100%;
-            max-width: 500px;
-            transition: transform 0.2s ease;
-        }
-
-        .hero-form:focus-within {
-            transform: scale(1.02);
-        }
-
-        .hero-input {
-            flex: 1;
-            border: none;
-            background: transparent;
-            padding: 0 1.5rem;
-            font-family: inherit;
-            font-size: 1rem;
-            color: var(--text-primary);
-            outline: none;
-        }
-
-        .hero-btn {
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-            color: white;
-            border: none;
-            padding: 0 2rem;
-            height: 48px;
-            border-radius: var(--radius-md);
-            font-weight: 500;
-            cursor: pointer;
-            transition: all var(--transition-normal);
-            box-shadow: inset -4px -6px 25px 0px rgba(201,201,201,0.08), 
-                        inset 4px 4px 10px 0px rgba(29,29,29,0.24);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 120px;
-        }
-
-        :root[data-theme="dark"] .hero-btn {
-            background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
-            color: #1a1a1a;
-            box-shadow: inset -4px -6px 25px 0px rgba(0,0,0,0.08), 
-                        inset 4px 4px 10px 0px rgba(255,255,255,0.24);
-        }
-
-        .hero-btn:hover { transform: translateY(-1px); filter: brightness(1.1); }
-        .hero-btn:active { transform: scale(0.97); }
-
-        .social-proof {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            margin-top: 1rem;
-        }
-
-        .social-proof .material-symbols-rounded {
-            font-size: 16px;
-            color: #fbbf24;
-            fill: #fbbf24;
-        }
-
-        /* Grid Sections */
-        .grid-3 {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 2rem;
-        }
-
-        .card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-default);
-            padding: 2.5rem;
-            border-radius: var(--radius-lg);
-            transition: transform var(--transition-normal), box-shadow var(--transition-normal);
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .card .material-symbols-rounded {
-            font-size: 32px;
-            margin-bottom: 1.5rem;
-            display: block;
-            color: var(--text-primary);
-        }
-
-        .card h3 { margin-bottom: 1rem; }
-        .card p { color: var(--text-secondary); font-size: 0.95rem; }
-
-        /* Steps Section */
-        .steps {
-            display: flex;
-            flex-direction: column;
-            gap: 4rem;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .step {
-            display: grid;
-            grid-template-columns: 80px 1fr;
-            gap: 2rem;
-            align-items: start;
-        }
-
-        .step-num {
-            font-size: 2rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            opacity: 0.5;
-        }
-
-        /* Pricing */
-        .pricing-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 2rem;
-            align-items: center;
-        }
-
-        .pricing-card {
-            text-align: center;
-            position: relative;
-            padding: 3rem 2rem;
-        }
-
-        .pricing-card.featured {
-            border: 2px solid var(--text-primary);
-            transform: scale(1.05);
-            z-index: 2;
-        }
-
-        .badge {
-            position: absolute;
-            top: -12px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--text-primary);
-            color: var(--bg-primary);
-            font-size: 0.75rem;
-            font-weight: 600;
-            padding: 4px 12px;
-            border-radius: 20px;
-            text-transform: uppercase;
-        }
-
-        .price {
-            font-size: 3rem;
-            font-weight: 600;
-            margin: 1.5rem 0;
-        }
-
-        .price span { font-size: 1rem; color: var(--text-secondary); }
-
-        .feature-list {
-            list-style: none;
-            margin-bottom: 2rem;
-            text-align: left;
-            display: inline-block;
-        }
-
-        .feature-list li {
-            margin-bottom: 0.75rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.9rem;
-        }
-
-        /* FAQ */
-        .faq-container {
-            max-width: 700px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        details {
-            border: 1px solid var(--border-default);
-            border-radius: var(--radius-md);
-            background: var(--bg-secondary);
-            overflow: hidden;
-        }
-
-        summary {
-            padding: 1.25rem;
-            cursor: pointer;
-            font-weight: 500;
-            list-style: none;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        summary::-webkit-details-marker { display: none; }
-
-        details p {
-            padding: 0 1.25rem 1.25rem;
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-        }
-
-        /* Testimonials */
-        .testimonial-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-        }
-
-        .testimonial-card {
-            padding: 2rem;
-            border-left: 4px solid var(--text-primary);
-            background: var(--bg-secondary);
-            border-radius: 0 var(--radius-md) var(--radius-md) 0;
-        }
-
-        .quote {
-            font-size: 1.1rem;
-            margin-bottom: 1.5rem;
-            font-style: italic;
-        }
-
-        .author {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .avatar {
-            width: 40px;
-            height: 40px;
-            background: var(--text-primary);
-            color: var(--bg-primary);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 0.8rem;
-        }
-
-        /* Final CTA */
-        .cta-band {
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-            color: white;
-            text-align: center;
-            padding: clamp(4rem, 8vw, 7rem) 0;
-        }
-
-        :root[data-theme="dark"] .cta-band {
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-            color: #1a1a1a;
-        }
-
-        .cta-band h2 { font-size: clamp(2rem, 4vw, 3rem); margin-bottom: 2rem; }
-        .cta-band .hero-btn { background: white; color: black; }
-        :root[data-theme="dark"] .cta-band .hero-btn { background: #1a1a1a; color: white; }
-
-        /* Footer */
-        footer {
-            padding: 4rem 0;
-            border-top: 1px solid var(--border-default);
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-        }
-
-        .footer-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 2rem;
-        }
-
-        /* Animations */
-        .reveal {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.6s var(--ease-standard);
-        }
-
-        .reveal.active {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* Mobile Responsiveness */
-        @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-            }
-            .grid-3, .pricing-grid, .testimonial-grid {
-                grid-template-columns: 1fr;
-            }
-            .pricing-card.featured {
-                transform: scale(1);
-            }
-            .hero-form {
-                flex-direction: column;
-                background: transparent;
-                box-shadow: none;
-                border: none;
-                gap: 1rem;
-                padding: 0;
-            }
-            .hero-input {
-                background: var(--bg-primary);
-                border: 1px solid var(--border-default);
-                border-radius: var(--radius-md);
-                height: 48px;
-                padding: 0 1.5rem;
-            }
-            .hero-title {
-                text-align: center;
-            }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            * {
-                transition: none !important;
-                animation: none !important;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nimbus - Project management that stays out of the way</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet">
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<style>
+:root{
+  --primary:#ffffff;
+  --text-primary:#373a46;
+  --text-secondary:rgba(55,58,70,.72);
+  --bg-primary:#fcfcfc;
+  --bg-secondary:#f4f4f2;
+  --text-success:#1a7f4b;
+  --text-error:#c0392b;
+  --border-default:rgba(0,0,0,.08);
+  --border-error:rgba(192,57,43,.45);
+  --border-success:rgba(26,127,75,.4);
+  --radius-sm:8px;--radius-md:14px;--radius-lg:20px;
+  --shadow-sm:0 1px 3px rgba(30,30,40,.06);
+  --shadow-md:0px 10px 40px 5px rgba(194,194,194,.25);
+  --cta-from:#1a1a1a;--cta-to:#2d2d2d;--on-cta:#ffffff;
+  --accent:#4f46e5;--on-accent:#ffffff;
+  --overlay-a:rgba(255,255,255,0);--overlay-b:#ffffff;
+  --spacing-gap:1.5rem;
+  --transition-fast:140ms;--transition-normal:240ms;--ease-standard:cubic-bezier(.22,.61,.36,1);
+  --z-dropdown:100;--z-modal:200;--z-toast:300;
+}
+:root[data-theme="dark"]{
+  --primary:#1a1a1e;
+  --text-primary:#ececf1;
+  --text-secondary:rgba(236,236,241,.72);
+  --bg-primary:#121216;
+  --bg-secondary:#1b1b21;
+  --text-success:#4ade80;
+  --text-error:#f87171;
+  --border-default:rgba(255,255,255,.1);
+  --border-error:rgba(248,113,113,.5);
+  --border-success:rgba(74,222,128,.45);
+  --shadow-sm:0 1px 3px rgba(0,0,0,.4);
+  --shadow-md:0px 10px 40px 5px rgba(0,0,0,.45);
+  --cta-from:#f4f4f2;--cta-to:#dcdce4;--on-cta:#1a1a1a;
+  --accent:#a5b4fc;--on-accent:#121216;
+  --overlay-a:rgba(18,18,22,0);--overlay-b:#121216;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{font-family:"Geist",system-ui,sans-serif;background:var(--bg-primary);color:var(--text-primary);line-height:1.6;overflow-x:hidden;transition:background var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard)}
+img,video{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer}
+.material-symbols-rounded{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;font-size:1.25rem;line-height:1;vertical-align:middle}
+.wrap{max-width:1200px;margin:0 auto;padding:0 1.25rem}
+@media(min-width:768px){.wrap{padding:0 2rem}}
+section{padding:clamp(4rem,8vw,7rem) 0}
+h1,h2,h3{font-weight:500;letter-spacing:-.03em;line-height:1.1}
+h2{font-size:clamp(1.9rem,3.5vw,2.6rem)}
+.sub{color:var(--text-secondary);max-width:60ch;margin-top:.75rem}
+.serif{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;letter-spacing:-.02em}
+/* NAV */
+.nav{position:sticky;top:0;z-index:var(--z-dropdown);height:68px;display:flex;align-items:center;background:color-mix(in srgb,var(--bg-primary) 82%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border-default)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;width:100%}
+.brand{display:flex;align-items:center;gap:.5rem;font-weight:600;font-size:1.05rem;letter-spacing:-.02em}
+.brand .material-symbols-rounded{color:var(--accent)}
+.nav-links{display:flex;align-items:center;gap:1.75rem;list-style:none}
+.nav-links a{font-size:.92rem;color:var(--text-secondary);transition:color var(--transition-fast)}
+.nav-links a:hover{color:var(--text-primary)}
+#theme-toggle{width:44px;height:44px;border-radius:50%;border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);display:flex;align-items:center;justify-content:center;transition:transform var(--transition-fast),background var(--transition-fast)}
+#theme-toggle:active{transform:scale(.94)}
+#theme-toggle .moon{display:none}
+:root[data-theme="dark"] #theme-toggle .sun{display:none}
+:root[data-theme="dark"] #theme-toggle .moon{display:inline}
+.menu-btn{display:none;width:44px;height:44px;border-radius:var(--radius-sm);border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);align-items:center;justify-content:center}
+@media(max-width:767px){
+  .menu-btn{display:flex}
+  .nav-links{position:absolute;top:68px;left:0;right:0;flex-direction:column;align-items:flex-start;gap:0;background:var(--bg-primary);border-bottom:1px solid var(--border-default);padding:.5rem 1.25rem 1rem;display:none}
+  .nav-links.open{display:flex}
+  .nav-links li{width:100%}
+  .nav-links a{display:block;padding:.75rem 0;font-size:1rem}
+}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:0 1.5rem;border-radius:999px;border:none;font-size:.95rem;font-weight:500;transition:transform var(--transition-fast) var(--ease-standard),filter var(--transition-fast),box-shadow var(--transition-fast);white-space:nowrap}
+.btn:active{transform:scale(.97)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.btn-primary{background:linear-gradient(135deg,var(--cta-from),var(--cta-to));color:var(--on-cta);box-shadow:inset -4px -6px 25px 0 rgba(201,201,201,.08),inset 4px 4px 10px 0 rgba(29,29,29,.24)}
+@media(hover:hover) and (pointer:fine){.btn-primary:hover{filter:brightness(1.12);box-shadow:inset -4px -6px 25px 0 rgba(201,201,201,.08),inset 4px 4px 10px 0 rgba(29,29,29,.24),0 8px 24px rgba(0,0,0,.18)}}
+.btn-ghost{background:transparent;color:var(--text-primary);border:1px solid var(--border-default)}
+@media(hover:hover) and (pointer:fine){.btn-ghost:hover{background:var(--bg-secondary)}}
+/* HERO */
+.hero{position:relative;min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:clamp(6rem,16vh,11rem);gap:2rem;text-align:center;overflow:hidden}
+.hero-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleY(-1);z-index:0}
+.hero-overlay{position:absolute;inset:0;z-index:1;background:linear-gradient(to bottom,var(--overlay-a) 26%,var(--overlay-b) 67%)}
+.hero-content{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:2rem;max-width:1200px;padding:0 1.25rem;width:100%}
+.hero h1{font-size:clamp(2.5rem,7vw,5rem);max-width:14ch}
+.hero h1 .serif{font-size:clamp(3.25rem,8.5vw,6.25rem)}
+.hero p{font-size:1.125rem;color:var(--text-secondary);max-width:554px}
+.email-block{display:flex;align-items:center;gap:.5rem;background:var(--bg-primary);border:1px solid var(--border-default);border-radius:40px;padding:.4rem .4rem .4rem 1.25rem;box-shadow:var(--shadow-md);width:min(520px,100%)}
+.email-block input{flex:1;min-width:0;border:none;background:transparent;color:var(--text-primary);font:inherit;font-size:.95rem;min-height:44px;outline:none}
+.email-block input::placeholder{color:var(--text-secondary)}
+.email-block:focus-within{border-color:var(--accent)}
+.proof{display:flex;align-items:center;gap:.6rem;font-size:.9rem;color:var(--text-secondary)}
+.stars{color:#f5a623;display:flex;gap:1px}
+.stars .material-symbols-rounded{font-variation-settings:'FILL' 1;font-size:1.05rem}
+@media(max-width:560px){.email-block{flex-direction:column;border-radius:var(--radius-lg);padding:.75rem}.email-block input{width:100%;text-align:center}.email-block .btn{width:100%}}
+/* REVEAL */
+.reveal{opacity:1}
+.js .reveal{opacity:0;transform:translateY(24px);transition:opacity .6s var(--ease-standard),transform .6s var(--ease-standard)}
+.js .reveal.in{opacity:1;transform:none}
+/* FEATURES */
+.grid3{display:grid;grid-template-columns:1fr;gap:1.5rem;margin-top:3rem}
+@media(min-width:768px){.grid3{grid-template-columns:repeat(3,1fr)}}
+.card{display:flex;flex-direction:column;gap:.75rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:1.75rem;box-shadow:var(--shadow-sm);transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal)}
+@media(hover:hover) and (pointer:fine){.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}}
+.card:focus-within{border-color:var(--accent)}
+.card .icon{width:44px;height:44px;border-radius:var(--radius-md);background:var(--bg-primary);border:1px solid var(--border-default);display:flex;align-items:center;justify-content:center;color:var(--accent)}
+.card h3{font-size:1.1rem}
+.card p{font-size:.92rem;color:var(--text-secondary)}
+/* STEPS */
+.steps{display:flex;flex-direction:column;gap:0;margin-top:3rem;counter-reset:step}
+.step{display:flex;align-items:flex-start;gap:1.5rem;padding:2rem 0;border-top:1px solid var(--border-default)}
+.step:last-child{border-bottom:1px solid var(--border-default)}
+.step-num{font-family:"Instrument Serif",serif;font-style:italic;font-size:2.5rem;line-height:1;color:var(--accent);min-width:3rem}
+.step h3{font-size:1.15rem;display:flex;align-items:center;gap:.5rem}
+.step p{color:var(--text-secondary);font-size:.95rem;max-width:60ch}
+/* PRICING */
+.price-card{display:flex;flex-direction:column;gap:1rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:2rem;box-shadow:var(--shadow-sm);transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal)}
+@media(hover:hover) and (pointer:fine){.price-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}}
+.price-card.featured{background:linear-gradient(150deg,var(--cta-from),var(--cta-to));color:var(--on-cta);border:none;position:relative}
+:root[data-theme="dark"] .price-card.featured{color:#1a1a1a}
+.price-card.featured .pdesc,.price-card.featured li{color:color-mix(in srgb,currentColor 75%,transparent)}
+.badge{align-self:flex-start;font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;background:var(--accent);color:var(--on-accent);padding:.3rem .75rem;border-radius:999px}
+.price{font-size:2.5rem;font-weight:600;letter-spacing:-.03em}
+.price span{font-size:.95rem;font-weight:400;opacity:.7}
+.price-card ul{list-style:none;display:flex;flex-direction:column;gap:.6rem;font-size:.92rem}
+.price-card li{display:flex;align-items:center;gap:.5rem;color:var(--text-secondary)}
+.price-card li .material-symbols-rounded{font-size:1.1rem;color:var(--text-success)}
+.price-card .btn{margin-top:auto}
+/* TESTIMONIALS */
+.tgrid{display:grid;grid-template-columns:1fr;gap:1.5rem;margin-top:3rem}
+@media(min-width:768px){.tgrid{grid-template-columns:1fr 1fr}}
+.tcard{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:2rem;display:flex;flex-direction:column;gap:1rem}
+.tcard blockquote{font-size:1.05rem;line-height:1.55}
+.tcard blockquote::before{content:"\201C"}
+.tcard blockquote::after{content:"\201D"}
+.tauthor{display:flex;align-items:center;gap:.75rem}
+.monogram{width:40px;height:40px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:.85rem}
+.tauthor small{display:block;color:var(--text-secondary)}
+/* FAQ */
+.faq{max-width:760px;margin:3rem auto 0;display:flex;flex-direction:column;gap:.75rem}
+details{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);overflow:hidden}
+summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.1rem 1.25rem;font-weight:500;cursor:pointer;min-height:44px}
+summary::-webkit-details-marker{display:none}
+summary .material-symbols-rounded{transition:transform var(--transition-normal) var(--ease-standard);color:var(--text-secondary)}
+details[open] summary .material-symbols-rounded{transform:rotate(180deg)}
+details p{padding:0 1.25rem 1.25rem;color:var(--text-secondary);font-size:.95rem}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+/* CTA BAND */
+.band{background:linear-gradient(135deg,#1a1a1a,#2d2d2d);color:#fff;text-align:center;border-radius:0}
+:root[data-theme="dark"] .band{background:linear-gradient(135deg,#f4f4f2,#dcdce4);color:#1a1a1a}
+.band h2{color:inherit}
+.band p{color:color-mix(in srgb,currentColor 72%,transparent);max-width:52ch;margin:.75rem auto 2rem}
+:root[data-theme="dark"] .band .btn-primary{background:linear-gradient(135deg,#1a1a1a,#2d2d2d);color:#fff}
+/* FOOTER */
+footer{border-top:1px solid var(--border-default);padding:3rem 0 2rem}
+.foot-grid{display:flex;flex-wrap:wrap;gap:2rem;justify-content:space-between;align-items:flex-start}
+.foot-links{display:flex;gap:3rem;flex-wrap:wrap}
+.foot-links ul{list-style:none;display:flex;flex-direction:column;gap:.5rem}
+.foot-links a{font-size:.9rem;color:var(--text-secondary)}
+.foot-links a:hover{color:var(--text-primary)}
+.copy{margin-top:2.5rem;font-size:.85rem;color:var(--text-secondary)}
+/* FORM STATES */
+.field{display:flex;flex-direction:column;gap:.35rem;max-width:420px}
+.field label{font-size:.9rem;font-weight:500}
+.field input{border:1px solid var(--border-default);border-radius:var(--radius-sm);background:var(--bg-primary);color:var(--text-primary);padding:.7rem .9rem;font:inherit;font-size:.95rem;min-height:44px}
+.field input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.field input[aria-invalid="true"]{border-color:var(--border-error)}
+.helper{font-size:.8rem;color:var(--text-secondary)}
+.err{font-size:.8rem;color:var(--text-error);display:flex;align-items:center;gap:.3rem}
+/* MODAL */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:var(--z-modal);display:flex;align-items:center;justify-content:center;padding:1.25rem}
+.modal{background:var(--bg-primary);color:var(--text-primary);border-radius:var(--radius-lg);padding:2rem;max-width:440px;width:100%;box-shadow:var(--shadow-md);position:relative}
+.modal h3{font-size:1.25rem;margin-bottom:.5rem}
+.modal p{color:var(--text-secondary);font-size:.95rem}
+.modal .close-x{position:absolute;top:.75rem;right:.75rem;width:44px;height:44px;border:none;background:transparent;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;border-radius:50%}
+.modal .close-x:hover{background:var(--bg-secondary)}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important;scroll-behavior:auto!important}
+  .js .reveal{transform:none}
+}
+@media (prefers-reduced-transparency: reduce){
+  .nav{background:var(--bg-primary);backdrop-filter:none;-webkit-backdrop-filter:none}
+}
+</style>
 </head>
 <body>
+<script>document.body.classList.add("js");</script>
 
-    <nav>
-        <div class="container nav-content">
-            <a href="#" style="font-weight: 600; color: var(--text-primary); text-decoration: none; font-size: 1.25rem;">Nimbus</a>
-            <div class="nav-links">
-                <a href="#features">Features</a>
-                <a href="#how-it-works">Process</a>
-                <a href="#pricing">Pricing</a>
-                <a href="#faq">FAQ</a>
-                <button id="theme-toggle" aria-label="Switch theme" aria-pressed="false">
-                    <span class="material-symbols-rounded" id="theme-icon">dark_mode</span>
-                </button>
-            </div>
-        </div>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="#"><span class="material-symbols-rounded" aria-hidden="true">cloud</span>Nimbus</a>
+    <button class="menu-btn" id="menu-btn" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu"><span class="material-symbols-rounded" aria-hidden="true">menu</span></button>
+    <nav aria-label="Primary">
+      <ul class="nav-links" id="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
     </nav>
+    <button id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+      <span class="material-symbols-rounded sun" aria-hidden="true">light_mode</span>
+      <span class="material-symbols-rounded moon" aria-hidden="true">dark_mode</span>
+    </button>
+  </div>
+</header>
 
-    <main>
-        <section class="hero">
-            <video class="hero-video" autoplay muted loop playsinline aria-hidden="true">
-                <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260302_085640_276ea93b-d7da-4418-a09b-2aa5b490e838.mp4" type="video/mp4">
-            </video>
-            <div class="hero-overlay"></div>
-            
-            <div class="container hero-content">
-                <h1 class="hero-title reveal">
-                    Smart digital <span class="serif-italic">management</span>
-                </h1>
-                <p class="hero-subtext reveal">
-                    A refined workspace for teams who value focus, clarity, and the beauty of minimalist organization.
-                </p>
-                <form class="hero-form reveal" onsubmit="event.preventDefault();">
-                    <input type="email" class="hero-input" placeholder="Enter your email" required>
-                    <button type="submit" class="hero-btn">Get Started</button>
-                </form>
-                <div class="social-proof reveal">
-                    <span class="material-symbols-rounded">star</span>
-                    <span class="material-symbols-rounded">star</span>
-                    <span class="material-symbols-rounded">star</span>
-                    <span class="material-symbols-rounded">star</span>
-                    <span class="material-symbols-rounded">star</span>
-                    <span>1,020+ Reviews</span>
-                </div>
-            </div>
-        </section>
+<main>
+  <!-- HERO -->
+  <section class="hero" style="padding-bottom:4rem">
+    <video class="hero-video" autoplay muted loop playsinline aria-hidden="true" src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260302_085640_276ea93b-d7da-4418-a09b-2aa5b490e838.mp4"></video>
+    <div class="hero-overlay" aria-hidden="true"></div>
+    <div class="hero-content">
+      <h1 class="reveal">Project <span class="serif">management</span> that stays out of the way</h1>
+      <p class="reveal">Nimbus keeps tasks, docs, and decisions in one calm workspace so your team ships without the status meetings.</p>
+      <form class="email-block reveal" id="signup-form" novalidate>
+        <label for="hero-email" class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Work email</label>
+        <input id="hero-email" name="email" type="email" placeholder="you@company.com" autocomplete="email" required aria-describedby="form-msg">
+        <button class="btn btn-primary" type="submit" id="signup-btn">Start free</button>
+      </form>
+      <p id="form-msg" class="err" role="status" aria-live="polite" hidden></p>
+      <div class="proof reveal">
+        <span class="stars" aria-hidden="true">
+          <span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star_half</span>
+        </span>
+        <span>4.6 rating, 1,020+ reviews from product teams</span>
+      </div>
+    </div>
+  </section>
 
-        <section id="features" class="section-padding">
-            <div class="container">
-                <div class="grid-3">
-                    <div class="card reveal">
-                        <span class="material-symbols-rounded">auto_awesome_motion</span>
-                        <h3>Fluid Motion</h3>
-                        <p>Experience a workspace that moves with you, reducing cognitive load through intuitive transitions.</p>
-                    </div>
-                    <div class="card reveal">
-                        <span class="material-symbols-rounded">visibility</span>
-                        <h3>Pure Clarity</h3>
-                        <p>Remove the noise. Our interface prioritizes your current task while keeping the rest accessible.</p>
-                    </div>
-                    <div class="card reveal">
-                        <span class="material-symbols-rounded">sync_alt</span>
-                        <h3>Instant Sync</h3>
-                        <p>Your data flows across all devices in real-time with zero latency and industrial-grade encryption.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
+  <!-- FEATURES -->
+  <section id="features">
+    <div class="wrap">
+      <h2>Built for focus, not busywork</h2>
+      <p class="sub">Three things Nimbus does well, so you can stop managing the tool and start managing the work.</p>
+      <div class="grid3">
+        <article class="card reveal">
+          <div class="icon"><span class="material-symbols-rounded" aria-hidden="true">view_kanban</span></div>
+          <h3>Boards that think ahead</h3>
+          <p>Tasks group themselves by deadline and owner. Overdue work surfaces before it becomes a fire drill.</p>
+        </article>
+        <article class="card reveal">
+          <div class="icon"><span class="material-symbols-rounded" aria-hidden="true">edit_note</span></div>
+          <h3>Docs next to the work</h3>
+          <p>Specs and meeting notes live beside the tasks they describe. No more hunting through chat threads.</p>
+        </article>
+        <article class="card reveal">
+          <div class="icon"><span class="material-symbols-rounded" aria-hidden="true">monitoring</span></div>
+          <h3>Progress you can quote</h3>
+          <p>Weekly digests summarize what shipped, what slipped, and why. Forward it to stakeholders as-is.</p>
+        </article>
+      </div>
+    </div>
+  </section>
 
-        <section id="how-it-works" class="section-padding" style="background: var(--bg-secondary);">
-            <div class="container">
-                <div class="steps">
-                    <div class="step reveal">
-                        <div class="step-num">01</div>
-                        <div>
-                            <h3>Connect your stack</h3>
-                            <p>Integrate your existing tools in seconds. Nimbus maps your data into a unified, clean architecture.</p>
-                        </div>
-                    </div>
-                    <div class="step reveal">
-                        <div class="step-num">02</div>
-                        <div>
-                            <h3>Define your flow</h3>
-                            <p>Create custom views that match your mental model. No rigid templates, just pure flexibility.</p>
-                        </div>
-                    </div>
-                    <div class="step reveal">
-                        <div class="step-num">03</div>
-                        <div>
-                            <h3>Achieve deep work</h3>
-                            <p>Use our focus modes to eliminate distractions and complete your most important tasks faster.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="pricing" class="section-padding">
-            <div class="container">
-                <div class="pricing-grid">
-                    <div class="card pricing-card reveal">
-                        <h3>Essential</h3>
-                        <div class="price">$0<span>/mo</span></div>
-                        <ul class="feature-list">
-                            <li><span class="material-symbols-rounded" style="font-size:16px">check_circle</span> 3 Projects</li>
-                            <li><span class="material-symbols-rounded" style="font-size:16px">check_circle</span> Basic Analytics</li>
-                            <li><span class="material-symbols-rounded" style="font-size:16px">check_circle</span> Community Support</li>
-                        </ul>
-                        <button class="hero-btn" style="width: 100%;">Join Free</button>
-                    </div>
-                    <div class="card pricing-card featured reveal">
-                        <div class="badge">Recommended</div>
-                        <h3>Professional</h3>
-                        <div class="price">$19<span>/mo</span></div>
-                        <ul class="feature-list">
-                            <li><span class="material-symbols-rounded" style="font-size:16px">check_circle</span> Unlimited Projects</li>
-                            <li><span class="material-symbols-rounded" style="font-size:16px">check_circle</span> Advanced Motion UI</li>
-                            <li><span class="material-symbols-rounded" style="font-size:16px">check_circle</span> Priority Support</li>
-                        </ul>
-                        <button class="hero-btn" style="width: 100%;">Start Trial</button>
-                    </div>
-                    <div class="card pricing-card reveal">
-                        <h3>Enterprise</h3>
-                        <div class="price">$49<span>/mo</span></div>
-                        <ul class="feature-list">
-                            <li><span class="material-symbols-rounded" style="font-size:16px">check_circle</span> Custom Security</li>
-                            <li><span class="material-symbols-rounded" style="font-size:16px">check_circle</span> Dedicated Manager</li>
-                            <li><span class="material-symbols-rounded" style="font-size:16px">check_circle</span> API Access</li>
-                        </ul>
-                        <button class="hero-btn" style="width: 100%;">Contact Us</button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="section-padding" style="background: var(--bg-secondary);">
-            <div class="container">
-                <div class="testimonial-grid">
-                    <div class="testimonial-card reveal">
-                        <p class="quote">"Nimbus changed how our design team collaborates. The minimalist approach actually makes us more productive."</p>
-                        <div class="author">
-                            <div class="avatar">SK</div>
-                            <div>
-                                <strong>Sarah King</strong><br>
-                                <small>Lead Designer, Studio X</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="testimonial-card reveal">
-                        <p class="quote">"Finally, a tool that doesn't feel like a spreadsheet. The motion and layout are a breath of fresh air."</p>
-                        <div class="author">
-                            <div class="avatar">MJ</div>
-                            <div>
-                                <strong>Marcus Jone</strong><br>
-                                <small>Founder, FlowState</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="faq" class="section-padding">
-            <div class="container">
-                <div class="faq-container">
-                    <details class="reveal">
-                        <summary>How does the motion system work? <span class="material-symbols-rounded">expand_more</span></summary>
-                        <p>Our motion system uses physics-based transitions to guide your eye to the most important information without causing distraction.</p>
-                    </details>
-                    <details class="reveal">
-                        <summary>Can I export my data? <span class="material-symbols-rounded">expand_more</span></summary>
-                        <p>Yes, you can export all your projects in JSON, CSV, or PDF formats at any time from the settings menu.</p>
-                    </details>
-                    <details class="reveal">
-                        <summary>Is there a mobile app? <span class="material-symbols-rounded">expand_more</span></summary>
-                        <p>Nimbus is a progressive web app, meaning it works perfectly in any browser and can be installed on your home screen.</p>
-                    </details>
-                </div>
-            </div>
-        </section>
-
-        <section class="cta-band">
-            <div class="container">
-                <h2 class="reveal">Ready for a calmer workspace?</h2>
-                <button class="hero-btn reveal">Get Started Now</button>
-            </div>
-        </section>
-    </main>
-
-    <footer>
-        <div class="container footer-content">
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <span style="font-weight: 600; color: var(--text-primary);">Nimbus</span>
-                <span>© 2026</span>
-            </div>
-            <div class="nav-links" style="display: flex;">
-                <a href="#">Privacy</a>
-                <a href="#">Terms</a>
-                <a href="#">Twitter</a>
-            </div>
+  <!-- HOW IT WORKS -->
+  <section id="how" style="background:var(--bg-secondary)">
+    <div class="wrap">
+      <h2>Up and running in an afternoon</h2>
+      <div class="steps">
+        <div class="step reveal">
+          <span class="step-num" aria-hidden="true">1</span>
+          <div>
+            <h3><span class="material-symbols-rounded" aria-hidden="true">upload</span>Import your work</h3>
+            <p>Pull tasks from spreadsheets, Trello, or Asana in a few clicks. Nimbus maps owners and dates automatically.</p>
+          </div>
         </div>
-    </footer>
+        <div class="step reveal">
+          <span class="step-num" aria-hidden="true">2</span>
+          <div>
+            <h3><span class="material-symbols-rounded" aria-hidden="true">group_add</span>Invite the team</h3>
+            <p>Teammates get a guided first session. Most people are assigning and commenting within ten minutes.</p>
+          </div>
+        </div>
+        <div class="step reveal">
+          <span class="step-num" aria-hidden="true">3</span>
+          <div>
+            <h3><span class="material-symbols-rounded" aria-hidden="true">rocket_launch</span>Ship your first sprint</h3>
+            <p>Plan a two-week cycle, watch the digest write itself, and cancel the Monday status call for good.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    <script>
-        (function() {
-            // Theme Toggle Logic
-            const toggleBtn = document.getElementById('theme-toggle');
-            const themeIcon = document.getElementById('theme-icon');
-            
-            function updateThemeUI(theme) {
-                document.documentElement.dataset.theme = theme;
-                toggleBtn.setAttribute('aria-pressed', theme === 'dark');
-                toggleBtn.setAttribute('aria-label', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
-                themeIcon.textContent = theme === 'dark' ? 'light_mode' : 'dark_mode';
-            }
+  <!-- PRICING -->
+  <section id="pricing">
+    <div class="wrap">
+      <h2>Simple pricing, no seat traps</h2>
+      <p class="sub">Start free. Upgrade when your team grows. Cancel any time from settings.</p>
+      <div class="grid3">
+        <article class="price-card reveal">
+          <h3>Starter</h3>
+          <p class="pdesc" style="color:var(--text-secondary);font-size:.9rem">For solo projects and small trials.</p>
+          <p class="price">$0<span>/mo</span></p>
+          <ul>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Up to 3 projects</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Boards and docs</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Community support</li>
+          </ul>
+          <button class="btn btn-ghost" type="button">Start free</button>
+        </article>
+        <article class="price-card featured reveal">
+          <span class="badge">Recommended</span>
+          <h3>Team</h3>
+          <p class="pdesc" style="font-size:.9rem">For product teams that ship weekly.</p>
+          <p class="price">$12<span>/user/mo</span></p>
+          <ul>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Unlimited projects</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Weekly digests and reports</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Priority support</li>
+          </ul>
+          <button class="btn btn-primary" type="button">Start free</button>
+        </article>
+        <article class="price-card reveal">
+          <h3>Business</h3>
+          <p class="pdesc" style="color:var(--text-secondary);font-size:.9rem">For orgs with compliance needs.</p>
+          <p class="price">$24<span>/user/mo</span></p>
+          <ul>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>SSO and audit logs</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Custom roles and permissions</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Dedicated success manager</li>
+          </ul>
+          <button class="btn btn-ghost" type="button">Start free</button>
+        </article>
+      </div>
+    </div>
+  </section>
 
-            toggleBtn.addEventListener('click', () => {
-                const currentTheme = document.documentElement.dataset.theme;
-                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-                localStorage.setItem('theme', newTheme);
-                updateThemeUI(newTheme);
-            });
+  <!-- TESTIMONIALS -->
+  <section style="background:var(--bg-secondary)">
+    <div class="wrap">
+      <h2>Teams that made the switch</h2>
+      <div class="tgrid">
+        <article class="tcard reveal">
+          <span class="stars" aria-label="5 out of 5 stars"><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span></span>
+          <blockquote>We cut our weekly sync from an hour to fifteen minutes. The digest tells everyone what they need to know.</blockquote>
+          <div class="tauthor">
+            <span class="monogram" aria-hidden="true">MK</span>
+            <div><strong>Marta Kowalski</strong><small>Engineering Lead, Fjordline Studio</small></div>
+          </div>
+        </article>
+        <article class="tcard reveal">
+          <span class="stars" aria-label="4.5 out of 5 stars"><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star_half</span></span>
+          <blockquote>Import took one afternoon and nobody asked for training. That has never happened with a new tool before.</blockquote>
+          <div class="tauthor">
+            <span class="monogram" aria-hidden="true">DA</span>
+            <div><strong>Daniel Adeyemi</strong><small>Product Manager, Brightpath Health</small></div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
 
-            // Initial UI Sync
-            updateThemeUI(document.documentElement.dataset.theme);
+  <!-- FAQ -->
+  <section id="faq">
+    <div class="wrap">
+      <h2 style="text-align:center">Common questions</h2>
+      <div class="faq">
+        <details class="reveal">
+          <summary>How long does the free trial last?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <p>The Starter plan is free forever. Team and Business plans include a 14-day trial with full features, no credit card required.</p>
+        </details>
+        <details class="reveal">
+          <summary>Can I import from my current tool?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <p>Yes. Nimbus imports from Trello, Asana, Jira, and CSV files. Owners, due dates, and attachments carry over automatically.</p>
+        </details>
+        <details class="reveal">
+          <summary>Is my data private?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <p>All data is encrypted in transit and at rest. Business plans add SSO, audit logs, and EU data residency options.</p>
+        </details>
+      </div>
+    </div>
+  </section>
 
-            // Intersection Observer for reveal animations
-            const observerOptions = {
-                threshold: 0.1,
-                rootMargin: '0px 0px -50px 0px'
-            };
+  <!-- FINAL CTA -->
+  <section class="band">
+    <div class="wrap">
+      <h2 class="reveal">Give your team a calmer week</h2>
+      <p class="reveal">Set up Nimbus this afternoon and see your first automated digest by Friday.</p>
+      <button class="btn btn-primary reveal" type="button" id="cta-btn">Start free</button>
+    </div>
+  </section>
+</main>
 
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach((entry, index) => {
-                    if (entry.isIntersecting) {
-                        // Add a small stagger effect for grid items
-                        setTimeout(() => {
-                            entry.target.classList.add('active');
-                        }, index * 50); 
-                    }
-                });
-            }, observerOptions);
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <a class="brand" href="#"><span class="material-symbols-rounded" aria-hidden="true">cloud</span>Nimbus</a>
+      <div class="foot-links">
+        <ul>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+        </ul>
+        <ul>
+          <li><a href="#how">How it works</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+      </div>
+    </div>
+    <p class="copy">&copy; 2026 Nimbus Labs, Inc. All rights reserved.</p>
+  </div>
+</footer>
 
-            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-        })();
-    </script>
+<!-- MODAL -->
+<div class="modal-backdrop" id="modal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <button class="close-x" id="modal-close" aria-label="Close dialog"><span class="material-symbols-rounded" aria-hidden="true">close</span></button>
+    <h3 id="modal-title">You are on the list</h3>
+    <p>Check your inbox for a confirmation link. Your workspace will be ready in under a minute.</p>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  /* Theme toggle */
+  var toggle=document.getElementById("theme-toggle");
+  function syncToggle(){
+    var dark=document.documentElement.dataset.theme==="dark";
+    toggle.setAttribute("aria-pressed",String(dark));
+    toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+  }
+  toggle.addEventListener("click",function(){
+    var next=document.documentElement.dataset.theme==="dark"?"light":"dark";
+    document.documentElement.dataset.theme=next;
+    localStorage.setItem("theme",next);
+    syncToggle();
+  });
+  syncToggle();
+
+  /* Mobile menu */
+  var menuBtn=document.getElementById("menu-btn"),navLinks=document.getElementById("nav-links");
+  menuBtn.addEventListener("click",function(){
+    var open=navLinks.classList.toggle("open");
+    menuBtn.setAttribute("aria-expanded",String(open));
+    menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");
+  });
+  navLinks.addEventListener("click",function(e){
+    if(e.target.tagName==="A"){navLinks.classList.remove("open");menuBtn.setAttribute("aria-expanded","false");}
+  });
+  document.addEventListener("keydown",function(e){
+    if(e.key==="Escape"){navLinks.classList.remove("open");menuBtn.setAttribute("aria-expanded","false");closeModal();}
+  });
+
+  /* Reveal on scroll */
+  var reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var items=document.querySelectorAll(".reveal");
+  if(reduced||!("IntersectionObserver" in window)){
+    items.forEach(function(el){el.classList.add("in");});
+  }else{
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){
+          var el=en.target;
+          var sibs=Array.prototype.slice.call(el.parentElement.querySelectorAll(".reveal"));
+          var idx=sibs.indexOf(el);
+          setTimeout(function(){el.classList.add("in");},Math.max(0,idx)*70);
+          io.unobserve(el);
+        }
+      });
+    },{threshold:.15});
+    items.forEach(function(el){io.observe(el);});
+  }
+
+  /* Modal */
+  var modal=document.getElementById("modal"),modalClose=document.getElementById("modal-close"),lastFocus=null;
+  function openModal(){lastFocus=document.activeElement;modal.hidden=false;modalClose.focus();}
+  function closeModal(){if(modal.hidden)return;modal.hidden=true;if(lastFocus)lastFocus.focus();}
+  modalClose.addEventListener("click",closeModal);
+  modal.addEventListener("click",function(e){if(e.target===modal)closeModal();});
+  modal.addEventListener("keydown",function(e){
+    if(e.key==="Tab"){
+      var f=modal.querySelectorAll("button");
+      var first=f[0],last=f[f.length-1];
+      if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+      else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+    }
+  });
+
+  /* Signup form */
+  var form=document.getElementById("signup-form"),email=document.getElementById("hero-email"),msg=document.getElementById("form-msg"),btn=document.getElementById("signup-btn");
+  form.addEventListener("submit",function(e){
+    e.preventDefault();
+    var val=email.value.trim();
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)){
+      email.setAttribute("aria-invalid","true");
+      msg.hidden=false;
+      msg.innerHTML='<span class="material-symbols-rounded" aria-hidden="true">error</span>Please enter a valid work email.';
+      email.focus();
+      return;
+    }
+    email.removeAttribute("aria-invalid");
+    msg.hidden=true;
+    btn.disabled=true;
+    btn.innerHTML='<span class="material-symbols-rounded" aria-hidden="true">progress_activity</span>Sending';
+    setTimeout(function(){
+      btn.disabled=false;
+      btn.textContent="Start free";
+      form.reset();
+      openModal();
+    },700);
+  });
+
+  /* CTA button scrolls to hero form */
+  document.getElementById("cta-btn").addEventListener("click",function(){
+    email.scrollIntoView({behavior:reduced?"auto":"smooth",block:"center"});
+    setTimeout(function(){email.focus();},reduced?0:500);
+  });
+})();
+</script>
 </body>
 </html>

@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Margin - The E-Ink Reading Tablet for Slow Readers</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<style>
+@layer reset{
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+}
+@layer tokens{
+:root{
+--primary:#1A1A1A;--secondary:#4A4A4A;
+--bg-primary:#FDFBF7;--bg-secondary:#F5F5F5;
+--text-primary:#1A1A1A;--text-secondary:#4A4A4A;
+--accent:#FFFF00;
+--text-success:#1F6E43;--text-error:#B3261E;
+--border-default:#E0E0E0;--border-success:#1F6E43;--border-error:#B3261E;
+--radius-sm:0;--radius-md:2px;--radius-lg:4px;
+--shadow-sm:none;--shadow-md:0 2px 0 var(--border-default);
+--spacing-gap:1.5rem;
+--transition-fast:0ms;--transition-normal:0ms;--ease-standard:steps(1,end);
+--z-dropdown:100;--z-modal:200;--z-toast:300;--z-noise:50;
+--font-base:"Newsreader",Georgia,serif;
+--font-mono:"IBM Plex Mono",monospace;
+--grain-opacity:0.04;
+color-scheme:light;
+}
+:root[data-theme="dark"]{
+--bg-primary:#1A1A1A;--bg-secondary:#242424;
+--text-primary:#FDFBF7;--text-secondary:#B8B8B8;
+--primary:#FDFBF7;--secondary:#B8B8B8;
+--border-default:#3D3D3D;
+--text-success:#8FD3A8;--text-error:#F0A69B;
+--border-success:#8FD3A8;--border-error:#F0A69B;
+--grain-opacity:0.06;
+color-scheme:dark;
+}
+}
+@layer base{
+html{scroll-behavior:auto}
+body{font-family:var(--font-base);font-size:1.0625rem;line-height:1.65;color:var(--text-primary);background:var(--bg-primary);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:var(--z-noise);opacity:var(--grain-opacity);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E")}
+h1,h2,h3{font-family:var(--font-base);font-weight:600;line-height:1.1;letter-spacing:-0.02em;color:var(--text-primary)}
+h1{font-size:clamp(2.5rem,6vw,4.25rem)}
+h2{font-size:clamp(1.875rem,4vw,2.75rem)}
+h3{font-size:1.375rem;line-height:1.25}
+p{max-width:65ch}
+a{color:var(--text-primary);text-underline-offset:3px}
+mark,.hl{background:var(--accent);color:#1A1A1A;padding:0 0.15em}
+img{max-width:100%;filter:grayscale(1)}
+:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+::selection{background:var(--accent);color:#1A1A1A}
+.material-symbols-outlined{font-size:1.5rem;user-select:none}
+.skip-link{position:absolute;left:1rem;top:-4rem;z-index:var(--z-toast);background:var(--primary);color:var(--bg-primary);padding:0.75rem 1.25rem;font-family:var(--font-mono);font-size:0.8125rem;text-decoration:none;transition:top var(--transition-fast) var(--ease-standard)}
+.skip-link:focus{top:1rem}
+}
+@layer layout{
+.container{max-width:72rem;margin-inline:auto;padding-inline:1.25rem}
+@media(min-width:768px){.container{padding-inline:2rem}}
+.section{padding-block:clamp(4rem,8vw,6.5rem);border-top:1px solid var(--border-default)}
+.section__head{display:flex;flex-direction:column;align-items:flex-start;gap:0.75rem;margin-bottom:3rem}
+.section__eyebrow{font-family:var(--font-mono);font-size:0.75rem;font-weight:500;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-secondary)}
+.section__sub{color:var(--text-secondary);font-size:1.125rem}
+}
+@layer components{
+/* Header */
+.header{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--bg-primary);border-bottom:1px solid var(--border-default)}
+.header__bar{display:flex;align-items:center;justify-content:space-between;gap:1rem;height:4.25rem}
+.wordmark{font-family:var(--font-mono);font-weight:600;font-size:1.125rem;letter-spacing:0.06em;text-decoration:none;display:flex;align-items:center;gap:0.5rem}
+.wordmark__dot{width:0.625rem;height:0.625rem;background:var(--primary);display:inline-block}
+.nav{display:flex;align-items:center;gap:1.75rem}
+.nav__link{font-family:var(--font-mono);font-size:0.8125rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;color:var(--text-secondary);padding:0.5rem 0;transition:color var(--transition-fast) var(--ease-standard)}
+.nav__link:hover{color:var(--text-primary);text-decoration:underline;text-underline-offset:4px}
+.header__actions{display:flex;align-items:center;gap:0.75rem}
+.icon-btn{display:flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;background:transparent;border:1px solid transparent;color:var(--text-primary);cursor:pointer;border-radius:var(--radius-md);transition:background var(--transition-fast) var(--ease-standard),border-color var(--transition-fast) var(--ease-standard)}
+.icon-btn:hover{border-color:var(--primary)}
+.icon-btn:active{transform:scale(0.97)}
+.menu-btn{display:none}
+/* Buttons */
+.btn{display:flex;align-items:center;justify-content:center;gap:0.5rem;min-height:44px;padding:0.75rem 1.5rem;font-family:var(--font-mono);font-size:0.8125rem;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none;border:1px solid var(--primary);background:transparent;color:var(--text-primary);border-radius:var(--radius-md);cursor:pointer;transition:background var(--transition-fast) var(--ease-standard),color var(--transition-fast) var(--ease-standard),transform var(--transition-fast) var(--ease-standard)}
+.btn:hover{background:var(--primary);color:var(--bg-primary)}
+.btn:active{transform:scale(0.97)}
+.btn--solid{background:var(--primary);color:var(--bg-primary)}
+.btn--solid:hover{background:transparent;color:var(--text-primary)}
+.btn--sm{min-height:40px;padding:0.5rem 1rem;font-size:0.75rem}
+.btn--danger{border-color:var(--text-error);color:var(--text-error)}
+.btn--danger:hover{background:var(--text-error);color:var(--bg-primary)}
+.btn[disabled]{opacity:0.5;filter:grayscale(1);cursor:not-allowed}
+.btn.is-loading{pointer-events:none;opacity:0.75}
+.btn.is-loading .material-symbols-outlined{animation:blink 1s steps(2,end) infinite}
+@keyframes blink{0%{opacity:1}50%{opacity:0.15}100%{opacity:1}}
+/* Cards */
+.card{display:flex;flex-direction:column;align-items:flex-start;gap:1rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:2rem;text-align:left;transition:border-color var(--transition-fast) var(--ease-standard),transform var(--transition-fast) var(--ease-standard)}
+/* Exception: prose-heavy card interiors use flex-start + left text for readability */
+.card:focus-within{border-color:var(--primary)}
+.card--interactive:hover{border-color:var(--primary);transform:translateY(-2px)}
+.card__icon{display:flex;align-items:center;justify-content:center;width:3rem;height:3rem;border:1px solid var(--primary);border-radius:var(--radius-md)}
+.card p{color:var(--text-secondary)}
+.card--featured{background:var(--primary);color:var(--bg-primary);border-color:var(--primary)}
+.card--featured h3,.card--featured p,.card--featured .price,.card--featured .tier-list li{color:var(--bg-primary)}
+.card--featured .btn{border-color:var(--bg-primary);color:var(--bg-primary)}
+.card--featured .btn:hover{background:var(--bg-primary);color:var(--primary)}
+.card--featured .card__icon{border-color:var(--bg-primary)}
+.card--empty{align-items:center;text-align:center;padding:3rem 2rem}
+.card--empty .material-symbols-outlined{font-size:3rem;color:var(--text-secondary)}
+.card--skeleton{gap:0.75rem}
+.skel{display:block;background:var(--border-default);animation:skelblink 1.2s steps(2,end) infinite;border-radius:var(--radius-sm)}
+@keyframes skelblink{0%{background:var(--border-default)}50%{background:var(--bg-primary)}100%{background:var(--border-default)}}
+/* Hero */
+.hero{padding-block:clamp(3.5rem,7vw,6rem)}
+.hero__inner{display:flex;flex-direction:column;align-items:flex-start;gap:1.5rem}
+.hero__eyebrow{font-family:var(--font-mono);font-size:0.75rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-secondary)}
+.hero__sub{font-size:1.25rem;color:var(--text-secondary);max-width:34rem}
+.hero__ctas{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+/* Grids */
+.grid-3{display:flex;gap:var(--spacing-gap)}
+.grid-3>*{flex:1 1 0;min-width:0}
+/* Steps */
+.steps{display:flex;flex-direction:column}
+.step{display:flex;align-items:flex-start;gap:1.5rem;padding:2rem 0;border-top:1px solid var(--border-default)}
+/* Exception: steps align to top so numbers sit beside headings */
+.step__num{font-family:var(--font-mono);font-size:0.875rem;font-weight:600;letter-spacing:0.1em;border:1px solid var(--primary);padding:0.375rem 0.625rem;border-radius:var(--radius-md);flex-shrink:0}
+.step__body{display:flex;flex-direction:column;align-items:flex-start;gap:0.5rem}
+.step__body p{color:var(--text-secondary)}
+/* Testimonials */
+.quote{display:flex;flex-direction:column;align-items:flex-start;gap:1.25rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:2.25rem}
+.quote blockquote{font-size:1.25rem;line-height:1.5;font-style:italic;position:relative;padding-top:1.5rem}
+.quote blockquote::before{content:"\201C";position:absolute;top:-0.75rem;left:-0.25rem;font-size:4rem;font-style:normal;line-height:1;color:var(--text-secondary)}
+.quote__by{font-family:var(--font-mono);font-size:0.8125rem;letter-spacing:0.06em;color:var(--text-secondary);display:flex;align-items:center;gap:0.75rem}
+.quote__mono{display:flex;align-items:center;justify-content:center;width:2.5rem;height:2.5rem;border:1px solid var(--primary);border-radius:var(--radius-md);font-weight:600;color:var(--text-primary)}
+/* Pricing */
+.price{font-family:var(--font-base);font-size:2.75rem;font-weight:600;letter-spacing:-0.02em;line-height:1}
+.price__per{font-family:var(--font-mono);font-size:0.8125rem;color:var(--text-secondary)}
+.card--featured .price__per{color:var(--bg-primary)}
+.tier-badge{font-family:var(--font-mono);font-size:0.6875rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase}
+.tier-list{list-style:none;display:flex;flex-direction:column;align-items:flex-start;gap:0.625rem;width:100%}
+.tier-list li{display:flex;align-items:flex-start;gap:0.5rem;color:var(--text-secondary);font-size:0.9375rem}
+.tier-list .material-symbols-outlined{font-size:1.125rem;flex-shrink:0;margin-top:0.15rem}
+.tier-card .btn{width:100%;margin-top:auto}
+/* FAQ */
+.faq{border-top:1px solid var(--border-default)}
+.faq details{border-bottom:1px solid var(--border-default)}
+.faq summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.375rem 0;cursor:pointer;font-size:1.25rem;font-weight:500;list-style:none;min-height:44px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary .material-symbols-outlined{flex-shrink:0;transition:transform var(--transition-fast) var(--ease-standard)}
+.faq summary .icon-remove{display:none}
+.faq details[open] .icon-add{display:none}
+.faq details[open] .icon-remove{display:inline-block}
+.faq__answer{padding:0 0 1.5rem;color:var(--text-secondary);max-width:65ch}
+/* CTA */
+.cta{display:flex;flex-direction:column;align-items:flex-start;gap:1.5rem}
+.cta h2{max-width:20ch}
+.input-group{display:flex;flex-direction:column;align-items:stretch;gap:0.5rem;width:100%;max-width:32rem}
+/* Exception: form groups stretch so inputs fill the column */
+.input-group__label{font-family:var(--font-mono);font-size:0.75rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-secondary)}
+.input-group__row{display:flex;gap:0.75rem;align-items:stretch}
+.input-group__row .btn{flex-shrink:0}
+.input-group input{flex:1;min-width:0;min-height:44px;padding:0.75rem 1rem;font-family:var(--font-mono);font-size:0.9375rem;color:var(--text-primary);background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);transition:border-color var(--transition-fast) var(--ease-standard)}
+.input-group input:focus{outline:none;border:2px solid var(--primary);padding:calc(0.75rem - 1px) calc(1rem - 1px)}
+.input-group input::placeholder{color:var(--text-secondary)}
+.input-group--valid input{border-color:var(--border-success)}
+.input-group--invalid input{border-color:var(--border-error)}
+.input-group input:disabled{opacity:0.5;cursor:not-allowed}
+.input-group input[readonly]{border-style:dashed}
+.input-group__hint{font-size:0.875rem;color:var(--text-secondary)}
+.input-group__error{display:flex;align-items:center;gap:0.375rem;font-family:var(--font-mono);font-size:0.8125rem;min-height:1.25rem}
+.input-group__error.is-error{color:var(--text-error)}
+.input-group__error.is-success{color:var(--text-success)}
+.input-group__error .material-symbols-outlined{font-size:1rem}
+/* Footer */
+.footer{border-top:1px solid var(--border-default);padding-block:3rem 2rem}
+.footer__grid{display:flex;justify-content:space-between;gap:2.5rem;flex-wrap:wrap;margin-bottom:2.5rem}
+.footer__col{display:flex;flex-direction:column;align-items:flex-start;gap:0.625rem}
+.footer__col h3{font-family:var(--font-mono);font-size:0.75rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:0.25rem}
+.footer__col a{font-size:0.9375rem;color:var(--text-secondary);text-decoration:none;min-height:28px;display:flex;align-items:center}
+.footer__col a:hover{color:var(--text-primary);text-decoration:underline;text-underline-offset:4px}
+.footer__fine{border-top:1px solid var(--border-default);padding-top:1.5rem;display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;font-family:var(--font-mono);font-size:0.75rem;letter-spacing:0.06em;color:var(--text-secondary)}
+}
+@layer utilities{
+.stack-sm{display:flex;flex-direction:column;align-items:flex-start;gap:0.5rem}
+}
+@layer responsive{
+@media(max-width:860px){
+.grid-3{flex-direction:column}
+.grid-3>*{flex:1 1 auto}
+.nav{position:absolute;top:4.25rem;left:0;right:0;flex-direction:column;align-items:stretch;gap:0;background:var(--bg-primary);border-bottom:1px solid var(--border-default);padding:0.5rem 1.25rem 1rem;display:none}
+.nav.is-open{display:flex}
+.nav__link{padding:0.875rem 0;border-top:1px solid var(--border-default)}
+.menu-btn{display:flex}
+.header__cta{display:none}
+.input-group__row{flex-direction:column}
+.input-group__row .btn{width:100%}
+}
+}
+@media (prefers-reduced-motion: reduce){
+*,*::before,*::after{animation:none!important;transition:none!important}
+}
+@media (prefers-reduced-transparency: reduce){
+body::before{display:none}
+}
+@media (hover:none){
+.btn:hover{background:transparent;color:var(--text-primary)}
+.btn--solid:hover{background:var(--primary);color:var(--bg-primary)}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="header">
+  <div class="container header__bar">
+    <a class="wordmark" href="#top"><span class="wordmark__dot" aria-hidden="true"></span>Margin</a>
+    <nav class="nav" id="site-nav" aria-label="Primary">
+      <a class="nav__link" href="#features">Features</a>
+      <a class="nav__link" href="#how">How It Works</a>
+      <a class="nav__link" href="#pricing">Pricing</a>
+      <a class="nav__link" href="#faq">FAQ</a>
+    </nav>
+    <div class="header__actions">
+      <button class="icon-btn" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-outlined" id="theme-icon" aria-hidden="true">dark_mode</span>
+      </button>
+      <button class="icon-btn menu-btn" id="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">
+        <span class="material-symbols-outlined" aria-hidden="true">menu</span>
+      </button>
+      <a class="btn btn--sm header__cta" href="#cta">Reserve Yours</a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <!-- Hero -->
+  <section class="hero" id="top">
+    <div class="container hero__inner">
+      <p class="hero__eyebrow">A reading tablet, and nothing else</p>
+      <h1>Read like it is <mark>paper again.</mark></h1>
+      <p class="hero__sub">Margin is an e-ink tablet with no apps, no feeds, and no notifications. Just your library, typeset beautifully, on a screen that never glows.</p>
+      <div class="hero__ctas">
+        <a class="btn btn--solid" href="#cta">Reserve Yours</a>
+        <a class="btn" href="#how">See How It Works</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="section" id="features" aria-labelledby="features-h">
+    <div class="container">
+      <div class="section__head">
+        <p class="section__eyebrow">01, Features</p>
+        <h2 id="features-h">Built for attention, not engagement</h2>
+        <p class="section__sub">Every decision favors the reader. Nothing on this device competes for you.</p>
+      </div>
+      <div class="grid-3">
+        <article class="card card--interactive">
+          <span class="card__icon"><span class="material-symbols-outlined" aria-hidden="true">menu_book</span></span>
+          <h3>True paper display</h3>
+          <p>A 10.3-inch matte e-ink panel at 300 ppi. Readable in full sun, restful at midnight, with no backlight bleeding into your evening.</p>
+        </article>
+        <article class="card card--interactive">
+          <span class="card__icon"><span class="material-symbols-outlined" aria-hidden="true">edit_note</span></span>
+          <h3>Marginalia that stays</h3>
+          <p>Write in the margins with the included pen. Your notes anchor to the passage, export as plain text, and never interrupt the page.</p>
+        </article>
+        <article class="card card--interactive">
+          <span class="card__icon"><span class="material-symbols-outlined" aria-hidden="true">battery_6_bar</span></span>
+          <h3>Seven weeks per charge</h3>
+          <p>E-ink sips power only when the page turns. Charge in January, read through February, and leave the cable in a drawer.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section class="section" id="how" aria-labelledby="how-h">
+    <div class="container">
+      <div class="section__head">
+        <p class="section__eyebrow">02, How It Works</p>
+        <h2 id="how-h">From box to first chapter in minutes</h2>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <span class="step__num">01</span>
+          <div class="step__body">
+            <h3>Send your library</h3>
+            <p>Email books to your Margin address or drag files into the web uploader. EPUB, PDF, and plain text are typeset automatically.</p>
+          </div>
+        </div>
+        <div class="step">
+          <span class="step__num">02</span>
+          <div class="step__body">
+            <h3>Set your type once</h3>
+            <p>Choose a serif, a size, and a measure. Margin applies your setting to every book, so each one feels printed for you.</p>
+          </div>
+        </div>
+        <div class="step">
+          <span class="step__num">03</span>
+          <div class="step__body">
+            <h3>Read without a clock</h3>
+            <p>No badges, no streaks, no reading stats unless you ask. The only number on screen is the page you are on.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="section" id="testimonials" aria-labelledby="testi-h">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="testi-h">Readers on Margin</h2>
+      </div>
+      <div class="grid-3">
+        <div class="quote">
+          <blockquote>I finished four novels in the month after it arrived. The device simply <mark>gets out of the way</mark>, and the book takes over.</blockquote>
+          <p class="quote__by"><span class="quote__mono" aria-hidden="true">EH</span>Elena Hartwig, Editor at Fieldstone Press</p>
+        </div>
+        <div class="quote">
+          <blockquote>My marginalia exports straight into my research notes. It is the first tablet that respects how scholars actually read.</blockquote>
+          <p class="quote__by"><span class="quote__mono" aria-hidden="true">DO</span>Dr. Tomas Okafor, Historian, University of Leeds</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section class="section" id="pricing" aria-labelledby="pricing-h">
+    <div class="container">
+      <div class="section__head">
+        <p class="section__eyebrow">03, Pricing</p>
+        <h2 id="pricing-h">One device, three ways to start</h2>
+      </div>
+      <div class="grid-3">
+        <article class="card tier-card">
+          <h3>Reader</h3>
+          <p><span class="price">$249</span> <span class="price__per">one time</span></p>
+          <ul class="tier-list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>10.3-inch e-ink display</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>8 GB library storage</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>USB-C charging cable</li>
+          </ul>
+          <a class="btn" href="#cta">Reserve Yours</a>
+        </article>
+        <article class="card card--featured tier-card">
+          <p class="tier-badge"><mark>Most highlighted</mark></p>
+          <h3>Reader + Pen</h3>
+          <p><span class="price">$319</span> <span class="price__per">one time</span></p>
+          <ul class="tier-list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Everything in Reader</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Pressure-sensitive margin pen</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>32 GB library storage</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Plain-text note export</li>
+          </ul>
+          <a class="btn" href="#cta">Reserve Yours</a>
+        </article>
+        <article class="card tier-card">
+          <h3>Studio</h3>
+          <p><span class="price">$389</span> <span class="price__per">one time</span></p>
+          <ul class="tier-list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Everything in Reader + Pen</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Linen folio cover</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Priority typesetting queue</li>
+          </ul>
+          <a class="btn" href="#cta">Reserve Yours</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq" aria-labelledby="faq-h">
+    <div class="container">
+      <div class="section__head">
+        <p class="section__eyebrow">04, FAQ</p>
+        <h2 id="faq-h">Questions from careful readers</h2>
+      </div>
+      <div class="faq">
+        <details>
+          <summary>Can I install apps or browse the web?<span class="material-symbols-outlined icon-add" aria-hidden="true">add</span><span class="material-symbols-outlined icon-remove" aria-hidden="true">remove</span></summary>
+          <p class="faq__answer">No, and that is the point. Margin runs exactly one activity: reading. There is no browser, no app store, and no notification system to disable.</p>
+        </details>
+        <details>
+          <summary>Which file formats does Margin support?<span class="material-symbols-outlined icon-add" aria-hidden="true">add</span><span class="material-symbols-outlined icon-remove" aria-hidden="true">remove</span></summary>
+          <p class="faq__answer">EPUB, PDF, MOBI, and plain text. EPUBs are re-typeset with your chosen font and measure; PDFs render as printed, with margin annotation on the Pen models.</p>
+        </details>
+        <details>
+          <summary>How do my margin notes leave the device?<span class="material-symbols-outlined icon-add" aria-hidden="true">add</span><span class="material-symbols-outlined icon-remove" aria-hidden="true">remove</span></summary>
+          <p class="faq__answer">Notes export as plain text or Markdown over USB-C or Wi-Fi sync. Each note carries the book title, chapter, and the passage it anchors to.</p>
+        </details>
+        <details>
+          <summary>Does the screen work in the dark?<span class="material-symbols-outlined icon-add" aria-hidden="true">add</span><span class="material-symbols-outlined icon-remove" aria-hidden="true">remove</span></summary>
+          <p class="faq__answer">An optional warm frontlight is built in, tuned to a candle-like 2200K. It lights the page from the edge rather than shining into your eyes, and it is off by default.</p>
+        </details>
+        <details>
+          <summary>What happens to my library if Margin the company closes?<span class="material-symbols-outlined icon-add" aria-hidden="true">add</span><span class="material-symbols-outlined icon-remove" aria-hidden="true">remove</span></summary>
+          <p class="faq__answer">Your books are ordinary files in an ordinary folder. Everything syncs over open protocols, and a full local backup is one menu item away. No DRM locks you in.</p>
+        </details>
+        <details>
+          <summary>Is there a subscription of any kind?<span class="material-symbols-outlined icon-add" aria-hidden="true">add</span><span class="material-symbols-outlined icon-remove" aria-hidden="true">remove</span></summary>
+          <p class="faq__answer">No. You pay once for the hardware. Sync, typesetting, and note export are included for the life of the device.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="section" id="cta" aria-labelledby="cta-h">
+    <div class="container cta">
+      <h2 id="cta-h">First print run ships this autumn.</h2>
+      <p class="section__sub">Leave your email and we will hold a unit from the first batch. One message when reservations open, nothing else.</p>
+      <form class="input-group" id="cta-form" novalidate>
+        <label class="input-group__label" for="cta-email">Email address</label>
+        <div class="input-group__row">
+          <input type="email" id="cta-email" name="email" placeholder="reader@example.com" autocomplete="email" aria-describedby="cta-hint cta-feedback" required>
+          <button class="btn btn--solid" id="cta-submit" type="submit">Reserve Yours</button>
+        </div>
+        <p class="input-group__hint" id="cta-hint">We send exactly one email. Unsubscribe with one click.</p>
+        <p class="input-group__error" id="cta-feedback" aria-live="polite"></p>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__col">
+        <a class="wordmark" href="#top"><span class="wordmark__dot" aria-hidden="true"></span>Margin</a>
+        <p class="input-group__hint">Slow technology for deep reading.</p>
+      </div>
+      <div class="footer__col">
+        <h3>Product</h3>
+        <a href="#features">Features</a>
+        <a href="#how">How It Works</a>
+        <a href="#pricing">Pricing</a>
+      </div>
+      <div class="footer__col">
+        <h3>Support</h3>
+        <a href="#faq">FAQ</a>
+        <a href="#cta">Contact</a>
+        <a href="#top">Shipping &amp; Returns</a>
+      </div>
+      <div class="footer__col">
+        <h3>Company</h3>
+        <a href="#top">About</a>
+        <a href="#top">Privacy</a>
+        <a href="#top">Terms</a>
+      </div>
+    </div>
+    <div class="footer__fine">
+      <span>&copy; 2026 Margin Devices, Ltd. All rights reserved.</span>
+      <span>Set in Newsreader &amp; IBM Plex Mono.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+var root=document.documentElement;
+var toggle=document.getElementById("theme-toggle");
+var icon=document.getElementById("theme-icon");
+function applyTheme(t){
+  root.dataset.theme=t;
+  var dark=t==="dark";
+  toggle.setAttribute("aria-pressed",String(dark));
+  toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+  icon.textContent=dark?"light_mode":"dark_mode";
+}
+applyTheme(root.dataset.theme==="dark"?"dark":"light");
+toggle.addEventListener("click",function(){
+  var next=root.dataset.theme==="dark"?"light":"dark";
+  localStorage.setItem("theme",next);
+  applyTheme(next);
+});
+
+var menuBtn=document.getElementById("menu-toggle");
+var nav=document.getElementById("site-nav");
+function closeMenu(){
+  nav.classList.remove("is-open");
+  menuBtn.setAttribute("aria-expanded","false");
+  menuBtn.setAttribute("aria-label","Open menu");
+}
+menuBtn.addEventListener("click",function(){
+  var open=nav.classList.toggle("is-open");
+  menuBtn.setAttribute("aria-expanded",String(open));
+  menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");
+});
+nav.addEventListener("click",function(e){if(e.target.closest("a"))closeMenu();});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")closeMenu();});
+
+var form=document.getElementById("cta-form");
+var email=document.getElementById("cta-email");
+var submitBtn=document.getElementById("cta-submit");
+var feedback=document.getElementById("cta-feedback");
+var busy=false;
+function setFeedback(kind,iconName,msg){
+  feedback.className="input-group__error"+(kind?" is-"+kind:"");
+  feedback.innerHTML=kind?'<span class="material-symbols-outlined" aria-hidden="true">'+iconName+"</span>"+msg:"";
+}
+form.addEventListener("submit",function(e){
+  e.preventDefault();
+  if(busy)return;
+  var val=email.value.trim();
+  var valid=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val);
+  if(!valid){
+    form.classList.remove("input-group--valid");
+    form.classList.add("input-group--invalid");
+    email.setAttribute("aria-invalid","true");
+    setFeedback("error","error","Please enter a valid email address, for example reader@example.com.");
+    email.focus();
+    return;
+  }
+  busy=true;
+  email.removeAttribute("aria-invalid");
+  form.classList.remove("input-group--invalid");
+  submitBtn.classList.add("is-loading");
+  submitBtn.setAttribute("aria-busy","true");
+  submitBtn.innerHTML='<span class="material-symbols-outlined" aria-hidden="true">hourglass_empty</span>Sending';
+  setFeedback("","","");
+  window.setTimeout(function(){
+    busy=false;
+    submitBtn.classList.remove("is-loading");
+    submitBtn.removeAttribute("aria-busy");
+    submitBtn.textContent="Reserve Yours";
+    form.classList.add("input-group--valid");
+    setFeedback("success","check_circle","You are on the list. We will write once when reservations open.");
+    form.reset();
+  },900);
+});
+email.addEventListener("input",function(){
+  if(form.classList.contains("input-group--invalid")){
+    form.classList.remove("input-group--invalid");
+    email.removeAttribute("aria-invalid");
+    setFeedback("","","");
+  }
+});
+})();
+</script>
+</body>
+</html>

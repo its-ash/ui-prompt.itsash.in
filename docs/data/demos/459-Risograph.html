@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nimbus Press - Risograph Print Studio</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<style>
+@layer tokens,base,layout,components,utilities;
+@layer tokens{
+:root{
+--bg-primary:#f3ecde;--bg-secondary:#f3ecde;
+--text-primary:#1a1a1a;--text-secondary:#444444;
+--primary:#ff5b45;--secondary:#0078bf;
+--ink-yellow:#ffd200;--ink-green:#00a95c;--ink-pink:#ff48b0;
+--text-success:#00713f;--text-error:#b3001b;
+--border-default:#1a1a1a;--border-success:#00a95c;--border-error:#d40029;
+--radius-sm:0px;--radius-md:2px;--radius-lg:4px;--radius-pill:999px;
+--shadow-sm:3px 3px 0 0 var(--secondary);--shadow-md:6px 6px 0 0 var(--primary);
+--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-6:24px;--space-8:32px;--space-12:48px;--space-16:64px;--space-24:96px;
+--spacing-gap:24px;
+--transition-fast:120ms;--transition-normal:240ms;--ease-standard:linear;
+--z-dropdown:1000;--z-modal:2000;--z-toast:3000;
+--font-base:'Space Grotesk',system-ui,sans-serif;--font-display:'Archivo Black',sans-serif;--font-mono:'Space Mono',monospace;
+--grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+--halftone:radial-gradient(var(--primary) 30%,transparent 31%) 0 0/6px 6px;
+--blend-overprint:multiply;
+--grain-opacity:.06;
+--on-primary:#111111;--on-secondary:#f3ecde;
+--nav-bg:rgba(243,236,222,.92);
+}
+:root[data-theme="dark"]{
+--bg-primary:#161412;--bg-secondary:#211d19;
+--text-primary:#f3ecde;--text-secondary:#b8b0a3;
+--border-default:#f3ecde;
+--text-success:#4ade9c;--text-error:#ff8fa0;
+--blend-overprint:screen;
+--grain-opacity:.1;
+--on-primary:#111111;--on-secondary:#f3ecde;
+--nav-bg:rgba(22,20,18,.92);
+}
+}
+@layer base{
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;overflow-x:hidden;transition:background var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard)}
+body::before{content:"";position:fixed;inset:0;background:var(--grain);opacity:var(--grain-opacity);pointer-events:none;z-index:1}
+h1,h2,h3{font-family:var(--font-display);line-height:1.1;letter-spacing:-.02em;text-wrap:balance}
+h1{font-size:clamp(2.25rem,5vw,3.75rem);text-shadow:3px 3px 0 var(--secondary)}
+h2{font-size:clamp(1.75rem,3.5vw,2.5rem);text-shadow:2px 2px 0 var(--ink-yellow)}
+h3{font-size:1.125rem;letter-spacing:0}
+p{max-width:65ch;color:var(--text-secondary)}
+a{color:inherit}
+img,svg{max-width:100%;display:block}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--secondary);outline-offset:2px}
+.material-symbols-rounded{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;font-size:1.5rem;line-height:1}
+.skip-link{position:absolute;left:var(--space-4);top:-100px;background:var(--primary);color:var(--on-primary);padding:var(--space-3) var(--space-4);border:2px solid var(--border-default);z-index:var(--z-toast);font-weight:700;transition:top var(--transition-fast)}
+.skip-link:focus{top:var(--space-4)}
+@media (prefers-reduced-motion:reduce){
+*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;transform:none!important}
+html{scroll-behavior:auto}
+}
+}
+@layer layout{
+.container{max-width:1120px;margin-inline:auto;padding-inline:clamp(1.25rem,4vw,2rem)}
+.section{padding-block:clamp(4rem,8vw,7rem);position:relative;z-index:2}
+.section__head{display:flex;flex-direction:column;gap:var(--space-3);margin-bottom:var(--space-12)}
+.section__head p{max-width:52ch}
+}
+@layer components{
+/* NAV */
+.nav{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--nav-bg);backdrop-filter:blur(8px);border-bottom:2px solid var(--border-default)}
+.nav__inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:var(--space-4)}
+.nav__logo{font-family:var(--font-display);font-size:1.125rem;text-decoration:none;display:flex;align-items:center;gap:var(--space-2)}
+.nav__logo-mark{width:26px;height:26px;background:var(--primary);border:2px solid var(--border-default);box-shadow:2px 2px 0 var(--secondary);display:inline-block;transform:rotate(-4deg)}
+.nav__links{display:flex;align-items:center;gap:var(--space-6);list-style:none}
+.nav__link{text-decoration:none;font-weight:500;font-size:.9375rem;padding:var(--space-2) 0;border-bottom:2px solid transparent}
+@media (hover:hover) and (pointer:fine){.nav__link:hover{border-bottom-color:var(--primary);color:var(--primary)}}
+.nav__actions{display:flex;align-items:center;gap:var(--space-3)}
+.nav__toggle,.nav__menu-btn{width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:var(--bg-primary);border:2px solid var(--border-default);border-radius:var(--radius-md);color:var(--text-primary);box-shadow:2px 2px 0 var(--secondary);transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard)}
+.nav__toggle:active,.nav__menu-btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--secondary)}
+.nav__menu-btn{display:none}
+@media (max-width:767px){
+.nav__menu-btn{display:flex}
+.nav__links{position:absolute;top:68px;left:0;right:0;flex-direction:column;align-items:stretch;background:var(--bg-primary);border-bottom:2px solid var(--border-default);padding:var(--space-4) var(--space-6);gap:var(--space-2);z-index:var(--z-dropdown)}
+.nav__links[hidden]{display:none}
+.nav__link{display:block;padding:var(--space-3) 0}
+.nav__cta{display:none}
+}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:0 var(--space-6);font-weight:700;font-size:.9375rem;text-decoration:none;border:2px solid var(--border-default);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary);box-shadow:var(--shadow-sm);transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard);position:relative}
+@media (hover:hover) and (pointer:fine){.btn:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 0 var(--secondary)}}
+.btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 0 var(--secondary)}
+.btn--primary{background:var(--primary);color:var(--on-primary)}
+.btn--secondary{background:var(--secondary);color:var(--on-secondary);box-shadow:3px 3px 0 0 var(--primary)}
+@media (hover:hover) and (pointer:fine){.btn--secondary:hover{box-shadow:4px 4px 0 0 var(--primary)}}
+.btn--ghost{background:transparent}
+.btn:disabled,.btn.is-loading{opacity:.5;filter:grayscale(.6);cursor:not-allowed;pointer-events:none}
+.btn.is-loading::after{content:"";width:1rem;height:1rem;border:2px dashed currentColor;border-radius:50%;animation:spin 1s linear infinite}
+.btn.is-success{border-color:var(--border-success);color:var(--text-success)}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* BADGE / KICKER */
+.badge{display:inline-flex;align-items:center;gap:var(--space-2);font-family:var(--font-mono);font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;padding:var(--space-2) var(--space-3);border:2px solid var(--border-default);border-radius:var(--radius-pill);background:var(--ink-yellow);color:#1a1a1a;transform:rotate(-1deg);width:max-content}
+.kicker{font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.12em;font-size:.8125rem;color:var(--secondary);font-weight:700}
+/* HERO */
+.hero{padding-top:clamp(3rem,6vw,5rem);padding-bottom:clamp(4rem,7vw,6rem);position:relative;z-index:2}
+.hero__grid{display:flex;align-items:center;gap:clamp(2rem,5vw,4rem)}
+.hero__text{flex:1 1 52%;display:flex;flex-direction:column;gap:var(--space-4);align-items:flex-start}
+.hero__text p{font-size:1.0625rem}
+.hero__ctas{display:flex;gap:var(--space-4);flex-wrap:wrap;margin-top:var(--space-2)}
+.hero__art{flex:1 1 42%;position:relative;min-height:340px}
+.hero__shape{position:absolute;border:2px solid var(--border-default);mix-blend-mode:var(--blend-overprint)}
+.hero__shape--circle{width:70%;aspect-ratio:1;border-radius:50%;background:var(--halftone);top:4%;left:2%}
+.hero__shape--disc{width:52%;aspect-ratio:1;border-radius:50%;background:var(--secondary);opacity:.85;bottom:6%;right:8%}
+.hero__shape--bar{width:64%;height:22%;background:var(--ink-pink);opacity:.85;top:38%;left:22%;transform:rotate(-3deg)}
+.hero__sticker{position:absolute;top:-4%;right:0;background:var(--ink-yellow);color:#1a1a1a;border:2px solid var(--border-default);border-radius:50%;width:96px;height:96px;display:flex;align-items:center;justify-content:center;text-align:center;font-family:var(--font-mono);font-size:.6875rem;font-weight:700;text-transform:uppercase;line-height:1.3;transform:rotate(8deg);box-shadow:3px 3px 0 var(--primary);padding:var(--space-2)}
+@media (max-width:767px){
+.hero__grid{flex-direction:column;align-items:stretch}
+.hero__art{min-height:260px}
+.hero__sticker{width:80px;height:80px;right:4%}
+}
+/* FEATURES */
+.features__grid{display:flex;gap:var(--spacing-gap);align-items:stretch}
+.card{display:flex;flex-direction:column;gap:var(--space-3);background:var(--bg-secondary);border:2px solid var(--border-default);border-radius:var(--radius-md);padding:var(--space-6);flex:1;transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),border-color var(--transition-normal)}
+.card:focus-within{border-color:var(--secondary)}
+@media (hover:hover) and (pointer:fine){.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}}
+.card--tilt-l{transform:rotate(-.75deg)}
+.card--tilt-r{transform:rotate(.75deg)}
+@media (hover:hover) and (pointer:fine){.card--tilt-l:hover,.card--tilt-r:hover{transform:rotate(0) translateY(-2px)}}
+.card__icon{width:52px;height:52px;border-radius:50%;border:2px solid var(--border-default);display:flex;align-items:center;justify-content:center;color:#1a1a1a}
+.card__icon--pink{background:var(--ink-pink)}
+.card__icon--blue{background:var(--secondary);color:#f3ecde}
+.card__icon--yellow{background:var(--ink-yellow)}
+.card__title{font-size:1.0625rem}
+.card p{font-size:.9375rem}
+@media (max-width:767px){.features__grid{flex-direction:column}.card--tilt-l,.card--tilt-r{transform:none}}
+/* STEPS */
+.steps__list{display:flex;gap:var(--spacing-gap);list-style:none;counter-reset:step;position:relative;align-items:stretch}
+.steps__list::before{content:"";position:absolute;top:34px;left:8%;right:8%;border-top:2px dashed var(--secondary);z-index:0}
+.step{flex:1;display:flex;flex-direction:column;gap:var(--space-3);align-items:flex-start;position:relative;z-index:1}
+.step__num{font-family:var(--font-mono);font-weight:700;font-size:1.25rem;width:68px;height:68px;border-radius:50%;border:2px solid var(--border-default);background:var(--bg-primary);display:flex;align-items:center;justify-content:center;box-shadow:3px 3px 0 var(--ink-pink)}
+.step:nth-child(2) .step__num{box-shadow:3px 3px 0 var(--ink-green)}
+.step:nth-child(3) .step__num{box-shadow:3px 3px 0 var(--secondary)}
+.step h3{font-size:1rem}
+.step p{font-size:.9375rem}
+@media (max-width:767px){.steps__list{flex-direction:column}.steps__list::before{display:none}}
+/* PRICING */
+.pricing__grid{display:flex;gap:var(--spacing-gap);align-items:stretch}
+.tier{display:flex;flex-direction:column;gap:var(--space-4);background:var(--bg-secondary);border:2px solid var(--border-default);border-radius:var(--radius-md);padding:var(--space-8) var(--space-6);flex:1;position:relative}
+.tier--featured{background:var(--primary);color:var(--on-primary);box-shadow:var(--shadow-sm);transform:rotate(-.5deg)}
+.tier--featured p,.tier--featured .tier__price{color:var(--on-primary)}
+.tier__badge{position:absolute;top:-14px;right:var(--space-4);background:var(--ink-yellow);color:#1a1a1a;border:2px solid var(--border-default);border-radius:var(--radius-pill);font-family:var(--font-mono);font-size:.6875rem;font-weight:700;text-transform:uppercase;padding:var(--space-1) var(--space-3);transform:rotate(3deg)}
+.tier__name{font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.1em;font-size:.8125rem;font-weight:700}
+.tier__price{font-family:var(--font-display);font-size:2.25rem;letter-spacing:-.02em}
+.tier__price span{font-family:var(--font-mono);font-size:.8125rem;font-weight:400}
+.tier__list{list-style:none;display:flex;flex-direction:column;gap:var(--space-2);flex:1;align-items:flex-start}
+.tier__list li{display:flex;align-items:center;gap:var(--space-2);font-size:.9375rem}
+.tier__list .material-symbols-rounded{font-size:1.125rem}
+.tier .btn{width:100%}
+@media (max-width:767px){.pricing__grid{flex-direction:column}.tier--featured{transform:none}}
+/* TESTIMONIALS */
+.quotes__grid{display:flex;gap:var(--spacing-gap);align-items:stretch}
+.quote{flex:1;display:flex;flex-direction:column;gap:var(--space-4);background:var(--bg-secondary);border:2px solid var(--border-default);border-radius:var(--radius-md);padding:var(--space-8) var(--space-6);transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard)}
+@media (hover:hover) and (pointer:fine){.quote:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}}
+.quote__text{font-size:1.0625rem;color:var(--text-primary);font-weight:500}
+.quote__text::before{content:"\201C";font-family:var(--font-display);color:var(--primary);margin-right:2px}
+.quote__text::after{content:"\201D";font-family:var(--font-display);color:var(--primary);margin-left:2px}
+.quote__by{display:flex;align-items:center;gap:var(--space-3);margin-top:auto}
+.quote__avatar{width:48px;height:48px;border-radius:50%;border:2px solid var(--border-default);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:700;font-size:.875rem;color:#1a1a1a}
+.quote__avatar--a{background:radial-gradient(var(--ink-pink) 30%,transparent 31%) 0 0/5px 5px,var(--ink-yellow)}
+.quote__avatar--b{background:radial-gradient(var(--ink-yellow) 30%,transparent 31%) 0 0/5px 5px,var(--secondary);color:#f3ecde}
+.quote__name{font-weight:700;font-size:.9375rem}
+.quote__role{font-size:.8125rem;color:var(--text-secondary)}
+@media (max-width:767px){.quotes__grid{flex-direction:column}}
+/* FAQ */
+.faq{max-width:720px}
+.faq__item{border:2px solid var(--border-default);border-radius:var(--radius-md);margin-bottom:var(--space-3);background:var(--bg-secondary)}
+.faq__item summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);padding:var(--space-4) var(--space-6);cursor:pointer;font-weight:700;min-height:44px}
+.faq__item summary::-webkit-details-marker{display:none}
+.faq__item summary .material-symbols-rounded{transition:transform var(--transition-normal) var(--ease-standard);flex-shrink:0}
+.faq__item[open] summary .material-symbols-rounded{transform:rotate(180deg)}
+.faq__item[open]{box-shadow:var(--shadow-sm)}
+.faq__body{padding:0 var(--space-6) var(--space-4);font-size:.9375rem;color:var(--text-secondary)}
+/* CTA */
+.cta{background:var(--secondary);border-block:2px solid var(--border-default);position:relative;overflow:hidden;z-index:2}
+.cta::before{content:"";position:absolute;width:340px;height:340px;border-radius:50%;background:var(--primary);mix-blend-mode:var(--blend-overprint);top:-120px;right:-80px;opacity:.9}
+.cta::after{content:"";position:absolute;width:220px;height:220px;border-radius:50%;background:var(--halftone);bottom:-90px;left:-40px;mix-blend-mode:var(--blend-overprint)}
+.cta__inner{position:relative;z-index:1;display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-4);padding-block:clamp(4rem,8vw,6rem)}
+.cta h2{color:#f3ecde;text-shadow:3px 3px 0 var(--primary)}
+.cta p{color:#f3ecde}
+.form{display:flex;flex-direction:column;gap:var(--space-2);width:100%;max-width:480px;margin-top:var(--space-2)}
+.form__label{font-weight:700;font-size:.9375rem;color:#f3ecde}
+.form__row{display:flex;gap:var(--space-3);align-items:flex-start}
+.form__field{flex:1;display:flex;flex-direction:column;gap:var(--space-1)}
+.input{min-height:48px;padding:0 var(--space-4);border:2px solid var(--border-default);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary);font:inherit;width:100%}
+.input:focus{outline:2px solid var(--primary);outline-offset:2px}
+.input.is-valid{border-color:var(--border-success)}
+.input.is-invalid{border-color:var(--border-error)}
+.form__hint{font-size:.8125rem;color:#dceef8}
+.form__error{font-size:.8125rem;color:#ffe1e6;font-weight:700;display:flex;align-items:center;gap:var(--space-1)}
+.form__error .material-symbols-rounded{font-size:1rem}
+.form__success{display:flex;align-items:center;gap:var(--space-2);font-weight:700;color:#d8ffe9;background:rgba(0,0,0,.25);border:2px solid var(--border-default);border-radius:var(--radius-md);padding:var(--space-3) var(--space-4)}
+@media (max-width:560px){.form__row{flex-direction:column;align-items:stretch}.form__row .btn{width:100%}}
+/* FOOTER */
+.footer{border-top:2px solid var(--border-default);padding-block:var(--space-12) var(--space-8);position:relative;z-index:2}
+.footer__grid{display:flex;gap:var(--space-8);align-items:flex-start;flex-wrap:wrap}
+.footer__brand{flex:1 1 220px;display:flex;flex-direction:column;gap:var(--space-3);align-items:flex-start}
+.footer__col{flex:1 1 140px;display:flex;flex-direction:column;gap:var(--space-2);align-items:flex-start}
+.footer__col h3{font-family:var(--font-mono);font-size:.8125rem;text-transform:uppercase;letter-spacing:.1em}
+.footer__col a{text-decoration:none;font-size:.9375rem;color:var(--text-secondary)}
+@media (hover:hover) and (pointer:fine){.footer__col a:hover{color:var(--primary)}}
+.footer__social{display:flex;gap:var(--space-3)}
+.footer__social a{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border:2px solid var(--border-default);border-radius:var(--radius-md);text-decoration:none;transition:transform var(--transition-fast)}
+@media (hover:hover) and (pointer:fine){.footer__social a:hover{transform:translate(-1px,-1px);box-shadow:var(--shadow-sm)}}
+.footer__bottom{margin-top:var(--space-8);padding-top:var(--space-4);border-top:2px dashed var(--border-default);font-family:var(--font-mono);font-size:.8125rem;color:var(--text-secondary)}
+/* REVEAL */
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .5s ease-out,transform .5s ease-out}
+.reveal.is-visible{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
+@media (prefers-reduced-transparency:reduce){.nav{backdrop-filter:none;background:var(--bg-primary)}}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="nav">
+  <div class="container nav__inner">
+    <a class="nav__logo" href="#top"><span class="nav__logo-mark" aria-hidden="true"></span>Nimbus Press</a>
+    <nav aria-label="Primary">
+      <ul class="nav__links" id="nav-links" hidden>
+        <li><a class="nav__link" href="#features">Features</a></li>
+        <li><a class="nav__link" href="#process">Process</a></li>
+        <li><a class="nav__link" href="#pricing">Pricing</a></li>
+        <li><a class="nav__link" href="#faq">FAQ</a></li>
+      </ul>
+    </nav>
+    <div class="nav__actions">
+      <button id="theme-toggle" class="nav__toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-rounded" id="theme-icon" aria-hidden="true">dark_mode</span>
+      </button>
+      <a class="btn btn--primary nav__cta" href="#cta">Start printing</a>
+      <button class="nav__menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">
+        <span class="material-symbols-rounded" aria-hidden="true">menu</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+<section class="hero" id="top">
+  <div class="container hero__grid">
+    <div class="hero__text">
+      <span class="badge"><span class="material-symbols-rounded" aria-hidden="true" style="font-size:1rem">print</span>Small-batch print studio</span>
+      <h1>Ink that refuses to sit still</h1>
+      <p>Nimbus Press runs two-drum risograph printing for posters, zines, and editions that want visible grain and honest misregistration.</p>
+      <div class="hero__ctas">
+        <a class="btn btn--primary" href="#cta">Start printing</a>
+        <a class="btn btn--ghost" href="#process">See the process</a>
+      </div>
+    </div>
+    <div class="hero__art" aria-hidden="true">
+      <div class="hero__shape hero__shape--circle"></div>
+      <div class="hero__shape hero__shape--disc"></div>
+      <div class="hero__shape hero__shape--bar"></div>
+      <div class="hero__sticker">2 inks<br>1 drum<br>0 regrets</div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="features">
+  <div class="container">
+    <div class="section__head">
+      <h2>Built for ink, not pixels</h2>
+      <p>Every job runs through real drums and real paper. These are the three things our regulars come back for.</p>
+    </div>
+    <div class="features__grid">
+      <article class="card card--tilt-l reveal">
+        <div class="card__icon card__icon--pink"><span class="material-symbols-rounded" aria-hidden="true">palette</span></div>
+        <h3 class="card__title">Fourteen spot inks</h3>
+        <p>Fluoro pink, federal blue, sunflower, and eleven more drums. Overprint any two and get a third color for free.</p>
+      </article>
+      <article class="card reveal">
+        <div class="card__icon card__icon--blue"><span class="material-symbols-rounded" aria-hidden="true">speed</span></div>
+        <h3 class="card__title">Five-day turnaround</h3>
+        <p>Files in by Monday, boxes out by Friday. Rush slots open every week for launches and tour posters.</p>
+      </article>
+      <article class="card card--tilt-r reveal">
+        <div class="card__icon card__icon--yellow"><span class="material-symbols-rounded" aria-hidden="true">recycling</span></div>
+        <h3 class="card__title">Recycled stock only</h3>
+        <p>Soy-based inks on post-consumer paper from 80 to 250 gsm. Your edition leaves a mark, not a footprint.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="process">
+  <div class="container">
+    <div class="section__head">
+      <span class="kicker">How it works</span>
+      <h2>From file to flat in three steps</h2>
+    </div>
+    <ol class="steps__list">
+      <li class="step reveal">
+        <span class="step__num">01</span>
+        <h3>Send your separations</h3>
+        <p>Upload grayscale layers, one per ink. Our preflight checks trapping and coverage within the hour.</p>
+      </li>
+      <li class="step reveal">
+        <span class="step__num">02</span>
+        <h3>We burn the masters</h3>
+        <p>Each color gets its own stencil. Expect a little drift between layers; that is the whole point.</p>
+      </li>
+      <li class="step reveal">
+        <span class="step__num">03</span>
+        <h3>Collate and ship</h3>
+        <p>We fold, staple, trim, and pack by hand, then send your edition anywhere with tracking.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section class="section" id="pricing">
+  <div class="container">
+    <div class="section__head">
+      <h2>Pricing by the edition</h2>
+      <p>Pick a run size. Every tier includes preflight, proofs, and our recycled house stock.</p>
+    </div>
+    <div class="pricing__grid">
+      <article class="tier reveal">
+        <span class="tier__name">Zine Run</span>
+        <p class="tier__price">$89 <span>/ 50 copies</span></p>
+        <ul class="tier__list">
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Up to 2 ink colors</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>80 gsm recycled paper</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Digital proof included</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Saddle-stitch finishing</li>
+        </ul>
+        <a class="btn btn--ghost" href="#cta">Start printing</a>
+      </article>
+      <article class="tier tier--featured reveal">
+        <span class="tier__badge">Most popular</span>
+        <span class="tier__name">Poster Edition</span>
+        <p class="tier__price">$249 <span>/ 150 copies</span></p>
+        <ul class="tier__list">
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Up to 3 ink colors</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>140 gsm recycled paper</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Physical press proof</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Trim and flat-pack shipping</li>
+        </ul>
+        <a class="btn btn--ghost" href="#cta">Start printing</a>
+      </article>
+      <article class="tier reveal">
+        <span class="tier__name">Studio Batch</span>
+        <p class="tier__price">$590 <span>/ 500 copies</span></p>
+        <ul class="tier__list">
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Up to 4 ink colors</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Mixed paper weights</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Dedicated press time</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Numbering and signing</li>
+        </ul>
+        <a class="btn btn--ghost" href="#cta">Start printing</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="testimonials">
+  <div class="container">
+    <div class="section__head">
+      <h2>From the drying rack</h2>
+    </div>
+    <div class="quotes__grid">
+      <blockquote class="quote reveal">
+        <p class="quote__text">The fluoro pink over federal blue made our tour poster glow under club lights. We sold the whole run at the first show.</p>
+        <footer class="quote__by">
+          <span class="quote__avatar quote__avatar--a" aria-hidden="true">MK</span>
+          <span><span class="quote__name">Mara Kowalski</span><br><span class="quote__role">Designer, Static Bloom Records</span></span>
+        </footer>
+      </blockquote>
+      <blockquote class="quote reveal">
+        <p class="quote__text">I sent messy separations on purpose and the drift came out better than my mockups. This is my fourth edition with them.</p>
+        <footer class="quote__by">
+          <span class="quote__avatar quote__avatar--b" aria-hidden="true">TA</span>
+          <span><span class="quote__name">Tunde Adeyemi</span><br><span class="quote__role">Publisher, Fieldnotes Zine</span></span>
+        </footer>
+      </blockquote>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="faq">
+  <div class="container">
+    <div class="section__head">
+      <h2>Common questions</h2>
+    </div>
+    <div class="faq">
+      <details class="faq__item">
+        <summary>How should I prepare my files?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+        <p class="faq__body">Send one grayscale PDF per ink at 600 dpi, with 3 mm bleed. Darker areas mean heavier ink coverage. Our preflight guide covers the rest.</p>
+      </details>
+      <details class="faq__item">
+        <summary>Will my colors match my screen?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+        <p class="faq__body">No, and that is the charm. Spot inks are opaque and uncoated paper shifts them. We mail a free ink swatch chart so you can choose with your eyes.</p>
+      </details>
+      <details class="faq__item">
+        <summary>Can I reorder an edition later?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+        <p class="faq__body">Yes. We archive your masters for twelve months, so reprints cost less and ship faster. After that we reburn them for a small fee.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="cta" id="cta">
+  <div class="container cta__inner">
+    <h2>Get a press slot this month</h2>
+    <p>Leave your email and we will send the ink chart, the preflight guide, and next open press dates.</p>
+    <form class="form" id="cta-form" novalidate>
+      <label class="form__label" for="email">Email address</label>
+      <div class="form__row">
+        <div class="form__field">
+          <input class="input" id="email" name="email" type="email" autocomplete="email" placeholder="you@studio.com" aria-describedby="email-hint email-error" required>
+          <span class="form__hint" id="email-hint">One email, no newsletter unless you ask.</span>
+          <span class="form__error" id="email-error" role="alert" aria-live="polite" hidden><span class="material-symbols-rounded" aria-hidden="true">error</span><span id="email-error-text">Enter a valid email address.</span></span>
+        </div>
+        <button class="btn btn--primary" id="cta-submit" type="submit">Start printing</button>
+      </div>
+      <p class="form__success" id="form-success" hidden><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>You are on the list. Check your inbox for the ink chart.</p>
+    </form>
+  </div>
+</section>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <a class="nav__logo" href="#top"><span class="nav__logo-mark" aria-hidden="true"></span>Nimbus Press</a>
+        <p>Two drums, fourteen inks, and a studio full of paper dust in Portland.</p>
+        <div class="footer__social">
+          <a href="#top" aria-label="Instagram"><span class="material-symbols-rounded" aria-hidden="true">photo_camera</span></a>
+          <a href="#top" aria-label="Newsletter"><span class="material-symbols-rounded" aria-hidden="true">mail</span></a>
+          <a href="#top" aria-label="Print archive"><span class="material-symbols-rounded" aria-hidden="true">collections</span></a>
+        </div>
+      </div>
+      <div class="footer__col">
+        <h3>Studio</h3>
+        <a href="#features">Features</a>
+        <a href="#process">Process</a>
+        <a href="#pricing">Pricing</a>
+      </div>
+      <div class="footer__col">
+        <h3>Support</h3>
+        <a href="#faq">FAQ</a>
+        <a href="#cta">Contact</a>
+        <a href="#top">File guide</a>
+      </div>
+      <div class="footer__col">
+        <h3>Legal</h3>
+        <a href="#top">Privacy</a>
+        <a href="#top">Terms</a>
+      </div>
+    </div>
+    <p class="footer__bottom">© 2026 Nimbus Press. Printed with soy ink and stubborn optimism.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+/* Theme toggle */
+var root=document.documentElement;
+var toggle=document.getElementById("theme-toggle");
+var icon=document.getElementById("theme-icon");
+function applyTheme(t){
+root.dataset.theme=t;
+toggle.setAttribute("aria-pressed",t==="dark"?"true":"false");
+toggle.setAttribute("aria-label",t==="dark"?"Switch to light mode":"Switch to dark mode");
+icon.textContent=t==="dark"?"light_mode":"dark_mode";
+}
+applyTheme(root.dataset.theme==="dark"?"dark":"light");
+toggle.addEventListener("click",function(){
+var next=root.dataset.theme==="dark"?"light":"dark";
+localStorage.setItem("theme",next);
+applyTheme(next);
+});
+/* Mobile menu */
+var menuBtn=document.getElementById("menu-btn");
+var navLinks=document.getElementById("nav-links");
+var mq=window.matchMedia("(min-width: 768px)");
+function syncNav(){if(mq.matches){navLinks.removeAttribute("hidden");menuBtn.setAttribute("aria-expanded","false");}else{navLinks.setAttribute("hidden","");}}
+syncNav();
+mq.addEventListener("change",syncNav);
+menuBtn.addEventListener("click",function(){
+var open=navLinks.hasAttribute("hidden");
+if(open){navLinks.removeAttribute("hidden");}else{navLinks.setAttribute("hidden","");}
+menuBtn.setAttribute("aria-expanded",open?"true":"false");
+menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");
+});
+navLinks.addEventListener("click",function(e){
+if(e.target.closest("a")&&!mq.matches){navLinks.setAttribute("hidden","");menuBtn.setAttribute("aria-expanded","false");}
+});
+document.addEventListener("keydown",function(e){
+if(e.key==="Escape"&&!navLinks.hasAttribute("hidden")&&!mq.matches){navLinks.setAttribute("hidden","");menuBtn.setAttribute("aria-expanded","false");menuBtn.focus();}
+});
+/* Scroll reveals */
+var reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+var items=document.querySelectorAll(".reveal");
+if(reduce||!("IntersectionObserver" in window)){
+items.forEach(function(el){el.classList.add("is-visible");});
+}else{
+var io=new IntersectionObserver(function(entries){
+entries.forEach(function(en){
+if(en.isIntersecting){en.target.classList.add("is-visible");io.unobserve(en.target);}
+});
+},{threshold:.15});
+items.forEach(function(el,i){el.style.transitionDelay=(i%3)*60+"ms";io.observe(el);});
+}
+/* Email form */
+var form=document.getElementById("cta-form");
+var email=document.getElementById("email");
+var errBox=document.getElementById("email-error");
+var errText=document.getElementById("email-error-text");
+var success=document.getElementById("form-success");
+var submitBtn=document.getElementById("cta-submit");
+function setInvalid(msg){
+email.classList.add("is-invalid");email.classList.remove("is-valid");
+errText.textContent=msg;errBox.removeAttribute("hidden");
+email.setAttribute("aria-invalid","true");
+}
+function clearInvalid(){
+email.classList.remove("is-invalid");errBox.setAttribute("hidden","");
+email.removeAttribute("aria-invalid");
+}
+email.addEventListener("input",function(){
+clearInvalid();
+if(email.value&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)){email.classList.add("is-valid");}else{email.classList.remove("is-valid");}
+});
+form.addEventListener("submit",function(e){
+e.preventDefault();
+success.setAttribute("hidden","");
+var v=email.value.trim();
+if(!v){setInvalid("Email address is required.");email.focus();return;}
+if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)){setInvalid("Enter a valid email address.");email.focus();return;}
+clearInvalid();
+submitBtn.classList.add("is-loading");
+submitBtn.setAttribute("aria-busy","true");
+setTimeout(function(){
+submitBtn.classList.remove("is-loading");
+submitBtn.removeAttribute("aria-busy");
+submitBtn.classList.add("is-success");
+success.removeAttribute("hidden");
+form.reset();
+email.classList.remove("is-valid");
+setTimeout(function(){submitBtn.classList.remove("is-success");},2500);
+},900);
+});
+})();
+</script>
+</body>
+</html>

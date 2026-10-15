@@ -1,998 +1,581 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>8-Bit Orbit</title>
+<title>8-Bit Orbit - Retro Arcade Platform</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";}document.documentElement.dataset.theme=t;})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Tektur:wght@400;500;700;800;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Sharp" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet">
 <style>
+@layer tokens{
 :root{
---primary:#F0A6CA;
---secondary:#5EDCF4;
---accent:#F4D03F;
---bg-primary:#0A0E27;
---bg-secondary:#0F1B3D;
---text-primary:#E2D5F2;
---text-secondary:#A79BC9;
---text-success:#5EDCF4;
---text-error:#FF6B9D;
---border-default:#26345F;
---border-error:#FF6B9D;
---border-success:#5EDCF4;
---radius-sm:0px;
---radius-md:0px;
---radius-lg:0px;
---shadow-sm:0 0 8px rgba(94,220,244,.35);
---shadow-md:0 0 16px rgba(240,166,202,.30);
+--primary:#F0A6CA;--secondary:#5EDCF4;--accent:#F4D03F;
+--bg-primary:#0A0E27;--bg-secondary:#0F1B3D;
+--text-primary:#E2D5F2;--text-secondary:#A79BC9;
+--text-success:#5EDCF4;--text-error:#FF6B9D;
+--on-accent:#0A0E27;
+--border-default:#26345F;--border-error:#FF6B9D;--border-success:#5EDCF4;
+--radius-sm:0px;--radius-md:0px;--radius-lg:0px;
+--shadow-sm:0 0 8px rgba(94,220,244,.35);--shadow-md:0 0 16px rgba(240,166,202,.30);
 --shadow-pixel:4px 4px 0 0 #050817;
---glow-pink:0 0 8px var(--primary);
---glow-cyan:0 0 8px var(--secondary);
---glow-yellow:0 0 8px var(--accent);
---font-display:'Tektur',monospace;
---font-base:'Space Mono',monospace;
+--glow-pink:0 0 8px #F0A6CA;--glow-cyan:0 0 8px #5EDCF4;--glow-yellow:0 0 8px #F4D03F;
+--font-display:'Tektur',monospace;--font-base:'Space Mono',monospace;
 --spacing-gap:1.5rem;
---transition-fast:150ms;
---transition-normal:300ms;
+--transition-fast:150ms;--transition-normal:300ms;
 --ease-standard:cubic-bezier(.2,0,.2,1);
---z-overlay:50;
---z-dropdown:60;
---z-modal:100;
---z-toast:200;
-color-scheme:dark
-}
-*,::before,::after{box-sizing:border-box}
-html{font-size:16px}
-body{
-margin:0;
-font-family:var(--font-base);
-background-color:var(--bg-primary);
-color:var(--text-primary);
-line-height:1.5;
-position:relative;
-overflow-x:hidden
-}
-body::after{
-content:"";
-position:fixed;
-inset:0;
-background:repeating-linear-gradient(0deg,rgba(0,0,0,0) 0px,rgba(0,0,0,0.03) 2px);
-pointer-events:none;
-z-index:var(--z-overlay);
-aria-hidden:true
-}
-.skip-link{
-position:absolute;
-top:-40px;
-left:0;
-background:#000;
-color:#fff;
-padding:8px;
-z-index:1000;
-transition:top .2s
-}
-.skip-link:focus{top:0}
-.container{
-width:90%;
-max-width:1200px;
-margin:0 auto;
-padding:0 1rem
-}
-.site-header{
-position:sticky;
-top:0;
-background-color:var(--bg-secondary);
-border-bottom:2px solid var(--border-default);
-z-index:100;
-display:flex;
-align-items:center;
-justify-content:space-between;
-height:4rem
-}
-.logo{
-display:flex;
-align-items:center;
-gap:.5rem
-}
-.logo-mark{
-width:24px;
-height:24px;
-background:radial-gradient(circle at 30% 30%,var(--primary) 10%,transparent 10.5%),radial-gradient(circle at 70% 70%,var(--secondary) 10%,transparent 10.5%);
-border:2px solid var(--border-default);
-}
-.logo-text{
-font-family:var(--font-display);
-font-weight:800;
-font-size:1.25rem;
-letter-spacing:.05em
-}
-.nav{
-display:flex;
-gap:2rem
-}
-.nav a{
-font-family:var(--font-display);
-font-weight:700;
-text-decoration:none;
-color:var(--text-secondary);
-transition:color var(--transition-fast)
-}
-.nav a:hover{color:var(--secondary)}
-.btn{
-display:inline-flex;
-align-items:center;
-justify-content:center;
-gap:.5rem;
-font-family:var(--font-display);
-font-weight:700;
-text-transform:uppercase;
-letter-spacing:.05em;
-border:2px solid;
-border-radius:var(--radius-sm);
-cursor:pointer;
-min-height:44px;
-min-width:44px;
-padding:0 1.5rem;
-transition:all var(--transition-fast)
-}
-.btn--primary{
-background-color:var(--primary);
-color:var(--bg-secondary)
-}
-.btn--primary:hover{
-background-color:var(--primary);
-box-shadow:var(--glow-pink),var(--shadow-pixel);
-transform:translate(-2px,-2px)
-}
-.btn--primary:active{transform:scale(.97)}
-.btn--secondary{
-background-color:transparent;
-color:var(--secondary);
-border-color:var(--secondary)
-}
-.btn--secondary:hover{
-background-color:var(--secondary);
-color:var(--bg-secondary);
-box-shadow:var(--glow-cyan),var(--shadow-pixel);
-transform:translate(-2px,-2px)
-}
-.btn--secondary:active{transform:scale(.97)}
-.crt-toggle{
-background:none;
-border:none;
-color:var(--text-secondary);
-font-size:1.25rem;
-cursor:pointer;
-padding:.5rem;
-transition:color var(--transition-fast)
-}
-.crt-toggle:hover{color:var(--secondary)}
-.crt-toggle[aria-pressed="true"]{color:var(--secondary)}
-.section-header{
-display:flex;
-flex-direction:column;
-align-items:center;
-gap:.5rem;
-margin-bottom:2rem
-}
-.section-header::before{
-content:"[ SYS.01 // ]";
-font-family:var(--font-base);
-color:var(--secondary);
-font-size:.875rem;
-letter-spacing:.05em
-}
-.section-header h2{
-font-family:var(--font-display);
-font-weight:800;
-font-size:clamp(1.5rem,4vw,2.5rem);
-margin:0;
-text-shadow:var(--glow-cyan);
-position:relative
-}
-.section-header h2::after{
-content:"";
-position:absolute;
-bottom:-4px;
-left:50%;
-transform:translateX(-50%);
-width:40%;
-height:2px;
-background:repeating-linear-gradient(90deg,var(--border-default) 0,var(--border-default) 2px,transparent 2px,transparent 4px)
-}
-.card{
-background-color:var(--bg-secondary);
-border:2px solid var(--border-default);
-border-radius:var(--radius-sm);
-box-shadow:var(--shadow-pixel);
-display:flex;
-flex-direction:column;
-align-items:center;
-text-align:center;
-padding:1.5rem;
-transition:all var(--transition-normal)
-}
-.card:hover{
-transform:translateY(-2px);
-border-color:var(--secondary);
-box-shadow:var(--shadow-pixel),var(--glow-cyan)
-}
-.card-icon{
-font-size:2rem;
-margin-bottom:1rem
-}
-.card-icon.memory{color:var(--primary)}
-.card-icon.bolt{color:var(--secondary)}
-.card-icon.sports_esports{color:var(--accent)}
-.card-title{
-font-family:var(--font-display);
-font-weight:700;
-font-size:1.25rem;
-margin-bottom:.5rem
-}
-.card-text{
-font-size:.95rem;
-color:var(--text-secondary);
-line-height:1.4
-}
-.steps{
-display:flex;
-gap:2rem;
-align-items:center;
-margin:2rem 0
-}
-.step-number{
-font-family:var(--font-display);
-font-weight:800;
-font-size:2rem;
-background-color:var(--accent);
-color:var(--bg-primary);
-width:2.5rem;
-height:2.5rem;
-display:flex;
-align-items:center;
-justify-content:center;
-border:2px solid var(--border-default);
-border-radius:var(--radius-sm)
-}
-.step-content{
-text-align:center
-}
-.step-title{
-font-family:var(--font-display);
-font-weight:700;
-font-size:1.125rem;
-margin-bottom:.5rem
-}
-.step-text{
-font-size:.95rem;
-color:var(--text-secondary)
-}
-.step-connector{
-flex:1;
-height:2px;
-background:repeating-linear-gradient(90deg,var(--border-default) 0,var(--border-default) 2px,transparent 2px,transparent 4px)
-}
-.testimonials{
-display:flex;
-gap:1.5rem;
-overflow-x:auto;
-padding-bottom:2rem
-}
-.testimonial-card{
-min-width:280px;
-flex:0 0 auto
-}
-.avatar{
-width:60px;
-height:60px;
-background:radial-gradient(circle at 30% 30%,var(--primary) 15%,transparent 15.5%),radial-gradient(circle at 70% 70%,var(--secondary) 15%,transparent 15.5%);
-border:2px solid var(--border-default);
-margin-bottom:1rem
-}
-.stars{
-display:flex;
-gap:.25rem;
-margin-bottom:.75rem
-}
-.stars .material-symbols-sharp{
-color:var(--accent);
-font-size:1.25rem
-}
-.testimonial-text{
-font-size:.95rem;
-color:var(--text-secondary);
-margin-bottom:1rem
-}
-.testimonial-author{
-font-family:var(--font-display);
-font-weight:700
-}
-.testimonial-role{
-font-size:.875rem;
-color:var(--text-secondary)
-}
-.pricing-toggle{
-display:flex;
-gap:.5rem;
-margin-bottom:2rem
-}
-.toggle-btn{
-flex:1;
-padding:.75rem;
-background-color:transparent;
-border:2px solid var(--border-default);
-color:var(--text-secondary);
-font-family:var(--font-display);
-font-weight:700;
-text-align:center;
-cursor:pointer;
-transition:all var(--transition-fast)
-}
-.toggle-btn.active{
-background-color:var(--accent);
-color:var(--bg-primary);
-border-color:var(--accent)
-}
-.pricing-cards{
-display:flex;
-gap:1.5rem
-}
-.pricing-card{
-flex:1;
-display:flex;
-flex-direction:column;
-}
-.pricing-card.featured{
-border-color:var(--accent);
-box-shadow:var(--shadow-pixel),var(--glow-yellow)
-}
-.pricing-header{
-background-color:var(--bg-secondary);
-padding:1rem;
-text-align:center;
-border-bottom:2px solid var(--border-default)
-}
-.pricing-tier{
-font-family:var(--font-display);
-font-weight:700;
-font-size:1.125rem;
-text-transform:uppercase
-}
-.pricing-price{
-font-family:var(--font-display);
-font-weight:800;
-font-size:2rem;
-margin:.5rem 0
-}
-.pricing-badge{
-background-color:var(--accent);
-color:var(--bg-primary);
-font-family:var(--font-display);
-font-size:.75rem;
-padding:.25rem .5rem;
-text-transform:uppercase;
-letter-spacing:.05em
-}
-.pricing-features{
-flex:1;
-padding:1.5rem;
-list-style:none;
-margin:0
-}
-.pricing-features li{
-display:flex;
-align-items:center;
-gap:.5rem;
-margin-bottom:.75rem;
-font-size:.95rem
-}
-.pricing-features .material-symbols-sharp{color:var(--secondary)}
-.pricing-features .close{color:var(--text-error)}
-.pricing-cta{
-padding:1.5rem;
-text-align:center
-}
-.faq{
-max-width:800px
-}
-.faq-item{
-border:2px solid var(--border-default);
-margin-bottom:1rem
-}
-.faq-item[open]{border-color:var(--secondary)}
-.faq-summary{
-padding:1.5rem;
-cursor:pointer;
-font-family:var(--font-display);
-font-weight:700;
-display:flex;
-justify-content:space-between;
-align-items:center
-}
-.faq-summary:hover{background-color:rgba(94,220,244,.05)}
-.faq-icon{
-transition:transform var(--transition-fast)
-}
-.faq-item[open] .faq-icon{transform:rotate(180deg)}
-.faq-answer{
-padding:0 1.5rem 1.5rem;
-color:var(--text-secondary);
-font-size:.95rem
-}
-.final-cta{
-background-color:var(--bg-secondary);
-border-top:2px solid var(--border-default);
-border-bottom:2px solid var(--border-default);
-padding:3rem 1rem;
-text-align:center
-}
-.final-cta h2{
-font-family:var(--font-display);
-font-weight:800;
-font-size:clamp(1.75rem,5vw,2.75rem);
-margin-bottom:1.5rem;
-text-shadow:var(--glow-pink)
-}
-.input-group{
-display:flex;
-flex-direction:column;
-align-items:stretch;
-gap:.5rem;
-max-width:400px;
-margin:0 auto 1.5rem
-}
-.input-group label{
-font-family:var(--font-display);
-font-weight:700;
-text-align:left
-}
-.input-group input{
-padding:.75rem;
-border:2px solid var(--border-default);
-background-color:var(--bg-primary);
-color:var(--text-primary);
-font-family:var(--font-base);
-border-radius:var(--radius-sm)
-}
-.input-group input:focus{
-outline:none;
-border-color:var(--secondary);
-box-shadow:var(--glow-cyan)
-}
-.input-group .error{
-color:var(--text-error);
-font-size:.875rem;
-min-height:1.25rem
-}
-.site-footer{
-background-color:var(--bg-secondary);
-border-top:2px solid var(--border-default);
-padding:2rem 1rem;
-font-size:.875rem
-}
-.footer-content{
-display:flex;
-flex-wrap:wrap;
-gap:2rem;
-margin-bottom:2rem
-}
-.footer-column{
-flex:1;
-min-width:150px
-}
-.footer-column h3{
-font-family:var(--font-display);
-font-weight:700;
-margin-bottom:1rem
-}
-.footer-column ul{
-list-style:none;
-padding:0
-}
-.footer-column li{
-margin-bottom:.5rem
-}
-.footer-column a{
-color:var(--text-secondary);
-text-decoration:none;
-transition:color var(--transition-fast)
-}
-.footer-column a:hover{color:var(--secondary)}
-.social-links{
-display:flex;
-gap:1rem
-}
-.social-links a{
-color:var(--text-secondary);
-font-size:1.125rem;
-transition:color var(--transition-fast)
-}
-.social-links a:hover{color:var(--secondary)}
-.footer-bottom{
-text-align:center;
-border-top:1px solid var(--border-default);
-padding-top:1.5rem;
-margin-top:2rem
-}
-#back-to-top{
-position:fixed;
-bottom:2rem;
-right:2rem;
-z-index:100;
-opacity:0;
-visibility:hidden;
-transition:opacity .3s,visibility .3s
-}
-#back-to-top.visible{
-opacity:1;
-visibility:visible
-}
-@media(prefers-reduced-motion:reduce){
-*{
-animation-duration:0.001ms !important;
-transition-duration:0.001ms !important;
-scroll-behavior:auto !important
-}
-body::after{animation:none}
-}
-@media(max-width:768px){
-.nav{display:none}
-.steps{flex-direction:column;gap:1.5rem}
-.step-connector{width:2px;height:100px;background:repeating-linear-gradient(0deg,var(--border-default) 0,var(--border-default) 2px,transparent 2px,transparent 4px)}
-.pricing-cards{flex-direction:column}
-.testimonials{justify-content:center}
-.footer-column{flex:1 0 100%}
+--z-overlay:50;--z-dropdown:60;--z-modal:100;--z-toast:200;
+color-scheme:dark;
+}
+:root[data-theme="light"]{
+--primary:#C2257C;--secondary:#0E7FA0;--accent:#8A6D00;
+--bg-primary:#EDE6F7;--bg-secondary:#FDFBFE;
+--text-primary:#1B1440;--text-secondary:#4A3F73;
+--text-success:#0E7FA0;--text-error:#C2255A;
+--on-accent:#FDFBFE;
+--border-default:#B9A8D9;--border-error:#C2255A;--border-success:#0E7FA0;
+--shadow-sm:0 0 8px rgba(14,127,160,.30);--shadow-md:0 0 16px rgba(194,37,124,.25);
+--shadow-pixel:4px 4px 0 0 #C9BBE4;
+color-scheme:light;
+}
+}
+@layer base{
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;font-size:1rem;overflow-x:hidden;min-height:100dvh}
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(1px 1px at 12% 22%,var(--secondary) 50%,transparent 51%),radial-gradient(1px 1px at 68% 8%,var(--primary) 50%,transparent 51%),radial-gradient(2px 2px at 84% 40%,var(--accent) 50%,transparent 51%),radial-gradient(1px 1px at 34% 66%,var(--text-primary) 50%,transparent 51%),radial-gradient(1px 1px at 55% 88%,var(--secondary) 50%,transparent 51%),radial-gradient(2px 2px at 8% 78%,var(--primary) 50%,transparent 51%),radial-gradient(1px 1px at 92% 70%,var(--text-primary) 50%,transparent 51%),radial-gradient(1px 1px at 44% 34%,var(--accent) 50%,transparent 51%);opacity:.5}
+body::after{content:"";position:fixed;inset:0;z-index:var(--z-overlay);pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.05) 0 1px,transparent 1px 2px),radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.28) 100%)}
+:root[data-theme="light"] body::after{background:repeating-linear-gradient(0deg,rgba(27,20,64,.04) 0 1px,transparent 1px 2px),radial-gradient(ellipse at center,transparent 55%,rgba(27,20,64,.12) 100%)}
+h1,h2,h3{font-family:var(--font-display);line-height:1.1;letter-spacing:-.01em}
+a{color:var(--secondary);text-decoration:none;transition:color var(--transition-fast) var(--ease-standard)}
+img{image-rendering:pixelated;max-width:100%}
+:focus-visible{outline:3px solid var(--secondary);outline-offset:2px;box-shadow:var(--glow-cyan)}
+.skip-link{position:absolute;left:1rem;top:-4rem;z-index:var(--z-toast);background:var(--primary);color:var(--on-accent);padding:.75rem 1.25rem;font-family:var(--font-display);font-weight:700;border:2px solid var(--border-default);transition:top var(--transition-fast) var(--ease-standard)}
+.skip-link:focus{top:1rem}
+}
+@layer layout{
+.wrap{max-width:75rem;margin:0 auto;padding-left:1.25rem;padding-right:1.25rem;position:relative;z-index:1}
+@media(min-width:768px){.wrap{padding-left:2rem;padding-right:2rem}}
+.section{padding-top:clamp(4rem,8vw,7rem);padding-bottom:clamp(4rem,8vw,7rem)}
+.section__head{display:flex;flex-direction:column;align-items:flex-start;gap:.75rem;margin-bottom:3rem;max-width:65ch}
+.section__eyebrow{font-size:.8125rem;letter-spacing:.12em;color:var(--secondary);text-transform:uppercase}
+.section__title{font-size:clamp(1.75rem,4vw,2.75rem);font-weight:800;text-shadow:var(--glow-pink)}
+.section__underline{width:6rem;height:2px;background:repeating-linear-gradient(90deg,var(--accent) 0 12px,transparent 12px 16px)}
+.section__sub{color:var(--text-secondary);max-width:60ch}
+.row{display:flex;flex-wrap:wrap;gap:var(--spacing-gap);align-items:stretch}
+.row>.card{flex:1 1 300px}
+}
+@layer components{
+.header{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--bg-secondary);border-bottom:2px solid var(--border-default)}
+.header__inner{display:flex;align-items:center;gap:1rem;height:4.5rem}
+.logo{display:flex;align-items:center;gap:.625rem;font-family:var(--font-display);font-weight:900;font-size:1.0625rem;color:var(--text-primary);letter-spacing:.04em}
+.logo__mark{width:26px;height:26px;flex:none;background:conic-gradient(from 45deg,var(--primary) 0 25%,var(--secondary) 0 50%,var(--accent) 0 75%,var(--primary) 0);box-shadow:var(--shadow-pixel);border:2px solid var(--border-default)}
+.nav{display:none;align-items:center;gap:1.5rem;margin-left:auto}
+.nav__link{font-family:var(--font-display);font-weight:500;font-size:.875rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-secondary);padding:.5rem 0}
+@media(hover:hover) and (pointer:fine){.nav__link:hover{color:var(--primary);text-shadow:var(--glow-pink)}}
+.header__actions{display:flex;align-items:center;gap:.75rem;margin-left:auto}
+.nav+.header__actions{margin-left:0}
+.icon-btn{display:flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;background:transparent;border:2px solid var(--border-default);color:var(--text-primary);cursor:pointer;transition:all var(--transition-fast) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.icon-btn:hover{border-color:var(--secondary);color:var(--secondary);box-shadow:var(--glow-cyan)}}
+.icon-btn:active{transform:scale(.97)}
+.menu-btn{display:flex}
+@media(min-width:900px){.nav{display:flex}.menu-btn{display:none}.header__actions{margin-left:0}}
+.mobile-panel{display:none;flex-direction:column;gap:.25rem;padding:1rem 1.25rem 1.5rem;background:var(--bg-secondary);border-bottom:2px solid var(--border-default)}
+.mobile-panel.is-open{display:flex}
+.mobile-panel .nav__link{padding:.75rem 0;border-bottom:1px solid var(--border-default)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:.75rem 1.5rem;font-family:var(--font-display);font-weight:700;font-size:.875rem;text-transform:uppercase;letter-spacing:.08em;border:2px solid var(--border-default);cursor:pointer;box-shadow:var(--shadow-pixel);transition:all var(--transition-fast) var(--ease-standard);position:relative}
+.btn--primary{background:var(--primary);color:var(--on-accent);border-color:var(--primary)}
+.btn--secondary{background:transparent;color:var(--secondary);border-color:var(--secondary)}
+.btn--danger{background:var(--text-error);color:var(--on-accent);border-color:var(--text-error)}
+@media(hover:hover) and (pointer:fine){
+.btn--primary:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 0 var(--bg-primary),var(--glow-pink);background:var(--accent);border-color:var(--accent)}
+.btn--secondary:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 0 var(--bg-primary),var(--glow-cyan);color:var(--primary);border-color:var(--primary)}
+.btn--danger:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 0 var(--bg-primary)}
+}
+.btn:active{transform:scale(.97)}
+.btn:disabled,.btn.is-loading{opacity:.5;cursor:not-allowed;filter:grayscale(.4)}
+.btn.is-loading .btn__label{visibility:hidden}
+.btn.is-loading::after{content:"";position:absolute;width:14px;height:14px;background:currentColor;animation:pixelspin 800ms steps(8) infinite}
+@keyframes pixelspin{to{transform:rotate(360deg)}}
+.btn.is-success{border-color:var(--border-success);color:var(--text-success);background:transparent}
+.btn.is-error{border-color:var(--border-error);color:var(--text-error);background:transparent}
+.card{display:flex;flex-direction:column;gap:1rem;align-items:flex-start;background:var(--bg-secondary);border:2px solid var(--border-default);padding:1.75rem;box-shadow:var(--shadow-pixel);transition:transform var(--transition-fast) var(--ease-standard),border-color var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.card:hover{transform:translateY(-2px);border-color:var(--primary);box-shadow:var(--shadow-pixel),var(--shadow-md)}}
+.card:focus-within{border-color:var(--secondary);box-shadow:var(--shadow-pixel),var(--glow-cyan)}
+.card__icon{font-size:2rem}
+.card__icon--pink{color:var(--primary)}.card__icon--cyan{color:var(--secondary)}.card__icon--yellow{color:var(--accent)}
+.card__title{font-size:1.25rem;font-weight:700}
+.card__text{color:var(--text-secondary);font-size:.9375rem}
+.card--skeleton{gap:.75rem}
+.card--skeleton .sk{background:var(--border-default);animation:shimmer 1s steps(4) infinite}
+@keyframes shimmer{50%{opacity:.5}}
+.card--empty{align-items:center;text-align:center;color:var(--text-secondary)}
+.badge{display:inline-flex;align-items:center;gap:.375rem;font-family:var(--font-display);font-weight:700;font-size:.6875rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:var(--on-accent);border:2px solid var(--accent);padding:.25rem .625rem}
+.hero{padding-top:clamp(3rem,6vw,5rem);padding-bottom:clamp(4rem,8vw,6rem)}
+.hero__inner{display:flex;flex-direction:column;gap:2.5rem;align-items:center}
+@media(min-width:900px){.hero__inner{flex-direction:row;gap:3rem}}
+.hero__copy{flex:1 1 55%;display:flex;flex-direction:column;align-items:flex-start;gap:1.25rem}
+.hero__title{font-size:clamp(2.25rem,5.5vw,3.75rem);font-weight:900;text-shadow:var(--glow-cyan)}
+.hero__title em{font-style:normal;color:var(--primary);text-shadow:var(--glow-pink)}
+.hero__sub{color:var(--text-secondary);max-width:34rem;font-size:1.0625rem}
+.hero__ctas{display:flex;flex-wrap:wrap;gap:1rem;align-items:center}
+.hero__trust{display:flex;align-items:center;gap:.5rem;font-size:.8125rem;color:var(--text-secondary)}
+.hero__trust .material-symbols-sharp{color:var(--text-success);font-size:1.125rem}
+.hero__visual{flex:1 1 40%;display:flex;align-items:center;justify-content:center;min-height:16rem}
+.planet{position:relative;width:min(18rem,70vw);aspect-ratio:1;display:flex;align-items:center;justify-content:center}
+.planet__body{width:55%;aspect-ratio:1;background:conic-gradient(from 90deg,var(--primary) 0 25%,var(--secondary) 0 50%,var(--primary) 0 75%,var(--accent) 0);border:2px solid var(--border-default);box-shadow:var(--shadow-pixel),var(--glow-pink);border-radius:0}
+.planet__ring{position:absolute;inset:8%;border:2px dashed var(--secondary);border-radius:50%;opacity:.7}
+.planet__ring--outer{inset:0;border-color:var(--primary);opacity:.5}
+.planet__ship{position:absolute;top:2%;left:50%;width:14px;height:14px;background:var(--accent);box-shadow:var(--glow-yellow);animation:orbit 9s linear infinite}
+@keyframes orbit{from{transform:rotate(0) translateX(9rem) rotate(0)}to{transform:rotate(360deg) translateX(9rem) rotate(-360deg)}}
+.hero__cursor{font-size:.8125rem;color:var(--accent);letter-spacing:.15em}
+.hero__cursor::after{content:"_";animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+.steps{display:flex;flex-direction:column;gap:2rem;align-items:stretch}
+@media(min-width:768px){.steps{flex-direction:row;align-items:stretch}}
+.step{flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:.875rem;position:relative;padding:1.5rem;border:2px solid var(--border-default);background:var(--bg-secondary);box-shadow:var(--shadow-pixel)}
+.step__num{font-family:var(--font-display);font-weight:900;font-size:1.5rem;color:var(--on-accent);background:var(--accent);border:2px solid var(--accent);padding:.25rem .75rem;text-shadow:none}
+.step__title{font-size:1.125rem;font-weight:700}
+.step__text{color:var(--text-secondary);font-size:.9375rem}
+.step__connector{display:none}
+@media(min-width:768px){.step__connector{display:block;align-self:center;flex:0 0 2rem;border-top:2px dashed var(--secondary)}}
+.stars{display:flex;gap:.125rem;color:var(--accent)}
+.stars .material-symbols-sharp{font-size:1.125rem}
+.quote{font-size:.9375rem;color:var(--text-primary)}
+.quote::before{content:"\201C "}.quote::after{content:" \201D"}
+.person{display:flex;align-items:center;gap:.75rem;margin-top:auto}
+.person__avatar{width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:800;font-size:.875rem;background:var(--primary);color:var(--on-accent);border:2px solid var(--border-default)}
+.person__avatar--cyan{background:var(--secondary)}
+.person__avatar--yellow{background:var(--accent)}
+.person__name{font-family:var(--font-display);font-weight:700;font-size:.875rem}
+.person__role{font-size:.75rem;color:var(--text-secondary)}
+.billing{display:flex;align-items:center;gap:0;margin-bottom:2.5rem;border:2px solid var(--border-default);width:max-content}
+.billing__btn{min-height:44px;padding:.625rem 1.5rem;font-family:var(--font-display);font-weight:700;font-size:.8125rem;text-transform:uppercase;letter-spacing:.06em;background:transparent;color:var(--text-secondary);border:0;cursor:pointer;transition:all var(--transition-fast) var(--ease-standard)}
+.billing__btn[aria-pressed="true"]{background:var(--secondary);color:var(--on-accent)}
+.price-card{position:relative}
+.price-card--featured{border-color:var(--accent);box-shadow:var(--shadow-pixel),var(--glow-yellow)}
+:root[data-theme="dark"] .price-card--featured{border-color:var(--accent)}
+.price-card__badge{position:absolute;top:-.875rem;left:1.25rem}
+.price-card__tier{font-family:var(--font-display);font-weight:800;font-size:1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--secondary)}
+.price-card__price{font-family:var(--font-display);font-weight:900;font-size:2.5rem;transition:color var(--transition-fast)}
+.price-card__price small{font-size:.875rem;font-weight:500;color:var(--text-secondary)}
+.price-card__list{list-style:none;display:flex;flex-direction:column;gap:.625rem;font-size:.875rem;align-items:flex-start;width:100%}
+.price-card__list li{display:flex;align-items:center;gap:.5rem}
+.price-card__list .material-symbols-sharp{font-size:1.125rem;color:var(--text-success)}
+.price-card__list li.is-off{color:var(--text-secondary)}
+.price-card__list li.is-off .material-symbols-sharp{color:var(--text-secondary)}
+.faq{display:flex;flex-direction:column;gap:1rem;max-width:50rem}
+.faq__item{border:2px solid var(--border-default);background:var(--bg-secondary);box-shadow:var(--shadow-pixel)}
+.faq__item summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;cursor:pointer;list-style:none;padding:1.125rem 1.25rem;font-family:var(--font-display);font-weight:700;font-size:.9375rem;min-height:44px;transition:color var(--transition-fast)}
+.faq__item summary::-webkit-details-marker{display:none}
+@media(hover:hover) and (pointer:fine){.faq__item summary:hover{color:var(--primary)}}
+.faq__item summary .material-symbols-sharp{transition:transform var(--transition-fast) var(--ease-standard);color:var(--secondary)}
+.faq__item[open] summary .material-symbols-sharp{transform:rotate(45deg)}
+.faq__answer{padding:0 1.25rem 1.25rem;color:var(--text-secondary);font-size:.9375rem}
+.cta-band{background:var(--bg-secondary);border-top:2px solid var(--border-default);border-bottom:2px solid var(--border-default)}
+.cta-band__inner{display:flex;flex-direction:column;align-items:center;text-align:center;gap:1.5rem}
+.cta-band__title{font-size:clamp(1.75rem,4vw,2.75rem);font-weight:900;text-shadow:var(--glow-cyan)}
+.input-group{display:flex;flex-direction:column;align-items:stretch;gap:.5rem;width:min(26rem,100%)}
+.input-group__label{font-family:var(--font-display);font-weight:700;font-size:.8125rem;text-transform:uppercase;letter-spacing:.08em}
+.input-group__row{display:flex;gap:.75rem;flex-wrap:wrap}
+.input-group__field{flex:1 1 14rem;min-height:44px;background:var(--bg-primary);border:2px solid var(--border-default);color:var(--text-primary);font-family:var(--font-base);font-size:1rem;padding:.625rem .875rem;transition:border-color var(--transition-fast),box-shadow var(--transition-fast)}
+.input-group__field:focus{border-color:var(--secondary);box-shadow:var(--glow-cyan);outline:none}
+.input-group__field.is-valid{border-color:var(--border-success)}
+.input-group__field.is-invalid{border-color:var(--border-error)}
+.input-group__hint{font-size:.75rem;color:var(--text-secondary)}
+.input-group__msg{font-size:.8125rem;min-height:1.25rem;display:flex;align-items:center;gap:.375rem}
+.input-group__msg.is-error{color:var(--text-error)}
+.input-group__msg.is-success{color:var(--text-success)}
+.footer{padding-top:4rem;padding-bottom:2.5rem}
+.footer__grid{display:flex;flex-wrap:wrap;gap:2.5rem;align-items:flex-start}
+.footer__brand{flex:1 1 16rem;display:flex;flex-direction:column;gap:1rem;align-items:flex-start}
+.footer__blurb{color:var(--text-secondary);font-size:.875rem;max-width:22rem}
+.footer__col{flex:1 1 9rem;display:flex;flex-direction:column;gap:.625rem;align-items:flex-start}
+.footer__heading{font-family:var(--font-display);font-weight:700;font-size:.8125rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-primary);margin-bottom:.375rem}
+.footer__link{font-size:.875rem;color:var(--text-secondary)}
+@media(hover:hover) and (pointer:fine){.footer__link:hover{color:var(--primary)}}
+.footer__bottom{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1rem;margin-top:3rem;padding-top:1.5rem;border-top:2px solid var(--border-default)}
+.footer__copy{font-size:.75rem;color:var(--text-secondary);letter-spacing:.05em}
+.footer__social{display:flex;gap:1.25rem;flex-wrap:wrap}
+.footer__social a{font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-secondary)}
+@media(hover:hover) and (pointer:fine){.footer__social a:hover{color:var(--secondary)}}
+.reveal{opacity:0;transform:translateY(12px);transition:opacity var(--transition-normal) var(--ease-standard),transform var(--transition-normal) var(--ease-standard)}
+.reveal.is-visible{opacity:1;transform:none}
+}
+@layer utilities{
+.material-symbols-sharp{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
+@media (prefers-reduced-motion: reduce){
+html{scroll-behavior:auto}
+body::after{display:none}
+.reveal{opacity:1;transform:none;transition:opacity 150ms ease}
+.planet__ship,.hero__cursor::after,.btn.is-loading::after,.card--skeleton .sk{animation:none}
+*{transition-duration:150ms!important}
+}
+@media (prefers-reduced-transparency: reduce){body::after{background:none}}
+@media (prefers-contrast: more){.card,.step,.faq__item{border-color:var(--text-secondary)}}
 }
 </style>
 </head>
 <body>
-<a href="#main-content" class="skip-link">Skip to content</a>
-<div id="crt-overlay" aria-hidden="true"></div>
-<header class="site-header">
-<div class="logo">
-<div class="logo-mark"></div>
-<div class="logo-text">8-BIT ORBIT</div>
-</div>
-<nav class="nav">
-<a href="#features">Features</a>
-<a href="#how-it-works">How It Works</a>
-<a href="#testimonials">Testimonials</a>
-<a href="#pricing">Pricing</a>
-<a href="#faq">FAQ</a>
-</nav>
-<button class="btn btn--primary">PRESS START</button>
-<button class="crt-toggle" id="crt-toggle" aria-label="Toggle CRT scanline effects" aria-pressed="true">
-<span class="material-symbols-sharp">tv</span>
-</button>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="header">
+  <div class="wrap header__inner">
+    <a class="logo" href="#top" aria-label="8-Bit Orbit home">
+      <span class="logo__mark" aria-hidden="true"></span>8-BIT ORBIT
+    </a>
+    <nav class="nav" aria-label="Primary">
+      <a class="nav__link" href="#features">Features</a>
+      <a class="nav__link" href="#how">How It Works</a>
+      <a class="nav__link" href="#pricing">Pricing</a>
+      <a class="nav__link" href="#faq">FAQ</a>
+    </nav>
+    <div class="header__actions">
+      <button class="icon-btn" id="theme-toggle" type="button" aria-pressed="true" aria-label="Switch to light mode">
+        <span class="material-symbols-sharp" id="theme-icon" aria-hidden="true">dark_mode</span>
+      </button>
+      <a class="btn btn--primary" href="#join"><span class="btn__label">Press Start</span></a>
+      <button class="icon-btn menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="mobile-panel" aria-label="Open menu">
+        <span class="material-symbols-sharp" aria-hidden="true">menu</span>
+      </button>
+    </div>
+  </div>
+  <nav class="mobile-panel" id="mobile-panel" aria-label="Mobile">
+    <a class="nav__link" href="#features">Features</a>
+    <a class="nav__link" href="#how">How It Works</a>
+    <a class="nav__link" href="#pricing">Pricing</a>
+    <a class="nav__link" href="#faq">FAQ</a>
+  </nav>
 </header>
-<main id="main-content">
-<section id="hero">
-<div class="container">
-<header class="section-header">
-<h2>TAKE YOUR PRODUCT INTO THE 8-BIT ORBIT</h2>
-</header>
-<p>Blast past limitations with pixel-perfect precision and zero-lag performance. Your journey to retro-futuristic excellence starts now.</p>
-<div class="hero-actions">
-<a href="#final-cta" class="btn btn--primary">INSERT COIN</a>
-<a href="#features" class="btn btn--secondary">VIEW DEMO</a>
-</div>
-<p class="trust-line"><span class="material-symbols-sharp">online</span> 9,000+ operators online</p>
-<div class="hero-centerpiece">
-<div style="position:relative;width:200px;height:200px;margin:2rem auto;">
-<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:120px;height:120px;background:radial-gradient(circle at 30% 30%,var(--primary) 20%,transparent 20.5%),radial-gradient(circle at 70% 70%,var(--secondary) 20%,transparent 20.5%);border:2px solid var(--border-default);border-radius:50%;"></div>
-<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:80px;height:80px;background:repeating-conic-gradient(from 0deg,var(--border-default) 0%,var(--border-default) 25%,transparent 25%,transparent 50%);border:2px solid var(--border-default);border-radius:50%;animation:spin 20s linear infinite;"></div>
-<div style="position:absolute;top:30%;left:50%;transform:translateX(-50%);width:20px;height:20px;background:var(--accent);border:2px solid var(--border-default);"></div>
-</div>
-</div>
-<p class="blink-cursor" id="blink-cursor">PRESS ANY KEY</p>
-</div>
-</section>
-<section id="features">
-<div class="container">
-<header class="section-header">
-<h2>FEATURES</h2>
-</header>
-<div class="card-grid">
-<div class="card">
-<span class="material-symbols-sharp card-icon memory">memory</span>
-<h3 class="card-title">Pixel-Perfect Precision</h3>
-<p class="card-text">Every frame rendered with authentic 8-bit accuracy. No scaling artifacts, no compromises - just pure retro fidelity at 60fps.</p>
-</div>
-<div class="card">
-<span class="material-symbols-sharp card-icon bolt">bolt</span>
-<h3 class="card-title">Zero-Lag Engine</h3>
-<p class="card-text">Our custom cycle-exact processor eliminates input delay. Feel every button press with immediate, arcade-perfect response.</p>
-</div>
-<div class="card">
-<span class="material-symbols-sharp card-icon sports_esports">sports_esports</span>
-<h3 class="card-title">Infinite Combos</h3>
-<p class="card-text">Procedural generation system creates unique challenges each playthrough. Master evolving patterns and discover secret routes.</p>
-</div>
-</div>
-</div>
-</section>
-<section id="how-it-works">
-<div class="container">
-<header class="section-header">
-<h2>HOW IT WORKS</h2>
-</header>
-<div class="steps">
-<div class="step">
-<div class="step-number">01</div>
-<div class="step-content">
-<h4 class="step-title">Insert Coin</h4>
-<p class="step-text">Begin your journey with a single token. Our universal coin detector accepts all retro currencies.</p>
-</div>
-</div>
-<div class="step-connector"></div>
-<div class="step">
-<div class="step-number">02</div>
-<div class="step-content">
-<h4 class="step-title">Choose Your Craft</h4>
-<p class="step-text">Select from 8 distinct vessels, each with unique handling characteristics and special abilities.</p>
-</div>
-</div>
-<div class="step-connector"></div>
-<div class="step">
-<div class="step-number">03</div>
-<div class="step-content">
-<h4 class="step-title">Enter Orbit</h4>
-<p class="step-text">Launch into the digital stratosphere. Navigate asteroid fields, defeat boss ships, and achieve high score supremacy.</p>
-</div>
-</div>
-</div>
-</div>
-</section>
-<section id="testimonials">
-<div class="container">
-<header class="section-header">
-<h2>TESTIMONIALS</h2>
-</header>
-<div class="testimonials">
-<div class="testimonial-card">
-<div class="avatar"></div>
-<div class="stars">
-<span class="material-symbols-sharp">star</span>
-<span class="material-symbols-sharp">star</span>
-<span class="material-symbols-sharp">star</span>
-<span class="material-symbols-sharp">star</span>
-<span class="material-symbols-sharp">star</span>
-</div>
-<p class="testimonial-text">"Finally, a development platform that understands true retro aesthetics. Our players can't tell the difference between this and actual 1987 hardware."</p>
-<p class="testimonial-author">Alex Chen</p>
-<p class="testimonial-role">Lead Developer, Pixel Pioneers</p>
-</div>
-<div class="testimonial-card">
-<div class="avatar"></div>
-<div class="stars">
-<span class="material-symbols-sharp">star</span>
-<span class="material-symbols-sharp">star</span>
-<span class="material-symbols-sharp">star</span>
-<span class="material-symbols-sharp">star</span>
-<span class="material-symbols-sharp">star</span>
-</div>
-<p class="testimonial-text">"The zero-lag engine transformed our competitive scene. Tournament matches now come down to pure skill, not input buffering."</p>
-<p class="testimonial-author">Morgan Ruiz</p>
-<p class="testimonial-role">Esports Coordinator, Neo Arcadia</p>
-</div>
-<div class="testimonial-card">
-<div class="avatar"></div>
-<div class="stars">
-<span class="material-symbols-sharp">star</span>
-<span class="material-symbols-sharp">star</span>
-<span class="material-symbols-sharp">star</span>
-<span class="material-symbols-sharp">star</span>
-<span class="material-symbols-sharp">star</span>
-</div>
-<p class="testimonial-text">"As a hardware purist, I was skeptical. But the pixel-perfect precision convinced me - this is the real deal."</p>
-<p class="testimonial-author">Sam Watanabe</p>
-<p class="testimonial-role">Retro Hardware Archivist</p>
-</div>
-</div>
-</div>
-</section>
-<section id="pricing">
-<div class="container">
-<header class="section-header">
-<h2>PRICING</h2>
-</header>
-<div class="pricing-toggle">
-<button class="toggle-btn active" data-period="monthly">Monthly</button>
-<button class="toggle-btn" data-period="yearly">Yearly</button>
-</div>
-<div class="pricing-cards">
-<div class="pricing-card">
-<div class="pricing-header">
-<h4 class="pricing-tier">CABINET</h4>
-<p class="pricing-price">$0</p>
-<p class="pricing-badge">FREE TIER</p>
-</div>
-<ul class="pricing-features">
-<li><span class="material-symbols-sharp">check</span>Basic 8-bit rendering</li>
-<li><span class="material-symbols-sharp">check</span>Single vessel selection</li>
-<li><span class="material-symbols-sharp">close</span>Zero-lag engine</li>
-<li><span class="material-symbols-sharp">close</span>Procedural generation</li>
-<li><span class="material-symbols-sharp">close</span>Priority support</li>
-</ul>
-<div class="pricing-cta">
-<a href="#final-cta" class="btn btn--secondary">START FREE</a>
-</div>
-</div>
-<div class="pricing-card featured">
-<div class="pricing-header">
-<h4 class="pricing-tier">ARCADE</h4>
-<p class="pricing-price">$19</p>
-<p class="pricing-badge">MOST PLAYED</p>
-</div>
-<ul class="pricing-features">
-<li><span class="material-symbols-sharp">check</span>Full 8-bit rendering suite</li>
-<li><span class="material-symbols-sharp">check</span>All 8 vessels unlocked</li>
-<li><span class="material-symbols-sharp">check</span>Zero-lag engine</li>
-<li><span class="material-symbols-sharp">check</span>Procedural generation</li>
-<li><span class="material-symbols-sharp">check</span>Priority support</li>
-</ul>
-<div class="pricing-cta">
-<button class="btn btn--primary">SELECT PLAN</button>
-</div>
-</div>
-<div class="pricing-card">
-<div class="pricing-header">
-<h4 class="pricing-tier">TOURNAMENT</h4>
-<p class="pricing-price">$49</p>
-</div>
-<ul class="pricing-features">
-<li><span class="material-symbols-sharp">check</span>Everything in Arcade</li>
-<li><span class="material-symbols-sharp">check</span>Custom vessel creation</li>
-<li><span class="material-symbols-sharp">check</span>Advanced analytics</li>
-<li><span class="material-symbols-sharp">check</span>Dedicated server hosting</li>
-<li><span class="material-symbols-sharp">check</span>24/7 phone support</li>
-</ul>
-<div class="pricing-cta">
-<a href="#final-cta" class="btn btn--secondary">GET QUOTE</a>
-</div>
-</div>
-</div>
-</div>
-</section>
-<section id="faq">
-<div class="container">
-<header class="section-header">
-<h2>FAQ</h2>
-</header>
-<div class="faq">
-<div class="faq-item">
-<div class="faq-summary">
-<h3>How does the zero-lag engine work?</h3>
-<span class="faq-icon material-symbols-sharp">add</span>
-</div>
-<div class="faq-answer">
-Our proprietary cycle-exact processor synchronizes with your display's refresh rate, eliminating input buffering through direct hardware-level interrupt handling. Each button press registers within 1ms of physical actuation.
-</div>
-</div>
-<div class="faq-item">
-<div class="faq-summary">
-<h3>Can I use my existing game controllers?</h3>
-<span class="faq-icon material-symbols-sharp">add</span>
-</div>
-<div class="faq-answer">
-Absolutely! We support all classic 9-pin Atari-style joysticks via USB adapter, plus modern Bluetooth controllers through our universal input mapper. Configure up to 4 simultaneous players.
-</div>
-</div>
-<div class="faq-item">
-<div class="faq-summary">
-<h3>Is there a limit to how many games I can create?</h3>
-<span class="faq-icon material-symbols-sharp">add</span>
-</div>
-<div class="faq-answer">
-No limits whatsoever. Our procedural generation system combined with your creativity creates infinite possibilities. Share your creations via our community hub with one-click publishing.
-</div>
-</div>
-<div class="faq-item">
-<div class="faq-summary">
-<h3>What platforms are supported?</h3>
-<span class="faq-icon material-symbols-sharp">add</span>
-</div>
-<div class="faq-answer">
-We run on any device with a modern web browser - Windows, macOS, Linux, Raspberry Pi, and even retrofitted arcade cabinets. No installation required; instant play through HTML5.
-</div>
-</div>
-<div class="faq-item">
-<div class="faq-summary">
-<h3>How do I access my creations offline?</h3>
-<span class="faq-icon material-symbols-sharp">add</span>
-</div>
-<div class="faq-answer">
-Export your projects as standalone .html files that run anywhere. Includes all assets and the zero-lag engine - perfect for preserving your work or sharing with friends without internet dependency.
-</div>
-</div>
-</div>
-</div>
-</section>
-<section id="final-cta">
-<div class="container">
-<h2>READY, PLAYER? PRESS START.</h2>
-<form id="cta-form" class="input-group">
-<label for="cta-email">Enter your email to join the arcade</label>
-<input type="email" id="cta-email" placeholder="you@domain.com" required>
-<div class="error" id="cta-error" aria-live="polite"></div>
-<button type="submit" class="btn btn--primary">JOIN THE ARCADE</button>
-</form>
-<div id="cta-success" aria-live="polite" style="display:none;color:var(--text-success);margin-top:1rem;font-family:var(--font-display);font-weight:700;">REGISTRATION COMPLETE — WELCOME, PLAYER</div>
-</div>
-</section>
+
+<main id="main">
+  <section class="hero" id="top" aria-labelledby="hero-title">
+    <div class="wrap hero__inner">
+      <div class="hero__copy">
+        <h1 class="hero__title" id="hero-title">Take your product into <em>8-bit orbit</em></h1>
+        <p class="hero__sub">The arcade-grade launch platform for indie teams. Ship fast, score high, and keep every player on the leaderboard.</p>
+        <div class="hero__ctas">
+          <a class="btn btn--primary" href="#join"><span class="btn__label">Insert Coin</span></a>
+          <a class="btn btn--secondary" href="#how"><span class="btn__label">View Demo</span></a>
+        </div>
+        <p class="hero__trust"><span class="material-symbols-sharp" aria-hidden="true">sports_esports</span>9,000+ operators online right now</p>
+        <p class="hero__cursor" aria-hidden="true">PRESS ANY KEY TO CONTINUE</p>
+      </div>
+      <div class="hero__visual" aria-hidden="true">
+        <div class="planet">
+          <span class="planet__ring planet__ring--outer"></span>
+          <span class="planet__ring"></span>
+          <span class="planet__body"></span>
+          <span class="planet__ship"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="features" aria-labelledby="features-title">
+    <div class="wrap">
+      <div class="section__head reveal">
+        <p class="section__eyebrow">[ SYS.01 // FEATURES ]</p>
+        <h2 class="section__title" id="features-title">Built for the high score</h2>
+        <span class="section__underline" aria-hidden="true"></span>
+      </div>
+      <div class="row">
+        <article class="card reveal">
+          <span class="material-symbols-sharp card__icon card__icon--pink" aria-hidden="true">memory</span>
+          <h3 class="card__title">Pixel-Perfect Precision</h3>
+          <p class="card__text">Every release lands exactly where you aim it. Deterministic deploys mean no drift, no surprises, no wasted credits.</p>
+        </article>
+        <article class="card reveal">
+          <span class="material-symbols-sharp card__icon card__icon--cyan" aria-hidden="true">bolt</span>
+          <h3 class="card__title">Zero-Lag Engine</h3>
+          <p class="card__text">Sub-50ms response across every region. Your players feel the difference between a good run and a record run.</p>
+        </article>
+        <article class="card reveal">
+          <span class="material-symbols-sharp card__icon card__icon--yellow" aria-hidden="true">sports_esports</span>
+          <h3 class="card__title">Infinite Combos</h3>
+          <p class="card__text">Chain builds, tests, and rollbacks into one flow. Stack multipliers by automating the moves you repeat daily.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="how" aria-labelledby="how-title">
+    <div class="wrap">
+      <div class="section__head reveal">
+        <h2 class="section__title" id="how-title">Three moves to liftoff</h2>
+        <span class="section__underline" aria-hidden="true"></span>
+        <p class="section__sub">No manuals, no tutorials. You are playing within minutes.</p>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <span class="step__num">01</span>
+          <h3 class="step__title">Insert Coin</h3>
+          <p class="step__text">Create a free cabinet account. No card required, no quarters lost in the slot.</p>
+        </div>
+        <span class="step__connector" aria-hidden="true"></span>
+        <div class="step reveal">
+          <span class="step__num">02</span>
+          <h3 class="step__title">Choose Your Craft</h3>
+          <p class="step__text">Pick a starter template or dock your existing repo. Both paths reach orbit.</p>
+        </div>
+        <span class="step__connector" aria-hidden="true"></span>
+        <div class="step reveal">
+          <span class="step__num">03</span>
+          <h3 class="step__title">Enter Orbit</h3>
+          <p class="step__text">Deploy with one command and watch your score climb on the live dashboard.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="testimonials" aria-labelledby="testimonials-title">
+    <div class="wrap">
+      <div class="section__head reveal">
+        <p class="section__eyebrow">[ SYS.03 // SIGNALS ]</p>
+        <h2 class="section__title" id="testimonials-title">Voices from the arcade floor</h2>
+        <span class="section__underline" aria-hidden="true"></span>
+      </div>
+      <div class="row">
+        <article class="card reveal">
+          <div class="stars" role="img" aria-label="Rated 5 out of 5">
+            <span class="material-symbols-sharp" aria-hidden="true">star</span><span class="material-symbols-sharp" aria-hidden="true">star</span><span class="material-symbols-sharp" aria-hidden="true">star</span><span class="material-symbols-sharp" aria-hidden="true">star</span><span class="material-symbols-sharp" aria-hidden="true">star</span>
+          </div>
+          <p class="quote">We cut release day from four hours to eleven minutes. The rollback button alone paid for the year.</p>
+          <div class="person">
+            <span class="person__avatar" aria-hidden="true">MK</span>
+            <div><p class="person__name">Mara Kessler</p><p class="person__role">Lead Engineer, Comet Labs</p></div>
+          </div>
+        </article>
+        <article class="card reveal">
+          <div class="stars" role="img" aria-label="Rated 5 out of 5">
+            <span class="material-symbols-sharp" aria-hidden="true">star</span><span class="material-symbols-sharp" aria-hidden="true">star</span><span class="material-symbols-sharp" aria-hidden="true">star</span><span class="material-symbols-sharp" aria-hidden="true">star</span><span class="material-symbols-sharp" aria-hidden="true">star</span>
+          </div>
+          <p class="quote">Our three-person team ships like a studio of thirty. The combo pipelines feel like a cheat code.</p>
+          <div class="person">
+            <span class="person__avatar person__avatar--cyan" aria-hidden="true">DO</span>
+            <div><p class="person__name">Dario Okafor</p><p class="person__role">Founder, Pixel Forge</p></div>
+          </div>
+        </article>
+        <article class="card reveal">
+          <div class="stars" role="img" aria-label="Rated 5 out of 5">
+            <span class="material-symbols-sharp" aria-hidden="true">star</span><span class="material-symbols-sharp" aria-hidden="true">star</span><span class="material-symbols-sharp" aria-hidden="true">star</span><span class="material-symbols-sharp" aria-hidden="true">star</span><span class="material-symbols-sharp" aria-hidden="true">star</span>
+          </div>
+          <p class="quote">Latency dropped across every region the week we switched. Players noticed before we announced it.</p>
+          <div class="person">
+            <span class="person__avatar person__avatar--yellow" aria-hidden="true">SL</span>
+            <div><p class="person__name">Sofia Lindqvist</p><p class="person__role">CTO, Neon Harbor</p></div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="pricing" aria-labelledby="pricing-title">
+    <div class="wrap">
+      <div class="section__head reveal">
+        <h2 class="section__title" id="pricing-title">Pick your cabinet</h2>
+        <span class="section__underline" aria-hidden="true"></span>
+        <p class="section__sub">Start free. Upgrade when your high score demands it.</p>
+      </div>
+      <div class="billing reveal" role="group" aria-label="Billing period">
+        <button class="billing__btn" id="bill-monthly" type="button" aria-pressed="true">Monthly</button>
+        <button class="billing__btn" id="bill-yearly" type="button" aria-pressed="false">Yearly</button>
+      </div>
+      <p class="input-group__msg" id="billing-live" aria-live="polite"></p>
+      <div class="row">
+        <article class="card price-card reveal">
+          <h3 class="price-card__tier">Cabinet</h3>
+          <p class="price-card__price" data-monthly="$0" data-yearly="$0">$0<small>/mo</small></p>
+          <ul class="price-card__list">
+            <li><span class="material-symbols-sharp" aria-hidden="true">check</span>1 project slot</li>
+            <li><span class="material-symbols-sharp" aria-hidden="true">check</span>Community leaderboard</li>
+            <li><span class="material-symbols-sharp" aria-hidden="true">check</span>Standard deploy queue</li>
+            <li class="is-off"><span class="material-symbols-sharp" aria-hidden="true">close</span>Combo pipelines</li>
+            <li class="is-off"><span class="material-symbols-sharp" aria-hidden="true">close</span>Priority support</li>
+          </ul>
+          <a class="btn btn--secondary" href="#join"><span class="btn__label">Start Free</span></a>
+        </article>
+        <article class="card price-card price-card--featured reveal">
+          <span class="badge price-card__badge"><span class="material-symbols-sharp" aria-hidden="true">trophy</span>Most Played</span>
+          <h3 class="price-card__tier">Arcade</h3>
+          <p class="price-card__price" data-monthly="$19" data-yearly="$15">$19<small>/mo</small></p>
+          <ul class="price-card__list">
+            <li><span class="material-symbols-sharp" aria-hidden="true">check</span>10 project slots</li>
+            <li><span class="material-symbols-sharp" aria-hidden="true">check</span>Combo pipelines</li>
+            <li><span class="material-symbols-sharp" aria-hidden="true">check</span>Zero-lag edge regions</li>
+            <li><span class="material-symbols-sharp" aria-hidden="true">check</span>One-click rollback</li>
+            <li class="is-off"><span class="material-symbols-sharp" aria-hidden="true">close</span>Dedicated tournament lane</li>
+          </ul>
+          <a class="btn btn--primary" href="#join"><span class="btn__label">Insert Coin</span></a>
+        </article>
+        <article class="card price-card reveal">
+          <h3 class="price-card__tier">Tournament</h3>
+          <p class="price-card__price" data-monthly="$49" data-yearly="$39">$49<small>/mo</small></p>
+          <ul class="price-card__list">
+            <li><span class="material-symbols-sharp" aria-hidden="true">check</span>Unlimited project slots</li>
+            <li><span class="material-symbols-sharp" aria-hidden="true">check</span>Dedicated tournament lane</li>
+            <li><span class="material-symbols-sharp" aria-hidden="true">check</span>Priority support, 1h response</li>
+            <li><span class="material-symbols-sharp" aria-hidden="true">check</span>Team roles and audit log</li>
+            <li><span class="material-symbols-sharp" aria-hidden="true">check</span>Custom domain shields</li>
+          </ul>
+          <a class="btn btn--secondary" href="#join"><span class="btn__label">Go Pro</span></a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="faq" aria-labelledby="faq-title">
+    <div class="wrap">
+      <div class="section__head reveal">
+        <p class="section__eyebrow">[ SYS.05 // MANUAL ]</p>
+        <h2 class="section__title" id="faq-title">Operator manual</h2>
+        <span class="section__underline" aria-hidden="true"></span>
+      </div>
+      <div class="faq reveal">
+        <details class="faq__item">
+          <summary>How long does setup take?<span class="material-symbols-sharp" aria-hidden="true">add</span></summary>
+          <p class="faq__answer">Most teams reach orbit in under ten minutes. Connect a repo, pick a region, and the first deploy runs automatically.</p>
+        </details>
+        <details class="faq__item">
+          <summary>Is the free Cabinet plan really free?<span class="material-symbols-sharp" aria-hidden="true">add</span></summary>
+          <p class="faq__answer">Yes, forever. One project slot with full deploy access, no card required. You only pay when you add more cabinets.</p>
+        </details>
+        <details class="faq__item">
+          <summary>Which stacks are compatible?<span class="material-symbols-sharp" aria-hidden="true">add</span></summary>
+          <p class="faq__answer">Static sites, Node, Python, Go, Rust, and containers. If it builds in a standard pipeline, it runs in our cabinets.</p>
+        </details>
+        <details class="faq__item">
+          <summary>Can I switch plans mid-run?<span class="material-symbols-sharp" aria-hidden="true">add</span></summary>
+          <p class="faq__answer">Anytime. Upgrades apply instantly and downgrades take effect at the next billing cycle. No continues required.</p>
+        </details>
+        <details class="faq__item">
+          <summary>What does support look like?<span class="material-symbols-sharp" aria-hidden="true">add</span></summary>
+          <p class="faq__answer">Real engineers on chat and email. Arcade plans get same-day replies; Tournament plans get a one-hour response window.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="section cta-band" id="join" aria-labelledby="join-title">
+    <div class="wrap cta-band__inner">
+      <h2 class="cta-band__title" id="join-title">Ready, player? Press start.</h2>
+      <form class="input-group" id="join-form" novalidate>
+        <label class="input-group__label" for="email">Operator email</label>
+        <div class="input-group__row">
+          <input class="input-group__field" id="email" name="email" type="email" autocomplete="email" placeholder="you@studio.dev" aria-describedby="email-hint email-msg" required>
+          <button class="btn btn--primary" id="join-btn" type="submit"><span class="btn__label">Join the Arcade</span></button>
+        </div>
+        <p class="input-group__hint" id="email-hint">We send one confirmation. No spam, no loot boxes.</p>
+        <p class="input-group__msg" id="email-msg" aria-live="polite"></p>
+      </form>
+    </div>
+  </section>
 </main>
-<footer class="site-footer">
-<div class="container">
-<div class="footer-content">
-<div class="footer-column">
-<h3>PRODUCT</h3>
-<ul>
-<li><a href="#features">Features</a></li>
-<li><a href="#how-it-works">How It Works</a></li>
-<li><a href="#testimonials">Testimonials</a></li>
-<li><a href="#pricing">Pricing</a></li>
-<li><a href="#faq">FAQ</a></li>
-</ul>
-</div>
-<div class="footer-column">
-<h3>COMPANY</h3>
-<ul>
-<li><a href="#">About Us</a></li>
-<li><a href="#">Careers</a></li>
-<li><a href="#">Press</a></li>
-<li><a href="#">Blog</a></li>
-</ul>
-</div>
-<div class="footer-column">
-<h3>SUPPORT</h3>
-<ul>
-<li><a href="#">Documentation</a></li>
-<li><a href="#">Community Forums</a></li>
-<li><a href="#">Contact Us</a></li>
-<li><a href="#">Status Page</a></li>
-</ul>
-</div>
-<div class="footer-column">
-<h3>LEGAL</h3>
-<ul>
-<li><a href="#">Terms of Service</a></li>
-<li><a href="#">Privacy Policy</a></li>
-<li><a href="#">Cookie Policy</a></li>
-<li><a href="#">Licensing</a></li>
-</ul>
-</div>
-</div>
-<div class="social-links">
-<a href="#" aria-label="Twitter"><span class="material-symbols-sharp">forum</span></a>
-<a href="#" aria-label="Discord"><span class="material-symbols-sharp">chat</span></a>
-<a href="#" aria-label="GitHub"><span class="material-symbols-sharp">code</span></a>
-<a href="#" aria-label="YouTube"><span class="material-symbols-sharp">theaters</span></a>
-</div>
-<div class="footer-bottom">
-<p>© 2025 8-BIT ORBIT — ALL RIGHTS RESERVED</p>
-<button id="back-to-top" class="btn btn--secondary" aria-label="Back to top">
-<span class="material-symbols-sharp">arrow_upward</span>
-</button>
-</div>
-</div>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <a class="logo" href="#top"><span class="logo__mark" aria-hidden="true"></span>8-BIT ORBIT</a>
+        <p class="footer__blurb">Arcade-grade deployment for teams that play to win. Insert coin, ship, repeat.</p>
+      </div>
+      <div class="footer__col">
+        <p class="footer__heading">Product</p>
+        <a class="footer__link" href="#features">Features</a>
+        <a class="footer__link" href="#pricing">Pricing</a>
+        <a class="footer__link" href="#">Changelog</a>
+      </div>
+      <div class="footer__col">
+        <p class="footer__heading">Company</p>
+        <a class="footer__link" href="#">About</a>
+        <a class="footer__link" href="#">Careers</a>
+        <a class="footer__link" href="#">Press Kit</a>
+      </div>
+      <div class="footer__col">
+        <p class="footer__heading">Support</p>
+        <a class="footer__link" href="#faq">FAQ</a>
+        <a class="footer__link" href="#">Docs</a>
+        <a class="footer__link" href="#">Status</a>
+      </div>
+      <div class="footer__col">
+        <p class="footer__heading">Legal</p>
+        <a class="footer__link" href="#">Privacy</a>
+        <a class="footer__link" href="#">Terms</a>
+        <a class="footer__link" href="#">Security</a>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <p class="footer__copy">&copy; 2026 8-BIT ORBIT. ALL RIGHTS RESERVED.</p>
+      <div class="footer__social">
+        <a href="#">GitHub</a><a href="#">Discord</a><a href="#">Mastodon</a>
+      </div>
+      <a class="btn btn--secondary" href="#top"><span class="material-symbols-sharp" aria-hidden="true">arrow_upward</span><span class="btn__label">Back to Top</span></a>
+    </div>
+  </div>
 </footer>
+
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-const crtToggle = document.getElementById('crt-toggle');
-const crtOverlay = document.querySelector('body::after');
-const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-let crtEnabled = localStorage.getItem('crt-fx') === 'null' ? true : localStorage.getItem('crt-fx') === 'true';
-if (prefersReducedMotion.matches) {
-crtEnabled = false;
-localStorage.setItem('crt-fx', 'false');
+(function(){
+"use strict";
+/* Theme toggle */
+var root=document.documentElement,toggle=document.getElementById("theme-toggle"),icon=document.getElementById("theme-icon");
+function paintTheme(){var d=root.dataset.theme==="dark";toggle.setAttribute("aria-pressed",String(d));toggle.setAttribute("aria-label",d?"Switch to light mode":"Switch to dark mode");icon.textContent=d?"dark_mode":"light_mode";}
+toggle.addEventListener("click",function(){root.dataset.theme=root.dataset.theme==="dark"?"light":"dark";localStorage.setItem("theme",root.dataset.theme);paintTheme();});
+paintTheme();
+
+/* Mobile menu */
+var menuBtn=document.getElementById("menu-btn"),panel=document.getElementById("mobile-panel");
+function closeMenu(){panel.classList.remove("is-open");menuBtn.setAttribute("aria-expanded","false");menuBtn.setAttribute("aria-label","Open menu");}
+menuBtn.addEventListener("click",function(){var open=panel.classList.toggle("is-open");menuBtn.setAttribute("aria-expanded",String(open));menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");});
+panel.addEventListener("click",function(e){if(e.target.closest("a"))closeMenu();});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")closeMenu();});
+
+/* Reveal on scroll */
+var reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+if(!reduced&&"IntersectionObserver" in window){
+var io=new IntersectionObserver(function(entries){entries.forEach(function(en){if(en.isIntersecting){en.target.classList.add("is-visible");io.unobserve(en.target);}});},{threshold:.12});
+document.querySelectorAll(".reveal").forEach(function(el,i){el.style.transitionDelay=(i%3)*60+"ms";io.observe(el);});
+}else{document.querySelectorAll(".reveal").forEach(function(el){el.classList.add("is-visible");});}
+
+/* Billing toggle */
+var bm=document.getElementById("bill-monthly"),by=document.getElementById("bill-yearly"),live=document.getElementById("billing-live");
+function setBilling(yearly){
+bm.setAttribute("aria-pressed",String(!yearly));by.setAttribute("aria-pressed",String(yearly));
+document.querySelectorAll(".price-card__price").forEach(function(p){var v=yearly?p.dataset.yearly:p.dataset.monthly;p.innerHTML=v+"<small>/mo</small>";});
+live.textContent=yearly?"Showing yearly prices. Save 20% on every tier.":"Showing monthly prices.";
 }
-updateCrtToggle();
-crtToggle.addEventListener('click', () => {
-crtEnabled = !crtEnabled;
-localStorage.setItem('crt-fx', crtEnabled);
-updateCrtToggle();
+bm.addEventListener("click",function(){setBilling(false);});
+by.addEventListener("click",function(){setBilling(true);});
+
+/* Join form */
+var form=document.getElementById("join-form"),email=document.getElementById("email"),msg=document.getElementById("email-msg"),joinBtn=document.getElementById("join-btn");
+form.addEventListener("submit",function(e){
+e.preventDefault();
+msg.className="input-group__msg";email.classList.remove("is-valid","is-invalid");
+var v=email.value.trim();
+if(!v||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)){
+email.classList.add("is-invalid");
+msg.classList.add("is-error");
+msg.innerHTML='<span class="material-symbols-sharp" aria-hidden="true">error</span>Enter a valid email to continue.';
+email.focus();return;
+}
+joinBtn.classList.add("is-loading");joinBtn.setAttribute("aria-busy","true");joinBtn.disabled=true;
+msg.textContent="Transmitting...";
+setTimeout(function(){
+joinBtn.classList.remove("is-loading");joinBtn.removeAttribute("aria-busy");joinBtn.disabled=false;
+joinBtn.classList.add("is-success");email.classList.add("is-valid");
+msg.classList.add("is-success");
+msg.innerHTML='<span class="material-symbols-sharp" aria-hidden="true">check_circle</span>REGISTRATION COMPLETE. WELCOME, PLAYER.';
+form.reset();
+setTimeout(function(){joinBtn.classList.remove("is-success");},3000);
+},1200);
 });
-function updateCrtToggle() {
-if (crtEnabled) {
-document.documentElement.style.setProperty('--crt-overlay-opacity', '1');
-} else {
-document.documentElement.style.setProperty('--crt-overlay-opacity', '0');
-}
-crtToggle.setAttribute('aria-pressed', crtEnabled);
-}
-const pricingToggleBtns = document.querySelectorAll('.toggle-btn');
-const pricingPrices = document.querySelectorAll('.pricing-price');
-pricingToggleBtns.forEach(btn => {
-btn.addEventListener('click', () => {
-pricingToggleBtns.forEach(b => b.classList.remove('active'));
-btn.classList.add('active');
-const period = btn.dataset.period;
-pricingPrices.forEach(price => {
-if (period === 'yearly') {
-if (price.closest('.pricing-card').querySelector('.pricing-tier').textContent === 'ARCADE') {
-price.textContent = '$15';
-} else if (price.closest('.pricing-card').querySelector('.pricing-tier').textContent === 'TOURNAMENT') {
-price.textContent = '$39';
-}
-} else {
-if (price.closest('.pricing-card').querySelector('.pricing-tier').textContent === 'ARCADE') {
-price.textContent = '$19';
-} else if (price.closest('.pricing-card').querySelector('.pricing-tier').textContent === 'TOURNAMENT') {
-price.textContent = '$49';
-}
-}
-});
-const announcement = document.createElement('div');
-announcement.setAttribute('aria-live', 'polite');
-announcement.textContent = period === 'yearly' ? 'Showing yearly prices — save 20%' : 'Showing monthly prices';
-document.body.appendChild(announcement);
-setTimeout(() => announcement.remove(), 3000);
-});
-});
-const faqItems = document.querySelectorAll('.faq-item');
-faqItems.forEach(item => {
-item.addEventListener('click', (e) => {
-if (e.target.closest('.faq-summary')) {
-item.toggleAttribute('open');
-}
-});
-});
-const backToTopBtn = document.getElementById('back-to-top');
-window.addEventListener('scroll', () => {
-if (window.pageYOffset > 300) {
-backToTopBtn.classList.add('visible');
-} else {
-backToTopBtn.classList.remove('visible');
-}
-});
-backToTopBtn.addEventListener('click', () => {
-window.scrollTo({ top: 0, behavior: 'smooth' });
-});
-const ctaForm = document.getElementById('cta-form');
-const ctaError = document.getElementById('cta-error');
-const ctaSuccess = document.getElementById('cta-success');
-ctaForm.addEventListener('submit', (e) => {
-e.preventaught();
-const emailInput = document.getElementById('cta-email');
-const email = emailInput.value.trim();
-if (!email) {
-showError('Please enter your email address');
-return;
-}
-if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-showError('Please enter a valid email address');
-return;
-}
-submitForm();
-});
-function showError(message) {
-ctaError.textContent = message;
-ctaError.style.display = 'block';
-ctaSuccess.style.display = 'none';
-}
-function hideError() {
-ctaError.textContent = '';
-ctaError.style.display = 'none';
-}
-function submitForm() {
-hideError();
-const submitBtn = ctaForm.querySelector('button[type="submit"]');
-submitBtn.classList.add('is-loading');
-submitBtn.setAttribute('aria-busy', 'true');
-submitBtn.disabled = true;
-setTimeout(() => {
-submitBtn.classList.remove('is-loading');
-submitBtn.removeAttribute('aria-busy');
-submitBtn.disabled = false;
-ctaForm.reset();
-ctaSuccess.style.display = 'block';
-ctaError.style.display = 'none';
-}, 1200);
-}
-});
+})();
 </script>
 </body>
 </html>

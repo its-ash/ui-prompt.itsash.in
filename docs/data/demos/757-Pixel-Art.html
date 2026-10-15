@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PIXELFORGE - Build Retro Games in Your Browser</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet">
+<style>
+/* Flexbox exception list: .features__row, .pricing__row, .testimonials__row use align-items:stretch for equal-height cards; .input-group and form stacks use align-items:stretch for stacked label/input groups. */
+:root{
+  --font-display:'Press Start 2P',monospace;
+  --font-base:'VT323',monospace;
+  --primary:#0058f8; --primary-contrast:#fefefe;
+  --secondary:#f8b800; --secondary-contrast:#121212;
+  --accent-red:#d82800; --accent-green:#00a800; --accent-cyan:#0058c8;
+  --bg-primary:#f2ecdc; --bg-secondary:#fefefe;
+  --bg-invert:#121212; --text-invert:#f2ecdc;
+  --text-primary:#121212; --text-secondary:#4f4a3d;
+  --text-success:#0b6b0b; --text-error:#b71c1c;
+  --border-default:#121212; --border-success:#0b6b0b; --border-error:#b71c1c;
+  --pixel-outline:#121212; --pixel-shadow:#121212;
+  --marquee-bg:#121212; --marquee-text:#f8b800;
+  --radius-sm:0; --radius-md:0; --radius-lg:0;
+  --shadow-sm:2px 2px 0 0 var(--pixel-shadow);
+  --shadow-md:4px 4px 0 0 var(--pixel-shadow);
+  --shadow-lg:6px 6px 0 0 var(--pixel-shadow);
+  --spacing-gap:1rem;
+  --transition-fast:60ms; --transition-normal:120ms; --ease-standard:linear;
+  --z-scanlines:80; --z-header:90; --z-dropdown:100;
+}
+:root[data-theme="dark"]{
+  --primary:#3cbcfc; --primary-contrast:#121212;
+  --secondary:#f8b800; --secondary-contrast:#121212;
+  --accent-cyan:#3cbcfc;
+  --bg-primary:#12121e; --bg-secondary:#1f1f33;
+  --bg-invert:#fefefe; --text-invert:#12121e;
+  --text-primary:#f8f8f8; --text-secondary:#b8b8d0;
+  --text-success:#58d854; --text-error:#fc7460;
+  --border-default:#e8e8f0; --border-success:#58d854; --border-error:#fc7460;
+  --pixel-outline:#f0f0f0; --pixel-shadow:#000000;
+  --marquee-bg:#000000; --marquee-text:#f8b800;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{
+  font-family:var(--font-base);font-size:20px;line-height:1.5;
+  background:var(--bg-primary);color:var(--text-primary);
+  overflow-x:hidden;max-width:100%;
+}
+img{max-width:100%;image-rendering:pixelated;image-rendering:crisp-edges}
+h1,h2,h3,.btn,.price,.nav__link,.brand,.step__plate,.badge{
+  font-family:var(--font-display);-webkit-font-smoothing:none;
+  letter-spacing:0;line-height:1.4;text-transform:uppercase;
+}
+h1{font-size:clamp(1.4rem,4.5vw,2.6rem);line-height:1.3}
+h2{font-size:clamp(1.1rem,3vw,1.6rem);line-height:1.35}
+h3{font-size:.85rem}
+p{max-width:65ch}
+section{scroll-margin-top:88px;padding:clamp(4rem,8vw,6.5rem) 0}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--accent-cyan);outline-offset:3px}
+.wrap{max-width:1200px;margin:0 auto;padding:0 1.25rem;width:100%}
+@media(min-width:768px){.wrap{padding:0 2rem}}
+.skip{position:absolute;left:-9999px;top:0;background:var(--primary);color:var(--primary-contrast);font-family:var(--font-display);font-size:12px;padding:12px 16px;z-index:400}
+.skip:focus{left:8px;top:8px}
+.material-symbols-outlined{font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24;font-size:24px;line-height:1}
+/* scanlines */
+.scanlines{position:fixed;inset:0;pointer-events:none;z-index:var(--z-scanlines);
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.045) 0 1px,transparent 1px 4px)}
+/* header */
+.header{position:sticky;top:0;z-index:var(--z-header);background:var(--bg-secondary);
+  border-bottom:4px solid var(--pixel-outline)}
+.header__bar{display:flex;align-items:center;justify-content:space-between;gap:1rem;height:68px}
+.brand{font-size:.95rem;text-decoration:none;display:flex;align-items:center;gap:.5rem}
+.brand__mark{width:24px;height:24px;background:var(--primary);box-shadow:inset -6px -6px 0 rgba(0,0,0,.3);flex:none}
+.nav{display:flex;align-items:center;gap:1.5rem}
+.nav__link{font-size:.65rem;text-decoration:none;padding:12px 4px;min-height:44px;display:flex;align-items:center}
+@media(hover:hover) and (pointer:fine){
+  .nav__link:hover{background:var(--secondary);color:var(--secondary-contrast);box-shadow:0 0 0 4px var(--secondary)}
+}
+.header__actions{display:flex;align-items:center;gap:.75rem}
+.icon-btn{width:44px;height:44px;display:flex;align-items:center;justify-content:center;
+  background:var(--bg-secondary);border:3px solid var(--pixel-outline);box-shadow:var(--shadow-sm);
+  color:var(--text-primary);cursor:pointer}
+.icon-btn:active{transform:translate(2px,2px);box-shadow:none}
+.menu-btn{display:none}
+.mobile-panel{display:none;position:absolute;top:68px;left:0;right:0;background:var(--bg-secondary);
+  border-bottom:4px solid var(--pixel-outline);flex-direction:column;align-items:center;gap:.25rem;
+  padding:1rem;z-index:var(--z-dropdown)}
+.mobile-panel.is-open{display:flex}
+@media(max-width:767px){.nav{display:none}.menu-btn{display:flex}}
+/* buttons */
+.btn{display:flex;align-items:center;justify-content:center;gap:.5rem;min-height:48px;
+  padding:0 1.25rem;font-size:12px;border:4px solid var(--pixel-outline);
+  box-shadow:var(--shadow-md);cursor:pointer;text-decoration:none;
+  transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard);
+  min-width:160px;text-align:center}
+.btn--primary{background:var(--primary);color:var(--primary-contrast)}
+.btn--secondary{background:var(--secondary);color:var(--secondary-contrast)}
+.btn--ghost{background:var(--bg-secondary);color:var(--text-primary)}
+.btn--danger{background:var(--accent-red);color:#fefefe}
+@media(hover:hover) and (pointer:fine){.btn:hover{box-shadow:var(--shadow-lg);filter:brightness(1.08)}}
+.btn:active{transform:translate(2px,2px);box-shadow:none}
+.btn:disabled,.btn.is-loading{opacity:.5;filter:grayscale(1);cursor:not-allowed;pointer-events:none;box-shadow:none}
+.btn.is-success{background:var(--accent-green);color:#fefefe}
+.btn.is-error{background:var(--accent-red);color:#fefefe}
+.btn--sm{min-height:44px;min-width:96px;padding:0 .9rem;font-size:10px}
+.spinner{width:16px;height:16px;background:currentColor;
+  animation:spin steps(8) .8s infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* hero */
+.hero{min-height:calc(100vh - 68px);display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;gap:1.5rem;padding-top:3rem;position:relative;overflow:hidden;
+  background:
+    repeating-conic-gradient(rgba(18,18,18,.05) 0% 25%,transparent 0% 50%) 0 0/16px 16px,
+    var(--bg-primary)}
+:root[data-theme="dark"] .hero{
+  background:
+    radial-gradient(2px 2px at 20% 30%,#f8f8f8 50%,transparent 51%),
+    radial-gradient(2px 2px at 70% 15%,#3cbcfc 50%,transparent 51%),
+    radial-gradient(2px 2px at 85% 55%,#f8b800 50%,transparent 51%),
+    radial-gradient(2px 2px at 40% 70%,#f8f8f8 50%,transparent 51%),
+    radial-gradient(2px 2px at 10% 80%,#3cbcfc 50%,transparent 51%),
+    radial-gradient(2px 2px at 60% 45%,#f8f8f8 50%,transparent 51%),
+    var(--bg-primary)}
+.hero__kicker{font-family:var(--font-display);font-size:.7rem;color:var(--primary);
+  background:var(--bg-secondary);border:3px solid var(--pixel-outline);box-shadow:var(--shadow-sm);padding:10px 16px}
+.hero__sub{font-size:clamp(1.25rem,2.5vw,1.5rem);color:var(--text-secondary);max-width:34ch}
+.hero__ctas{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;justify-content:center}
+.cursor{display:inline-block;width:.7em;height:1em;background:var(--text-primary);vertical-align:-.1em;
+  animation:blink 1s steps(2) infinite}
+.press-start{font-family:var(--font-display);font-size:.7rem;color:var(--accent-red);
+  animation:blink 1s steps(2) infinite}
+:root[data-theme="dark"] .press-start{color:var(--secondary)}
+@keyframes blink{50%{opacity:0}}
+/* coin sprite: 2-frame steps animation */
+.coin{width:16px;height:16px;background:var(--secondary);border:4px solid var(--pixel-outline);
+  box-shadow:var(--shadow-sm);animation:coinflip 1s steps(1,end) infinite}
+@keyframes coinflip{0%,49%{transform:scaleX(1)}50%,99%{transform:scaleX(.25)}}
+/* marquee */
+.marquee{background:var(--marquee-bg);color:var(--marquee-text);overflow:hidden;
+  border-top:4px solid var(--pixel-outline);border-bottom:4px solid var(--pixel-outline);
+  padding:14px 0;max-width:100%}
+.marquee__track{display:flex;gap:3rem;width:max-content;animation:scroll 22s linear infinite;
+  font-family:var(--font-display);font-size:.75rem;white-space:nowrap}
+.marquee:hover .marquee__track,.marquee:focus-within .marquee__track{animation-play-state:paused}
+@keyframes scroll{to{transform:translateX(-50%)}}
+/* sections */
+.section-head{text-align:center;display:flex;flex-direction:column;align-items:center;gap:1rem;margin-bottom:3rem}
+.section-head p{color:var(--text-secondary);font-size:1.25rem}
+/* cards */
+.card{display:flex;flex-direction:column;gap:var(--spacing-gap);background:var(--bg-secondary);
+  border:4px solid var(--pixel-outline);box-shadow:var(--shadow-md);padding:1.5rem;
+  transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard)}
+.card:focus-within{border-color:var(--primary)}
+@media(hover:hover) and (pointer:fine){.card--hover:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}}
+.card__chip{width:56px;height:56px;display:flex;align-items:center;justify-content:center;
+  border:4px solid var(--pixel-outline);background:var(--secondary);color:var(--secondary-contrast);box-shadow:var(--shadow-sm)}
+.card__chip--blue{background:var(--primary);color:var(--primary-contrast)}
+.card__chip--red{background:var(--accent-red);color:#fefefe}
+.card h3{font-size:.8rem}
+.card p{color:var(--text-secondary)}
+.badge{font-size:.55rem;background:var(--accent-red);color:#fefefe;padding:6px 10px;align-self:flex-start;
+  border:3px solid var(--pixel-outline)}
+.badge--green{background:var(--accent-green)}
+.card--skeleton .sk{background:var(--text-secondary);opacity:.25;animation:shimmer 1s steps(2) infinite}
+@keyframes shimmer{50%{opacity:.1}}
+.card--empty{align-items:center;justify-content:center;text-align:center;color:var(--text-secondary)}
+.features__row{display:flex;align-items:stretch;gap:1.5rem}
+.features__row>.card{flex:1;min-width:0}
+@media(max-width:767px){.features__row{flex-direction:column;align-items:stretch}}
+/* steps */
+.steps{display:flex;align-items:stretch;gap:0;position:relative}
+.step{flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;gap:1rem;padding:0 1.25rem;position:relative}
+.step__plate{width:72px;height:72px;display:flex;align-items:center;justify-content:center;
+  background:var(--primary);color:var(--primary-contrast);border:4px solid var(--pixel-outline);
+  box-shadow:var(--shadow-md);font-size:.6rem}
+.step p{color:var(--text-secondary)}
+.step:not(:last-child)::after{content:"";position:absolute;top:36px;left:calc(50% + 48px);right:calc(-50% + 48px);
+  height:4px;background:repeating-linear-gradient(90deg,var(--pixel-outline) 0 8px,transparent 8px 16px)}
+@media(max-width:767px){
+  .steps{flex-direction:column;gap:2.5rem;align-items:center}
+  .step{max-width:340px}
+  .step:not(:last-child)::after{top:auto;left:50%;right:auto;bottom:-2.25rem;width:4px;height:2rem;
+    transform:translateX(-50%);background:repeating-linear-gradient(180deg,var(--pixel-outline) 0 8px,transparent 8px 16px)}
+}
+/* testimonials */
+.testimonials__row{display:flex;align-items:stretch;gap:1.5rem;flex-wrap:wrap}
+.quote{flex:1;min-width:260px;display:flex;flex-direction:column;gap:1rem;background:var(--bg-secondary);
+  border:4px solid var(--pixel-outline);box-shadow:var(--shadow-md);padding:1.5rem}
+.quote__head{display:flex;align-items:center;gap:1rem}
+.quote__avatar{width:48px;height:48px;flex:none;display:flex;align-items:center;justify-content:center;
+  border:4px solid var(--pixel-outline);color:var(--primary-contrast);
+  background:repeating-conic-gradient(var(--primary) 0% 25%,#0038a8 0% 50%) 0 0/8px 8px}
+.quote__name{font-family:var(--font-display);font-size:.65rem}
+.quote__role{color:var(--text-secondary);font-size:1.05rem}
+.stars{display:flex;align-items:center;gap:2px;color:var(--secondary)}
+.stars .material-symbols-outlined{font-size:20px}
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* pricing */
+.pricing__row{display:flex;align-items:stretch;gap:1.5rem}
+.pricing-card{flex:1;min-width:0;display:flex;flex-direction:column;gap:1.25rem;background:var(--bg-secondary);
+  border:4px solid var(--pixel-outline);box-shadow:var(--shadow-md);padding:1.5rem}
+.pricing-card--featured{border:8px solid var(--primary);padding:2rem;position:relative}
+:root[data-theme="dark"] .pricing-card--featured{border-color:var(--primary)}
+.pricing-card__flag{position:absolute;top:-16px;left:50%;transform:translateX(-50%);
+  font-family:var(--font-display);font-size:.55rem;background:var(--secondary);color:var(--secondary-contrast);
+  border:3px solid var(--pixel-outline);padding:6px 10px;white-space:nowrap}
+.price{font-size:1.6rem}
+.price small{font-family:var(--font-base);font-size:1.1rem;text-transform:none;color:var(--text-secondary)}
+.feat-list{list-style:none;display:flex;flex-direction:column;gap:.75rem;flex:1}
+.feat-list li{display:flex;align-items:center;gap:.5rem}
+.feat-list .material-symbols-outlined{color:var(--text-success);font-size:22px;flex:none}
+@media(max-width:767px){.pricing__row{flex-direction:column;align-items:stretch}.pricing-card--featured{margin-top:1rem}}
+/* faq */
+.faq{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:1rem}
+.faq__item{background:var(--bg-secondary);border:4px solid var(--pixel-outline);box-shadow:var(--shadow-sm)}
+.faq__item[open]{border-color:var(--primary)}
+.faq__item summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;cursor:pointer;
+  padding:1.25rem;font-family:var(--font-display);font-size:.75rem;list-style:none;min-height:44px}
+.faq__item summary::-webkit-details-marker{display:none}
+.faq__item summary .material-symbols-outlined{flex:none}
+.faq__item[open] summary .material-symbols-outlined{transform:rotate(45deg)}
+.faq__item p{padding:0 1.25rem 1.25rem;color:var(--text-secondary)}
+/* cta */
+.cta{background:var(--primary);color:var(--primary-contrast);border-top:4px solid var(--pixel-outline);
+  border-bottom:4px solid var(--pixel-outline)}
+.cta__panel{display:flex;flex-direction:column;align-items:center;gap:1.5rem;text-align:center}
+.cta p{opacity:.95}
+.signup{display:flex;align-items:flex-end;gap:1rem;width:100%;max-width:560px}
+.input-group{display:flex;flex-direction:column;align-items:stretch;gap:.5rem;flex:1;text-align:left}
+.input-group label{font-size:1.15rem}
+.input{height:48px;background:var(--bg-secondary);color:var(--text-primary);
+  border:4px solid var(--pixel-outline);font-family:var(--font-base);font-size:20px;padding:0 .75rem;width:100%}
+.input:focus{outline:3px solid var(--accent-cyan);outline-offset:3px}
+.input.is-valid{border-color:var(--border-success)}
+.input.is-invalid{border-color:var(--border-error)}
+.input:disabled{opacity:.5;cursor:not-allowed}
+.input__error{color:var(--text-error);font-size:1.05rem;display:flex;align-items:center;gap:.35rem;min-height:1.4rem}
+.cta .input__error{color:#ffe08a}
+:root[data-theme="dark"] .cta .input__error{color:#7a1010}
+.form-status{font-size:1.2rem;min-height:1.5rem;display:flex;align-items:center;gap:.5rem;justify-content:center}
+@media(max-width:767px){.signup{flex-direction:column;align-items:stretch}.signup .btn{width:100%}}
+/* footer */
+.footer{background:var(--bg-invert);color:var(--text-invert);padding:3.5rem 0 0}
+.footer__grid{display:flex;flex-wrap:wrap;gap:2.5rem;justify-content:space-between}
+.footer__brand{max-width:280px;display:flex;flex-direction:column;gap:.75rem}
+.footer__col{display:flex;flex-direction:column;gap:.5rem;align-items:flex-start}
+.footer__col h3{font-size:.65rem;margin-bottom:.5rem}
+.footer__col a{text-decoration:none;font-size:1.1rem;padding:4px 0;min-height:32px;display:flex;align-items:center}
+@media(hover:hover) and (pointer:fine){.footer__col a:hover{background:var(--secondary);color:var(--secondary-contrast);box-shadow:0 0 0 3px var(--secondary)}}
+.socials{display:flex;gap:.75rem}
+.socials .icon-btn{background:var(--bg-invert);color:var(--text-invert);border-color:var(--text-invert);box-shadow:2px 2px 0 0 var(--text-invert)}
+.footer__bottom{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin-top:2.5rem;padding:1.25rem 0;border-top:4px dashed var(--text-invert);font-size:1.05rem}
+.footer__bottom nav{display:flex;gap:1.5rem}
+.footer__bottom a{color:inherit}
+@media(max-width:640px){.footer__grid{flex-direction:column}.footer__bottom{justify-content:center;text-align:center}}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .cursor,.press-start{animation:none;opacity:1}
+  .coin{animation:none}
+  .marquee__track{animation:none;width:100%;justify-content:center}
+  .marquee__track span[aria-hidden]{display:none}
+  *{transition-duration:60ms!important}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="scanlines" aria-hidden="true"></div>
+
+<header class="header">
+  <div class="wrap header__bar">
+    <a class="brand" href="#top"><span class="brand__mark" aria-hidden="true"></span>PIXELFORGE</a>
+    <nav class="nav" aria-label="Main">
+      <a class="nav__link" href="#features">Features</a>
+      <a class="nav__link" href="#how">How It Works</a>
+      <a class="nav__link" href="#pricing">Pricing</a>
+      <a class="nav__link" href="#faq">FAQ</a>
+    </nav>
+    <div class="header__actions">
+      <button class="icon-btn" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-outlined" id="theme-icon" aria-hidden="true">dark_mode</span>
+      </button>
+      <a class="btn btn--primary btn--sm" href="#cta">Start</a>
+      <button class="icon-btn menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="mobile-panel" aria-label="Open menu">
+        <span class="material-symbols-outlined" aria-hidden="true">menu</span>
+      </button>
+    </div>
+  </div>
+  <nav class="mobile-panel" id="mobile-panel" aria-label="Mobile">
+    <a class="nav__link" href="#features">Features</a>
+    <a class="nav__link" href="#how">How It Works</a>
+    <a class="nav__link" href="#pricing">Pricing</a>
+    <a class="nav__link" href="#faq">FAQ</a>
+  </nav>
+</header>
+
+<main id="main">
+  <section class="hero" id="top">
+    <p class="hero__kicker">★ New Game ★</p>
+    <h1>Build Retro Games in Your Browser<span class="cursor" aria-hidden="true"></span></h1>
+    <p class="hero__sub">PixelForge is a sprite editor, level builder, and chiptune studio packed into one 8-bit workshop.</p>
+    <div class="hero__ctas">
+      <a class="btn btn--primary" href="#cta">Press Start</a>
+      <a class="btn btn--secondary" href="#features">Explore Features</a>
+    </div>
+    <p class="press-start" aria-hidden="true">Press Start</p>
+    <div class="coin" aria-hidden="true"></div>
+  </section>
+
+  <div class="marquee" aria-label="Arcade ticker">
+    <div class="marquee__track">
+      <span>Insert Coin ★ Press Start ★ High Score ★ 1UP ★ New Game ★ Ready Player One ★&nbsp;</span>
+      <span aria-hidden="true">Insert Coin ★ Press Start ★ High Score ★ 1UP ★ New Game ★ Ready Player One ★&nbsp;</span>
+    </div>
+  </div>
+
+  <section id="features">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Power-Ups Included</h2>
+        <p>Every tool you need to ship a cartridge-worthy game, no quarters required.</p>
+      </div>
+      <div class="features__row">
+        <article class="card card--hover">
+          <span class="card__chip"><span class="material-symbols-outlined" aria-hidden="true">grid_on</span></span>
+          <h3>Sprite Studio</h3>
+          <p>Draw frame-by-frame sprites on a 16x16 grid with a full NES palette, onion skinning, and instant flipbook preview.</p>
+          <span class="badge">New</span>
+        </article>
+        <article class="card card--hover">
+          <span class="card__chip card__chip--blue"><span class="material-symbols-outlined" aria-hidden="true">map</span></span>
+          <h3>Level Builder</h3>
+          <p>Paint tile maps with drag-and-drop brushes, set collision boxes visually, and test-play any stage in one click.</p>
+        </article>
+        <article class="card card--hover">
+          <span class="card__chip card__chip--red"><span class="material-symbols-outlined" aria-hidden="true">music_note</span></span>
+          <h3>Chiptune Mixer</h3>
+          <p>Compose square-wave anthems on four channels with tracker-style patterns that export straight into your game.</p>
+          <span class="badge badge--green">1UP</span>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Three Levels to Launch</h2>
+        <p>From blank cartridge to playable build before your pizza arrives.</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="step__plate">Level 1</div>
+          <span class="material-symbols-outlined" aria-hidden="true">draw</span>
+          <h3>Draw Your Hero</h3>
+          <p>Sketch sprites and tiles in the editor, or remix a starter pack from the vault.</p>
+        </div>
+        <div class="step">
+          <div class="step__plate">Level 2</div>
+          <span class="material-symbols-outlined" aria-hidden="true">construction</span>
+          <h3>Build the World</h3>
+          <p>Assemble stages, wire up enemies and pickups, and drop in your soundtrack.</p>
+        </div>
+        <div class="step">
+          <div class="step__plate">Level 3</div>
+          <span class="material-symbols-outlined" aria-hidden="true">rocket_launch</span>
+          <h3>Ship and Share</h3>
+          <p>Export a playable ROM-style file or publish a link your friends can run instantly.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="testimonials">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Players Talk</h2>
+        <p>High scores from makers who shipped their first game with PixelForge.</p>
+      </div>
+      <div class="testimonials__row">
+        <article class="quote">
+          <div class="quote__head">
+            <span class="quote__avatar"><span class="material-symbols-outlined" aria-hidden="true">person</span></span>
+            <div><p class="quote__name">Mara Voss</p><p class="quote__role">Indie Dev, Coincave Studio</p></div>
+          </div>
+          <p>&ldquo;I prototyped a full platformer over one weekend. The sprite editor feels like the tools I grew up dreaming about.&rdquo;</p>
+          <div class="stars"><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="visually-hidden">Rated 5 out of 5 stars</span></div>
+        </article>
+        <article class="quote">
+          <div class="quote__head">
+            <span class="quote__avatar"><span class="material-symbols-outlined" aria-hidden="true">person</span></span>
+            <div><p class="quote__name">Devon Park</p><p class="quote__role">Teacher, Bitwise Club</p></div>
+          </div>
+          <p>&ldquo;My students went from zero to playable games in three sessions. The instant test-play button is pure magic.&rdquo;</p>
+          <div class="stars"><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="visually-hidden">Rated 5 out of 5 stars</span></div>
+        </article>
+        <article class="quote">
+          <div class="quote__head">
+            <span class="quote__avatar"><span class="material-symbols-outlined" aria-hidden="true">person</span></span>
+            <div><p class="quote__name">Lena Ruiz</p><p class="quote__role">Composer, Wavetable Works</p></div>
+          </div>
+          <p>&ldquo;The chiptune mixer alone is worth it. Four channels, real tracker patterns, and my loops drop right into the build.&rdquo;</p>
+          <div class="stars"><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="material-symbols-outlined" aria-hidden="true">star</span><span class="visually-hidden">Rated 5 out of 5 stars</span></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Pick Your Cartridge</h2>
+        <p>Start free, upgrade when your game outgrows the sandbox.</p>
+      </div>
+      <div class="pricing__row">
+        <article class="pricing-card">
+          <h3>Rookie</h3>
+          <p class="price">$0<small> /month</small></p>
+          <ul class="feat-list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>3 active projects</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Sprite editor, 16x16 grid</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>2 chiptune channels</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Community arcade publishing</li>
+          </ul>
+          <a class="btn btn--secondary" href="#cta">Start Free</a>
+        </article>
+        <article class="pricing-card pricing-card--featured">
+          <span class="pricing-card__flag">Most Popular</span>
+          <h3>Speedrunner</h3>
+          <p class="price">$9<small> /month</small></p>
+          <ul class="feat-list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Unlimited projects</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>32x32 grids and tile sheets</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>4 chiptune channels</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>ROM-style export</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Custom splash screen</li>
+          </ul>
+          <a class="btn btn--primary" href="#cta">Press Start</a>
+        </article>
+        <article class="pricing-card">
+          <h3>Arcade Pro</h3>
+          <p class="price">$24<small> /month</small></p>
+          <ul class="feat-list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Everything in Speedrunner</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Team co-op editing</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Version history, 90 days</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Priority support queue</li>
+          </ul>
+          <a class="btn btn--secondary" href="#cta">Go Pro</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Continue?</h2>
+        <p>Answers before you spend a single coin.</p>
+      </div>
+      <div class="faq">
+        <details class="faq__item">
+          <summary>Do I need to know how to code?<span class="material-symbols-outlined" aria-hidden="true">add</span></summary>
+          <p>No. PixelForge uses visual rules for movement, collisions, and scoring. If you can drag a tile, you can ship a game. A scripting lane is there when you want it.</p>
+        </details>
+        <details class="faq__item">
+          <summary>What can I export my game as?<span class="material-symbols-outlined" aria-hidden="true">add</span></summary>
+          <p>Every plan exports a shareable browser link. Paid plans add a ROM-style file you can run in common emulators and flash carts.</p>
+        </details>
+        <details class="faq__item">
+          <summary>Who owns the games I make?<span class="material-symbols-outlined" aria-hidden="true">add</span></summary>
+          <p>You do, completely. Every sprite, track, and level you create is yours to sell, share, or port anywhere.</p>
+        </details>
+        <details class="faq__item">
+          <summary>Can I collaborate with my team?<span class="material-symbols-outlined" aria-hidden="true">add</span></summary>
+          <p>Arcade Pro includes live co-op editing, so one person can paint tiles while another writes the boss music in real time.</p>
+        </details>
+        <details class="faq__item">
+          <summary>Is there a free trial of paid plans?<span class="material-symbols-outlined" aria-hidden="true">add</span></summary>
+          <p>The Rookie plan is free forever. Speedrunner and Arcade Pro come with a 14-day trial, no card required.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta" id="cta">
+    <div class="wrap cta__panel">
+      <h2>Ready Player One</h2>
+      <p>Join the cartridge club. Get dev tips, sprite packs, and beta keys in your inbox.</p>
+      <form class="signup" id="signup-form" novalidate>
+        <div class="input-group">
+          <label for="email">Email address</label>
+          <input class="input" type="email" id="email" name="email" autocomplete="email" aria-describedby="email-error" placeholder="you@arcade.gg">
+          <p class="input__error" id="email-error" aria-live="polite"></p>
+        </div>
+        <button class="btn btn--secondary" id="signup-btn" type="submit">Start Playing</button>
+      </form>
+      <p class="form-status" id="form-status" aria-live="polite"></p>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <a class="brand" href="#top"><span class="brand__mark" aria-hidden="true"></span>PIXELFORGE</a>
+        <p>Retro game creation for the modern arcade. No quarters required.</p>
+        <div class="socials">
+          <a class="icon-btn" href="#top" aria-label="PixelForge on YouTube"><span class="material-symbols-outlined" aria-hidden="true">play_circle</span></a>
+          <a class="icon-btn" href="#top" aria-label="PixelForge community chat"><span class="material-symbols-outlined" aria-hidden="true">forum</span></a>
+          <a class="icon-btn" href="#top" aria-label="PixelForge code repository"><span class="material-symbols-outlined" aria-hidden="true">code</span></a>
+        </div>
+      </div>
+      <div class="footer__col">
+        <h3>Product</h3>
+        <a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#how">How It Works</a>
+      </div>
+      <div class="footer__col">
+        <h3>Company</h3>
+        <a href="#top">About</a><a href="#top">Blog</a><a href="#top">Careers</a>
+      </div>
+      <div class="footer__col">
+        <h3>Support</h3>
+        <a href="#faq">FAQ</a><a href="#top">Docs</a><a href="#top">Contact</a>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <p>&copy; <span id="year">2026</span> PixelForge Arcade Co. All rights reserved.</p>
+      <nav aria-label="Legal"><a href="#top">Privacy</a><a href="#top">Terms</a></nav>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var root=document.documentElement;
+  var toggle=document.getElementById("theme-toggle");
+  var icon=document.getElementById("theme-icon");
+  function applyTheme(t){
+    root.dataset.theme=t;
+    var dark=t==="dark";
+    toggle.setAttribute("aria-pressed",dark?"true":"false");
+    toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+    icon.textContent=dark?"light_mode":"dark_mode";
+  }
+  applyTheme(root.dataset.theme==="dark"?"dark":"light");
+  toggle.addEventListener("click",function(){
+    var next=root.dataset.theme==="dark"?"light":"dark";
+    localStorage.setItem("theme",next);
+    applyTheme(next);
+  });
+
+  var menuBtn=document.getElementById("menu-btn");
+  var panel=document.getElementById("mobile-panel");
+  function closeMenu(){
+    panel.classList.remove("is-open");
+    menuBtn.setAttribute("aria-expanded","false");
+    menuBtn.setAttribute("aria-label","Open menu");
+  }
+  menuBtn.addEventListener("click",function(){
+    var open=panel.classList.toggle("is-open");
+    menuBtn.setAttribute("aria-expanded",open?"true":"false");
+    menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");
+    if(open){var first=panel.querySelector("a");if(first){first.focus();}}
+  });
+  document.addEventListener("keydown",function(e){
+    if(e.key==="Escape"&&panel.classList.contains("is-open")){closeMenu();menuBtn.focus();}
+  });
+  document.addEventListener("click",function(e){
+    if(panel.classList.contains("is-open")&&!panel.contains(e.target)&&!menuBtn.contains(e.target)){closeMenu();}
+  });
+  panel.addEventListener("click",function(e){if(e.target.tagName==="A"){closeMenu();}});
+
+  var form=document.getElementById("signup-form");
+  var email=document.getElementById("email");
+  var err=document.getElementById("email-error");
+  var btn=document.getElementById("signup-btn");
+  var status=document.getElementById("form-status");
+  var re=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  form.addEventListener("submit",function(e){
+    e.preventDefault();
+    status.textContent="";
+    btn.classList.remove("is-success","is-error");
+    if(!re.test(email.value.trim())){
+      email.classList.add("is-invalid");email.classList.remove("is-valid");
+      email.setAttribute("aria-invalid","true");
+      err.innerHTML='<span class="material-symbols-outlined" aria-hidden="true">error</span> Enter a valid email to continue.';
+      btn.classList.add("is-error");btn.textContent="Try Again";
+      email.focus();
+      return;
+    }
+    email.classList.remove("is-invalid");email.classList.add("is-valid");
+    email.removeAttribute("aria-invalid");err.textContent="";
+    btn.classList.add("is-loading");btn.setAttribute("aria-busy","true");
+    btn.innerHTML='<span class="spinner" aria-hidden="true"></span> Loading';
+    setTimeout(function(){
+      btn.classList.remove("is-loading");btn.removeAttribute("aria-busy");
+      btn.classList.add("is-success");
+      btn.innerHTML='<span class="material-symbols-outlined" aria-hidden="true">check</span> Game On';
+      status.textContent="READY PLAYER ONE, check your inbox for your beta key.";
+      form.reset();email.classList.remove("is-valid");
+    },1200);
+  });
+
+  document.getElementById("year").textContent=new Date().getFullYear();
+})();
+</script>
+</body>
+</html>

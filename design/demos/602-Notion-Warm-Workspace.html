@@ -1,690 +1,635 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nimbus Warm Workspace</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <style>
-    :root{
-      --primary:#0075de;--secondary:#213183;--bg-primary:#fefefe;--bg-secondary:#f6f5f4;
-      --text-primary:rgba(0,0,0,0.95);--text-secondary:#615d59;--text-muted:#a39e98;
-      --text-success:#0f7b6c;--text-error:#d44c47;--border-default:rgba(0,0,0,0.1);
-      --border-success:rgba(15,123,108,0.5);--border-error:rgba(212,76,71,0.5);
-      --blue-tint:rgba(0,117,222,0.08);--radius-sm:4px;--radius-md:12px;--radius-lg:16px;--radius-pill:9999px;
-      --shadow-sm:0 1px 2px rgba(0,0,0,0.04),0 4px 10px rgba(0,0,0,0.03),0 12px 28px rgba(0,0,0,0.02);
-      --shadow-md:0 2px 6px rgba(0,0,0,0.04),0 8px 16px rgba(0,0,0,0.03),0 20px 48px rgba(0,0,0,0.02);
-      --spacing-gap:1.5rem;--transition-fast:150ms;--transition-normal:280ms;
-      --ease-standard:cubic-bezier(0.25,0.46,0.45,0.94);--z-dropdown:100;--z-modal:200;--z-toast:300;
-      --font-base:'Inter',sans-serif;--tracking-headline:-0.033em;
-      --accent-dark:#4da3f7;
-    }
-    html.dark{
-      --bg-primary:#1f1e1c;--bg-secondary:#292724;--text-primary:rgba(255,255,255,0.95);
-      --text-secondary:#a39e98;--text-muted:#8a857f;--border-default:rgba(255,255,255,0.1);
-      --blue-tint:rgba(77,163,247,0.14);--accent-dark:#4da3f7;
-    }
-    @media (prefers-color-scheme:dark){
-      :root{
-        --bg-primary:#1f1e1c;--bg-secondary:#292724;--text-primary:rgba(255,255,255,0.95);
-        --text-secondary:#a39e98;--text-muted:#8a857f;--border-default:rgba(255,255,255,0.1);
-        --blue-tint:rgba(77,163,247,0.14);
-      }
-    }
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;overflow-x:hidden;}
-    body{
-      font:400 16px var(--font-base);background:var(--bg-primary);color:var(--text-primary);
-      -webkit-tap-highlight-color:transparent;
-    }
-    @media (prefers-reduced-motion:reduce){
-      *,*::before,*::after{transition:none!important;animation:none!important;}
-    }
-    a{color:inherit;text-decoration:none;}
-    img{max-width:100%;display:block;}
-    .skip-link{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(1px,1px,1px,1px);}
-    .skip-link:focus{left:0;top:0;width:auto;height:auto;padding:0.5rem;background:var(--primary);color:#fff;}
-    .container{max-width:1120px;margin:0 auto;padding:0 var(--spacing-gap);}
-    .skip-to-content{position:absolute;left:-9999px;}
-    .skip-to-content:focus{left:0;top:auto;padding:1rem;background:var(--primary);color:#fff;width:auto;}
-    /* Header */
-    header{
-      position:sticky;top:0;z-index:var(--z-dropdown);background:var(--bg-primary);
-      border-bottom:1px solid var(--border-default);padding:1rem 0;
-    }
-    .header-wrap{
-      display:flex;align-items:center;justify-content:space-between;gap:var(--spacing-gap);
-    }
-    .logo{
-      display:flex;align-items:center;gap:0.5rem;
-    }
-    .logo .material-icons{
-      font-variant:opsz;font-size:28px;
-    }
-    .nav{
-      display:flex;gap:2rem;list-style:none;
-    }
-    .nav__link{
-      font:500 var(--tracking-headline) var(--font-base);color:var(--text-secondary);
-      position:relative;padding-bottom:0.25rem;
-    }
-    .nav__link::after{
-      content:'';position:absolute;left:0;bottom:0;width:0;height:2px;background:var(--primary);
-      transition:var(--transition-fast);
-    }
-    .nav__link:hover,.nav__link:focus{color:var(--text-primary);}
-    .nav__link:focus::after,.nav__link:hover::after{width:100%;}
-    .header__actions{
-      display:flex;align-items:center;gap:0.75rem;
-    }
-    .theme-toggle{
-      display:flex;align-items:center;gap:0.5rem;padding:0.5rem;
-      background:transparent;border:none;cursor:pointer;
-      color:var(--text-secondary);
-    }
-    .theme-toggle .material-icons{
-      font-size:24px;
-    }
-    .theme-toggle[aria-pressed="true"] .material-icons{color:var(--primary);}
-    /* Hero */
-    .hero{
-      padding:4rem 0;text-align:center;
-    }
-    .hero__badge{
-      display:inline-flex;align-items:center;justify-content:center;
-      margin:1rem auto 2rem; padding:0.6rem 1.2rem;
-      background:var(--blue-tint);color:var(--primary);
-      border-radius:var(--radius-pill);font:500 14px var(--font-base);
-    }
-    .hero__title{
-      font:700 clamp(50px,4vw+46px,64px) var(--font-base);letter-spacing:-0.033em;line-height:1.1;
-      margin-bottom:1rem;
-    }
-    .hero__subtitle{
-      color:var(--text-secondary);font:400 var(--font-base);max-width:60ch;margin:0 auto 2rem;
-    }
-    .hero__buttons{
-      display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;
-    }
-    /* Sections */
-    section{
-      padding:4rem 0;
-    }
-    .section-header{
-      text-align:center;margin-bottom:3rem;
-    }
-    .section-heading{
-      font:700 clamp(32px,3vw+28px,40px) var(--font-base);letter-spacing:var(--tracking-headline);margin-bottom0.5rem;
-    }
-    .section-subheading{
-      color:var(--text-secondary);font:400 var(--font-base);
-    }
-    /* Features */
-    .features{
-      background:var(--bg-secondary);
-    }
-    .features__grid{
-      display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--spacing-gap);
-    }
-    .feature__card{
-      background:var(--bg-primary);border:1px solid var(--border-default);
-      border-radius:var(--radius-md);padding:2rem;display:flex;flex-direction:column;gap:1rem;
-      transition:var(--transition-normal);
-    }
-    .feature__card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
-    .feature__card:focus-within{border-color:var(--primary);}
-    .feature__icon{
-      width:48px;height:48px;display:flex;align-items:center;justify-content:center;
-      margin:0 auto 1rem;border-radius:50%;background:var(--blue-tint);color:var(--primary);
-    }
-    /* How It Works */
-    .how-it-works{
-      background:var(--bg-primary);
-    }
-    .steps{
-      display:flex;flex-direction:column;align-items:center;gap:2rem;
-    }
-    .step{
-      display:flex;flex-direction:column;align-items:center;gap:0.75rem;
-    }
-    .step__number{
-      width:48px;height:48px;display:flex;align-items:center;justify-content:center;
-      background:var(--bg-primary);border:1px solid var(--border-default);
-      border-radius:9999px;font:600 18px var(--font-base);color:var(--primary);
-    }
-    .step__symbol{
-      width:48px;height:48px;display:flex;align-items:center;justify-content:center;
-      color:var(--primary);margin-top:0.5rem;
-    }
-    .step__line{
-      flex:1;height:1px;background:var(--border-default);
-    }
-    /* Testimonials */
-    .testimonials{
-      background:var(--bg-secondary);
-    }
-    .testimonials__grid{
-      display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:var(--spacing-gap);
-    }
-    .testimonial__card{
-      background:var(--bg-primary);border:1px solid var(--border-default);
-      border-radius:var(--radius-md);padding:2rem;display:flex;flex-direction:column;gap:1rem;
-    }
-    .testimonial__quote{font:400 18px/1.6 var(--font-base);color:var(--text-secondary);flex:1;}
-    .testimonial__avatar{
-      width:48px;height:48px;border-radius:9999px;background:var(--border-default);
-      flex-shrink:0;
-    }
-    .testimonial__name{font:500 var(--font-base);} .testimonial__role{color:var(--text-muted);font-size:0.875rem;}
-    /* Pricing */
-    .pricing{
-      background:var(--bg-primary);
-    }
-    .pricing__grid{
-      display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:var(--spacing-gap);
-    }
-    .pricing__card{
-      background:var(--bg-primary);border:1px solid var(--border-default);
-      border-radius:var(--radius-md);padding:2rem;display:flex:flex-direction:column;gap:1.5rem;
-      transition:var(--transition-normal);
-    }
-    .pricing__card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
-    .pricing__card--featured{
-      border-color:var(--primary);box-shadow:var(--shadow-md);position:relative;
-    }
-    .pricing__card--featured .pricing__tag{
-      position:absolute;top:1rem;right:1rem;display:inline-flex;align-items:center;gap:0.4rem;
-      background:var(--primary);color:#fff;border-radius:var(--radius-sm);padding:0.4rem 0.8rem;
-      font:600 12px var(--font-base);
-    }
-    .pricing__card--featured .material-icons{color:var(--primary);}
-    .pricing__features{color:var(--text-secondary);font-size:0.875rem;line-height:1.8;}
-    .pricing__price{
-      font:700 var(--font-base);color:var(--primary);margin:1rem 0;
-    }
-    .pricing__button{
-      width:100%;padding:1rem;background:var(--bg-primary);border:1px solid var(--border-default);
-      border-radius:var(--radius-sm);font:500 var(--font-base);cursor:pointer;
-      transition:var(--transition-fast);
-    }
-    .pricing__button:hover{border-color:var(--primary);color:var(--primary);}
-    .pricing__button:focus{outline:2px solid var(--primary);outline-offset:2px;}
-    .pricing__button:disabled{
-      opacity:0.5;cursor:not-allowed;border-color:var(--border-default);background:var(--bg-secondary);
-    }
-    /* FAQ */
-    .faq{
-      background:var(--bg-secondary);
-    }
-    .faq__item{
-      border:1px solid var(--border-default);border-radius:var(--radius-md);margin-bottom:0.5rem;
-      overflow:hidden;
-    }
-    .faq__trigger{
-      width:100%;padding:1.25rem 1.5rem;display:flex;align-items:center;justify-content:between;
-      background:var(--bg-primary);font:500 var(--font-base);color:var(--text-primary);
-      text-align:left;cursor:pointer;transition:var(--transition-fast);
-    }
-    .faq__trigger .material-icons{transition:transform var(--transition-fast);}
-    .faq__trigger[aria-expanded="true"] .material-icons{transform:rotate(180deg);}
-    .faq__trigger:focus{
-      outline:2px solid var(--primary);outline-offset:2px;
-    }
-    .faq__panel{
-      padding:0 1.5rem;max-height:0;overflow:hidden;transition:max-height 0.3s var(--ease-standard);
-    }
-    .faq__panel p{color:var(--text-secondary);font-size:0.875rem;line-height:1.6;}
-    /* Final CTA */
-    .cta{
-      background:var(--primary);color:var(--bg-primary);padding:4rem 0;text-align:center;
-    }
-    .cta__title{
-      font:700 clamp(40px,4vw+32px,56px) var(--font-base);letter-spacing:var(--tracking-headline);margin-bottom1rem;
-    }
-    .cta__text{color:rgba(255,255,255,0.9);font:400 var(--font-base);margin-bottom2rem;max-width:60ch;margin-left:auto;margin-right:auto;}
-    .cta__button{
-      display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;
-      padding:1rem 2rem;background:var(--bg-primary);color:var(--primary);
-      border:none;border-radius:var(--radius-sm);font:500 var(--font-base);cursor:pointer;
-      transition:var(--transition-fast);
-    }
-    .cta__button:hover{transform:scale(0.97);background:#fefefe;}
-    .cta__button:focus{
-      outline:2px solid var(--primary);outline-offset:2px;
-    }
-    .cta__button .material-icons{font-size:18px;}
-    /* Footer */
-    footer{
-      background:var(--bg-secondary);border-top:1px solid var(--border-default);padding:3rem 0 1rem;
-    }
-    .footer__wrap{
-      display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--spacing-gap);
-      margin-bottom:2rem;
-    }
-    .footer__column h4{
-      font:600 var(--font-base);margin-bottom1rem;color:var(--text-primary);
-    }
-    .footer__column ul{list-style:none;}
-    .footer__column li{
-      margin-bottom0.5rem;color:var(--text-muted);font-size:0.875rem;
-    }
-    .footer__column li a:hover{color:var(--primary);}
-    .footer__bottom{
-      padding-top:1rem;border-top:1px solid var(--border-default);display:flex;justify-content:space-between;align-items:center;
-      color:var(--text-muted);font-size:0.875rem;
-    }
-    .footer__links a{margin-left1.5rem;color:var(--text-muted);font-size:0.875rem;transition:var(--transition-fast);}
-    .footer__links a:hover{color:var(--primary);}
-    /* Buttons */
-    .btn{
-      display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;
-      min-width:180px;padding:1rem 1.5rem;font:500 var(--font-base);cursor:pointer;
-      border:none;border-radius:var(--radius-sm);transition:var(--transition-fast);
-    }
-    .btn-primary{
-      background:var(--primary);color:rgba(255,255,255,0.95);
-    }
-    .btn-primary:hover{filter:brightness(1.05);}
-    .btn-primary:focus{outline:2px solid #005fa3;outline-offset:2px;}
-    .btn-primary:active{transform:scale(0.97);}
-    .btn-secondary{
-      background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border-default);
-    }
-    .btn-secondary:hover{border-color:#7a7672;}
-    .btn-secondary:focus{outline:2px solid var(--primary);outline-offset:2px;}
-    .btn-danger{
-      background:rgba(212,76,71,0.1);color:var(--text-error);
-      border:1px solid var(--border-error);
-    }
-    .btn-danger:hover{background:rgba(212,76,71,0.2);}
-    .btn-danger:focus{outline:2px solid var(--text-error);outline-offset:2px;}
-    /* Workspace mockup */
-    .workspace{
-      background:var(--bg-primary);border:1px solid var(--border-default);
-      border-radius:var(--radius-md);padding:2rem;box-shadow:var(--shadow-md);margin-top:2rem;
-    }
-    .workspace__row{
-      display:flex;gap:1rem;margin-bottom1rem;flex-wrap:wrap;
-    }
-    .workspace__col{
-      flex:1;min-width:200px;display:flex;flex-direction:column;gap:0.75rem;
-    }
-    .workspace__block{
-      background:var(--bg-secondary);border:1px solid var(--border-default);
-      border-radius:var(--radius-sm);height:32px;display:flex;align-items:center;
-      padding:0 0.75rem;color:var(--text-muted);font-size:12px;
-    }
-    .workspace__text{
-      background:var(--bg-secondary);border:1px solid var(--border-default);
-      border-radius:var(--radius-sm);height:48px;display:flex;align-items:center;
-      padding:0 0.75rem;color:var(--text-muted);font-size:13px;
-    }
-    /* Reduced motion */
-    @media (prefers-reduced-motion:reduce){
-      .feature__card,.pricing__card,.testimonial__card{transition:none;}
-      .pricing__card--featured{box-shadow:none;}
-      .workspace__block,.workspace__text{transition:none;}
-      .cta__button{transition:none;}
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notewell - A calmer workspace for thinking teams</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<style>
+:root{
+  --primary:#0075de;--secondary:#213183;
+  --bg-primary:#fefefe;--bg-secondary:#f6f5f4;
+  --text-primary:rgba(0,0,0,0.95);--text-secondary:#615d59;--text-muted:#a39e98;
+  --text-success:#0f7b6c;--text-error:#d44c47;
+  --border-default:rgba(0,0,0,0.1);--border-success:rgba(15,123,108,0.5);--border-error:rgba(212,76,71,0.5);
+  --blue-tint:rgba(0,117,222,0.08);--on-accent:rgba(255,255,255,0.97);
+  --accent-text:#0075de;
+  --radius-sm:4px;--radius-md:12px;--radius-lg:16px;--radius-pill:9999px;
+  --shadow-sm:0 1px 2px rgba(0,0,0,0.04),0 4px 10px rgba(0,0,0,0.03),0 12px 28px rgba(0,0,0,0.02);
+  --shadow-md:0 1px 2px rgba(0,0,0,0.04),0 8px 20px rgba(0,0,0,0.04),0 20px 48px rgba(0,0,0,0.03);
+  --spacing-gap:1.5rem;
+  --transition-fast:150ms;--transition-normal:280ms;
+  --ease-standard:cubic-bezier(0.25,0.46,0.45,0.94);
+  --z-dropdown:100;--z-modal:200;--z-toast:300;
+  --font-base:'Inter',sans-serif;--tracking-headline:-0.033em;
+}
+:root[data-theme="dark"]{
+  --primary:#0075de;--accent-text:#4da3f7;
+  --bg-primary:#1f1e1c;--bg-secondary:#292724;
+  --text-primary:rgba(255,255,255,0.95);--text-secondary:#a39e98;--text-muted:#8a857f;
+  --text-success:#4ec9b0;--text-error:#f08a85;
+  --border-default:rgba(255,255,255,0.1);--border-success:rgba(78,201,176,0.5);--border-error:rgba(240,138,133,0.5);
+  --blue-tint:rgba(77,163,247,0.14);--on-accent:rgba(255,255,255,0.97);
+  --shadow-sm:0 1px 2px rgba(0,0,0,0.3),0 4px 10px rgba(0,0,0,0.25),0 12px 28px rgba(0,0,0,0.2);
+  --shadow-md:0 1px 2px rgba(0,0,0,0.3),0 8px 20px rgba(0,0,0,0.28),0 20px 48px rgba(0,0,0,0.22);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth;scroll-padding-top:5rem}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;font-size:1rem;overflow-x:hidden;transition:background var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard)}
+h1,h2,h3{letter-spacing:var(--tracking-headline);line-height:1.1;font-weight:700}
+h1{font-size:clamp(2.25rem,5vw,4rem)}
+h2{font-size:clamp(1.75rem,3.5vw,2.5rem)}
+h3{font-size:1.125rem;line-height:1.35}
+p{max-width:65ch}
+a{color:inherit}
+.container{max-width:1120px;margin:0 auto;padding:0 1.25rem}
+@media(min-width:768px){.container{padding:0 2rem}}
+section{padding:clamp(4rem,8vw,7rem) 0}
+.section-alt{background:var(--bg-secondary)}
+.section-head{display:flex;flex-direction:column;align-items:center;text-align:center;gap:0.75rem;margin-bottom:3rem}
+.section-head p{color:var(--text-secondary);font-size:1.0625rem;max-width:52ch}
+.material-symbols-rounded{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;user-select:none}
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;min-height:44px;padding:0 1.25rem;border-radius:var(--radius-sm);font-family:var(--font-base);font-size:0.9375rem;font-weight:500;text-decoration:none;border:1px solid transparent;cursor:pointer;transition:background var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard),transform var(--transition-fast) var(--ease-standard),opacity var(--transition-fast) var(--ease-standard);white-space:nowrap}
+.btn:active{transform:scale(0.97)}
+.btn:focus-visible{outline:2px solid var(--accent-text);outline-offset:2px}
+.btn-primary{background:var(--primary);color:var(--on-accent)}
+.btn-secondary{background:var(--bg-primary);color:var(--text-primary);border-color:var(--border-default)}
+.btn-danger{background:var(--text-error);color:#fff}
+.btn:disabled,.btn[aria-disabled="true"]{opacity:0.5;filter:grayscale(0.4);cursor:not-allowed}
+@media(hover:hover) and (pointer:fine){
+  .btn-primary:hover{filter:brightness(1.08);box-shadow:var(--shadow-sm)}
+  .btn-secondary:hover{background:var(--bg-secondary)}
+  .btn-danger:hover{filter:brightness(1.08)}
+}
+.btn--white{background:#fff;color:#0075de}
+@media(hover:hover) and (pointer:fine){.btn--white:hover{background:#eef5fc}}
+/* Badge */
+.badge-pill{display:inline-flex;align-items:center;gap:0.375rem;padding:0.3rem 0.875rem;border-radius:var(--radius-pill);background:var(--blue-tint);color:var(--accent-text);font-size:0.8125rem;font-weight:600}
+/* Header */
+.site-header{position:sticky;top:0;z-index:var(--z-dropdown);background:color-mix(in srgb,var(--bg-primary) 85%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border-default)}
+.site-header__inner{display:flex;align-items:center;justify-content:space-between;height:64px;gap:1rem}
+.wordmark{display:flex;align-items:center;gap:0.5rem;font-weight:700;font-size:1.0625rem;text-decoration:none;letter-spacing:-0.02em}
+.wordmark .material-symbols-rounded{color:var(--accent-text);font-size:1.5rem}
+.nav-links{display:flex;align-items:center;gap:1.5rem;list-style:none}
+.nav-links a{text-decoration:none;color:var(--text-secondary);font-size:0.9375rem;font-weight:500;transition:color var(--transition-fast)}
+.nav-links a:focus-visible{outline:2px solid var(--accent-text);outline-offset:2px;border-radius:var(--radius-sm)}
+@media(hover:hover) and (pointer:fine){.nav-links a:hover{color:var(--text-primary)}}
+.header-actions{display:flex;align-items:center;gap:0.75rem}
+#theme-toggle{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-sm);border:1px solid var(--border-default);background:var(--bg-primary);color:var(--text-secondary);cursor:pointer;transition:background var(--transition-fast),color var(--transition-fast),transform var(--transition-fast)}
+#theme-toggle:active{transform:scale(0.97)}
+#theme-toggle:focus-visible{outline:2px solid var(--accent-text);outline-offset:2px}
+@media(hover:hover) and (pointer:fine){#theme-toggle:hover{color:var(--accent-text);background:var(--bg-secondary)}}
+#theme-toggle .icon-moon,#theme-toggle .icon-sun{display:none}
+:root[data-theme="light"] #theme-toggle .icon-moon{display:inline-block}
+:root[data-theme="dark"] #theme-toggle .icon-sun{display:inline-block}
+.menu-btn{display:none;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-sm);border:1px solid var(--border-default);background:var(--bg-primary);color:var(--text-primary);cursor:pointer}
+.menu-btn:focus-visible{outline:2px solid var(--accent-text);outline-offset:2px}
+@media(max-width:767px){
+  .menu-btn{display:inline-flex}
+  .nav-links{position:absolute;top:64px;left:0;right:0;flex-direction:column;align-items:stretch;gap:0;background:var(--bg-primary);border-bottom:1px solid var(--border-default);padding:0.75rem 1.25rem;box-shadow:var(--shadow-md)}
+  .nav-links[hidden]{display:none}
+  .nav-links a{display:block;padding:0.75rem 0.5rem}
+  .header-actions .btn{display:none}
+}
+/* Hero */
+.hero{padding-top:clamp(3rem,6vw,5rem)}
+.hero__grid{display:flex;align-items:center;gap:3rem}
+.hero__copy{flex:1 1 46%;display:flex;flex-direction:column;align-items:flex-start;gap:1.25rem}
+.hero__sub{color:var(--text-secondary);font-size:1.125rem;max-width:44ch}
+.hero__ctas{display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap}
+.hero__visual{flex:1 1 54%;display:flex;align-items:center;justify-content:center}
+.mockup{width:100%;max-width:560px;background:var(--bg-primary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);display:flex;overflow:hidden}
+.mockup__side{width:34%;background:var(--bg-secondary);border-right:1px solid var(--border-default);padding:1rem;display:flex;flex-direction:column;gap:0.625rem}
+.mockup__side-item{display:flex;align-items:center;gap:0.5rem;font-size:0.75rem;color:var(--text-secondary);font-weight:500}
+.mockup__side-item .material-symbols-rounded{font-size:1rem;color:var(--text-muted)}
+.mockup__side-item--active{background:var(--blue-tint);color:var(--accent-text);border-radius:var(--radius-sm);padding:0.3rem 0.5rem;margin:0 -0.5rem}
+.mockup__side-item--active .material-symbols-rounded{color:var(--accent-text)}
+.mockup__main{flex:1;padding:1.25rem;display:flex;flex-direction:column;gap:0.75rem}
+.mockup__title{font-weight:700;font-size:1rem;letter-spacing:-0.02em}
+.mockup__line{height:8px;border-radius:var(--radius-pill);background:var(--bg-secondary);border:1px solid var(--border-default)}
+.mockup__line--short{width:62%}
+.mockup__block{display:flex;align-items:center;gap:0.625rem;border:1px solid var(--border-default);border-radius:var(--radius-md);padding:0.625rem 0.75rem;box-shadow:var(--shadow-sm);background:var(--bg-primary)}
+.mockup__block .material-symbols-rounded{color:var(--accent-text);font-size:1.125rem}
+.mockup__block span{font-size:0.8125rem;color:var(--text-secondary);font-weight:500}
+.mockup__check{width:16px;height:16px;border-radius:var(--radius-sm);border:1px solid var(--border-default);flex:none}
+.mockup__check--done{background:var(--primary);border-color:var(--primary);position:relative}
+@media(max-width:900px){.hero__grid{flex-direction:column;align-items:flex-start}.hero__visual{width:100%}}
+/* Cards */
+.card{display:flex;flex-direction:column;gap:0.75rem;background:var(--bg-primary);border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);padding:1.75rem;transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),border-color var(--transition-normal)}
+.section-alt .card{background:var(--bg-primary)}
+.card:focus-within{border-color:var(--accent-text)}
+@media(hover:hover) and (pointer:fine){.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}}
+.card__icon{width:44px;height:44px;border-radius:var(--radius-pill);background:var(--blue-tint);color:var(--accent-text);display:flex;align-items:center;justify-content:center}
+.card p{color:var(--text-secondary);font-size:0.9375rem}
+.grid-3{display:flex;gap:var(--spacing-gap);align-items:stretch}
+.grid-3>*{flex:1}
+@media(max-width:767px){.grid-3{flex-direction:column}}
+/* Steps */
+.steps{display:flex;align-items:stretch;gap:var(--spacing-gap);position:relative}
+.step{flex:1;display:flex;flex-direction:column;gap:0.75rem;align-items:flex-start}
+.step__num{font-size:0.8125rem;font-weight:700;color:var(--accent-text);background:var(--blue-tint);border-radius:var(--radius-pill);padding:0.25rem 0.75rem}
+.step__icon{color:var(--text-muted);font-size:1.75rem}
+.step p{color:var(--text-secondary);font-size:0.9375rem}
+.step__arrow{align-self:center;color:var(--text-muted);flex:none}
+@media(max-width:767px){.steps{flex-direction:column}.step__arrow{transform:rotate(90deg);align-self:flex-start;margin-left:1rem}}
+/* Testimonials */
+.quote-card{display:flex;flex-direction:column;gap:1rem}
+.quote-card .material-symbols-rounded{color:var(--accent-text);font-size:1.5rem}
+.quote-card blockquote{font-size:0.9375rem;color:var(--text-primary);line-height:1.6}
+.quote-card__person{display:flex;align-items:center;gap:0.75rem}
+.avatar{width:40px;height:40px;border-radius:var(--radius-pill);background:var(--blue-tint);color:var(--accent-text);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8125rem;flex:none}
+.quote-card__name{font-weight:600;font-size:0.875rem}
+.quote-card__role{color:var(--text-muted);font-size:0.8125rem}
+/* Pricing */
+.pricing-card{position:relative;display:flex;flex-direction:column;gap:1.25rem}
+.pricing-card--featured{border:1px solid var(--primary);box-shadow:var(--shadow-md)}
+:root[data-theme="dark"] .pricing-card--featured{border-color:var(--accent-text)}
+.pricing-card__badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%)}
+.pricing-card__price{font-size:2.25rem;font-weight:700;letter-spacing:var(--tracking-headline)}
+.pricing-card__price small{font-size:0.875rem;font-weight:500;color:var(--text-muted);letter-spacing:0}
+.pricing-card ul{list-style:none;display:flex;flex-direction:column;gap:0.625rem;flex:1}
+.pricing-card li{display:flex;align-items:center;gap:0.5rem;font-size:0.9375rem;color:var(--text-secondary)}
+.pricing-card li .material-symbols-rounded{color:var(--text-success);font-size:1.125rem}
+/* FAQ */
+.accordion{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:0.75rem}
+.accordion__item{background:var(--bg-primary);border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);overflow:hidden}
+.accordion__trigger{width:100%;display:flex;align-items:center;justify-content:space-between;gap:1rem;background:none;border:none;font-family:var(--font-base);font-size:1rem;font-weight:600;color:var(--text-primary);text-align:left;padding:1.125rem 1.25rem;cursor:pointer;min-height:44px}
+.accordion__trigger:focus-visible{outline:2px solid var(--accent-text);outline-offset:-2px}
+.accordion__trigger .material-symbols-rounded{color:var(--text-muted);transition:transform var(--transition-normal) var(--ease-standard)}
+.accordion__trigger[aria-expanded="true"] .material-symbols-rounded{transform:rotate(180deg)}
+.accordion__panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--transition-normal) var(--ease-standard)}
+.accordion__trigger[aria-expanded="true"]+.accordion__panel{grid-template-rows:1fr}
+.accordion__panel-inner{overflow:hidden}
+.accordion__panel p{padding:0 1.25rem 1.25rem;color:var(--text-secondary);font-size:0.9375rem}
+/* CTA band */
+.cta-band{background:var(--primary);color:var(--on-accent);text-align:center}
+.cta-band .container{display:flex;flex-direction:column;align-items:center;gap:1.25rem}
+.cta-band p{color:rgba(255,255,255,0.85);font-size:1.0625rem}
+/* Footer */
+.site-footer{background:var(--bg-secondary);border-top:1px solid var(--border-default);padding:3.5rem 0 2rem}
+.footer-grid{display:flex;gap:3rem;align-items:flex-start;flex-wrap:wrap}
+.footer-brand{flex:1 1 220px;display:flex;flex-direction:column;gap:0.75rem}
+.footer-brand p{color:var(--text-secondary);font-size:0.875rem}
+.footer-col{display:flex;flex-direction:column;gap:0.625rem;min-width:120px}
+.footer-col h3{font-size:0.8125rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);font-weight:600}
+.footer-col a{color:var(--text-secondary);text-decoration:none;font-size:0.875rem;padding:0.125rem 0;transition:color var(--transition-fast)}
+.footer-col a:focus-visible{outline:2px solid var(--accent-text);outline-offset:2px;border-radius:var(--radius-sm)}
+@media(hover:hover) and (pointer:fine){.footer-col a:hover{color:var(--accent-text)}}
+.footer-bottom{margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid var(--border-default);display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;color:var(--text-muted);font-size:0.8125rem}
+/* Newsletter */
+.newsletter{display:flex;flex-direction:column;gap:0.5rem;max-width:420px;width:100%}
+.newsletter label{font-weight:600;font-size:0.9375rem}
+.newsletter__row{display:flex;gap:0.5rem}
+.newsletter input{flex:1;min-height:44px;padding:0 0.875rem;border-radius:var(--radius-sm);border:1px solid rgba(255,255,255,0.4);background:rgba(255,255,255,0.12);color:var(--on-accent);font-family:var(--font-base);font-size:0.9375rem}
+.newsletter input::placeholder{color:rgba(255,255,255,0.6)}
+.newsletter input:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.newsletter input[aria-invalid="true"]{border-color:#ffd7d5}
+.newsletter__hint{font-size:0.8125rem;color:rgba(255,255,255,0.75)}
+.newsletter__msg{font-size:0.875rem;min-height:1.25rem}
+.newsletter__msg--error{color:#ffd7d5}
+.newsletter__msg--ok{color:#d2f5ea}
+/* Reveal */
+.reveal{opacity:1}
+.js .reveal{opacity:0;transform:translateY(14px);transition:opacity 500ms var(--ease-standard),transform 500ms var(--ease-standard)}
+.js .reveal--in{opacity:1;transform:none}
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{transition-duration:0.01ms!important;animation-duration:0.01ms!important}
+  .js .reveal{transform:none;transition:opacity 200ms ease}
+}
+@media (prefers-reduced-transparency: reduce){
+  .site-header{background:var(--bg-primary);backdrop-filter:none;-webkit-backdrop-filter:none}
+}
+@media (prefers-contrast: more){
+  :root{--border-default:rgba(0,0,0,0.35)}
+  :root[data-theme="dark"]{--border-default:rgba(255,255,255,0.4)}
+}
+</style>
 </head>
 <body>
-  <a class="skip-link" href="#main">Skip to main content</a>
-  <header>
-    <div class="header-wrap container">
-      <div class="logo">
-        <span class="material-icons" aria-hidden="true">grid_on</span>
-        <span>Nimbus</span>
+<script>document.body.classList.add("js");</script>
+
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a class="wordmark" href="#top"><span class="material-symbols-rounded" aria-hidden="true">stacks</span>Notewell</a>
+    <nav aria-label="Primary">
+      <ul class="nav-links" id="nav-links" hidden>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how">How It Works</a></li>
+        <li><a href="#testimonials">Testimonials</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+    </nav>
+    <div class="header-actions">
+      <button id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-rounded icon-moon" aria-hidden="true">dark_mode</span>
+        <span class="material-symbols-rounded icon-sun" aria-hidden="true">light_mode</span>
+      </button>
+      <a class="btn btn-primary" href="#pricing">Start free</a>
+      <button class="menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">
+        <span class="material-symbols-rounded" aria-hidden="true">menu</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container hero__grid">
+      <div class="hero__copy">
+        <span class="badge-pill"><span class="material-symbols-rounded" aria-hidden="true" style="font-size:1rem">bolt</span>New: synced databases</span>
+        <h1>One calm place for your team's work</h1>
+        <p class="hero__sub">Notewell brings docs, tasks, and wikis into a single warm workspace, so your team spends less time hunting and more time shipping.</p>
+        <div class="hero__ctas">
+          <a class="btn btn-primary" href="#pricing">Start free</a>
+          <a class="btn btn-secondary" href="#how">See how it works</a>
+        </div>
       </div>
-      <nav class="nav" aria-label="Main navigation">
-        <ul>
-          <li><a class="nav__link" href="#features">Features</a></li>
-          <li><a class="nav__link" href="#how-it-works">How It Works</a></li>
-          <li><a class="nav__link" href="#testimonials">Testimonials</a></li>
-          <li><a class="nav__link" href="#pricing">Pricing</a></li>
-          <li><a class="nav__link" href="#faq">FAQ</a></li>
-        </ul>
-      </nav>
-      <div class="header__actions">
-        <button class="theme-toggle" id="themeToggle" aria-pressed="false" aria-label="Toggle dark mode">
-          <span class="material-icons" id="themeIcon">light_mode</span>
-          <span class="material-icons" id="themeIconDark" style="display:none;">dark_mode</span>
-        </button>
-        <button class="btn btn-primary">Get Started</button>
+      <div class="hero__visual" aria-hidden="true">
+        <div class="mockup">
+          <div class="mockup__side">
+            <div class="mockup__side-item mockup__side-item--active"><span class="material-symbols-rounded">home</span>Home</div>
+            <div class="mockup__side-item"><span class="material-symbols-rounded">description</span>Roadmap</div>
+            <div class="mockup__side-item"><span class="material-symbols-rounded">check_circle</span>Sprint 14</div>
+            <div class="mockup__side-item"><span class="material-symbols-rounded">menu_book</span>Handbook</div>
+            <div class="mockup__side-item"><span class="material-symbols-rounded">group</span>Team wiki</div>
+          </div>
+          <div class="mockup__main">
+            <div class="mockup__title">Q3 Launch Plan</div>
+            <div class="mockup__line"></div>
+            <div class="mockup__line mockup__line--short"></div>
+            <div class="mockup__block"><span class="mockup__check mockup__check--done"></span><span>Draft release notes</span></div>
+            <div class="mockup__block"><span class="mockup__check"></span><span>Review pricing page copy</span></div>
+            <div class="mockup__block"><span class="material-symbols-rounded">database</span><span>Launch checklist · 12 tasks</span></div>
+          </div>
+        </div>
       </div>
     </div>
-  </header>
-  <main id="main">
-    <section class="hero">
-      <h1 class="hero__title">Organize your thinking, simplify your work</h1>
-      <p class="hero__subtitle">A minimal, flexible workspace that adapts to how you think — without the noise.</p>
-      <div class="hero__badge">Nimbus Workspace</div>
-      <div class="hero__buttons">
-        <button class="btn btn-primary">Start Free</button>
-        <button class="btn btn-secondary">Learn More</button>
-      </div>
-    </section>
+  </section>
 
-    <section class="features" id="features">
-      <div class="container">
-        <div class="section-header">
-          <h2 class="section-heading">Built for the way you work</h2>
-          <p class="section-subheading">Flexible blocks, zero setup, total focus.</p>
-        </div>
-        <div class="features__grid">
-          <article class="feature__card">
-            <div class="feature__icon"><span class="material-icons">grid_on</span></div>
-            <h3>Flexible Pages</h3>
-            <p>Combine text, images, databases, and embeds anywhere on the canvas.</p>
-          </article>
-          <article class="feature__card">
-            <div class="feature__icon"><span class="material-icons">folder</span></div>
-            <h3>Nested Folders</h3>
-            <p>Organize pages into hierarchies that mirror your actual workflow.</p>
-          </article>
-          <article class="feature__card">
-            <div class="feature__icon"><span class="material-icons">sync</span></div>
-            <h3>Real-time Sync</h3>
-            <p>Changes propagate instantly across all your devices.</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="how-it-works" id="how-it-works">
-      <div class="container">
-        <div class="section-header">
-          <h2 class="section-heading">How it works</h2>
-          <p class="section-subheading">Three steps to a cleaner workspace.</p>
-        </div>
-        <div class="steps">
-          <div class="step">
-            <div class="step__number"><span class="material-icons">remove</span>01</div>
-            <div class="step__symbol"><span class="material-icons">dashboard</span></div>
-            <span>Set up your first page</span>
-          </div>
-          <div class="step__line"></div>
-          <div class="step">
-            <div class="step__number"><span class="material-icons">remove</span>02</div>
-            <div class="step__symbol"><span class="material-icons">delete</span></div>
-            <span>Add blocks and content</span>
-          </div>
-          <div class="step__line"></div>
-          <div class="step">
-            <div class="step__number"><span class="material-icons">remove</span>03</div>
-            <div class="step__symbol"><span class="material-icons">check_circle</span></div>
-            <span>Invite collaborators</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="testimonials" id="testimonials">
-      <div class="container">
-        <div class="section-header">
-          <h2 class="section-heading">Trusted by teams like yours</h2>
-          <p class="section-subheading">Real people, real results.</p>
-        </div>
-        <div class="testimonials__grid">
-          <article class="testimonial__card">
-            <blockquote class="testimonial__quote">"Finally a workspace that doesn't fight my flow. The block system is intuitive and the performance is buttery."</blockquote>
-            <div class="testimonial__avatar" aria-hidden="true"></div>
-            <div>
-              <p class="testimonial__name">Alex R.</p>
-              <p class="testimonial__role">Product Lead</p>
-            </div>
-          </article>
-          <article class="testimonial__card">
-            <blockquote class="testimonial__quote">"The best Notion alternative I've tried. Light, fast, and the dark mode is easy on the eyes."</blockquote>
-            <div class="testimonial__avatar" aria-hidden="true"></div>
-            <div>
-              <p class="testimonial__name">Mia T.</p>
-              <p class="testimonial__role">Designer</p>
-            </div>
-          </article>
-          <article class="testimonial__card">
-            <blockquote class="testimonial__quote">"No more scattered docs. Everything lives in one place that actually stays organized."</blockquote>
-            <div class="testimonial__avatar" aria-hidden="true"></div>
-            <div>
-              <p class="testimonial__name">Sam L.</p>
-              <p class="testimonial__role">Engineer</p>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="pricing" id="pricing">
-      <div class="container">
-        <div class="section-header">
-          <h2 class="section-heading">Simple, transparent pricing</h2>
-          <p class="section-subheading">Pick the plan that fits your team — no hidden fees.</p>
-        </div>
-        <div class="pricing__grid">
-          <article class="pricing__card">
-            <div class="pricing__tag">Free</div>
-            <p class="pricing__price">$0</p>
-            <ul class="pricing__features">
-              <li>Up to 1,000 blocks</li>
-              <li>Basic blocks & templates</li>
-              <li>Personal use only</li>
-            </ul>
-            <button class="pricing__button">Get Started</button>
-          </article>
-          <article class="pricing__card pricing__card--featured">
-            <div class="pricing__tag"><span class="material-icons">star</span>Most Popular</div>
-            <p class="pricing__price">$12</p>
-            <ul class="pricing__features">
-              <li>Unlimited blocks</li>
-              <li>Advanced blocks & databases</li>
-              <li>Team collaboration</li>
-              <li>Version history</li>
-            </ul>
-            <button class="pricing__button">Select Plan</button>
-          </article>
-          <article class="pricing__card">
-            <div class="pricing__tag">Enterprise</div>
-            <p class="pricing__price">$24</p>
-            <ul class="pricing__features">
-              <li>Everything in Pro</li>
-              <li>SSO & SAML</li>
-              <li>24/7 support</li>
-              <li>Custom branding</li>
-            </ul>
-            <button class="pricing__button">Contact Sales</button>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="faq" id="faq">
-      <div class="container">
-        <div class="section-header">
-          <h2 class="section-heading">Frequently asked questions</h2>
-        </div>
-        <div class="faq__item">
-          <button class="faq__trigger" aria-controls="faq-1" aria-expanded="true">
-            <span>What is Nimbus Workspace?</span><span class="material-icons">expand_more</span>
-          </button>
-          <div class="faq__panel" id="faq-1">
-            <p>Nimbus Workspace is a minimal, block-based workspace designed to help you think clearly and work efficiently. It combines the best of Notion-style flexibility with a warm minimalist aesthetic.</p>
-          </div>
-        </div>
-        <div class="faq__item">
-          <button class="faq__trigger" aria-controls="faq-2" aria-expanded="false">
-            <span>How do I switch to dark mode?</span><span class="material-icons">expand_more</span>
-          </button>
-          <div class="faq__panel" id="faq-2">
-            <p>You can toggle dark mode from the header, or your system preferences will be detected automatically. Your choice is saved in localStorage.</p>
-          </div>
-        </div>
-        <div class="faq__item">
-          <button class="faq__trigger" aria-controls="faq-3" aria-expanded="false">
-            <span>Can I use Nimbus offline?</span><span class="material-icons">expand_more</span>
-          </button>
-          <div class="faq__panel" id="faq-3">
-            <p>Yes. Your data is stored locally in your browser and syncs when you're back online. Changes are queued and sent automatically.</p>
-          </div>
-        </div>
-        <div class="faq__item">
-          <button class="faq__trigger" aria-controls="faq-4" aria-expanded="false">
-            <span>Is my data private?</span><span class="material-icons">expand_more</span>
-          </button>
-          <div class="faq__panel" id="faq-4">
-            <p>All data is encrypted in transit and at rest. We never sell your information, and you can export your workspace at any time.</p>
-          </div>
-        </div>
-        <div class="faq__item">
-          <button class="faq__trigger" aria-controls="faq-5" aria-expanded="false">
-            <span>What happens if I exceed my block limit?</span><span class="material-icons">expand_more</span>
-          </button>
-          <div class="faq__panel" id="faq-5">
-            <p>You'll receive a gentle notification and can upgrade your plan or archive older blocks to stay within limits.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="cta">
-      <div class="container">
-        <h2 class="cta__title">Ready to organize your thinking?</h2>
-        <p class="cta__text">Join thousands of users who've simplified their workflow with a workspace that adapts to them.</p>
-        <button class="cta__button"><span class="material-icons">open_in_new</span>Start Free</button>
-      </div>
-    </section>
-  </main>
-  <footer>
+  <!-- Features -->
+  <section class="section-alt" id="features">
     <div class="container">
-      <div class="footer__wrap">
-        <div class="footer__column">
-          <h4>Nimbus</h4>
-          <p>Modern workspace for modern teams.</p>
-        </div>
-        <div class="footer__column">
-          <h4>Product</h4>
-          <ul>
-            <li><a href="#features">Features</a></li>
-            <li><a href="#how-it-works">How It Works</a></li>
-          </ul>
-        </div>
-        <div class="footer__column">
-          <h4>Company</h4>
-          <ul>
-            <li><a href="#about">About</a></li>
-            <li><a href="#careers">Careers</a></li>
-          </ul>
-        </div>
-        <div class="footer__column">
-          <h4>Resources</h4>
-          <ul>
-            <li><a href="#help">Help Center</a></li>
-            <li><a href="#blog">Blog</a></li>
-          </ul>
-        </div>
+      <div class="section-head">
+        <h2>Everything your team needs, nothing it doesn't</h2>
+        <p>Three building blocks that cover daily work without the clutter of heavier tools.</p>
       </div>
-      <div class="footer__bottom">
-        <p>&copy; 2026 Nimbus. All rights reserved.</p>
-        <div class="footer__links">
-          <a href="#" aria-label="Twitter">X</a>
-          <a href="#" aria-label="LinkedIn">In</a>
-          <a href="#" aria-label="GitHub">GitHub</a>
+      <div class="grid-3">
+        <article class="card reveal">
+          <div class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">edit_note</span></div>
+          <h3>Docs that stay tidy</h3>
+          <p>Write meeting notes, specs, and decisions in clean pages with nested structure and instant search across everything.</p>
+        </article>
+        <article class="card reveal">
+          <div class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">view_kanban</span></div>
+          <h3>Tasks with real context</h3>
+          <p>Track work on boards or lists, then link every task back to the doc where the decision was made.</p>
+        </article>
+        <article class="card reveal">
+          <div class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">sync</span></div>
+          <h3>A wiki that updates itself</h3>
+          <p>Synced blocks keep repeated content current everywhere it appears, so the handbook never goes stale.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section id="how">
+    <div class="container">
+      <div class="section-head">
+        <h2>Up and running in an afternoon</h2>
+        <p>No consultants, no migration project. Three steps and your team is working.</p>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <span class="step__num">01</span>
+          <span class="material-symbols-rounded step__icon" aria-hidden="true">upload_file</span>
+          <h3>Import your content</h3>
+          <p>Bring in docs from Google Drive, Confluence, or plain Markdown with one click.</p>
+        </div>
+        <span class="material-symbols-rounded step__arrow" aria-hidden="true">arrow_forward</span>
+        <div class="step reveal">
+          <span class="step__num">02</span>
+          <span class="material-symbols-rounded step__icon" aria-hidden="true">dashboard_customize</span>
+          <h3>Shape your workspace</h3>
+          <p>Pick a template for your team, or start blank and add structure as you go.</p>
+        </div>
+        <span class="material-symbols-rounded step__arrow" aria-hidden="true">arrow_forward</span>
+        <div class="step reveal">
+          <span class="step__num">03</span>
+          <span class="material-symbols-rounded step__icon" aria-hidden="true">group_add</span>
+          <h3>Invite the team</h3>
+          <p>Share one link. Teammates land in the right place with the right permissions.</p>
         </div>
       </div>
     </div>
-  </footer>
+  </section>
 
-  <script>
-    (function(){
-      const html = document.documentElement;
-      const themeToggle = document.getElementById('themeToggle');
-      const themeIcon = document.getElementById('themeIcon');
-      const themeIconDark = document.getElementById('themeIconDark');
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+  <!-- Testimonials -->
+  <section class="section-alt" id="testimonials">
+    <div class="container">
+      <div class="section-head">
+        <h2>Teams that switched, stayed</h2>
+        <p>What people say after their first quarter on Notewell.</p>
+      </div>
+      <div class="grid-3">
+        <article class="card quote-card reveal">
+          <span class="material-symbols-rounded" aria-hidden="true">format_quote</span>
+          <blockquote>We replaced three tools with Notewell and our weekly planning meeting dropped from an hour to twenty minutes.</blockquote>
+          <div class="quote-card__person">
+            <span class="avatar" aria-hidden="true">MK</span>
+            <div><div class="quote-card__name">Mara Kessler</div><div class="quote-card__role">Head of Product, Fieldstone Labs</div></div>
+          </div>
+        </article>
+        <article class="card quote-card reveal">
+          <span class="material-symbols-rounded" aria-hidden="true">format_quote</span>
+          <blockquote>The synced blocks alone sold us. Our onboarding doc updates itself across twelve team spaces at once.</blockquote>
+          <div class="quote-card__person">
+            <span class="avatar" aria-hidden="true">DO</span>
+            <div><div class="quote-card__name">Daniel Okafor</div><div class="quote-card__role">Operations Lead, Brightpath</div></div>
+          </div>
+        </article>
+        <article class="card quote-card reveal">
+          <span class="material-symbols-rounded" aria-hidden="true">format_quote</span>
+          <blockquote>It feels quiet in a way other tools don't. People actually write things down now, which changed how we decide.</blockquote>
+          <div class="quote-card__person">
+            <span class="avatar" aria-hidden="true">SL</span>
+            <div><div class="quote-card__name">Sofia Lindqvist</div><div class="quote-card__role">Engineering Manager, Northbeam Systems</div></div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
 
-      function setTheme(isDark){
-        if(isDark) html.classList.add('dark');
-        else html.classList.remove('dark');
-        themeToggle.setAttribute('aria-pressed', isDark);
-        themeIcon.style.display = isDark ? 'none' : 'inline-block';
-        themeIconDark.style.display = isDark ? 'inline-block' : 'none';
-      }
+  <!-- Pricing -->
+  <section id="pricing">
+    <div class="container">
+      <div class="section-head">
+        <h2>Simple pricing that scales with you</h2>
+        <p>Start free, upgrade when your team grows. Every plan includes unlimited docs.</p>
+      </div>
+      <div class="grid-3">
+        <article class="card pricing-card reveal">
+          <h3>Starter</h3>
+          <div class="pricing-card__price">$0<small> / person / month</small></div>
+          <ul>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Up to 10 teammates</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Unlimited docs and tasks</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>7-day version history</li>
+          </ul>
+          <a class="btn btn-secondary" href="#faq">Start free</a>
+        </article>
+        <article class="card pricing-card pricing-card--featured reveal">
+          <span class="badge-pill pricing-card__badge">Most Popular</span>
+          <h3>Team</h3>
+          <div class="pricing-card__price">$8<small> / person / month</small></div>
+          <ul>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Unlimited teammates</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Synced databases</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>90-day version history</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Priority support</li>
+          </ul>
+          <a class="btn btn-primary" href="#faq">Start free</a>
+        </article>
+        <article class="card pricing-card reveal">
+          <h3>Company</h3>
+          <div class="pricing-card__price">$15<small> / person / month</small></div>
+          <ul>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>SSO and SCIM provisioning</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Audit log and data export</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Unlimited version history</li>
+          </ul>
+          <a class="btn btn-secondary" href="#faq">Start free</a>
+        </article>
+      </div>
+    </div>
+  </section>
 
-      let initialDark = false;
-      if('localStorage' in window){
-        const stored = localStorage.getItem('nimbus-theme');
-        if(stored === 'dark' || (!stored && prefersDark.matches)){
-          initialDark = true;
+  <!-- FAQ -->
+  <section class="section-alt" id="faq">
+    <div class="container">
+      <div class="section-head">
+        <h2>Questions, answered</h2>
+        <p>The things teams ask before moving their work to Notewell.</p>
+      </div>
+      <div class="accordion">
+        <div class="accordion__item">
+          <button class="accordion__trigger" type="button" aria-expanded="false" aria-controls="faq-p1" id="faq-t1">
+            Can I import from Notion or Confluence?
+            <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
+          </button>
+          <div class="accordion__panel" id="faq-p1" role="region" aria-labelledby="faq-t1">
+            <div class="accordion__panel-inner"><p>Yes. The importer handles Notion exports, Confluence spaces, Google Docs, and Markdown folders. Most teams finish migrating in under an hour.</p></div>
+          </div>
+        </div>
+        <div class="accordion__item">
+          <button class="accordion__trigger" type="button" aria-expanded="false" aria-controls="faq-p2" id="faq-t2">
+            Is the free plan really free forever?
+            <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
+          </button>
+          <div class="accordion__panel" id="faq-p2" role="region" aria-labelledby="faq-t2">
+            <div class="accordion__panel-inner"><p>It is. Starter includes unlimited docs and tasks for up to 10 teammates, with no credit card required and no time limit.</p></div>
+          </div>
+        </div>
+        <div class="accordion__item">
+          <button class="accordion__trigger" type="button" aria-expanded="false" aria-controls="faq-p3" id="faq-t3">
+            How does Notewell handle permissions?
+            <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
+          </button>
+          <div class="accordion__panel" id="faq-p3" role="region" aria-labelledby="faq-t3">
+            <div class="accordion__panel-inner"><p>Every page and database has its own sharing controls. Set workspace-wide defaults, then override per page with view, comment, or edit access.</p></div>
+          </div>
+        </div>
+        <div class="accordion__item">
+          <button class="accordion__trigger" type="button" aria-expanded="false" aria-controls="faq-p4" id="faq-t4">
+            Does Notewell work offline?
+            <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
+          </button>
+          <div class="accordion__panel" id="faq-p4" role="region" aria-labelledby="faq-t4">
+            <div class="accordion__panel-inner"><p>The desktop and mobile apps cache your recent pages locally. Edits made offline sync automatically when you reconnect.</p></div>
+          </div>
+        </div>
+        <div class="accordion__item">
+          <button class="accordion__trigger" type="button" aria-expanded="false" aria-controls="faq-p5" id="faq-t5">
+            What happens to my data if I cancel?
+            <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
+          </button>
+          <div class="accordion__panel" id="faq-p5" role="region" aria-labelledby="faq-t5">
+            <div class="accordion__panel-inner"><p>You keep read access and can export everything as Markdown or HTML at any time, including after cancellation. Nothing is held hostage.</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="cta-band">
+    <div class="container">
+      <h2>Give your team a calmer place to work</h2>
+      <p>Join the newsletter for product updates, or start your free workspace today.</p>
+      <form class="newsletter" id="newsletter-form" novalidate>
+        <label for="newsletter-email">Work email</label>
+        <div class="newsletter__row">
+          <input type="email" id="newsletter-email" name="email" placeholder="you@company.com" autocomplete="email" required>
+          <button class="btn btn--white" type="submit" id="newsletter-btn">Subscribe</button>
+        </div>
+        <p class="newsletter__hint">One email a month. Unsubscribe anytime.</p>
+        <p class="newsletter__msg" id="newsletter-msg" aria-live="polite"></p>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="wordmark" href="#top"><span class="material-symbols-rounded" aria-hidden="true">stacks</span>Notewell</a>
+        <p>A warm, quiet workspace for docs, tasks, and team knowledge.</p>
+      </div>
+      <div class="footer-col">
+        <h3>Product</h3>
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#how">How It Works</a>
+      </div>
+      <div class="footer-col">
+        <h3>Company</h3>
+        <a href="#">About</a>
+        <a href="#">Careers</a>
+        <a href="#testimonials">Customers</a>
+      </div>
+      <div class="footer-col">
+        <h3>Resources</h3>
+        <a href="#">Help center</a>
+        <a href="#">Templates</a>
+        <a href="#faq">FAQ</a>
+      </div>
+      <div class="footer-col">
+        <h3>Legal</h3>
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+        <a href="#">Security</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Notewell, Inc. All rights reserved.</span>
+      <span>Made for teams that think in writing.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  /* Theme toggle */
+  var toggle=document.getElementById("theme-toggle");
+  function syncToggle(){
+    var dark=document.documentElement.dataset.theme==="dark";
+    toggle.setAttribute("aria-pressed",String(dark));
+    toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+  }
+  toggle.addEventListener("click",function(){
+    var next=document.documentElement.dataset.theme==="dark"?"light":"dark";
+    document.documentElement.dataset.theme=next;
+    localStorage.setItem("theme",next);
+    syncToggle();
+  });
+  syncToggle();
+
+  /* Mobile menu */
+  var menuBtn=document.getElementById("menu-btn");
+  var navLinks=document.getElementById("nav-links");
+  function setMenu(open){
+    menuBtn.setAttribute("aria-expanded",String(open));
+    menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");
+    if(open){navLinks.removeAttribute("hidden");}else{navLinks.setAttribute("hidden","");}
+  }
+  function syncMenuForViewport(){
+    if(window.innerWidth>=768){navLinks.removeAttribute("hidden");menuBtn.setAttribute("aria-expanded","false");}
+    else{setMenu(false);}
+  }
+  menuBtn.addEventListener("click",function(){
+    setMenu(menuBtn.getAttribute("aria-expanded")!=="true");
+  });
+  navLinks.addEventListener("click",function(e){
+    if(e.target.closest("a")&&window.innerWidth<768){setMenu(false);}
+  });
+  document.addEventListener("keydown",function(e){
+    if(e.key==="Escape"&&menuBtn.getAttribute("aria-expanded")==="true"){setMenu(false);menuBtn.focus();}
+  });
+  window.addEventListener("resize",syncMenuForViewport);
+  syncMenuForViewport();
+
+  /* FAQ accordion */
+  var triggers=document.querySelectorAll(".accordion__trigger");
+  triggers.forEach(function(btn){
+    btn.addEventListener("click",function(){
+      var open=btn.getAttribute("aria-expanded")==="true";
+      triggers.forEach(function(b){b.setAttribute("aria-expanded","false");});
+      btn.setAttribute("aria-expanded",String(!open));
+    });
+  });
+
+  /* Newsletter validation */
+  var form=document.getElementById("newsletter-form");
+  var email=document.getElementById("newsletter-email");
+  var msg=document.getElementById("newsletter-msg");
+  var subBtn=document.getElementById("newsletter-btn");
+  form.addEventListener("submit",function(e){
+    e.preventDefault();
+    var val=email.value.trim();
+    var valid=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val);
+    msg.classList.remove("newsletter__msg--error","newsletter__msg--ok");
+    if(!valid){
+      email.setAttribute("aria-invalid","true");
+      msg.textContent=val?"That email address doesn't look complete. Please check it.":"Please enter your work email to subscribe.";
+      msg.classList.add("newsletter__msg--error");
+      email.focus();
+      return;
+    }
+    email.removeAttribute("aria-invalid");
+    subBtn.disabled=true;
+    msg.textContent="Subscribing...";
+    window.setTimeout(function(){
+      msg.textContent="You're on the list. Welcome aboard.";
+      msg.classList.add("newsletter__msg--ok");
+      subBtn.disabled=false;
+      form.reset();
+    },700);
+  });
+
+  /* Scroll reveal */
+  var reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var items=document.querySelectorAll(".reveal");
+  if(reduce||!("IntersectionObserver" in window)){
+    items.forEach(function(el){el.classList.add("reveal--in");});
+  }else{
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){
+          var el=entry.target;
+          var idx=Array.prototype.indexOf.call(el.parentNode.children,el);
+          el.style.transitionDelay=(Math.max(idx,0)*60)+"ms";
+          el.classList.add("reveal--in");
+          io.unobserve(el);
         }
-      }
-      setTheme(initialDark);
-
-      themeToggle.addEventListener('click',()=>{
-        const newState = !html.classList.contains('dark');
-        setTheme(newState);
-        if('localStorage' in window){
-          localStorage.setItem('nimbus-theme', newState ? 'dark' : 'light');
-        }
       });
-
-      prefersDark.addEventListener('change',(e)=>{
-        const matched = e.matches && !initialDark;
-        setTheme(matched);
-      });
-
-      // FAQ accordion
-      document.querySelectorAll('.faq__trigger').forEach(trigger=>{
-        trigger.addEventListener('click',()=>{
-          const expanded = trigger.getAttribute('aria-expanded') === 'true';
-          trigger.setAttribute('aria-expanded', !expanded);
-          const panel = document.getElementById(trigger.getAttribute('aria-controls'));
-          if(!expanded){
-            panel.style.maxHeight = panel.scrollHeight + 'px';
-          }else{
-            panel.style.maxHeight = 0;
-          }
-        });
-      });
-      // Close open panels on init
-      document.querySelectorAll('.faq__panel').forEach(panel=>panel.style.maxHeight='0');
-
-      // Smooth scrolling for nav links
-      document.querySelectorAll('a[href^="#"]').forEach(anchor=>{
-        anchor.addEventListener('click',function(e){
-          e.preventDefault();
-          const target = document.querySelector(this.getAttribute('href'));
-          if(target){
-            const headerHeight = document.querySelector('header').offsetHeight;
-            const targetPos = target.getBoundingClientRect().top + window.pageYOffset - headerHeight;
-            window.scrollTo({top: targetPos, behavior: 'smooth'});
-          }
-        });
-      });
-
-      // CTA form validation (simple inline example)
-      const ctaForm = document.querySelector('.cta');
-      if(ctaForm){
-        const emailInput = ctaForm.querySelector('input[type="email"]');
-        const errorRegion = document.createElement('div');
-        errorRegion.className = 'error-region';
-        errorRegion.setAttribute('role', 'alert');
-        errorRegion.setAttribute('aria-live', 'polite');
-        ctaForm.insertBefore(errorRegion, ctaForm.firstElementChild);
-        ctaForm.addEventListener('submit',function(e){
-          let valid = true;
-          if(emailInput){
-            if(!emailInput.value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)){
-              valid = false;
-              errorRegion.textContent = 'Please enter a valid email address.';
-              emailInput.focus();
-            }else{
-              errorRegion.textContent = 'Thank you! We\'ll keep you posted.';
-              setTimeout(()=>errorRegion.textContent='', 5000);
-            }
-          }
-          if(!valid) e.preventDefault();
-        });
-      }
-    })();
-  </script>
+    },{threshold:0.15});
+    items.forEach(function(el){io.observe(el);});
+  }
+})();
+</script>
 </body>
 </html>

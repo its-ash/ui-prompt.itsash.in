@@ -1,937 +1,753 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Copperline – Modern CRM for Sales Teams</title>
-<meta name="description" content="Copperline gives you pipeline visibility, contact intelligence, and activity tracking to close more deals.">
+<title>Copperline - The CRM that keeps your pipeline honest</title>
+<meta name="description" content="Copperline is a modern CRM for sales teams: pipeline management, contact intelligence, and activity analytics in one clean workspace.">
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..800&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..600,0..1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..600,0..1,0" rel="stylesheet">
 <style>
-/* ==== CSS Variables ==== */
-:root {
-  color-scheme: light;
-  --font-base: 'Geist', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --primary: #C08532;            /* copper */
-  --on-primary: #111827;         /* graphite text on copper */
-  --secondary: #111827;          /* graphite */
-  --bg-primary: #F2F1ED;         /* sand */
-  --bg-secondary: #FEFEFE;       /* card surfaces */
-  --bg-inverse: #111827;         /* footer band */
-  --text-primary: #111827;
-  --text-secondary: #4B5563;
-  --text-muted: #6B7280;
-  --text-on-inverse: #F2F1ED;
-  --text-success: #16A34A;
-  --text-error: #DC2626;
-  --border-default: #E5E1D8;
-  --border-success: #16A34A;
-  --border-error: #DC2626;
-  --radius-sm: 8px; --radius-md: 14px; --radius-lg: 20px;
-  --radius-card: var(--radius-md);
-  --shadow-sm: 0 6px 16px rgba(15,23,42,0.06);
-  --shadow-md: 0 18px 45px rgba(15,23,42,0.08);
-  --spacing-gap: 1.5rem;
-  --transition-fast: 150ms;
-  --transition-normal: 300ms;
-  --ease-standard: cubic-bezier(0.4,0,0.2,1);
-  --z-dropdown: 1000;
-  --z-modal: 1100;
-  --z-toast: 1200;
+:root{
+  color-scheme:light;
+  --font-base:'Geist',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --primary:#C08532; --primary-hover:#A96F26; --on-primary:#111827;
+  --secondary:#111827; --on-secondary:#F2F1ED;
+  --bg-primary:#F2F1ED; --bg-secondary:#FEFEFE; --bg-inverse:#111827;
+  --bg-tint:#EFE3D0; --bg-tint-2:#E9D9C2;
+  --text-primary:#111827; --text-secondary:#4B5563; --text-muted:#5F6B7A;
+  --text-on-inverse:#F2F1ED; --text-on-inverse-muted:#B9C0CB;
+  --text-success:#15803D; --text-error:#DC2626;
+  --border-default:#E5E1D8; --border-strong:#C9C3B4;
+  --ring:#C08532; --ring-on-copper:#111827;
+  --radius-sm:8px; --radius-md:14px; --radius-lg:20px; --radius-card:var(--radius-md);
+  --shadow-sm:0 6px 16px rgba(15,23,42,.06);
+  --shadow-md:0 18px 45px rgba(15,23,42,.08);
+  --spacing-gap:1.5rem;
+  --transition-fast:150ms; --transition-normal:300ms;
+  --ease-standard:cubic-bezier(.4,0,.2,1);
+  --z-dropdown:1000; --z-modal:1100; --z-toast:1200;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-    --bg-primary: #111827;
-    --bg-secondary: #1F2937;
-    --bg-inverse: #0B1220;
-    --text-primary: #F2F1ED;
-    --text-secondary: #9CA3AF;
-    --text-muted: #9CA3AF;
-    --border-default: #374151;
-    --shadow-md: 0 18px 45px rgba(0,0,0,0.5);
-  }
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg-primary:#111827; --bg-secondary:#1F2937; --bg-inverse:#0B1220;
+  --bg-tint:#1C2536; --bg-tint-2:#24304A;
+  --text-primary:#F2F1ED; --text-secondary:#C3CAD4; --text-muted:#9CA3AF;
+  --text-on-inverse:#F2F1ED; --text-on-inverse-muted:#9CA3AF;
+  --text-success:#4ADE80; --text-error:#F87171;
+  --border-default:#374151; --border-strong:#4B5563;
+  --ring:#C08532;
+  --shadow-sm:0 6px 16px rgba(0,0,0,.35);
+  --shadow-md:0 18px 45px rgba(0,0,0,.5);
 }
-:root.light { --bg-primary: #F2F1ED; --bg-secondary: #FEFEFE; --bg-inverse: #111827; --text-primary: #111827; --text-secondary: #4B5563; --text-muted: #6B7280; --text-on-inverse: #F2F1ED; --border-default: #E5E1D8; --shadow-md: 0 18px 45px rgba(15,23,42,0.08); }
-:root.dark { --bg-primary: #111827; --bg-secondary: #1F2937; --bg-inverse: #0B1220; --text-primary: #F2F1ED; --text-secondary: #9CA3AF; --text-muted: #9CA3AF; --text-on-inverse: #F2F1ED; --border-default: #374151; --shadow-md: 0 18px 45px rgba(0,0,0,0.5); }
-
-/* ==== Global ==== */
-*, *::before, *::after { box-sizing: border-box; }
-html { font-size: 100%; }
-body {
-  margin: 0;
-  font-family: var(--font-base);
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  line-height: 1.6;
-  letter-spacing: -0.15px;
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);letter-spacing:-.15px;line-height:1.6;font-size:1rem;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+img,svg{max-width:100%;display:block}
+h1,h2,h3{letter-spacing:-.02em;line-height:1.12;margin:0 0 .75rem;font-weight:700}
+h1{font-size:clamp(2.25rem,5vw,3.5rem)}
+h2{font-size:clamp(1.75rem,3.5vw,2.5rem)}
+h3{font-size:1.2rem}
+p{margin:0 0 1rem;max-width:65ch}
+a{color:inherit}
+button{font-family:inherit}
+:focus-visible{outline:2px solid var(--ring);outline-offset:2px;border-radius:4px}
+.visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.skip-link{position:absolute;left:1rem;top:-4rem;z-index:var(--z-toast);background:var(--secondary);color:var(--on-secondary);padding:.75rem 1.25rem;border-radius:var(--radius-sm);text-decoration:none;transition:top var(--transition-fast) var(--ease-standard)}
+.skip-link:focus{top:1rem}
+.material-symbols-rounded{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;font-size:1.4rem;line-height:1;user-select:none}
+.container{max-width:1200px;margin:0 auto;padding:0 1.25rem}
+@media(min-width:768px){.container{padding:0 2rem}}
+.section{padding:clamp(4rem,8vw,7rem) 0}
+.section__head{max-width:640px;margin:0 auto 3rem;text-align:center}
+.section__head p{color:var(--text-secondary);margin:0}
+.eyebrow{display:inline-block;font-size:.78rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--primary);margin-bottom:.75rem}
+/* ---------- Buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:.7rem 1.5rem;border-radius:var(--radius-sm);border:1px solid transparent;font-weight:600;font-size:.95rem;text-decoration:none;cursor:pointer;transition:background var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard),transform var(--transition-fast) var(--ease-standard);white-space:nowrap}
+.btn:active{transform:scale(.97)}
+.btn--primary{background:var(--primary);color:var(--on-primary)}
+.btn--secondary{background:var(--secondary);color:var(--on-secondary)}
+.btn--ghost{background:transparent;color:var(--text-primary);border-color:var(--border-strong)}
+.btn--inverse{background:var(--secondary);color:var(--on-secondary)}
+.btn--danger{background:var(--text-error);color:#FEFEFE}
+@media(hover:hover) and (pointer:fine){
+  .btn--primary:hover{background:var(--primary-hover);box-shadow:var(--shadow-sm)}
+  .btn--secondary:hover,.btn--inverse:hover{filter:brightness(1.25);box-shadow:var(--shadow-sm)}
+  .btn--ghost:hover{background:var(--bg-tint);box-shadow:var(--shadow-sm)}
 }
-h1, h2, h3, h4, h5, h6 { margin-top: 0; margin-bottom: .5rem; line-height: 1.2; letter-spacing: -0.02em; }
-p { margin-top: 0; margin-bottom: 1rem; }
-a { color: var(--primary); text-decoration: none; }
-a:hover { text-decoration: underline; }
-img { max-width: 100%; height: auto; }
-button, input, optgroup, select, textarea { font-family: inherit; font-size: 100%; margin: 0; }
-button { cursor: pointer; }
-:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-[hidden] { display: none !important; }
-.visually-hidden { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
-
-/* ==== Layout ==== */
-.container { width: 90%; max-width: 1200px; margin-inline: auto; }
-.grid-3 { display: flex; gap: var(--spacing-gap); }
-@media (max-width: 768px) { .grid-3 { flex-direction: column; } }
-
-/* ==== Header ==== */
-.header {
-  position: sticky;
-  top: 0;
-  background-color: var(--primary);
-  color: var(--on-primary);
-  padding: .75rem 0;
-  z-index: 1000;
+.btn--loading{pointer-events:none;opacity:.85}
+.btn--loading .btn__spinner{display:inline-block}
+.btn__spinner{display:none;width:1rem;height:1rem;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.btn:disabled{opacity:.5;filter:grayscale(.4);cursor:not-allowed}
+/* ---------- Header ---------- */
+.header{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--primary);color:var(--on-primary);box-shadow:var(--shadow-sm)}
+.header__inner{display:flex;align-items:center;justify-content:space-between;gap:1rem;height:68px}
+.header__logo{display:flex;align-items:center;gap:.5rem;font-weight:700;font-size:1.15rem;text-decoration:none;letter-spacing:-.02em}
+.header__logo .material-symbols-rounded{font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
+.header__nav{display:flex;align-items:center;gap:1.75rem}
+.header__nav a{color:var(--on-primary);text-decoration:none;font-weight:500;font-size:.95rem;opacity:.85;transition:opacity var(--transition-fast)}
+@media(hover:hover) and (pointer:fine){.header__nav a:hover{opacity:1;text-decoration:underline;text-underline-offset:4px}}
+.header__actions{display:flex;align-items:center;gap:.6rem}
+.header__cta{background:var(--on-primary);color:var(--primary);min-height:44px}
+@media(hover:hover) and (pointer:fine){.header__cta:hover{filter:brightness(1.1);box-shadow:var(--shadow-sm)}}
+.header .btn:focus-visible,.header a:focus-visible,.header button:focus-visible{outline-color:var(--ring-on-copper)}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-sm);border:1px solid transparent;background:transparent;color:inherit;cursor:pointer;transition:background var(--transition-fast)}
+@media(hover:hover) and (pointer:fine){.icon-btn:hover{background:rgba(17,24,39,.12)}}
+.icon-btn:active{transform:scale(.97)}
+.header__menu-btn{display:none}
+@media(max-width:767px){
+  .header__menu-btn{display:inline-flex}
+  .header__nav{position:absolute;top:68px;left:0;right:0;flex-direction:column;align-items:stretch;gap:0;background:var(--primary);padding:.5rem 1.25rem 1rem;box-shadow:var(--shadow-md)}
+  .header__nav a{padding:.85rem .25rem;border-top:1px solid rgba(17,24,39,.15)}
+  .header__cta{display:none}
+  .header__nav .header__cta--mobile{display:inline-flex;margin-top:.75rem}
 }
-.header .container { display: flex; align-items: center; justify-content: space-between; }
-.header__logo { display: flex; align-items: center; gap: .5rem; font-weight: 700; font-size: 1.25rem; }
-.header__logo .material-symbols-rounded { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-.header__nav { display: flex; gap: 1.5rem; }
-.header__nav a { color: var(--on-primary); font-weight: 500; }
-.header__nav a:hover { opacity: .8; }
-.header__cta { display: flex; gap: .5rem; align-items: center; }
-.header__toggle {
-  background: transparent;
-  border: none;
-  color: var(--on-primary);
-  font-size: 1.25rem;
-  padding: .25rem;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.header__cta--mobile{display:none}
+@media(max-width:767px){.header__nav .header__cta--mobile{display:inline-flex}}
+/* ---------- Hero ---------- */
+.hero{padding:clamp(3rem,6vw,5rem) 0 clamp(3.5rem,7vw,6rem)}
+.hero__grid{display:flex;align-items:center;gap:3rem}
+.hero__copy{flex:1 1 46%;min-width:0}
+.hero__copy p{color:var(--text-secondary);font-size:1.1rem}
+.hero__ctas{display:flex;align-items:center;gap:.9rem;flex-wrap:wrap;margin-top:1.5rem}
+.hero__visual{flex:1 1 54%;min-width:0;display:flex;flex-direction:column;gap:var(--spacing-gap)}
+@media(max-width:900px){.hero__grid{flex-direction:column;align-items:stretch}}
+/* ---------- Cards ---------- */
+.card{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-card);box-shadow:var(--shadow-sm);padding:1.5rem;transition:box-shadow var(--transition-normal) var(--ease-standard),transform var(--transition-normal) var(--ease-standard),border-color var(--transition-normal)}
+@media(hover:hover) and (pointer:fine){.card--lift:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}}
+.card:focus-within{border-color:var(--primary)}
+.card--highlight{border:2px solid var(--primary);position:relative}
+.card__badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--primary);color:var(--on-primary);font-size:.75rem;font-weight:700;padding:.3rem .9rem;border-radius:999px;white-space:nowrap}
+.card__empty{display:flex;flex-direction:column;align-items:center;gap:.5rem;text-align:center;color:var(--text-muted);padding:1.5rem 0}
+.card--skeleton .skel{background:linear-gradient(90deg,var(--bg-tint) 25%,var(--bg-tint-2) 50%,var(--bg-tint) 75%);background-size:200% 100%;animation:shimmer 1.1s linear infinite;border-radius:6px}
+@keyframes shimmer{to{background-position:-200% 0}}
+/* ---------- Hero mockup ---------- */
+.mock{display:flex;flex-direction:column;gap:1rem}
+.mock__row{display:flex;gap:1rem;align-items:stretch}
+.mock__row>.card{flex:1;min-width:0}
+@media(max-width:560px){.mock__row{flex-direction:column}}
+.mock__title{display:flex;align-items:center;gap:.5rem;font-weight:600;font-size:.9rem;margin-bottom:1rem}
+.mock__title .material-symbols-rounded{color:var(--primary);font-size:1.15rem}
+.stage{margin-bottom:.8rem}
+.stage__label{display:flex;justify-content:space-between;font-size:.8rem;color:var(--text-secondary);margin-bottom:.3rem}
+.stage__bar{height:8px;border-radius:99px;background:var(--bg-tint);overflow:hidden}
+.stage__fill{display:block;height:100%;border-radius:99px;background:var(--primary);transform-origin:left;transition:transform 900ms var(--ease-standard)}
+.chart{display:flex;align-items:flex-end;gap:.5rem;height:110px;margin-top:.5rem} /* exception: bar baselines */
+.chart__bar{flex:1;background:linear-gradient(180deg,var(--primary),var(--primary-hover));border-radius:6px 6px 2px 2px;min-height:8%;transform-origin:bottom;transition:transform 900ms var(--ease-standard)}
+.chart__bar--muted{background:var(--bg-tint-2)}
+.activity{display:flex;align-items:center;gap:.75rem;padding:.55rem 0;border-top:1px solid var(--border-default);font-size:.85rem}
+.activity:first-of-type{border-top:0}
+.activity__dot{flex:none;width:32px;height:32px;border-radius:50%;background:var(--bg-tint);color:var(--primary);display:flex;align-items:center;justify-content:center}
+.activity__dot .material-symbols-rounded{font-size:1rem}
+.activity p{margin:0;color:var(--text-secondary)}
+.activity strong{color:var(--text-primary);font-weight:600}
+.stats{display:flex;gap:1rem}
+.stats .card{flex:1;text-align:center;padding:1rem}
+.stats b{display:block;font-size:1.35rem;letter-spacing:-.02em}
+.stats span{font-size:.78rem;color:var(--text-muted)}
+@media(max-width:560px){.stats{flex-direction:column}}
+/* ---------- Features ---------- */
+.features__grid{display:flex;gap:var(--spacing-gap);align-items:stretch} /* exception: equal-height cards */
+.features__grid>.card{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start}
+@media(max-width:767px){.features__grid{flex-direction:column}}
+.icon-chip{width:52px;height:52px;border-radius:50%;background:var(--bg-tint);color:var(--primary);display:flex;align-items:center;justify-content:center;margin-bottom:1.1rem}
+.icon-chip .material-symbols-rounded{font-size:1.5rem}
+.features__grid p{color:var(--text-secondary);margin:0;font-size:.95rem}
+/* ---------- Steps ---------- */
+.steps{display:flex;gap:var(--spacing-gap);align-items:stretch;position:relative}
+.step{flex:1;min-width:0;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-card);padding:1.75rem;position:relative;box-shadow:var(--shadow-sm)}
+.step__num{font-size:.8rem;font-weight:700;color:var(--primary);letter-spacing:.1em;margin-bottom:.9rem;display:block}
+.step p{color:var(--text-secondary);margin:0;font-size:.95rem}
+.step__icon{width:44px;height:44px;border-radius:var(--radius-sm);background:var(--primary);color:var(--on-primary);display:flex;align-items:center;justify-content:center;margin-bottom:1rem}
+.step::after{content:"";position:absolute;top:50%;right:calc(-1 * var(--spacing-gap));width:var(--spacing-gap);height:2px;background:var(--border-strong)}
+.step:last-child::after{display:none}
+@media(max-width:767px){.steps{flex-direction:column}.step::after{display:none}}
+/* ---------- Testimonials ---------- */
+.quotes{display:flex;gap:var(--spacing-gap);align-items:stretch}
+.quotes>.card{flex:1;min-width:0;display:flex;flex-direction:column}
+@media(max-width:767px){.quotes{flex-direction:column}}
+.quote__icon{color:var(--primary);font-size:1.6rem}
+.stars{display:flex;gap:2px;color:var(--primary);margin:.25rem 0 .9rem}
+.stars .material-symbols-rounded{font-size:1.05rem;font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 20}
+.quote__text{font-size:.95rem;color:var(--text-primary);flex:1}
+.quote__who{display:flex;align-items:center;gap:.75rem;margin-top:1rem}
+.avatar{flex:none;width:42px;height:42px;border-radius:50%;background:var(--secondary);color:var(--on-secondary);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem}
+.quote__who small{display:block;color:var(--text-muted)}
+.quote__who b{font-size:.9rem}
+/* ---------- Pricing ---------- */
+.billing-toggle{display:inline-flex;align-items:center;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:999px;padding:4px;margin:0 auto 2.5rem}
+.billing-toggle button{border:0;background:transparent;color:var(--text-secondary);font-weight:600;font-size:.9rem;padding:.55rem 1.3rem;border-radius:999px;cursor:pointer;min-height:44px;transition:background var(--transition-fast),color var(--transition-fast)}
+.billing-toggle button[aria-pressed="true"]{background:var(--primary);color:var(--on-primary)}
+.billing-wrap{text-align:center}
+.pricing{display:flex;gap:var(--spacing-gap);align-items:stretch;text-align:left}
+.pricing>.card{flex:1;min-width:0;display:flex;flex-direction:column}
+@media(max-width:900px){.pricing{flex-direction:column;max-width:460px;margin:0 auto}}
+.price{font-size:2.4rem;font-weight:700;letter-spacing:-.03em;margin:.5rem 0 .1rem}
+.price small{font-size:.9rem;font-weight:500;color:var(--text-muted);letter-spacing:0}
+.tier__desc{color:var(--text-secondary);font-size:.9rem;min-height:2.6em}
+.tier__list{list-style:none;margin:1.25rem 0 1.5rem;padding:0;display:flex;flex-direction:column;gap:.6rem;flex:1}
+.tier__list li{display:flex;align-items:center;gap:.55rem;font-size:.9rem;color:var(--text-secondary)}
+.tier__list .material-symbols-rounded{color:var(--text-success);font-size:1.15rem}
+/* ---------- FAQ ---------- */
+.faq{max-width:760px;margin:0 auto}
+.faq__item{border:1px solid var(--border-default);border-radius:var(--radius-card);background:var(--bg-secondary);margin-bottom:.85rem;overflow:hidden}
+.faq__trigger{width:100%;display:flex;align-items:center;justify-content:space-between;gap:1rem;background:transparent;border:0;padding:1.1rem 1.35rem;font-size:1rem;font-weight:600;color:var(--text-primary);cursor:pointer;text-align:left;min-height:44px}
+.faq__trigger .material-symbols-rounded{transition:transform var(--transition-normal) var(--ease-standard);color:var(--primary);flex:none}
+.faq__trigger[aria-expanded="true"] .material-symbols-rounded{transform:rotate(180deg)}
+.faq__panel{max-height:0;overflow:hidden;opacity:0;transition:max-height var(--transition-normal) var(--ease-standard),opacity var(--transition-normal) var(--ease-standard)}
+.faq__panel p{padding:0 1.35rem 1.2rem;margin:0;color:var(--text-secondary);font-size:.95rem}
+/* ---------- CTA band ---------- */
+.cta-band{background:var(--primary);color:var(--on-primary);text-align:center}
+.cta-band h2{color:var(--on-primary)}
+.cta-band p{color:var(--on-primary);opacity:.85;margin:0 auto 2rem}
+.cta-band__actions{display:flex;align-items:center;justify-content:center;gap:1.5rem;flex-wrap:wrap}
+.cta-band .btn--inverse{background:var(--on-primary);color:var(--primary)}
+.cta-band__link{color:var(--on-primary);font-weight:600;text-decoration:underline;text-underline-offset:4px;min-height:44px;display:inline-flex;align-items:center}
+.cta-band :focus-visible{outline-color:var(--ring-on-copper)}
+/* ---------- Footer ---------- */
+.footer{background:var(--bg-inverse);color:var(--text-on-inverse);padding:4rem 0 2rem}
+.footer__grid{display:flex;gap:2.5rem;align-items:flex-start;flex-wrap:wrap}
+.footer__brand{flex:1 1 260px;min-width:220px}
+.footer__brand p{color:var(--text-on-inverse-muted);font-size:.9rem}
+.footer__cols{display:flex;gap:2.5rem;flex:2 1 480px;flex-wrap:wrap}
+.footer__col{flex:1;min-width:130px}
+.footer__col h3{font-size:.85rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-on-inverse-muted);margin-bottom:1rem}
+.footer__col ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.55rem}
+.footer__col a{color:var(--text-on-inverse);text-decoration:none;font-size:.9rem;opacity:.85}
+@media(hover:hover) and (pointer:fine){.footer__col a:hover{opacity:1;text-decoration:underline;text-underline-offset:3px}}
+.footer__news{margin-top:2.5rem;max-width:420px}
+.input-group{display:flex;flex-direction:column;align-items:stretch;gap:.4rem} /* documented exception */
+.input-group label{font-size:.85rem;font-weight:600}
+.input-group input{min-height:44px;padding:.65rem .9rem;border-radius:var(--radius-sm);border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);font-family:inherit;font-size:.95rem;transition:border-color var(--transition-fast),box-shadow var(--transition-fast)}
+.input-group input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(192,133,50,.25)}
+.input-group input[aria-invalid="true"]{border-color:var(--border-error,#DC2626)}
+.input-group__row{display:flex;gap:.6rem;align-items:stretch}
+.input-group__row input{flex:1;min-width:0}
+.input-group__msg{display:flex;align-items:center;gap:.4rem;font-size:.82rem;min-height:1.2em;color:var(--text-on-inverse-muted)}
+.input-group__msg--error{color:#F87171}
+.input-group__msg--ok{color:#4ADE80}
+.footer__bottom{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-top:3rem;padding-top:1.5rem;border-top:1px solid rgba(242,241,237,.15);font-size:.85rem;color:var(--text-on-inverse-muted)}
+.socials{display:flex;gap:.4rem}
+.socials .icon-btn{color:var(--text-on-inverse)}
+@media(hover:hover) and (pointer:fine){.socials .icon-btn:hover{background:rgba(242,241,237,.12)}}
+/* ---------- Modal ---------- */
+.modal{position:fixed;inset:0;z-index:var(--z-modal);display:flex;align-items:center;justify-content:center;padding:1.25rem}
+.modal__overlay{position:absolute;inset:0;background:rgba(11,18,32,.6)}
+.modal__box{position:relative;background:var(--bg-secondary);color:var(--text-primary);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);width:100%;max-width:460px;padding:2rem;opacity:0;transform:scale(.96);transition:opacity var(--transition-normal) var(--ease-standard),transform var(--transition-normal) var(--ease-standard)}
+.modal.is-open .modal__box{opacity:1;transform:scale(1)}
+.modal__close{position:absolute;top:.75rem;right:.75rem;color:var(--text-secondary)}
+.modal h2{font-size:1.4rem}
+.modal .input-group{margin-bottom:1rem}
+.modal__success{text-align:center;padding:1rem 0}
+.modal__success .material-symbols-rounded{font-size:3rem;color:var(--text-success);font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 48}
+/* ---------- Reveal ---------- */
+.reveal{opacity:0;transform:translateY(18px);transition:opacity 600ms var(--ease-standard),transform 600ms var(--ease-standard)}
+.reveal.is-visible{opacity:1;transform:none}
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:150ms!important}
+  .reveal{opacity:1;transform:none}
+  .stage__fill,.chart__bar{transition:none}
+  .card--skeleton .skel{animation:none}
 }
-.header__toggle[aria-pressed="true"] .material-symbols-rounded { content: "\e859"; } /* light_mode */
-.header__toggle[aria-pressed="false"] .material-symbols-rounded { content: "\e864"; } /* dark_mode */
-
-/* ==== Hero ==== */
-.hero { padding: 4rem 0; text-align: center; }
-.hero__eyebrow { font-size: .875rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .05em; }
-.hero__title { font-size: 2.25rem; margin: .5rem 0; }
-.hero__actions { display: flex; flex-wrap: wrap; gap: .75rem; justify-content: center; margin-top: 1.5rem; }
-.hero__actions .btn { min-width: 140px; }
-
-/* ==== Buttons ==== */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: .5rem;
-  height: 3rem;
-  min-height: 3rem;
-  min-width: 90px;
-  padding: 0 1.5rem;
-  font-weight: 500;
-  border-radius: var(--radius-md);
-  border: 2px solid transparent;
-  cursor: pointer;
-  transition: background-color var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
-}
-.btn:hover { box-shadow: var(--shadow-sm); }
-.btn:active { transform: scale(0.97); }
-.btn--primary { background-color: var(--primary); color: var(--on-primary); }
-.btn--primary:hover { background-color: #b0762d; }
-.btn--secondary { background-color: var(--secondary); color: var(--bg-primary); }
-.btn--secondary:hover { background-color: #0f1721; }
-.btn--ghost { background: transparent; color: var(--primary); border: 2px solid var(--primary); }
-.btn--ghost:hover { background-color: rgba(192,133,50,.1); }
-.btn--inverse { background-color: var(--bg-inverse); color: var(--text-on-inverse); }
-.btn--inverse:hover { background-color: #000; }
-.btn--danger { background-color: var(--text-error); color: #fff; }
-.btn--danger:hover { background-color: #b91c1c; }
-.btn--loading { position: relative; pointer-events: none; opacity: .7; }
-.btn--loading::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  margin: auto;
-  width: 1rem;
-  height: 1rem;
-  border: 2px solid currentColor;
-  border-top-color: transparent;
-  border-radius: 50%;
-  animation: spin .8s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-.btn--success { background-color: var(--text-success); color: #fff; }
-.btn--success:hover { background-color: #15803d; }
-.btn--error { background-color: var(--text-error); color: #fff; }
-.btn--error:hover { background-color: #b91c1c; }
-
-/* ==== Card ==== */
-.card {
-  background-color: var(--bg-secondary);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-sm);
-  transition: box-shadow var(--transition-normal), transform var(--transition-normal);
-}
-.card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
-.card__icon {
-  width: 2.5rem;
-  height: 2.5rem;
-  background-color: rgba(192,133,50,.1);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 1rem;
-}
-.card__icon .material-symbols-rounded { font-size: 1.5rem; color: var(--primary); }
-.card__title { font-size: 1.25rem; margin-bottom: .5rem; }
-.card__body { font-size: .95rem; color: var(--text-secondary); }
-.card--highlight { border: 2px solid var(--primary); position: relative; }
-.card--highlight::after {
-  content: "Most popular";
-  position: absolute;
-  top: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: var(--primary);
-  color: var(--on-primary);
-  font-size: .75rem;
-  padding: .2rem .6rem;
-  border-radius: var(--radius-sm);
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-/* ==== Input Group ==== */
-.input-group { display: flex; flex-direction: column; gap: .25rem; }
-.input-group label { font-weight: 500; font-size: .875rem; }
-.input-group input {
-  width: 100%;
-  padding: .5rem .75rem;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-sm);
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-}
-.input-group input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(192,133,50,.25); }
-.input-group input:disabled { background-color: var(--text-muted); color: var(--text-muted); cursor: not-allowed; }
-.input-group .help { font-size: .75rem; color: var(--text-muted); min-height: 1.25rem; }
-.input-group .help[aria-live="polite"] { min-height: 1.5rem; display: flex; align-items: center; gap: .25rem; }
-.input-group .help .material-symbols-rounded { font-size: 1rem; }
-
-/* ==== Modal ==== */
-.backdrop {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(0,0,0,.5);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: var(--z-modal);
-}
-.backdrop[aria-hidden="false"] { display: flex; }
-.modal {
-  background-color: var(--bg-secondary);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  width: 90%;
-  max-width: 420px;
-  max-height: 85vh;
-  overflow-y: auto;
-  animation: modalFadeIn .3s var(--ease-standard);
-}
-@media (prefers-reduced-motion: reduce) { .modal { animation: none; } }
-@keyframes modalFadeIn { from { opacity:0; transform:scale(.96); } to { opacity:1; transform:scale(1); } }
-.modal__header { padding: 1.5rem; border-bottom: 1px solid var(--border-default); display: flex; justify-content: space-between; align-items: center; }
-.modal__title { font-size: 1.25rem; margin: 0; }
-.modal__close {
-  background: transparent;
-  border: none;
-  font-size: 1.25rem;
-  line-height: 1;
-  color: var(--text-secondary);
-  width: 2.5rem;
-  height: 2.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.modal__close:hover { color: var(--text-primary); }
-.modal__body { padding: 1.5rem; }
-.modal__body p { margin-bottom: 1rem; }
-.modal__footer { padding: 1.5rem; text-align: right; border-top: 1px solid var(--border-default); }
-.modal[aria-hidden="true"] { display: none; }
-
-/* ==== Sections ==== */
-section { padding: 4rem 0; }
-.section__title { text-align: center; font-size: 2rem; margin-bottom: 2.5rem; }
-.section__subtitle { text-align: center; font-size: 1.125rem; color: var(--text-secondary); max-width: 600px; margin-inline: auto; margin-bottom: 3rem; }
-
-/* ==== Features ==== */
-.features .card { flex: 1; display: flex; flex-direction: column; align-items: stretch; }
-.features .card__body { flex-grow: 1; }
-
-/* ==== Steps ==== */
-.steps { display: flex; gap: var(--spacing-gap); align-items: flex-start; }
-.step {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: .75rem;
-}
-.step__number {
-  width: 2.5rem;
-  height: 2.5rem;
-  background-color: rgba(192,133,50,.1);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  color: var(--primary);
-}
-.step__icon {
-  width: 2.5rem;
-  height: 2.5rem;
-  background-color: rgba(192,133,50,.1);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.step__icon .material-symbols-rounded { font-size: 1.5rem; color: var(--primary); }
-.step__title { font-size: 1.125rem; font-weight: 600; }
-.step__desc { font-size: .95rem; color: var(--text-secondary); }
-@media (max-width: 768px) {
-  .steps { flex-direction: column; align-items: stretch; }
-  .step { align-items: flex-start; }
-}
-
-/* ==== Testimonials ==== */
-.testimonials { display: flex; gap: var(--spacing-gap); }
-.testimonial {
-  flex: 1;
-  background-color: var(--bg-secondary);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-card);
-  padding: 1.5rem;
-  box-shadow: var(--shadow-sm);
-}
-.testimonial__quote { font-size: 1.1rem; font-style: italic; margin-bottom: 1rem; position: relative; }
-.testimonial__quote::before { content: "\201C"; font-size: 2.5rem; opacity: .2; position: absolute; top: -10px; left: -5px; }
-.testimonial__rating { margin-bottom: .75rem; }
-.testimonial__rating .material-symbols-rounded { color: #fbbf24; font-size: 1.25rem; }
-.testimonial__avatar {
-  width: 2.5rem;
-  height: 2.5rem;
-  background-color: var(--primary);
-  color: var(--on-primary);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  margin-right: .75rem;
-}
-.testimonial__info { display: flex; align-items: center; }
-.testimonial__name { font-weight: 600; }
-.testimonial__role { font-size: .875rem; color: var(--text-muted); }
-
-/* ==== Pricing ==== */
-.pricing-toggle { display: flex; gap: .5rem; justify-content: center; margin-bottom: 2rem; }
-.pricing-toggle button {
-  flex: 1;
-  padding: .5rem;
-  border: none;
-  background: transparent;
-  font-weight: 500;
-  color: var(--text-secondary);
-  border-bottom: 2px solid transparent;
-  cursor: pointer;
-}
-.pricing-toggle button[aria-pressed="true"] {
-  color: var(--primary);
-  border-bottom-color: var(--primary);
-}
-.pricing .grid-3 { gap: var(--spacing-gap); }
-.pricing .card { display: flex; flex-direction: column; }
-.pricing .card__body { flex-grow: 1; display: flex; flex-direction: column; }
-.pricing__price { font-size: 2rem; font-weight: 600; margin: .5rem 0; }
-.pricing__price span { font-size: 1rem; opacity: .7; }
-.pricing__features { margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--border-default); flex-grow: 1; }
-.pricing__features li { display: flex; align-items: center; gap: .5rem; margin-bottom: .75rem; font-size: .95rem; color: var(--text-secondary); }
-.pricing__features .material-symbols-rounded { color: var(--text-success); }
-.pricing .btn { align-self: center; margin-top: 1.5rem; }
-
-/* ==== FAQ ==== */
-.faq-details { border: 1px solid var(--border-default); border-radius: var(--radius-card); margin-bottom: .75rem; overflow: hidden; }
-.faq-details[open] { border-color: var(--primary); }
-.faq-details summary {
-  padding: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.faq-details summary::-webkit-details-marker { display: none; }
-.faq-details summary::after {
-  content: "";
-  width: .75rem;
-  height: .75rem;
-  border-top: 2px solid currentColor;
-  border-right: 2px solid currentColor;
-  transform: rotate(-45deg);
-  transition: transform var(--transition-normal);
-}
-.faq-details[open] summary::after { transform: rotate(135deg); }
-.faq-details[open] summary { color: var(--primary); }
-.faq-details .faq-panel { padding: 1rem; color: var(--text-secondary); font-size: .95rem; }
-
-/* ==== Final CTA ==== */
-.cta-band {
-  background-color: var(--primary);
-  color: var(--on-primary);
-  text-align: center;
-  padding: 2.5rem 0;
-}
-.cta-band__title { font-size: 1.75rem; margin-bottom: .5rem; }
-.cta-band__subtitle { font-size: 1.125rem; margin-bottom: 1.5rem; opacity: .9; }
-.cta-band .btn { margin: .5rem; }
-
-/* ==== Footer ==== */
-.footer {
-  background-color: var(--bg-inverse);
-  color: var(--text-on-inverse);
-  padding: 2.5rem 0;
-}
-.footer .container { display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
-.footer h3 { font-size: 1.125rem; margin-bottom: 1rem; }
-.footer ul { list-style: none; padding: 0; margin: 0; }
-.footer li { margin-bottom: .5rem; }
-.footer a { color: var(--text-on-inverse); opacity: .8; }
-.footer a:hover { opacity: 1; }
-.footer__newsletter { margin-top: 1.5rem; }
-.footer__newsletter .input-group { width: 100%; }
-.footer__newsletter .btn { align-self: stretch; margin-top: .5rem; }
-.footer__social { display: flex; gap: .75rem; margin-top: 1.5rem; }
-.footer__social button {
-  background: transparent;
-  border: none;
-  color: var(--text-on-inverse);
-  width: 2.5rem;
-  height: 2.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.25rem;
-}
-.footer__social button:hover { color: #fff; }
-.footer__copyright { text-align: center; font-size: .875rem; margin-top: 2rem; opacity: .7; }
-
-/* ==== Reduced Motion ==== */
-@media (prefers-reduced-motion: reduce) {
-  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
-  .btn--loading::after { animation: none; }
-}
-
-/* ==== Skip Link ==== */
-.skip-link {
-  position: absolute;
-  left: -999px;
-  top: auto;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-}
-.skip-link:focus {
-  left: 0;
-  top: 0;
-  width: auto;
-  height: auto;
-  overflow: visible;
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  padding: .5rem 1rem;
-  z-index: 1001;
-}
+@media (prefers-reduced-transparency: reduce){.modal__overlay{background:rgba(11,18,32,.92)}}
 </style>
 </head>
 <body>
-<a href="#main" class="skip-link">Skip to content</a>
+<a class="skip-link" href="#main">Skip to main content</a>
 
 <header class="header">
-  <div class="container">
-    <div class="header__logo">
-      <span class="material-symbols-rounded">account_balance</span>
+  <div class="container header__inner">
+    <a class="header__logo" href="#top" aria-label="Copperline home">
+      <span class="material-symbols-rounded" aria-hidden="true">donut_large</span>
       Copperline
-    </div>
-    <nav class="header__nav">
+    </a>
+    <nav class="header__nav" id="site-nav" aria-label="Primary" hidden>
       <a href="#features">Features</a>
-      <a href="#how-it-works">How It Works</a>
+      <a href="#how">How it works</a>
       <a href="#pricing">Pricing</a>
       <a href="#faq">FAQ</a>
+      <button class="btn header__cta header__cta--mobile" type="button" data-open-demo>Book a demo</button>
     </nav>
-    <div class="header__cta">
-      <button class="btn btn--primary" id="open-demo-modal">Start free trial</button>
-      <button class="btn btn--ghost" id="open-demo-modal-2">Book a demo</button>
-      <button class="header__toggle" id="theme-toggle" aria-label="Toggle dark mode" aria-pressed="false">
-        <span class="material-symbols-rounded"></span>
+    <div class="header__actions">
+      <button class="btn header__cta" type="button" data-open-demo>Book a demo</button>
+      <button class="icon-btn" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-rounded" id="theme-icon" aria-hidden="true">dark_mode</span>
+      </button>
+      <button class="icon-btn header__menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">
+        <span class="material-symbols-rounded" id="menu-icon" aria-hidden="true">menu</span>
       </button>
     </div>
   </div>
 </header>
 
 <main id="main">
-  <section class="hero">
-    <div class="container">
-      <div class="hero__content">
-        <p class="hero__eyebrow">Modern CRM for Sales Teams</p>
-        <h1 class="hero__title">Close more deals with pipeline visibility and contact intelligence</h1>
-        <div class="hero__actions">
-          <a href="#pricing" class="btn btn--primary">Start free trial</a>
-          <button class="btn btn--ghost" id="open-demo-modal-hero">Book a demo</button>
+  <!-- HERO -->
+  <section class="hero" id="top" aria-labelledby="hero-title">
+    <div class="container hero__grid">
+      <div class="hero__copy">
+        <span class="eyebrow">CRM for teams that sell</span>
+        <h1 id="hero-title">A pipeline you can actually trust</h1>
+        <p>Copperline tracks every deal, contact, and activity in one clean workspace, so your forecast stops being a guess.</p>
+        <div class="hero__ctas">
+          <a class="btn btn--primary" href="#pricing">Start free trial</a>
+          <button class="btn btn--ghost" type="button" data-open-demo>Book a demo</button>
+        </div>
+      </div>
+      <div class="hero__visual" aria-label="Product preview">
+        <div class="mock">
+          <div class="mock__row">
+            <div class="card">
+              <div class="mock__title"><span class="material-symbols-rounded" aria-hidden="true">view_kanban</span>Pipeline</div>
+              <div class="stage"><div class="stage__label"><span>Qualified</span><span>24 deals</span></div><div class="stage__bar"><span class="stage__fill" style="width:82%"></span></div></div>
+              <div class="stage"><div class="stage__label"><span>Proposal</span><span>15 deals</span></div><div class="stage__bar"><span class="stage__fill" style="width:58%"></span></div></div>
+              <div class="stage" style="margin-bottom:0"><div class="stage__label"><span>Negotiation</span><span>9 deals</span></div><div class="stage__bar"><span class="stage__fill" style="width:36%"></span></div></div>
+            </div>
+            <div class="card">
+              <div class="mock__title"><span class="material-symbols-rounded" aria-hidden="true">monitoring</span>Revenue</div>
+              <div class="chart" role="img" aria-label="Revenue by month, rising from 42 to 96 thousand dollars">
+                <div class="chart__bar chart__bar--muted" style="height:38%" aria-label="Jan 42k"></div>
+                <div class="chart__bar chart__bar--muted" style="height:52%" aria-label="Feb 55k"></div>
+                <div class="chart__bar" style="height:47%" aria-label="Mar 51k"></div>
+                <div class="chart__bar" style="height:66%" aria-label="Apr 68k"></div>
+                <div class="chart__bar" style="height:80%" aria-label="May 82k"></div>
+                <div class="chart__bar" style="height:96%" aria-label="Jun 96k"></div>
+              </div>
+            </div>
+          </div>
+          <div class="card" id="activity-card" aria-live="polite">
+            <div class="mock__title"><span class="material-symbols-rounded" aria-hidden="true">history</span>Recent activity</div>
+            <div id="activity-body">
+              <div class="activity card--skeleton"><span class="skel" style="width:32px;height:32px;border-radius:50%"></span><span class="skel" style="height:12px;flex:1"></span></div>
+              <div class="activity card--skeleton"><span class="skel" style="width:32px;height:32px;border-radius:50%"></span><span class="skel" style="height:12px;flex:1"></span></div>
+              <div class="activity card--skeleton"><span class="skel" style="width:32px;height:32px;border-radius:50%"></span><span class="skel" style="height:12px;flex:1"></span></div>
+            </div>
+          </div>
+        </div>
+        <div class="stats">
+          <div class="card"><b>23%</b><span>higher win rate</span></div>
+          <div class="card"><b>4,800</b><span>active teams</span></div>
+          <div class="card"><b>2 min</b><span>avg. response time</span></div>
         </div>
       </div>
     </div>
   </section>
 
-  <section id="features" class="features">
+  <!-- FEATURES -->
+  <section class="section" id="features" aria-labelledby="features-title" style="scroll-margin-top:84px">
     <div class="container">
-      <h2 class="section__title">Features</h2>
-      <p class="section__subtitle">Everything you need to manage your sales process, from lead to close.</p>
-      <div class="grid-3">
-        <article class="card">
-          <div class="card__icon"><span class="material-symbols-rounded">view_kanban</span></div>
-          <h3 class="card__title">Pipeline Management</h3>
-          <div class="card__body">Visualize deals across stages, drag‑and‑drop updates, and forecast revenue with confidence.</div>
+      <div class="section__head reveal">
+        <h2 id="features-title">Everything a sales day needs</h2>
+        <p>Three pillars, one workspace. No tab-hopping between tools that never sync.</p>
+      </div>
+      <div class="features__grid">
+        <article class="card card--lift reveal">
+          <div class="icon-chip"><span class="material-symbols-rounded" aria-hidden="true">view_kanban</span></div>
+          <h3>Pipeline management</h3>
+          <p>Drag deals across stages, spot stalled opportunities at a glance, and forecast with numbers that update the moment a rep logs a call.</p>
         </article>
-        <article class="card">
-          <div class="card__icon"><span class="material-symbols-rounded">contacts</span></div>
-          <h3 class="card__title">Contact Intelligence</h3>
-          <div class="card__body">Enrich profiles, track interactions, and surface insights that help you personalize outreach.</div>
+        <article class="card card--lift reveal">
+          <div class="icon-chip"><span class="material-symbols-rounded" aria-hidden="true">contacts</span></div>
+          <h3>Contact intelligence</h3>
+          <p>Every email, meeting, and note lands on the contact timeline automatically, enriched with company data your reps would otherwise hunt for.</p>
         </article>
-        <article class="card">
-          <div class="card__icon"><span class="material-symbols-rounded">monitoring</span></div>
-          <h3 class="card__title">Activity Tracking &amp; Analytics</h3>
-          <div class="card__body">Automatically log calls, emails, and meetings; measure performance with built‑in reports.</div>
+        <article class="card card--lift reveal">
+          <div class="icon-chip"><span class="material-symbols-rounded" aria-hidden="true">monitoring</span></div>
+          <h3>Activity analytics</h3>
+          <p>See which activities actually move deals forward. Compare reps, teams, and quarters with reports that build themselves.</p>
         </article>
       </div>
     </div>
   </section>
 
-  <section id="how-it-works" class="how-it-works">
+  <!-- HOW IT WORKS -->
+  <section class="section" id="how" aria-labelledby="how-title" style="scroll-margin-top:84px;background:var(--bg-tint)">
     <div class="container">
-      <h2 class="section__title">How It Works</h2>
-      <p class="section__subtitle">Three simple steps to get your team selling faster.</p>
+      <div class="section__head reveal">
+        <h2 id="how-title">Up and running in an afternoon</h2>
+        <p>Import, organize, and start closing before your current CRM contract even ends.</p>
+      </div>
       <div class="steps">
-        <div class="step">
-          <div class="step__number">01</div>
-          <div class="step__icon"><span class="material-symbols-rounded">upload</span></div>
-          <h3 class="step__title">Import your data</h3>
-          <p class="step__desc">Upload contacts, companies, and deals via CSV or sync with your existing tools.</p>
+        <div class="step reveal">
+          <span class="step__num">Step 01</span>
+          <div class="step__icon"><span class="material-symbols-rounded" aria-hidden="true">upload</span></div>
+          <h3>Import your data</h3>
+          <p>Bring contacts, deals, and history from spreadsheets or your old CRM with a guided mapper that flags duplicates.</p>
         </div>
-        <div class="step">
-          <div class="step__number">02</div>
-          <div class="step__icon"><span class="material-symbols-rounded">view_kanban</span></div>
-          <h3 class="step__title">Manage your pipeline</h3>
-          <p class="step__desc">Visualize deals, set tasks, and move opportunities forward with drag‑and‑drop ease.</p>
+        <div class="step reveal">
+          <span class="step__num">Step 02</span>
+          <div class="step__icon"><span class="material-symbols-rounded" aria-hidden="true">view_kanban</span></div>
+          <h3>Shape your pipeline</h3>
+          <p>Define stages that match how your team actually sells, with required fields that keep data clean from day one.</p>
         </div>
-        <div class="step">
-          <div class="step__number">03</div>
-          <div class="step__icon"><span class="material-symbols-rounded">insights</span></div>
-          <h3 class="step__title">Act on insights</h3>
-          <p class="step__desc">Get AI‑driven suggestions, track activity, and close more deals.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="testimonials" class="testimonials">
-    <div class="container">
-      <h2 class="section__title">What our customers say</h2>
-      <div class="testimonials">
-        <div class="testimonial">
-          <p class="testimonial__quote">“Copperline gave us real‑time pipeline visibility that helped us increase win rates by 22% in just three months.”</p>
-          <div class="testimonial__rating">
-            <span class="material-symbols-rounded">star</span>
-            <span class="material-symbols-rounded">star</span>
-            <span class="material-symbols-rounded">star</span>
-            <span class="material-symbols-rounded">star</span>
-            <span class="material-symbols-rounded">star</span>
-          </div>
-          <div class="testimonial__info">
-            <div class="testimonial__avatar">JS</div>
-            <div>
-              <p class="testimonial__name">Jordan Smith</p>
-              <p class="testimonial__role">Sales Director, Summit Corp</p>
-            </div>
-          </div>
-        </div>
-        <div class="testimonial">
-          <p class="testimonial__quote">“The contact enrichment saved us hours each week and let us personalize outreach at scale.”</p>
-          <div class="testimonial__rating">
-            <span class="material-symbols-rounded">star</span>
-            <span class="material-symbols-rounded">star</span>
-            <span class="material-symbols-rounded">star</span>
-            <span class="material-symbols-rounded">star</span>
-            <span class="material-symbols-rounded">star</span>
-          </div>
-          <div class="testimonial__info">
-            <div class="testimonial__avatar">ML</div>
-            <div>
-              <p class="testimonial__name">Mia Lopez</p>
-              <p class="testimonial__role">RevOps Lead, NovaTech</p>
-            </div>
-          </div>
+        <div class="step reveal">
+          <span class="step__num">Step 03</span>
+          <div class="step__icon"><span class="material-symbols-rounded" aria-hidden="true">insights</span></div>
+          <h3>Read the results</h3>
+          <p>Dashboards fill in as your team works. Weekly digests land in your inbox with the numbers that matter.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <section id="pricing" class="pricing">
+  <!-- TESTIMONIALS -->
+  <section class="section" aria-labelledby="quotes-title">
     <div class="container">
-      <h2 class="section__title">Pricing</h2>
-      <p class="section__subtitle">Simple, scalable plans for teams of any size.</p>
-      <div class="pricing-toggle">
-        <button aria-pressed="true" data-period="monthly">Monthly</button>
-        <button aria-pressed="false" data-period="annual">Annual</button>
+      <div class="section__head reveal">
+        <h2 id="quotes-title">Teams that stopped guessing</h2>
+        <p>Sales leaders on what changed after switching to Copperline.</p>
       </div>
-      <div class="grid-3">
-        <div class="card">
-          <div class="card__body">
-            <h3 class="card__title">Starter</h3>
-            <div class="pricing__price"><span>$</span>19 <span>/user/mo</span></div>
-            <ul class="pricing__features">
-              <li><span class="material-symbols-rounded">check_circle</span>Unlimited contacts</li>
-              <li><span class="material-symbols-rounded">check_circle</span>Pipeline views</li>
-              <li><span class="material-symbols-rounded">check_circle</span>Email sync</li>
-              <li><span class="material-symbols-rounded">check_circle</span>Basic reporting</li>
-            </ul>
-            <a href="#hero" class="btn btn--primary">Start free trial</a>
-          </div>
+      <div class="quotes">
+        <article class="card reveal">
+          <span class="material-symbols-rounded quote__icon" aria-hidden="true">format_quote</span>
+          <div class="stars" role="img" aria-label="Rated 5 out of 5"><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span></div>
+          <p class="quote__text">For the first time in three years our forecast call takes ten minutes. The pipeline view shows exactly which deals slipped and why.</p>
+          <div class="quote__who"><span class="avatar" aria-hidden="true">MR</span><div><b>Marta Reyes</b><small>VP of Sales, Fieldstone Logistics</small></div></div>
+        </article>
+        <article class="card reveal">
+          <span class="material-symbols-rounded quote__icon" aria-hidden="true">format_quote</span>
+          <div class="stars" role="img" aria-label="Rated 5 out of 5"><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span></div>
+          <p class="quote__text">Reps log activities because it takes two clicks, not twenty. Our close rate went up 18% in the first quarter after rollout.</p>
+          <div class="quote__who"><span class="avatar" aria-hidden="true">DK</span><div><b>Daniel Kowalski</b><small>Sales Director, Beacon &amp; Co.</small></div></div>
+        </article>
+        <article class="card reveal">
+          <span class="material-symbols-rounded quote__icon" aria-hidden="true">format_quote</span>
+          <div class="stars" role="img" aria-label="Rated 5 out of 5"><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span></div>
+          <p class="quote__text">Migration from our legacy CRM took one afternoon. Support stayed on the call until every custom field mapped cleanly.</p>
+          <div class="quote__who"><span class="avatar" aria-hidden="true">AO</span><div><b>Amara Osei</b><small>Revenue Operations, Northwind Medical</small></div></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="section" id="pricing" aria-labelledby="pricing-title" style="scroll-margin-top:84px;background:var(--bg-tint)">
+    <div class="container">
+      <div class="section__head reveal">
+        <h2 id="pricing-title">Pricing that scales with your team</h2>
+        <p>Per user, per month. Switch or cancel any time.</p>
+      </div>
+      <div class="billing-wrap reveal">
+        <div class="billing-toggle" role="group" aria-label="Billing period">
+          <button type="button" id="bill-monthly" aria-pressed="true">Monthly</button>
+          <button type="button" id="bill-annual" aria-pressed="false">Annual, save 20%</button>
         </div>
-        <div class="card card--highlight">
-          <div class="card__body">
-            <h3 class="card__title">Professional</h3>
-            <div class="pricing__price"><span>$</span>49 <span>/user/mo</span></div>
-            <ul class="pricing__features">
-              <li><span class="material-symbols-rounded">check_circle</span>Everything in Starter</li>
-              <li><span class="material-symbols-rounded">check_circle</span>Workflow automation</li>
-              <li><span class="material-symbols-rounded">check_circle</span>Advanced reporting</li>
-              <li><span class="material-symbols-rounded">check_circle</span>Integrations (Slack, Zapier)</li>
-              <li><span class="material-symbols-rounded">check_circle</span>Phone support</li>
-            </ul>
-            <a href="#hero" class="btn btn--primary">Start free trial</a>
-          </div>
+        <p class="visually-hidden" id="price-live" aria-live="polite"></p>
+      </div>
+      <div class="pricing">
+        <article class="card card--lift reveal">
+          <h3>Starter</h3>
+          <p class="tier__desc">For small teams getting their first real pipeline.</p>
+          <p class="price"><span data-price data-monthly="19" data-annual="15">$19</span><small> /user/mo</small></p>
+          <ul class="tier__list">
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Up to 3 pipelines</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Contact timeline and notes</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Email integration</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Standard reports</li>
+          </ul>
+          <a class="btn btn--ghost" href="#pricing" data-plan="Starter">Start free trial</a>
+        </article>
+        <article class="card card--highlight card--lift reveal">
+          <span class="card__badge">Most popular</span>
+          <h3>Professional</h3>
+          <p class="tier__desc">For growing teams that need automation and insight.</p>
+          <p class="price"><span data-price data-monthly="49" data-annual="39">$49</span><small> /user/mo</small></p>
+          <ul class="tier__list">
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Unlimited pipelines</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Workflow automation</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Activity analytics</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Forecasting and goals</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Priority support</li>
+          </ul>
+          <a class="btn btn--primary" href="#pricing" data-plan="Professional">Start free trial</a>
+        </article>
+        <article class="card card--lift reveal">
+          <h3>Enterprise</h3>
+          <p class="tier__desc">For organizations with security and scale requirements.</p>
+          <p class="price"><span data-price data-monthly="99" data-annual="79">$99</span><small> /user/mo</small></p>
+          <ul class="tier__list">
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Everything in Professional</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>SSO and audit logs</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Custom roles and permissions</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Dedicated success manager</li>
+          </ul>
+          <button class="btn btn--secondary" type="button" data-open-demo>Book a demo</button>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq" aria-labelledby="faq-title" style="scroll-margin-top:84px">
+    <div class="container">
+      <div class="section__head reveal">
+        <h2 id="faq-title">Common questions</h2>
+        <p>Everything teams usually ask before starting a trial.</p>
+      </div>
+      <div class="faq">
+        <div class="faq__item reveal">
+          <button class="faq__trigger" type="button" aria-expanded="false" aria-controls="faq-p1" id="faq-t1">How long is the free trial?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button>
+          <div class="faq__panel" id="faq-p1" role="region" aria-labelledby="faq-t1"><p>Fourteen days with full Professional features, no credit card required. When the trial ends you can pick a plan or export your data.</p></div>
         </div>
-        <div class="card">
-          <div class="card__body">
-            <h3 class="card__title">Enterprise</h3>
-            <div class="pricing__price"><span>$</span>99 <span>/user/mo</span></div>
-            <ul class="pricing__features">
-              <li><span class="material-symbols-rounded">check_circle</span>Everything in Professional</li>
-              <li><span class="material-symbols-rounded">check_circle</span>Custom permissions</li>
-              <li><span class="material-symbols-rounded">check_circle</span>Dedicated CSM</li>
-              <li><span class="material-symbols-rounded">check_circle</span>SSO &amp; SCIM</li>
-              <li><span class="material-symbols-rounded">check_circle</span>On‑premise option</li>
-            </ul>
-            <a href="#hero" class="btn btn--primary">Start free trial</a>
-          </div>
+        <div class="faq__item reveal">
+          <button class="faq__trigger" type="button" aria-expanded="false" aria-controls="faq-p2" id="faq-t2">Can I import data from my current CRM?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button>
+          <div class="faq__panel" id="faq-p2" role="region" aria-labelledby="faq-t2"><p>Yes. The import wizard handles CSV files and direct migrations from most major CRMs, mapping fields automatically and flagging duplicates for review.</p></div>
+        </div>
+        <div class="faq__item reveal">
+          <button class="faq__trigger" type="button" aria-expanded="false" aria-controls="faq-p3" id="faq-t3">Which tools does Copperline integrate with?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button>
+          <div class="faq__panel" id="faq-p3" role="region" aria-labelledby="faq-t3"><p>Gmail, Outlook, Google Calendar, Slack, Zoom, and over 60 more through our marketplace. A REST API and webhooks cover everything else.</p></div>
+        </div>
+        <div class="faq__item reveal">
+          <button class="faq__trigger" type="button" aria-expanded="false" aria-controls="faq-p4" id="faq-t4">How is my data secured?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button>
+          <div class="faq__panel" id="faq-p4" role="region" aria-labelledby="faq-t4"><p>Data is encrypted in transit and at rest, hosted in SOC 2 certified facilities, with daily backups and optional EU data residency on Enterprise plans.</p></div>
+        </div>
+        <div class="faq__item reveal">
+          <button class="faq__trigger" type="button" aria-expanded="false" aria-controls="faq-p5" id="faq-t5">Can I cancel at any time?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button>
+          <div class="faq__panel" id="faq-p5" role="region" aria-labelledby="faq-t5"><p>Yes. Monthly plans cancel with one click. Annual plans are refunded pro rata within the first 60 days, and your data stays exportable for 90 days after cancellation.</p></div>
+        </div>
+        <div class="faq__item reveal">
+          <button class="faq__trigger" type="button" aria-expanded="false" aria-controls="faq-p6" id="faq-t6">What support do you offer?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></button>
+          <div class="faq__panel" id="faq-p6" role="region" aria-labelledby="faq-t6"><p>Every plan includes email support with a median response under two hours. Professional adds live chat, and Enterprise gets a dedicated success manager.</p></div>
         </div>
       </div>
     </div>
   </section>
 
-  <section id="faq" class="faq">
+  <!-- FINAL CTA -->
+  <section class="section cta-band" aria-labelledby="cta-title">
     <div class="container">
-      <h2 class="section__title">Frequently asked questions</h2>
-      <div class="faq-details">
-        <summary>What is included in the free trial?</summary>
-        <div class="faq-panel">The free trial gives you full access to the Professional plan for 14 days, including all features, integrations, and support.</div>
-      </div>
-      <div class="faq-details">
-        <summary>Can I import my existing CRM data?</summary>
-        <div class="faq-panel">Yes. You can import contacts, companies, and deals via CSV, or use our native sync tools for HubSpot, Salesforce, and Pipedrive.</div>
-      </div>
-      <div class="faq-details">
-        <summary>Is my data secure?</summary>
-        <div class="faq-panel">We encrypt data at rest and in transit, undergo regular SOC 2 audits, and provide granular permission controls.</div>
-      </div>
-    </div>
-  </section>
-
-  <section class="cta-band">
-    <div class="container">
-      <h2 class="cta-band__title">Ready to transform your sales process?</h2>
-      <p class="cta-band__subtitle">Start a free trial or book a live demo to see Copperline in action.</p>
+      <h2 id="cta-title">Close your next quarter with confidence</h2>
+      <p>Start your trial today and see your real pipeline by Friday.</p>
       <div class="cta-band__actions">
-        <a href="#pricing" class="btn btn--inverse">Start free trial</a>
-        <button class="btn btn--ghost" id="open-demo-modal-footer">Book a demo</button>
+        <a class="btn btn--inverse" href="#pricing">Start free trial</a>
+        <button class="cta-band__link" type="button" data-open-demo style="background:none;border:0;cursor:pointer;font-size:1rem">Book a demo</button>
       </div>
     </div>
   </section>
 </main>
 
+<!-- FOOTER -->
 <footer class="footer">
   <div class="container">
-    <div>
-      <h3>Product</h3>
-      <ul>
-        <li><a href="#features">Features</a></li>
-        <li><a href="#how-it-works">How it works</a></li>
-        <li><a href="#pricing">Pricing</a></li>
-        <li><a href="#faq">FAQ</a></li>
-      </ul>
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <a class="header__logo" href="#top" style="color:var(--text-on-inverse)"><span class="material-symbols-rounded" aria-hidden="true" style="font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24">donut_large</span>Copperline</a>
+        <p>The CRM that keeps your pipeline honest. Built for sales teams that would rather sell than administer software.</p>
+      </div>
+      <div class="footer__cols">
+        <nav class="footer__col" aria-label="Product"><h3>Product</h3><ul><li><a href="#features">Features</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#how">How it works</a></li><li><a href="#faq">FAQ</a></li></ul></nav>
+        <nav class="footer__col" aria-label="Company"><h3>Company</h3><ul><li><a href="#top">About</a></li><li><a href="#top">Careers</a></li><li><a href="#top">Press</a></li><li><a href="#top">Contact</a></li></ul></nav>
+        <nav class="footer__col" aria-label="Resources"><h3>Resources</h3><ul><li><a href="#top">Blog</a></li><li><a href="#top">Help center</a></li><li><a href="#top">API docs</a></li><li><a href="#top">Webinars</a></li></ul></nav>
+        <nav class="footer__col" aria-label="Legal"><h3>Legal</h3><ul><li><a href="#top">Privacy</a></li><li><a href="#top">Terms</a></li><li><a href="#top">Security</a></li><li><a href="#top">DPA</a></li></ul></nav>
+      </div>
     </div>
-    <div>
-      <h3>Company</h3>
-      <ul>
-        <li><a href="#">About us</a></li>
-        <li><a href="#">Careers</a></li>
-        <li><a href="#">Blog</a></li>
-        <li><a href="#">Press</a></li>
-      </ul>
-    </div>
-    <div>
-      <h3>Resources</h3>
-      <ul>
-        <li><a href="#">Help center</a></li>
-        <li><a href="#">Webinars</a></li>
-        <li><a href="#">Case studies</a></li>
-        <li><a href="#">API docs</a></li>
-      </ul>
-    </div>
-    <div>
-      <h3>Legal</h3>
-      <ul>
-        <li><a href="#">Privacy policy</a></li>
-        <li><a href="#">Terms of service</a></li>
-        <li><a href="#">Security</a></li>
-        <li><a href="#">Cookie settings</a></li>
-      </ul>
-      <div class="footer__newsletter">
-        <form id="newsletter-form" novalidate>
-          <div class="input-group">
-            <label for="newsletter-email">Stay updated</label>
-            <input type="email" id="newsletter-email" placeholder="you@example.com" required>
-            <div class="help" aria-live="polite" aria-required="true"></div>
+    <div class="footer__news">
+      <form id="news-form" novalidate>
+        <div class="input-group">
+          <label for="news-email" style="color:var(--text-on-inverse)">Get the monthly sales digest</label>
+          <div class="input-group__row">
+            <input type="email" id="news-email" name="email" autocomplete="email" placeholder="you@company.com" aria-describedby="news-msg" required>
+            <button class="btn btn--primary" type="submit" id="news-btn"><span class="btn__spinner" aria-hidden="true"></span>Subscribe</button>
           </div>
-          <button type="submit" class="btn btn--primary">Subscribe</button>
-        </form>
-      </div>
-      <div class="footer__social">
-        <button aria-label="Follow us on LinkedIn"><span class="material-symbols-rounded">linkedin</span></button>
-        <button aria-label="Follow us on Twitter"><span class="material-symbols-rounded">twitter</span></button>
-        <button aria-label="Subscribe to our YouTube channel"><span class="material-symbols-rounded">youtube</span></button>
+          <p class="input-group__msg" id="news-msg" aria-live="polite">One email a month. Unsubscribe any time.</p>
+        </div>
+      </form>
+    </div>
+    <div class="footer__bottom">
+      <span>© 2026 Copperline Inc. All rights reserved.</span>
+      <div class="socials">
+        <a class="icon-btn" href="#top" aria-label="Email us"><span class="material-symbols-rounded" aria-hidden="true">alternate_email</span></a>
+        <a class="icon-btn" href="#top" aria-label="RSS feed"><span class="material-symbols-rounded" aria-hidden="true">rss_feed</span></a>
+        <a class="icon-btn" href="#top" aria-label="Community site"><span class="material-symbols-rounded" aria-hidden="true">public</span></a>
       </div>
     </div>
-  </div>
-  <div class="footer__copyright">
-    © 2026 Copperline. All rights reserved.
   </div>
 </footer>
 
-<!-- Demo Modal -->
-<div class="backdrop" id="demo-backdrop" aria-hidden="true">
-  <div class="modal" id="demo-modal" role="dialog" aria-modal="true" aria-labelledby="demo-modal-title">
-    <div class="modal__header">
-      <h2 class="modal__title" id="demo-modal-title">Book a live demo</h2>
-      <button class="modal__close" id="demo-modal-close" aria-label="Close dialog">
-        <span class="material-symbols-rounded">close</span>
-      </button>
-    </div>
-    <div class="modal__body">
-      <p>Pick a time that works for you. One of our product specialists will walk you through the platform and answer any questions.</p>
+<!-- DEMO MODAL -->
+<div class="modal" id="demo-modal" hidden>
+  <div class="modal__overlay" data-close-modal></div>
+  <div class="modal__box" role="dialog" aria-modal="true" aria-labelledby="demo-title">
+    <button class="icon-btn modal__close" type="button" data-close-modal aria-label="Close dialog"><span class="material-symbols-rounded" aria-hidden="true">close</span></button>
+    <div id="demo-form-wrap">
+      <h2 id="demo-title">Book a demo</h2>
+      <p style="color:var(--text-secondary);font-size:.95rem">A product specialist will walk your team through Copperline in 30 minutes.</p>
       <form id="demo-form" novalidate>
         <div class="input-group">
           <label for="demo-name">Full name</label>
-          <input type="text" id="demo-name" required>
-          <div class="help" aria-live="polite"></div>
+          <input type="text" id="demo-name" name="name" autocomplete="name" required>
+          <p class="input-group__msg" id="demo-name-msg" aria-live="polite" style="color:var(--text-muted)"></p>
         </div>
         <div class="input-group">
           <label for="demo-email">Work email</label>
-          <input type="email" id="demo-email" required>
-          <div class="help" aria-live="polite"></div>
+          <input type="email" id="demo-email" name="email" autocomplete="email" required>
+          <p class="input-group__msg" id="demo-email-msg" aria-live="polite" style="color:var(--text-muted)"></p>
         </div>
-        <div class="input-group">
-          <label for="demo-company">Company (optional)</label>
-          <input type="text" id="demo-company">
-          <div class="help" aria-live="polite"></div>
-        </div>
-        <div class="input-group">
-          <label for="demo-time">Preferred date &amp; time</label>
-          <input type="datetime-local" id="demo-time" required>
-          <div class="help" aria-live="polite"></div>
-        </div>
-        <button type="submit" class="btn btn--primary w-100" id="demo-submit">Send request</button>
+        <button class="btn btn--primary" type="submit" id="demo-submit" style="width:100%"><span class="btn__spinner" aria-hidden="true"></span>Request demo</button>
       </form>
-      <div id="demo-success" class="visually-hidden">
-        <div class="modal__body" style="text-align:center;">
-          <span class="material-symbols-rounded" style="font-size:3rem;color:var(--text-success);">check_circle</span>
-          <p>Thanks! We’ll contact you shortly to confirm your demo.</p>
-        </div>
-      </div>
-      <div id="demo-error" class="visually-hidden">
-        <div class="modal__body" style="text-align:center;">
-          <span class="material-symbols-rounded" style="font-size:3rem;color:var(--text-error);">error</span>
-          <p>Oops! Something went wrong. Please try again.</p>
-        </div>
-      </div>
+    </div>
+    <div class="modal__success" id="demo-success" hidden>
+      <span class="material-symbols-rounded" aria-hidden="true">check_circle</span>
+      <h2 style="margin-top:.75rem">Request received</h2>
+      <p style="color:var(--text-secondary)">We will reach out within one business day to schedule your walkthrough.</p>
+      <button class="btn btn--secondary" type="button" data-close-modal>Done</button>
     </div>
   </div>
 </div>
 
 <script>
-/* ==== Theme Toggle ==== */
-const rootEl = document.documentElement;
-const themeToggle = document.getElementById('theme-toggle');
-const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+(function(){
+"use strict";
+var $=function(s,c){return (c||document).querySelector(s)};
+var $$=function(s,c){return Array.prototype.slice.call((c||document).querySelectorAll(s))};
 
-function setTheme(theme) {
-  if (theme === 'dark') {
-    rootEl.classList.add('dark');
-    rootEl.classList.remove('light');
-    themeToggle.setAttribute('aria-pressed', 'true');
-    themeToggle.querySelector('.material-symbols-rounded').textContent = '\e859'; // light_mode
-  } else {
-    rootEl.classList.add('light');
-    rootEl.classList.remove('dark');
-    themeToggle.setAttribute('aria-pressed', 'false');
-    themeToggle.querySelector('.material-symbols-rounded').textContent = '\e864'; // dark_mode
-  }
-  localStorage.setItem('theme', theme);
+/* Theme toggle */
+var root=document.documentElement,toggle=$("#theme-toggle"),ticon=$("#theme-icon");
+function applyTheme(t){root.dataset.theme=t;var d=t==="dark";toggle.setAttribute("aria-pressed",String(d));toggle.setAttribute("aria-label",d?"Switch to light mode":"Switch to dark mode");ticon.textContent=d?"light_mode":"dark_mode";}
+applyTheme(root.dataset.theme==="dark"?"dark":"light");
+toggle.addEventListener("click",function(){var t=root.dataset.theme==="dark"?"light":"dark";localStorage.setItem("theme",t);applyTheme(t);});
+
+/* Mobile menu */
+var menuBtn=$("#menu-btn"),menuIcon=$("#menu-icon"),nav=$("#site-nav");
+var mq=window.matchMedia("(min-width: 768px)");
+function setMenu(open){
+  menuBtn.setAttribute("aria-expanded",String(open));
+  menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");
+  menuIcon.textContent=open?"close":"menu";
+  if(mq.matches){nav.hidden=false;return;}
+  nav.hidden=!open;
+}
+function syncNav(){if(mq.matches){nav.hidden=false;menuBtn.setAttribute("aria-expanded","false");menuIcon.textContent="menu";}else{nav.hidden=menuBtn.getAttribute("aria-expanded")!=="true";}}
+syncNav();
+if(mq.addEventListener){mq.addEventListener("change",syncNav);}
+menuBtn.addEventListener("click",function(){var open=menuBtn.getAttribute("aria-expanded")!=="true";setMenu(open);if(open){var first=nav.querySelector("a");if(first)first.focus();}});
+$$("a, button",nav).forEach(function(el){el.addEventListener("click",function(){if(!mq.matches)setMenu(false);});});
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&!mq.matches&&menuBtn.getAttribute("aria-expanded")==="true"){setMenu(false);menuBtn.focus();}});
+
+/* Reveal on scroll */
+var reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+var revealEls=$$(".reveal");
+if(reduce||!("IntersectionObserver" in window)){revealEls.forEach(function(el){el.classList.add("is-visible");});}
+else{
+  var io=new IntersectionObserver(function(entries){entries.forEach(function(en){if(en.isIntersecting){en.target.classList.add("is-visible");io.unobserve(en.target);}});},{threshold:.12});
+  revealEls.forEach(function(el,i){el.style.transitionDelay=(i%3)*70+"ms";io.observe(el);});
 }
 
-function initTheme() {
-  const stored = localStorage.getItem('theme');
-  if (stored) {
-    setTheme(stored);
-  } else {
-    setTheme(prefersDark.matches ? 'dark' : 'light');
-  }
-}
-themeToggle.addEventListener('click', () => {
-  const isDark = rootEl.classList.contains('dark');
-  setTheme(isDark ? 'light' : 'dark');
-});
-prefersDark.addEventListener('change', e => {
-  if (!localStorage.getItem('theme')) {
-    setTheme(e.matches ? 'dark' : 'light');
-  }
-});
-initTheme();
-
-/* ==== Modal ==== */
-const backdrop = document.getElementById('demo-backdrop');
-const modal = document.getElementById('demo-modal');
-const openButtons = [document.getElementById('open-demo-modal'), document.getElementById('open-demo-modal-2'), document.getElementById('open-demo-modal-hero'), document.getElementById('open-demo-modal-footer')];
-const closeButton = document.getElementById('demo-modal-close');
-const form = document.getElementById('demo-form');
-const submitBtn = document.getElementById('demo-submit');
-const successEl = document.getElementById('demo-success');
-const errorEl = document.getElementById('demo-error');
-
-function openModal() {
-  backdrop.setAttribute('aria-hidden', 'false');
-  modal.setAttribute('aria-hidden', 'false');
-  // trap focus (simple)
-  const focusable = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-  const first = focusable[0];
-  const last = focusable[focusable.length - 1];
-  function trap(e) {
-    if (e.key === 'Tab') {
-      if (e.shiftKey) {
-        if (document.activeElement === first) { e.preventDefault(); last.focus(); }
-      } else {
-        if (document.activeElement === last) { e.preventDefault(); first.focus(); }
-      }
-    }
-    if (e.key === 'Escape') { closeModal(); }
-  }
-  modal.addEventListener('keydown', trap);
-  modal._trap = trap;
-  first.focus();
-}
-function closeModal() {
-  backdrop.setAttribute('aria-hidden', 'true');
-  modal.setAttribute('aria-hidden', 'true');
-  modal.removeEventListener('keydown', modal._trap);
-  // return focus to trigger
-  openButtons.forEach(btn => { if (btn === document.activeElement) btn.focus(); });
-}
-openButtons.forEach(btn => btn.addEventListener('click', openModal));
-closeButton.addEventListener('click', closeModal);
-backdrop.addEventListener('click', e => { if (e.target === backdrop) closeModal(); });
-
-form.addEventListener('submit', e => {
-  e.preventDefault();
-  submitBtn.classList.add('btn--loading');
-  submitBtn.setAttribute('aria-busy', 'true');
-  // simulate async
-  setTimeout(() => {
-    // randomly succeed/fail for demo
-    if (Math.random() > 0.2) {
-      form.reset();
-      form.classList.add('visually-hidden');
-      successEl.classList.remove('visually-hidden');
-    } else {
-      errorEl.classList.remove('visually-hidden');
-    }
-    submitBtn.classList.remove('btn--loading');
-    submitBtn.removeAttribute('aria-busy');
-  }, 1200);
-});
-
-/* ==== Newsletter Form ==== */
-const newsletterForm = document.getElementById('newsletter-form');
-const newsletterInput = document.getElementById('newsletter-email');
-const newsletterHelp = newsletterForm.querySelector('.help');
-newsletterForm.addEventListener('submit', e => {
-  e.preventDefault();
-  const email = newsletterInput.value.trim();
-  if (!email) {
-    newsletterHelp.textContent = 'Please enter your email address';
-    newsletterHelp.style.color = 'var(--text-error)';
+/* Activity feed mock */
+var activities=[
+  {icon:"call",text:"<strong>Priya Nair</strong> logged a call with Hartmann Group",time:"12 min ago"},
+  {icon:"handshake",text:"Deal <strong>Orbit Analytics, $48k</strong> moved to Negotiation",time:"38 min ago"},
+  {icon:"person_add",text:"<strong>Leo Fischer</strong> added 3 contacts from the expo list",time:"1 hr ago"}
+];
+var actBody=$("#activity-body");
+setTimeout(function(){
+  if(!actBody)return;
+  if(!activities.length){
+    actBody.innerHTML='<div class="card__empty"><span class="material-symbols-rounded" aria-hidden="true">inbox</span><p>No activity yet. Log your first call or import contacts to get started.</p></div>';
     return;
   }
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    newsletterHelp.textContent = 'Please enter a valid email address';
-    newsletterHelp.style.color = 'var(--text-error)';
-    return;
-  }
-  newsletterHelp.textContent = 'Thanks for subscribing!';
-  newsletterHelp.style.color = 'var(--text-success)';
-  newsletterInput.value = '';
-});
+  actBody.innerHTML=activities.map(function(a){
+    return '<div class="activity"><span class="activity__dot"><span class="material-symbols-rounded" aria-hidden="true">'+a.icon+'</span></span><p>'+a.text+'<br><small style="color:var(--text-muted)">'+a.time+'</small></p></div>';
+  }).join("");
+},reduce?0:800);
 
-/* ==== Smooth Scroll for Nav Links ==== */
-document.querySelectorAll('a[href^="#"]').forEach(link => {
-  link.addEventListener('click', e => {
-    const target = document.querySelector(link.getAttribute('href'));
-    if (target) {
-      e.preventDefault();
-      target.scrollIntoView({ behavior: 'smooth' });
-    }
+/* Pricing toggle */
+var bm=$("#bill-monthly"),ba=$("#bill-annual"),live=$("#price-live");
+function setBilling(annual){
+  bm.setAttribute("aria-pressed",String(!annual));
+  ba.setAttribute("aria-pressed",String(annual));
+  $$("[data-price]").forEach(function(el){el.textContent="$"+(annual?el.dataset.annual:el.dataset.monthly);});
+  live.textContent=annual?"Annual billing selected, prices reduced by 20 percent.":"Monthly billing selected.";
+}
+bm.addEventListener("click",function(){setBilling(false);});
+ba.addEventListener("click",function(){setBilling(true);});
+$$("[data-plan]").forEach(function(el){el.addEventListener("click",function(e){if(el.getAttribute("href")==="#pricing"){e.preventDefault();$("#pricing").scrollIntoView({behavior:reduce?"auto":"smooth"});}});});
+
+/* FAQ accordion */
+$$(".faq__trigger").forEach(function(btn){
+  var panel=document.getElementById(btn.getAttribute("aria-controls"));
+  btn.addEventListener("click",function(){
+    var open=btn.getAttribute("aria-expanded")==="true";
+    btn.setAttribute("aria-expanded",String(!open));
+    if(open){panel.style.maxHeight="0px";panel.style.opacity="0";}
+    else{panel.style.maxHeight=panel.scrollHeight+"px";panel.style.opacity="1";}
   });
 });
 
-/* ==== Pricing Toggle ==== */
-const toggleButtons = document.querySelectorAll('.pricing-toggle button');
-toggleButtons.forEach(btn => {
-  btn.addEventListener('click', () => {
-    toggleButtons.forEach(b => b.setAttribute('aria-pressed', 'false'));
-    btn.setAttribute('aria-pressed', 'true');
-    // In a real app you would update prices here
-  });
+/* Modal */
+var modal=$("#demo-modal"),formWrap=$("#demo-form-wrap"),success=$("#demo-success"),lastFocus=null;
+function openModal(){
+  lastFocus=document.activeElement;
+  modal.hidden=false;
+  document.body.style.overflow="hidden";
+  requestAnimationFrame(function(){modal.classList.add("is-open");});
+  formWrap.hidden=false;success.hidden=true;
+  var f=$("#demo-name");if(f)f.focus();
+  document.addEventListener("keydown",trapKeys);
+}
+function closeModal(){
+  modal.classList.remove("is-open");
+  document.body.style.overflow="";
+  document.removeEventListener("keydown",trapKeys);
+  setTimeout(function(){modal.hidden=true;},reduce?0:280);
+  if(lastFocus&&lastFocus.focus)lastFocus.focus();
+}
+function trapKeys(e){
+  if(e.key==="Escape"){closeModal();return;}
+  if(e.key!=="Tab")return;
+  var focusables=$$("button, input, a[href]",modal).filter(function(el){return el.offsetParent!==null;});
+  if(!focusables.length)return;
+  var first=focusables[0],last=focusables[focusables.length-1];
+  if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+  else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+}
+$$("[data-open-demo]").forEach(function(b){b.addEventListener("click",openModal);});
+$$("[data-close-modal]",modal).forEach(function(b){b.addEventListener("click",closeModal);});
+
+/* Demo form */
+var demoForm=$("#demo-form"),demoBtn=$("#demo-submit");
+demoForm.addEventListener("submit",function(e){
+  e.preventDefault();
+  var name=$("#demo-name"),email=$("#demo-email"),ok=true;
+  var nm=$("#demo-name-msg"),em=$("#demo-email-msg");
+  if(!name.value.trim()){nm.textContent="Please enter your name.";name.setAttribute("aria-invalid","true");ok=false;}else{nm.textContent="";name.removeAttribute("aria-invalid");}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)){em.textContent="Enter a valid work email.";email.setAttribute("aria-invalid","true");ok=false;}else{em.textContent="";email.removeAttribute("aria-invalid");}
+  if(!ok)return;
+  demoBtn.classList.add("btn--loading");demoBtn.setAttribute("aria-busy","true");demoBtn.disabled=true;
+  setTimeout(function(){
+    demoBtn.classList.remove("btn--loading");demoBtn.removeAttribute("aria-busy");demoBtn.disabled=false;
+    formWrap.hidden=true;success.hidden=false;
+    var done=$(".modal__success .btn",modal);if(done)done.focus();
+  },reduce?100:900);
 });
+
+/* Newsletter form */
+var newsForm=$("#news-form"),newsBtn=$("#news-btn"),newsMsg=$("#news-msg"),newsEmail=$("#news-email");
+newsForm.addEventListener("submit",function(e){
+  e.preventDefault();
+  newsMsg.classList.remove("input-group__msg--error","input-group__msg--ok");
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newsEmail.value)){
+    newsMsg.innerHTML='<span class="material-symbols-rounded" aria-hidden="true" style="font-size:1rem">error</span> Enter a valid email address.';
+    newsMsg.classList.add("input-group__msg--error");
+    newsEmail.setAttribute("aria-invalid","true");newsEmail.focus();return;
+  }
+  newsEmail.removeAttribute("aria-invalid");
+  newsBtn.classList.add("btn--loading");newsBtn.setAttribute("aria-busy","true");newsBtn.disabled=true;
+  setTimeout(function(){
+    newsBtn.classList.remove("btn--loading");newsBtn.removeAttribute("aria-busy");newsBtn.disabled=false;
+    newsMsg.innerHTML='<span class="material-symbols-rounded" aria-hidden="true" style="font-size:1rem">check_circle</span> Subscribed. See you in the next digest.';
+    newsMsg.classList.add("input-group__msg--ok");
+    newsForm.reset();
+  },reduce?100:800);
+});
+})();
 </script>
 </body>
 </html>

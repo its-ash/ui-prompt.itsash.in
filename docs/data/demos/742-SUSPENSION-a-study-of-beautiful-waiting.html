@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Suspension - A Study of Beautiful Waiting</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet">
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<style>
+@layer tokens, base, layout, components, animations, utilities;
+
+@layer tokens{
+:root{
+--primary:#ff7a3d; --secondary:#ffb43d;
+--bg-primary:#fefefe; --bg-secondary:#f4f5f8;
+--text-primary:#17181c; --text-secondary:#6a6d78;
+--border-default:#d8dae0;
+--text-success:#0f8a5f; --text-error:#d64545;
+--border-success:#0f8a5f; --border-error:#d64545;
+--ink-on-accent:#17181c;
+--gradient-accent:linear-gradient(135deg,#ff7a3d,#ffb43d);
+--radius-sm:10px; --radius-md:16px; --radius-lg:28px;
+--shadow-sm:0 2px 8px rgba(23,24,28,.06);
+--shadow-md:0 12px 32px rgba(23,24,28,.12);
+--glow-accent:0 8px 32px rgba(255,122,61,.35);
+--spacing-gap:1.5rem;
+--spacing-section:clamp(4rem,10vw,7rem);
+--transition-fast:150ms; --transition-normal:320ms;
+--ease-standard:cubic-bezier(0.22,1,0.36,1);
+--z-header:900; --z-dropdown:1000; --z-modal:1100; --z-toast:1200;
+--font-display:'Sora',sans-serif; --font-base:'Inter',sans-serif;
+--header-bg:rgba(254,254,254,.75);
+--band-bg:#101116; --band-text:#fefefe; --band-sub:#c9cbd4;
+}
+:root[data-theme="dark"]{
+--bg-primary:#101116; --bg-secondary:#17181c;
+--text-primary:#fefefe; --text-secondary:#9a9dab;
+--border-default:#2b2d36;
+--text-success:#34d399; --text-error:#ff6b6b;
+--border-success:#34d399; --border-error:#ff6b6b;
+--shadow-sm:0 2px 8px rgba(0,0,0,.35);
+--shadow-md:0 12px 32px rgba(0,0,0,.5);
+--header-bg:rgba(16,17,22,.75);
+--band-bg:#17181c; --band-text:#fefefe; --band-sub:#c9cbd4;
+}
+@media (prefers-color-scheme: dark){
+:root:not([data-theme="light"]){
+--bg-primary:#101116; --bg-secondary:#17181c;
+--text-primary:#fefefe; --text-secondary:#9a9dab;
+--border-default:#2b2d36;
+--text-success:#34d399; --text-error:#ff6b6b;
+--border-success:#34d399; --border-error:#ff6b6b;
+--shadow-sm:0 2px 8px rgba(0,0,0,.35);
+--shadow-md:0 12px 32px rgba(0,0,0,.5);
+--header-bg:rgba(16,17,22,.75);
+--band-bg:#17181c; --band-text:#fefefe; --band-sub:#c9cbd4;
+}
+}
+}
+
+@layer base{
+*,*::before,*::after{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+margin:0; font-family:var(--font-base); font-size:1rem; line-height:1.6;
+color:var(--text-primary);
+background:var(--bg-primary) radial-gradient(1200px 600px at 80% -10%, rgba(255,180,61,.08), transparent 60%);
+overflow-x:hidden;
+}
+h1,h2,h3{font-family:var(--font-display); line-height:1.1; letter-spacing:-0.02em; margin:0 0 .5em;}
+h1{font-size:clamp(2.25rem,5vw,3.75rem); font-weight:800;}
+h2{font-size:clamp(1.75rem,3.5vw,2.5rem); font-weight:700;}
+h3{font-size:1.15rem; font-weight:700;}
+p{margin:0 0 1rem;}
+a{color:var(--primary); text-decoration:none;}
+img{max-width:100%;}
+[hidden]{display:none!important;}
+:focus-visible{outline:3px solid var(--primary); outline-offset:3px; border-radius:4px;}
+.material-symbols-rounded{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; font-size:1.4em; line-height:1; vertical-align:middle;}
+.skip-link{position:absolute; left:-9999px; top:0; background:var(--text-primary); color:var(--bg-primary); padding:.75rem 1.25rem; border-radius:0 0 var(--radius-sm) 0; z-index:var(--z-toast);}
+.skip-link:focus{left:0;}
+}
+
+@layer layout{
+.container{max-width:1128px; margin-inline:auto; padding-inline:1.25rem; width:100%;}
+@media(min-width:768px){.container{padding-inline:2rem;}}
+.section{padding-block:var(--spacing-section);}
+.section__head{max-width:65ch; margin-bottom:3rem;}
+.section__sub{color:var(--text-secondary); max-width:60ch;}
+.eyebrow{display:inline-block; font-size:.78rem; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--primary); margin-bottom:.75rem;}
+}
+
+@layer components{
+/* ---------- Buttons ---------- */
+.btn{
+display:inline-flex; align-items:center; justify-content:center; gap:.5rem;
+min-height:44px; min-width:44px; padding:.7rem 1.4rem;
+font-family:var(--font-base); font-size:.95rem; font-weight:600;
+border-radius:999px; border:1px solid transparent; cursor:pointer;
+transition:transform var(--transition-fast) var(--ease-standard), box-shadow var(--transition-fast) var(--ease-standard), filter var(--transition-fast) var(--ease-standard), background var(--transition-fast) var(--ease-standard);
+}
+.btn--primary{background:var(--gradient-accent); color:var(--ink-on-accent); box-shadow:var(--shadow-sm);}
+.btn--secondary{background:transparent; color:var(--text-primary); border-color:var(--border-default);}
+.btn--danger{background:transparent; color:var(--text-error); border-color:var(--border-error);}
+.btn--sm{min-height:40px; padding:.5rem 1.1rem; font-size:.88rem;}
+.btn:disabled{opacity:.5; filter:grayscale(.6); cursor:not-allowed;}
+.btn.is-loading{pointer-events:none;}
+.btn.is-loading .btn__label{opacity:.7;}
+.btn .material-symbols-rounded{transition:transform var(--transition-normal) var(--ease-standard);}
+@media (hover:hover) and (pointer:fine){
+.btn--primary:hover{filter:brightness(1.05); transform:translateY(-1px); box-shadow:var(--glow-accent);}
+.btn--secondary:hover{border-color:var(--primary); color:var(--primary); transform:translateY(-1px);}
+.btn--danger:hover{background:var(--text-error); color:#fff; transform:translateY(-1px);}
+}
+.btn:active{transform:scale(.97);}
+.spin-icon{animation:spin 1s linear infinite;}
+
+/* ---------- Header ---------- */
+.header{
+position:sticky; top:0; z-index:var(--z-header);
+background:var(--header-bg); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+border-bottom:1px solid transparent;
+transition:box-shadow var(--transition-normal) var(--ease-standard), border-color var(--transition-normal) var(--ease-standard);
+}
+.header.is-scrolled{border-bottom-color:var(--border-default); box-shadow:var(--shadow-sm);}
+.header__inner{display:flex; align-items:center; justify-content:space-between; height:68px; gap:1rem;}
+.wordmark{display:flex; align-items:center; gap:.5rem; font-family:var(--font-display); font-weight:800; font-size:1.15rem; color:var(--text-primary); letter-spacing:-0.02em;}
+.wordmark__dot{width:12px; height:12px; border-radius:50%; background:var(--gradient-accent); animation:breathe 3s ease-in-out infinite;}
+.nav{display:flex; align-items:center; gap:1.5rem;}
+.nav__link{position:relative; color:var(--text-secondary); font-size:.92rem; font-weight:500; padding:.35rem 0; transition:color var(--transition-fast);}
+.nav__link::after{content:""; position:absolute; left:0; right:0; bottom:0; height:2px; border-radius:2px; background:var(--gradient-accent); transform:scaleX(0); transform-origin:left; transition:transform var(--transition-normal) var(--ease-standard);}
+@media (hover:hover) and (pointer:fine){
+.nav__link:hover{color:var(--text-primary);}
+.nav__link:hover::after{transform:scaleX(1);}
+}
+.header__actions{display:flex; align-items:center; gap:.75rem;}
+.theme-toggle{
+display:inline-flex; align-items:center; justify-content:center;
+width:44px; height:44px; border-radius:50%; border:1px solid var(--border-default);
+background:transparent; color:var(--text-primary); cursor:pointer; position:relative;
+transition:border-color var(--transition-fast), transform var(--transition-fast);
+}
+@media (hover:hover) and (pointer:fine){.theme-toggle:hover{border-color:var(--primary); color:var(--primary);}}
+.theme-toggle:active{transform:scale(.94);}
+.theme-toggle .material-symbols-rounded{position:absolute; transition:opacity var(--transition-fast), transform var(--transition-fast);}
+.theme-toggle .icon-sun{opacity:0; transform:rotate(90deg) scale(.6);}
+.theme-toggle .icon-moon{opacity:1; transform:rotate(0) scale(1);}
+:root[data-theme="dark"] .theme-toggle .icon-sun{opacity:1; transform:rotate(0) scale(1);}
+:root[data-theme="dark"] .theme-toggle .icon-moon{opacity:0; transform:rotate(-90deg) scale(.6);}
+.menu-btn{display:none; width:44px; height:44px; border-radius:50%; border:1px solid var(--border-default); background:transparent; color:var(--text-primary); cursor:pointer; align-items:center; justify-content:center;}
+@media(max-width:767px){
+.menu-btn{display:inline-flex;}
+.nav{
+position:absolute; top:68px; left:0; right:0; z-index:var(--z-dropdown);
+flex-direction:column; align-items:stretch; gap:0; padding:.75rem 1.25rem 1.25rem;
+background:var(--bg-secondary); border-bottom:1px solid var(--border-default);
+display:none;
+}
+.nav.is-open{display:flex;}
+.nav__link{padding:.85rem 0; border-bottom:1px solid var(--border-default);}
+.nav .btn{margin-top:.85rem;}
+}
+
+/* ---------- Hero ---------- */
+.hero{position:relative; padding-top:clamp(3rem,6vw,5rem); padding-bottom:var(--spacing-section); overflow:hidden;}
+.hero__grid{display:flex; flex-direction:column; gap:3rem; align-items:center;}
+@media(min-width:1024px){
+.hero__grid{flex-direction:row; justify-content:space-between; gap:2rem;}
+.hero__copy{flex:1 1 52%; min-width:0;}
+.hero__visual{flex:1 1 42%; min-width:0;}
+}
+.hero__copy p.lede{color:var(--text-secondary); font-size:1.1rem; max-width:44ch;}
+.hero__title .grad{background:var(--gradient-accent); -webkit-background-clip:text; background-clip:text; color:transparent;}
+.hero__ctas{display:flex; gap:.9rem; flex-wrap:wrap; margin-top:1.75rem;}
+.hero__visual{position:relative; display:flex; align-items:center; justify-content:center; min-height:340px;}
+.blob{position:absolute; border-radius:50%; filter:blur(60px); opacity:.5; pointer-events:none;}
+.blob--a{width:260px; height:260px; background:#ffb43d; top:-40px; right:-30px; animation:drift 12s ease-in-out infinite;}
+.blob--b{width:200px; height:200px; background:#ff7a3d; bottom:-30px; left:-20px; animation:drift 14s ease-in-out infinite reverse;}
+.orb{position:absolute; width:300px; height:300px; border-radius:50%; background:radial-gradient(circle, rgba(255,180,61,.45), rgba(255,122,61,.12) 55%, transparent 70%); animation:breathe 4s ease-in-out infinite;}
+.ring{
+position:relative; width:220px; height:220px; border-radius:50%;
+background:conic-gradient(from 0deg, #ff7a3d, #ffb43d, #ff7a3d 40%, transparent 40%, transparent 55%, #ffb43d 70%, #ff7a3d);
+-webkit-mask:radial-gradient(farthest-side, transparent calc(100% - 26px), #000 calc(100% - 25px));
+mask:radial-gradient(farthest-side, transparent calc(100% - 26px), #000 calc(100% - 25px));
+animation:spin 6s linear infinite;
+transition:transform var(--transition-normal) var(--ease-standard);
+}
+.hero__visual:hover .ring{animation-duration:2s; transform:scale(1.02);}
+.chip{
+position:absolute; display:flex; align-items:center; justify-content:center;
+width:56px; height:56px; border-radius:var(--radius-md);
+background:var(--bg-secondary); border:1px solid var(--border-default); box-shadow:var(--shadow-md);
+color:var(--primary); animation:float 5s ease-in-out infinite;
+}
+.chip--1{top:6%; left:8%; animation-delay:0s;}
+.chip--2{top:14%; right:4%; animation-delay:.8s;}
+.chip--3{bottom:8%; left:16%; animation-delay:1.6s;}
+.scroll-cue{display:flex; justify-content:center; margin-top:2.5rem; color:var(--text-secondary);}
+.scroll-cue .material-symbols-rounded{animation:float 2.2s ease-in-out infinite;}
+
+/* ---------- Cards ---------- */
+.card{
+display:flex; flex-direction:column; gap:.75rem;
+background:var(--bg-secondary); border:1px solid var(--border-default);
+border-radius:var(--radius-md); padding:1.75rem; box-shadow:var(--shadow-sm);
+transition:transform var(--transition-normal) var(--ease-standard), box-shadow var(--transition-normal) var(--ease-standard), border-color var(--transition-normal) var(--ease-standard);
+}
+@media (hover:hover) and (pointer:fine){
+.card:hover{transform:translateY(-4px); box-shadow:var(--shadow-md);}
+}
+.card:focus-within{border-color:var(--primary);}
+.card p{color:var(--text-secondary); font-size:.95rem; margin:0;}
+.card__badge{
+display:flex; align-items:center; justify-content:center;
+width:52px; height:52px; border-radius:var(--radius-sm);
+background:linear-gradient(135deg, rgba(255,122,61,.16), rgba(255,180,61,.16));
+color:var(--primary);
+transition:transform var(--transition-normal) var(--ease-standard);
+}
+@media (hover:hover) and (pointer:fine){
+.card:hover .card__badge{transform:scale(1.08) rotate(-6deg);}
+}
+.card--skeleton{position:relative; overflow:hidden;}
+.card--skeleton::after{
+content:""; position:absolute; inset:0;
+background:linear-gradient(100deg, transparent 30%, rgba(255,255,255,.35) 50%, transparent 70%);
+background-size:200% 100%; animation:shimmer 1.8s linear infinite; pointer-events:none;
+}
+:root[data-theme="dark"] .card--skeleton::after{background:linear-gradient(100deg, transparent 30%, rgba(255,255,255,.08) 50%, transparent 70%); background-size:200% 100%;}
+.card--empty{align-items:center; text-align:center; color:var(--text-secondary); border-style:dashed;}
+.skel-demo{display:flex; flex-direction:column; gap:.6rem; margin-top:.5rem;}
+.skel-row{height:12px; border-radius:6px; background:linear-gradient(100deg, var(--border-default) 30%, var(--bg-primary) 50%, var(--border-default) 70%); background-size:200% 100%; animation:shimmer 1.8s linear infinite;}
+.skel-row--short{width:60%;}
+
+/* ---------- Features ---------- */
+.features__grid{display:flex; flex-direction:column; gap:var(--spacing-gap);}
+@media(min-width:768px){.features__grid{flex-direction:row; align-items:stretch;} .features__grid .card{flex:1; min-width:0;}}
+
+/* ---------- Steps ---------- */
+.steps{position:relative; display:flex; flex-direction:column; gap:2.5rem;}
+/* Steps use flex-start: numbered timeline reads top-down, centered alignment would break the rail. */
+.steps__list{display:flex; flex-direction:column; gap:2.25rem; align-items:flex-start; position:relative; counter-reset:step;}
+@media(min-width:1024px){
+.steps__list{flex-direction:row; gap:var(--spacing-gap); align-items:flex-start;}
+.steps__list::before{
+content:""; position:absolute; top:26px; left:8%; right:8%; height:3px; border-radius:3px;
+background:var(--gradient-accent); transform:scaleX(0); transform-origin:left;
+}
+.steps__list.is-visible::before{animation:draw 1.2s var(--ease-standard) .2s forwards;}
+.step{flex:1; min-width:0;}
+}
+@media(max-width:1023px){
+.steps__list::before{content:""; position:absolute; left:25px; top:20px; bottom:20px; width:3px; border-radius:3px; background:var(--gradient-accent); opacity:.5;}
+.step{padding-left:4.5rem; position:relative;}
+}
+.step__num{
+display:flex; align-items:center; justify-content:center;
+width:52px; height:52px; border-radius:50%; background:var(--gradient-accent);
+color:var(--ink-on-accent); font-family:var(--font-display); font-weight:800; font-size:1.05rem;
+box-shadow:var(--glow-accent); position:relative; z-index:1; flex-shrink:0;
+}
+@media(max-width:1023px){.step__num{position:absolute; left:0; top:0;}}
+.step h3{margin-top:1rem;}
+@media(max-width:1023px){.step h3{margin-top:0;}}
+.step p{color:var(--text-secondary); font-size:.95rem; margin:0;}
+.step .material-symbols-rounded{color:var(--primary); margin-top:.5rem;}
+
+/* ---------- Testimonials ---------- */
+.testimonials__grid{display:flex; flex-direction:column; gap:var(--spacing-gap);}
+@media(min-width:768px){.testimonials__grid{flex-direction:row; align-items:stretch;} .testimonials__grid .card{flex:1; min-width:0;}}
+.testimonial{position:relative;}
+.testimonial::before{
+content:""; position:absolute; inset:-1px; border-radius:var(--radius-md); padding:1px;
+background:var(--gradient-accent); opacity:0;
+-webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+-webkit-mask-composite:xor; mask-composite:exclude;
+transition:opacity var(--transition-normal) var(--ease-standard); pointer-events:none;
+}
+@media (hover:hover) and (pointer:fine){.testimonial:hover::before{opacity:1;}}
+.testimonial__stars{color:var(--secondary); display:flex; gap:2px;}
+.testimonial__stars .material-symbols-rounded{font-size:1.1em; font-variation-settings:'FILL' 1;}
+.testimonial__quote{font-size:.98rem; color:var(--text-primary); margin:0;}
+.testimonial__quote::before{content:"\201C";} .testimonial__quote::after{content:"\201D";}
+.testimonial__who{display:flex; align-items:center; gap:.85rem; margin-top:auto; padding-top:.75rem;}
+.avatar{
+display:flex; align-items:center; justify-content:center; flex-shrink:0;
+width:44px; height:44px; border-radius:50%; background:var(--gradient-accent);
+color:var(--ink-on-accent); font-weight:700; font-size:.85rem; font-family:var(--font-display);
+}
+.testimonial__name{font-weight:600; font-size:.92rem; margin:0;}
+.testimonial__role{color:var(--text-secondary); font-size:.82rem; margin:0;}
+.quote-icon{color:var(--primary); opacity:.6;}
+
+/* ---------- Pricing ---------- */
+.billing{
+display:inline-flex; align-items:center; position:relative;
+background:var(--bg-secondary); border:1px solid var(--border-default); border-radius:999px; padding:4px; margin-bottom:2.5rem;
+}
+.billing__thumb{position:absolute; top:4px; bottom:4px; left:4px; width:calc(50% - 4px); border-radius:999px; background:var(--gradient-accent); transition:transform var(--transition-normal) var(--ease-standard);}
+.billing[data-mode="yearly"] .billing__thumb{transform:translateX(100%);}
+.billing__opt{
+position:relative; z-index:1; min-height:40px; padding:.45rem 1.4rem; border:0; background:transparent;
+border-radius:999px; font-family:var(--font-base); font-weight:600; font-size:.9rem;
+color:var(--text-secondary); cursor:pointer; transition:color var(--transition-fast);
+}
+.billing__opt[aria-pressed="true"]{color:var(--ink-on-accent);}
+.pricing__grid{display:flex; flex-direction:column; gap:var(--spacing-gap); align-items:stretch;}
+@media(min-width:1024px){.pricing__grid{flex-direction:row; align-items:stretch;} .pricing__grid .card{flex:1; min-width:0;}}
+.pricing__card--featured{
+border:2px solid transparent;
+background:linear-gradient(var(--bg-secondary), var(--bg-secondary)) padding-box, var(--gradient-accent) border-box;
+box-shadow:var(--glow-accent);
+}
+.pricing__badge{
+align-self:flex-start; font-size:.72rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+background:var(--gradient-accent); color:var(--ink-on-accent); padding:.3rem .8rem; border-radius:999px;
+}
+.pricing__price{font-family:var(--font-display); font-size:2.4rem; font-weight:800; letter-spacing:-0.03em; transition:opacity var(--transition-fast);}
+.pricing__price small{font-size:.95rem; font-weight:500; color:var(--text-secondary); letter-spacing:0;}
+.pricing__note{font-size:.8rem; color:var(--text-secondary); min-height:1.2em; margin:0;}
+.pricing__features{list-style:none; margin:1rem 0 1.5rem; padding:0; display:flex; flex-direction:column; gap:.6rem;}
+.pricing__features li{display:flex; align-items:center; gap:.6rem; font-size:.92rem; color:var(--text-secondary);}
+.pricing__features .material-symbols-rounded{color:var(--text-success); font-size:1.2em;}
+.pricing__card .btn{margin-top:auto;}
+
+/* ---------- FAQ ---------- */
+.faq__item{border:1px solid var(--border-default); border-radius:var(--radius-md); background:var(--bg-secondary); margin-bottom:.9rem; overflow:hidden; transition:border-color var(--transition-fast);}
+.faq__item:focus-within{border-color:var(--primary);}
+.faq__trigger{
+display:flex; align-items:center; justify-content:space-between; gap:1rem; width:100%;
+min-height:56px; padding:1rem 1.4rem; background:transparent; border:0; cursor:pointer;
+font-family:var(--font-base); font-size:1rem; font-weight:600; color:var(--text-primary); text-align:left;
+}
+.faq__trigger .material-symbols-rounded{color:var(--primary); transition:transform var(--transition-normal) var(--ease-standard); flex-shrink:0;}
+.faq__trigger[aria-expanded="true"] .material-symbols-rounded{transform:rotate(180deg);}
+.faq__panel{display:grid; grid-template-rows:0fr; transition:grid-template-rows var(--transition-normal) var(--ease-standard);}
+.faq__panel.is-open{grid-template-rows:1fr;}
+.faq__panel-inner{overflow:hidden; min-height:0;}
+.faq__panel-inner p{padding:0 1.4rem 1.25rem; color:var(--text-secondary); font-size:.95rem; margin:0;}
+
+/* ---------- Final CTA band ---------- */
+.band{
+position:relative; overflow:hidden; background:var(--band-bg); color:var(--band-text);
+border-radius:var(--radius-lg); padding:clamp(3rem,7vw,5rem) clamp(1.5rem,5vw,4rem); text-align:center;
+}
+.band__glow{position:absolute; width:420px; height:420px; border-radius:50%; filter:blur(90px); opacity:.35; background:var(--gradient-accent); top:-160px; right:-100px; animation:drift 14s ease-in-out infinite; pointer-events:none;}
+.band h2{color:var(--band-text); position:relative;}
+.band p{color:var(--band-sub); position:relative; max-width:52ch; margin-inline:auto;}
+.cta-form{display:flex; flex-direction:column; gap:.75rem; max-width:460px; margin:1.75rem auto 0; position:relative;}
+@media(min-width:640px){.cta-form{flex-direction:row; align-items:flex-start;} .cta-form .input-group{flex:1; min-width:0;}}
+.cta-form .btn{flex-shrink:0;}
+
+/* ---------- Form ---------- */
+.input-group{display:flex; flex-direction:column; gap:.35rem; text-align:left;}
+.input-group label{font-size:.85rem; font-weight:600; color:inherit;}
+.input-group input{
+min-height:48px; padding:.7rem 1rem; border-radius:var(--radius-sm);
+border:1px solid var(--border-default); background:var(--bg-primary); color:var(--text-primary);
+font-family:var(--font-base); font-size:.95rem; width:100%;
+transition:border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.band .input-group input{background:#1d1f26; border-color:#2b2d36; color:#fefefe;}
+.band .input-group input::placeholder{color:#9a9dab;}
+.input-group input:focus{outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(255,122,61,.25);}
+.input-group.is-valid input{border-color:var(--border-success);}
+.input-group.is-invalid input{border-color:var(--border-error);}
+.input-group input:disabled{opacity:.5; cursor:not-allowed;}
+.input-group input[readonly]{background:var(--bg-secondary);}
+.input-group .input-msg{font-size:.8rem; min-height:1.1em; margin:0; display:flex; align-items:center; gap:.3rem;}
+.input-group .input-msg--error{color:var(--text-error);}
+.input-group .input-msg--ok{color:var(--text-success);}
+.cta-success{display:flex; align-items:center; justify-content:center; gap:.5rem; color:var(--text-success); font-weight:600; min-height:48px;}
+
+/* ---------- Modal ---------- */
+.modal{
+position:fixed; inset:0; z-index:var(--z-modal); display:flex; align-items:center; justify-content:center;
+padding:1.25rem; background:rgba(16,17,22,.55); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+opacity:0; pointer-events:none; transition:opacity var(--transition-normal) var(--ease-standard);
+}
+.modal.is-open{opacity:1; pointer-events:auto;}
+.modal__box{
+width:100%; max-width:520px; background:var(--bg-secondary); border:1px solid var(--border-default);
+border-radius:var(--radius-lg); padding:2rem; box-shadow:var(--shadow-md);
+transform:scale(.96); opacity:0; transition:transform var(--transition-normal) var(--ease-standard), opacity var(--transition-normal) var(--ease-standard);
+}
+.modal.is-open .modal__box{transform:scale(1); opacity:1;}
+.modal__head{display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem;}
+.modal__head h3{margin:0;}
+.modal__close{width:44px; height:44px; border-radius:50%; border:1px solid var(--border-default); background:transparent; color:var(--text-primary); cursor:pointer; display:flex; align-items:center; justify-content:center;}
+@media (hover:hover) and (pointer:fine){.modal__close:hover{border-color:var(--primary); color:var(--primary);}}
+.progress{height:8px; border-radius:99px; background:var(--border-default); overflow:hidden; margin-bottom:1.5rem;}
+.progress__bar{height:100%; width:0; border-radius:99px; background:var(--gradient-accent); transition:width 2s var(--ease-standard);}
+.modal__stage{min-height:150px; display:flex; flex-direction:column; gap:.7rem;}
+.modal__result{
+display:flex; flex-direction:column; gap:.5rem; padding:1.25rem; border-radius:var(--radius-md);
+background:linear-gradient(135deg, rgba(255,122,61,.12), rgba(255,180,61,.12));
+border:1px solid var(--primary);
+}
+.modal__result h4{margin:0; font-family:var(--font-display); display:flex; align-items:center; gap:.5rem;}
+.modal__result h4 .material-symbols-rounded{color:var(--text-success);}
+.modal__result p{margin:0; color:var(--text-secondary); font-size:.92rem;}
+.modal__status{font-size:.82rem; color:var(--text-secondary); margin-top:1rem; min-height:1.2em;}
+
+/* ---------- Footer ---------- */
+.footer{border-top:1px solid var(--border-default); padding:3.5rem 0 2rem; background:var(--bg-secondary);}
+.footer__grid{display:flex; flex-direction:column; gap:2.5rem;}
+@media(min-width:768px){.footer__grid{flex-direction:row; justify-content:space-between; align-items:flex-start;}}
+.footer__brand{max-width:280px;}
+.footer__brand p{color:var(--text-secondary); font-size:.9rem;}
+.footer__cols{display:flex; gap:3.5rem; flex-wrap:wrap;}
+.footer__col h4{font-family:var(--font-display); font-size:.85rem; text-transform:uppercase; letter-spacing:.1em; margin:0 0 1rem; color:var(--text-secondary);}
+.footer__col ul{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.6rem;}
+.footer__col a{color:var(--text-secondary); font-size:.92rem; display:inline-flex; align-items:center; gap:.4rem; transition:color var(--transition-fast);}
+@media (hover:hover) and (pointer:fine){.footer__col a:hover{color:var(--primary);}}
+.footer__bottom{margin-top:3rem; padding-top:1.5rem; border-top:1px solid var(--border-default); color:var(--text-secondary); font-size:.85rem; text-align:center;}
+}
+
+@layer animations{
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);}}
+@keyframes drift{0%,100%{transform:translate(0,0);}50%{transform:translate(24px,-18px);}}
+@keyframes breathe{0%,100%{transform:scale(1); opacity:.7;}50%{transform:scale(1.12); opacity:1;}}
+@keyframes shimmer{from{background-position:200% 0;}to{background-position:-200% 0;}}
+@keyframes gradient-pan{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
+@keyframes rise{from{opacity:0; transform:translateY(24px);}to{opacity:1; transform:translateY(0);}}
+@keyframes draw{from{transform:scaleX(0);}to{transform:scaleX(1);}}
+}
+
+@layer utilities{
+.reveal{opacity:0; transform:translateY(24px); transition:opacity 600ms var(--ease-standard), transform 600ms var(--ease-standard);}
+.reveal.is-visible{opacity:1; transform:translateY(0);}
+.reveal--d1{transition-delay:80ms;} .reveal--d2{transition-delay:160ms;} .reveal--d3{transition-delay:240ms;}
+.visually-hidden{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap;}
+@media (prefers-reduced-motion: reduce){
+*,*::before,*::after{animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:150ms!important;}
+.reveal{opacity:1; transform:none;}
+html{scroll-behavior:auto;}
+}
+@media (prefers-reduced-transparency: reduce){
+.header{background:var(--bg-primary); backdrop-filter:none;}
+.modal{background:rgba(16,17,22,.85); backdrop-filter:none;}
+}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="header" id="header">
+<div class="container header__inner">
+<a class="wordmark" href="#top"><span class="wordmark__dot" aria-hidden="true"></span>Suspension</a>
+<button class="menu-btn" id="menu-btn" aria-expanded="false" aria-controls="nav" aria-label="Open menu">
+<span class="material-symbols-rounded" aria-hidden="true">menu</span>
+</button>
+<nav class="nav" id="nav" aria-label="Primary">
+<a class="nav__link" href="#features">Features</a>
+<a class="nav__link" href="#how">How It Works</a>
+<a class="nav__link" href="#testimonials">Testimonials</a>
+<a class="nav__link" href="#pricing">Pricing</a>
+<a class="nav__link" href="#faq">FAQ</a>
+<div class="header__actions">
+<button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+<span class="material-symbols-rounded icon-sun" aria-hidden="true">light_mode</span>
+<span class="material-symbols-rounded icon-moon" aria-hidden="true">dark_mode</span>
+</button>
+<a class="btn btn--primary btn--sm" href="#pricing">Start for free</a>
+</div>
+</nav>
+</div>
+</header>
+
+<main id="main">
+<!-- HERO -->
+<section class="hero" id="top" aria-labelledby="hero-title">
+<div class="container hero__grid">
+<div class="hero__copy">
+<span class="eyebrow">A study of beautiful waiting</span>
+<h1 class="hero__title" id="hero-title">Make every moment of <span class="grad">waiting worth watching.</span></h1>
+<p class="lede">Suspension is a motion-design toolkit that turns loaders, queues, and delays into calm, choreographed experiences your users will remember.</p>
+<div class="hero__ctas">
+<a class="btn btn--primary" href="#pricing">Start for free</a>
+<button class="btn btn--secondary" id="open-modal" type="button">
+<span class="material-symbols-rounded" aria-hidden="true">play_circle</span>Watch the study
+</button>
+</div>
+</div>
+<div class="hero__visual" aria-hidden="true">
+<div class="blob blob--a"></div>
+<div class="blob blob--b"></div>
+<div class="orb"></div>
+<div class="ring"></div>
+<div class="chip chip--1"><span class="material-symbols-rounded">progress_activity</span></div>
+<div class="chip chip--2"><span class="material-symbols-rounded">hourglass_top</span></div>
+<div class="chip chip--3"><span class="material-symbols-rounded">schedule</span></div>
+</div>
+</div>
+<div class="scroll-cue" aria-hidden="true"><span class="material-symbols-rounded">expand_more</span></div>
+</section>
+
+<!-- FEATURES -->
+<section class="section" id="features" aria-labelledby="features-title">
+<div class="container">
+<div class="section__head reveal">
+<h2 id="features-title">Waiting, designed with intent</h2>
+<p class="section__sub">Three building blocks that turn dead time into a crafted pause, tuned to your brand and your users' patience.</p>
+</div>
+<div class="features__grid">
+<article class="card reveal">
+<div class="card__badge"><span class="material-symbols-rounded" aria-hidden="true">progress_activity</span></div>
+<h3>Choreographed Loaders</h3>
+<p>Spinners, rings, and progress trails with physics-based easing. Every rotation is timed to feel calm, never frantic.</p>
+</article>
+<article class="card reveal reveal--d1">
+<div class="card__badge"><span class="material-symbols-rounded" aria-hidden="true">blur_on</span></div>
+<h3>Breathing Skeletons</h3>
+<p>Placeholder layouts that shimmer and pulse at a resting heart rate, so the page feels alive while data arrives.</p>
+<div class="skel-demo" aria-hidden="true">
+<div class="skel-row"></div>
+<div class="skel-row"></div>
+<div class="skel-row skel-row--short"></div>
+</div>
+</article>
+<article class="card reveal reveal--d2">
+<div class="card__badge"><span class="material-symbols-rounded" aria-hidden="true">animation</span></div>
+<h3>Wait-State Choreography</h3>
+<p>Sequence loaders, messages, and reveals into a single flow. Long waits become a short story with a satisfying end.</p>
+</article>
+</div>
+</div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how" aria-labelledby="how-title" style="background:var(--bg-secondary);">
+<div class="container">
+<div class="section__head reveal">
+<h2 id="how-title">Three beats to a better wait</h2>
+<p class="section__sub">Suspension fits into your existing stack in an afternoon. No rewrites, no heavy runtime.</p>
+</div>
+<div class="steps">
+<div class="steps__list reveal" id="steps-list">
+<div class="step">
+<span class="step__num">01</span>
+<h3>Suspend</h3>
+<p>Drop in a Suspension component where your app pauses. It captures the wait and holds the user's attention gently.</p>
+<span class="material-symbols-rounded" aria-hidden="true">hourglass_top</span>
+</div>
+<div class="step">
+<span class="step__num">02</span>
+<h3>Animate</h3>
+<p>Choose a motion preset or compose your own. Timing, color, and rhythm adapt to your brand tokens automatically.</p>
+<span class="material-symbols-rounded" aria-hidden="true">animation</span>
+</div>
+<div class="step">
+<span class="step__num">03</span>
+<h3>Release</h3>
+<p>When data lands, the loader resolves into the content with a soft rise. The wait ends the way it began: on purpose.</p>
+<span class="material-symbols-rounded" aria-hidden="true">rocket_launch</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="section" id="testimonials" aria-labelledby="testimonials-title">
+<div class="container">
+<div class="section__head reveal">
+<h2 id="testimonials-title">Teams that stopped dreading the spinner</h2>
+</div>
+<div class="testimonials__grid">
+<article class="card testimonial reveal">
+<span class="material-symbols-rounded quote-icon" aria-hidden="true">format_quote</span>
+<div class="testimonial__stars" aria-label="5 out of 5 stars">
+<span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span>
+</div>
+<p class="testimonial__quote">Our checkout latency did not change, but complaints about it disappeared. The wait finally feels like part of the product.</p>
+<div class="testimonial__who">
+<span class="avatar" aria-hidden="true">MK</span>
+<div><p class="testimonial__name">Mara Kessler</p><p class="testimonial__role">Product Lead, Fieldnote</p></div>
+</div>
+</article>
+<article class="card testimonial reveal reveal--d1">
+<span class="material-symbols-rounded quote-icon" aria-hidden="true">format_quote</span>
+<div class="testimonial__stars" aria-label="5 out of 5 stars">
+<span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span>
+</div>
+<p class="testimonial__quote">We replaced fourteen one-off spinners with one system. Design review went from an argument to a checkbox.</p>
+<div class="testimonial__who">
+<span class="avatar" aria-hidden="true">DO</span>
+<div><p class="testimonial__name">Dario Okafor</p><p class="testimonial__role">Design Systems Engineer, Loomcraft</p></div>
+</div>
+</article>
+<article class="card testimonial reveal reveal--d2">
+<span class="material-symbols-rounded quote-icon" aria-hidden="true">format_quote</span>
+<div class="testimonial__stars" aria-label="5 out of 5 stars">
+<span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span>
+</div>
+<p class="testimonial__quote">The reduced-motion presets passed our accessibility audit on the first pass. That alone paid for the year.</p>
+<div class="testimonial__who">
+<span class="avatar" aria-hidden="true">SL</span>
+<div><p class="testimonial__name">Sofia Lindqvist</p><p class="testimonial__role">Frontend Director, Arcline Health</p></div>
+</div>
+</article>
+</div>
+</div>
+</section>
+
+<!-- PRICING -->
+<section class="section" id="pricing" aria-labelledby="pricing-title" style="background:var(--bg-secondary);">
+<div class="container">
+<div class="section__head reveal">
+<h2 id="pricing-title">Pricing that waits for no one</h2>
+<p class="section__sub">Start free, upgrade when your waits get longer. Every plan includes the full motion preset library.</p>
+</div>
+<div class="reveal" style="text-align:center;">
+<div class="billing" id="billing" data-mode="monthly" role="group" aria-label="Billing period">
+<span class="billing__thumb" aria-hidden="true"></span>
+<button class="billing__opt" type="button" data-mode="monthly" aria-pressed="true">Monthly</button>
+<button class="billing__opt" type="button" data-mode="yearly" aria-pressed="false">Yearly</button>
+</div>
+<p class="visually-hidden" aria-live="polite" id="billing-status"></p>
+</div>
+<div class="pricing__grid">
+<article class="card pricing__card reveal">
+<h3>Drift</h3>
+<p class="pricing__price"><span class="price" data-monthly="$0" data-yearly="$0">$0</span><small>/mo</small></p>
+<p class="pricing__note">Free forever</p>
+<ul class="pricing__features">
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span>12 core motion presets</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span>1 project, 2 team seats</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span>Reduced-motion variants</li>
+</ul>
+<a class="btn btn--secondary" href="#cta">Start for free</a>
+</article>
+<article class="card pricing__card pricing__card--featured reveal reveal--d1">
+<span class="pricing__badge">Most popular</span>
+<h3>Hover</h3>
+<p class="pricing__price"><span class="price" data-monthly="$12" data-yearly="$10">$12</span><small>/mo</small></p>
+<p class="pricing__note"><span class="billing-note" data-monthly="billed monthly" data-yearly="billed annually">billed monthly</span></p>
+<ul class="pricing__features">
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span>Full preset library, 80+ motions</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span>Unlimited projects, 10 seats</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span>Brand token sync</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span>Wait-state sequencing</li>
+</ul>
+<a class="btn btn--primary" href="#cta">Start for free</a>
+</article>
+<article class="card pricing__card reveal reveal--d2">
+<h3>Levitate</h3>
+<p class="pricing__price"><span class="price" data-monthly="$29" data-yearly="$24">$29</span><small>/mo</small></p>
+<p class="pricing__note"><span class="billing-note" data-monthly="billed monthly" data-yearly="billed annually">billed monthly</span></p>
+<ul class="pricing__features">
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span>Everything in Hover</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span>Custom motion composer</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span>SSO, audit log, priority support</li>
+</ul>
+<a class="btn btn--secondary" href="#cta">Start for free</a>
+</article>
+</div>
+</div>
+</section>
+
+<!-- FAQ -->
+<section class="section" id="faq" aria-labelledby="faq-title">
+<div class="container">
+<div class="section__head reveal">
+<h2 id="faq-title">Questions, answered while you wait</h2>
+</div>
+<div class="reveal" id="faq-list">
+<div class="faq__item">
+<button class="faq__trigger" type="button" aria-expanded="false" aria-controls="faq-p1" id="faq-t1">
+Will Suspension slow down my app?
+<span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
+</button>
+<div class="faq__panel" id="faq-p1" role="region" aria-labelledby="faq-t1">
+<div class="faq__panel-inner"><p>No. Presets are pure CSS transforms and opacity, running on the compositor thread. The runtime is under 4KB gzipped and never touches layout or paint.</p></div>
+</div>
+</div>
+<div class="faq__item">
+<button class="faq__trigger" type="button" aria-expanded="false" aria-controls="faq-p2" id="faq-t2">
+Can I use my own brand colors?
+<span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
+</button>
+<div class="faq__panel" id="faq-p2" role="region" aria-labelledby="faq-t2">
+<div class="faq__panel-inner"><p>Yes. Suspension reads your design tokens directly. Point it at your CSS variables, and every loader, shimmer, and gradient inherits your palette in both light and dark mode.</p></div>
+</div>
+</div>
+<div class="faq__item">
+<button class="faq__trigger" type="button" aria-expanded="false" aria-controls="faq-p3" id="faq-t3">
+Are the motion presets accessible?
+<span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
+</button>
+<div class="faq__panel" id="faq-p3" role="region" aria-labelledby="faq-t3">
+<div class="faq__panel-inner"><p>Every preset ships with a reduced-motion variant that swaps movement for a short opacity fade. Loading states are always paired with perceivable text status for assistive technology.</p></div>
+</div>
+</div>
+<div class="faq__item">
+<button class="faq__trigger" type="button" aria-expanded="false" aria-controls="faq-p4" id="faq-t4">
+Is the free tier really free?
+<span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
+</button>
+<div class="faq__panel" id="faq-p4" role="region" aria-labelledby="faq-t4">
+<div class="faq__panel-inner"><p>Yes. Drift includes 12 presets, one project, and two seats with no time limit and no credit card. Upgrade only when you need the full library or more seats.</p></div>
+</div>
+</div>
+<div class="faq__item">
+<button class="faq__trigger" type="button" aria-expanded="false" aria-controls="faq-p5" id="faq-t5">
+Which frameworks are supported?
+<span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
+</button>
+<div class="faq__panel" id="faq-p5" role="region" aria-labelledby="faq-t5">
+<div class="faq__panel-inner"><p>React, Vue, Svelte, and plain Web Components. The core is framework-agnostic CSS, so anything that renders HTML can run Suspension.</p></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section" id="cta" aria-labelledby="cta-title">
+<div class="container">
+<div class="band reveal">
+<div class="band__glow" aria-hidden="true"></div>
+<h2 id="cta-title">Give your users something beautiful to wait for.</h2>
+<p>Join the early access list. We send one thoughtful email a month, never more.</p>
+<form class="cta-form" id="cta-form" novalidate>
+<div class="input-group" id="email-group">
+<label for="cta-email">Work email</label>
+<input type="email" id="cta-email" name="email" placeholder="you@studio.com" autocomplete="email" aria-describedby="email-msg">
+<p class="input-msg" id="email-msg" aria-live="polite"></p>
+</div>
+<button class="btn btn--primary" id="cta-submit" type="submit">
+<span class="btn__label">Get early access</span>
+</button>
+</form>
+<p class="cta-success" id="cta-success" hidden>
+<span class="material-symbols-rounded" aria-hidden="true">check_circle</span>
+You're on the list, beautifully done.
+</p>
+</div>
+</div>
+</section>
+</main>
+
+<!-- MODAL -->
+<div class="modal" id="demo-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+<div class="modal__box">
+<div class="modal__head">
+<h3 id="modal-title">The study, performed live</h3>
+<button class="modal__close" id="modal-close" type="button" aria-label="Close dialog">
+<span class="material-symbols-rounded" aria-hidden="true">close</span>
+</button>
+</div>
+<div class="progress"><div class="progress__bar" id="modal-bar"></div></div>
+<div class="modal__stage" id="modal-stage">
+<div class="skel-row"></div>
+<div class="skel-row"></div>
+<div class="skel-row skel-row--short"></div>
+</div>
+<p class="modal__status" id="modal-status" aria-live="polite">Preparing the wait…</p>
+</div>
+</div>
+
+<footer class="footer">
+<div class="container">
+<div class="footer__grid">
+<div class="footer__brand">
+<a class="wordmark" href="#top"><span class="wordmark__dot" aria-hidden="true"></span>Suspension</a>
+<p>A motion-design toolkit for the moments in between. Beautiful waiting, by design.</p>
+</div>
+<div class="footer__cols">
+<div class="footer__col">
+<h4>Product</h4>
+<ul>
+<li><a href="#features">Features</a></li>
+<li><a href="#pricing">Pricing</a></li>
+<li><a href="#">Changelog</a></li>
+</ul>
+</div>
+<div class="footer__col">
+<h4>Resources</h4>
+<ul>
+<li><a href="#">Documentation</a></li>
+<li><a href="#">Motion presets</a></li>
+<li><a href="#"><span class="material-symbols-rounded" aria-hidden="true">mail</span>Support</a></li>
+</ul>
+</div>
+<div class="footer__col">
+<h4>Company</h4>
+<ul>
+<li><a href="#">About</a></li>
+<li><a href="#">Careers</a></li>
+<li><a href="#"><span class="material-symbols-rounded" aria-hidden="true">public</span>Blog</a></li>
+</ul>
+</div>
+</div>
+</div>
+<p class="footer__bottom">© 2026 Suspension. All waits reserved.</p>
+</div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- Theme toggle ---------- */
+var root=document.documentElement;
+var toggle=document.getElementById("theme-toggle");
+function syncToggle(){
+var dark=root.dataset.theme==="dark";
+toggle.setAttribute("aria-pressed",String(dark));
+toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+}
+syncToggle();
+toggle.addEventListener("click",function(){
+var next=root.dataset.theme==="dark"?"light":"dark";
+root.dataset.theme=next;
+try{localStorage.setItem("theme",next);}catch(e){}
+syncToggle();
+});
+
+/* ---------- Header scroll + mobile nav ---------- */
+var header=document.getElementById("header");
+var menuBtn=document.getElementById("menu-btn");
+var nav=document.getElementById("nav");
+new IntersectionObserver(function(entries){
+header.classList.toggle("is-scrolled",!entries[0].isIntersecting);
+},{rootMargin:"-1px 0px 0px 0px"}).observe(document.getElementById("top"));
+function closeMenu(){nav.classList.remove("is-open");menuBtn.setAttribute("aria-expanded","false");menuBtn.setAttribute("aria-label","Open menu");}
+menuBtn.addEventListener("click",function(){
+var open=nav.classList.toggle("is-open");
+menuBtn.setAttribute("aria-expanded",String(open));
+menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");
+});
+nav.addEventListener("click",function(e){if(e.target.closest("a"))closeMenu();});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")closeMenu();});
+
+/* ---------- Scroll reveals ---------- */
+var io=new IntersectionObserver(function(entries){
+entries.forEach(function(en){
+if(en.isIntersecting){en.target.classList.add("is-visible");io.unobserve(en.target);}
+});
+},{threshold:.15});
+document.querySelectorAll(".reveal").forEach(function(el){io.observe(el);});
+var stepsList=document.getElementById("steps-list");
+new IntersectionObserver(function(entries,obs){
+if(entries[0].isIntersecting){stepsList.classList.add("is-visible");obs.disconnect();}
+},{threshold:.3}).observe(stepsList);
+
+/* ---------- Pricing toggle ---------- */
+var billing=document.getElementById("billing");
+var billingStatus=document.getElementById("billing-status");
+billing.addEventListener("click",function(e){
+var btn=e.target.closest(".billing__opt");
+if(!btn)return;
+var mode=btn.dataset.mode;
+billing.dataset.mode=mode;
+billing.querySelectorAll(".billing__opt").forEach(function(o){
+o.setAttribute("aria-pressed",String(o===btn));
+});
+document.querySelectorAll(".price").forEach(function(p){
+p.style.opacity="0";
+setTimeout(function(){p.textContent=p.dataset[mode];p.style.opacity="1";},160);
+});
+document.querySelectorAll(".billing-note").forEach(function(n){n.textContent=n.dataset[mode];});
+billingStatus.textContent=mode==="yearly"?"Yearly billing selected. Prices updated.":"Monthly billing selected. Prices updated.";
+});
+
+/* ---------- FAQ accordion ---------- */
+var triggers=document.querySelectorAll(".faq__trigger");
+triggers.forEach(function(t){
+t.addEventListener("click",function(){
+var panel=document.getElementById(t.getAttribute("aria-controls"));
+var isOpen=t.getAttribute("aria-expanded")==="true";
+triggers.forEach(function(o){
+o.setAttribute("aria-expanded","false");
+document.getElementById(o.getAttribute("aria-controls")).classList.remove("is-open");
+});
+if(!isOpen){t.setAttribute("aria-expanded","true");panel.classList.add("is-open");}
+});
+t.addEventListener("keydown",function(e){
+if(e.key==="Escape"){
+t.setAttribute("aria-expanded","false");
+document.getElementById(t.getAttribute("aria-controls")).classList.remove("is-open");
+}
+});
+});
+
+/* ---------- Modal ---------- */
+var modal=document.getElementById("demo-modal");
+var openBtn=document.getElementById("open-modal");
+var closeBtn=document.getElementById("modal-close");
+var bar=document.getElementById("modal-bar");
+var stage=document.getElementById("modal-stage");
+var status=document.getElementById("modal-status");
+var lastFocus=null;
+var timers=[];
+var skelHTML=stage.innerHTML;
+
+function clearTimers(){timers.forEach(clearTimeout);timers=[];}
+function openModal(){
+lastFocus=document.activeElement;
+modal.hidden=false;
+requestAnimationFrame(function(){requestAnimationFrame(function(){modal.classList.add("is-open");});});
+document.body.style.overflow="hidden";
+stage.innerHTML=skelHTML;
+bar.style.width="0";
+status.textContent="Stage 1 of 3: the wait begins.";
+clearTimers();
+timers.push(setTimeout(function(){bar.style.width="100%";status.textContent="Stage 2 of 3: content is loading.";},100));
+timers.push(setTimeout(function(){
+status.textContent="Stage 3 of 3: release.";
+stage.innerHTML='<div class="modal__result"><h4><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>The wait, resolved</h4><p>Progress, shimmer, reveal. Three beats, two seconds, zero frustration. That is the Suspension method.</p></div>';
+},2400));
+closeBtn.focus();
+}
+function closeModal(){
+modal.classList.remove("is-open");
+clearTimers();
+document.body.style.overflow="";
+setTimeout(function(){modal.hidden=true;if(lastFocus)lastFocus.focus();},340);
+}
+openBtn.addEventListener("click",openModal);
+closeBtn.addEventListener("click",closeModal);
+modal.addEventListener("click",function(e){if(e.target===modal)closeModal();});
+document.addEventListener("keydown",function(e){
+if(modal.hidden)return;
+if(e.key==="Escape"){closeModal();return;}
+if(e.key==="Tab"){
+var focusables=modal.querySelectorAll("button, [href], input, [tabindex]:not([tabindex='-1'])");
+var first=focusables[0], last=focusables[focusables.length-1];
+if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+}
+});
+
+/* ---------- CTA form ---------- */
+var form=document.getElementById("cta-form");
+var group=document.getElementById("email-group");
+var input=document.getElementById("cta-email");
+var msg=document.getElementById("email-msg");
+var submitBtn=document.getElementById("cta-submit");
+var success=document.getElementById("cta-success");
+form.addEventListener("submit",function(e){
+e.preventDefault();
+group.classList.remove("is-valid","is-invalid");
+msg.className="input-msg";
+var val=input.value.trim();
+if(!val||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)){
+group.classList.add("is-invalid");
+msg.classList.add("input-msg--error");
+msg.innerHTML='<span class="material-symbols-rounded" aria-hidden="true">error</span>Please enter a valid email address.';
+input.focus();
+return;
+}
+group.classList.add("is-valid");
+msg.classList.add("input-msg--ok");
+msg.innerHTML='<span class="material-symbols-rounded" aria-hidden="true">check</span>Looks good.';
+submitBtn.classList.add("is-loading");
+submitBtn.setAttribute("aria-busy","true");
+submitBtn.innerHTML='<span class="material-symbols-rounded spin-icon" aria-hidden="true">progress_activity</span><span class="btn__label">Joining…</span>';
+setTimeout(function(){
+submitBtn.classList.remove("is-loading");
+submitBtn.removeAttribute("aria-busy");
+form.hidden=true;
+success.hidden=false;
+},1200);
+});
+})();
+</script>
+</body>
+</html>

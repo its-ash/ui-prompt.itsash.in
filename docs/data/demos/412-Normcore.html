@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Ledger is a plain notes and task utility. It works. That's the pitch.">
+<title>Ledger - a plain notes utility</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<style>
+/* ============================================================
+   NORMCORE TOKEN SHEET, canonical reference
+   The signature move is the absence of one.
+   ============================================================ */
+:root{
+  color-scheme:light;
+  /* color, light theme (default) */
+  --color-bg:#e9e7e2;
+  --color-surface:#f5f4f1;
+  --color-surface-strong:#dcdad4;
+  --color-border:#b8b5ad;
+  --color-text:#2f2e2b;
+  --color-text-muted:#6a6862;
+  --color-primary:#4a5568;
+  --color-accent:#7c8a99;
+  --color-denim:#5c7189;
+  --color-on-primary:#f5f4f1;
+  /* mandatory semantic aliases */
+  --primary:var(--color-primary);
+  --secondary:var(--color-accent);
+  --bg-primary:var(--color-bg);
+  --bg-secondary:var(--color-surface);
+  --text-primary:var(--color-text);
+  --text-secondary:var(--color-text-muted);
+  --border-default:var(--color-border);
+  --text-success:#4d6b54;
+  --text-error:#a34d42;
+  --border-success:#4d6b54;
+  --border-error:#a34d42;
+  /* radius: nothing special, off-the-shelf default corners */
+  --radius-sm:4px;--radius-md:6px;--radius-lg:8px;--radius-pill:999px;
+  /* shadow: barely there, no statement */
+  --shadow-sm:0 1px 2px rgba(47,46,43,0.08);
+  --shadow-md:0 2px 6px rgba(47,46,43,0.1);
+  --shadow-lg:0 6px 14px rgba(47,46,43,0.12);
+  /* font, Roboto with the generic system stack behind it, on purpose */
+  --font-base:'Roboto',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;
+  --font-sans:var(--font-base);
+  --font-display:var(--font-base);
+  --font-mono:ui-monospace,'Courier New',monospace;
+  /* text scale */
+  --text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;
+  --text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:2rem;--text-4xl:2.5rem;--text-5xl:3.25rem;
+  /* space */
+  --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-6:24px;
+  --space-8:32px;--space-12:48px;--space-16:64px;--space-24:96px;
+  --spacing-gap:var(--space-4);
+  /* transitions */
+  --ease-standard:ease;
+  --transition-fast:140ms var(--ease-standard);
+  --transition-normal:240ms var(--ease-standard);
+  /* elevation */
+  --z-dropdown:100;--z-modal:200;--z-toast:300;
+  /* the "signature move": the absence of one */
+  --plain-rule:1px solid var(--color-border);
+  --generic-accent-line:2px solid var(--color-denim);
+}
+/* Dark theme, same tokens, inverted, contrast pairing preserved */
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --color-bg:#262522;
+  --color-surface:#31302c;
+  --color-surface-strong:#3d3b36;
+  --color-border:#55534b;
+  --color-text:#e9e7e2;
+  --color-text-muted:#a09d94;
+  --color-primary:#8f9db0;
+  --color-accent:#a4b2c1;
+  --color-denim:#89a0ba;
+  --color-on-primary:#262522;
+  --text-success:#8fae96;--text-error:#d08a80;
+  --border-success:#8fae96;--border-error:#d08a80;
+  --shadow-sm:0 1px 2px rgba(0,0,0,0.35);
+  --shadow-md:0 2px 6px rgba(0,0,0,0.4);
+  --shadow-lg:0 6px 14px rgba(0,0,0,0.45);
+}
+
+/* ---------- base ---------- */
+*,*::before,*::after{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  font-family:var(--font-base);
+  font-size:var(--text-base);
+  line-height:1.6;
+  color:var(--text-primary);
+  background:var(--bg-primary);
+  -webkit-font-smoothing:antialiased;
+}
+[hidden]{display:none!important;}
+img{max-width:100%;display:block;}
+h1,h2,h3{margin:0;font-weight:500;line-height:1.15;letter-spacing:-0.01em;color:var(--text-primary);}
+p{margin:0;}
+a{color:var(--text-primary);}
+.container{max-width:1200px;margin:0 auto;padding-left:var(--space-4);padding-right:var(--space-4);}
+@media(min-width:768px){.container{padding-left:var(--space-8);padding-right:var(--space-8);}}
+.section{padding-top:clamp(4rem,8vw,6rem);padding-bottom:clamp(4rem,8vw,6rem);}
+.section__head{margin-bottom:var(--space-12);max-width:65ch;}
+.section__head h2{font-size:clamp(var(--text-2xl),3.5vw,var(--text-3xl));margin-bottom:var(--space-3);}
+.section__head p{color:var(--text-secondary);font-size:var(--text-lg);max-width:65ch;}
+.skip-link{position:absolute;left:var(--space-4);top:-100px;z-index:var(--z-toast);background:var(--color-surface);border:var(--plain-rule);padding:var(--space-3) var(--space-4);border-radius:var(--radius-md);transition:top var(--transition-fast);}
+.skip-link:focus{top:var(--space-4);}
+.icon{font-family:'Material Symbols Outlined';font-weight:normal;font-style:normal;font-size:1.25rem;line-height:1;display:inline-block;vertical-align:middle;user-select:none;}
+
+/* ---------- button ---------- */
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:0.5rem;
+  min-height:44px;min-width:44px;
+  font-family:var(--font-base);font-weight:500;font-size:var(--text-base);
+  padding:var(--space-3) var(--space-6);
+  border-radius:var(--radius-md);
+  background:var(--color-surface);
+  color:var(--text-primary);
+  border:var(--plain-rule);
+  box-shadow:var(--shadow-sm);
+  cursor:pointer;text-decoration:none;
+  transition:background var(--transition-fast),box-shadow var(--transition-fast),transform var(--transition-fast);
+}
+.btn:hover{background:var(--color-surface-strong);box-shadow:var(--shadow-md);}
+.btn:focus-visible{outline:2px solid var(--color-accent);outline-offset:2px;}
+.btn:active{transform:scale(0.97);box-shadow:var(--shadow-sm);}
+.btn[disabled]{opacity:0.5;filter:grayscale(0.4);cursor:not-allowed;pointer-events:none;}
+.btn--primary{background:var(--color-denim);color:var(--color-on-primary);border-color:var(--color-denim);}
+.btn--primary:hover{background:var(--color-primary);border-color:var(--color-primary);}
+.btn--danger{background:#a34d42;color:#f5f4f1;border-color:#a34d42;}
+.btn--danger:hover{background:#8f4238;border-color:#8f4238;}
+.btn.is-loading{pointer-events:none;position:relative;}
+.btn.is-loading .btn__label{visibility:hidden;}
+.btn.is-loading::after{
+  content:"";position:absolute;width:1.1rem;height:1.1rem;border-radius:50%;
+  border:2px solid currentColor;border-right-color:transparent;
+  animation:spin 700ms linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+.btn.is-success{border-color:var(--border-success);color:var(--text-success);background:var(--color-surface);}
+.btn.is-error{border-color:var(--border-error);color:var(--text-error);}
+
+/* ---------- card ---------- */
+.card{
+  display:flex;flex-direction:column;align-items:flex-start; /* text blocks read better left-aligned */
+  background:var(--bg-secondary);
+  border:var(--plain-rule);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-sm);
+  padding:var(--space-6);
+  transition:box-shadow var(--transition-fast),border-color var(--transition-fast);
+}
+.card:hover{box-shadow:var(--shadow-md);}
+.card:focus-within{border-color:var(--color-accent);}
+.card--empty{align-items:center;justify-content:center;text-align:center;color:var(--text-secondary);gap:var(--space-2);}
+.skeleton{animation:pulse 1.4s ease-in-out infinite;background:var(--color-surface-strong);border-radius:var(--radius-sm);}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.5;}}
+
+/* ---------- badge ---------- */
+.badge{
+  display:inline-flex;align-items:center;gap:var(--space-2);
+  font-size:var(--text-sm);color:var(--text-secondary);
+  border:var(--plain-rule);border-radius:var(--radius-pill);
+  padding:var(--space-1) var(--space-3);background:var(--color-surface);
+}
+
+/* ---------- input ---------- */
+.input-group{display:flex;flex-direction:column;align-items:stretch;gap:var(--space-2);} /* form fields stack top to bottom */
+.input-group label{font-weight:500;font-size:var(--text-sm);}
+.input{
+  min-height:44px;width:100%;
+  font-family:var(--font-base);font-size:var(--text-base);color:var(--text-primary);
+  background:var(--color-surface);
+  border:var(--plain-rule);
+  border-left:var(--generic-accent-line);
+  border-radius:var(--radius-sm);
+  padding:var(--space-3) var(--space-4);
+  transition:border-color var(--transition-fast),box-shadow var(--transition-fast);
+}
+.input::placeholder{color:var(--text-secondary);}
+.input:focus{outline:none;border-color:var(--color-accent);box-shadow:0 0 0 3px rgba(124,138,153,0.25);}
+.input--valid{border-color:var(--border-success);}
+.input--invalid{border-color:var(--border-error);border-left:2px solid var(--border-error);}
+.input[disabled]{opacity:0.6;cursor:not-allowed;}
+.input[readonly]{background:var(--color-surface-strong);}
+.input-group__error{display:flex;align-items:center;gap:var(--space-2);font-size:var(--text-sm);color:var(--text-error);min-height:1.25rem;margin:0;}
+.input-group__helper{font-size:var(--text-sm);color:var(--text-secondary);margin:0;}
+
+/* ---------- nav ---------- */
+.nav{
+  position:sticky;top:0;z-index:var(--z-dropdown);
+  display:flex;align-items:center;gap:var(--space-4);
+  background:var(--color-surface);
+  border-bottom:var(--plain-rule);
+  border-top:var(--generic-accent-line);
+  min-height:64px;
+  padding-left:var(--space-4);padding-right:var(--space-4);
+}
+@media(min-width:768px){.nav{padding-left:var(--space-8);padding-right:var(--space-8);}}
+.nav__brand{font-weight:500;font-size:var(--text-lg);text-decoration:none;color:var(--text-primary);}
+.nav__links{display:none;align-items:center;gap:var(--space-6);margin-left:auto;list-style:none;margin-top:0;margin-bottom:0;padding:0;}
+.nav__links a{color:var(--text-secondary);text-decoration:none;font-size:var(--text-base);padding:var(--space-2) 0;}
+.nav__links a:hover,.nav__links a:focus-visible{color:var(--text-primary);text-decoration:underline;text-underline-offset:4px;}
+.nav__actions{display:flex;align-items:center;gap:var(--space-3);margin-left:auto;}
+@media(min-width:768px){.nav__links{display:flex;margin-left:var(--space-8);}.nav__actions{margin-left:auto;}}
+.nav__toggle{display:flex;}
+@media(min-width:768px){.nav__toggle{display:none;}}
+.nav__menu{
+  position:absolute;top:100%;left:0;right:0;
+  background:var(--color-surface);border-bottom:var(--plain-rule);
+  display:flex;flex-direction:column;align-items:stretch; /* full-width stacked links */
+  padding:var(--space-4);gap:var(--space-2);
+  box-shadow:var(--shadow-md);
+}
+.nav__menu a{padding:var(--space-3);color:var(--text-primary);text-decoration:none;border-radius:var(--radius-sm);}
+.nav__menu a:hover,.nav__menu a:focus-visible{background:var(--color-surface-strong);}
+.btn--theme{padding:var(--space-3);}
+
+/* ---------- hero ---------- */
+.hero{padding-top:var(--space-16);padding-bottom:var(--space-16);}
+.hero__inner{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-12);} /* mobile: stacked */
+@media(min-width:768px){
+  .hero__inner{flex-direction:row;align-items:center;gap:var(--space-16);}
+  .hero__text{flex:1 1 50%;}
+  .hero__visual{flex:1 1 50%;}
+}
+.hero__text{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-6);}
+.hero h1{font-size:clamp(var(--text-3xl),5vw,var(--text-5xl));font-weight:500;letter-spacing:-0.02em;line-height:1.1;max-width:16ch;}
+.hero__sub{color:var(--text-secondary);font-size:var(--text-lg);max-width:65ch;}
+.hero__ctas{display:flex;gap:var(--spacing-gap);flex-wrap:wrap;}
+@media(max-width:639px){.hero__ctas{flex-direction:column;align-items:stretch;width:100%;}}
+.hero__visual{border:var(--plain-rule);border-radius:var(--radius-lg);overflow:hidden;background:var(--color-surface-strong);box-shadow:var(--shadow-sm);}
+.hero__visual img{width:100%;height:auto;filter:grayscale(0.55) contrast(0.95);}
+
+/* ---------- features ---------- */
+.features__grid{display:flex;flex-wrap:wrap;gap:var(--space-6);align-items:stretch;} /* equal-height cards */
+.features__grid .card{flex:1 1 280px;gap:var(--space-3);}
+.card__icon{color:var(--text-secondary);font-size:1.5rem;}
+.card h3{font-size:var(--text-xl);}
+.card p{color:var(--text-secondary);max-width:65ch;}
+
+/* ---------- steps ---------- */
+.steps{display:flex;flex-direction:column;align-items:stretch;gap:0;} /* rules between steps */
+@media(min-width:768px){.steps{flex-direction:row;align-items:stretch;}}
+.step{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-3);padding:var(--space-6) 0;border-top:var(--plain-rule);flex:1;}
+.step:first-child{border-top:none;}
+@media(min-width:768px){
+  .step{border-top:none;border-left:var(--plain-rule);padding:0 var(--space-8);}
+  .step:first-child{border-left:none;padding-left:0;}
+  .step:last-child{padding-right:0;}
+}
+.step__num{font-family:var(--font-mono);color:var(--text-secondary);font-size:var(--text-sm);}
+.step h3{font-size:var(--text-xl);}
+.step p{color:var(--text-secondary);max-width:65ch;}
+
+/* ---------- testimonials ---------- */
+.quotes{display:flex;flex-wrap:wrap;gap:var(--space-6);align-items:stretch;}
+.quotes .card{flex:1 1 300px;gap:var(--space-4);}
+.quotes blockquote{margin:0;}
+.quotes blockquote p{font-size:var(--text-lg);max-width:65ch;}
+.quotes figcaption{display:flex;align-items:center;gap:var(--space-3);font-size:var(--text-sm);color:var(--text-secondary);}
+.quotes__disc{display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;background:var(--color-surface-strong);color:var(--text-secondary);font-size:var(--text-sm);font-weight:500;flex-shrink:0;}
+
+/* ---------- pricing ---------- */
+.pricing__grid{display:flex;flex-wrap:wrap;gap:var(--space-6);align-items:stretch;} /* documented exception: equal heights */
+.card--tier{flex:1 1 280px;gap:var(--space-4);}
+.card--tier .btn{margin-top:auto;width:100%;}
+.card--featured{border-top:var(--generic-accent-line);}
+.tier__price{font-size:var(--text-3xl);font-weight:500;}
+.tier__price span{font-size:var(--text-sm);color:var(--text-secondary);font-weight:400;}
+.tier__list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2);width:100%;}
+.tier__list li{display:flex;align-items:center;gap:var(--space-2);color:var(--text-secondary);font-size:var(--text-base);}
+.tier__list .icon{font-size:1.1rem;color:var(--text-success);}
+
+/* ---------- faq ---------- */
+.faq__list{border-top:var(--plain-rule);max-width:52rem;}
+.faq__item{border-bottom:var(--plain-rule);}
+.faq__item summary{
+  display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);
+  padding:var(--space-4) var(--space-2);cursor:pointer;list-style:none;
+  transition:background var(--transition-fast);
+}
+.faq__item summary::-webkit-details-marker{display:none;}
+.faq__item summary:hover{background:var(--color-surface);}
+.faq__item summary:focus-visible{outline:2px solid var(--color-accent);outline-offset:2px;}
+.faq__item summary h3{font-size:var(--text-lg);font-weight:500;}
+.faq__item summary .icon{color:var(--text-secondary);transition:transform var(--transition-fast);flex-shrink:0;}
+.faq__item[open] summary .icon{transform:rotate(180deg);}
+.faq__answer{padding:0 var(--space-2) var(--space-6);color:var(--text-secondary);max-width:65ch;}
+
+/* ---------- final cta ---------- */
+.cta{background:var(--color-surface);border-top:var(--plain-rule);border-bottom:var(--plain-rule);}
+.cta__inner{display:flex;flex-direction:column;align-items:center;text-align:center;gap:var(--space-6);max-width:36rem;margin:0 auto;}
+.cta h2{font-size:clamp(var(--text-2xl),3.5vw,var(--text-3xl));}
+.cta__sub{color:var(--text-secondary);font-size:var(--text-lg);}
+.cta__form{width:100%;display:flex;flex-direction:column;gap:var(--spacing-gap);align-items:stretch;text-align:left;}
+@media(min-width:640px){
+  .cta__form-row{display:flex;gap:var(--spacing-gap);align-items:flex-start;}
+  .cta__form-row .input-group{flex:1;}
+  .cta__form-row .btn{flex-shrink:0;}
+}
+.cta__status{font-size:var(--text-sm);color:var(--text-success);min-height:1.25rem;margin:0;}
+
+/* ---------- footer ---------- */
+.footer{background:var(--bg-primary);border-top:var(--plain-rule);padding:var(--space-12) 0;}
+.footer__inner{display:flex;flex-direction:column;gap:var(--space-8);align-items:flex-start;}
+@media(min-width:768px){.footer__inner{flex-direction:row;justify-content:space-between;align-items:flex-start;}}
+.footer__brand{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2);}
+.footer__brand strong{font-weight:500;font-size:var(--text-lg);}
+.footer__brand p{color:var(--text-secondary);font-size:var(--text-sm);}
+.footer__links{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:var(--space-4) var(--space-6);}
+.footer__links a{color:var(--text-secondary);text-decoration:none;font-size:var(--text-sm);}
+.footer__links a:hover,.footer__links a:focus-visible{color:var(--text-primary);text-decoration:underline;text-underline-offset:4px;}
+.footer__small{margin-top:var(--space-8);padding-top:var(--space-6);border-top:var(--plain-rule);color:var(--text-secondary);font-size:var(--text-sm);}
+
+/* ---------- reveal (JS-added only) ---------- */
+.reveal{opacity:0;transform:translateY(8px);transition:opacity var(--transition-normal),transform var(--transition-normal);}
+.reveal.is-visible{opacity:1;transform:none;}
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto;}
+  *,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important;}
+  .reveal{opacity:1;transform:none;}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="nav">
+  <a class="nav__brand" href="#top">Ledger</a>
+  <ul class="nav__links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#how-it-works">How it works</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+  <div class="nav__actions">
+    <button class="btn btn--theme" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+      <span class="icon" id="theme-icon" aria-hidden="true">dark_mode</span>
+    </button>
+    <a class="btn btn--primary" href="#cta"><span class="btn__label">Get started</span></a>
+    <button class="btn nav__toggle" id="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-menu" aria-label="Open menu">
+      <span class="icon" id="nav-toggle-icon" aria-hidden="true">menu</span>
+    </button>
+  </div>
+  <nav class="nav__menu" id="nav-menu" aria-label="Mobile" hidden>
+    <a href="#features">Features</a>
+    <a href="#how-it-works">How it works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#faq">FAQ</a>
+  </nav>
+</header>
+
+<main id="main">
+  <!-- Hero -->
+  <section class="hero" id="top">
+    <div class="container hero__inner">
+      <div class="hero__text">
+        <span class="badge">No account needed</span>
+        <h1>A plain place for notes and tasks.</h1>
+        <p class="hero__sub">Ledger keeps your lists and notes in one quiet spot. It works. That's the pitch.</p>
+        <div class="hero__ctas">
+          <a class="btn btn--primary" href="#cta"><span class="btn__label">Get started</span></a>
+          <a class="btn" href="#how-it-works"><span class="btn__label">How it works</span></a>
+        </div>
+      </div>
+      <div class="hero__visual">
+        <img src="https://picsum.photos/seed/plain-desk-notebook/960/640" width="960" height="640" alt="A notebook and a pencil on a plain desk.">
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="section" id="features">
+    <div class="container">
+      <div class="section__head">
+        <h2>What it does</h2>
+        <p>Three things, done adequately.</p>
+      </div>
+      <div class="features__grid">
+        <article class="card">
+          <span class="icon card__icon" aria-hidden="true">edit_note</span>
+          <h3>Notes</h3>
+          <p>Write things down. They stay written down. Search finds them later.</p>
+        </article>
+        <article class="card">
+          <span class="icon card__icon" aria-hidden="true">check_box</span>
+          <h3>Tasks</h3>
+          <p>Make a list, tick things off. The ticks sync to your other devices.</p>
+        </article>
+        <article class="card">
+          <span class="icon card__icon" aria-hidden="true">folder</span>
+          <h3>Folders</h3>
+          <p>Put notes in folders if you like folders. Ignore them if you don't.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="section" id="how-it-works">
+    <div class="container">
+      <div class="section__head">
+        <h2>How it works</h2>
+        <p>There are three steps. None of them are hard.</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <span class="step__num">01</span>
+          <h3>Open it</h3>
+          <p>Go to the page or install the app. There is no setup wizard.</p>
+        </div>
+        <div class="step">
+          <span class="step__num">02</span>
+          <h3>Write something</h3>
+          <p>Type a note or add a task. It saves on its own, quietly.</p>
+        </div>
+        <div class="step">
+          <span class="step__num">03</span>
+          <h3>Find it later</h3>
+          <p>Search or scroll. Your stuff is where you left it.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="section" id="testimonials">
+    <div class="container">
+      <div class="section__head">
+        <h2>What people say</h2>
+        <p>Measured praise from measured people.</p>
+      </div>
+      <div class="quotes">
+        <figure class="card">
+          <blockquote><p>&ldquo;It does what it says. I stopped thinking about it, which is the point.&rdquo;</p></blockquote>
+          <figcaption><span class="quotes__disc" aria-hidden="true">D</span>, Dana, customer since 2021</figcaption>
+        </figure>
+        <figure class="card">
+          <blockquote><p>&ldquo;No popups, no badges, no streaks. Just my list, still there in the morning.&rdquo;</p></blockquote>
+          <figcaption><span class="quotes__disc" aria-hidden="true">M</span>, Marcus, customer since 2022</figcaption>
+        </figure>
+        <figure class="card">
+          <blockquote><p>&ldquo;I recommended it to my team. Nobody was excited. Everyone uses it.&rdquo;</p></blockquote>
+          <figcaption><span class="quotes__disc" aria-hidden="true">P</span>, Priya, customer since 2023</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section class="section" id="pricing">
+    <div class="container">
+      <div class="section__head">
+        <h2>Pricing</h2>
+        <p>Plain prices. Cancel whenever.</p>
+      </div>
+      <div class="pricing__grid">
+        <article class="card card--tier">
+          <h3>Basic</h3>
+          <p class="tier__price">$0 <span>/ month</span></p>
+          <ul class="tier__list">
+            <li><span class="icon" aria-hidden="true">check</span>Up to 100 notes</li>
+            <li><span class="icon" aria-hidden="true">check</span>One device</li>
+            <li><span class="icon" aria-hidden="true">check</span>Search</li>
+          </ul>
+          <a class="btn" href="#cta"><span class="btn__label">Get started</span></a>
+        </article>
+        <article class="card card--tier card--featured">
+          <span class="badge">Most common</span>
+          <h3>Standard</h3>
+          <p class="tier__price">$8 <span>/ month</span></p>
+          <ul class="tier__list">
+            <li><span class="icon" aria-hidden="true">check</span>Unlimited notes</li>
+            <li><span class="icon" aria-hidden="true">check</span>All your devices</li>
+            <li><span class="icon" aria-hidden="true">check</span>Folders and tags</li>
+            <li><span class="icon" aria-hidden="true">check</span>Offline access</li>
+          </ul>
+          <a class="btn btn--primary" href="#cta"><span class="btn__label">Get started</span></a>
+        </article>
+        <article class="card card--tier">
+          <h3>Pro</h3>
+          <p class="tier__price">$15 <span>/ month</span></p>
+          <ul class="tier__list">
+            <li><span class="icon" aria-hidden="true">check</span>Everything in Standard</li>
+            <li><span class="icon" aria-hidden="true">check</span>Shared folders</li>
+            <li><span class="icon" aria-hidden="true">check</span>Version history</li>
+            <li><span class="icon" aria-hidden="true">check</span>Email support</li>
+          </ul>
+          <a class="btn" href="#cta"><span class="btn__label">Get started</span></a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq">
+    <div class="container">
+      <div class="section__head">
+        <h2>Questions</h2>
+        <p>The ones people actually ask.</p>
+      </div>
+      <div class="faq__list">
+        <details class="faq__item">
+          <summary><h3>Do I need an account?</h3><span class="icon" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__answer">No. You can use Ledger without one. An account is only needed if you want syncing across devices.</p>
+        </details>
+        <details class="faq__item">
+          <summary><h3>Where is my data stored?</h3><span class="icon" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__answer">On your device first, and on our servers if you turn on sync. You can export everything at any time.</p>
+        </details>
+        <details class="faq__item">
+          <summary><h3>Can I cancel whenever?</h3><span class="icon" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__answer">Yes. Cancel from the settings page in two clicks. Your notes stay readable on the free plan.</p>
+        </details>
+        <details class="faq__item">
+          <summary><h3>Is there a mobile app?</h3><span class="icon" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__answer">Yes, for iOS and Android. It looks the same as the website, on purpose.</p>
+        </details>
+        <details class="faq__item">
+          <summary><h3>What happens if you shut down?</h3><span class="icon" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__answer">You can export your notes as plain text files today, so you would keep everything either way.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="section cta" id="cta">
+    <div class="container cta__inner">
+      <h2>Try it</h2>
+      <p class="cta__sub">Leave an email and we'll send a link. One email, no newsletter.</p>
+      <form class="cta__form" id="cta-form" novalidate>
+        <div class="cta__form-row">
+          <div class="input-group">
+            <label for="cta-email">Email address</label>
+            <input class="input" id="cta-email" name="email" type="email" required autocomplete="email" placeholder="you@example.com" aria-describedby="cta-error">
+            <p class="input-group__error" id="cta-error" aria-live="polite"></p>
+          </div>
+          <button class="btn btn--primary" id="cta-submit" type="submit">
+            <span class="btn__label">Get started</span>
+          </button>
+        </div>
+        <p class="cta__status" id="cta-status" aria-live="polite"></p>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__inner">
+      <div class="footer__brand">
+        <strong>Ledger</strong>
+        <p>Made to be used, not admired.</p>
+      </div>
+      <ul class="footer__links">
+        <li><a href="#top">About</a></li>
+        <li><a href="#faq">Help</a></li>
+        <li><a href="#top">Privacy</a></li>
+        <li><a href="#top">Terms</a></li>
+        <li><a href="#top">Status</a></li>
+        <li><a href="#cta">Contact</a></li>
+      </ul>
+    </div>
+    <p class="footer__small">&copy; 2026 Ledger. All rights reserved.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---- theme toggle ---- */
+  var root=document.documentElement;
+  var themeBtn=document.getElementById("theme-toggle");
+  var themeIcon=document.getElementById("theme-icon");
+  function syncTheme(){
+    var dark=root.dataset.theme==="dark";
+    themeBtn.setAttribute("aria-pressed",String(dark));
+    themeBtn.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+    themeIcon.textContent=dark?"light_mode":"dark_mode";
+  }
+  themeBtn.addEventListener("click",function(){
+    root.dataset.theme=root.dataset.theme==="dark"?"light":"dark";
+    localStorage.setItem("theme",root.dataset.theme);
+    syncTheme();
+  });
+  syncTheme();
+
+  /* ---- mobile nav ---- */
+  var navToggle=document.getElementById("nav-toggle");
+  var navToggleIcon=document.getElementById("nav-toggle-icon");
+  var navMenu=document.getElementById("nav-menu");
+  function closeMenu(){
+    navMenu.hidden=true;
+    navToggle.setAttribute("aria-expanded","false");
+    navToggle.setAttribute("aria-label","Open menu");
+    navToggleIcon.textContent="menu";
+  }
+  function openMenu(){
+    navMenu.hidden=false;
+    navToggle.setAttribute("aria-expanded","true");
+    navToggle.setAttribute("aria-label","Close menu");
+    navToggleIcon.textContent="close";
+  }
+  navToggle.addEventListener("click",function(){
+    if(navMenu.hidden){openMenu();}else{closeMenu();}
+  });
+  navMenu.addEventListener("click",function(e){
+    if(e.target.tagName==="A"){closeMenu();}
+  });
+  document.addEventListener("keydown",function(e){
+    if(e.key==="Escape"&&!navMenu.hidden){closeMenu();navToggle.focus();}
+  });
+
+  /* ---- reveal on scroll (JS-added classes only) ---- */
+  var reduceMotion=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if(!reduceMotion&&"IntersectionObserver" in window){
+    var targets=document.querySelectorAll(".features__grid .card, .step, .quotes .card, .pricing__grid .card");
+    targets.forEach(function(el){el.classList.add("reveal");});
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){
+          var el=entry.target;
+          var idx=Array.prototype.indexOf.call(el.parentNode.children,el);
+          el.style.transitionDelay=(idx%3)*60+"ms";
+          el.classList.add("is-visible");
+          io.unobserve(el);
+        }
+      });
+    },{threshold:0.15});
+    targets.forEach(function(el){io.observe(el);});
+  }
+
+  /* ---- CTA form ---- */
+  var form=document.getElementById("cta-form");
+  var email=document.getElementById("cta-email");
+  var error=document.getElementById("cta-error");
+  var submit=document.getElementById("cta-submit");
+  var status=document.getElementById("cta-status");
+  var emailRe=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  email.addEventListener("input",function(){
+    email.classList.remove("input--invalid");
+    error.textContent="";
+  });
+
+  form.addEventListener("submit",function(e){
+    e.preventDefault();
+    if(submit.classList.contains("is-loading")||submit.classList.contains("is-success")){return;}
+    if(!emailRe.test(email.value.trim())){
+      email.classList.add("input--invalid");
+      error.innerHTML='<span class="icon" aria-hidden="true">error</span> Enter a valid email address.';
+      email.focus();
+      return;
+    }
+    submit.classList.add("is-loading");
+    submit.setAttribute("disabled","");
+    email.setAttribute("disabled","");
+    window.setTimeout(function(){
+      submit.classList.remove("is-loading");
+      submit.classList.add("is-success");
+      submit.removeAttribute("disabled");
+      submit.innerHTML='<span class="icon" aria-hidden="true">check_circle</span><span class="btn__label">Done</span>';
+      email.removeAttribute("disabled");
+      email.setAttribute("readonly","");
+      email.classList.add("input--valid");
+      status.textContent="You're on the list.";
+    },900);
+  });
+})();
+</script>
+</body>
+</html>

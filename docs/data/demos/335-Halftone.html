@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nimbus — Halftone Print Toolkit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Bangers&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0&display=block" rel="stylesheet">
+<script>(function(){var t=null;try{t=localStorage.getItem('nimbus-theme')}catch(e){}var d=t?t==='dark':matchMedia('(prefers-color-scheme:dark)').matches;document.documentElement.classList.toggle('dark',d);document.documentElement.classList.toggle('light',!d)})();</script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg-primary:#fdf6e8;--bg-secondary:#fffdf7;--surface-strong:#fff2c9;--border-default:#16130f;--text-primary:#16130f;--text-secondary:#4d463a;--primary:#e0263b;--secondary:#1f6fd6;--yellow:#f6c93b;--text-success:#1a7a3a;--text-error:#c0182c;--border-error:#c0182c;--border-success:#1a7a3a;--radius-sm:2px;--radius-md:4px;--radius-lg:8px;--radius-pill:999px;--shadow-sm:3px 3px 0 var(--border-default);--shadow-md:5px 5px 0 var(--border-default);--shadow-lg:8px 8px 0 var(--border-default);--font-base:'Archivo Black','Helvetica Neue',sans-serif;--font-display:'Bangers','Anton',sans-serif;--font-mono:'Courier New',ui-monospace,monospace;--spacing-gap:24px;--transition-fast:.15s cubic-bezier(.34,1.56,.64,1);--transition-normal:.25s cubic-bezier(.34,1.56,.64,1);--dot-color:var(--primary);--dot-color-blue:var(--secondary);--dot-grid:radial-gradient(var(--dot-color) 32%,transparent 34%) 0 0/10px 10px;--dot-grid-blue:radial-gradient(var(--dot-color-blue) 32%,transparent 34%) 0 0/8px 8px;--dot-grid-cream:radial-gradient(#fff2c9 28%,transparent 30%) 0 0/8px 8px}
+.dark{--bg-primary:#16130f;--bg-secondary:#1e1a14;--surface-strong:#262017;--border-default:#f2e3c2;--text-primary:#fdf6e8;--text-secondary:#cfc3ab;--primary:#ff4257;--secondary:#6aa6ff;--text-success:#4cc274;--text-error:#ff8494;--border-error:#ff8494;--border-success:#4cc274;--dot-color:#ff4257;--dot-color-blue:#6aa6ff}
+@media(prefers-color-scheme:dark){:root:not(.light){--bg-primary:#16130f;--bg-secondary:#1e1a14;--surface-strong:#262017;--border-default:#f2e3c2;--text-primary:#fdf6e8;--text-secondary:#cfc3ab;--primary:#ff4257;--secondary:#6aa6ff;--text-success:#4cc274;--text-error:#ff8494;--border-error:#ff8494;--border-success:#4cc274;--dot-color:#ff4257;--dot-color-blue:#6aa6ff}}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);font-size:16px;line-height:1.5;color:var(--text-primary);background:var(--bg-primary);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+::selection{background:var(--secondary);color:#fff8ec}
+:focus-visible{outline:3px solid var(--secondary);outline-offset:2px}
+.ic{font-family:'Material Symbols Rounded';font-weight:400;font-style:normal;line-height:1;letter-spacing:normal;white-space:nowrap;direction:ltr;display:inline-block;font-size:24px;font-variation-settings:'FILL' 1;user-select:none;-webkit-font-smoothing:antialiased}
+.spin{display:none;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.wrap{width:100%;max-width:1100px;margin-inline:auto;padding-inline:20px}
+.row{display:flex;align-items:center;flex-wrap:wrap;gap:var(--spacing-gap)}
+.grid{display:flex;flex-wrap:wrap;align-items:stretch;gap:var(--spacing-gap)}
+.grid>*{flex:1 1 280px;min-width:0}
+.badge{display:inline-flex;align-items:center;gap:.45rem;padding:8px 14px;font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:#fff8ec;background:var(--primary);background-image:var(--dot-grid-cream);border:3px solid var(--border-default);border-radius:var(--radius-pill);box-shadow:var(--shadow-sm)}
+.badge .ic{font-size:16px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;min-width:44px;padding:10px 20px;font-family:var(--font-base);font-size:.82rem;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;color:var(--text-primary);background:var(--bg-secondary);background-image:var(--dot-grid-blue);border:3px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);cursor:pointer;transition:transform var(--transition-fast),box-shadow var(--transition-fast),background-color var(--transition-normal)}
+.btn:hover{transform:translate(-2px,-2px);box-shadow:var(--shadow-md)}
+.btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--border-default)}
+.btn:disabled{opacity:.5;filter:grayscale(1);cursor:not-allowed}
+.btn--icon{padding:10px}
+.btn--primary{color:#fff8ec;background-color:var(--primary);background-image:var(--dot-grid-cream)}
+.btn--danger{color:var(--bg-primary);background-color:var(--text-error);background-image:var(--dot-grid-cream)}
+.btn--success{color:#fff;background-color:var(--border-success);background-image:none}
+.btn--loading{pointer-events:none;position:relative}
+.btn--loading .btn__label{visibility:hidden}
+.btn--loading .spin{display:block;position:absolute;top:calc(50% - 13px);left:calc(50% - 13px);font-size:26px}
+.site-header{position:sticky;top:0;z-index:100;background:var(--bg-secondary);background-image:var(--dot-grid-blue);border-bottom:3px solid var(--border-default)}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:10px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text-primary);font-family:var(--font-display);font-size:1.6rem;letter-spacing:.06em}
+.brand__mark{width:36px;height:36px;border:3px solid var(--border-default);border-radius:var(--radius-md);background:var(--primary);background-image:var(--dot-grid-cream);box-shadow:var(--shadow-sm)}
+.nav__links{display:flex;align-items:center;gap:4px;list-style:none}
+.nav__links a{display:flex;align-items:center;min-height:44px;padding:8px 12px;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;color:var(--text-primary);border-radius:var(--radius-sm);transition:background-color var(--transition-fast)}
+.nav__links a:hover{background:var(--yellow);color:#16130f;box-shadow:var(--shadow-sm)}
+section{padding:64px 0;border-top:3px solid var(--border-default);scroll-margin-top:90px}
+.sec-head{max-width:640px;margin:0 auto 40px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
+.kicker{font-family:var(--font-mono);font-size:.78rem;font-weight:700;letter-spacing:.3em;text-transform:uppercase;color:var(--text-secondary)}
+h2{font-family:var(--font-display);font-size:clamp(2.1rem,4.5vw,3rem);line-height:1;letter-spacing:.04em;text-shadow:3px 3px 0 var(--yellow)}
+.tint{background:var(--surface-strong);background-image:var(--dot-grid-blue)}
+.tint h2{text-shadow:4px 4px 0 var(--secondary)}
+.sec-head p{color:var(--text-secondary);font-size:.95rem}
+h3{font-family:var(--font-display);font-size:1.5rem;line-height:1.1;letter-spacing:.05em}
+.card{display:flex;flex-direction:column;align-items:flex-start;gap:12px;padding:var(--spacing-gap);background:var(--bg-secondary);background-image:var(--dot-grid-blue);border:3px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);transition:transform var(--transition-normal),box-shadow var(--transition-normal)}
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.card:focus-within{border-color:var(--primary)}
+.card p{color:var(--text-secondary);font-size:.9rem;line-height:1.6}
+.card__ic{display:flex;align-items:center;justify-content:center;width:52px;height:52px;font-size:28px;color:#16130f;background:var(--yellow);border:3px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm)}
+#hero{border-top:0;padding:80px 0;position:relative}
+#hero::before,#hero::after{content:"";position:absolute;width:140px;height:140px;background-image:var(--dot-grid);pointer-events:none}
+#hero::after{background-image:var(--dot-grid-blue);right:0;bottom:40px}
+#hero::before{left:0;top:60px}
+.hero{display:flex;flex-direction:column;align-items:center;text-align:center;position:relative}
+.hero h1{font-family:var(--font-display);font-size:clamp(3rem,8vw,5.4rem);line-height:.92;letter-spacing:.02em;color:var(--primary);text-shadow:5px 5px 0 var(--secondary);margin:20px 0}
+.hero h1 em{font-style:normal;color:var(--secondary);text-shadow:5px 5px 0 var(--primary)}
+.hero .lede{max-width:56ch;margin:0 auto 28px;color:var(--text-secondary);font-size:1rem}
+.step{position:relative;padding-top:36px}
+.grid--steps{list-style:none;padding-top:26px}
+.step__num{position:absolute;top:0;left:20px;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;width:46px;height:46px;font-family:var(--font-display);font-size:1.3rem;color:#fff8ec;background:var(--secondary);background-image:var(--dot-grid-cream);border:3px solid var(--border-default);border-radius:var(--radius-pill);box-shadow:var(--shadow-sm)}
+.step:nth-child(2) .step__num{background-color:var(--primary)}
+.step:nth-child(3) .step__num{background-color:var(--yellow);background-image:none;color:#16130f}
+.quote__mark{font-size:34px;color:var(--primary)}
+.quote__text{font-size:1rem;line-height:1.65;color:var(--text-secondary)}
+.quote__who{display:flex;align-items:center;gap:12px;margin-top:auto}
+.avatar{display:flex;align-items:center;justify-content:center;width:44px;height:44px;font-family:var(--font-display);font-size:1.1rem;color:#fff8ec;background:var(--secondary);background-image:var(--dot-grid-cream);border:3px solid var(--border-default);border-radius:var(--radius-pill);box-shadow:var(--shadow-sm)}
+.quote__name{font-size:.9rem}
+.quote__role{font-family:var(--font-mono);font-size:.72rem;color:var(--text-secondary)}
+.tier{position:relative}
+.tier__blurb{font-size:.85rem}
+.tier__price{font-family:var(--font-display);font-size:3rem;line-height:1;margin:4px 0}
+.tier__per{font-family:var(--font-base);font-size:.75rem;color:var(--text-secondary)}
+.tier ul{list-style:none;display:flex;flex-direction:column;gap:10px;margin:16px 0 22px}
+.tier li{display:flex;gap:10px;align-items:flex-start;font-size:.82rem;line-height:1.45}
+.tier li .ic{font-size:18px;color:var(--border-success)}
+.tier .btn{width:100%;margin-top:auto}
+.tier--hot{--text-secondary:#4d463a;color:#16130f;background:var(--yellow);background-image:var(--dot-grid)}
+.tier--hot .tier__per{color:#4d463a}
+.badge--hot{position:absolute;top:0;left:50%;transform:translate(-50%,-50%) rotate(-4deg)}
+.faq{max-width:720px;margin:0 auto;display:flex;flex-direction:column;align-items:stretch;gap:16px}
+.faq details{background:var(--bg-secondary);border:3px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);transition:box-shadow var(--transition-normal)}
+.faq details[open]{box-shadow:var(--shadow-md)}
+.faq summary{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:48px;padding:12px 16px;font-size:.9rem;cursor:pointer;list-style:none}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary .ic{color:var(--primary);transition:rotate var(--transition-normal)}
+.faq details[open] summary .ic{rotate:180deg;color:var(--secondary)}
+.faq__a{padding:0 16px 16px;color:var(--text-secondary);font-size:.88rem;line-height:1.6}
+.faq details[open] .faq__a{animation:reveal .25s ease both}
+@keyframes reveal{from{opacity:0;translate:0 -4px}to{opacity:1}}
+#cta{background:var(--primary);background-image:var(--dot-grid-cream)}
+#cta .kicker,#cta .sec-head p{color:#ffe3d9}
+#cta h2{color:#fff8ec;text-shadow:4px 4px 0 var(--secondary)}
+.cta__card{max-width:520px;margin:0 auto;padding:var(--spacing-gap);background:var(--bg-secondary);border:3px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg)}
+.input-group{display:flex;flex-direction:column;align-items:stretch;gap:8px}
+label{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase}
+.input-wrap{position:relative;display:flex}
+.input{width:100%;min-height:48px;padding:10px 44px 10px 12px;font-family:var(--font-mono);font-size:1rem;color:var(--text-primary);background:var(--bg-primary);border:3px solid var(--border-default);border-radius:var(--radius-md);transition:border-color var(--transition-fast),box-shadow var(--transition-fast)}
+.input:focus{outline:none;border-color:var(--secondary);box-shadow:var(--shadow-sm)}
+.input:disabled{opacity:.5;cursor:not-allowed}
+.input[readonly]{background:var(--surface-strong)}
+.input--valid{border-color:var(--border-success)}
+.input--error{border-color:var(--border-error)}
+.input__feedback{position:absolute;right:12px;top:calc(50% - 13px);display:none;font-size:26px;pointer-events:none}
+.input--valid~.input__ok{display:block;color:var(--text-success)}
+.input--error~.input__err{display:block;color:var(--text-error)}
+.form__msg{min-height:20px;font-family:var(--font-mono);font-size:.78rem;color:var(--text-error)}
+.form__msg--ok{color:var(--text-success)}
+.form__actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px}
+footer{background:var(--text-primary);color:var(--bg-primary);border-top:3px solid var(--border-default);padding:48px 0 24px}
+.footer__cols{display:flex;flex-wrap:wrap;align-items:flex-start;gap:40px;justify-content:space-between;margin-bottom:40px}
+.footer__cols>*{flex:1 1 200px;min-width:0}
+footer .brand,footer a{color:inherit}
+footer .brand__mark{border-color:var(--bg-primary);box-shadow:3px 3px 0 var(--bg-primary)}
+footer h3{font-family:var(--font-mono);font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:var(--primary);margin-bottom:12px}
+footer ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+footer p{opacity:.75;font-size:.85rem}
+footer a{text-decoration:underline dotted 2px;text-underline-offset:4px;transition:text-decoration-thickness var(--transition-fast)}
+footer a:hover{text-decoration-thickness:4px}
+.footer__bottom{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;border-top:2px dashed currentColor;padding-top:20px;font-family:var(--font-mono);font-size:.72rem}
+.skip{position:absolute;left:-999px;top:8px;z-index:200;padding:10px 16px;background:var(--yellow);color:#16130f;border:3px solid var(--border-default);font-size:.78rem;text-transform:uppercase;text-decoration:none}
+.skip:focus{left:8px}
+@media(max-width:640px){.nav__links{display:none}section{padding:48px 0}#hero{padding:56px 0}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}html{scroll-behavior:auto}.btn:hover,.btn:active,.card:hover{transform:none!important}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+<nav class="nav wrap" aria-label="Primary">
+<a class="brand" href="#hero"><span class="brand__mark" aria-hidden="true"></span>NIMBUS</a>
+<ul class="nav__links">
+<li><a href="#features">Features</a></li>
+<li><a href="#how">How it works</a></li>
+<li><a href="#pricing">Pricing</a></li>
+<li><a href="#faq">FAQ</a></li>
+</ul>
+<button id="themeToggle" class="btn btn--icon" type="button" aria-pressed="false" aria-label="Switch to dark mode"><span class="ic" aria-hidden="true">dark_mode</span></button>
+</nav>
+</header>
+<main id="main">
+<section id="hero" aria-labelledby="heroTitle">
+<div class="wrap hero">
+<span class="badge"><span class="ic" aria-hidden="true">local_print_shop</span>Issue #12 · Fresh off the press</span>
+<h1 id="heroTitle">BOLD IDEAS.<br><em>PRINTED LOUD.</em></h1>
+<p class="lede">Nimbus is the retro print toolkit for the web — Ben-Day dot textures, hard CMYK offset shadows and loud newsprint type, pressed into any page in minutes.</p>
+<div class="row">
+<a class="btn btn--primary" href="#pricing"><span class="ic" aria-hidden="true">bolt</span>Start printing free</a>
+<a class="btn" href="#how"><span class="ic" aria-hidden="true">menu_book</span>See how it works</a>
+</div>
+</div>
+</section>
+<section id="features" aria-labelledby="featuresTitle">
+<div class="wrap">
+<div class="sec-head">
+<p class="kicker">The toolkit</p>
+<h2 id="featuresTitle">EVERYTHING BUT THE INK SMUDGE</h2>
+<p>Three press-ready superpowers for your next edition.</p>
+</div>
+<div class="grid">
+<article class="card">
+<span class="card__ic"><span class="ic" aria-hidden="true">grain</span></span>
+<h3>Ben-Day Dots On Demand</h3>
+<p>Wrap any section in authentic halftone dot grids. Pick the pitch, tint and ink — registration is handled for you.</p>
+</article>
+<article class="card">
+<span class="card__ic"><span class="ic" aria-hidden="true">layers</span></span>
+<h3>CMYK Misregistration Engine</h3>
+<p>Hard offset shadows in cyan, magenta and gold make every click land like a comic-panel thump. No blur, ever.</p>
+</article>
+<article class="card">
+<span class="card__ic"><span class="ic" aria-hidden="true">speed</span></span>
+<h3>Newsprint Speed</h3>
+<p>Every texture is pure CSS, so pages load like paper. Sixty frames per second, even on a 1962 press.</p>
+</article>
+</div>
+</div>
+</section>
+<section id="how" class="tint" aria-labelledby="howTitle">
+<div class="wrap">
+<div class="sec-head">
+<p class="kicker">The press run</p>
+<h2 id="howTitle">FROM SKETCH TO SUNDAY EDITION</h2>
+<p>Three moves and the ink is dry.</p>
+</div>
+<ol class="grid grid--steps">
+<li class="card step">
+<span class="step__num" aria-hidden="true">01</span>
+<h3>Sketch your layout</h3>
+<p>Drag blocks onto the pasteboard. Nimbus snaps everything to a print grid so nothing drifts off-register.</p>
+</li>
+<li class="card step">
+<span class="step__num" aria-hidden="true">02</span>
+<h3>Pick your dots &amp; ink</h3>
+<p>Choose dot size, palette and shadow depth from the swatch book, then preview the light and dark editions side by side.</p>
+</li>
+<li class="card step">
+<span class="step__num" aria-hidden="true">03</span>
+<h3>Ship the presses</h3>
+<p>Publish with one line of code, or export a poster your print shop will swear came off a Heidelberg.</p>
+</li>
+</ol>
+</div>
+</section>
+<section id="stories" aria-labelledby="storiesTitle">
+<div class="wrap">
+<div class="sec-head">
+<p class="kicker">Letters to the editor</p>
+<h2 id="storiesTitle">THE CRITICS RAVE</h2>
+</div>
+<div class="grid">
+<figure class="card quote">
+<span class="ic quote__mark" aria-hidden="true">format_quote</span>
+<blockquote class="quote__text">“Our launch page went from beige to blockbuster. Sign-ups tripled the week we went halftone — clients keep asking who our illustrator is.”</blockquote>
+<figcaption class="quote__who"><span class="avatar" aria-hidden="true">MR</span><span><span class="quote__name">Maya Reyes</span><br><span class="quote__role">Creative Director, Dot &amp; Dash Studio</span></span></figcaption>
+</figure>
+<figure class="card quote">
+<span class="ic quote__mark" aria-hidden="true">format_quote</span>
+<blockquote class="quote__text">“It looks like it rolled off a 1962 press but ships like modern software. The dark-mode inking alone sold my whole team.”</blockquote>
+<figcaption class="quote__who"><span class="avatar" aria-hidden="true">JK</span><span><span class="quote__name">Jonah Kim</span><br><span class="quote__role">Founder, Pressplay</span></span></figcaption>
+</figure>
+</div>
+</div>
+</section>
+<section id="pricing" class="tint" aria-labelledby="pricingTitle">
+<div class="wrap">
+<div class="sec-head">
+<p class="kicker">Newsstand rates</p>
+<h2 id="pricingTitle">PICK YOUR PRESS PASS</h2>
+</div>
+<div class="grid">
+<article class="card tier">
+<h3>Rookie</h3>
+<p class="tier__blurb">For solo scribblers and first issues.</p>
+<p class="tier__price">$0<span class="tier__per"> /mo</span></p>
+<ul>
+<li><span class="ic" aria-hidden="true">check</span>1 live project</li>
+<li><span class="ic" aria-hidden="true">check</span>Community dot library</li>
+<li><span class="ic" aria-hidden="true">check</span>Nimbus badge on output</li>
+</ul>
+<a class="btn" href="#cta">Grab the free pass</a>
+</article>
+<article class="card tier tier--hot">
+<span class="badge badge--hot"><span class="ic" aria-hidden="true">star</span>Most popular</span>
+<h3>Inker</h3>
+<p class="tier__blurb">For working designers and indie studios.</p>
+<p class="tier__price">$12<span class="tier__per"> /mo</span></p>
+<ul>
+<li><span class="ic" aria-hidden="true">check</span>Unlimited projects</li>
+<li><span class="ic" aria-hidden="true">check</span>Full CMYK export pack</li>
+<li><span class="ic" aria-hidden="true">check</span>Custom dot sizes &amp; palettes</li>
+<li><span class="ic" aria-hidden="true">check</span>Badge removal included</li>
+</ul>
+<a class="btn btn--primary" href="#cta">Start the Inker plan</a>
+</article>
+<article class="card tier">
+<h3>Pressroom</h3>
+<p class="tier__blurb">For teams running daily editions.</p>
+<p class="tier__price">$39<span class="tier__per"> /mo</span></p>
+<ul>
+<li><span class="ic" aria-hidden="true">check</span>5 team seats</li>
+<li><span class="ic" aria-hidden="true">check</span>Shared asset vault</li>
+<li><span class="ic" aria-hidden="true">check</span>Priority press queue</li>
+<li><span class="ic" aria-hidden="true">check</span>Dedicated support line</li>
+</ul>
+<a class="btn" href="#cta">Run the pressroom</a>
+</article>
+</div>
+</div>
+</section>
+<section id="faq" aria-labelledby="faqTitle">
+<div class="wrap">
+<div class="sec-head">
+<p class="kicker">Letters desk</p>
+<h2 id="faqTitle">SMALL PRINT, BIG ANSWERS</h2>
+</div>
+<div class="faq">
+<details>
+<summary>What is the Halftone engine, exactly?<span class="ic" aria-hidden="true">expand_more</span></summary>
+<p class="faq__a">Our CSS-first texture system. Every dot grid, offset shadow and misprint effect is drawn with gradients and borders — no images, no JavaScript, no layout shift. It prints beautifully even on a slow connection.</p>
+</details>
+<details>
+<summary>Can I bring my own fonts and colors?<span class="ic" aria-hidden="true">expand_more</span></summary>
+<p class="faq__a">Yes. Every token is a CSS custom property, so you can re-ink the whole site — palette, dots, radii and shadows — from a single stylesheet. Bangers and Archivo Black ship as defaults.</p>
+</details>
+<details>
+<summary>Can I cancel my press pass anytime?<span class="ic" aria-hidden="true">expand_more</span></summary>
+<p class="faq__a">Anytime, in two clicks, no call to the circulation desk. You keep every edition you've published, and we refund the current month if you ask within 14 days.</p>
+</details>
+</div>
+</div>
+</section>
+<section id="cta" aria-labelledby="ctaTitle">
+<div class="wrap">
+<div class="sec-head">
+<p class="kicker">Final call</p>
+<h2 id="ctaTitle">GET THE NEXT ISSUE FIRST</h2>
+<p>Join 12,000+ designers getting one boldly printed page idea every Friday. No spam — we hate unregistered mail.</p>
+</div>
+<form class="cta__card" id="subForm" novalidate>
+<p class="input-group">
+<label for="email">Your email address</label>
+<span class="input-wrap">
+<input class="input" id="email" name="email" type="email" placeholder="you@pressroom.com" autocomplete="email" required>
+<span class="ic input__feedback input__ok" aria-hidden="true">check_circle</span>
+<span class="ic input__feedback input__err" aria-hidden="true">error</span>
+</span>
+</p>
+<p class="form__msg" id="formMsg" role="status" aria-live="polite" hidden></p>
+<div class="form__actions">
+<button class="btn btn--primary" id="subBtn" type="submit"><span class="btn__label">Subscribe</span><span class="ic spin" aria-hidden="true">progress</span></button>
+<button class="btn btn--danger" type="reset"><span class="ic" aria-hidden="true">backspace</span>Clear</button>
+</div>
+</form>
+</div>
+</section>
+</main>
+<footer>
+<div class="wrap">
+<div class="footer__cols">
+<div>
+<a class="brand" href="#hero"><span class="brand__mark" aria-hidden="true"></span>NIMBUS</a>
+<p>The retro print toolkit for modern web teams. Bold dots, hard shadows, zero smudges.</p>
+</div>
+<nav aria-label="Product">
+<h3>Product</h3>
+<ul>
+<li><a href="#features">Halftone engine</a></li>
+<li><a href="#how">Dot library</a></li>
+<li><a href="#pricing">Press passes</a></li>
+<li><a href="#stories">Changelog</a></li>
+</ul>
+</nav>
+<nav aria-label="Company">
+<h3>Company</h3>
+<ul>
+<li><a href="#hero">About the press</a></li>
+<li><a href="#stories">Careers</a></li>
+<li><a href="#cta">Press kit</a></li>
+<li><a href="#cta">Contact</a></li>
+</ul>
+</nav>
+<nav aria-label="Support">
+<h3>Support</h3>
+<ul>
+<li><a href="#faq">Help desk</a></li>
+<li><a href="#stories">Community inkwell</a></li>
+<li><a href="#cta">System status</a></li>
+<li><a href="#faq">Privacy &amp; terms</a></li>
+</ul>
+</nav>
+</div>
+<div class="footer__bottom">
+<p>© 2026 Nimbus Press Co. All rights reserved.</p>
+<p>Printed on 100% recycled pixels.</p>
+</div>
+</div>
+</footer>
+<script>
+(function(){var root=document.documentElement,toggle=document.getElementById('themeToggle');
+function sync(d){toggle.setAttribute('aria-pressed',d?'true':'false');toggle.setAttribute('aria-label',d?'Switch to light mode':'Switch to dark mode');toggle.querySelector('.ic').textContent=d?'light_mode':'dark_mode'}
+sync(root.classList.contains('dark'));
+toggle.addEventListener('click',function(){var d=!root.classList.contains('dark');root.classList.toggle('dark',d);root.classList.toggle('light',!d);try{localStorage.setItem('nimbus-theme',d?'dark':'light')}catch(e){}sync(d)});
+var form=document.getElementById('subForm'),input=document.getElementById('email'),msg=document.getElementById('formMsg'),btn=document.getElementById('subBtn'),label=btn.querySelector('.btn__label');
+form.addEventListener('submit',function(e){e.preventDefault();
+var v=input.value.trim(),ok=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+input.classList.remove('input--error','input--valid');msg.className='form__msg';
+if(!ok){input.classList.add('input--error');msg.textContent=v?'Hold the presses — "'+v+'" looks misprinted. Try name@pressroom.com.':'Please ink in your email address first.';msg.hidden=false;input.focus();return}
+input.classList.add('input--valid');msg.hidden=true;
+btn.disabled=true;btn.classList.add('btn--loading');
+setTimeout(function(){btn.classList.remove('btn--loading');btn.classList.add('btn--success');btn.disabled=false;label.textContent='Subscribed!';input.readOnly=true;msg.textContent='Done! Issue #13 ships to '+v+' next week.';msg.classList.add('form__msg--ok');msg.hidden=false},900)});
+form.addEventListener('reset',function(){input.classList.remove('input--error','input--valid');input.readOnly=false;msg.hidden=true;msg.className='form__msg';label.textContent='Subscribe';btn.classList.remove('btn--loading','btn--success');btn.disabled=false});
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nimbus — Generative Intelligence API</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+<script>/* theme: first statement — stored choice, else OS preference */
+(function(){var t=localStorage.getItem('theme');var d=t?t==='dark':matchMedia('(prefers-color-scheme:dark)').matches;document.documentElement.classList.add(d?'dark':'light')})();</script>
+<style>
+@layer tokens,base,layout,components,effects;
+@layer tokens{
+:root{--primary:#00A67E;--secondary:#800080;--bg-primary:#fefefe;--bg-secondary:#F0F0F0;--text-primary:#202124;--text-secondary:#5F6368;--text-success:#188038;--text-error:#D93025;--border-default:#DADCE0;--border-error:#D93025;--border-success:#188038;--accent-cyan:#00FFFF;--accent-green:#00FF00;--radius-sm:6px;--radius-md:8px;--radius-lg:16px;--shadow-sm:0 2px 8px rgba(0,0,0,.1);--shadow-md:0 8px 24px rgba(0,0,0,.12);--spacing-gap:1rem;--transition-fast:150ms ease-in-out;--transition-normal:300ms ease-in-out;--ease-standard:cubic-bezier(.4,0,.2,1);--z-dropdown:100;--z-modal:1000;--z-toast:1100;--z-header:90;--glow-primary:0 0 24px rgba(0,166,126,.35);--font-base:'Inter',system-ui,sans-serif;--font-mono:'JetBrains Mono',monospace;--gradient-surface:linear-gradient(to bottom,#F8F8F8,#fefefe)}
+@media(prefers-color-scheme:dark){:root:not(.light){--primary:#00C796;--secondary:#A855F7;--bg-primary:#0D0F12;--bg-secondary:#202124;--text-primary:#F0F0F0;--text-secondary:#9AA0A6;--text-success:#5BBB7B;--text-error:#F28B82;--border-default:#3C4043;--border-error:#F28B82;--border-success:#5BBB7B;--shadow-sm:0 2px 8px rgba(0,0,0,.55);--shadow-md:0 8px 24px rgba(0,0,0,.65);--glow-primary:0 0 32px rgba(0,199,150,.55);--gradient-surface:radial-gradient(60% 55% at 75% 0%,rgba(0,199,150,.14),transparent 70%),linear-gradient(#131719,#0D0F12)}}
+.dark{--primary:#00C796;--secondary:#A855F7;--bg-primary:#0D0F12;--bg-secondary:#202124;--text-primary:#F0F0F0;--text-secondary:#9AA0A6;--text-success:#5BBB7B;--text-error:#F28B82;--border-default:#3C4043;--border-error:#F28B82;--border-success:#5BBB7B;--shadow-sm:0 2px 8px rgba(0,0,0,.55);--shadow-md:0 8px 24px rgba(0,0,0,.65);--glow-primary:0 0 32px rgba(0,199,150,.55);--gradient-surface:radial-gradient(60% 55% at 75% 0%,rgba(0,199,150,.14),transparent 70%),linear-gradient(#131719,#0D0F12)}
+}
+@layer base{
+*{box-sizing:border-box}
+html{scroll-padding-top:90px;background:var(--bg-primary)}
+body{margin:0;font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.6}
+h1{font-size:clamp(2rem,5vw,3.2rem);line-height:1.12;margin:0 0 1rem}
+h2{font-size:clamp(1.5rem,3.5vw,2.1rem);margin:0;text-align:center}
+h3{font-size:1.05rem;margin:0}
+p{margin:0 0 1rem}
+figure{margin:0}
+a{color:var(--primary)}
+code,pre{font-family:var(--font-mono)}
+.material-symbols-outlined{font-size:24px;line-height:1;user-select:none}
+.skip{position:absolute;left:-999px;top:0;z-index:var(--z-modal);background:var(--primary);color:var(--bg-primary);padding:.6rem 1rem;border-radius:var(--radius-sm)}
+.skip:focus{left:8px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.is-hidden{display:none!important}
+[hidden]{display:none!important}
+@media(prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+}
+@layer layout{
+.wrap{max-width:1060px;margin:0 auto;padding:0 1.25rem}
+section{padding:4rem 0;scroll-margin-top:84px}
+.section-sub{text-align:center;max-width:620px;margin:.75rem auto 0;color:var(--text-secondary)}
+.hero{position:relative;overflow:hidden;background:var(--gradient-surface);padding:4.5rem 0 4rem}
+.hero__grid{display:flex;flex-wrap:wrap;align-items:center;gap:2.5rem;position:relative;z-index:1}
+.hero__copy{flex:1 1 340px}
+.hero__copy p{color:var(--text-secondary);max-width:34em}
+.hero__demo{flex:1 1 320px;min-width:0}
+.btn-row{display:flex;flex-wrap:wrap;gap:1rem}
+.badge{display:inline-flex;align-items:center;gap:.4rem;margin:0 0 1.25rem;padding:.35rem 1rem;border:1px solid var(--primary);border-radius:999px;background:color-mix(in srgb,var(--primary) 10%,transparent);color:var(--primary);font-size:.85rem;font-weight:600}
+.badge .material-symbols-outlined{font-size:16px}
+/* equal-height cards is a deliberate flex exception */
+.cards{display:flex;flex-wrap:wrap;align-items:stretch;gap:var(--spacing-gap);margin-top:2.25rem}
+.steps{position:relative;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-start;gap:2rem;margin-top:2.5rem}
+/* step entries are text stacks → aligned to top */
+.step{flex:1 1 240px;position:relative;z-index:1}
+.step p{color:var(--text-secondary);font-size:.95rem;margin:0}
+.steps__flow{position:absolute;top:24px;left:12%;right:12%;height:2px;opacity:.45;background:repeating-linear-gradient(90deg,var(--primary) 0 10px,transparent 10px 22px)}
+.faq{max-width:760px;margin:2rem auto 0;display:flex;flex-direction:column;gap:.75rem}
+.cta-band{border-block:1px solid var(--border-default);background:radial-gradient(90% 130% at 50% 0%,color-mix(in srgb,var(--primary) 16%,var(--bg-secondary)),var(--bg-secondary));text-align:center}
+.footer{border-top:1px solid var(--border-default);background:var(--bg-secondary);padding:3rem 0 1.5rem}
+.footer__cols{display:flex;flex-wrap:wrap;gap:2rem;justify-content:space-between}
+.footer__brand{flex:1 1 240px}
+.footer__brand p{color:var(--text-secondary);font-size:.9rem}
+.footer__social{display:flex;gap:.5rem;margin-top:.75rem}
+.footer__link-group{flex:1 1 130px}
+.footer__link-group h3{font-size:.85rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-secondary)}
+.footer__link-group ul{list-style:none;margin:.5rem 0 0;padding:0;display:flex;flex-direction:column;gap:.35rem}
+.footer__link-group a{color:var(--text-primary);text-decoration:none;font-size:.9rem}
+.footer__link-group a:hover{color:var(--primary)}
+.footer__copy{margin:2rem 0 0;padding-top:1rem;border-top:1px solid var(--border-default);color:var(--text-secondary);font-size:.85rem;text-align:center}
+@media(max-width:767px){
+.steps{flex-direction:column;gap:2.5rem;align-items:center}
+.step{flex-basis:auto;max-width:420px}
+.steps__flow{left:24px;right:auto;top:24px;bottom:24px;width:2px;height:auto;background:repeating-linear-gradient(180deg,var(--primary) 0 10px,transparent 10px 22px)}
+}
+}
+@layer components{
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;min-width:44px;padding:.55rem 1.4rem;border:1px solid transparent;border-radius:var(--radius-md);background:var(--bg-secondary);color:var(--text-primary);font:600 1rem var(--font-base);text-decoration:none;cursor:pointer;transition:box-shadow var(--transition-fast),transform var(--transition-fast),background-color var(--transition-fast),color var(--transition-fast),border-color var(--transition-fast),filter var(--transition-fast)}
+.btn--primary{background:var(--primary);color:var(--bg-primary)}
+.btn--primary:hover{box-shadow:var(--glow-primary);filter:brightness(1.08)}
+.btn--secondary{background:transparent;border-color:var(--border-default);color:var(--text-primary)}
+.btn--secondary:hover{border-color:var(--primary);color:var(--primary)}
+.btn--danger{background:var(--text-error);color:var(--bg-primary)}
+.btn:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.5;filter:grayscale(1);cursor:not-allowed}
+.btn.is-loading{pointer-events:none}
+.btn.is-loading::after{content:"";width:16px;height:16px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%}
+.icon-btn{width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--border-default);border-radius:var(--radius-md);background:transparent;color:var(--text-primary);text-decoration:none;cursor:pointer;transition:border-color var(--transition-fast),color var(--transition-fast),transform var(--transition-fast)}
+.icon-btn:hover{border-color:var(--primary);color:var(--primary)}
+.icon-btn:active{transform:scale(.95)}
+.hdr{position:sticky;top:0;z-index:var(--z-header);background:color-mix(in srgb,var(--bg-primary) 82%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-default)}
+.hdr__inner{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:64px}
+.hdr__logo{display:inline-flex;align-items:center;gap:.4rem;font-size:1.2rem;font-weight:800;color:var(--text-primary);text-decoration:none}
+.hdr__logo .material-symbols-outlined{color:var(--primary)}
+.hdr__nav{display:none}
+.hdr__nav ul,.hdr__panel ul{list-style:none;margin:0;padding:0}
+.hdr__nav ul{display:flex;align-items:center;gap:1.5rem}
+.hdr__link{position:relative;display:inline-block;padding:.5rem 0;color:var(--text-secondary);text-decoration:none;font-weight:600;transition:color var(--transition-fast)}
+.hdr__link::after{content:"";position:absolute;left:0;right:100%;bottom:0;height:2px;background:var(--primary);transition:right var(--transition-normal)}
+.hdr__link:hover{color:var(--primary)}
+.hdr__link:hover::after{right:0}
+.hdr__actions{display:flex;align-items:center;gap:.5rem}
+.hdr__cta{display:none}
+.hdr__panel{position:absolute;top:100%;left:0;right:0;z-index:var(--z-dropdown);display:none;padding:.5rem 1.25rem 1.25rem;background:var(--bg-primary);border-bottom:1px solid var(--border-default)}
+.hdr__panel.is-open{display:block}
+.hdr__panel a{display:block;padding:.8rem 0;border-bottom:1px solid var(--border-default);color:var(--text-primary);text-decoration:none;font-weight:600}
+.hdr__panel .btn{margin-top:1rem}
+@media(min-width:768px){.hdr__nav{display:block}.hdr__menu{display:none}.hdr__cta{display:inline-flex}.hdr__panel{display:none!important}}
+.card{position:relative;display:flex;flex-direction:column;gap:.6rem;flex:1 1 260px;padding:1.5rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);text-align:left;transition:box-shadow var(--transition-normal),transform var(--transition-normal),border-color var(--transition-normal)}
+/* text stacks read best left-aligned; center variant below */
+.card--center{align-items:center;text-align:center}
+.card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.card:focus-within{border-color:var(--primary);box-shadow:var(--glow-primary)}
+.card__icon{width:52px;height:52px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-md);background:linear-gradient(135deg,var(--primary),var(--secondary));color:var(--bg-primary);box-shadow:var(--glow-primary)}
+.card__text{color:var(--text-secondary);font-size:.95rem;margin:0}
+.card--featured{border-color:transparent;transform:translateY(-6px);box-shadow:var(--glow-primary);background:linear-gradient(var(--bg-secondary),var(--bg-secondary)) padding-box,linear-gradient(135deg,var(--primary),var(--secondary),var(--accent-cyan)) border-box}
+.card--featured:hover{transform:translateY(-8px);box-shadow:var(--glow-primary),var(--shadow-md)}
+.card__badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);padding:.25rem .8rem;border-radius:999px;background:var(--primary);color:var(--bg-primary);font-size:.75rem;font-weight:700;white-space:nowrap}
+.card--loading{overflow:hidden}
+.card--loading::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,color-mix(in srgb,var(--primary) 18%,transparent) 50%,transparent 65%);background-size:200% 100%}
+.card--empty{border-style:dashed;justify-content:center;align-items:center;text-align:center;min-height:180px;color:var(--text-secondary)}
+.pricing__card{flex:1 1 280px}
+.price{font-size:2.2rem;font-weight:800;margin:.25rem 0}
+.price span{font-size:1rem;font-weight:400;color:var(--text-secondary)}
+.card__list{list-style:none;margin:0 0 1.25rem;padding:0;display:flex;flex-direction:column;gap:.5rem;flex:1;font-size:.95rem}
+.card__list li{display:flex;align-items:center;gap:.5rem}
+.card__list li::before{content:"check";font-family:'Material Symbols Outlined';font-size:18px;line-height:1;color:var(--primary)}
+.step__num{width:48px;height:48px;display:flex;align-items:center;justify-content:center;margin-bottom:.75rem;border-radius:50%;background:var(--primary);color:var(--bg-primary);font-weight:800;box-shadow:var(--glow-primary)}
+.stars{color:var(--primary);font-size:18px;letter-spacing:.15em;font-variation-settings:'FILL' 1}
+.tst__quote{margin:0 0 1rem}
+.tst__meta{display:flex;align-items:center;gap:.75rem;text-align:left}
+.tst__meta small{color:var(--text-secondary)}
+.tst__avatar{width:48px;height:48px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));color:var(--bg-primary);font-weight:700}
+.faq__item{border:1px solid var(--border-default);border-radius:var(--radius-md);background:var(--bg-secondary)}
+.faq__q{display:flex;align-items:center;justify-content:space-between;gap:1rem;width:100%;min-height:44px;padding:1rem 1.25rem;border:0;background:none;color:var(--text-primary);font:600 1rem var(--font-base);text-align:left;cursor:pointer;transition:color var(--transition-fast)}
+.faq__q:hover{color:var(--primary)}
+.faq__q:focus-visible{outline:2px solid var(--primary);outline-offset:-2px}
+.faq__chev{color:var(--primary);transition:transform var(--transition-normal)}
+details[open] .faq__chev{transform:rotate(180deg)}
+.faq__a{margin:0;padding:0 1.25rem 1rem;color:var(--text-secondary)}
+/* fixed dark terminal surface in both themes — documented exception */
+.ai-generation-animation{position:relative;padding:1px;border-radius:var(--radius-lg);background:linear-gradient(120deg,var(--primary),var(--accent-cyan),var(--secondary),var(--primary));background-size:300% 300%}
+.ai-generation-animation__inner{padding:1.1rem 1.25rem;border-radius:15px;background:#0D0F12;color:#F0F0F0;font-family:var(--font-mono);font-size:.82rem;line-height:1.55}
+.demo__bar{display:flex;gap:.4rem;margin-bottom:.9rem}
+.demo__bar i{width:10px;height:10px;border-radius:50%}
+.demo__bar i:nth-child(1){background:#F28B82}
+.demo__bar i:nth-child(2){background:#FDD663}
+.demo__bar i:nth-child(3){background:#5BBB7B}
+.ai-generation-animation pre{margin:0;min-height:11em;white-space:pre-wrap;overflow-wrap:anywhere}
+.demo__caret{display:inline-block;width:.55em;height:1.05em;vertical-align:-.15em;background:var(--accent-green)}
+.demo__done{display:none;margin-top:.6rem;color:var(--accent-green);font-size:.78rem}
+.demo__done.is-visible{display:inline-flex;align-items:center;gap:.3rem}
+.neural-network-visualization{position:absolute;inset:0;pointer-events:none;opacity:.5}
+.nn-node{position:absolute;width:9px;height:9px;border-radius:50%;background:var(--primary);box-shadow:0 0 10px var(--primary)}
+.nn-node:nth-of-type(1){left:6%;top:20%}
+.nn-node:nth-of-type(2){left:18%;top:72%}
+.nn-node:nth-of-type(3){left:40%;top:10%}
+.nn-node:nth-of-type(4){left:58%;top:82%}
+.nn-node:nth-of-type(5){left:76%;top:18%}
+.nn-node:nth-of-type(6){left:90%;top:64%}
+.nn-line{position:absolute;height:1px;opacity:.3;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--accent-cyan) 60%,transparent),transparent)}
+.nn-line:nth-of-type(1){left:8%;top:24%;width:14%;transform:rotate(28deg)}
+.nn-line:nth-of-type(2){left:42%;top:14%;width:16%;transform:rotate(38deg)}
+.nn-line:nth-of-type(3){left:22%;top:76%;width:18%;transform:rotate(-16deg)}
+.nn-line:nth-of-type(4){left:60%;top:24%;width:16%;transform:rotate(26deg)}
+.input-group{display:flex;align-items:center;flex-wrap:wrap;gap:.6rem;max-width:540px;margin:1.75rem auto 0;text-align:left}
+.input-group__input{flex:1 1 220px;min-height:44px;padding:.55rem 1rem;border:1px solid var(--border-default);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary);font:inherit;transition:border-color var(--transition-fast),box-shadow var(--transition-fast)}
+.input-group__input::placeholder{color:var(--text-secondary)}
+.input-group__input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 25%,transparent)}
+.input-group__input[aria-invalid="true"]{border-color:var(--border-error)}
+.input-group__error{flex-basis:100%;min-height:1.3em;margin:0;font-size:.85rem}
+.input-group__error.is-invalid{color:var(--text-error)}
+.input-group__error.is-valid{color:var(--text-success)}
+.input-group__error.is-invalid::before,.input-group__error.is-valid::before{font-family:'Material Symbols Outlined';font-size:16px;vertical-align:-3px;margin-right:.3rem}
+.input-group__error.is-invalid::before{content:"error"}
+.input-group__error.is-valid::before{content:"check_circle"}
+.cta__note{font-size:.85rem;color:var(--text-secondary)}
+.cta__status{display:flex;align-items:center;justify-content:center;gap:.4rem;margin-top:1.5rem;font-weight:600;color:var(--text-success)}
+}
+@layer effects{
+/* all keyframe animation gated behind no-preference; static equivalents otherwise */
+@media(prefers-reduced-motion:no-preference){
+@keyframes spin{to{transform:rotate(1turn)}}
+@keyframes blink{50%{opacity:0}}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.7);opacity:1}}
+@keyframes flowx{to{background-position-x:22px}}
+@keyframes flowy{to{background-position-y:22px}}
+@keyframes gradflow{to{background-position:300% 50%}}
+@keyframes shimmer{to{background-position:-200% 0}}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}}
+@keyframes softpulse{0%,100%{box-shadow:0 0 10px color-mix(in srgb,var(--primary) 30%,transparent)}50%{box-shadow:0 0 26px color-mix(in srgb,var(--primary) 60%,transparent)}}
+.btn.is-loading::after{animation:spin .8s linear infinite}
+.demo__caret{animation:blink 1s steps(2) infinite}
+.ai-generation-animation{animation:gradflow 8s linear infinite}
+.nn-node{animation:pulse 3s ease-in-out infinite}
+.nn-node:nth-of-type(2n){animation-delay:.8s}
+.nn-node:nth-of-type(3n){animation-delay:1.6s}
+.steps__flow{animation:flowx 1.2s linear infinite}
+.btn--primary:hover{animation:softpulse 1.4s ease-in-out infinite}
+details[open] .faq__a{animation:fade .35s var(--ease-standard)}
+.card--loading::after{animation:shimmer 1.5s linear infinite}
+@media(max-width:767px){.steps__flow{animation-name:flowy}}
+}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="hdr">
+  <div class="wrap hdr__inner">
+    <a class="hdr__logo" href="#"><span class="material-symbols-outlined" aria-hidden="true">auto_awesome</span>Nimbus</a>
+    <nav class="hdr__nav" aria-label="Primary">
+      <ul>
+        <li><a class="hdr__link" href="#features">Features</a></li>
+        <li><a class="hdr__link" href="#how">How It Works</a></li>
+        <li><a class="hdr__link" href="#pricing">Pricing</a></li>
+        <li><a class="hdr__link" href="#faq">FAQ</a></li>
+      </ul>
+    </nav>
+    <div class="hdr__actions">
+      <button id="themeToggle" class="icon-btn" type="button" aria-pressed="false" aria-label="Switch to dark theme"><span class="material-symbols-outlined" aria-hidden="true">dark_mode</span></button>
+      <a href="#cta" class="btn btn--primary hdr__cta">Get API Access</a>
+      <button id="menuBtn" class="icon-btn hdr__menu" type="button" aria-expanded="false" aria-controls="mobileNav" aria-label="Open menu"><span class="material-symbols-outlined" aria-hidden="true">menu</span></button>
+    </div>
+  </div>
+  <div class="hdr__panel" id="mobileNav">
+    <ul>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#how">How It Works</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+    <a href="#cta" class="btn btn--primary">Get API Access</a>
+  </div>
+</header>
+<main id="main">
+  <section class="hero" aria-labelledby="heroTitle">
+    <div class="neural-network-visualization" aria-hidden="true">
+      <i class="nn-node"></i><i class="nn-node"></i><i class="nn-node"></i><i class="nn-node"></i><i class="nn-node"></i><i class="nn-node"></i>
+      <b class="nn-line"></b><b class="nn-line"></b><b class="nn-line"></b><b class="nn-line"></b>
+    </div>
+    <div class="wrap hero__grid">
+      <div class="hero__copy">
+        <span class="badge"><span class="material-symbols-outlined" aria-hidden="true">bolt</span>Nimbus-2 · long-horizon reasoning is live</span>
+        <h1 id="heroTitle">Generative intelligence for the AGI era</h1>
+        <p>Nimbus-2 plans, codes, and ships. One API call streams production-grade answers, decisions, and code at 842 tokens per second.</p>
+        <div class="btn-row">
+          <a class="btn btn--primary" href="#pricing">Start Building<span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span></a>
+          <a class="btn btn--secondary" href="#how">Read the Docs</a>
+        </div>
+      </div>
+      <div class="hero__demo">
+        <p class="sr-only">Demo: the Nimbus API streams a summarized code review in real time.</p>
+        <div class="ai-generation-animation" aria-hidden="true">
+          <div class="ai-generation-animation__inner">
+            <div class="demo__bar"><i></i><i></i><i></i></div>
+            <pre><code id="demoOut"></code><span class="demo__caret" id="demoCaret"></span></pre>
+            <span class="demo__done" id="demoDone"><span class="material-symbols-outlined" style="font-size:16px">check_circle</span>generation complete — 0.9s</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section id="features" aria-labelledby="fTitle">
+    <div class="wrap">
+      <h2 id="fTitle">Built for builders</h2>
+      <p class="section-sub">Everything you need to ship generative features — nothing you don't.</p>
+      <div class="cards">
+        <article class="card card--center">
+          <span class="card__icon"><span class="material-symbols-outlined" aria-hidden="true">psychology</span></span>
+          <h3 class="card__title">Long-horizon reasoning</h3>
+          <p class="card__text">A 1M-token context window with chain-of-thought planning that stays on task across entire codebases.</p>
+        </article>
+        <article class="card card--center">
+          <span class="card__icon"><span class="material-symbols-outlined" aria-hidden="true">api</span></span>
+          <h3 class="card__title">Developer-first API</h3>
+          <p class="card__text">Typed SDKs for Python, Go, and TypeScript, structured JSON outputs, and token-level streaming by default.</p>
+        </article>
+        <article class="card card--center">
+          <span class="card__icon"><span class="material-symbols-outlined" aria-hidden="true">shield</span></span>
+          <h3 class="card__title">Aligned by design</h3>
+          <p class="card__text">Constitutional guardrails, automatic PII redaction, and full audit logs on every single request.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+  <section id="how" aria-labelledby="howTitle">
+    <div class="wrap">
+      <h2 id="howTitle">How it works</h2>
+      <p class="section-sub">From API key to production in three steps.</p>
+      <div class="steps">
+        <div class="steps__flow" aria-hidden="true"></div>
+        <div class="step">
+          <span class="step__num">01</span>
+          <h3>Get an API key</h3>
+          <p>Create a workspace, grab a key, and pick the model that fits your latency budget.</p>
+        </div>
+        <div class="step">
+          <span class="step__num">02</span>
+          <h3>Send a prompt</h3>
+          <p>POST JSON to /v1/chat with tools, schemas, and system instructions attached.</p>
+        </div>
+        <div class="step">
+          <span class="step__num">03</span>
+          <h3>Stream tokens</h3>
+          <p>Token-level SSE streams land in your app with a sub-200ms time-to-first-token.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section id="testimonials" aria-labelledby="tTitle">
+    <div class="wrap">
+      <h2 id="tTitle">Trusted by builders</h2>
+      <div class="cards">
+        <figure class="card card--center">
+          <span class="stars" aria-hidden="true">star star star star star</span>
+          <span class="sr-only">Rated 5 out of 5.</span>
+          <blockquote class="tst__quote">“Nimbus-2 reviewed our ingestion pipeline and caught two race conditions. It reads a repo like a senior engineer.”</blockquote>
+          <figcaption class="tst__meta">
+            <span class="tst__avatar" aria-hidden="true">MK</span>
+            <span><strong>Mira Kato</strong><br><small>Staff Engineer, Vector Labs</small></span>
+          </figcaption>
+        </figure>
+        <figure class="card card--center">
+          <span class="stars" aria-hidden="true">star star star star star</span>
+          <span class="sr-only">Rated 5 out of 5.</span>
+          <blockquote class="tst__quote">“We replaced three vendors with one Nimbus endpoint. Streaming JSON cut our p95 latency nearly in half.”</blockquote>
+          <figcaption class="tst__meta">
+            <span class="tst__avatar" aria-hidden="true">DO</span>
+            <span><strong>Dario Osei</strong><br><small>CTO, Loopstack</small></span>
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+  <section id="pricing" aria-labelledby="pTitle">
+    <div class="wrap">
+      <h2 id="pTitle">Simple, scalable pricing</h2>
+      <p class="section-sub">Start free. Pay for tokens, not seats.</p>
+      <div class="cards">
+        <article class="card pricing__card">
+          <h3 class="card__title">Developer</h3>
+          <p class="price">$0<span> / month</span></p>
+          <ul class="card__list">
+            <li>1M free tokens</li>
+            <li>Sandbox models</li>
+            <li>Community support</li>
+          </ul>
+          <a class="btn btn--secondary" href="#cta">Start free</a>
+        </article>
+        <article class="card card--featured pricing__card">
+          <span class="card__badge">Most popular</span>
+          <h3 class="card__title">Scale</h3>
+          <p class="price">$49<span> / month</span></p>
+          <ul class="card__list">
+            <li>10M tokens included</li>
+            <li>Priority routing &amp; 99.9% SLA</li>
+            <li>Production models</li>
+          </ul>
+          <a class="btn btn--primary" href="#cta">Choose Scale</a>
+        </article>
+        <article class="card pricing__card">
+          <h3 class="card__title">Enterprise</h3>
+          <p class="price">Custom</p>
+          <ul class="card__list">
+            <li>Unlimited usage</li>
+            <li>VPC peering &amp; SOC 2 reports</li>
+            <li>Dedicated capacity</li>
+          </ul>
+          <a class="btn btn--secondary" href="#cta">Talk to sales</a>
+        </article>
+      </div>
+    </div>
+  </section>
+  <section id="faq" aria-labelledby="qTitle">
+    <div class="wrap">
+      <h2 id="qTitle">Frequently asked questions</h2>
+      <div class="faq">
+        <details class="faq__item" name="faq">
+          <summary class="faq__q">What is Nimbus-2?<span class="material-symbols-outlined faq__chev" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__a">Nimbus-2 is our frontier generative model: a 1M-token, tool-using reasoner tuned for coding, analysis, and long-horizon planning tasks.</p>
+        </details>
+        <details class="faq__item" name="faq">
+          <summary class="faq__q">How does pricing work?<span class="material-symbols-outlined faq__chev" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__a">You pay per token, never per seat. The Developer tier includes 1M free tokens each month; Scale adds priority routing and an SLA.</p>
+        </details>
+        <details class="faq__item" name="faq">
+          <summary class="faq__q">Is my data used for training?<span class="material-symbols-outlined faq__chev" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__a">No. API inputs and outputs are never used to train our models, and a zero-retention mode is available on every plan.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+  <section class="cta-band" id="cta" aria-labelledby="cTitle">
+    <div class="wrap">
+      <h2 id="cTitle">Start building with Nimbus</h2>
+      <p class="section-sub">Get your API key in 60 seconds. No credit card required.</p>
+      <form class="input-group" id="ctaForm" novalidate>
+        <label class="sr-only" for="email">Work email</label>
+        <input class="input-group__input" id="email" name="email" type="email" placeholder="you@company.com" autocomplete="email" required>
+        <button class="btn btn--primary" id="ctaBtn" type="submit">Get early access</button>
+        <p class="input-group__error" id="formMsg" aria-live="polite"></p>
+      </form>
+      <p class="cta__status" id="ctaOk" role="status" hidden><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>You're on the list — check your inbox for your API key.</p>
+      <p class="cta__note">Free tier includes 1M tokens · SOC 2 Type II · GDPR ready</p>
+    </div>
+  </section>
+</main>
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer__cols">
+      <div class="footer__brand">
+        <a class="hdr__logo" href="#"><span class="material-symbols-outlined" aria-hidden="true">auto_awesome</span>Nimbus</a>
+        <p>Generative intelligence for the API-first era.</p>
+        <div class="footer__social">
+          <a class="icon-btn" href="#" aria-label="GitHub"><span class="material-symbols-outlined" aria-hidden="true">code</span></a>
+          <a class="icon-btn" href="#" aria-label="Email"><span class="material-symbols-outlined" aria-hidden="true">mail</span></a>
+          <a class="icon-btn" href="#" aria-label="Website"><span class="material-symbols-outlined" aria-hidden="true">public</span></a>
+        </div>
+      </div>
+      <nav class="footer__link-group" aria-label="Product"><h3>Product</h3><ul><li><a href="#">Models</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#">Changelog</a></li></ul></nav>
+      <nav class="footer__link-group" aria-label="Company"><h3>Company</h3><ul><li><a href="#">About</a></li><li><a href="#">Careers</a></li><li><a href="#">Contact</a></li></ul></nav>
+      <nav class="footer__link-group" aria-label="Resources"><h3>Resources</h3><ul><li><a href="#">API reference</a></li><li><a href="#">Status</a></li><li><a href="#">Community</a></li></ul></nav>
+      <nav class="footer__link-group" aria-label="Legal"><h3>Legal</h3><ul><li><a href="#">Privacy</a></li><li><a href="#">Terms</a></li><li><a href="#">Security</a></li></ul></nav>
+    </div>
+    <p class="footer__copy">© 2026 Nimbus AI, Inc. All rights reserved.</p>
+  </div>
+</footer>
+<script>
+(function(){
+var root=document.documentElement,btn=document.getElementById('themeToggle');
+function applyTheme(d){root.classList.toggle('dark',d);root.classList.toggle('light',!d);btn.setAttribute('aria-pressed',d);btn.setAttribute('aria-label',d?'Switch to light theme':'Switch to dark theme');btn.firstElementChild.textContent=d?'light_mode':'dark_mode'}
+applyTheme(root.classList.contains('dark'));
+btn.addEventListener('click',function(){var d=!root.classList.contains('dark');applyTheme(d);localStorage.setItem('theme',d?'dark':'light')});
+var mb=document.getElementById('menuBtn'),panel=document.getElementById('mobileNav');
+function closeMenu(){panel.classList.remove('is-open');mb.setAttribute('aria-expanded','false');mb.setAttribute('aria-label','Open menu');mb.firstElementChild.textContent='menu'}
+mb.addEventListener('click',function(){var o=panel.classList.toggle('is-open');mb.setAttribute('aria-expanded',o);mb.setAttribute('aria-label',o?'Close menu':'Open menu');mb.firstElementChild.textContent=o?'close':'menu'});
+panel.addEventListener('click',function(e){if(e.target.closest('a'))closeMenu()});
+var out=document.getElementById('demoOut'),caret=document.getElementById('demoCaret'),done=document.getElementById('demoDone');
+var TXT='POST /v1/chat\n> "Summarize this pull request"\n∴ planning · tools: repo_map\n\n• Adds token streaming + retry logic\n• Cuts p95 latency by 38%\n• Ships behind a feature flag';
+var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function finish(){done.classList.add('is-visible');caret.classList.add('is-hidden')}
+function reset(){out.textContent='';caret.classList.remove('is-hidden');done.classList.remove('is-visible')}
+function type(i){if(i>TXT.length){finish();if(!reduce)setTimeout(function(){reset();type(0)},6000);return}out.textContent=TXT.slice(0,i);setTimeout(function(){type(i+1)},reduce?0:22)}
+if(reduce){out.textContent=TXT;finish()}else{type(0)}
+var items=document.querySelectorAll('.faq__item');
+items.forEach(function(d){d.addEventListener('toggle',function(){if(d.open)items.forEach(function(o){if(o!==d)o.removeAttribute('open')})})});
+var form=document.getElementById('ctaForm'),email=document.getElementById('email'),msg=document.getElementById('formMsg'),sb=document.getElementById('ctaBtn'),ok=document.getElementById('ctaOk');
+email.addEventListener('input',function(){msg.textContent='';msg.className='input-group__error';email.removeAttribute('aria-invalid')});
+form.addEventListener('submit',function(e){
+e.preventDefault();
+var v=email.value.trim();
+if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)){email.setAttribute('aria-invalid','true');msg.textContent='Please enter a valid work email address.';msg.classList.add('is-invalid');email.focus();return}
+msg.classList.remove('is-invalid');msg.classList.add('is-valid');msg.textContent='Looks good.';
+sb.classList.add('is-loading');sb.setAttribute('aria-busy','true');sb.disabled=true;
+setTimeout(function(){form.classList.add('is-hidden');ok.hidden=false;ok.setAttribute('aria-live','polite')},1100);
+});
+})();
+</script>
+</body>
+</html>

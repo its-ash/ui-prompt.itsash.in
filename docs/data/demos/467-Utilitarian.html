@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NIMBUS // Industrial Workflow System</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<style>
+:root{
+--primary:#000000;--secondary:#666666;--bg-primary:#FFFFFF;--bg-secondary:#CCCCCC;
+--text-primary:#000000;--text-secondary:#555555;--text-success:#003366;--text-error:#CC0000;
+--border-default:#000000;--border-error:#CC0000;--border-success:#003366;
+--signal-yellow:#FFD700;--signal-red:#CC0000;--industrial-blue:#003366;--info-text:#003366;
+--dark-grey:#333333;--light-grey:#CCCCCC;--grid-line:#000000;
+--on-primary:#FFFFFF;--on-invert:#000000;--invert-bg:#000000;--invert-text:#FFFFFF;
+--radius-sm:0px;--radius-md:0px;--radius-lg:0px;--shadow-sm:none;--shadow-md:none;
+--spacing-gap:8px;--transition-fast:60ms;--transition-normal:100ms;--ease-standard:linear;
+--z-dropdown:100;--z-modal:200;--z-toast:300;
+--font-base:'IBM Plex Mono','Courier New',monospace;
+}
+:root[data-theme="dark"]{
+--primary:#FFFFFF;--secondary:#CCCCCC;--bg-primary:#000000;--bg-secondary:#333333;
+--text-primary:#FFFFFF;--text-secondary:#CCCCCC;--text-success:#6699CC;--text-error:#FF5555;
+--border-default:#FFFFFF;--border-error:#FF5555;--border-success:#6699CC;
+--info-text:#6699CC;--grid-line:#FFFFFF;
+--on-primary:#000000;--invert-bg:#FFFFFF;--invert-text:#000000;
+}
+*{margin:0;padding:0;box-sizing:border-box;border-radius:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);font-size:14px;line-height:1.4;background:var(--bg-primary);color:var(--text-primary);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+h1,h2,h3{font-weight:700;text-transform:uppercase;letter-spacing:.01em;line-height:1.15}
+a{color:var(--info-text);text-decoration:none}
+a:hover{text-decoration:underline}
+:focus-visible{outline:2px solid var(--info-text);outline-offset:2px}
+.material-symbols-outlined{font-size:20px;vertical-align:middle}
+.skip-link{position:absolute;left:0;top:-60px;background:var(--signal-yellow);color:#000;padding:12px 16px;font-weight:700;text-transform:uppercase;z-index:var(--z-toast);transition:top var(--transition-fast) var(--ease-standard)}
+.skip-link:focus{top:0;text-decoration:none}
+/* HEADER */
+.header{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--bg-primary);border-bottom:1px solid var(--border-default);display:flex;align-items:center;height:64px;padding:0 16px;gap:16px}
+.header__wordmark{font-weight:700;text-transform:uppercase;font-size:15px;letter-spacing:.05em;color:var(--text-primary);white-space:nowrap}
+.header__wordmark:hover{text-decoration:none}
+.nav{margin-left:auto;display:flex;align-items:center;gap:2px}
+.nav__link{color:var(--text-primary);text-transform:uppercase;font-size:12px;font-weight:500;padding:12px 12px;min-height:44px;display:flex;align-items:center;border:1px solid transparent;transition:background var(--transition-fast) var(--ease-standard),color var(--transition-fast) var(--ease-standard)}
+.nav__link:hover{background:var(--invert-bg);color:var(--invert-text);text-decoration:none}
+.header__toggle{border:1px solid var(--border-default);background:var(--bg-primary);color:var(--text-primary);min-width:44px;min-height:44px;padding:8px 12px;font-family:var(--font-base);font-size:11px;font-weight:700;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background var(--transition-fast) var(--ease-standard),color var(--transition-fast) var(--ease-standard)}
+.header__toggle:hover{background:var(--invert-bg);color:var(--invert-text)}
+.header__toggle:active{transform:scale(.97)}
+.menu-btn{display:none;border:1px solid var(--border-default);background:var(--bg-primary);color:var(--text-primary);min-width:44px;min-height:44px;font-family:var(--font-base);font-size:12px;font-weight:700;cursor:pointer;align-items:center;justify-content:center}
+/* GRID */
+.grid-12{display:grid;grid-template-columns:repeat(12,1fr);gap:1px;background:var(--grid-line);border-bottom:1px solid var(--border-default)}
+.cell{background:var(--bg-primary);padding:24px 16px}
+.cell--full{grid-column:1/-1}
+.section-label{grid-column:1/-1;background:var(--invert-bg);color:var(--invert-text);padding:8px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;display:flex;justify-content:space-between;align-items:center}
+/* HERO */
+.hero__main{grid-column:span 8;padding:48px 24px;display:flex;flex-direction:column;justify-content:center;gap:16px;min-height:420px}
+.hero__meta{font-size:11px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.08em;display:flex;gap:16px;flex-wrap:wrap}
+.hero__title{font-size:clamp(28px,4vw,44px)}
+.hero__sub{max-width:52ch;color:var(--text-secondary);font-size:14px}
+.hero__ctas{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.hero__panel{grid-column:span 4;padding:0;display:flex;flex-direction:column;align-items:stretch}
+.status-panel{display:flex;flex-direction:column;align-items:stretch;height:100%}
+.status-panel__head{background:var(--bg-secondary);color:var(--text-primary);padding:8px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;border-bottom:1px solid var(--border-default)}
+.status-row{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--grid-line);font-size:12px;text-transform:uppercase}
+.status-row:last-child{border-bottom:none}
+.status-row__k{color:var(--text-secondary)}
+.status-row__v{font-weight:700}
+.status-row__v--info{color:var(--info-text)}
+.status-row__v--warn{background:var(--signal-yellow);color:#000;padding:2px 6px}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;text-transform:uppercase;font-family:var(--font-base);font-size:12px;font-weight:700;letter-spacing:.05em;border:1px solid var(--border-default);min-height:44px;padding:8px 16px;cursor:pointer;background:var(--bg-primary);color:var(--text-primary);transition:background var(--transition-fast) var(--ease-standard),color var(--transition-fast) var(--ease-standard),transform var(--transition-fast) var(--ease-standard);text-decoration:none}
+.btn:active{transform:scale(.97)}
+.btn--primary{background:var(--primary);color:var(--on-primary)}
+.btn--primary:hover{background:var(--bg-primary);color:var(--text-primary);text-decoration:none}
+.btn--secondary:hover{background:var(--invert-bg);color:var(--invert-text);text-decoration:none}
+.btn--danger{background:var(--signal-red);border-color:var(--signal-red);color:#FFFFFF}
+.btn--danger:hover{background:var(--bg-primary);color:var(--text-error);text-decoration:none}
+.btn--warning{background:var(--signal-yellow);border-color:var(--border-default);color:#000}
+.btn--warning:hover{background:var(--invert-bg);color:var(--invert-text);text-decoration:none}
+.btn--info{background:var(--industrial-blue);border-color:var(--industrial-blue);color:#FFF}
+.btn:disabled,.btn.is-loading{opacity:.5;cursor:not-allowed;filter:grayscale(1)}
+.btn:disabled:hover,.btn.is-loading:hover{background:var(--primary);color:var(--on-primary)}
+.btn--secondary:disabled:hover{background:var(--bg-primary);color:var(--text-primary)}
+.btn--warning:disabled:hover{background:var(--signal-yellow);color:#000}
+.spinner{width:14px;height:14px;border:1px solid currentColor;border-top-color:transparent;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* FEATURES */
+.feature{grid-column:span 4;display:flex;flex-direction:column;gap:12px;align-items:flex-start;border:1px solid transparent;transition:border var(--transition-fast) var(--ease-standard),transform var(--transition-fast) var(--ease-standard)}
+.feature:hover{border:1px solid var(--border-default);transform:translateY(-2px)}
+.feature:focus-within{border:2px solid var(--info-text)}
+.feature__idx{font-size:11px;color:var(--text-secondary);letter-spacing:.1em}
+.feature__icon{font-size:24px}
+.feature__title{font-size:15px}
+.feature__desc{color:var(--text-secondary)}
+.feature__link{margin-top:auto;font-size:12px;font-weight:700;text-transform:uppercase}
+/* STEPS */
+.step{grid-column:span 4;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.step__label{font-size:11px;font-weight:700;background:var(--invert-bg);color:var(--invert-text);padding:2px 8px;letter-spacing:.1em}
+.step__title{font-size:15px}
+.step__desc{color:var(--text-secondary)}
+/* TESTIMONIALS */
+.quote{grid-column:span 6;display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.quote__text{font-size:14px}
+.quote__text::before{content:"\201C "}
+.quote__text::after{content:" \201D"}
+.quote__meta{font-size:11px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;border-top:1px solid var(--grid-line);padding-top:8px;width:100%}
+/* PRICING */
+.pricing{grid-column:span 4;display:flex;flex-direction:column;align-items:stretch;border:1px solid var(--border-default);padding:0;transition:transform var(--transition-fast) var(--ease-standard)}
+.pricing:hover{transform:translateY(-2px)}
+.pricing:focus-within{border:2px solid var(--info-text)}
+.pricing--featured{border:2px solid var(--signal-yellow)}
+.pricing__head{padding:10px 16px;border-bottom:1px solid var(--border-default);display:flex;justify-content:space-between;align-items:center;text-transform:uppercase;font-weight:700;font-size:13px}
+.pricing--featured .pricing__head{background:var(--signal-yellow);color:#000;border-bottom:2px solid var(--signal-yellow)}
+.pricing__tag{font-size:10px;border:1px solid #000;padding:1px 6px;letter-spacing:.1em}
+.pricing__price{padding:16px;font-size:28px;font-weight:700;border-bottom:1px solid var(--grid-line)}
+.pricing__price small{font-size:12px;font-weight:400;color:var(--text-secondary)}
+.pricing__list{list-style:none;padding:8px 16px;display:flex;flex-direction:column;gap:6px;font-size:13px;flex:1}
+.pricing__list li{display:flex;gap:8px;align-items:baseline}
+.pricing__list .ex{color:var(--text-secondary)}
+.pricing__foot{padding:16px;display:flex;flex-direction:column;gap:8px;align-items:stretch}
+.plan-status{font-size:11px;text-transform:uppercase;min-height:16px;font-weight:700}
+.plan-status--ok{color:var(--text-success)}
+.plan-status--err{color:var(--text-error)}
+/* FAQ */
+.faq{grid-column:1/-1;padding:0;display:flex;flex-direction:column;align-items:stretch}
+.faq__item{border-bottom:1px solid var(--grid-line)}
+.faq__item:last-child{border-bottom:none}
+.faq__q{width:100%;background:var(--bg-primary);border:none;font-family:var(--font-base);display:flex;align-items:center;gap:16px;padding:14px 16px;cursor:pointer;text-align:left;min-height:44px;transition:background var(--transition-fast) var(--ease-standard),color var(--transition-fast) var(--ease-standard)}
+.faq__q:hover{background:var(--invert-bg);color:var(--invert-text)}
+.faq__idx{font-size:11px;color:var(--text-secondary);min-width:40px}
+.faq__q:hover .faq__idx{color:inherit}
+.faq__qtext{flex:1;text-transform:uppercase;font-weight:700;font-size:13px;color:var(--text-primary)}
+.faq__q:hover .faq__qtext{color:inherit}
+.faq__ind{font-weight:700;font-size:16px}
+.faq__a{padding:0 16px 16px 72px;color:var(--text-secondary);max-width:80ch}
+/* CTA */
+.cta{grid-column:1/-1;background:var(--invert-bg);color:var(--invert-text);border-left:4px solid var(--signal-yellow);padding:40px 24px;display:flex;flex-direction:column;gap:16px;align-items:flex-start}
+.cta__title{font-size:clamp(20px,3vw,30px)}
+.cta__sub{max-width:60ch;opacity:.85}
+.cta__form{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;width:100%;max-width:560px}
+.input-group{display:flex;flex-direction:column;align-items:stretch;gap:4px;flex:1;min-width:220px}
+.input-group__label{text-transform:uppercase;font-size:11px;font-weight:700;letter-spacing:.08em}
+.input-group__field{font-family:var(--font-base);font-size:14px;padding:10px 12px;border:1px solid var(--border-default);background:var(--bg-primary);color:var(--text-primary);min-height:44px}
+.input-group__field:focus{outline:2px solid var(--info-text);outline-offset:2px}
+.input-group__field:disabled{opacity:.5;cursor:not-allowed}
+.input-group--invalid .input-group__field{border:2px solid var(--border-error)}
+.input-group--valid .input-group__field{border:2px solid var(--border-success)}
+.input-group__msg{font-size:11px;min-height:15px;text-transform:uppercase;font-weight:700}
+.input-group__msg--err{color:var(--text-error)}
+.input-group__msg--ok{color:var(--text-success)}
+.cta .input-group__msg--ok{color:#9FC5E8}
+.cta .input-group__msg--err{color:#FF8888}
+/* FOOTER */
+.footer{grid-column:1/-1;padding:0;display:flex;flex-direction:column;align-items:stretch}
+.footer__grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--grid-line)}
+.footer__cell{background:var(--bg-primary);padding:20px 16px;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.footer__head{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-secondary)}
+.footer__link{color:var(--text-primary);font-size:12px;text-transform:uppercase;padding:4px 0;display:inline-block}
+.footer__link:hover{background:var(--invert-bg);color:var(--invert-text);text-decoration:none}
+.footer__bar{background:var(--invert-bg);color:var(--invert-text);padding:10px 16px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+.footer__status{color:var(--info-text);font-weight:700}
+.footer__bar .footer__status{color:#6699CC}
+/* REVEAL */
+.reveal{opacity:0;transform:translateY(8px)}
+.reveal.is-in{opacity:1;transform:none;transition:opacity var(--transition-normal) var(--ease-standard),transform var(--transition-normal) var(--ease-standard)}
+@media (prefers-reduced-motion: reduce){
+html{scroll-behavior:auto}
+*,*::before,*::after{transition-duration:0ms!important;animation:none!important}
+.reveal{opacity:1;transform:none}
+.spinner{animation:none;border-top-color:currentColor}
+}
+@media (max-width:1024px){
+.hero__main{grid-column:span 7}
+.hero__panel{grid-column:span 5}
+.footer__grid{grid-template-columns:repeat(3,1fr)}
+}
+@media (max-width:768px){
+.grid-12{grid-template-columns:repeat(2,1fr)}
+.hero__main,.hero__panel,.feature,.step,.pricing,.quote{grid-column:1/-1}
+.hero__main{min-height:0;padding:32px 16px}
+.nav{display:none;position:absolute;top:64px;left:0;right:0;background:var(--bg-primary);border-bottom:1px solid var(--border-default);flex-direction:column;align-items:stretch;z-index:var(--z-dropdown)}
+.nav.is-open{display:flex}
+.nav__link{border-bottom:1px solid var(--grid-line);padding:14px 16px}
+.menu-btn{display:flex}
+.footer__grid{grid-template-columns:repeat(2,1fr)}
+.faq__a{padding-left:16px}
+.cta__form{flex-direction:column;align-items:stretch}
+}
+@media (max-width:640px){
+.footer__grid{grid-template-columns:1fr}
+.header{padding:0 8px;gap:8px}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+<header class="header">
+<a class="header__wordmark" href="#main">NIMBUS&#9646;SYS</a>
+<button class="menu-btn" id="menu-btn" aria-expanded="false" aria-controls="nav">MENU</button>
+<nav class="nav" id="nav" aria-label="Primary">
+<a class="nav__link" href="#features">Features</a>
+<a class="nav__link" href="#process">Process</a>
+<a class="nav__link" href="#pricing">Pricing</a>
+<a class="nav__link" href="#faq">FAQ</a>
+</nav>
+<button class="header__toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+<span class="material-symbols-outlined" id="theme-icon" aria-hidden="true">dark_mode</span><span id="theme-text">THEME: LIGHT</span>
+</button>
+</header>
+<main class="grid-12" id="main">
+
+<div class="section-label"><span>SEC/01 // HERO</span><span>PRIORITY: HIGH</span></div>
+<section class="cell hero__main" aria-labelledby="hero-title">
+<div class="hero__meta"><span>REF: NB-2026-0117</span><span>REV: 2.4.1</span><span>CLASS: WORKFLOW CONTROL</span></div>
+<h1 class="hero__title" id="hero-title">Operations, logged and under control</h1>
+<p class="hero__sub">Nimbus records every task, handoff, and exception in one auditable system. No noise. No guesswork. Full traceability.</p>
+<div class="hero__ctas">
+<a class="btn btn--primary" href="#pricing">Deploy System</a>
+<a class="btn btn--secondary" href="#process">Read Manual</a>
+</div>
+</section>
+<aside class="cell hero__panel" aria-label="System status">
+<div class="status-panel">
+<div class="status-panel__head">System Status</div>
+<div class="status-row"><span class="status-row__k">Status</span><span class="status-row__v status-row__v--info">Operational</span></div>
+<div class="status-row"><span class="status-row__k">Uptime</span><span class="status-row__v">99.99%</span></div>
+<div class="status-row"><span class="status-row__k">Build</span><span class="status-row__v">V2.4.1</span></div>
+<div class="status-row"><span class="status-row__k">Region</span><span class="status-row__v">EU-West</span></div>
+<div class="status-row"><span class="status-row__k">Queue Load</span><span class="status-row__v status-row__v--warn">Moderate</span></div>
+<div class="status-row"><span class="status-row__k">Last Audit</span><span class="status-row__v">2026-01-16</span></div>
+</div>
+</aside>
+
+<div class="section-label" id="features"><span>SEC/02 // FEATURES</span><span>COUNT: 03</span></div>
+<article class="cell feature reveal">
+<span class="feature__idx">F-01</span>
+<span class="material-symbols-outlined feature__icon" aria-hidden="true">receipt_long</span>
+<h2 class="feature__title">Immutable audit log</h2>
+<p class="feature__desc">Every action is timestamped, attributed, and sealed. Export the full record for compliance review at any time.</p>
+<a class="feature__link" href="#faq">Read more &rarr;</a>
+</article>
+<article class="cell feature reveal">
+<span class="feature__idx">F-02</span>
+<span class="material-symbols-outlined feature__icon" aria-hidden="true">rule</span>
+<h2 class="feature__title">Exception routing</h2>
+<p class="feature__desc">Failed checks route to a named owner with a deadline. Nothing stalls in an inbox; every exception has an assignee.</p>
+<a class="feature__link" href="#faq">Read more &rarr;</a>
+</article>
+<article class="cell feature reveal">
+<span class="feature__idx">F-03</span>
+<span class="material-symbols-outlined feature__icon" aria-hidden="true">monitoring</span>
+<h2 class="feature__title">Live queue metrics</h2>
+<p class="feature__desc">Throughput, backlog age, and error rate on one panel. Thresholds trigger alerts before a queue becomes an incident.</p>
+<a class="feature__link" href="#faq">Read more &rarr;</a>
+</article>
+
+<div class="section-label" id="process"><span>SEC/03 // PROCESS</span><span>STEPS: 03</span></div>
+<div class="cell step reveal">
+<span class="step__label">Step 01</span>
+<h2 class="step__title">Connect inputs</h2>
+<p class="step__desc">Point Nimbus at your existing tools. Forms, email, and API events become structured records on arrival.</p>
+</div>
+<div class="cell step reveal">
+<span class="step__label">Step 02</span>
+<h2 class="step__title">Define checks</h2>
+<p class="step__desc">Write the rules each record must pass. Checks run on intake; failures become routed exceptions automatically.</p>
+</div>
+<div class="cell step reveal">
+<span class="step__label">Step 03</span>
+<h2 class="step__title">Operate and audit</h2>
+<p class="step__desc">Work the queues, clear the exceptions, and pull the audit trail whenever a reviewer asks for evidence.</p>
+</div>
+
+<div class="section-label"><span>SEC/04 // FIELD REPORTS</span><span>ENTRIES: 02</span></div>
+<blockquote class="cell quote reveal">
+<p class="quote__text">We cut exception resolution from three days to four hours. The audit log ended every dispute about who approved what.</p>
+<footer class="quote__meta">Name: Marta Keller / Role: Ops Director / Co: Hallwag Logistics / Ref: FR-118</footer>
+</blockquote>
+<blockquote class="cell quote reveal">
+<p class="quote__text">Auditors used to take two weeks of our time. Now we export the record and the meeting lasts twenty minutes.</p>
+<footer class="quote__meta">Name: Devraj Iyer / Role: Compliance Lead / Co: Nordbank Group / Ref: FR-142</footer>
+</blockquote>
+
+<div class="section-label" id="pricing"><span>SEC/05 // PRICING</span><span>TIERS: 03</span></div>
+<article class="cell pricing reveal">
+<div class="pricing__head"><span>Standard</span></div>
+<div class="pricing__price">&euro;49<small>/MO</small></div>
+<ul class="pricing__list">
+<li><span aria-hidden="true">[+]</span> 3 queues, 5 operators</li>
+<li><span aria-hidden="true">[+]</span> 90-day audit retention</li>
+<li><span aria-hidden="true">[+]</span> Email exception routing</li>
+<li class="ex"><span aria-hidden="true">[&minus;]</span> Custom check engine</li>
+<li class="ex"><span aria-hidden="true">[&minus;]</span> SSO and audit export API</li>
+</ul>
+<div class="pricing__foot">
+<button class="btn btn--secondary plan-btn" type="button" data-plan="Standard">Select Plan</button>
+<span class="plan-status" aria-live="polite"></span>
+</div>
+</article>
+<article class="cell pricing pricing--featured reveal">
+<div class="pricing__head"><span>Industrial</span><span class="pricing__tag">Recommended</span></div>
+<div class="pricing__price">&euro;149<small>/MO</small></div>
+<ul class="pricing__list">
+<li><span aria-hidden="true">[+]</span> Unlimited queues, 25 operators</li>
+<li><span aria-hidden="true">[+]</span> 7-year audit retention</li>
+<li><span aria-hidden="true">[+]</span> Custom check engine</li>
+<li><span aria-hidden="true">[+]</span> Threshold alerts and metrics API</li>
+<li class="ex"><span aria-hidden="true">[&minus;]</span> Dedicated region hosting</li>
+</ul>
+<div class="pricing__foot">
+<button class="btn btn--warning plan-btn" type="button" data-plan="Industrial">Select Plan</button>
+<span class="plan-status" aria-live="polite"></span>
+</div>
+</article>
+<article class="cell pricing reveal">
+<div class="pricing__head"><span>Sovereign</span></div>
+<div class="pricing__price">&euro;490<small>/MO</small></div>
+<ul class="pricing__list">
+<li><span aria-hidden="true">[+]</span> Unlimited everything</li>
+<li><span aria-hidden="true">[+]</span> Dedicated region hosting</li>
+<li><span aria-hidden="true">[+]</span> SSO, SCIM, audit export API</li>
+<li><span aria-hidden="true">[+]</span> Named support engineer</li>
+<li><span aria-hidden="true">[+]</span> 99.99% uptime contract</li>
+</ul>
+<div class="pricing__foot">
+<button class="btn btn--secondary plan-btn" type="button" data-plan="Sovereign">Select Plan</button>
+<span class="plan-status" aria-live="polite"></span>
+</div>
+</article>
+
+<div class="section-label" id="faq"><span>SEC/06 // FAQ</span><span>ITEMS: 03</span></div>
+<div class="cell faq">
+<div class="faq__item">
+<button class="faq__q" type="button" aria-expanded="false" aria-controls="faq-a1" id="faq-q1">
+<span class="faq__idx">Q-01</span><span class="faq__qtext">How long does deployment take?</span><span class="faq__ind" aria-hidden="true">+</span>
+</button>
+<div class="faq__a" id="faq-a1" role="region" aria-labelledby="faq-q1" hidden>Most teams connect their first input and pass their first check within one working day. Full queue migration typically completes inside two weeks.</div>
+</div>
+<div class="faq__item">
+<button class="faq__q" type="button" aria-expanded="false" aria-controls="faq-a2" id="faq-q2">
+<span class="faq__idx">Q-02</span><span class="faq__qtext">Where is the audit data stored?</span><span class="faq__ind" aria-hidden="true">+</span>
+</button>
+<div class="faq__a" id="faq-a2" role="region" aria-labelledby="faq-q2" hidden>All records are stored in the EU-West region by default, encrypted at rest. Sovereign tier customers select a dedicated region under contract.</div>
+</div>
+<div class="faq__item">
+<button class="faq__q" type="button" aria-expanded="false" aria-controls="faq-a3" id="faq-q3">
+<span class="faq__idx">Q-03</span><span class="faq__qtext">Can we export everything if we leave?</span><span class="faq__ind" aria-hidden="true">+</span>
+</button>
+<div class="faq__a" id="faq-a3" role="region" aria-labelledby="faq-q3" hidden>Yes. The full audit trail, every record, and all check definitions export as signed, verifiable archives. No lock-in, no ransom.</div>
+</div>
+</div>
+
+<div class="section-label"><span>SEC/07 // ACTION</span><span>RESPONSE: REQUIRED</span></div>
+<section class="cell cta" aria-labelledby="cta-title">
+<h2 class="cta__title" id="cta-title">Request deployment access</h2>
+<p class="cta__sub">Leave a work email. An engineer replies with credentials and a setup checklist within one business day.</p>
+<form class="cta__form" id="cta-form" novalidate>
+<div class="input-group" id="email-group">
+<label class="input-group__label" for="cta-email">Work email</label>
+<input class="input-group__field" id="cta-email" name="email" type="email" autocomplete="email" placeholder="name@company.com" aria-describedby="email-msg" required>
+<span class="input-group__msg" id="email-msg" aria-live="polite"></span>
+</div>
+<button class="btn btn--primary" id="cta-submit" type="submit">Request Access</button>
+</form>
+</section>
+
+<div class="section-label"><span>SEC/08 // FOOTER</span><span>END OF DOCUMENT</span></div>
+<footer class="footer">
+<div class="footer__grid">
+<div class="footer__cell">
+<span class="header__wordmark">NIMBUS&#9646;SYS</span>
+<span class="footer__head">Workflow control system. Built for operators, maintained by engineers.</span>
+</div>
+<div class="footer__cell">
+<span class="footer__head">Product</span>
+<a class="footer__link" href="#features">Features</a>
+<a class="footer__link" href="#pricing">Pricing</a>
+<a class="footer__link" href="#process">Process</a>
+</div>
+<div class="footer__cell">
+<span class="footer__head">Company</span>
+<a class="footer__link" href="#main">About</a>
+<a class="footer__link" href="#main">Careers</a>
+<a class="footer__link" href="#main">Contact</a>
+</div>
+<div class="footer__cell">
+<span class="footer__head">Resources</span>
+<a class="footer__link" href="#faq">FAQ</a>
+<a class="footer__link" href="#main">Documentation</a>
+<a class="footer__link" href="#main">Status page</a>
+</div>
+<div class="footer__cell">
+<span class="footer__head">Legal</span>
+<a class="footer__link" href="#main">Privacy</a>
+<a class="footer__link" href="#main">Terms</a>
+<a class="footer__link" href="#main">DPA</a>
+</div>
+</div>
+<div class="footer__bar">
+<span>&copy; 2026 Nimbus Systems GmbH. All rights reserved.</span>
+<span class="footer__status">System status: Operational</span>
+</div>
+</footer>
+</main>
+
+<script>
+(function(){
+"use strict";
+var root=document.documentElement;
+var toggle=document.getElementById("theme-toggle");
+var icon=document.getElementById("theme-icon");
+var text=document.getElementById("theme-text");
+function applyTheme(t){
+root.dataset.theme=t;
+var dark=t==="dark";
+toggle.setAttribute("aria-pressed",String(dark));
+toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+icon.textContent=dark?"light_mode":"dark_mode";
+text.textContent=dark?"THEME: DARK":"THEME: LIGHT";
+}
+applyTheme(root.dataset.theme==="dark"?"dark":"light");
+toggle.addEventListener("click",function(){
+var next=root.dataset.theme==="dark"?"light":"dark";
+localStorage.setItem("theme",next);
+applyTheme(next);
+});
+
+var menuBtn=document.getElementById("menu-btn");
+var nav=document.getElementById("nav");
+menuBtn.addEventListener("click",function(){
+var open=nav.classList.toggle("is-open");
+menuBtn.setAttribute("aria-expanded",String(open));
+});
+nav.addEventListener("click",function(e){
+if(e.target.classList.contains("nav__link")){nav.classList.remove("is-open");menuBtn.setAttribute("aria-expanded","false");}
+});
+document.addEventListener("keydown",function(e){
+if(e.key==="Escape"&&nav.classList.contains("is-open")){nav.classList.remove("is-open");menuBtn.setAttribute("aria-expanded","false");menuBtn.focus();}
+});
+
+var faqBtns=document.querySelectorAll(".faq__q");
+faqBtns.forEach(function(btn){
+btn.addEventListener("click",function(){
+var expanded=btn.getAttribute("aria-expanded")==="true";
+var panel=document.getElementById(btn.getAttribute("aria-controls"));
+btn.setAttribute("aria-expanded",String(!expanded));
+panel.hidden=expanded;
+btn.querySelector(".faq__ind").textContent=expanded?"+":"\u2212";
+});
+});
+
+var planBtns=document.querySelectorAll(".plan-btn");
+planBtns.forEach(function(btn){
+btn.addEventListener("click",function(){
+var status=btn.parentElement.querySelector(".plan-status");
+btn.disabled=true;btn.classList.add("is-loading");btn.setAttribute("aria-busy","true");
+var label=btn.textContent;
+btn.innerHTML='<span class="spinner" aria-hidden="true"></span> Processing';
+status.textContent="";status.className="plan-status";
+setTimeout(function(){
+btn.disabled=false;btn.classList.remove("is-loading");btn.removeAttribute("aria-busy");
+btn.textContent=label;
+status.textContent="OK \u2014 "+btn.dataset.plan.toUpperCase()+" RESERVED";
+status.classList.add("plan-status--ok");
+},900);
+});
+});
+
+var form=document.getElementById("cta-form");
+var email=document.getElementById("cta-email");
+var group=document.getElementById("email-group");
+var msg=document.getElementById("email-msg");
+var submit=document.getElementById("cta-submit");
+form.addEventListener("submit",function(e){
+e.preventDefault();
+var val=email.value.trim();
+group.classList.remove("input-group--invalid","input-group--valid");
+msg.className="input-group__msg";
+if(!val||!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val)){
+group.classList.add("input-group--invalid");
+msg.textContent="Error: valid email required";
+msg.classList.add("input-group__msg--err");
+email.setAttribute("aria-invalid","true");
+email.focus();
+return;
+}
+email.removeAttribute("aria-invalid");
+submit.disabled=true;submit.classList.add("is-loading");submit.setAttribute("aria-busy","true");
+submit.innerHTML='<span class="spinner" aria-hidden="true"></span> Sending';
+msg.textContent="";
+setTimeout(function(){
+submit.disabled=false;submit.classList.remove("is-loading");submit.removeAttribute("aria-busy");
+submit.textContent="Request Access";
+group.classList.add("input-group--valid");
+msg.textContent="OK \u2014 request logged. Check inbox.";
+msg.classList.add("input-group__msg--ok");
+form.reset();
+},1000);
+});
+
+var reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+if(!reduce&&"IntersectionObserver" in window){
+var io=new IntersectionObserver(function(entries){
+entries.forEach(function(en){
+if(en.isIntersecting){en.target.classList.add("is-in");io.unobserve(en.target);}
+});
+},{threshold:.15});
+document.querySelectorAll(".reveal").forEach(function(el,i){
+el.style.transitionDelay=(i%3)*60+"ms";
+io.observe(el);
+});
+}else{
+document.querySelectorAll(".reveal").forEach(function(el){el.classList.add("is-in");});
+}
+})();
+</script>
+</body>
+</html>

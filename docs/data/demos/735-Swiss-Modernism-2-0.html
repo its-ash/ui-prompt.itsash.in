@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RASTER - Modular Workspace System</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0,0" rel="stylesheet">
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --primary:#000000;--secondary:#F5F5F5;--accent:#E10600;--accent-strong:#B80500;--on-accent:#FFFFFF;
+  --bg-primary:#F5F5F5;--bg-secondary:#FEFEFE;--text-primary:#000000;--text-secondary:#4A4A4A;
+  --text-success:#1A7F37;--text-error:#B42318;--border-default:rgba(0,0,0,.15);
+  --border-error:#B42318;--border-success:#1A7F37;
+  --band-bg:#000000;--band-text:#FFFFFF;
+  --shadow-md:0 24px 64px rgba(0,0,0,.32);
+  --gap:1rem;--s1:.5rem;--s2:1rem;--s3:1.5rem;--s4:2rem;--s6:3rem;--s8:4rem;
+  --tf:120ms;--tn:240ms;--ease:cubic-bezier(.2,0,0,1);
+  --z-header:30;--z-modal:100;--z-toast:200;
+  --font:'Inter','Helvetica Neue',Helvetica,Arial,sans-serif;
+  --txs:.75rem;--tsm:.875rem;--tbase:1rem;--tlg:1.25rem;--txl:1.5rem;--t4xl:3rem;
+}
+:root[data-theme="dark"]{
+  --primary:#FFFFFF;--secondary:#141414;--accent:#E10600;--accent-strong:#FF3B30;--on-accent:#FFFFFF;
+  --bg-primary:#000000;--bg-secondary:#141414;--text-primary:#FFFFFF;--text-secondary:#A3A3A3;
+  --text-success:#4ADE80;--text-error:#F97066;--border-default:rgba(255,255,255,.16);
+  --border-error:#F97066;--border-success:#4ADE80;
+  --band-bg:#FEFEFE;--band-text:#000000;
+}
+/* ============ BASE ============ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg-primary);color:var(--text-primary);font-size:var(--tbase);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+a:hover{text-decoration:underline;text-decoration-color:var(--accent-strong);text-underline-offset:3px}
+button{font-family:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.material-symbols-outlined{font-size:20px;color:currentColor;line-height:1;font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
+.skip-link{position:absolute;left:var(--s2);top:-4rem;background:var(--primary);color:var(--bg-primary);padding:var(--s1) var(--s2);z-index:calc(var(--z-toast) + 1);font-weight:700;transition:top var(--tf) var(--ease)}
+.skip-link:focus{top:var(--s2)}
+/* ============ LAYOUT ============ */
+.container{max-width:80rem;margin-inline:auto;padding-inline:clamp(1rem,4vw,2rem)}
+.grid-12{display:grid;grid-template-columns:repeat(12,1fr);gap:var(--gap)}
+.section{padding-block:clamp(4rem,8vw,6rem);scroll-margin-top:5rem}
+.section__label{font-size:var(--txs);font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--accent-strong);padding-bottom:var(--s1);border-bottom:1px solid var(--border-default);margin-bottom:var(--s6)}
+.section__title{font-size:clamp(1.75rem,3.5vw,2.5rem);font-weight:800;letter-spacing:-.02em;line-height:1.05}
+.section__intro{color:var(--text-secondary);max-width:34rem}
+/* ============ BUTTONS ============ */
+.btn{display:flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:0 1.5rem;font-weight:700;font-size:var(--tsm);border:1px solid transparent;border-radius:0;cursor:pointer;transition:background var(--tf) var(--ease),color var(--tf) var(--ease),border-color var(--tf) var(--ease),transform var(--tf) var(--ease);white-space:nowrap}
+.btn:active{transform:scale(.97)}
+.btn--primary{background:var(--primary);color:var(--bg-primary)}
+.btn--accent{background:var(--accent);color:var(--on-accent)}
+.btn--outline{background:transparent;border-color:var(--border-default);color:var(--text-primary)}
+@media (hover:hover) and (pointer:fine){
+  .btn--primary:hover,.btn--accent:hover{background:var(--accent-strong);color:var(--on-accent);text-decoration:none}
+  .btn--outline:hover{border-color:var(--accent-strong);color:var(--accent-strong);text-decoration:none}
+}
+.btn--loading{pointer-events:none;opacity:.85}
+.btn--loading .btn__spin{width:16px;height:16px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* ============ HEADER ============ */
+.header{position:sticky;top:0;z-index:var(--z-header);background:var(--bg-primary);border-bottom:1px solid var(--border-default)}
+.header__bar{display:flex;align-items:center;justify-content:space-between;height:64px;gap:var(--s2)}
+.wordmark{font-weight:800;font-size:var(--tlg);letter-spacing:-.02em;display:flex;align-items:center;gap:.5rem}
+.wordmark::before{content:"";width:12px;height:12px;background:var(--accent);flex:none}
+.nav__list{display:flex;align-items:center;gap:var(--s4);list-style:none}
+.nav__list a{font-size:var(--tsm);font-weight:500}
+.header__actions{display:flex;align-items:center;gap:var(--s1)}
+.icon-btn{display:flex;align-items:center;justify-content:center;width:44px;height:44px;background:transparent;border:1px solid transparent;color:var(--text-primary);cursor:pointer;transition:border-color var(--tf) var(--ease),transform var(--tf) var(--ease)}
+.icon-btn:active{transform:scale(.97)}
+@media (hover:hover) and (pointer:fine){.icon-btn:hover{border-color:var(--border-default)}}
+.icon-btn .moon{display:none}
+:root[data-theme="dark"] .icon-btn .sun{display:none}
+:root[data-theme="dark"] .icon-btn .moon{display:block}
+.nav-toggle{display:none}
+.header__cta{display:inline-flex}
+@media (max-width:767px){
+  .nav-toggle{display:flex}
+  .header__cta{display:none}
+  .nav{position:absolute;top:64px;left:0;right:0;background:var(--bg-primary);border-bottom:1px solid var(--border-default);display:none}
+  .nav--open{display:block}
+  .nav__list{flex-direction:column;align-items:stretch;gap:0;padding:var(--s2) clamp(1rem,4vw,2rem) var(--s3)}
+  .nav__list a{display:flex;align-items:center;min-height:48px;font-size:var(--tbase);border-bottom:1px solid var(--border-default)}
+  .nav__list li:last-child a{border-bottom:0}
+}
+/* ============ HERO ============ */
+.hero{padding-top:var(--s8);padding-bottom:clamp(4rem,8vw,6rem)}
+.hero__title{grid-column:1/8;font-size:clamp(2.5rem,6vw + 1rem,4.75rem);font-weight:800;letter-spacing:-.02em;line-height:.98}
+.hero__sub{grid-column:1/6;color:var(--text-secondary);max-width:34rem;margin-top:var(--s3)}
+.hero__ctas{grid-column:1/8;display:flex;align-items:center;gap:var(--s2);margin-top:var(--s4);flex-wrap:wrap}
+.hero__art{grid-column:9/13;grid-row:1/4;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(4,1fr);gap:0;border:1px solid var(--border-default);min-height:320px;position:relative}
+.hero__cell{border:1px solid var(--border-default);margin:-.5px}
+.hero__cell--accent{background:var(--accent)}
+.hero__num{position:absolute;right:var(--s2);bottom:0;font-size:clamp(5rem,10vw,8rem);font-weight:800;line-height:.85;color:transparent;-webkit-text-stroke:1.5px var(--text-primary);letter-spacing:-.04em}
+@media (max-width:1023px){
+  .hero__title,.hero__sub,.hero__ctas{grid-column:1/13}
+  .hero__art{grid-column:1/13;grid-row:auto;margin-top:var(--s6);min-height:220px}
+}
+/* ============ CARDS / FEATURES ============ */
+.features__head .section__label{grid-column:1/5}
+.features__head .section__intro{grid-column:8/13;align-self:end}
+.card{background:var(--bg-secondary);border:1px solid var(--border-default);padding:var(--s4);display:flex;flex-direction:column;align-items:flex-start;gap:var(--s2);transition:border-color var(--tf) var(--ease),transform var(--tf) var(--ease)}
+@media (hover:hover) and (pointer:fine){.card--interactive:hover{border-color:var(--accent);transform:translateY(-2px)}}
+.card:focus-within{border-color:var(--accent)}
+.card__icon{color:var(--accent-strong);font-size:24px}
+.card__tag{font-size:var(--txs);font-weight:700;letter-spacing:.12em;color:var(--text-secondary)}
+.card__title{font-size:var(--tlg);font-weight:700;line-height:1.2}
+.card__body{font-size:var(--tsm);color:var(--text-secondary)}
+.card__link{font-size:var(--tsm);font-weight:700;color:var(--accent-strong);margin-top:auto}
+.feature-card{grid-column:span 4}
+@media (max-width:1023px){
+  .features__head .section__label,.features__head .section__intro{grid-column:1/13}
+  .feature-card{grid-column:1/13}
+}
+/* ============ STEPS ============ */
+.steps{border-top:1px solid var(--border-default)}
+.step{grid-column:span 4;padding-top:var(--s4);position:relative}
+.step::before{content:"";position:absolute;top:-1px;left:0;width:33%;height:1px;background:var(--accent)}
+.step__num{font-size:var(--t4xl);font-weight:800;line-height:1;letter-spacing:-.02em}
+.step__num--accent{color:var(--accent)}
+.step__title{font-size:var(--tlg);font-weight:700;margin-top:var(--s2)}
+.step__body{font-size:var(--tsm);color:var(--text-secondary);margin-top:var(--s1)}
+@media (max-width:1023px){
+  .step{grid-column:1/13;border-left:1px solid var(--border-default);padding-left:var(--s4)}
+  .step::before{width:1px;height:33%;left:-1px;top:0}
+}
+/* ============ TESTIMONIALS ============ */
+.quote-feature{grid-column:1/8;border-left:2px solid var(--accent);padding-left:var(--s4)}
+.quote-feature blockquote{font-size:var(--txl);font-weight:500;line-height:1.35;letter-spacing:-.01em}
+.quote-side{grid-column:8/13;display:flex;flex-direction:column;gap:var(--s4)}
+.quote-small blockquote{font-size:var(--tbase);line-height:1.55}
+.quote-small{border-top:1px solid var(--border-default);padding-top:var(--s3)}
+.attrib{display:flex;align-items:center;gap:var(--s2);margin-top:var(--s3)}
+.monogram{width:48px;height:48px;background:var(--primary);color:var(--bg-primary);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:var(--tsm);flex:none}
+.attrib__name{font-weight:700;font-size:var(--tsm)}
+.attrib__role{font-size:var(--tsm);color:var(--text-secondary)}
+@media (max-width:1023px){.quote-feature,.quote-side{grid-column:1/13}.quote-side{margin-top:var(--s6)}}
+/* ============ PRICING ============ */
+.tiers{align-items:stretch}
+.tier{grid-column:span 4;display:flex;flex-direction:column;align-items:flex-start;gap:var(--s2);background:var(--bg-secondary);border:1px solid var(--border-default);padding:var(--s4);position:relative}
+.tier--featured{border:2px solid var(--accent)}
+:root[data-theme="dark"] .tier--featured{border:2px solid var(--accent)}
+.tier__tab{position:absolute;top:-1px;right:var(--s4);transform:translateY(-100%);background:var(--accent);color:var(--on-accent);font-size:var(--txs);font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:.25rem .75rem}
+.tier__name{font-size:var(--tsm);font-weight:700;text-transform:uppercase;letter-spacing:.12em}
+.tier__price{font-size:var(--t4xl);font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1}
+.tier__period{font-size:var(--tsm);color:var(--text-secondary)}
+.tier__list{list-style:none;display:flex;flex-direction:column;gap:var(--s1);margin-block:var(--s2);width:100%}
+.tier__list li{display:flex;align-items:center;gap:.5rem;font-size:var(--tsm)}
+.tier__list .material-symbols-outlined{color:var(--accent-strong);font-size:18px}
+.tier__fine{font-size:var(--txs);color:var(--text-secondary);margin-top:auto;padding-top:var(--s2)}
+.tier .btn{width:100%;margin-top:var(--s2)}
+@media (max-width:1023px){.tier{grid-column:1/13}.tier__tab{transform:none;top:-1.5rem}}
+/* ============ FAQ ============ */
+.faq__wrap{grid-column:3/11}
+.faq details{border-bottom:1px solid var(--border-default)}
+.faq details:first-child{border-top:1px solid var(--border-default)}
+.faq summary{display:flex;align-items:center;justify-content:space-between;gap:var(--s2);min-height:56px;cursor:pointer;font-weight:700;font-size:var(--tbase);list-style:none;padding-block:var(--s2)}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary .material-symbols-outlined{transition:transform var(--tn) var(--ease);flex:none}
+.faq details[open] summary .material-symbols-outlined{transform:rotate(45deg)}
+.faq details[open] summary{color:var(--accent-strong)}
+.faq__answer{padding:0 0 var(--s3);color:var(--text-secondary);font-size:var(--tsm);max-width:60ch}
+@media (max-width:1023px){.faq__wrap{grid-column:1/13}}
+/* ============ CTA BAND ============ */
+.band{background:var(--band-bg);color:var(--band-text);padding-block:clamp(4rem,8vw,6rem)}
+.band__title{grid-column:1/9;font-size:clamp(2rem,4.5vw,3.5rem);font-weight:800;letter-spacing:-.02em;line-height:1.02}
+.band__sub{grid-column:1/7;margin-top:var(--s3);opacity:.75}
+.band__form{grid-column:1/9;margin-top:var(--s4)}
+.band__row{display:flex;align-items:center;gap:var(--s1)}
+.band__input{flex:1;min-height:48px;padding:0 var(--s2);border:1px solid var(--band-text);background:transparent;color:var(--band-text);font:inherit;font-size:var(--tsm);border-radius:0;min-width:0}
+.band__input::placeholder{color:var(--band-text);opacity:.55}
+.band__input:focus{outline:2px solid var(--accent);outline-offset:2px}
+.band__label{display:block;font-size:var(--tsm);font-weight:500;margin-bottom:var(--s1)}
+.band__msg{display:flex;align-items:center;gap:.5rem;font-size:var(--tsm);margin-top:var(--s1);min-height:1.5rem}
+.band__msg--error{color:#FF6B61}
+.band__msg--ok{color:#7BE39A}
+.band__fine{grid-column:1/9;font-size:var(--txs);opacity:.6;margin-top:var(--s1)}
+@media (max-width:1023px){.band__title,.band__sub,.band__form,.band__fine{grid-column:1/13}}
+@media (max-width:639px){.band__row{flex-direction:column;align-items:stretch}.band__row .btn{width:100%}}
+/* ============ MODAL ============ */
+.modal{border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);padding:0;max-width:26rem;width:calc(100% - 2rem);box-shadow:var(--shadow-md)}
+.modal::backdrop{background:rgba(0,0,0,.6)}
+.modal[open]{animation:modalIn var(--tn) var(--ease)}
+@keyframes modalIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.modal__inner{padding:var(--s4);display:flex;flex-direction:column;gap:var(--s2)}
+.modal__head{display:flex;align-items:center;justify-content:space-between}
+.modal__title{font-size:var(--txl);font-weight:800;letter-spacing:-.02em}
+.modal__body{font-size:var(--tsm);color:var(--text-secondary)}
+.input-group{display:flex;flex-direction:column;align-items:stretch;gap:.25rem}
+.input-group label{font-size:var(--tsm);font-weight:500}
+.input-group input{min-height:44px;padding:0 var(--s2);border:1px solid var(--border-default);background:var(--bg-primary);color:var(--text-primary);font:inherit;font-size:var(--tsm);border-radius:0}
+.input-group input:focus{outline:none;box-shadow:0 0 0 2px var(--accent)}
+.input-group input[aria-invalid="true"]{border-color:var(--border-error)}
+.input-group__help{font-size:var(--txs);color:var(--text-secondary)}
+.input-group__error{display:flex;align-items:center;gap:.25rem;font-size:var(--txs);color:var(--text-error);min-height:1.25rem}
+.modal__success{display:flex;flex-direction:column;align-items:flex-start;gap:var(--s2)}
+.modal__success .material-symbols-outlined{font-size:32px;color:var(--text-success)}
+/* ============ TOAST ============ */
+.toast{position:fixed;bottom:var(--s4);left:50%;transform:translateX(-50%) translateY(1rem);background:var(--primary);color:var(--bg-primary);padding:var(--s2) var(--s3);font-size:var(--tsm);font-weight:500;z-index:var(--z-toast);opacity:0;pointer-events:none;transition:opacity var(--tn) var(--ease),transform var(--tn) var(--ease);display:flex;align-items:center;gap:.5rem;max-width:calc(100vw - 2rem)}
+.toast--show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* ============ FOOTER ============ */
+.footer{border-top:1px solid var(--border-default);background:var(--bg-secondary);padding-block:var(--s8) var(--s4)}
+.footer__brand{grid-column:1/5;display:flex;flex-direction:column;gap:var(--s2);align-items:flex-start}
+.footer__tag{font-size:var(--tsm);color:var(--text-secondary)}
+.footer__col{grid-column:span 2}
+.footer__col h3{font-size:var(--txs);font-weight:700;text-transform:uppercase;letter-spacing:.12em;margin-bottom:var(--s2)}
+.footer__col ul{list-style:none;display:flex;flex-direction:column;gap:var(--s1)}
+.footer__col a{font-size:var(--tsm);color:var(--text-secondary)}
+.footer__bar{grid-column:1/13;display:flex;align-items:center;justify-content:space-between;gap:var(--s2);border-top:1px solid var(--border-default);margin-top:var(--s8);padding-top:var(--s3);font-size:var(--txs);color:var(--text-secondary);flex-wrap:wrap}
+.footer__legal{display:flex;align-items:center;gap:var(--s3)}
+@media (max-width:1023px){.footer__brand{grid-column:1/13}.footer__col{grid-column:span 4}}
+@media (max-width:639px){.footer__col{grid-column:1/13}}
+/* ============ REVEAL / MOTION ============ */
+.reveal{opacity:1}
+.js .reveal{opacity:0;transform:translateY(12px);transition:opacity var(--tn) var(--ease),transform var(--tn) var(--ease)}
+.js .reveal--in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+  .js .reveal{opacity:1;transform:none}
+  .btn:active,.icon-btn:active{transform:none}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<header class="header">
+  <div class="container header__bar">
+    <a class="wordmark" href="#" aria-label="RASTER home">RASTER</a>
+    <nav class="nav" id="site-nav" aria-label="Primary">
+      <ul class="nav__list">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+    </nav>
+    <div class="header__actions">
+      <button class="icon-btn" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-outlined sun" aria-hidden="true">dark_mode</span>
+        <span class="material-symbols-outlined moon" aria-hidden="true">light_mode</span>
+      </button>
+      <a class="btn btn--primary header__cta" href="#get-started">Get started</a>
+      <button class="icon-btn nav-toggle" id="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">
+        <span class="material-symbols-outlined" aria-hidden="true">menu</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <!-- HERO -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="container grid-12">
+      <h1 class="hero__title" id="hero-title">Work arranged on a rational grid.</h1>
+      <p class="hero__sub">RASTER is a modular workspace that organizes projects, documents, and decisions into one consistent system.</p>
+      <div class="hero__ctas">
+        <button class="btn btn--accent" type="button" data-modal-open>Request access</button>
+        <a class="btn btn--outline" href="#how">How it works</a>
+      </div>
+      <div class="hero__art" aria-hidden="true">
+        <div class="hero__cell"></div><div class="hero__cell"></div><div class="hero__cell"></div>
+        <div class="hero__cell"></div><div class="hero__cell hero__cell--accent"></div><div class="hero__cell"></div>
+        <div class="hero__cell"></div><div class="hero__cell"></div><div class="hero__cell"></div>
+        <div class="hero__cell"></div><div class="hero__cell"></div><div class="hero__cell"></div>
+        <span class="hero__num">12</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section" id="features" aria-labelledby="features-title">
+    <div class="container">
+      <div class="grid-12 features__head">
+        <p class="section__label">01 Features</p>
+        <p class="section__intro">Three modules form the core. Each does one thing and does it without ornament.</p>
+      </div>
+      <div class="grid-12">
+        <article class="card card--interactive feature-card reveal">
+          <span class="material-symbols-outlined card__icon" aria-hidden="true">grid_view</span>
+          <p class="card__tag">F.01</p>
+          <h3 class="card__title" id="features-title">Modular boards</h3>
+          <p class="card__body">Every project lives on a twelve column board. Blocks snap to the grid, so structure is never improvised.</p>
+          <a class="card__link" href="#pricing">Learn more</a>
+        </article>
+        <article class="card card--interactive feature-card reveal">
+          <span class="material-symbols-outlined card__icon" aria-hidden="true">history</span>
+          <p class="card__tag">F.02</p>
+          <h3 class="card__title">Version ledger</h3>
+          <p class="card__body">Each change is recorded as a numbered entry. Revert to any state with one action, no branches required.</p>
+          <a class="card__link" href="#pricing">Learn more</a>
+        </article>
+        <article class="card card--interactive feature-card reveal">
+          <span class="material-symbols-outlined card__icon" aria-hidden="true">groups</span>
+          <p class="card__tag">F.03</p>
+          <h3 class="card__title">Role based access</h3>
+          <p class="card__body">Permissions follow a simple matrix of viewer, editor, and owner. Auditable, predictable, and quiet.</p>
+          <a class="card__link" href="#pricing">Learn more</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="section" id="how" aria-labelledby="how-title">
+    <div class="container">
+      <p class="section__label">02 How it works</p>
+      <h2 class="section__title" id="how-title" style="display:none">How it works</h2>
+      <div class="grid-12 steps">
+        <div class="step reveal">
+          <p class="step__num">01</p>
+          <h3 class="step__title">Define the grid</h3>
+          <p class="step__body">Choose a board template or start blank. Columns and modules are set before content arrives.</p>
+        </div>
+        <div class="step reveal">
+          <p class="step__num step__num--accent">02</p>
+          <h3 class="step__title">Place the work</h3>
+          <p class="step__body">Add documents, tasks, and decisions as blocks. The system keeps alignment and order for you.</p>
+        </div>
+        <div class="step reveal">
+          <p class="step__num">03</p>
+          <h3 class="step__title">Publish and record</h3>
+          <p class="step__body">Share the board with your team. Every edit enters the ledger with a timestamp and an author.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="section" id="testimonials" aria-labelledby="testimonials-title">
+    <div class="container">
+      <p class="section__label">03 Testimonials</p>
+      <h2 class="section__title" id="testimonials-title" style="display:none">Testimonials</h2>
+      <div class="grid-12">
+        <figure class="quote-feature reveal">
+          <blockquote>&ldquo;We replaced four tools with one board. The grid forces clarity, and our weekly review now takes twenty minutes instead of two hours.&rdquo;</blockquote>
+          <figcaption class="attrib">
+            <span class="monogram" aria-hidden="true">MK</span>
+            <span><span class="attrib__name">Marta Keller</span><br><span class="attrib__role">Head of Operations, Forma Studio</span></span>
+          </figcaption>
+        </figure>
+        <div class="quote-side">
+          <figure class="quote-small reveal">
+            <blockquote>&ldquo;The version ledger ended our debate about which file was final. The answer is always entry number twelve.&rdquo;</blockquote>
+            <figcaption class="attrib">
+              <span class="monogram" aria-hidden="true">DA</span>
+              <span><span class="attrib__name">Daniel Aubert</span><br><span class="attrib__role">Design Lead, Nordwerk</span></span>
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="section" id="pricing" aria-labelledby="pricing-title">
+    <div class="container">
+      <p class="section__label">04 Pricing</p>
+      <h2 class="section__title" id="pricing-title" style="margin-bottom:var(--s6)">Three tiers. No hidden lines.</h2>
+      <div class="grid-12 tiers">
+        <div class="tier reveal">
+          <h3 class="tier__name">Draft</h3>
+          <p class="tier__price">$0</p>
+          <p class="tier__period">per user, forever</p>
+          <ul class="tier__list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>3 boards</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Version ledger, 30 days</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Viewer and editor roles</li>
+          </ul>
+          <a class="btn btn--outline" href="#get-started">Get started</a>
+          <p class="tier__fine">For individuals testing the system.</p>
+        </div>
+        <div class="tier tier--featured reveal">
+          <p class="tier__tab">Most popular</p>
+          <h3 class="tier__name">Studio</h3>
+          <p class="tier__price">$12</p>
+          <p class="tier__period">per user / month</p>
+          <ul class="tier__list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Unlimited boards</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Full version history</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Owner roles and audit log</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Priority support</li>
+          </ul>
+          <button class="btn btn--accent" type="button" data-modal-open>Request access</button>
+          <p class="tier__fine">Billed annually. Monthly billing available.</p>
+        </div>
+        <div class="tier reveal">
+          <h3 class="tier__name">Institute</h3>
+          <p class="tier__price">$24</p>
+          <p class="tier__period">per user / month</p>
+          <ul class="tier__list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Everything in Studio</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Single sign on</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Dedicated workspace manager</li>
+          </ul>
+          <a class="btn btn--outline" href="#get-started">Get started</a>
+          <p class="tier__fine">For organizations above fifty seats.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section faq" id="faq" aria-labelledby="faq-title">
+    <div class="container">
+      <p class="section__label">05 FAQ</p>
+      <h2 class="section__title" id="faq-title" style="margin-bottom:var(--s6)">Frequently asked questions</h2>
+      <div class="grid-12">
+        <div class="faq__wrap">
+          <details>
+            <summary>Can I import boards from other tools?<span class="material-symbols-outlined" aria-hidden="true">add</span></summary>
+            <p class="faq__answer">Yes. RASTER imports documents and task lists from common formats including CSV, Markdown, and PDF. Structure is mapped onto the grid automatically.</p>
+          </details>
+          <details>
+            <summary>What happens when I cancel a paid plan?<span class="material-symbols-outlined" aria-hidden="true">add</span></summary>
+            <p class="faq__answer">Your workspace moves to the Draft tier. Boards remain readable, version history is kept for 30 days, and you can export everything at any time.</p>
+          </details>
+          <details>
+            <summary>Is my data stored in Europe?<span class="material-symbols-outlined" aria-hidden="true">add</span></summary>
+            <p class="faq__answer">All workspace data is hosted in Zurich and Frankfurt data centers. Backups are encrypted and retained for 90 days before deletion.</p>
+          </details>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="band" id="get-started" aria-labelledby="band-title">
+    <div class="container grid-12">
+      <h2 class="band__title" id="band-title">Put your work on the grid.</h2>
+      <p class="band__sub">Leave an email address. We send one invitation, nothing else.</p>
+      <form class="band__form" id="band-form" novalidate>
+        <label class="band__label" for="band-email">Work email</label>
+        <div class="band__row">
+          <input class="band__input" id="band-email" name="email" type="email" autocomplete="email" placeholder="name@company.com" aria-describedby="band-msg" required>
+          <button class="btn btn--accent" id="band-submit" type="submit">Get started</button>
+        </div>
+        <p class="band__msg" id="band-msg" aria-live="polite"></p>
+      </form>
+      <p class="band__fine">We store your address only to send the invitation. No newsletter, no resale.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container grid-12">
+    <div class="footer__brand">
+      <a class="wordmark" href="#">RASTER</a>
+      <p class="footer__tag">A modular workspace built on a rational grid.</p>
+    </div>
+    <nav class="footer__col" aria-label="Product">
+      <h3>Product</h3>
+      <ul><li><a href="#features">Features</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#">Changelog</a></li></ul>
+    </nav>
+    <nav class="footer__col" aria-label="Company">
+      <h3>Company</h3>
+      <ul><li><a href="#">About</a></li><li><a href="#">Careers</a></li><li><a href="#">Contact</a></li></ul>
+    </nav>
+    <nav class="footer__col" aria-label="Resources">
+      <h3>Resources</h3>
+      <ul><li><a href="#">Documentation</a></li><li><a href="#">Grid guide</a></li><li><a href="#">Status</a></li></ul>
+    </nav>
+    <div class="footer__bar">
+      <p>&copy; 2026 RASTER Systems GmbH</p>
+      <div class="footer__legal">
+        <a href="#">Privacy</a><a href="#">Terms</a><a href="#main">Back to top</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- MODAL -->
+<dialog class="modal" id="access-modal" aria-labelledby="modal-title">
+  <div class="modal__inner">
+    <div class="modal__head">
+      <h2 class="modal__title" id="modal-title">Request early access</h2>
+      <button class="icon-btn" type="button" data-modal-close aria-label="Close dialog">
+        <span class="material-symbols-outlined" aria-hidden="true">close</span>
+      </button>
+    </div>
+    <form id="modal-form" novalidate>
+      <p class="modal__body">Invitations are sent in weekly batches. Studio tier applicants are prioritized.</p>
+      <div class="input-group">
+        <label for="modal-email">Work email</label>
+        <input id="modal-email" name="email" type="email" autocomplete="email" aria-describedby="modal-help modal-error" required>
+        <p class="input-group__help" id="modal-help">Use the address your team knows you by.</p>
+        <p class="input-group__error" id="modal-error" aria-live="polite"></p>
+      </div>
+      <button class="btn btn--accent" id="modal-submit" type="submit">Request access</button>
+    </form>
+    <div class="modal__success" id="modal-success" hidden>
+      <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+      <p class="modal__title" style="font-size:var(--tlg)">Request received.</p>
+      <p class="modal__body">Your invitation will arrive in the next weekly batch. Nothing further is required.</p>
+      <button class="btn btn--outline" type="button" data-modal-close>Close</button>
+    </div>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+"use strict";
+document.documentElement.classList.add("js");
+
+/* Theme toggle */
+var toggle=document.getElementById("theme-toggle");
+function applyTheme(t){
+  document.documentElement.dataset.theme=t;
+  var dark=t==="dark";
+  toggle.setAttribute("aria-pressed",String(dark));
+  toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+}
+applyTheme(document.documentElement.dataset.theme==="dark"?"dark":"light");
+toggle.addEventListener("click",function(){
+  var next=document.documentElement.dataset.theme==="dark"?"light":"dark";
+  localStorage.setItem("theme",next);
+  applyTheme(next);
+});
+
+/* Mobile nav */
+var navToggle=document.getElementById("nav-toggle");
+var nav=document.getElementById("site-nav");
+function setNav(open){
+  nav.classList.toggle("nav--open",open);
+  navToggle.setAttribute("aria-expanded",String(open));
+  navToggle.setAttribute("aria-label",open?"Close menu":"Open menu");
+  navToggle.querySelector(".material-symbols-outlined").textContent=open?"close":"menu";
+}
+navToggle.addEventListener("click",function(){setNav(!nav.classList.contains("nav--open"));});
+nav.addEventListener("click",function(e){if(e.target.closest("a"))setNav(false);});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")setNav(false);});
+window.addEventListener("resize",function(){if(window.innerWidth>=768)setNav(false);});
+
+/* FAQ: one open at a time */
+var faqItems=document.querySelectorAll(".faq details");
+faqItems.forEach(function(d){
+  d.addEventListener("toggle",function(){
+    if(d.open){faqItems.forEach(function(o){if(o!==d)o.open=false;});}
+  });
+});
+
+/* Toast */
+var toast=document.getElementById("toast");
+var toastTimer=null;
+function showToast(msg){
+  toast.textContent=msg;
+  toast.classList.add("toast--show");
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){toast.classList.remove("toast--show");},4000);
+}
+
+/* Email validation */
+var emailRe=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+/* Modal */
+var modal=document.getElementById("access-modal");
+var modalForm=document.getElementById("modal-form");
+var modalSuccess=document.getElementById("modal-success");
+var modalEmail=document.getElementById("modal-email");
+var modalError=document.getElementById("modal-error");
+var modalSubmit=document.getElementById("modal-submit");
+var lastTrigger=null;
+
+function openModal(e){
+  lastTrigger=e.currentTarget;
+  modalForm.hidden=false;
+  modalSuccess.hidden=true;
+  modalError.textContent="";
+  modalEmail.removeAttribute("aria-invalid");
+  modalEmail.value="";
+  modal.showModal();
+  document.body.style.overflow="hidden";
+  modalEmail.focus();
+}
+function closeModal(){
+  modal.close();
+  document.body.style.overflow="";
+  if(lastTrigger)lastTrigger.focus();
+}
+document.querySelectorAll("[data-modal-open]").forEach(function(b){b.addEventListener("click",openModal);});
+modal.querySelectorAll("[data-modal-close]").forEach(function(b){b.addEventListener("click",closeModal);});
+modal.addEventListener("click",function(e){if(e.target===modal)closeModal();});
+modal.addEventListener("close",function(){document.body.style.overflow="";});
+
+modalEmail.addEventListener("blur",function(){
+  if(modalEmail.value&&!emailRe.test(modalEmail.value)){
+    modalEmail.setAttribute("aria-invalid","true");
+    modalError.innerHTML='<span class="material-symbols-outlined" aria-hidden="true" style="font-size:14px">error</span> Enter a valid email address.';
+  }
+});
+modalForm.addEventListener("submit",function(e){
+  e.preventDefault();
+  if(modalSubmit.classList.contains("btn--loading"))return;
+  if(!emailRe.test(modalEmail.value)){
+    modalEmail.setAttribute("aria-invalid","true");
+    modalError.innerHTML='<span class="material-symbols-outlined" aria-hidden="true" style="font-size:14px">error</span> Enter a valid email address.';
+    modalEmail.focus();
+    return;
+  }
+  modalEmail.removeAttribute("aria-invalid");
+  modalError.textContent="";
+  modalSubmit.classList.add("btn--loading");
+  modalSubmit.setAttribute("aria-busy","true");
+  modalSubmit.innerHTML='<span class="btn__spin" aria-hidden="true"></span> Sending';
+  setTimeout(function(){
+    modalSubmit.classList.remove("btn--loading");
+    modalSubmit.removeAttribute("aria-busy");
+    modalSubmit.textContent="Request access";
+    modalForm.hidden=true;
+    modalSuccess.hidden=false;
+    showToast("Request received. Invitation follows shortly.");
+  },1200);
+});
+
+/* Band form */
+var bandForm=document.getElementById("band-form");
+var bandEmail=document.getElementById("band-email");
+var bandMsg=document.getElementById("band-msg");
+var bandSubmit=document.getElementById("band-submit");
+bandForm.addEventListener("submit",function(e){
+  e.preventDefault();
+  if(bandSubmit.classList.contains("btn--loading"))return;
+  bandMsg.className="band__msg";
+  if(!emailRe.test(bandEmail.value)){
+    bandMsg.classList.add("band__msg--error");
+    bandMsg.innerHTML='<span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px">error</span> Enter a valid email address.';
+    bandEmail.focus();
+    return;
+  }
+  bandSubmit.classList.add("btn--loading");
+  bandSubmit.setAttribute("aria-busy","true");
+  bandSubmit.innerHTML='<span class="btn__spin" aria-hidden="true"></span> Sending';
+  setTimeout(function(){
+    bandSubmit.classList.remove("btn--loading");
+    bandSubmit.removeAttribute("aria-busy");
+    bandSubmit.textContent="Get started";
+    bandMsg.classList.add("band__msg--ok");
+    bandMsg.innerHTML='<span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px">check_circle</span> Invitation requested. Check your inbox.';
+    bandForm.reset();
+    showToast("You are on the list.");
+  },1200);
+});
+
+/* Reveal on scroll */
+var revealEls=document.querySelectorAll(".reveal");
+if("IntersectionObserver" in window){
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(en,i){
+      if(en.isIntersecting){
+        en.target.style.transitionDelay=(i*60)+"ms";
+        en.target.classList.add("reveal--in");
+        io.unobserve(en.target);
+      }
+    });
+  },{threshold:.15});
+  revealEls.forEach(function(el){io.observe(el);});
+}else{
+  revealEls.forEach(function(el){el.classList.add("reveal--in");});
+}
+})();
+</script>
+</body>
+</html>

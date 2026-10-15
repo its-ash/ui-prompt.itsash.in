@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nimbus - Software with a human hand</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet">
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<style>
+:root{
+  --primary:#1A1A1A;--secondary:#8B7355;
+  --bg-primary:#F5F0E8;--bg-secondary:#EDE6D9;--bg-band:#E4DACA;
+  --text-primary:#1A1A1A;--text-secondary:#4A4A4A;
+  --text-success:#3E6B50;--text-error:#9B4444;
+  --on-accent:#F5F0E8;
+  --border-default:rgba(26,26,26,0.25);--border-error:#9B4444;--border-success:#3E6B50;
+  --watercolor-blue:#6B9BD2;--watercolor-pink:#D4A0A0;--watercolor-green:#7BA68C;
+  --radius-sm:2px;--radius-md:4px;--radius-lg:8px;
+  --shadow-sm:0 2px 8px rgba(26,26,26,0.12);--shadow-md:0 0 20px rgba(26,26,26,0.15);
+  --spacing-gap:1.5rem;
+  --transition-fast:120ms;--transition-normal:300ms;
+  --ease-standard:cubic-bezier(0.4,0,0.2,1);
+  --z-dropdown:50;--z-modal:100;--z-toast:200;
+  --font-base:'Libre Baskerville',Georgia,serif;--font-hand:'Caveat',cursive;
+  --frame:255px 15px 225px 15px / 15px 225px 15px 255px;
+  --frame-alt:15px 225px 15px 255px / 255px 15px 225px 15px;
+  --grain-opacity:.07;
+}
+:root[data-theme="dark"]{
+  --primary:#EDE6D9;--secondary:#C4A87E;
+  --bg-primary:#1C1915;--bg-secondary:#26221C;--bg-band:#211D17;
+  --text-primary:#EDE6D9;--text-secondary:#C9BFAE;
+  --text-success:#8FBF9F;--text-error:#D4A0A0;
+  --on-accent:#1C1915;
+  --border-default:rgba(237,230,217,0.3);--border-error:#D4A0A0;--border-success:#8FBF9F;
+  --watercolor-blue:#3A5A80;--watercolor-pink:#7A5050;--watercolor-green:#3E5E4C;
+  --shadow-sm:0 2px 8px rgba(0,0,0,0.4);--shadow-md:0 0 20px rgba(0,0,0,0.45);
+  --grain-opacity:.1;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);
+  line-height:1.6;font-size:1rem;overflow-x:hidden;
+  transition:background var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard);
+}
+body::before{
+  content:"";position:fixed;inset:0;z-index:var(--z-toast);pointer-events:none;
+  opacity:var(--grain-opacity);mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+img{max-width:100%;display:block}
+a{color:inherit}
+h1,h2,h3{line-height:1.12;letter-spacing:-0.02em;font-weight:700}
+h2{font-size:clamp(1.75rem,3.5vw,2.5rem);margin-bottom:0.75rem}
+p{max-width:65ch}
+.hand{font-family:var(--font-hand);font-weight:400}
+.material-symbols-outlined{font-family:'Material Symbols Outlined';font-style:normal;font-size:1.4em;line-height:1}
+.container{max-width:1200px;margin:0 auto;padding:0 1.25rem}
+@media(min-width:768px){.container{padding:0 2rem}}
+section{padding:clamp(4rem,8vw,7rem) 0;position:relative}
+.section-head{max-width:40rem;margin-bottom:3rem}
+.section-head p{color:var(--text-secondary);font-size:1.05rem}
+
+/* ---------- Nav ---------- */
+.nav{
+  position:sticky;top:0;z-index:var(--z-dropdown);
+  background:var(--bg-primary);border-bottom:1px solid var(--border-default);
+}
+.nav__inner{display:flex;align-items:center;justify-content:space-between;height:64px;gap:1rem}
+.nav__brand{display:flex;align-items:center;gap:.5rem;font-weight:700;font-size:1.15rem;text-decoration:none}
+.nav__brand .hand{color:var(--secondary);font-size:1.3rem}
+.nav__links{display:flex;align-items:center;gap:1.75rem;list-style:none}
+.nav__links a{text-decoration:none;font-size:.92rem;color:var(--text-secondary);border-bottom:2px solid transparent;transition:color var(--transition-fast) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.nav__links a:hover{color:var(--text-primary);border-bottom-color:var(--secondary)}}
+.nav__links a:focus-visible,.btn:focus-visible,button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{outline:2px dashed var(--secondary);outline-offset:3px}
+.nav__actions{display:flex;align-items:center;gap:.5rem}
+.icon-btn{
+  display:flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;
+  background:transparent;border:1px solid var(--border-default);border-radius:var(--frame-alt);
+  color:var(--text-primary);cursor:pointer;transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard);
+}
+@media(hover:hover) and (pointer:fine){.icon-btn:hover{box-shadow:var(--shadow-sm);transform:rotate(2deg)}}
+.icon-btn:active{transform:scale(.97)}
+#theme-toggle .icon-sun{display:none}
+:root[data-theme="dark"] #theme-toggle .icon-sun{display:block}
+:root[data-theme="dark"] #theme-toggle .icon-moon{display:none}
+.menu-btn{display:none}
+@media(max-width:767px){
+  .menu-btn{display:flex}
+  .nav__links{
+    display:none;position:absolute;top:64px;left:0;right:0;flex-direction:column;align-items:flex-start;
+    background:var(--bg-primary);border-bottom:1px solid var(--border-default);padding:1rem 1.25rem 1.5rem;gap:1rem;
+  }
+  .nav__links.is-open{display:flex}
+}
+
+/* ---------- Buttons ---------- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
+  min-height:44px;padding:.7rem 1.6rem;font-family:var(--font-base);font-size:1rem;font-weight:700;
+  text-decoration:none;cursor:pointer;border:2px solid var(--primary);
+  border-radius:var(--frame);transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard);
+  white-space:nowrap;
+}
+.btn--primary{background:var(--primary);color:var(--on-accent);box-shadow:var(--shadow-md)}
+.btn--ghost{background:transparent;color:var(--text-primary)}
+@media(hover:hover) and (pointer:fine){
+  .btn:hover{transform:rotate(.5deg) translateY(-2px);box-shadow:0 0 28px rgba(26,26,26,.22)}
+  :root[data-theme="dark"] .btn:hover{box-shadow:0 0 28px rgba(0,0,0,.55)}
+}
+.btn:active{transform:scale(.97)}
+.btn[disabled]{opacity:.5;filter:grayscale(1);cursor:not-allowed}
+
+/* ---------- Hero ---------- */
+.hero{padding-top:clamp(3rem,6vw,5rem)}
+.hero__grid{display:flex;align-items:center;gap:3rem}
+.hero__text{flex:1 1 52%;min-width:0}
+.hero__visual{flex:1 1 42%;min-width:0;display:flex;align-items:center;justify-content:center}
+.hero h1{font-size:clamp(2.25rem,5vw,3.75rem);margin-bottom:1rem}
+.hero__sub{color:var(--text-secondary);font-size:1.08rem;margin-bottom:1.75rem}
+.hero__ctas{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.squiggle{position:relative;display:inline-block}
+.squiggle svg{position:absolute;left:0;right:0;bottom:-.35em;width:100%;height:.4em}
+.squiggle path{stroke:var(--watercolor-pink);stroke-width:3;fill:none;stroke-linecap:round}
+.arrow-note{display:flex;align-items:center;gap:.5rem;margin-top:1.25rem;color:var(--secondary)}
+.arrow-note .hand{font-size:1.35rem;transform:rotate(-2deg)}
+.arrow-note svg{width:56px;height:28px;flex:none}
+.arrow-note path{stroke:var(--secondary);stroke-width:2.5;fill:none;stroke-linecap:round;stroke-dasharray:4 3}
+.hero__photo{
+  width:100%;max-width:420px;transform:rotate(2deg);
+  filter:saturate(.6) contrast(.95);
+  clip-path:polygon(2% 0,98% 1%,100% 96%,95% 100%,3% 99%,0 95%);
+  box-shadow:var(--shadow-md);
+}
+.hero__caption{font-family:var(--font-hand);font-size:1.25rem;color:var(--text-secondary);text-align:center;margin-top:.75rem;transform:rotate(-1deg)}
+@media(max-width:767px){
+  .hero__grid{flex-direction:column;align-items:flex-start;gap:2rem}
+  .hero__photo{transform:rotate(0);max-width:100%}
+}
+
+/* ---------- Splash backgrounds ---------- */
+.splash{position:relative}
+.splash::before{
+  content:"";position:absolute;inset:0;pointer-events:none;mix-blend-mode:multiply;opacity:.5;
+  background-image:
+    radial-gradient(ellipse 340px 240px at 12% 20%,var(--watercolor-green),transparent 70%),
+    radial-gradient(ellipse 300px 260px at 88% 75%,var(--watercolor-blue),transparent 70%);
+}
+.splash--pink::before{
+  background-image:
+    radial-gradient(ellipse 380px 260px at 50% 40%,var(--watercolor-pink),transparent 70%),
+    radial-gradient(ellipse 280px 220px at 85% 85%,var(--watercolor-green),transparent 70%);
+}
+.splash>*{position:relative}
+
+/* ---------- Cards ---------- */
+.cards{display:flex;gap:var(--spacing-gap);align-items:stretch}
+.card{
+  flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:.75rem;
+  background:var(--bg-secondary);border:2px solid var(--border-default);border-radius:var(--frame);
+  padding:1.75rem;box-shadow:var(--shadow-sm);
+  transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard);
+}
+.card:focus-within{border-color:var(--secondary)}
+@media(hover:hover) and (pointer:fine){.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}}
+.card__icon{display:flex;align-items:center;justify-content:center;width:52px;height:52px;border:2px solid var(--border-default);border-radius:var(--frame-alt);color:var(--secondary);background:var(--bg-primary)}
+.card__title{font-size:1.2rem}
+.card p{color:var(--text-secondary);font-size:.95rem}
+.tilt-left{transform:rotate(-1.2deg)}
+.tilt-right{transform:rotate(1.4deg)}
+.tilt-soft{transform:rotate(.6deg)}
+.offset-sm{margin-top:1.5rem}
+@media(hover:hover) and (pointer:fine){
+  .tilt-left:hover{transform:rotate(-1.2deg) translateY(-2px)}
+  .tilt-right:hover{transform:rotate(1.4deg) translateY(-2px)}
+  .tilt-soft:hover{transform:rotate(.6deg) translateY(-2px)}
+}
+@media(max-width:767px){
+  .cards{flex-direction:column}
+  .tilt-left,.tilt-right,.tilt-soft{transform:none}
+  .offset-sm{margin-top:0}
+}
+
+/* ---------- Steps ---------- */
+.steps{display:flex;gap:var(--spacing-gap);align-items:flex-start;list-style:none;counter-reset:step}
+.step{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:.6rem;position:relative}
+.step__num{
+  display:flex;align-items:center;justify-content:center;width:56px;height:56px;
+  font-family:var(--font-hand);font-size:1.9rem;color:var(--on-accent);background:var(--primary);
+  border-radius:var(--frame);box-shadow:var(--shadow-sm);
+}
+.step h3{font-size:1.15rem}
+.step p{color:var(--text-secondary);font-size:.95rem}
+.step__arrow{align-self:center;flex:none;width:44px}
+.step__arrow path{stroke:var(--secondary);stroke-width:2.5;fill:none;stroke-linecap:round;stroke-dasharray:5 4}
+@media(max-width:767px){
+  .steps{flex-direction:column;gap:2rem}
+  .step__arrow{display:none}
+}
+
+/* ---------- Testimonials ---------- */
+.quote-card{background:var(--bg-secondary)}
+.quote-card blockquote{font-style:italic;font-size:1.02rem;color:var(--text-primary)}
+.quote-card__sig{display:flex;align-items:center;gap:.85rem;margin-top:.5rem}
+.monogram{
+  display:flex;align-items:center;justify-content:center;width:46px;height:46px;flex:none;
+  background:var(--watercolor-green);color:#fff;font-weight:700;border-radius:var(--frame-alt);font-size:.95rem;
+}
+.monogram--pink{background:var(--watercolor-pink)}
+.quote-card__who{font-size:.85rem;color:var(--text-secondary)}
+.quote-card__name{font-family:var(--font-hand);font-size:1.5rem;color:var(--text-primary);line-height:1.1}
+
+/* ---------- Pricing ---------- */
+.pricing .card__price{font-size:2.1rem;font-weight:700;letter-spacing:-0.02em}
+.pricing .card__price span{font-size:.9rem;font-weight:400;color:var(--text-secondary)}
+.card__list{list-style:none;display:flex;flex-direction:column;gap:.55rem;font-size:.92rem;color:var(--text-secondary);margin:.5rem 0 1.25rem}
+.card__list li{display:flex;align-items:center;gap:.55rem}
+.card__list .material-symbols-outlined{color:var(--text-success);font-size:1.15em}
+.card .btn{margin-top:auto;width:100%}
+.card--featured{
+  background:var(--bg-primary);border-color:var(--primary);border-width:3px;
+  box-shadow:var(--shadow-md);position:relative;
+}
+:root[data-theme="dark"] .card--featured{background:var(--bg-secondary);border-color:var(--secondary)}
+.card--featured::before{
+  content:"";position:absolute;inset:-14px;z-index:-1;mix-blend-mode:multiply;opacity:.55;
+  background:radial-gradient(ellipse at 50% 30%,var(--watercolor-pink),transparent 70%);
+}
+.card__badge{
+  position:absolute;top:-14px;left:50%;transform:translateX(-50%) rotate(-2deg);
+  font-family:var(--font-hand);font-size:1.15rem;background:var(--primary);color:var(--on-accent);
+  padding:.15rem 1rem;border-radius:var(--frame);
+}
+
+/* ---------- FAQ ---------- */
+.faq{max-width:46rem}
+.faq details{border-bottom:2px dashed var(--border-default);padding:1.1rem 0}
+.faq summary{
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;cursor:pointer;
+  font-weight:700;font-size:1.05rem;list-style:none;min-height:44px;
+}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary .material-symbols-outlined{transition:transform var(--transition-normal) var(--ease-standard);color:var(--secondary);flex:none}
+.faq details[open] summary .material-symbols-outlined{transform:rotate(45deg)}
+.faq details p{padding:.75rem 0 .25rem;color:var(--text-secondary);font-size:.95rem}
+
+/* ---------- CTA band ---------- */
+.cta-band{background:var(--bg-band);text-align:center}
+.cta-band .section-head{margin:0 auto 2rem}
+.cta-band h2{font-size:clamp(2rem,4.5vw,3rem)}
+.cta-band .hand{display:block;font-size:1.5rem;color:var(--secondary);margin-top:.5rem;transform:rotate(-1deg)}
+
+/* ---------- Footer ---------- */
+footer{border-top:2px dashed var(--border-default);padding:3.5rem 0 2rem;background:var(--bg-secondary)}
+.footer__grid{display:flex;gap:2.5rem;align-items:flex-start;flex-wrap:wrap;justify-content:space-between}
+.footer__col{display:flex;flex-direction:column;align-items:flex-start;gap:.6rem;min-width:140px}
+.footer__col h3{font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-secondary);margin-bottom:.25rem}
+.footer__col a{text-decoration:none;font-size:.92rem;color:var(--text-secondary)}
+@media(hover:hover) and (pointer:fine){.footer__col a:hover{color:var(--text-primary);text-decoration:underline wavy var(--secondary)}}
+.news{display:flex;flex-direction:column;gap:.4rem;min-width:min(280px,100%)}
+.news label{font-size:.92rem;font-weight:700}
+.news__row{display:flex;gap:.5rem;align-items:stretch}
+.news input{
+  flex:1;min-width:0;min-height:44px;padding:.55rem .9rem;font-family:var(--font-base);font-size:.95rem;
+  background:var(--bg-primary);color:var(--text-primary);border:2px solid var(--border-default);border-radius:var(--frame-alt);
+}
+.news input::placeholder{color:var(--text-secondary)}
+.news input:focus{outline:2px dashed var(--secondary);outline-offset:2px}
+.news input.is-valid{border-color:var(--border-success)}
+.news input.is-invalid{border-color:var(--border-error)}
+.news__hint{font-size:.8rem;color:var(--text-secondary)}
+.news__msg{font-size:.85rem;min-height:1.3em}
+.news__msg.is-error{color:var(--text-error)}
+.news__msg.is-ok{color:var(--text-success)}
+.footer__bottom{margin-top:2.5rem;padding-top:1.25rem;border-top:1px solid var(--border-default);display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;font-size:.82rem;color:var(--text-secondary)}
+
+/* ---------- Reveal ---------- */
+.reveal{opacity:0;transform:translateY(14px) scale(.97);transition:opacity .5s var(--ease-standard),transform .5s var(--ease-standard)}
+.reveal.is-in{opacity:1;transform:none}
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{transition-duration:.15s!important;animation:none!important}
+  .reveal{transform:none}
+  .tilt-left,.tilt-right,.tilt-soft,.hero__photo,.arrow-note .hand,.cta-band .hand{transform:none!important}
+}
+@media (prefers-reduced-transparency: reduce){.splash::before,.card--featured::before{opacity:.9;mix-blend-mode:normal}}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="container nav__inner">
+    <a class="nav__brand" href="#top">Nimbus <span class="hand">made by hand</span></a>
+    <nav aria-label="Main">
+      <ul class="nav__links" id="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+    </nav>
+    <div class="nav__actions">
+      <button class="icon-btn" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-outlined icon-moon" aria-hidden="true">dark_mode</span>
+        <span class="material-symbols-outlined icon-sun" aria-hidden="true">light_mode</span>
+      </button>
+      <button class="icon-btn menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">
+        <span class="material-symbols-outlined" aria-hidden="true">menu</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- HERO -->
+  <section class="hero splash">
+    <div class="container hero__grid">
+      <div class="hero__text">
+        <h1>Notes that feel <span class="squiggle">written<svg viewBox="0 0 120 12" preserveAspectRatio="none" aria-hidden="true"><path d="M2 8 C 20 3, 40 10, 60 6 S 100 4, 118 7"/></svg></span>, not typed.</h1>
+        <p class="hero__sub">Nimbus is a quiet notebook app for people who think in margins, coffee rings, and half-finished sentences.</p>
+        <div class="hero__ctas">
+          <a class="btn btn--primary" href="#pricing">Start writing</a>
+          <a class="btn btn--ghost" href="#how">See how it works</a>
+        </div>
+        <div class="arrow-note">
+          <svg viewBox="0 0 60 30" aria-hidden="true"><path d="M4 4 C 20 18, 34 22, 52 20 M 44 14 L 53 20 L 45 26"/></svg>
+          <span class="hand">this one, it is free to try</span>
+        </div>
+      </div>
+      <div class="hero__visual">
+        <figure>
+          <img class="hero__photo" src="https://picsum.photos/seed/wabi-desk-notebook/640/760" alt="A worn paper notebook open on a wooden desk beside a cup of tea" width="640" height="760">
+          <figcaption class="hero__caption">an actual desk, not a render</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features" id="features">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2>Built slow, on purpose</h2>
+        <p>Three things Nimbus does well. It politely refuses to do the rest.</p>
+      </div>
+      <div class="cards">
+        <article class="card tilt-left reveal">
+          <span class="card__icon"><span class="material-symbols-outlined" aria-hidden="true">edit_note</span></span>
+          <h3 class="card__title">Paper-first editor</h3>
+          <p>A page that behaves like paper. No toolbars shouting at you, no badges, no streaks. Just ink, margins, and room to wander.</p>
+        </article>
+        <article class="card tilt-soft offset-sm reveal">
+          <span class="card__icon"><span class="material-symbols-outlined" aria-hidden="true">ink_pen</span></span>
+          <h3 class="card__title">Honest search</h3>
+          <p>Find notes by the words you actually wrote, including the misspelled ones. We index your typos because that is how memory works.</p>
+        </article>
+        <article class="card tilt-right reveal">
+          <span class="card__icon"><span class="material-symbols-outlined" aria-hidden="true">cloud_off</span></span>
+          <h3 class="card__title">Offline by default</h3>
+          <p>Your notes live on your device first. Sync happens when you ask for it, over a connection you choose. Airplane mode is a feature.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="how splash" id="how">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2>Three steps, no ceremony</h2>
+        <p>From download to first sentence in about a minute.</p>
+      </div>
+      <ol class="steps">
+        <li class="step reveal">
+          <span class="step__num" aria-hidden="true">1</span>
+          <h3>Open a blank page</h3>
+          <p>No onboarding tour, no template gallery. One honest page, dated today, waiting for you.</p>
+        </li>
+        <svg class="step__arrow" viewBox="0 0 44 24" aria-hidden="true"><path d="M3 12 C 14 4, 26 20, 38 10 M 32 6 L 39 10 L 33 16"/></svg>
+        <li class="step reveal">
+          <span class="step__num" aria-hidden="true">2</span>
+          <h3>Write badly first</h3>
+          <p>Drafts stay drafts until you mark them done. Crossed-out lines are kept, because the mess is the thinking.</p>
+        </li>
+        <svg class="step__arrow" viewBox="0 0 44 24" aria-hidden="true"><path d="M3 10 C 16 20, 28 4, 38 12 M 32 8 L 39 12 L 32 17"/></svg>
+        <li class="step reveal">
+          <span class="step__num" aria-hidden="true">3</span>
+          <h3>Stitch pages together</h3>
+          <p>Link notes by hand with a simple [[double bracket]]. Over time your notebook becomes a map of your mind.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="testimonials" id="testimonials">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2>People who stopped optimizing</h2>
+        <p>Notes from users, lightly edited for spelling.</p>
+      </div>
+      <div class="cards">
+        <article class="card quote-card tilt-left reveal">
+          <blockquote>&ldquo;I deleted four productivity apps after a week with Nimbus. It turns out I did not need a system. I needed a page.&rdquo;</blockquote>
+          <div class="quote-card__sig">
+            <span class="monogram" aria-hidden="true">MR</span>
+            <div>
+              <div class="quote-card__name">Marta Reyes</div>
+              <div class="quote-card__who">Ceramicist &amp; studio teacher, Portland</div>
+            </div>
+          </div>
+        </article>
+        <article class="card quote-card tilt-right offset-sm reveal">
+          <blockquote>&ldquo;The search finds my typos. My typos. It feels like the app actually reads my handwriting, metaphorically speaking.&rdquo;</blockquote>
+          <div class="quote-card__sig">
+            <span class="monogram monogram--pink" aria-hidden="true">TO</span>
+            <div>
+              <div class="quote-card__name">Tunde Okafor</div>
+              <div class="quote-card__who">Field researcher, Lagos</div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="pricing splash" id="pricing">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2>Pay once, or pay a little</h2>
+        <p>No seats, no tiers of AI, no annual lock-in tricks.</p>
+      </div>
+      <div class="cards">
+        <article class="card tilt-left reveal">
+          <h3 class="card__title">Scrap</h3>
+          <p class="card__price">$0 <span>forever</span></p>
+          <ul class="card__list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>One notebook, unlimited pages</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Offline first, always</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Export to plain text</li>
+          </ul>
+          <a class="btn btn--ghost" href="#faq">Start free</a>
+        </article>
+        <article class="card card--featured reveal">
+          <span class="card__badge">most chosen</span>
+          <h3 class="card__title">Bound</h3>
+          <p class="card__price">$4 <span>/ month</span></p>
+          <ul class="card__list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Unlimited notebooks</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Optional end-to-end encrypted sync</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Hand-drawn themes and inks</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Typo-tolerant search</li>
+          </ul>
+          <a class="btn btn--primary" href="#faq">Start writing</a>
+        </article>
+        <article class="card tilt-right reveal">
+          <h3 class="card__title">Archive</h3>
+          <p class="card__price">$60 <span>once</span></p>
+          <ul class="card__list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Everything in Bound, forever</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Printed yearly digest of your pages</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Founding reader badge</li>
+          </ul>
+          <a class="btn btn--ghost" href="#faq">Buy once</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="faq-section" id="faq">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2>Fair questions</h2>
+        <p>Asked often, answered plainly.</p>
+      </div>
+      <div class="faq reveal">
+        <details>
+          <summary>Does Nimbus use AI to write for me?<span class="material-symbols-outlined" aria-hidden="true">add</span></summary>
+          <p>No. There is no autocomplete, no summary bot, no generated anything. Nimbus stores your words and finds them later. The thinking is entirely your job.</p>
+        </details>
+        <details>
+          <summary>What happens to my notes if you shut down?<span class="material-symbols-outlined" aria-hidden="true">add</span></summary>
+          <p>Every page can be exported to plain text or PDF at any time, on every plan including the free one. Your notes are files, not hostages.</p>
+        </details>
+        <details>
+          <summary>Can I sync between my phone and laptop?<span class="material-symbols-outlined" aria-hidden="true">add</span></summary>
+          <p>Yes, on the Bound and Archive plans. Sync is end-to-end encrypted and off by default. You turn it on, choose a passphrase, and we never see your pages.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="cta-band splash splash--pink">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2>Your next thought deserves paper</h2>
+        <p>Download Nimbus, open one page, and write one true sentence. That is the whole pitch.</p>
+        <span class="hand">no credit card, no newsletter trap</span>
+      </div>
+      <a class="btn btn--primary" href="#pricing">Start writing</a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__col">
+        <h3>Nimbus</h3>
+        <a href="#features">Features</a>
+        <a href="#how">How it works</a>
+        <a href="#pricing">Pricing</a>
+      </div>
+      <div class="footer__col">
+        <h3>Company</h3>
+        <a href="#top">About the studio</a>
+        <a href="#top">Journal</a>
+        <a href="#top">Privacy, in plain words</a>
+      </div>
+      <form class="news" id="news-form" novalidate>
+        <label for="news-email">Occasional letters</label>
+        <div class="news__row">
+          <input id="news-email" name="email" type="email" placeholder="you@example.com" autocomplete="email" aria-describedby="news-hint news-msg">
+          <button class="btn btn--primary" type="submit">Join</button>
+        </div>
+        <span class="news__hint" id="news-hint">One letter a month. Unsubscribe anytime.</span>
+        <span class="news__msg" id="news-msg" aria-live="polite"></span>
+      </form>
+    </div>
+    <div class="footer__bottom">
+      <span>&copy; 2026 Nimbus Studio. Made slowly.</span>
+      <span class="hand">thanks for reading this far</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var root=document.documentElement;
+
+  /* Theme toggle */
+  var toggle=document.getElementById("theme-toggle");
+  function paintToggle(){
+    var dark=root.dataset.theme==="dark";
+    toggle.setAttribute("aria-pressed",String(dark));
+    toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+  }
+  toggle.addEventListener("click",function(){
+    root.dataset.theme=root.dataset.theme==="dark"?"light":"dark";
+    localStorage.setItem("theme",root.dataset.theme);
+    paintToggle();
+  });
+  paintToggle();
+
+  /* Mobile menu */
+  var menuBtn=document.getElementById("menu-btn");
+  var links=document.getElementById("nav-links");
+  function closeMenu(){links.classList.remove("is-open");menuBtn.setAttribute("aria-expanded","false");}
+  menuBtn.addEventListener("click",function(){
+    var open=links.classList.toggle("is-open");
+    menuBtn.setAttribute("aria-expanded",String(open));
+  });
+  links.addEventListener("click",function(e){if(e.target.tagName==="A")closeMenu();});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape")closeMenu();});
+
+  /* Reveal on scroll with stagger */
+  var items=document.querySelectorAll(".reveal");
+  if("IntersectionObserver" in window){
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){
+          var el=en.target;
+          var sibs=Array.prototype.slice.call(el.parentElement.children).filter(function(n){return n.classList&&n.classList.contains("reveal");});
+          var i=sibs.indexOf(el);
+          el.style.transitionDelay=(Math.max(0,i)*70)+"ms";
+          el.classList.add("is-in");
+          io.unobserve(el);
+        }
+      });
+    },{threshold:0.15});
+    items.forEach(function(el){io.observe(el);});
+  }else{
+    items.forEach(function(el){el.classList.add("is-in");});
+  }
+
+  /* Newsletter validation */
+  var form=document.getElementById("news-form");
+  var input=document.getElementById("news-email");
+  var msg=document.getElementById("news-msg");
+  form.addEventListener("submit",function(e){
+    e.preventDefault();
+    var v=input.value.trim();
+    input.classList.remove("is-valid","is-invalid");
+    msg.classList.remove("is-error","is-ok");
+    if(!v||!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)){
+      input.classList.add("is-invalid");
+      msg.classList.add("is-error");
+      msg.textContent="That address looks smudged. Check it and try again.";
+      input.focus();
+      return;
+    }
+    input.classList.add("is-valid");
+    msg.classList.add("is-ok");
+    msg.textContent="Welcome aboard. First letter arrives next month.";
+    form.reset();
+  });
+})();
+</script>
+</body>
+</html>

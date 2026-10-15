@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Astryx - A calmer workspace for focused teams</title>
+<meta name="description" content="Astryx is a neutral, minimal workspace that brings tasks, docs and team rhythm into one calm surface. Free to start.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,500,0,0&display=block" rel="stylesheet">
+<script>
+(function(){var t=localStorage.getItem('theme');if(t!=='dark'&&t!=='light'){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}document.documentElement.dataset.theme=t;})();
+</script>
+<style>
+@layer tokens,reset,layout,components,utilities;
+@layer tokens{
+:root{
+--font-base:'Figtree',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+--primary:#15110C;--secondary:#4E606F;
+--bg-primary:#F8F4ED;--bg-secondary:#fefefe;
+--text-primary:#15110C;--text-secondary:#4E606F;
+--text-success:#1E6B40;--text-error:#B3261E;
+--border-default:rgba(5,54,89,.10);--border-strong:rgba(21,17,12,.22);
+--border-success:var(--text-success);--border-error:var(--text-error);
+--on-primary:#F8F4ED;
+--radius-sm:8px;--radius-md:12px;--radius-lg:20px;
+--shadow-sm:0 1px 2px rgba(21,17,12,.05);--shadow-md:0 10px 30px rgba(21,17,12,.07);
+--transition-fast:175ms;--transition-normal:410ms;
+--ease-standard:cubic-bezier(.24,1,.4,1);
+--z-dropdown:100;--z-modal:200;--z-toast:300;
+}
+:root[data-theme="dark"]{
+--primary:#F4F1EA;--secondary:#A3ACB6;
+--bg-primary:#111112;--bg-secondary:#1F1F22;
+--text-primary:#F4F1EA;--text-secondary:#A3ACB6;
+--text-success:#6BC98F;--text-error:#F2A2A2;
+--border-default:rgba(244,241,234,.12);--border-strong:rgba(244,241,234,.28);
+--on-primary:#15110C;
+--shadow-sm:0 1px 2px rgba(0,0,0,.3);--shadow-md:0 10px 30px rgba(0,0,0,.4);
+}
+}
+@layer reset{
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;-webkit-font-smoothing:antialiased;transition:background-color var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard)}
+img{max-width:100%}
+[hidden]{display:none!important}
+::selection{background:var(--primary);color:var(--bg-primary)}
+h1,h2,h3{line-height:1.1;letter-spacing:-.02em;font-weight:700}
+.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 500,'GRAD' 0,'opsz' 24;font-size:1.5rem;line-height:1;user-select:none}
+}
+@layer layout{
+.container{max-width:1120px;margin-inline:auto;padding-inline:1.25rem}
+.section{padding-block:clamp(4rem,8vw,6.5rem);scroll-margin-top:5.5rem}
+.section__head{max-width:44rem;margin:0 auto 3rem;text-align:center}
+.section__title{font-size:clamp(1.75rem,3.5vw,2.5rem);margin-bottom:.75rem}
+.section__sub{color:var(--text-secondary);font-size:1.0625rem;max-width:38rem;margin-inline:auto}
+@media(min-width:768px){.container{padding-inline:2rem}}
+}
+@layer components{
+/* Skip link */
+.skip-link{position:absolute;left:1rem;top:-4rem;background:var(--primary);color:var(--on-primary);padding:.75rem 1.25rem;border-radius:var(--radius-sm);z-index:var(--z-toast);text-decoration:none;font-weight:600;transition:top var(--transition-fast) var(--ease-standard)}
+.skip-link:focus{top:1rem}
+/* Header */
+.header{position:sticky;top:0;z-index:var(--z-dropdown);background:color-mix(in srgb,var(--bg-secondary) 82%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--border-default);transition:background-color var(--transition-normal) var(--ease-standard),border-color var(--transition-normal) var(--ease-standard)}
+.header__inner{display:flex;align-items:center;justify-content:space-between;height:64px;gap:1rem}
+.header__brand{font-weight:800;font-size:1.25rem;letter-spacing:-.02em;color:var(--text-primary);text-decoration:none;display:flex;align-items:center;gap:.5rem}
+.header__brand .material-symbols-outlined{font-size:1.35rem}
+.header__nav{display:none}
+.header__actions{display:flex;align-items:center;gap:.5rem}
+.header__menu-btn{display:flex}
+@media(min-width:768px){
+.header__nav{display:flex;align-items:center;gap:1.75rem}
+.header__menu-btn{display:none}
+}
+.nav__link{color:var(--text-secondary);text-decoration:none;font-weight:500;font-size:.9375rem;transition:color var(--transition-fast) var(--ease-standard)}
+.nav__link:hover{color:var(--text-primary)}
+.mobile-nav{display:flex;flex-direction:column;gap:.25rem;padding:1rem 1.25rem 1.5rem;border-bottom:1px solid var(--border-default);background:var(--bg-secondary)}
+.mobile-nav .nav__link{padding:.75rem .5rem;font-size:1rem;border-radius:var(--radius-sm)}
+/* Buttons */
+.btn{display:flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:.875rem 1.75rem;border-radius:var(--radius-md);font-family:var(--font-base);font-weight:600;font-size:.9375rem;border:1px solid transparent;cursor:pointer;text-decoration:none;transition:background-color var(--transition-fast) var(--ease-standard),color var(--transition-fast) var(--ease-standard),border-color var(--transition-fast) var(--ease-standard),transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard)}
+.btn--primary{background:var(--primary);color:var(--on-primary)}
+.btn--primary:hover{box-shadow:var(--shadow-md)}
+.btn--secondary{background:transparent;color:var(--text-primary);border-color:var(--border-default)}
+.btn--secondary:hover{border-color:var(--border-strong)}
+.btn--icon{width:44px;height:44px;padding:0;background:transparent;color:var(--text-primary);border-color:var(--border-default)}
+.btn--icon:hover{border-color:var(--border-strong)}
+.btn--danger{background:var(--text-error);color:#fff}
+.btn--success{background:var(--text-success);color:#fff;border-color:var(--border-success)}
+.btn--error{background:var(--text-error);color:#fff;border-color:var(--border-error)}
+.btn:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.btn:active{transform:scale(.97)}
+.btn[disabled]{opacity:.5;filter:grayscale(1);cursor:not-allowed}
+.btn.is-loading{pointer-events:none}
+.btn.is-loading .btn__label{visibility:hidden}
+.btn.is-loading::after{content:"";position:absolute;width:1.1rem;height:1.1rem;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite}
+.btn{position:relative}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* Hero */
+.hero{padding-top:clamp(3.5rem,7vw,5.5rem);padding-bottom:clamp(4rem,8vw,6rem)}
+.hero__inner{display:flex;flex-direction:column;align-items:center;text-align:center;gap:1.5rem}
+.hero__badge{display:inline-flex;align-items:center;gap:.5rem;padding:.375rem .875rem;border:1px solid var(--border-default);border-radius:999px;font-size:.8125rem;font-weight:600;color:var(--text-secondary);background:var(--bg-secondary)}
+.hero__title{font-size:clamp(2.25rem,5.5vw,3.75rem);max-width:16ch}
+.hero__sub{color:var(--text-secondary);font-size:clamp(1rem,1.5vw,1.125rem);max-width:34rem}
+.hero__ctas{display:flex;flex-wrap:wrap;gap:.75rem;justify-content:center}
+.hero__meta{display:flex;flex-wrap:wrap;gap:.5rem 1.5rem;justify-content:center;font-size:.8125rem;color:var(--text-secondary);font-weight:500}
+.hero__meta span{display:flex;align-items:center;gap:.375rem}
+.hero__meta .material-symbols-outlined{font-size:1rem}
+/* Hero visual: CSS dashboard cluster */
+.hero__visual{margin-top:2.5rem;width:100%;max-width:52rem;display:flex;gap:1rem;align-items:stretch}
+.panel{flex:1 1 0;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:1.25rem;display:flex;flex-direction:column;gap:.875rem;box-shadow:var(--shadow-sm);text-align:left;transition:background-color var(--transition-normal) var(--ease-standard),border-color var(--transition-normal) var(--ease-standard)}
+.panel--side{flex:0 0 30%;display:none}
+@media(min-width:768px){.panel--side{display:flex}}
+.panel__row{display:flex;align-items:center;gap:.625rem}
+.panel__dot{width:.625rem;height:.625rem;border-radius:50%;background:var(--border-strong);flex:none}
+.panel__dot--accent{background:var(--primary)}
+.panel__label{font-size:.75rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em}
+.panel__bar{height:.5rem;border-radius:999px;background:var(--border-default)}
+.panel__bar--fill{background:var(--primary);width:64%}
+.panel__bar--mid{width:82%}
+.panel__bar--short{width:45%}
+.panel__stat{font-size:1.75rem;font-weight:800;letter-spacing:-.03em}
+.panel__stat-sub{font-size:.8125rem;color:var(--text-secondary)}
+.panel__chip{display:inline-flex;align-items:center;gap:.375rem;align-self:flex-start;font-size:.75rem;font-weight:600;color:var(--text-success);border:1px solid var(--border-success);border-radius:999px;padding:.25rem .625rem}
+.panel__chip .material-symbols-outlined{font-size:.875rem}
+.panel__divider{height:1px;background:var(--border-default)}
+/* Cards */
+.card{display:flex;flex-direction:column;align-items:center;text-align:center;gap:.875rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:1.75rem;transition:transform var(--transition-normal) var(--ease-standard),border-color var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),background-color var(--transition-normal) var(--ease-standard)}
+.card:hover{transform:translateY(-2px);border-color:var(--border-strong);box-shadow:var(--shadow-sm)}
+.card:focus-within{border-color:var(--primary)}
+.card__icon{display:flex;align-items:center;justify-content:center;width:3rem;height:3rem;border-radius:var(--radius-md);border:1px solid var(--border-default);color:var(--text-primary);background:var(--bg-primary)}
+.card__title{font-size:1.125rem;font-weight:700}
+.card__text{color:var(--text-secondary);font-size:.9375rem}
+.card-row{display:flex;flex-wrap:wrap;gap:1.5rem}
+.card-row>.card{flex:1 1 280px}
+/* Steps */
+.steps{display:flex;flex-direction:column;gap:2.5rem;position:relative}
+.step{display:flex;flex-direction:column;align-items:flex-start;gap:.75rem;flex:1 1 0}
+.step__num{font-size:.8125rem;font-weight:800;letter-spacing:.12em;color:var(--text-secondary)}
+.step__icon{display:flex;align-items:center;justify-content:center;width:3rem;height:3rem;border-radius:50%;background:var(--primary);color:var(--on-primary)}
+.step__title{font-size:1.125rem;font-weight:700}
+.step__text{color:var(--text-secondary);font-size:.9375rem}
+@media(min-width:768px){
+.steps{flex-direction:row;gap:2rem}
+.steps::before{content:"";position:absolute;top:1.5rem;left:8%;right:8%;height:1px;background:var(--border-strong)}
+.step{position:relative}
+}
+/* Testimonials */
+.quote-card{align-items:flex-start;text-align:left}
+.quote-card .material-symbols-outlined{color:var(--text-secondary)}
+.quote-card__text{font-size:1rem}
+.quote-card__person{display:flex;align-items:center;gap:.75rem;margin-top:.25rem}
+.avatar{display:flex;align-items:center;justify-content:center;width:2.75rem;height:2.75rem;border-radius:50%;background:var(--primary);color:var(--on-primary);font-weight:700;font-size:.875rem;flex:none}
+.quote-card__name{font-weight:700;font-size:.9375rem}
+.quote-card__role{color:var(--text-secondary);font-size:.8125rem}
+/* Pricing */
+.billing{display:flex;align-items:center;justify-content:center;gap:.875rem;margin-bottom:2.5rem;font-weight:600;font-size:.9375rem}
+.billing__save{font-size:.75rem;color:var(--text-success);border:1px solid var(--border-success);border-radius:999px;padding:.125rem .5rem;font-weight:700}
+.switch{position:relative;width:52px;height:28px;border-radius:999px;background:var(--border-strong);border:none;cursor:pointer;transition:background-color var(--transition-fast) var(--ease-standard);flex:none}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--bg-secondary);transition:transform var(--transition-fast) var(--ease-standard)}
+.switch[aria-checked="true"]{background:var(--primary)}
+.switch[aria-checked="true"]::after{transform:translateX(24px)}
+.switch:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.pricing__tier{align-items:stretch;text-align:left;gap:1.25rem}
+.pricing__tier--featured{background:var(--primary);color:var(--bg-primary);border-color:var(--primary);box-shadow:var(--shadow-md)}
+:root[data-theme="dark"] .pricing__tier--featured{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
+.pricing__tier--featured .pricing__desc,:root[data-theme="dark"] .pricing__tier--featured .pricing__desc{color:color-mix(in srgb,currentColor 72%,transparent)}
+.pricing__badge{align-self:flex-start;font-size:.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border:1px solid currentColor;border-radius:999px;padding:.25rem .75rem}
+.pricing__name{font-size:1.25rem;font-weight:800}
+.pricing__price{display:flex;align-items:baseline;gap:.375rem;min-height:3rem}
+.pricing__amount{font-size:2.5rem;font-weight:800;letter-spacing:-.03em;display:inline-block;min-width:3.5ch}
+.pricing__per{color:var(--text-secondary);font-size:.875rem}
+.pricing__tier--featured .pricing__per{color:inherit;opacity:.7}
+.pricing__desc{color:var(--text-secondary);font-size:.9375rem}
+.pricing__list{list-style:none;display:flex;flex-direction:column;gap:.625rem;align-items:flex-start;flex:1}
+.pricing__list li{display:flex;align-items:flex-start;gap:.5rem;font-size:.9375rem}
+.pricing__list .material-symbols-outlined{font-size:1.125rem;margin-top:.2rem;color:var(--text-success)}
+.pricing__tier--featured .pricing__list .material-symbols-outlined{color:inherit}
+.pricing__tier .btn{width:100%}
+.pricing__tier--featured .btn--primary{background:var(--bg-primary);color:var(--text-primary)}
+:root[data-theme="dark"] .pricing__tier--featured .btn--primary{background:var(--bg-primary);color:var(--text-primary)}
+.pricing__note{text-align:center;color:var(--text-secondary);font-size:.8125rem;margin-top:1.5rem;min-height:1.25rem}
+/* FAQ */
+.faq{max-width:44rem;margin-inline:auto;display:flex;flex-direction:column;gap:.75rem}
+.faq__item{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);transition:border-color var(--transition-fast) var(--ease-standard),background-color var(--transition-normal) var(--ease-standard)}
+.faq__item:has(.faq__trigger[aria-expanded="true"]){border-color:var(--border-strong)}
+.faq__trigger{display:flex;align-items:center;justify-content:space-between;gap:1rem;width:100%;padding:1.125rem 1.25rem;background:none;border:none;font-family:var(--font-base);font-size:1rem;font-weight:600;color:var(--text-primary);text-align:left;cursor:pointer;min-height:44px}
+.faq__trigger .material-symbols-outlined{transition:transform var(--transition-normal) var(--ease-standard);flex:none}
+.faq__trigger[aria-expanded="true"] .material-symbols-outlined{transform:rotate(180deg)}
+.faq__trigger:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:var(--radius-md)}
+.faq__panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--transition-normal) var(--ease-standard)}
+.faq__panel--open{grid-template-rows:1fr}
+.faq__panel-inner{overflow:hidden}
+.faq__panel p{padding:0 1.25rem 1.25rem;color:var(--text-secondary);font-size:.9375rem}
+/* CTA band */
+.cta-band{background:var(--primary);color:var(--bg-primary);border-radius:var(--radius-lg);padding:clamp(2.5rem,6vw,4.5rem);text-align:center;display:flex;flex-direction:column;align-items:center;gap:1.25rem}
+:root[data-theme="dark"] .cta-band{background:var(--primary);color:var(--on-primary)}
+.cta-band__title{font-size:clamp(1.75rem,3.5vw,2.5rem);max-width:20ch}
+.cta-band__sub{opacity:.75;max-width:32rem}
+.cta-form{display:flex;flex-wrap:wrap;gap:.75rem;justify-content:center;width:100%;max-width:32rem}
+.input-group{display:flex;flex-direction:column;gap:.375rem;flex:1 1 240px;text-align:left}
+.input-group__label{font-size:.8125rem;font-weight:600}
+.input-group__field{width:100%;min-height:48px;padding:.75rem 1rem;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);font-family:var(--font-base);font-size:.9375rem;transition:border-color var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard)}
+.input-group__field::placeholder{color:var(--text-secondary)}
+.input-group__field:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 18%,transparent)}
+.cta-band .input-group__field{background:color-mix(in srgb,var(--bg-primary) 12%,transparent);color:inherit;border-color:color-mix(in srgb,currentColor 35%,transparent)}
+.cta-band .input-group__field::placeholder{color:color-mix(in srgb,currentColor 60%,transparent)}
+.cta-band .input-group__field:focus{border-color:currentColor;box-shadow:0 0 0 3px color-mix(in srgb,currentColor 20%,transparent)}
+.input-group.is-invalid .input-group__field{border-color:var(--border-error)}
+.cta-band .input-group.is-invalid .input-group__field{border-color:var(--text-error)}
+.input-group.is-valid .input-group__field{border-color:var(--border-success)}
+.input-group__error{display:flex;align-items:center;gap:.375rem;min-height:1.25rem;font-size:.8125rem;color:var(--text-error)}
+.cta-band .input-group__error{color:var(--text-error)}
+:root[data-theme="dark"] .cta-band .input-group__error{color:#F2A2A2}
+.cta-band .input-group__error .material-symbols-outlined{font-size:1rem}
+.cta-form__submit{align-self:flex-end}
+.cta-band .btn--primary{background:var(--bg-primary);color:var(--text-primary)}
+.cta-band .btn--success{background:var(--text-success);color:#fff}
+.cta-form__success{display:flex;align-items:center;justify-content:center;gap:.5rem;font-weight:600;min-height:1.5rem}
+.cta-form__success .material-symbols-outlined{color:var(--text-success)}
+/* Footer */
+.footer{border-top:1px solid var(--border-default);padding:3.5rem 0 2rem;background:var(--bg-secondary);transition:background-color var(--transition-normal) var(--ease-standard),border-color var(--transition-normal) var(--ease-standard)}
+.footer__grid{display:flex;flex-wrap:wrap;gap:2.5rem}
+.footer__brand{flex:1 1 260px;display:flex;flex-direction:column;gap:.75rem;align-items:flex-start}
+.footer__blurb{color:var(--text-secondary);font-size:.9375rem;max-width:22rem}
+.footer__col{flex:1 1 140px;display:flex;flex-direction:column;gap:.625rem;align-items:flex-start}
+.footer__col-title{font-size:.8125rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-secondary);margin-bottom:.25rem}
+.footer__link{color:var(--text-secondary);text-decoration:none;font-size:.9375rem;transition:color var(--transition-fast) var(--ease-standard)}
+.footer__link:hover{color:var(--text-primary)}
+.footer__bottom{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1rem;margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--border-default);font-size:.8125rem;color:var(--text-secondary)}
+.footer__bottom-links{display:flex;gap:1.5rem}
+}
+@layer utilities{
+.reveal{opacity:0;transform:translateY(12px);transition:opacity var(--transition-normal) var(--ease-standard),transform var(--transition-normal) var(--ease-standard)}
+.reveal.in-view{opacity:1;transform:none}
+@media (prefers-reduced-motion: reduce){
+html{scroll-behavior:auto}
+*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+.reveal{opacity:1;transform:none}
+}
+@media (prefers-reduced-transparency: reduce){
+.header{background:var(--bg-secondary);backdrop-filter:none}
+}
+@media (hover:none){.card:hover{transform:none}}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="header">
+  <div class="container header__inner">
+    <a class="header__brand" href="#top" aria-label="Astryx home">
+      <span class="material-symbols-outlined" aria-hidden="true">tune</span>Astryx
+    </a>
+    <nav class="header__nav" aria-label="Primary">
+      <a class="nav__link" href="#features">Features</a>
+      <a class="nav__link" href="#how-it-works">How it works</a>
+      <a class="nav__link" href="#pricing">Pricing</a>
+      <a class="nav__link" href="#faq">FAQ</a>
+    </nav>
+    <div class="header__actions">
+      <button class="btn btn--icon" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-outlined" id="theme-icon" aria-hidden="true">dark_mode</span>
+      </button>
+      <a class="btn btn--primary" href="#pricing">Start free</a>
+      <button class="btn btn--icon header__menu-btn" id="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-nav" aria-label="Open menu">
+        <span class="material-symbols-outlined" id="menu-icon" aria-hidden="true">menu</span>
+      </button>
+    </div>
+  </div>
+  <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile" hidden>
+    <a class="nav__link" href="#features">Features</a>
+    <a class="nav__link" href="#how-it-works">How it works</a>
+    <a class="nav__link" href="#pricing">Pricing</a>
+    <a class="nav__link" href="#faq">FAQ</a>
+  </nav>
+</header>
+
+<main id="main">
+  <!-- Hero -->
+  <section class="hero" id="top">
+    <div class="container hero__inner">
+      <span class="hero__badge"><span class="material-symbols-outlined" aria-hidden="true" style="font-size:1rem">dashboard</span>Workspace, minus the noise</span>
+      <h1 class="hero__title">A calmer workspace for focused teams</h1>
+      <p class="hero__sub">Astryx brings tasks, docs and team rhythm into one quiet surface, so work moves forward without the clutter.</p>
+      <div class="hero__ctas">
+        <a class="btn btn--primary" href="#pricing"><span class="btn__label">Start free</span></a>
+        <a class="btn btn--secondary" href="#how-it-works">See how it works</a>
+      </div>
+      <div class="hero__meta">
+        <span><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>99.9% uptime</span>
+        <span><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>SOC 2 Type II</span>
+        <span><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>WCAG 2.2 AA</span>
+      </div>
+      <div class="hero__visual" aria-hidden="true">
+        <div class="panel panel--side">
+          <span class="panel__label">Spaces</span>
+          <div class="panel__row"><span class="panel__dot panel__dot--accent"></span><div class="panel__bar panel__bar--mid"></div></div>
+          <div class="panel__row"><span class="panel__dot"></span><div class="panel__bar panel__bar--short"></div></div>
+          <div class="panel__row"><span class="panel__dot"></span><div class="panel__bar panel__bar--mid"></div></div>
+          <div class="panel__row"><span class="panel__dot"></span><div class="panel__bar panel__bar--short"></div></div>
+        </div>
+        <div class="panel">
+          <span class="panel__label">This week</span>
+          <div class="panel__stat">24<span class="panel__stat-sub"> tasks closed</span></div>
+          <div class="panel__bar"><div class="panel__bar panel__bar--fill"></div></div>
+          <div class="panel__divider"></div>
+          <div class="panel__row"><span class="panel__dot panel__dot--accent"></span><div class="panel__bar panel__bar--mid"></div></div>
+          <div class="panel__row"><span class="panel__dot"></span><div class="panel__bar panel__bar--short"></div></div>
+          <span class="panel__chip"><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>On track</span>
+        </div>
+        <div class="panel panel--side">
+          <span class="panel__label">Focus</span>
+          <div class="panel__stat">3.5h</div>
+          <span class="panel__stat-sub">Deep work today</span>
+          <div class="panel__divider"></div>
+          <div class="panel__bar panel__bar--mid"></div>
+          <div class="panel__bar panel__bar--short"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="section" id="features">
+    <div class="container">
+      <div class="section__head">
+        <h2 class="section__title">Everything you need, nothing you don't</h2>
+        <p class="section__sub">Three core tools, tuned to stay out of your way.</p>
+      </div>
+      <div class="card-row">
+        <article class="card reveal">
+          <span class="card__icon"><span class="material-symbols-outlined" aria-hidden="true">dashboard</span></span>
+          <h3 class="card__title">One quiet board</h3>
+          <p class="card__text">Tasks, docs and decisions live on a single board with sensible defaults. No nested menus, no badge storms.</p>
+        </article>
+        <article class="card reveal">
+          <span class="card__icon"><span class="material-symbols-outlined" aria-hidden="true">link</span></span>
+          <h3 class="card__title">Linked context</h3>
+          <p class="card__text">Every task links to its doc, its owner and its deadline. Handoffs stop depending on memory and chat scrollback.</p>
+        </article>
+        <article class="card reveal">
+          <span class="card__icon"><span class="material-symbols-outlined" aria-hidden="true">accessibility_new</span></span>
+          <h3 class="card__title">Accessible by default</h3>
+          <p class="card__text">Full keyboard support, calibrated contrast and screen-reader labels ship in every view, not as an afterthought.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="section" id="how-it-works">
+    <div class="container">
+      <div class="section__head">
+        <h2 class="section__title">Up and running in one afternoon</h2>
+        <p class="section__sub">No consultants, no migration spreadsheets, no week of setup calls.</p>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <span class="step__num">01</span>
+          <span class="step__icon"><span class="material-symbols-outlined" aria-hidden="true">link</span></span>
+          <h3 class="step__title">Connect your work</h3>
+          <p class="step__text">Import tasks from your current tool or start from a blank board. Either way, structure appears in minutes.</p>
+        </div>
+        <div class="step reveal">
+          <span class="step__num">02</span>
+          <span class="step__icon"><span class="material-symbols-outlined" aria-hidden="true">design_services</span></span>
+          <h3 class="step__title">Shape your rhythm</h3>
+          <p class="step__text">Set weekly cycles, owners and review moments. Astryx keeps the cadence so you don't have to chase it.</p>
+        </div>
+        <div class="step reveal">
+          <span class="step__num">03</span>
+          <span class="step__icon"><span class="material-symbols-outlined" aria-hidden="true">rocket_launch</span></span>
+          <h3 class="step__title">Ship with less noise</h3>
+          <p class="step__text">Progress rolls up automatically. Stakeholders see status without meetings, and your team keeps its focus.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="section" id="testimonials">
+    <div class="container">
+      <div class="section__head">
+        <h2 class="section__title">Teams that switched, stayed</h2>
+        <p class="section__sub">What people say after their first full cycle on Astryx.</p>
+      </div>
+      <div class="card-row">
+        <article class="card quote-card reveal">
+          <span class="material-symbols-outlined" aria-hidden="true">format_quote</span>
+          <p class="quote-card__text">"We cut our weekly status meeting entirely. The board answers the question before anyone asks it."</p>
+          <div class="quote-card__person">
+            <span class="avatar" aria-hidden="true">MK</span>
+            <div><div class="quote-card__name">Mara Kessler</div><div class="quote-card__role">Engineering Lead, Fieldnote</div></div>
+          </div>
+        </article>
+        <article class="card quote-card reveal">
+          <span class="material-symbols-outlined" aria-hidden="true">format_quote</span>
+          <p class="quote-card__text">"The first tool our design team didn't complain about. It reads like paper and behaves like software."</p>
+          <div class="quote-card__person">
+            <span class="avatar" aria-hidden="true">TO</span>
+            <div><div class="quote-card__name">Tunde Okafor</div><div class="quote-card__role">Design Director, Halvard Studio</div></div>
+          </div>
+        </article>
+        <article class="card quote-card reveal">
+          <span class="material-symbols-outlined" aria-hidden="true">format_quote</span>
+          <p class="quote-card__text">"Migration took one afternoon. Two weeks later, nobody remembered the old tool's name."</p>
+          <div class="quote-card__person">
+            <span class="avatar" aria-hidden="true">SR</span>
+            <div><div class="quote-card__name">Sofia Reyes</div><div class="quote-card__role">Operations Manager, Corvus Health</div></div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section class="section" id="pricing">
+    <div class="container">
+      <div class="section__head">
+        <h2 class="section__title">Simple pricing, honest limits</h2>
+        <p class="section__sub">Start free. Pay only when your team grows into it.</p>
+      </div>
+      <div class="billing">
+        <span>Monthly</span>
+        <button class="switch" id="billing-switch" type="button" role="switch" aria-checked="false" aria-label="Toggle annual billing"></button>
+        <span>Annual <span class="billing__save">save 20%</span></span>
+      </div>
+      <div class="card-row">
+        <article class="card pricing__tier reveal">
+          <h3 class="pricing__name">Starter</h3>
+          <div class="pricing__price"><span class="pricing__amount" data-monthly="$0" data-annual="$0">$0</span><span class="pricing__per">/ forever</span></div>
+          <p class="pricing__desc">For individuals and small side projects finding their footing.</p>
+          <ul class="pricing__list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Up to 3 boards</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>5 team members</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Core task and doc tools</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Community support</li>
+          </ul>
+          <a class="btn btn--secondary" href="#cta"><span class="btn__label">Start free</span></a>
+        </article>
+        <article class="card pricing__tier pricing__tier--featured reveal">
+          <span class="pricing__badge">Most popular</span>
+          <h3 class="pricing__name">Pro</h3>
+          <div class="pricing__price"><span class="pricing__amount" data-monthly="$12" data-annual="$10">$12</span><span class="pricing__per">/ user / month</span></div>
+          <p class="pricing__desc">For teams that run their whole week inside Astryx.</p>
+          <ul class="pricing__list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Unlimited boards and docs</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Cycles and automatic rollups</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Guest access and permissions</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Priority support</li>
+          </ul>
+          <a class="btn btn--primary" href="#cta"><span class="btn__label">Start free</span></a>
+        </article>
+        <article class="card pricing__tier reveal">
+          <h3 class="pricing__name">Enterprise</h3>
+          <div class="pricing__price"><span class="pricing__amount" data-monthly="Custom" data-annual="Custom">Custom</span></div>
+          <p class="pricing__desc">For organizations with security, scale and compliance needs.</p>
+          <ul class="pricing__list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>SSO and SCIM provisioning</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Audit logs and data residency</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Dedicated success manager</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>99.9% uptime SLA</li>
+          </ul>
+          <a class="btn btn--secondary" href="#cta">Contact sales</a>
+        </article>
+      </div>
+      <p class="pricing__note" id="billing-note" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq">
+    <div class="container">
+      <div class="section__head">
+        <h2 class="section__title">Questions, answered</h2>
+        <p class="section__sub">The things teams ask before they switch.</p>
+      </div>
+      <div class="faq">
+        <div class="faq__item">
+          <button class="faq__trigger" type="button" aria-expanded="false" aria-controls="faq-panel-1">Is the free plan really free?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button>
+          <div class="faq__panel" id="faq-panel-1" role="region"><div class="faq__panel-inner"><p>Yes. Starter is free forever with no credit card required. You get three boards, five seats and the full core toolset. Upgrade only when you outgrow it.</p></div></div>
+        </div>
+        <div class="faq__item">
+          <button class="faq__trigger" type="button" aria-expanded="false" aria-controls="faq-panel-2">Can we migrate from our current tool?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button>
+          <div class="faq__panel" id="faq-panel-2" role="region"><div class="faq__panel-inner"><p>Astryx imports boards, tasks and docs from the most common project tools in a few clicks. Most teams finish migration in a single afternoon, and our support team reviews larger imports for free.</p></div></div>
+        </div>
+        <div class="faq__item">
+          <button class="faq__trigger" type="button" aria-expanded="false" aria-controls="faq-panel-3">How accessible is Astryx?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button>
+          <div class="faq__panel" id="faq-panel-3" role="region"><div class="faq__panel-inner"><p>Every view meets WCAG 2.2 AA: full keyboard operability, visible focus states, calibrated contrast in both light and dark themes, and complete screen-reader labeling. We audit each release before it ships.</p></div></div>
+        </div>
+        <div class="faq__item">
+          <button class="faq__trigger" type="button" aria-expanded="false" aria-controls="faq-panel-4">Where is our data stored, and is it secure?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button>
+          <div class="faq__panel" id="faq-panel-4" role="region"><div class="faq__panel-inner"><p>Data is encrypted in transit and at rest, hosted in SOC 2 Type II certified facilities. Enterprise plans add regional data residency, audit logs and SSO with SCIM provisioning.</p></div></div>
+        </div>
+        <div class="faq__item">
+          <button class="faq__trigger" type="button" aria-expanded="false" aria-controls="faq-panel-5">What kind of support do teams get?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button>
+          <div class="faq__panel" id="faq-panel-5" role="region"><div class="faq__panel-inner"><p>Starter includes community support with a public knowledge base. Pro adds priority email support with same-day responses, and Enterprise includes a dedicated success manager and a 99.9% uptime SLA.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="section" id="cta">
+    <div class="container">
+      <div class="cta-band reveal">
+        <h2 class="cta-band__title">Give your team a quieter week</h2>
+        <p class="cta-band__sub">Create your workspace in under a minute. Free plan, no credit card, cancel anytime.</p>
+        <form class="cta-form" id="cta-form" novalidate>
+          <div class="input-group" id="email-group">
+            <label class="input-group__label" for="cta-email">Work email</label>
+            <input class="input-group__field" id="cta-email" name="email" type="email" autocomplete="email" placeholder="you@company.com" required>
+            <span class="input-group__error" id="email-error" aria-live="polite"></span>
+          </div>
+          <button class="btn btn--primary cta-form__submit" id="cta-submit" type="submit"><span class="btn__label">Start free</span></button>
+        </form>
+        <p class="cta-form__success" id="cta-success" aria-live="polite" hidden><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>You're in. Check your inbox for a setup link.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <a class="header__brand" href="#top"><span class="material-symbols-outlined" aria-hidden="true">tune</span>Astryx</a>
+        <p class="footer__blurb">A calm workspace that brings tasks, docs and team rhythm into one quiet surface.</p>
+      </div>
+      <div class="footer__col">
+        <span class="footer__col-title">Product</span>
+        <a class="footer__link" href="#features">Features</a>
+        <a class="footer__link" href="#pricing">Pricing</a>
+        <a class="footer__link" href="#">Changelog</a>
+      </div>
+      <div class="footer__col">
+        <span class="footer__col-title">Company</span>
+        <a class="footer__link" href="#">About</a>
+        <a class="footer__link" href="#">Careers</a>
+        <a class="footer__link" href="#">Blog</a>
+      </div>
+      <div class="footer__col">
+        <span class="footer__col-title">Resources</span>
+        <a class="footer__link" href="#">Documentation</a>
+        <a class="footer__link" href="#faq">FAQ</a>
+        <a class="footer__link" href="#">Accessibility</a>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span>© 2026 Astryx</span>
+      <div class="footer__bottom-links">
+        <a class="footer__link" href="#">Privacy</a>
+        <a class="footer__link" href="#">Terms</a>
+        <a class="footer__link" href="#">Status</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+'use strict';
+/* Theme */
+var root=document.documentElement;
+var toggle=document.getElementById('theme-toggle');
+var icon=document.getElementById('theme-icon');
+function applyThemeUI(){
+  var dark=root.dataset.theme==='dark';
+  toggle.setAttribute('aria-pressed',String(dark));
+  toggle.setAttribute('aria-label',dark?'Switch to light mode':'Switch to dark mode');
+  icon.textContent=dark?'light_mode':'dark_mode';
+}
+applyThemeUI();
+toggle.addEventListener('click',function(){
+  root.dataset.theme=root.dataset.theme==='dark'?'light':'dark';
+  localStorage.setItem('theme',root.dataset.theme);
+  applyThemeUI();
+});
+
+/* Mobile menu */
+var menuBtn=document.getElementById('menu-toggle');
+var menuIcon=document.getElementById('menu-icon');
+var mobileNav=document.getElementById('mobile-nav');
+function closeMenu(){
+  mobileNav.hidden=true;
+  menuBtn.setAttribute('aria-expanded','false');
+  menuBtn.setAttribute('aria-label','Open menu');
+  menuIcon.textContent='menu';
+}
+menuBtn.addEventListener('click',function(){
+  var open=mobileNav.hidden;
+  if(open){
+    mobileNav.hidden=false;
+    menuBtn.setAttribute('aria-expanded','true');
+    menuBtn.setAttribute('aria-label','Close menu');
+    menuIcon.textContent='close';
+  }else{closeMenu();}
+});
+mobileNav.addEventListener('click',function(e){if(e.target.closest('a'))closeMenu();});
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'&&!mobileNav.hidden){closeMenu();menuBtn.focus();}
+});
+
+/* FAQ */
+var triggers=document.querySelectorAll('.faq__trigger');
+triggers.forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var panel=document.getElementById(btn.getAttribute('aria-controls'));
+    var open=btn.getAttribute('aria-expanded')==='true';
+    btn.setAttribute('aria-expanded',String(!open));
+    panel.classList.toggle('faq__panel--open',!open);
+  });
+});
+
+/* Billing toggle */
+var sw=document.getElementById('billing-switch');
+var note=document.getElementById('billing-note');
+sw.addEventListener('click',function(){
+  var annual=sw.getAttribute('aria-checked')!=='true';
+  sw.setAttribute('aria-checked',String(annual));
+  document.querySelectorAll('.pricing__amount').forEach(function(el){
+    el.textContent=annual?el.dataset.annual:el.dataset.monthly;
+  });
+  note.textContent=annual?'Annual billing applied. Prices shown per user, billed yearly.':'Monthly billing applied. Prices shown per user, billed monthly.';
+});
+
+/* Email form */
+var form=document.getElementById('cta-form');
+var group=document.getElementById('email-group');
+var input=document.getElementById('cta-email');
+var error=document.getElementById('email-error');
+var submit=document.getElementById('cta-submit');
+var success=document.getElementById('cta-success');
+var emailRe=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+function setError(msg){
+  group.classList.add('is-invalid');group.classList.remove('is-valid');
+  input.setAttribute('aria-invalid','true');
+  error.innerHTML='';
+  var ic=document.createElement('span');
+  ic.className='material-symbols-outlined';ic.setAttribute('aria-hidden','true');ic.textContent='error';
+  error.appendChild(ic);error.appendChild(document.createTextNode(msg));
+}
+function clearError(){
+  group.classList.remove('is-invalid');
+  input.removeAttribute('aria-invalid');
+  error.textContent='';
+}
+input.addEventListener('blur',function(){
+  if(!input.value){clearError();return;}
+  if(emailRe.test(input.value)){clearError();group.classList.add('is-valid');}
+  else setError('Enter a valid work email, like you@company.com.');
+});
+form.addEventListener('submit',function(e){
+  e.preventDefault();
+  if(!emailRe.test(input.value)){setError('Enter a valid work email, like you@company.com.');input.focus();return;}
+  clearError();group.classList.add('is-valid');
+  submit.classList.add('is-loading');submit.setAttribute('aria-busy','true');submit.disabled=true;
+  setTimeout(function(){
+    submit.classList.remove('is-loading');submit.removeAttribute('aria-busy');
+    submit.classList.add('btn--success');
+    submit.querySelector('.btn__label').textContent='Done';
+    success.hidden=false;
+    setTimeout(function(){
+      submit.classList.remove('btn--success');submit.disabled=false;
+      submit.querySelector('.btn__label').textContent='Start free';
+      form.reset();group.classList.remove('is-valid');
+    },3000);
+  },1000);
+});
+
+/* Scroll reveal */
+var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+var revealEls=document.querySelectorAll('.reveal');
+if(reduce||!('IntersectionObserver' in window)){
+  revealEls.forEach(function(el){el.classList.add('in-view');});
+}else{
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){entry.target.classList.add('in-view');io.unobserve(entry.target);}
+    });
+  },{threshold:.15});
+  revealEls.forEach(function(el,i){el.style.transitionDelay=(i%3)*60+'ms';io.observe(el);});
+}
+})();
+</script>
+</body>
+</html>

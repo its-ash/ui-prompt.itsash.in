@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aetherworks Engine Co. | Steam-Powered Automation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL@20..48,100..700,0..1" rel="stylesheet">
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<style>
+:root{
+--primary:#CD7F32;--secondary:#B87333;
+--bg-primary:#f4e9d8;--bg-secondary:#ead9bd;--bg-elevated:#f9f1e2;
+--text-primary:#2b2118;--text-secondary:#6b5636;
+--text-success:#2f6b3a;--text-error:#9c2b1f;
+--border-default:#4A3C28;--border-error:#9c2b1f;--border-success:#2f6b3a;
+--on-accent:#1a0f08;
+--radius-sm:4px;--radius-md:8px;--radius-lg:14px;
+--shadow-sm:0 1px 3px rgba(74,60,40,.35),inset 0 1px 0 rgba(255,255,255,.4);
+--shadow-md:0 6px 20px rgba(74,60,40,.3),0 0 18px rgba(205,127,50,.18);
+--spacing-gap:1.5rem;
+--transition-fast:150ms;--transition-normal:280ms;--ease-standard:cubic-bezier(.22,.8,.36,1);
+--z-dropdown:50;--z-modal:60;--z-toast:70;
+--font-display:"Cinzel",serif;--font-base:"Crimson Text",serif;
+--nav-bg:rgba(244,233,216,.9);--nav-border:var(--border-default);
+--steam:rgba(255,250,240,.5);
+--accent-text:#9c6a1f;
+}
+:root[data-theme="dark"]{
+--bg-primary:#0D1B33;--bg-secondary:#1A0F1F;--bg-elevated:#241428;
+--text-primary:#efe4cd;--text-secondary:#8B7355;
+--text-success:#7fd08c;--text-error:#ff8a7a;
+--border-default:#4A3C28;--border-error:#ff8a7a;--border-success:#7fd08c;
+--on-accent:#1a0f08;
+--nav-bg:rgba(13,27,51,.88);
+--steam:rgba(180,200,255,.14);
+--accent-text:#e0b27e;
+--shadow-sm:0 1px 3px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.06);
+--shadow-md:0 6px 20px rgba(0,0,0,.55),0 0 22px rgba(205,127,50,.12);
+}
+[hidden]{display:none!important}
+*{margin:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;font-size:1.05rem;overflow-x:hidden;transition:background var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard)}
+h1,h2,h3{font-family:var(--font-display);letter-spacing:-.01em;line-height:1.1}
+h1{font-size:clamp(2.25rem,5vw,3.75rem);font-weight:900}
+h2{font-size:clamp(1.75rem,3.5vw,2.5rem);font-weight:700}
+h3{font-size:1.25rem;font-weight:700}
+a{color:inherit}
+img{max-width:100%;display:block}
+.container{max-width:1200px;margin:0 auto;padding:0 1.25rem}
+@media(min-width:768px){.container{padding:0 2rem}}
+.skip{position:absolute;left:-999px}
+.skip:focus{left:1rem;top:1rem;z-index:var(--z-toast);background:var(--primary);color:var(--on-accent);padding:.6rem 1rem;border-radius:var(--radius-sm)}
+/* NAV */
+.nav{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--nav-bg);backdrop-filter:blur(10px);border-bottom:1px solid var(--nav-border)}
+.nav__inner{display:flex;align-items:center;justify-content:space-between;height:68px}
+.brand{display:flex;align-items:center;gap:.6rem;text-decoration:none;font-family:var(--font-display);font-weight:900;font-size:1.15rem}
+.brand .material-symbols-rounded{color:var(--secondary);font-size:1.6rem}
+.nav__links{display:flex;align-items:center;gap:1.75rem;list-style:none;padding:0}
+.nav__links a{text-decoration:none;font-weight:600;color:var(--text-secondary);padding:.5rem .25rem;transition:color var(--transition-fast)}
+.nav__links a:hover{color:var(--primary)}
+.nav__toggle{position:relative;display:none;width:44px;height:44px;min-width:44px;min-height:44px;align-items:center;justify-content:center;justify-content:center;gap:.5rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);color:var(--text-primary);cursor:pointer;font-size:1.2rem}
+#theme-toggle{width:44px;height:44px;min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);color:var(--primary);cursor:pointer;transition:transform var(--transition-fast) var(--ease-standard)}
+#theme-toggle:active{transform:scale(.95)}
+#theme-toggle .icon-moon{display:none}
+:root[data-theme="dark"] #theme-toggle .icon-moon{display:block}
+:root[data-theme="dark"] #theme-toggle .icon-sun{display:none}
+@media(max-width:767px){
+.nav__toggle{display:flex}
+.nav__links{position:absolute;top:68px;left:0;right:0;flex-direction:column;align-items:stretch;background:var(--bg-primary);border-bottom:1px solid var(--border-default);padding:1rem 1.25rem;gap:.25rem;display:none}
+.nav__links.open{display:flex}
+.nav__links a{display:block;padding:.75rem}
+}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:.7rem 1.5rem;font-family:var(--font-base);font-weight:600;font-size:1rem;border-radius:var(--radius-md);cursor:pointer;text-decoration:none;border:1px solid var(--border-default);transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-normal),filter var(--transition-normal)}
+.btn:active{transform:scale(.97)}
+.btn:focus-visible{outline:3px solid var(--primary);outline-offset:2px}
+.btn-primary{background:linear-gradient(160deg,var(--primary),var(--secondary));color:var(--on-accent);box-shadow:var(--shadow-md)}
+.btn-primary:hover{filter:brightness(1.12)}
+.btn-ghost{background:transparent;color:var(--text-primary)}
+.btn-ghost:hover{background:var(--bg-secondary)}
+.btn-danger{background:linear-gradient(160deg,#8a2e1f,#6b1f14);color:#f4e9d8;border-color:#6b1f14}
+.btn[disabled]{opacity:.5;cursor:not-allowed;filter:grayscale(.6)}
+/* SECTIONS */
+.section{padding:clamp(4rem,8vw,7rem) 0}
+.section__head{max-width:65ch;margin-bottom:3rem}
+.section__head p{color:var(--text-secondary);max-width:52ch;margin-top:.6rem}
+/* HERO */
+.hero{position:relative;overflow:hidden;padding:5rem 0 4rem;min-height:min(92vh,760px);display:flex;align-items:center}
+.hero__grid{display:grid;grid-template-columns:1.05fr .95fr;gap:3rem;align-items:center}
+.hero__eyebrow{font-size:.8rem;letter-spacing:.18em;text-transform:uppercase;color:var(--secondary);font-weight:600}
+.hero h1{margin:.8rem 0 1rem}
+.hero__sub{color:var(--text-secondary);max-width:44ch}
+.hero__ctas{display:flex;gap:1rem;flex-wrap:wrap;margin-top:1.6rem}
+.hero__visual{position:relative;min-height:380px;display:flex;align-items:center;justify-content:center}
+.gear-cluster{position:relative;width:100%;max-width:420px;aspect-ratio:1}
+.gear{position:absolute;color:var(--secondary);animation:rotate 24s linear infinite;filter:drop-shadow(0 4px 10px rgba(0,0,0,.35))}
+.gear--1{font-size:9rem;left:8%;top:6%;animation-duration:20s}
+.gear--2{font-size:6rem;right:6%;top:22%;animation-duration:14s;animation-direction:reverse}
+.gear--3{font-size:4.5rem;left:30%;bottom:4%;animation-duration:11s}
+.gear--4{font-size:3.4rem;right:24%;bottom:20%;animation-duration:9s;animation-direction:reverse}
+@keyframes rotate{to{transform:rotate(360deg)}}
+.steam{position:absolute;width:120px;height:120px;border-radius:50%;background:radial-gradient(closest-side,var(--steam),transparent);filter:blur(14px);animation:drift 12s ease-in-out infinite alternate;pointer-events:none}
+.steam--1{left:5%;top:15%}
+.steam--2{right:8%;top:45%;animation-delay:-6s}
+@keyframes drift{from{transform:translateY(0);opacity:.4}to{transform:translateY(-46px);opacity:1}}
+.hero__plate{position:absolute;inset:12% 6%;border:1px solid var(--border-default);border-radius:var(--radius-lg);background:linear-gradient(150deg,var(--bg-secondary),var(--bg-primary));box-shadow:var(--shadow-md);opacity:.7}
+@media(max-width:900px){.hero__grid{grid-template-columns:1fr}.hero__visual{min-height:300px}}
+/* CARDS */
+.card{display:flex;flex-direction:column;gap:.8rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:1.75rem;box-shadow:var(--shadow-md);transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal)}
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md),0 0 24px rgba(205,127,50,.22)}
+.card:focus-within{border-color:var(--primary)}
+.card__icon{color:var(--primary);font-size:2.4rem}
+.card h3{font-size:1.3rem}
+.card p{color:var(--text-secondary)}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--spacing-gap)}
+@media(max-width:900px){.grid-3{grid-template-columns:1fr}}
+/* STEPS */
+.steps{display:flex;flex-direction:column;gap:2rem;position:relative}
+.step{display:flex;gap:1.25rem;align-items:flex-start}
+.step__num{flex:none;width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:900;color:var(--on-accent);background:radial-gradient(circle at 35% 30%,var(--primary),var(--secondary));box-shadow:var(--shadow-md)}
+.step__pipe{flex:1;height:2px;background:var(--border-default);margin-top:26px;position:relative;top:26px}
+.step p{color:var(--text-secondary)}
+@media(max-width:767px){.step__pipe{display:none}}
+/* TESTIMONIALS */
+.testimonial blockquote{font-size:1.15rem;font-style:italic}
+.testimonial__who{display:flex;align-items:center;gap:.9rem;margin-top:1rem}
+.testimonial__avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;background:var(--secondary);color:var(--on-accent)}
+.testimonial__role{color:var(--text-secondary);font-size:.95rem}
+/* PRICING */
+.pricing{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--spacing-gap);align-items:stretch}
+.price-card{position:relative}
+.price-card--featured{border:2px solid var(--primary);box-shadow:var(--shadow-md),0 0 30px rgba(205,127,50,.25)}
+.price-card__badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--primary);color:var(--on-accent);font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:.3rem .8rem;border-radius:999px;white-space:nowrap}
+.price-card__price{font-family:var(--font-display);font-size:2.2rem;font-weight:900}
+.price-card__price span{font-size:1rem;color:var(--text-secondary)}
+.price-card ul{list-style:none;padding:0;display:flex;flex-direction:column;gap:.5rem;color:var(--text-secondary)}
+.price-card li{display:flex;gap:.5rem;align-items:flex-start}
+.price-card li::before{content:"";flex:none;width:8px;height:8px;margin-top:.55em;border-radius:50%;background:var(--primary)}
+@media(max-width:900px){.pricing{grid-template-columns:1fr}}
+/* FAQ */
+.faq details{border:1px solid var(--border-default);border-radius:var(--radius-md);background:var(--bg-secondary);margin-bottom:1rem;overflow:hidden}
+.faq summary{cursor:pointer;padding:1.1rem 1.25rem;font-family:var(--font-display);font-weight:700;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:1rem}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";font-family:var(--font-base);color:var(--primary);font-size:1.4rem}
+.faq details[open] summary::after{content:"–"}
+.faq details p{padding:0 1.25rem 1.1rem;color:var(--text-secondary)}
+.faq summary:focus-visible{outline:3px solid var(--primary);outline-offset:-3px}
+/* CTA */
+.cta-band{background:linear-gradient(140deg,var(--bg-secondary),var(--bg-primary));border-top:1px solid var(--border-default);border-bottom:1px solid var(--border-default);text-align:center}
+.cta-band h2{margin-bottom:.6rem}
+.cta-band>p{color:var(--text-secondary);max-width:48ch;margin:0 auto 1.75rem}
+.cta-form{display:flex;gap:.8rem;max-width:460px;margin:0 auto}
+.cta-form .input-group{flex:1;display:flex;flex-direction:column;gap:.4rem;text-align:left}
+.cta-form label{font-weight:600}
+.cta-form input{min-height:44px;padding:.6rem .9rem;border-radius:var(--radius-sm);border:1px solid var(--border-default);background:var(--bg-elevated);color:var(--text-primary);font-family:var(--font-base);font-size:1rem}
+.cta-form input:focus{outline:3px solid var(--primary);outline-offset:1px}
+.form-msg{margin-top:.9rem;min-height:1.4em;font-weight:600}
+.form-msg--success{color:var(--text-success)}
+.form-msg--error{color:var(--text-error)}
+/* FOOTER */
+.footer{padding:3.5rem 0 2rem}
+.footer__grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:2.5rem}
+.footer h4{font-family:var(--font-display);font-size:.95rem;letter-spacing:.1em;text-transform:uppercase;color:var(--secondary);margin-bottom:.9rem}
+.footer ul{list-style:none;padding:0;display:flex;flex-direction:column;gap:.5rem}
+.footer a{color:var(--text-secondary);text-decoration:none}
+.footer a:hover{color:var(--primary)}
+.footer__social{display:flex;gap:.8rem;margin-top:1.2rem}
+.footer__social a{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border:1px solid var(--border-default);border-radius:var(--radius-md);color:var(--primary)}
+.footer__copy{margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid var(--border-default);color:var(--text-secondary);font-size:.9rem}
+@media(max-width:900px){.footer__grid{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.footer__grid{grid-template-columns:1fr}}
+/* REVEAL */
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .5s var(--ease-standard),transform .5s var(--ease-standard)}
+.reveal.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){
+.gear{animation:none}
+.steam{animation:none}
+.reveal{opacity:1;transform:none}
+}
+@media(hover:none){.btn-primary:hover{filter:none}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="nav">
+<div class="container nav__inner">
+<a class="brand" href="#"><span class="material-symbols-rounded" aria-hidden="true">settings</span>Aetherworks</a>
+<button class="nav__toggle" id="nav-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu"><span class="material-symbols-rounded" aria-hidden="true">menu</span></button>
+<ul class="nav__links" id="nav-links">
+<li><a href="#features">Features</a></li>
+<li><a href="#how">How It Works</a></li>
+<li><a href="#pricing">Pricing</a></li>
+<li><a href="#faq">FAQ</a></li>
+</ul>
+<button id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+<span class="material-symbols-rounded icon-sun" aria-hidden="true">light_mode</span>
+<span class="material-symbols-rounded icon-moon" aria-hidden="true">dark_mode</span>
+</button>
+</div>
+</header>
+<main id="main">
+<section class="hero">
+<div class="container hero__grid">
+<div>
+<p class="hero__eyebrow">Est. 1887 · Steam-Powered Automation</p>
+<h1>Clockwork precision for the modern workshop</h1>
+<p class="hero__sub">Aetherworks engines automate your drafting, scheduling, and inventory with brass-and-steam reliability.</p>
+<div class="hero__ctas">
+<a class="btn btn-primary" href="#cta">Start your engine</a>
+<a class="btn btn-ghost" href="#how">See how it works</a>
+</div>
+</div>
+<div class="hero__visual" aria-hidden="true">
+<div class="hero__plate"></div>
+<div class="gear-cluster">
+<span class="material-symbols-rounded gear gear--1">settings</span>
+<span class="material-symbols-rounded gear gear--2">settings</span>
+<span class="material-symbols-rounded gear gear--3">settings</span>
+<span class="material-symbols-rounded gear gear--4">settings</span>
+</div>
+<div class="steam steam--1"></div>
+<div class="steam steam--2"></div>
+</div>
+</div>
+</section>
+
+<section class="section" id="features">
+<div class="container">
+<div class="section__head">
+<h2>Machinery that never sleeps</h2>
+<p>Every Aetherworks unit is hand-assembled, pressure-tested, and warranted for a decade of daily service.</p>
+</div>
+<div class="grid-3">
+<article class="card reveal">
+<span class="material-symbols-rounded card__icon" aria-hidden="true">settings</span>
+<h3>Clockwork Scheduler</h3>
+<p>Brass-gear timing keeps every appointment wound and on time.</p>
+</article>
+<article class="card reveal">
+<span class="material-symbols-rounded card__icon" aria-hidden="true">settings</span>
+<h3>Steam Ledger</h3>
+<p>Inventory tracked on punched-card precision, synced to your workshop.</p>
+</article>
+<article class="card reveal">
+<span class="material-symbols-rounded card__icon" aria-hidden="true">settings</span>
+<h3>Pressure Valve</h3>
+<p>Automatic load balancing across your entire operation.</p>
+</article>
+</div>
+</div>
+</section>
+
+<section class="section" id="how">
+<div class="container">
+<div class="section__head">
+<h2>From cold start to full steam</h2>
+<p>Three turns of the key and your workshop runs itself.</p>
+</div>
+<div class="steps">
+<div class="step reveal">
+<span class="step__num">1</span>
+<div>
+<h3>Prime the boiler</h3>
+<p>Connect your tools and let the engine map your workflow.</p>
+</div>
+</div>
+<div class="step reveal">
+<span class="step__num">2</span>
+<div>
+<h3>Engage the gears</h3>
+<p>Automations take over scheduling, routing, and stock.</p>
+</div>
+</div>
+<div class="step reveal">
+<span class="step__num">3</span>
+<div>
+<h3>Run at full pressure</h3>
+<p>Watch throughput climb as the engine keeps everything in motion.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section class="section">
+<div class="container">
+<div class="section__head">
+<h2>Voices from the workshop</h2>
+<p>Owners and foremen on what the engine changed for them.</p>
+</div>
+<div class="grid-3">
+<article class="card testimonial reveal">
+<blockquote>“The scheduler alone paid for the engine in six weeks.”</blockquote>
+<div class="testimonial__who">
+<span class="testimonial__avatar" aria-hidden="true">MH</span>
+<div>
+<strong>Martha Hale</strong>
+<div class="testimonial__role">Owner, Hale & Sons Foundry</div>
+</div>
+</div>
+</article>
+<article class="card testimonial reveal">
+<blockquote>“We stopped losing orders the day the ledger came online.”</blockquote>
+<div class="testimonial__who">
+<span class="testimonial__avatar" aria-hidden="true">DK</span>
+<div>
+<strong>Daniel Kim</strong>
+<div class="testimonial__role">Foreman, Ironwood Mills</div>
+</div>
+</div>
+</article>
+<article class="card testimonial reveal">
+<blockquote>“It runs quieter than our old hand-cranked system and never jams.”</blockquote>
+<div class="testimonial__who">
+<span class="testimonial__avatar" aria-hidden="true">AO</span>
+<div>
+<strong>Amara Osei</strong>
+<div class="testimonial__role">Director, Copperline Works</div>
+</div>
+</div>
+</article>
+</div>
+</div>
+</section>
+
+<section class="section" id="pricing">
+<div class="container">
+<div class="section__head">
+<h2>Choose your engine</h2>
+<p>Every tier includes lifetime maintenance and a brass-plated warranty.</p>
+</div>
+<div class="pricing">
+<article class="card price-card reveal">
+<h3>The Apprentice</h3>
+<p class="price-card__price">$49<span>/mo</span></p>
+<ul>
+<li>Clockwork Scheduler</li>
+<li>Steam Ledger</li>
+<li>Email support</li>
+</ul>
+<a class="btn btn-ghost" href="#cta">Get started</a>
+</article>
+<article class="card price-card price-card--featured reveal">
+<span class="price-card__badge">Most Popular</span>
+<h3>The Foreman</h3>
+<p class="price-card__price">$99<span>/mo</span></p>
+<ul>
+<li>Everything in Apprentice</li>
+<li>Pressure Valve</li>
+<li>Priority support</li>
+</ul>
+<a class="btn btn-primary" href="#cta">Get started</a>
+</article>
+<article class="card price-card reveal">
+<h3>The Magnate</h3>
+<p class="price-card__price">$249<span>/mo</span></p>
+<ul>
+<li>Everything in Foreman</li>
+<li>Custom gear train</li>
+<li>Dedicated engineer</li>
+</ul>
+<a class="btn btn-ghost" href="#cta">Get started</a>
+</article>
+</div>
+</div>
+</section>
+
+<section class="section" id="faq">
+<div class="container">
+<div class="section__head">
+<h2>Frequently asked</h2>
+<p>Answers to the questions we hear most often.</p>
+</div>
+<div class="faq">
+<details class="reveal">
+<summary>How long does installation take?</summary>
+<p>Most workshops are running within a week, including calibration.</p>
+</details>
+<details class="reveal">
+<summary>Does it work with our existing tools?</summary>
+<p>Yes. The engine connects to standard pneumatic and mechanical systems.</p>
+</details>
+<details class="reveal">
+<summary>What if the pressure drops?</summary>
+<p>Automatic fail-safes engage and an engineer is dispatched within 24 hours.</p>
+</details>
+</div>
+</div>
+</section>
+
+<section class="section cta-band" id="cta">
+<div class="container">
+<h2>Ready to fire the boiler?</h2>
+<p>Leave your address and our engineers will send a full prospectus.</p>
+<form class="cta-form" id="cta-form" novalidate>
+<div class="input-group">
+<label for="email">Workshop email</label>
+<input type="email" id="email" name="email" required autocomplete="email">
+</div>
+<button class="btn btn-primary" type="submit">Request prospectus</button>
+</form>
+<p class="form-msg" id="form-msg" role="status" aria-live="polite"></p>
+</div>
+</section>
+</main>
+
+<footer class="footer">
+<div class="container">
+<div class="footer__grid">
+<div>
+<a class="brand" href="#"><span class="material-symbols-rounded" aria-hidden="true">settings</span>Aetherworks</a>
+<p style="margin-top:1rem;color:var(--text-secondary)">Steam-powered automation for workshops that value craft.</p>
+<div class="footer__social">
+<a href="#" aria-label="Follow us"><span class="material-symbols-rounded" aria-hidden="true">share</span></a>
+<a href="#" aria-label="Contact us"><span class="material-symbols-rounded" aria-hidden="true">mail</span></a>
+<a href="#" aria-label="Community"><span class="material-symbols-rounded" aria-hidden="true">groups</span></a>
+</div>
+</div>
+<div>
+<h4>Product</h4>
+<ul>
+<li><a href="#features">Features</a></li>
+<li><a href="#pricing">Pricing</a></li>
+<li><a href="#faq">FAQ</a></li>
+</ul>
+</div>
+<div>
+<h4>Company</h4>
+<ul>
+<li><a href="#">About</a></li>
+<li><a href="#">Careers</a></li>
+<li><a href="#">Press</a></li>
+</ul>
+</div>
+<div>
+<h4>Legal</h4>
+<ul>
+<li><a href="#">Privacy</a></li>
+<li><a href="#">Terms</a></li>
+<li><a href="#">Warranty</a></li>
+</ul>
+</div>
+</div>
+<p class="footer__copy">© 2026 Aetherworks Engine Co. All rights reserved.</p>
+</div>
+</footer>
+<script>
+(function(){
+var toggle=document.getElementById("theme-toggle");
+var navToggle=document.getElementById("nav-toggle");
+var navLinks=document.getElementById("nav-links");
+var form=document.getElementById("cta-form");
+var msg=document.getElementById("form-msg");
+function setTheme(t){document.documentElement.dataset.theme=t;localStorage.setItem("theme",t);var dark=t==="dark";toggle.setAttribute("aria-pressed",dark);toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");}
+toggle.addEventListener("click",function(){setTheme(document.documentElement.dataset.theme==="dark"?"light":"dark");});
+setTheme(document.documentElement.dataset.theme);
+navToggle.addEventListener("click",function(){var open=navLinks.classList.toggle("open");navToggle.setAttribute("aria-expanded",open);});
+navLinks.addEventListener("click",function(e){if(e.target.tagName==="A"){navLinks.classList.remove("open");navToggle.setAttribute("aria-expanded","false");}});
+form.addEventListener("submit",function(e){e.preventDefault();var email=document.getElementById("email");if(!email.value||!email.checkValidity()){msg.textContent="Please enter a valid email address.";msg.className="form-msg form-msg--error";}else{msg.textContent="Prospectus requested. Check your workshop inbox.";msg.className="form-msg form-msg--success";form.reset();}});
+var io=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target);}});},{threshold:.15});
+document.querySelectorAll(".reveal").forEach(function(el){io.observe(el);});
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MONOLITH - System Status &amp; Uptime Observability</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet">
+<style>
+:root{
+--font-display:'Space Grotesk',sans-serif;--font-base:'Inter',sans-serif;
+--primary:#1c1e24;--on-primary:#fefefe;--secondary:#2e7d32;--on-secondary:#ffffff;
+--bg-primary:#e9eaec;--bg-secondary:#fefefe;--bg-glass:rgba(254,254,254,.55);
+--mint:#e4f0e4;--mint-strong:#bcd9bc;
+--text-primary:#1c1e24;--text-secondary:#4a4f5a;--text-success:#256b2a;--text-error:#b3261e;
+--border-default:rgba(138,143,154,.35);--border-success:#2e7d32;--border-error:#b3261e;
+--radius-sm:8px;--radius-md:14px;--radius-lg:24px;
+--shadow-sm:5px 5px 12px rgba(28,30,36,.10),-5px -5px 12px rgba(255,255,255,.85);
+--shadow-md:10px 10px 24px rgba(28,30,36,.14),-10px -10px 24px rgba(255,255,255,.80);
+--transition-fast:150ms;--transition-normal:300ms;--ease:cubic-bezier(.4,0,.2,1);
+--blur:16px;--orb-a:rgba(188,217,188,.8);--orb-b:rgba(46,125,50,.25);
+}
+:root[data-theme="dark"]{
+--primary:#e9eaec;--on-primary:#1c1e24;--secondary:#66bb6a;--on-secondary:#10230f;
+--bg-primary:#1c1e24;--bg-secondary:#23262e;--bg-glass:rgba(35,38,46,.55);
+--mint:rgba(102,187,106,.12);--mint-strong:rgba(102,187,106,.22);
+--text-primary:#e9eaec;--text-secondary:#a9aeb8;--text-success:#8fd696;--text-error:#f2b8b5;
+--border-default:rgba(233,234,236,.14);--border-success:#7fd486;--border-error:#f2b8b5;
+--shadow-sm:5px 5px 12px rgba(0,0,0,.45),-5px -5px 12px rgba(255,255,255,.04);
+--shadow-md:10px 10px 24px rgba(0,0,0,.5),-10px -10px 24px rgba(255,255,255,.04);
+--orb-a:rgba(102,187,106,.18);--orb-b:rgba(102,187,106,.10);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;font-size:1rem;transition:background-color var(--transition-normal) var(--ease),color var(--transition-normal) var(--ease);overflow-x:hidden}
+h1,h2,h3,.num{font-family:var(--font-display);letter-spacing:-.02em;line-height:1.1}
+.container{max-width:1200px;margin:0 auto;padding:0 1.25rem}
+@media(min-width:768px){.container{padding:0 2rem}}
+section{padding:clamp(4rem,8vw,7rem) 0;scroll-margin-top:5rem}
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.skip{position:absolute;left:-999px;top:0;background:var(--primary);color:var(--on-primary);padding:.75rem 1.25rem;border-radius:var(--radius-sm);z-index:100}
+.skip:focus{left:1rem;top:1rem}
+.mso{font-family:'Material Symbols Outlined';font-weight:normal;font-style:normal;font-size:1.25rem;line-height:1;display:inline-block;vertical-align:middle}
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:.7rem 1.5rem;border-radius:var(--radius-sm);font:600 .95rem var(--font-base);border:1px solid transparent;cursor:pointer;text-decoration:none;transition:transform var(--transition-fast) var(--ease),box-shadow var(--transition-fast) var(--ease),background-color var(--transition-fast) var(--ease),filter var(--transition-fast) var(--ease)}
+.btn:active{transform:scale(.97)}
+.btn:focus-visible{outline:2px solid var(--secondary);outline-offset:2px}
+.btn-primary{background:var(--primary);color:var(--on-primary)}
+.btn-ghost{background:transparent;color:var(--text-primary);border-color:var(--border-default)}
+@media(hover:hover) and (pointer:fine){
+.btn-primary:hover{filter:brightness(1.15);box-shadow:var(--shadow-sm)}
+.btn-ghost:hover{border-color:var(--secondary);color:var(--secondary)}
+}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+/* ---------- nav ---------- */
+.nav{position:fixed;top:0;left:0;right:0;z-index:50;background:var(--bg-glass);-webkit-backdrop-filter:blur(var(--blur));backdrop-filter:blur(var(--blur));border-bottom:1px solid var(--border-default)}
+.nav__inner{display:flex;align-items:center;justify-content:space-between;height:64px;gap:1rem}
+.nav__brand{display:flex;align-items:center;gap:.5rem;font:700 1.05rem var(--font-display);letter-spacing:.04em;color:var(--text-primary);text-decoration:none}
+.nav__dot{width:9px;height:9px;border-radius:50%;background:var(--secondary);box-shadow:0 0 0 0 rgba(46,125,50,.5);animation:pulse 2.4s infinite}
+.nav__links{display:none;align-items:center;gap:1.75rem;list-style:none}
+.nav__links a{color:var(--text-secondary);text-decoration:none;font-size:.9rem;font-weight:500;transition:color var(--transition-fast)}
+@media(hover:hover){.nav__links a:hover{color:var(--text-primary)}}
+.nav__actions{display:flex;align-items:center;gap:.5rem}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-sm);border:1px solid var(--border-default);background:transparent;color:var(--text-primary);cursor:pointer;transition:transform var(--transition-fast),border-color var(--transition-fast)}
+.icon-btn:active{transform:scale(.95)}
+.icon-btn:focus-visible{outline:2px solid var(--secondary);outline-offset:2px}
+.nav__cta{display:none}
+.nav__menu-btn{display:inline-flex}
+.nav__panel{display:none;flex-direction:column;gap:.25rem;padding:.75rem 1.25rem 1.25rem;background:var(--bg-glass);-webkit-backdrop-filter:blur(var(--blur));backdrop-filter:blur(var(--blur));border-bottom:1px solid var(--border-default)}
+.nav__panel.is-open{display:flex}
+.nav__panel a{padding:.75rem .5rem;color:var(--text-primary);text-decoration:none;font-weight:500;border-radius:var(--radius-sm)}
+.nav__panel a:focus-visible{outline:2px solid var(--secondary)}
+@media(min-width:768px){
+.nav__links{display:flex}
+.nav__cta{display:inline-flex;min-height:44px;padding:.55rem 1.1rem}
+.nav__menu-btn{display:none}
+.nav__panel{display:none!important}
+}
+/* ---------- hero ---------- */
+.hero{position:relative;padding-top:6rem;overflow:hidden}
+.hero__bg{position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(var(--border-default) 1px,transparent 1px),linear-gradient(90deg,var(--border-default) 1px,transparent 1px);background-size:48px 48px;-webkit-mask-image:radial-gradient(ellipse 90% 70% at 50% 30%,#000 30%,transparent 75%);mask-image:radial-gradient(ellipse 90% 70% at 50% 30%,#000 30%,transparent 75%);opacity:.5}
+.orb{position:absolute;border-radius:50%;filter:blur(70px);pointer-events:none}
+.orb--a{width:420px;height:420px;background:var(--orb-a);top:-120px;right:-80px}
+.orb--b{width:340px;height:340px;background:var(--orb-b);bottom:-100px;left:-100px}
+.hero__grid{position:relative;display:grid;grid-template-columns:1fr;gap:3rem;align-items:center}
+@media(min-width:900px){.hero__grid{grid-template-columns:55fr 45fr}}
+.eyebrow{display:inline-block;font:600 .72rem var(--font-base);letter-spacing:.18em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:1rem}
+.hero h1{font-size:clamp(2.4rem,5vw,3.9rem);margin-bottom:1.1rem}
+.hero h1 em{font-style:italic;color:var(--text-success)}
+.hero__sub{color:var(--text-secondary);max-width:34rem;margin-bottom:1.75rem;font-size:1.05rem}
+.hero__ctas{display:flex;flex-wrap:wrap;gap:.75rem;margin-bottom:2.25rem}
+.hero__metrics{display:flex;gap:2rem;flex-wrap:wrap}
+.metric__num{font:700 1.5rem var(--font-display)}
+.metric__num .u{color:var(--text-success)}
+.metric__lbl{font-size:.78rem;color:var(--text-secondary)}
+/* dashboard slab */
+.slab-wrap{perspective:1200px}
+.slab{background:var(--bg-glass);-webkit-backdrop-filter:blur(var(--blur));backdrop-filter:blur(var(--blur));border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);padding:1.25rem;transform:rotateX(8deg) rotateY(-6deg);transition:transform 500ms var(--ease);display:flex;flex-direction:column;gap:1rem}
+@media(hover:hover) and (pointer:fine){.slab:hover{transform:rotateX(3deg) rotateY(-2deg)}}
+.slab__head{display:flex;align-items:center;justify-content:space-between;gap:.75rem}
+.slab__title{font:600 .85rem var(--font-display)}
+.status-pill{display:inline-flex;align-items:center;gap:.45rem;padding:.35rem .8rem;border-radius:999px;border:1px solid var(--border-success);background:var(--mint);color:var(--text-success);font-size:.75rem;font-weight:600}
+.status-pill__dot{width:8px;height:8px;border-radius:50%;background:var(--secondary);animation:pulse 2.4s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(46,125,50,.45)}70%{box-shadow:0 0 0 9px rgba(46,125,50,0)}100%{box-shadow:0 0 0 0 rgba(46,125,50,0)}}
+.tile{border:1px solid var(--border-default);border-radius:var(--radius-md);padding:.9rem 1rem;background:var(--bg-secondary);box-shadow:var(--shadow-sm)}
+.tile__row{display:flex;align-items:baseline;justify-content:space-between;gap:.5rem}
+.tile__label{font-size:.72rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.08em}
+.tile__val{font:700 1.6rem var(--font-display)}
+.tile__delta{display:inline-flex;align-items:center;gap:.15rem;font-size:.75rem;font-weight:600;color:var(--text-success)}
+.spark{display:flex;align-items:flex-end;gap:3px;height:34px;margin-top:.6rem}
+.spark i{flex:1;border-radius:2px 2px 0 0;background:linear-gradient(180deg,var(--secondary),var(--mint-strong));animation:grow 900ms var(--ease) both;transform-origin:bottom}
+@keyframes grow{from{transform:scaleY(.05);opacity:.3}to{transform:scaleY(1);opacity:1}}
+.uptime{display:grid;grid-template-columns:repeat(30,1fr);gap:3px}
+.uptime i{height:22px;border-radius:2px;background:var(--secondary);opacity:.85}
+.uptime i.deg{background:var(--mint-strong);opacity:1}
+.uptime i.err{background:var(--text-error)}
+.regions{display:flex;flex-direction:column;gap:.45rem}
+.region{display:flex;align-items:center;justify-content:space-between;font-size:.82rem}
+.region span:first-child{display:flex;align-items:center;gap:.5rem;color:var(--text-secondary)}
+.region b{font-family:var(--font-display);font-size:.8rem}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--secondary);display:inline-block}
+.dot--deg{background:#c9a227}
+.empty{display:flex;align-items:center;gap:.8rem;border:1px dashed var(--border-default);border-radius:var(--radius-md);padding:.8rem 1rem}
+.empty__ring{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--bg-primary);box-shadow:var(--shadow-sm);color:var(--text-success);flex:none}
+.empty p{font-size:.8rem;color:var(--text-secondary)}
+.slab__cap{font-size:.72rem;color:var(--text-secondary);text-align:center}
+/* ---------- section head ---------- */
+.sec-head{max-width:44rem;margin-bottom:3rem}
+.sec-head h2{font-size:clamp(1.8rem,3.5vw,2.6rem);margin-bottom:.75rem}
+.sec-head p{color:var(--text-secondary)}
+/* ---------- cards ---------- */
+.grid3{display:grid;grid-template-columns:1fr;gap:1.5rem}
+@media(min-width:768px){.grid3{grid-template-columns:repeat(3,1fr)}}
+.card{background:var(--bg-glass);-webkit-backdrop-filter:blur(var(--blur));backdrop-filter:blur(var(--blur));border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:1.75rem;display:flex;flex-direction:column;gap:.9rem;transition:transform var(--transition-normal) var(--ease),box-shadow var(--transition-normal) var(--ease),border-color var(--transition-normal)}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.card,.slab,.nav,.nav__panel{background:var(--bg-secondary)}}
+@media(hover:hover) and (pointer:fine){.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}}
+.card:focus-within{border-color:var(--secondary)}
+.card__icon{width:46px;height:46px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;background:var(--mint);color:var(--text-success);box-shadow:var(--shadow-sm)}
+.card h3{font-size:1.15rem}
+.card p{color:var(--text-secondary);font-size:.92rem}
+.mini-viz{margin-top:auto;padding-top:.75rem}
+.tline{display:flex;align-items:center;gap:0;margin-top:.5rem}
+.tline i{height:6px;flex:1;background:var(--mint-strong)}
+.tline i:first-child{border-radius:3px 0 0 3px;background:var(--secondary)}
+.tline i.bad{flex:.4;background:var(--text-error)}
+.tline i:last-child{border-radius:0 3px 3px 0;background:var(--secondary)}
+.tline-lbls{display:flex;justify-content:space-between;font-size:.68rem;color:var(--text-secondary);margin-top:.4rem}
+.gauge{width:96px;height:96px;border-radius:50%;background:conic-gradient(var(--secondary) calc(var(--v)*1%),var(--border-default) 0);display:flex;align-items:center;justify-content:center;animation:spin 1.4s var(--ease) both}
+.gauge::before{content:"";position:absolute;width:70px;height:70px;border-radius:50%;background:var(--bg-secondary)}
+.gauge b{position:relative;font:700 1.05rem var(--font-display)}
+@keyframes spin{from{transform:rotate(-120deg);opacity:0}to{transform:rotate(0);opacity:1}}
+/* ---------- steps ---------- */
+.steps{display:grid;grid-template-columns:1fr;gap:2rem;position:relative}
+@media(min-width:768px){.steps{grid-template-columns:repeat(3,1fr)}.steps::before{content:"";position:absolute;top:34px;left:12%;right:12%;height:2px;background:linear-gradient(90deg,var(--border-default),var(--secondary),var(--border-default))}}
+.step{display:flex;flex-direction:column;gap:.6rem;position:relative}
+.step__num{font:700 2rem var(--font-display);color:var(--text-success);display:flex;align-items:center;gap:.6rem}
+.step__num .mso{font-size:1.6rem;color:var(--text-secondary)}
+.step h3{font-size:1.05rem}
+.step p{color:var(--text-secondary);font-size:.9rem}
+/* ---------- testimonials ---------- */
+.quote{display:flex;flex-direction:column;gap:1rem}
+.quote .mso{color:var(--secondary);font-size:1.8rem}
+.quote blockquote{font-size:.95rem;color:var(--text-primary)}
+.quote__who{display:flex;align-items:center;gap:.8rem;margin-top:auto}
+.avatar{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:700 .8rem var(--font-display);background:var(--mint);color:var(--text-success);box-shadow:var(--shadow-sm);flex:none}
+.quote__who small{display:block;color:var(--text-secondary);font-size:.75rem}
+/* ---------- pricing ---------- */
+.bill-toggle{display:inline-flex;gap:.25rem;border:1px solid var(--border-default);border-radius:999px;padding:.3rem;margin-bottom:2.5rem;background:var(--bg-secondary);box-shadow:var(--shadow-sm)}
+.bill-toggle button{border:0;background:transparent;padding:.55rem 1.2rem;border-radius:999px;font:600 .85rem var(--font-base);color:var(--text-secondary);cursor:pointer;min-height:44px}
+.bill-toggle button[aria-pressed="true"]{background:var(--primary);color:var(--on-primary)}
+.bill-toggle button:focus-visible{outline:2px solid var(--secondary);outline-offset:2px}
+.tier{position:relative}
+.tier--pop{border:2px solid var(--border-success);box-shadow:var(--shadow-md)}
+@media(min-width:768px){.tier--pop{transform:scale(1.03)}}
+.badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--secondary);color:var(--on-secondary);font:600 .7rem var(--font-base);letter-spacing:.06em;text-transform:uppercase;padding:.3rem .9rem;border-radius:999px;white-space:nowrap}
+.price{font:700 2.4rem var(--font-display)}
+.price small{font:500 .85rem var(--font-base);color:var(--text-secondary)}
+.save{font-size:.75rem;color:var(--text-success);font-weight:600;min-height:1.2em}
+.tier ul{list-style:none;display:flex;flex-direction:column;gap:.55rem;margin:.5rem 0 1rem}
+.tier li{display:flex;gap:.55rem;align-items:center;font-size:.88rem;color:var(--text-secondary)}
+.tier li .mso{color:var(--text-success);font-size:1.1rem}
+/* ---------- faq ---------- */
+.faq{max-width:46rem;margin:0 auto;display:flex;flex-direction:column;gap:.9rem}
+.faq details{background:var(--bg-glass);-webkit-backdrop-filter:blur(var(--blur));backdrop-filter:blur(var(--blur));border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);overflow:hidden}
+.faq summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;cursor:pointer;padding:1.1rem 1.25rem;font:600 .95rem var(--font-base);list-style:none;min-height:44px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary:focus-visible{outline:2px solid var(--secondary);outline-offset:-2px}
+.faq summary .mso{transition:transform var(--transition-normal) var(--ease);color:var(--text-secondary)}
+.faq details[open] summary .mso{transform:rotate(180deg)}
+.faq details p{padding:0 1.25rem 1.2rem;color:var(--text-secondary);font-size:.9rem}
+/* ---------- cta ---------- */
+.cta{position:relative}
+.cta__slab{background:linear-gradient(135deg,var(--mint),var(--bg-glass));border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);padding:clamp(2rem,5vw,4rem);text-align:center;display:flex;flex-direction:column;align-items:center;gap:1.1rem}
+.cta h2{font-size:clamp(1.8rem,3.5vw,2.5rem)}
+.cta p{color:var(--text-secondary);max-width:32rem}
+.cta__form{display:flex;flex-direction:column;gap:.5rem;width:100%;max-width:30rem;text-align:left}
+.cta__row{display:flex;flex-direction:column;gap:.6rem}
+@media(min-width:560px){.cta__row{flex-direction:row}}
+.cta label{font-size:.8rem;font-weight:600}
+.input{flex:1;min-height:48px;padding:.7rem 1rem;border-radius:var(--radius-sm);border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);font:400 .95rem var(--font-base);transition:border-color var(--transition-fast)}
+.input:focus{outline:2px solid var(--secondary);outline-offset:1px;border-color:var(--secondary)}
+.input[aria-invalid="true"]{border-color:var(--border-error)}
+.field-msg{font-size:.78rem;min-height:1.2em}
+.field-msg.err{color:var(--text-error)}
+.field-msg.ok{color:var(--text-success);font-weight:600}
+.cta__micro{font-size:.72rem;color:var(--text-secondary)}
+/* ---------- footer ---------- */
+footer{border-top:1px solid var(--border-default);padding:3.5rem 0 2rem;background:var(--bg-secondary)}
+.foot-grid{display:grid;grid-template-columns:1fr;gap:2rem;margin-bottom:2.5rem}
+@media(min-width:768px){.foot-grid{grid-template-columns:2fr 1fr 1fr 1fr}}
+.foot-grid h4{font:600 .8rem var(--font-base);text-transform:uppercase;letter-spacing:.1em;color:var(--text-secondary);margin-bottom:.9rem}
+.foot-grid ul{list-style:none;display:flex;flex-direction:column;gap:.55rem}
+.foot-grid a{color:var(--text-secondary);text-decoration:none;font-size:.88rem;transition:color var(--transition-fast)}
+@media(hover:hover){.foot-grid a:hover{color:var(--text-primary);text-decoration:underline}}
+.foot-brand p{color:var(--text-secondary);font-size:.85rem;margin:.6rem 0 1rem;max-width:22rem}
+.foot-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1rem;border-top:1px solid var(--border-default);padding-top:1.5rem;font-size:.8rem;color:var(--text-secondary)}
+.foot-bar nav{display:flex;gap:1.25rem;flex-wrap:wrap}
+.foot-bar a{color:var(--text-secondary);text-decoration:none}
+@media(hover:hover){.foot-bar a:hover{color:var(--text-primary)}}
+/* ---------- reveal ---------- */
+.rv{opacity:0;transform:translateY(16px);transition:opacity 600ms var(--ease),transform 600ms var(--ease)}
+.rv.is-visible{opacity:1;transform:none}
+@media (prefers-reduced-motion: reduce){
+*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:150ms!important}
+html{scroll-behavior:auto}
+.slab{transform:none!important}
+.rv{transform:none}
+}
+@media (prefers-reduced-transparency: reduce){
+.nav,.nav__panel,.card,.slab,.faq details{background:var(--bg-secondary);-webkit-backdrop-filter:none;backdrop-filter:none}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav">
+  <div class="container nav__inner">
+    <a class="nav__brand" href="#top"><span class="nav__dot" aria-hidden="true"></span>MONOLITH</a>
+    <nav aria-label="Primary">
+      <ul class="nav__links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+    </nav>
+    <div class="nav__actions">
+      <button class="icon-btn" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="mso" id="theme-icon" aria-hidden="true">dark_mode</span>
+      </button>
+      <a class="btn btn-primary nav__cta" href="#cta">Start monitoring</a>
+      <button class="icon-btn nav__menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="mobile-panel" aria-label="Open menu">
+        <span class="mso" aria-hidden="true">menu</span>
+      </button>
+    </div>
+  </div>
+  <nav class="nav__panel" id="mobile-panel" aria-label="Mobile">
+    <a href="#features">Features</a>
+    <a href="#how">How it works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#faq">FAQ</a>
+    <a href="#cta" style="font-weight:700;color:var(--text-success)">Start monitoring</a>
+  </nav>
+</header>
+
+<main id="main">
+<!-- HERO -->
+<section class="hero" id="top" aria-labelledby="hero-title">
+  <div class="hero__bg" aria-hidden="true"></div>
+  <div class="orb orb--a" aria-hidden="true"></div>
+  <div class="orb orb--b" aria-hidden="true"></div>
+  <div class="container hero__grid">
+    <div>
+      <span class="eyebrow">Uptime observability</span>
+      <h1 id="hero-title">Know your status <em>before</em> your users do</h1>
+      <p class="hero__sub">MONOLITH checks your services every 30 seconds from 40+ regions and alerts your team the moment anything drifts.</p>
+      <div class="hero__ctas">
+        <a class="btn btn-primary" href="#cta">Start monitoring</a>
+        <a class="btn btn-ghost" href="#features">View live demo</a>
+      </div>
+      <div class="hero__metrics">
+        <div><div class="metric__num"><span class="count" data-to="99.98" data-dec="2">0</span><span class="u">%</span></div><div class="metric__lbl">Fleet uptime</div></div>
+        <div><div class="metric__num"><span class="count" data-to="40">0</span><span class="u">+</span></div><div class="metric__lbl">Check regions</div></div>
+        <div><div class="metric__num">&lt;<span class="count" data-to="50">0</span><span class="u">ms</span></div><div class="metric__lbl">Check interval</div></div>
+      </div>
+    </div>
+    <div class="slab-wrap rv">
+      <div class="slab" id="slab">
+        <div class="slab__head">
+          <span class="slab__title">production / api-gateway</span>
+          <span class="status-pill"><span class="status-pill__dot" aria-hidden="true"></span>All Systems Operational</span>
+        </div>
+        <div class="tile">
+          <div class="tile__row">
+            <div><div class="tile__label">Uptime · 90 days</div><div class="tile__val">99.98%</div></div>
+            <span class="tile__delta"><span class="mso" aria-hidden="true">trending_up</span>0.02%</span>
+          </div>
+          <div class="spark" aria-hidden="true">
+            <i style="height:40%"></i><i style="height:55%"></i><i style="height:48%"></i><i style="height:70%"></i><i style="height:62%"></i><i style="height:80%"></i><i style="height:74%"></i><i style="height:92%"></i><i style="height:85%"></i><i style="height:100%"></i><i style="height:88%"></i><i style="height:95%"></i>
+          </div>
+        </div>
+        <div>
+          <div class="tile__label" style="margin-bottom:.5rem">Daily status</div>
+          <div class="uptime" id="uptime" role="img" aria-label="90 day uptime history, 2 degraded days, 1 incident day"></div>
+        </div>
+        <div class="regions">
+          <div class="region"><span><i class="dot"></i>us-east-1</span><b>38ms</b></div>
+          <div class="region"><span><i class="dot"></i>eu-central-1</span><b>41ms</b></div>
+          <div class="region"><span><i class="dot dot--deg"></i>ap-southeast-2</span><b>122ms</b></div>
+        </div>
+        <div class="empty">
+          <span class="empty__ring"><span class="mso" aria-hidden="true">check_circle</span></span>
+          <p>No incidents in the last 90 days. When one occurs, the full timeline appears here.</p>
+        </div>
+        <div class="slab__cap">Live view from the MONOLITH status console</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features" aria-labelledby="feat-title">
+  <div class="container">
+    <div class="sec-head rv">
+      <h2 id="feat-title">Built for teams that hate guessing</h2>
+      <p>Every signal your services emit, condensed into calm, readable status.</p>
+    </div>
+    <div class="grid3">
+      <article class="card rv">
+        <span class="card__icon"><span class="mso" aria-hidden="true">monitor_heart</span></span>
+        <h3>Real-time monitoring</h3>
+        <p>HTTP, TCP, DNS and TLS checks run every 30 seconds from 40+ regions. Latency regressions surface in under a minute, not after the support tickets.</p>
+        <div class="mini-viz">
+          <div class="tile__label">Latency · last hour</div>
+          <div class="spark" aria-hidden="true">
+            <i style="height:30%"></i><i style="height:45%"></i><i style="height:38%"></i><i style="height:60%"></i><i style="height:52%"></i><i style="height:44%"></i><i style="height:66%"></i><i style="height:58%"></i><i style="height:72%"></i><i style="height:64%"></i><i style="height:78%"></i><i style="height:70%"></i>
+          </div>
+        </div>
+      </article>
+      <article class="card rv">
+        <span class="card__icon"><span class="mso" aria-hidden="true">timeline</span></span>
+        <h3>Incident timelines</h3>
+        <p>Every alert becomes a structured timeline with region data and acknowledgment notes. Postmortems start from facts, not chat scrollback.</p>
+        <div class="mini-viz">
+          <div class="tline" aria-hidden="true"><i></i><i></i><i class="bad"></i><i></i><i></i><i></i></div>
+          <div class="tline-lbls"><span>00:00</span><span>incident 00:41</span><span>resolved 01:12</span></div>
+        </div>
+      </article>
+      <article class="card rv">
+        <span class="card__icon"><span class="mso" aria-hidden="true">donut_large</span></span>
+        <h3>SLA analytics</h3>
+        <p>Uptime is computed against your SLA targets automatically. Export audit-ready reports for customers and leadership in one click.</p>
+        <div class="mini-viz" style="display:flex;align-items:center;gap:1rem">
+          <div class="gauge" style="--v:99.9"><b>99.9%</b></div>
+          <div><div class="tile__label">SLA compliance</div><div style="font-size:.8rem;color:var(--text-secondary)">Q1 2026 · all services</div></div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" aria-labelledby="how-title">
+  <div class="container">
+    <div class="sec-head rv">
+      <h2 id="how-title">Operational in three steps</h2>
+      <p>From first endpoint to full fleet coverage in an afternoon.</p>
+    </div>
+    <div class="steps">
+      <div class="step rv"><div class="step__num">01 <span class="mso" aria-hidden="true">cable</span></div><h3>Connect endpoints</h3><p>Add URLs, hosts or synthetic flows. MONOLITH auto-detects protocols and starts checking immediately.</p></div>
+      <div class="step rv"><div class="step__num">02 <span class="mso" aria-hidden="true">notifications_active</span></div><h3>Watch and alert</h3><p>Route alerts to Slack, PagerDuty, email or webhooks with escalation rules that match your on-call rota.</p></div>
+      <div class="step rv"><div class="step__num">03 <span class="mso" aria-hidden="true">query_stats</span></div><h3>Review analytics</h3><p>Track uptime trends, latency percentiles and SLA compliance across every region from one dashboard.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testimonials" aria-labelledby="test-title">
+  <div class="container">
+    <div class="sec-head rv">
+      <h2 id="test-title">Trusted by on-call teams</h2>
+      <p>Engineers who sleep better because their status page tells the truth.</p>
+    </div>
+    <div class="grid3">
+      <article class="card quote rv">
+        <span class="mso" aria-hidden="true">format_quote</span>
+        <blockquote>We caught a regional DNS failure four minutes before our first customer ticket arrived. That paid for the year.</blockquote>
+        <div class="quote__who"><span class="avatar" aria-hidden="true">MK</span><div><strong>Marta Kowalska</strong><small>SRE Lead, Vantage Freight</small></div></div>
+      </article>
+      <article class="card quote rv">
+        <span class="mso" aria-hidden="true">format_quote</span>
+        <blockquote>The incident timelines turned our postmortems from archaeology into a ten-minute review. The data is just there.</blockquote>
+        <div class="quote__who"><span class="avatar" aria-hidden="true">DA</span><div><strong>Daniel Adeyemi</strong><small>Platform Engineer, Corvus Pay</small></div></div>
+      </article>
+      <article class="card quote rv">
+        <span class="mso" aria-hidden="true">format_quote</span>
+        <blockquote>Our SLA reports used to take a day of spreadsheet work each quarter. Now they are a link we send to customers.</blockquote>
+        <div class="quote__who"><span class="avatar" aria-hidden="true">SR</span><div><strong>Sofia Ramírez</strong><small>VP Engineering, Harborline Analytics</small></div></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" aria-labelledby="price-title">
+  <div class="container">
+    <div class="sec-head rv">
+      <h2 id="price-title">Pricing that scales with your fleet</h2>
+      <p>Start free, upgrade when your services do. Annual billing saves 20%.</p>
+    </div>
+    <div class="bill-toggle rv" role="group" aria-label="Billing period">
+      <button type="button" id="bill-monthly" aria-pressed="true">Monthly</button>
+      <button type="button" id="bill-annual" aria-pressed="false">Annual</button>
+    </div>
+    <p class="visually-hidden" aria-live="polite" id="bill-live"></p>
+    <div class="grid3">
+      <article class="card tier rv">
+        <h3>Scout</h3>
+        <div class="price">$<span class="p" data-m="19" data-a="15">19</span><small>/mo</small></div>
+        <div class="save" data-save></div>
+        <ul>
+          <li><span class="mso" aria-hidden="true">check</span>10 monitors, 60s interval</li>
+          <li><span class="mso" aria-hidden="true">check</span>5 check regions</li>
+          <li><span class="mso" aria-hidden="true">check</span>Email and Slack alerts</li>
+          <li><span class="mso" aria-hidden="true">check</span>30-day data retention</li>
+        </ul>
+        <a class="btn btn-ghost" href="#cta" style="margin-top:auto">Start monitoring</a>
+      </article>
+      <article class="card tier tier--pop rv">
+        <span class="badge">Most popular</span>
+        <h3>Operator</h3>
+        <div class="price">$<span class="p" data-m="59" data-a="47">59</span><small>/mo</small></div>
+        <div class="save" data-save></div>
+        <ul>
+          <li><span class="mso" aria-hidden="true">check</span>100 monitors, 30s interval</li>
+          <li><span class="mso" aria-hidden="true">check</span>All 40+ regions</li>
+          <li><span class="mso" aria-hidden="true">check</span>PagerDuty and webhooks</li>
+          <li><span class="mso" aria-hidden="true">check</span>Incident timelines and SLA reports</li>
+          <li><span class="mso" aria-hidden="true">check</span>13-month data retention</li>
+        </ul>
+        <a class="btn btn-primary" href="#cta" style="margin-top:auto">Start monitoring</a>
+      </article>
+      <article class="card tier rv">
+        <h3>Enterprise</h3>
+        <div class="price">$<span class="p" data-m="189" data-a="151">189</span><small>/mo</small></div>
+        <div class="save" data-save></div>
+        <ul>
+          <li><span class="mso" aria-hidden="true">check</span>Unlimited monitors, 10s interval</li>
+          <li><span class="mso" aria-hidden="true">check</span>SSO, audit log, self-host option</li>
+          <li><span class="mso" aria-hidden="true">check</span>Dedicated status pages</li>
+          <li><span class="mso" aria-hidden="true">check</span>7-year retention, 99.99% SLA</li>
+        </ul>
+        <a class="btn btn-ghost" href="#cta" style="margin-top:auto">Start monitoring</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" aria-labelledby="faq-title">
+  <div class="container">
+    <div class="sec-head rv">
+      <h2 id="faq-title">Common questions</h2>
+      <p>The short answers, before you ask support.</p>
+    </div>
+    <div class="faq rv">
+      <details>
+        <summary>What can MONOLITH monitor?<span class="mso" aria-hidden="true">expand_more</span></summary>
+        <p>HTTP and HTTPS endpoints, TCP ports, DNS records, TLS certificate expiry, and multi-step synthetic flows such as login or checkout. Each monitor can run from any subset of our 40+ regions.</p>
+      </details>
+      <details>
+        <summary>How is uptime calculated?<span class="mso" aria-hidden="true">expand_more</span></summary>
+        <p>Uptime is the share of successful checks over total checks per period, weighted by region. Degraded responses count as partial availability, so your numbers match what users actually experienced.</p>
+      </details>
+      <details>
+        <summary>Which alert channels are supported?<span class="mso" aria-hidden="true">expand_more</span></summary>
+        <p>Slack, PagerDuty, Opsgenie, email, SMS and generic webhooks. Escalation policies let you page the primary on-call first, then fall back to a secondary after a configurable delay.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="cta" id="cta" aria-labelledby="cta-title">
+  <div class="container">
+    <div class="cta__slab rv">
+      <span class="status-pill"><span class="status-pill__dot" aria-hidden="true"></span>All Systems Operational</span>
+      <h2 id="cta-title">Put your status on record</h2>
+      <p>Free for 14 days. No credit card, five-minute setup, cancel anytime.</p>
+      <form class="cta__form" id="cta-form" novalidate>
+        <label for="cta-email">Work email</label>
+        <div class="cta__row">
+          <input class="input" id="cta-email" name="email" type="email" autocomplete="email" placeholder="you@company.com" required>
+          <button class="btn btn-primary" id="cta-submit" type="submit">Start monitoring</button>
+        </div>
+        <p class="field-msg" id="cta-msg" aria-live="polite"></p>
+      </form>
+      <p class="cta__micro">We only email you about your trial. No newsletters, no reselling your address.</p>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <a class="nav__brand" href="#top"><span class="nav__dot" aria-hidden="true"></span>MONOLITH</a>
+        <p>Calm, precise uptime observability for engineering teams that would rather prevent incidents than explain them.</p>
+        <span class="status-pill"><span class="status-pill__dot" aria-hidden="true"></span>All Systems Operational</span>
+      </div>
+      <div><h4>Product</h4><ul><li><a href="#features">Features</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#how">How it works</a></li><li><a href="#cta">Free trial</a></li></ul></div>
+      <div><h4>Resources</h4><ul><li><a href="#faq">FAQ</a></li><li><a href="#faq">Documentation</a></li><li><a href="#faq">API reference</a></li><li><a href="#faq">Status history</a></li></ul></div>
+      <div><h4>Company</h4><ul><li><a href="#top">About</a></li><li><a href="#top">Careers</a></li><li><a href="#top">Blog</a></li><li><a href="#top">Contact</a></li></ul></div>
+    </div>
+    <div class="foot-bar">
+      <span>© 2026 Monolith Systems, Inc.</span>
+      <nav aria-label="Legal"><a href="#top">Privacy</a><a href="#top">Terms</a><a href="#top">Status</a><a href="#top">Security</a></nav>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+/* ---- theme toggle ---- */
+var root=document.documentElement,toggle=document.getElementById("theme-toggle"),icon=document.getElementById("theme-icon");
+function paintTheme(){var d=root.dataset.theme==="dark";toggle.setAttribute("aria-pressed",String(d));toggle.setAttribute("aria-label",d?"Switch to light mode":"Switch to dark mode");icon.textContent=d?"light_mode":"dark_mode";}
+toggle.addEventListener("click",function(){root.dataset.theme=root.dataset.theme==="dark"?"light":"dark";try{localStorage.setItem("theme",root.dataset.theme);}catch(e){}paintTheme();});
+paintTheme();
+
+/* ---- mobile menu ---- */
+var menuBtn=document.getElementById("menu-btn"),panel=document.getElementById("mobile-panel");
+function setMenu(open){menuBtn.setAttribute("aria-expanded",String(open));menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");menuBtn.querySelector(".mso").textContent=open?"close":"menu";panel.classList.toggle("is-open",open);}
+menuBtn.addEventListener("click",function(){setMenu(menuBtn.getAttribute("aria-expanded")!=="true");});
+panel.addEventListener("click",function(e){if(e.target.tagName==="A")setMenu(false);});
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&menuBtn.getAttribute("aria-expanded")==="true"){setMenu(false);menuBtn.focus();}});
+
+/* ---- uptime grid ---- */
+var ug=document.getElementById("uptime"),i,bar;
+for(i=1;i<=90;i++){bar=document.createElement("i");
+if(i===42){bar.className="deg";bar.title="Day 42: degraded, 99.2% uptime";bar.setAttribute("aria-label","Day 42: degraded, 99.2% uptime");}
+else if(i===67){bar.className="err";bar.title="Day 67: incident, 96.8% uptime";bar.setAttribute("aria-label","Day 67: incident, 96.8% uptime");}
+else{bar.title="Day "+i+": operational, 100% uptime";bar.setAttribute("aria-label","Day "+i+": operational");}
+ug.appendChild(bar);}
+
+/* ---- reveal on scroll ---- */
+var reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+var rvEls=document.querySelectorAll(".rv");
+if("IntersectionObserver" in window&&!reduced){
+var io=new IntersectionObserver(function(entries){entries.forEach(function(en){if(en.isIntersecting){en.target.classList.add("is-visible");io.unobserve(en.target);}});},{threshold:.12});
+rvEls.forEach(function(el,idx){el.style.transitionDelay=(idx%3)*70+"ms";io.observe(el);});
+}else{rvEls.forEach(function(el){el.classList.add("is-visible");});}
+
+/* ---- count-up ---- */
+var counters=document.querySelectorAll(".count");
+function runCount(el){var to=parseFloat(el.dataset.to),dec=parseInt(el.dataset.dec||"0",10),t0=null;
+if(reduced){el.textContent=to.toFixed(dec);return;}
+function step(ts){if(!t0)t0=ts;var p=Math.min((ts-t0)/1200,1);el.textContent=(to*(1-Math.pow(1-p,3))).toFixed(dec);if(p<1)requestAnimationFrame(step);}
+requestAnimationFrame(step);}
+if("IntersectionObserver" in window){var cio=new IntersectionObserver(function(es){es.forEach(function(en){if(en.isIntersecting){runCount(en.target);cio.unobserve(en.target);}});},{threshold:.5});counters.forEach(function(c){cio.observe(c);});}
+else{counters.forEach(runCount);}
+
+/* ---- parallax orbs + slab ---- */
+if(!reduced){
+var slab=document.getElementById("slab"),orbA=document.querySelector(".orb--a"),orbB=document.querySelector(".orb--b"),ticking=false;
+window.addEventListener("scroll",function(){if(!ticking){requestAnimationFrame(function(){var y=window.scrollY;
+if(y<900){orbA.style.transform="translateY("+(y*.12)+"px)";orbB.style.transform="translateY("+(-y*.08)+"px)";}
+ticking=false;});ticking=true;}},{passive:true});
+}
+
+/* ---- pricing toggle ---- */
+var bm=document.getElementById("bill-monthly"),ba=document.getElementById("bill-annual"),live=document.getElementById("bill-live");
+function setBilling(annual){bm.setAttribute("aria-pressed",String(!annual));ba.setAttribute("aria-pressed",String(annual));
+document.querySelectorAll(".p").forEach(function(p){p.textContent=annual?p.dataset.a:p.dataset.m;});
+document.querySelectorAll("[data-save]").forEach(function(s){s.textContent=annual?"Billed annually, save 20%":"";});
+live.textContent=annual?"Annual billing selected, prices reduced by 20 percent.":"Monthly billing selected.";}
+bm.addEventListener("click",function(){setBilling(false);});
+ba.addEventListener("click",function(){setBilling(true);});
+
+/* ---- CTA form ---- */
+var form=document.getElementById("cta-form"),email=document.getElementById("cta-email"),msg=document.getElementById("cta-msg"),submit=document.getElementById("cta-submit");
+form.addEventListener("submit",function(e){e.preventDefault();
+var v=email.value.trim();
+msg.className="field-msg";
+if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)){email.setAttribute("aria-invalid","true");msg.textContent="Enter a valid work email, for example you@company.com.";msg.classList.add("err");email.focus();return;}
+email.removeAttribute("aria-invalid");
+submit.disabled=true;submit.textContent="Sending…";msg.textContent="";
+setTimeout(function(){submit.textContent="Start monitoring";submit.disabled=false;form.reset();
+msg.textContent="You are on the list. Check your inbox to activate your trial.";msg.classList.add("ok");},900);
+});
+email.addEventListener("input",function(){if(email.getAttribute("aria-invalid")){email.removeAttribute("aria-invalid");msg.textContent="";msg.className="field-msg";}});
+})();
+</script>
+</body>
+</html>

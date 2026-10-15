@@ -1,484 +1,548 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BETWEEN STATIONS — a night radio</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500;1,9..144,600;1,9..144,700&family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;1,14..32,400;1,14..32,500;1,14..32,600&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700" rel="stylesheet">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,GRAD@20..90,400..700">
-  <style>
-    /* -- tokens -- */
-    :root{
-      --font-display:'Fraunces',serif;
-      --font-base:'Inter',sans-serif;
-      --font-mono:'Space Mono',monospace;
-      --bg-primary:#f4ead9;
-      --bg-secondary:#ece0c9;
-      --primary:#5a3f26;
-      --secondary:#4a3320;
-      --accent-glow:#c9884a;
-      --text-primary:#17120c;
-      --text-secondary:#5a3f26;
-      --text-on-primary:#f4ead9;
-      --text-success:#2e6b4f;
-      --text-error:#a63d2f;
-      --border-default:rgba(90,63,38,.28);
-      --border-success:rgba(46,107,79,.55);
-      --border-error:rgba(166,61,47,.55);
-      --nm-out:8px 8px 18px rgba(14,10,7,.18),-8px -8px 18px rgba(254,254,254,.85);
-      --nm-in:inset 6px 6px 12px rgba(14,10,7,.16),inset -6px -6px 12px rgba(254,254,254,.70);
-      --glow-sm:0 0 12px rgba(201,136,74,.35);
-      --glow-md:0 0 28px rgba(201,136,74,.50);
-      --gradient-warm:linear-gradient(135deg,#5a3f26,#2c1e10);
-      --gradient-glow:linear-gradient(135deg,#c9884a,#5a3f26);
-      --radius-sm:8px;--radius-md:14px;--radius-lg:24px;
-      --shadow-sm:0 1px 3px rgba(14,10,7,.14);
-      --shadow-md:0 6px 18px rgba(14,10,7,.18);
-      --spacing-gap:clamp(1.25rem,3vw,2.5rem);
-      --transition-fast:150ms;--transition-normal:300ms;
-      --ease-standard:cubic-bezier(0.4,0,0.2,1);
-      --z-grain:60;--z-dropdown:100;--z-modal:1000;--z-toast:1100;
-      --grain-opacity:0.05;
-    }
-    @media (prefers-color-scheme:dark){
-      :root{
-        --bg-primary:#0e0a07;--bg-secondary:#17120c;
-        --primary:#c9884a;--secondary:#8a6a45;
-        --text-primary:#f4ead9;--text-secondary:#b39872;
-        --text-on-primary:#17120c;
-        --border-default:rgba(201,136,74,.28);
-        --nm-out:8px 8px 18px rgba(0,0,0,.60),-8px -8px 18px rgba(90,63,38,.14);
-        --nm-in:inset 6px 6px 12px rgba(0,0,0,.65),inset -6px -6px 12px rgba(90,63,38,.12);
-        --gradient-warm:linear-gradient(135deg,#2c1e10,#17120c);
-        --grain-opacity:0.08;
-      }
-    }
-    .dark{--bg-primary:#0e0a07;--bg-secondary:#17120c;--primary:#c9884a;--secondary:#8a6a45;--text-primary:#f4ead9;--text-secondary:#b39872;--text-on-primary:#17120c;--border-default:rgba(201,136,74,.28);--nm-out:8px 8px 18px rgba(0,0,0,.60),-8px -8px 18px rgba(90,63,38,.14);--nm-in:inset 6px 6px 12px rgba(0,0,0,.65),inset -6px -6px 12px rgba(90,63,38,.12);--gradient-warm:linear-gradient(135deg,#2c1e10,#17120c);--grain-opacity:0.08;}
-    html{scroll-behavior:smooth;}
-    @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto;}*{transition:none!important;transition-property:color,background,border!important;}}
-    body{margin:0;font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.5;position:relative;}
-    body::after{
-      content:'';position:fixed;inset:0;pointer-events:none;z-index:var(--z-grain);
-      background:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22400%22 viewBox=%220 0 400 400%22><filter id=%22blur%22><feGaussianBlur stdDeviation="1.5"/></filter><image width=%22400%22 height=%22400%22 xlink:href=%22data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22400%22 viewBox=%220 0 400 400%22><rect width=%22400%22 height=%22400%22 fill=%22white%22/></svg>%22/></svg>') repeat;
-      opacity:var(--grain-opacity);
-    }
-    a{text-decoration:none;color:inherit;}
-    :focus-visible{outline:2px solid var(--accent-glow);outline-offset:2px;}
-    /* -- base -- */
-    .skip-link{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;}
-    .skip-link:focus{left:0;top:0;width:auto;height:auto;background:#17120c;padding:1rem;z-index:var(--z-dropdown);}
-    /* -- components -- */
-    .btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.75rem 1.5rem;font-family:var(--font-base);font-size:.9rem;font-weight:500;cursor:border-box;border:none;border-radius:var(--radius-md);transition:transform var(--transition-fast),box-shadow var(--transition-fast);min-width:140px;}
-    .btn--primary{background:var(--gradient-warm);color:var(--text-on-primary);box-shadow:var(--glow-md);}
-    .btn--primary:hover{transform:translateY(-1px);box-shadow:var(--glow-sm),0 4px 12px rgba(90,63,38,.2);}
-    .btn--primary:focus-visible{box-shadow:0 0 0 3px var(--accent-glow);}
-    .btn--primary:active{transform:scale(0.97);}
-    .btn--primary.is-loading .material-symbols-outlined{animation:spin 1s linear infinite;}
-    .btn--ghost{border:1px solid var(--border-default);background:transparent;color:var(--text-primary);}
-    .btn--ghost:hover{border-color:var(--accent-glow);color:var(--accent-glow);}
-    .btn--ghost:focus-visible{border-color:var(--accent-glow);outline:2px solid var(--accent-glow);}
-    .btn--ghost:active{transform:scale(0.97);}
-    .btn--danger{background:rgba(166,61,47,.15);color:var(--text-error);border:1px solid var(--text-error);}
-    .btn--danger:hover{background:rgba(166,61,47,.25);}
-    .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0;}
-    @keyframes spin{to{transform:rotate(360deg);}}
-    /* -- header -- */
-    header{position:sticky;top:0;background:var(--bg-primary);border-bottom:1px solid var(--border-default);z-index:var(--z-dropdown);padding:.75rem 1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;}
-    .brand{font-family:var(--font-display);font-size:1.25rem;font-weight:700;letter-spacing:.02em;}
-    .brand .material-symbols-outlined{vertical-align:middle;margin-right:.3em;font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0;}
-    nav{display:flex;gap:2rem;}
-    nav a{font-size:.9rem;color:var(--text-secondary);transition:color var(--transition-fast);}
-    nav a:hover{color:var(--primary);}
-    .nav-current{color:var(--primary);}
-    .theme-toggle{position:relative;display:flex;align-items:center;gap:.5rem;}
-    .theme-toggle .material-symbols-outlined{cursor:pointer;font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0;}
-    .theme-toggle[aria-pressed="true"] .material-symbols-outlined{color:var(--accent-glow);}
-    .mobile-menu-btn{display:none;width:44px;height:44px;background:none;border:none;cursor:pointer;position:relative;}
-    .mobile-menu-btn .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0;}
-    .nav-links{display:flex;align-items:center;gap:2rem;flex-wrap:wrap;}
-    .nav-links a{position:relative;padding-bottom:.2rem;}
-    .nav-links a::after{content:'';position:absolute;left:0;bottom:0;width:0;height:2px;background:var(--primary);transition:width var(--transition-fast);}
-    .nav-links a:hover::after{width:100%;}
-    /* -- hero -- */
-    .hero{padding:3rem 1rem;display:flex;gap:2rem;align-items:center;flex-wrap:wrap;max-width:1200px;margin-left:auto;margin-right:auto;}
-    .hero-copy{flex:1 1 300px;}
-    .hero-copy h1{font-family:var(--font-display);font-size:clamp(2rem,6vw,3.5rem);font-weight:700;line-height:1.2;margin:.5rem 0 1rem;}
-    .hero-copy p{font-size:.95rem;color:var(--text-secondary);max-width:480px;}
-    .hero-ctas{display:flex;gap:.5rem;margin-top:1rem;flex-wrap:wrap;}
-    .tuner-card{flex:0 1 320px;background:var(--bg-secondary);border-radius:var(--radius-lg);padding:2rem;position:relative;border:1px solid var(--border-default);box-shadow:var(--nm-out);overflow:hidden;}
-    .tuner-card::before{content:'';position:absolute;inset:0;background:var(--gradient-glow);opacity:.3;pointer-events:none;}
-    .dial-well{position:relative;width:180px;height:180px;margin:0 auto;}
-    .dial-well::after{content:'';position:absolute;inset:12px;border:2px solid var(--primary);border-radius:50%;}
-    .tick-marks{position:absolute;inset:0;pointer-events:none;}
-    .tick-marks span{position:absolute;left:50%;transform:translateX(-50%);font-family:var(--font-mono);font-size:.65rem;color:var(--primary);white-space:nowrap;}
-    .tick-marks span::before{content:'';position:absolute;left:-4px;top:50%;width:8px;height:1px;background:var(--primary);}
-    .needle{position:absolute;bottom:50%;left:50%;width:4px;height:50%;background:var(--accent-glow);border-radius:2px;transform-origin:bottom center;animation:idle-drift 20s linear infinite;}
-    @keyframes idle-drift{0%{transform:rotate(0deg);}100%{transform:rotate(3deg);}}
-    .waveform{bdisplay:flex;gap:2px;height:30px;width:120px;margin:2rem auto 0;flex-wrap:wrap;}
-    .waveform .bar{flex:1;background:var(--primary);border-radius:2px;animation:wave var(--transition-normal) ease-in-out infinite;}
-    @keyframes wave{0%,100%{transform:scaleY(0.2);}50%{transform:scaleY(1);}}
-    .on-air{display:flex;align-items:center;gap:.4rem;margin-top:1rem;font-size:.75rem;color:var(--primary);}
-    .on-air .material-symbols-outlined{color:var(--accent-glow);animation:pulse 2s ease-in-out infinite;}
-    @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
-    /* -- features -- */
-    .features{padding:2rem 1rem;max-width:1200px;margin-left:auto;margin-right:auto;}
-    .features-grid{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;}
-    .feature-card{flex:1 1 200px;background:var(--bg-secondary);border-radius:var(--radius-lg);padding:1.5rem;border:1px solid var(--border-default);box-shadow:var(--nm-out);transition:transform var(--transition-fast);min-height:180px;display:flex;flex-direction:column;justify-content:space-between;}
-    .feature-card:hover{transform:translateY(-4px);box-shadow:var(--nm-in);}
-    .feature-card:focus-within{border-color:var(--accent-glow);}
-    .feature-icon{width:48px;height:48px;background:var(--gradient-warm);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto .75rem;color:var(--text-on-primary);font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0;}
-    .feature-card h3{font-family:var(--font-display);font-size:1.1rem;margin-bottom:.5rem;text-align:center;}
-    .feature-card p{font-size:.85rem;color:var(--text-secondary);text-align:center;flex:1;}
-    /* -- how it works -- */
-    .steps{padding:2rem 1rem;max-width:1200px;margin-left:auto;margin-right:auto;}
-    .steps-header{display:flex;gap:1rem;align-items:center;flex-wrap:wrap;}
-    .step{flex:1 1 150px;text-align:center;position:relative;}
-    .step-number{width:48px;height:48px;border-radius:50;background:var(--gradient-warm);color:var(--text-on-primary);font-family:var(--font-mono);font-size:1.2rem;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;}
-    .step h3{font-family:var(--font-display);font-size:1rem;margin-bottom:.3rem;}
-    .step p{font-size:.85rem;color:var(--text-secondary);}
-    .signal-line{height:1px;background:var(--gradient-glow);opacity:.5;margin:2rem auto;max-width:created;}
-    /* -- testimonials -- */
-    .testimonials{padding:2rem 1rem;max-width:1200px;margin-left:auto;margin-right:auto;}
-    .test-grid{display:flex;gap:1.5rem;flex-wrap:wrap;justify-content:center;}
-    .test-card{flex:1 1 260px;background:var(--bg-secondary);border-radius:var(--radius-lg);padding:1.5rem;border:1px solid var(--border-default);box-shadow:var(--nm-out);display:flex;flex-direction:column;min-height:260px;}
-    .test-card .stars{color:#e8c452;margin-bottom:.5rem;}
-    .test-card .stars .material-symbols-outlined{cursor:default;}
-    .test-card blockquote{font-family:var(--font-display);font-style:italic;font-size:.9rem;margin:.5rem 0;color:var(--text-primary);line-height:1.4;}
-    .test-card .attribution{margin-top:auto;font-size:.8rem;color:var(--text-secondary);display:flex;justify-content:space-between;}
-    /* -- pricing -- */
-    .pricing{padding:2rem 1rem;max-width:1200px;margin-left:auto;margin-right:auto;}
-    .pricing-grid{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;}
-    .pricing-card{flex:1 1 240px;background:var(--bg-secondary);border-radius:var(--radius-lg);padding:1.5rem;border:1px solid var(--border-default);box-shadow:var(--nm-out);transition:transform var(--transition-fast);text-align:center;min-height:380px;display:flex;flex-direction:column;justify-content:space-between;}
-    .pricing-card:hover{transform:translateY(-4px);box-shadow:var(--nm-in);}
-    .pricing-card.card--featured{border-color:var(--primary);box-shadow:var(--nm-out),0 0 30px rgba(201,136,74,.2);transform:scale(1.04);}
-    .pricing-card.card--featured .badge{position:absolute;top:1rem;right:1rem;background:var(--accent-glow);color:var(--text-primary);font-size:.65rem;padding:.2rem .5rem;border-radius:4px;font-weight:700;text-transform:uppercase;}
-    .pricing-card h3{font-family:var(--font-display);font-size:1.25rem;margin:.5rem 0;}
-    .pricing-card .price{font-size:1.5rem;font-family:var(--font-mono);color:var(--primary);margin:.5rem 0;}
-    .pricing-card ul{list-style:none;padding:0;margin:.5rem 0 1rem;text-align:left;flex:1;}
-    .pricing-card li{padding:.3rem 0;border-bottom:1px solid var(--border-default);}
-    .pricing-card li .material-symbols-outlined{color:var(--text-success);margin-right:.4rem;}
-    .pricing-card .btn{width:100%;}
-    /* -- faq -- */
-    .faq{padding:2rem 1rem;max-width:1200px;margin-left:auto;margin-right:auto;}
-    .faq-list{display:flex;flex-direction:column;gap:.75rem;}
-    .faq-summary{font-family:var(--font-display);font-size:1rem;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:.75rem 1rem;background:var(--bg-secondary);border-radius:var(--radius-lg);border:1px solid var(--border-default);transition:background var(--transition-fast);}
-    .faq-summary:hover{background:var(--bg-primary);}
-    .faq-summary:focus-visible{outline:2px solid var(--accent-glow);outline-offset:2px;}
-    .faq-summary .material-symbols-outlined{transition:transform var(--transition-fast);}
-    .faq-summary[aria-expanded="true"] .material-symbols-outlined{transform:rotate(180deg);}
-    .faq-content{max-height:0;overflow:hidden;transition:max-height var(--transition-normal) ease-out;}
-    .faq-content p{padding:.5rem 1rem;font-size:.85rem;color:var(--text-secondary);}
-    /* -- final cta -- */
-    .final-cta{padding:3rem 1rem;max-width:1200px;margin-left:auto;margin-right:auto;position:relative;background:var(--gradient-warm);border-radius:var(--radius-lg);overflow:hidden;}
-    .final-cta::before{content:'';position:absolute;inset:0;background:var(--gradient-glow);opacity:.15;pointer-events:none;}
-    .final-cta .headline{font-family:var(--font-display);font-size:clamp(2rem,6vw,3rem);color:var(--text-primary);margin-bottom:.5rem;}
-    .final-cta p{font-size:.95rem;color:var(--text-on-primary);opacity:.9;max-width:500px;}
-    .final-cta .form{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-top:1rem;}
-    .final-cta input{flex:1;padding:.75rem 1rem;font-family:var(--font-base);font-size:.9rem;border:none;border-radius:var(--radius-md);background:rgba(255,255,255,.1);color:var(--text-on-primary);}
-    .final-cta input:focus{outline:none;box-shadow:0 0 0 3px var(--accent-glow);}
-    /* -- footer -- */
-    footer{padding:3rem 1rem 1rem;color:var(--text-secondary);font-size:.85rem;}
-    .footer-top{display:flex;gap:2rem;flex-wrap:wrap;justify-content:center;margin-bottom:2rem;}
-    .footer-col{flex:1 1 180px;margin-bottom:1rem;}
-    .footer-col h4{font-family:var(--font-display);font-size:.85rem;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem;color:var(--primary);}
-    .footer-col ul{list-style:none;padding:0;margin:0;}
-    .footer-col li{padding:.3rem 0;border-bottom:1px solid var(--border-default);}
-    .footer-col a:hover{color:var(--primary);}
-    .footer-social{display:flex;gap:.5rem;margin-top:1rem;}
-    .footer-social .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0;color:var(--primary);cursor:pointer;}
-    .footer-bottom{padding-top:1rem;border-top:1px solid var(--border-default);display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:.5rem;color:var(--text-secondary);font-size:.75rem;}
-    .year{color:var(--primary);}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Between Stations - a night radio</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<style>
+:root{
+--font-display:'Fraunces',serif;--font-base:'Inter',sans-serif;--font-mono:'Space Mono',monospace;
+--bg-primary:#f4ead9;--bg-secondary:#ece0c9;--bg-inset:#e6d8be;
+--primary:#5a3f26;--secondary:#4a3320;--accent-glow:#c9884a;
+--text-primary:#17120c;--text-secondary:#5a3f26;--text-on-primary:#f4ead9;
+--text-success:#2e6b4f;--text-error:#a63d2f;
+--border-default:rgba(90,63,38,.28);--border-success:rgba(46,107,79,.55);--border-error:rgba(166,61,47,.55);
+--nm-out:8px 8px 18px rgba(14,10,7,.18),-8px -8px 18px rgba(254,254,254,.85);
+--nm-in:inset 6px 6px 12px rgba(14,10,7,.16),inset -6px -6px 12px rgba(254,254,254,.70);
+--glow-sm:0 0 12px rgba(201,136,74,.35);--glow-md:0 0 28px rgba(201,136,74,.50);
+--gradient-warm:linear-gradient(135deg,#5a3f26,#2c1e10);
+--gradient-glow:linear-gradient(135deg,#c9884a,#5a3f26);
+--radius-sm:8px;--radius-md:14px;--radius-lg:24px;
+--shadow-sm:0 1px 3px rgba(14,10,7,.14);--shadow-md:0 6px 18px rgba(14,10,7,.18);
+--grain-opacity:.05;
+--transition-fast:150ms;--transition-normal:300ms;
+--ease-standard:cubic-bezier(.4,0,.2,1);
+--z-grain:60;--z-dropdown:100;--z-modal:1000;--z-toast:1100;
+}
+:root[data-theme="dark"]{
+--bg-primary:#0e0a07;--bg-secondary:#17120c;--bg-inset:#0a0705;
+--primary:#c9884a;--secondary:#8a6a45;
+--text-primary:#f4ead9;--text-secondary:#c9a87e;--text-on-primary:#17120c;
+--text-success:#6fbf8f;--text-error:#e08a7a;
+--border-default:rgba(201,136,74,.30);
+--nm-out:8px 8px 18px rgba(0,0,0,.60),-8px -8px 18px rgba(90,63,38,.14);
+--nm-in:inset 6px 6px 12px rgba(0,0,0,.65),inset -6px -6px 12px rgba(90,63,38,.12);
+--glow-sm:0 0 14px rgba(201,136,74,.45);--glow-md:0 0 32px rgba(201,136,74,.60);
+--gradient-warm:linear-gradient(135deg,#2c1e10,#17120c);
+--shadow-sm:0 1px 3px rgba(0,0,0,.4);--shadow-md:0 6px 18px rgba(0,0,0,.5);
+--grain-opacity:.08;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;font-size:1rem;overflow-x:hidden;transition:background var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard)}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:var(--z-grain);opacity:var(--grain-opacity);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+h1,h2,h3{font-family:var(--font-display);font-weight:600;line-height:1.1;letter-spacing:-.02em;color:var(--text-primary)}
+h1{font-size:clamp(2.4rem,5.5vw,3.9rem)}
+h2{font-size:clamp(1.8rem,3.5vw,2.6rem);margin-bottom:.75rem}
+h3{font-size:1.25rem}
+p{max-width:65ch}
+a{color:var(--text-secondary)}
+.container{max-width:1200px;margin:0 auto;padding-left:1.25rem;padding-right:1.25rem}
+@media(min-width:768px){.container{padding-left:2rem;padding-right:2rem}}
+section{padding:clamp(4rem,8vw,7rem) 0}
+.section-head{text-align:center;margin-bottom:clamp(2.5rem,5vw,4rem)}
+.section-head p{color:var(--text-secondary);margin:0 auto;font-size:1.05rem}
+.mono{font-family:var(--font-mono)}
+.icon{font-family:'Material Symbols Rounded';font-weight:normal;font-style:normal;font-size:24px;line-height:1;display:inline-block;text-transform:none;letter-spacing:normal;word-wrap:normal;white-space:nowrap;direction:ltr;-webkit-font-smoothing:antialiased}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.skip-link{position:absolute;left:1rem;top:-4rem;background:var(--primary);color:var(--text-on-primary);padding:.75rem 1.25rem;border-radius:var(--radius-sm);z-index:var(--z-toast);transition:top var(--transition-fast) var(--ease-standard);text-decoration:none;font-weight:600}
+.skip-link:focus{top:1rem}
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:.7rem 1.5rem;border-radius:var(--radius-md);font-family:var(--font-base);font-weight:600;font-size:.95rem;text-decoration:none;border:1px solid transparent;cursor:pointer;transition:box-shadow var(--transition-fast) var(--ease-standard),transform var(--transition-fast) var(--ease-standard),filter var(--transition-fast) var(--ease-standard);white-space:nowrap}
+.btn--primary{background:var(--gradient-warm);color:var(--text-on-primary);border:none}
+.btn--ghost{background:var(--bg-secondary);color:var(--text-primary);border-color:var(--border-default);box-shadow:var(--nm-out)}
+.btn--sm{min-height:40px;padding:.45rem 1.1rem;font-size:.88rem}
+.btn:active{transform:scale(.97)}
+.btn:focus-visible{outline:2px solid var(--accent-glow);outline-offset:3px;box-shadow:var(--glow-sm)}
+.btn:disabled,.btn.is-loading{opacity:.6;pointer-events:none}
+.btn .icon{font-size:20px}
+@media(hover:hover) and (pointer:fine){
+.btn--primary:hover{filter:brightness(1.12);box-shadow:var(--glow-sm)}
+.btn--ghost:hover{box-shadow:var(--nm-out),var(--glow-sm)}
+}
+/* Header */
+.header{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--bg-primary);border-bottom:1px solid var(--border-default)}
+.header__inner{display:flex;align-items:center;gap:1rem;height:68px}
+.brand{display:flex;align-items:center;gap:.5rem;text-decoration:none;font-family:var(--font-display);font-weight:700;font-size:1.05rem;letter-spacing:.04em;color:var(--text-primary)}
+.brand .icon{color:var(--accent-glow);font-size:22px}
+.nav{margin-left:auto;display:flex;align-items:center;gap:1.5rem}
+.nav__link{text-decoration:none;color:var(--text-secondary);font-weight:500;font-size:.92rem;transition:color var(--transition-fast)}
+.nav__link:focus-visible{outline:2px solid var(--accent-glow);outline-offset:3px;border-radius:4px}
+@media(hover:hover) and (pointer:fine){.nav__link:hover{color:var(--text-primary)}}
+.header__actions{display:flex;align-items:center;gap:.75rem;margin-left:auto}
+.nav--desktop{margin-left:2rem}
+.nav--desktop+.header__actions{margin-left:auto}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);cursor:pointer;box-shadow:var(--nm-out);transition:box-shadow var(--transition-fast),transform var(--transition-fast)}
+.icon-btn:active{transform:scale(.95)}
+.icon-btn:focus-visible{outline:2px solid var(--accent-glow);outline-offset:3px}
+#theme-toggle .icon--moon{display:none}
+:root[data-theme="dark"] #theme-toggle .icon--sun{display:none}
+:root[data-theme="dark"] #theme-toggle .icon--moon{display:inline-block}
+.menu-btn{display:none}
+@media(max-width:900px){
+.nav--desktop{display:none}
+.menu-btn{display:inline-flex}
+}
+.mobile-nav{display:none;position:absolute;top:68px;left:0;right:0;background:var(--bg-primary);border-bottom:1px solid var(--border-default);padding:1rem 1.25rem 1.5rem;flex-direction:column;gap:.25rem;z-index:var(--z-dropdown)}
+.mobile-nav.is-open{display:flex}
+.mobile-nav a{padding:.8rem .5rem;text-decoration:none;color:var(--text-primary);font-weight:500;border-radius:var(--radius-sm)}
+.mobile-nav a:focus-visible{outline:2px solid var(--accent-glow)}
+/* Hero */
+.hero{position:relative;padding-top:clamp(3rem,6vw,5.5rem);overflow:hidden}
+.hero::before{content:"";position:absolute;inset:-20% -10%;background:radial-gradient(ellipse 60% 55% at 70% 40%,rgba(201,136,74,.28),transparent 70%);pointer-events:none}
+.hero__inner{position:relative;display:flex;align-items:center;gap:clamp(2rem,5vw,4rem);flex-wrap:wrap}
+.hero__copy{flex:1 1 340px;min-width:0}
+.hero__copy p{color:var(--text-secondary);font-size:1.1rem;margin:1.1rem 0 1.75rem;max-width:44ch}
+.hero__ctas{display:flex;gap:.9rem;flex-wrap:wrap;align-items:center}
+.freq-strip{margin-top:2rem;font-family:var(--font-mono);font-size:.8rem;letter-spacing:.08em;color:var(--text-secondary);border-top:1px solid var(--border-default);padding-top:1rem}
+/* Tuner card */
+.tuner{flex:1 1 380px;min-width:0;max-width:520px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--nm-out);padding:1.75rem}
+.tuner__top{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
+.onair{display:inline-flex;align-items:center;gap:.5rem;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.14em;font-weight:700;color:var(--text-error);border:1px solid var(--border-error);border-radius:999px;padding:.3rem .8rem}
+.onair__dot{width:8px;height:8px;border-radius:50%;background:var(--text-error);animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
+.tuner__freq{font-family:var(--font-mono);font-size:1.5rem;font-weight:700;color:var(--text-primary);text-shadow:var(--glow-sm)}
+.tuner__dial{position:relative;background:var(--bg-inset);border-radius:var(--radius-md);box-shadow:var(--nm-in);padding:1.5rem 1.25rem 1rem;margin-bottom:1.25rem}
+.tuner__ticks{height:34px;background:repeating-linear-gradient(90deg,var(--text-secondary) 0 1px,transparent 1px 9%),repeating-linear-gradient(90deg,var(--text-secondary) 0 2px,transparent 2px 25%);background-size:100% 12px,100% 22px;background-repeat:no-repeat;background-position:bottom;opacity:.55}
+.tuner__labels{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:.68rem;color:var(--text-secondary);margin-top:.5rem}
+.tuner__needle{position:absolute;top:8px;bottom:26px;left:38%;width:3px;border-radius:2px;background:var(--gradient-glow);box-shadow:var(--glow-md);animation:drift 9s ease-in-out infinite alternate}
+@keyframes drift{from{left:30%}to{left:64%}}
+.tuner__wave{display:flex;align-items:flex-end;justify-content:center;gap:8px;height:52px;margin-bottom:1.25rem}
+.tuner__bar{width:8px;border-radius:4px;background:var(--gradient-glow);box-shadow:var(--glow-sm);transform-origin:bottom;animation:wave 1.1s ease-in-out infinite alternate}
+.tuner__bar:nth-child(1){height:30%;animation-delay:0s}
+.tuner__bar:nth-child(2){height:65%;animation-delay:.15s}
+.tuner__bar:nth-child(3){height:90%;animation-delay:.3s}
+.tuner__bar:nth-child(4){height:55%;animation-delay:.45s}
+.tuner__bar:nth-child(5){height:80%;animation-delay:.6s}
+.tuner__bar:nth-child(6){height:40%;animation-delay:.75s}
+@keyframes wave{from{transform:scaleY(.35)}to{transform:scaleY(1)}}
+.tuner__meta{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:.72rem;color:var(--text-secondary)}
+/* Cards */
+.card{display:flex;flex-direction:column;align-items:flex-start;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--nm-out);padding:2rem;transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),border-color var(--transition-normal)}
+.card:focus-within{border-color:var(--accent-glow)}
+@media(hover:hover) and (pointer:fine){.card:hover{transform:translateY(-2px);box-shadow:var(--nm-out),var(--glow-sm)}}
+.card__chip{display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:var(--radius-md);background:var(--bg-secondary);box-shadow:var(--nm-out);color:var(--accent-glow);margin-bottom:1.25rem}
+.card h3{margin-bottom:.5rem}
+.card p{color:var(--text-secondary);font-size:.95rem}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(1.25rem,3vw,2rem)}
+@media(max-width:800px){.grid-3{grid-template-columns:1fr}}
+/* Steps */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(1.5rem,3vw,2.5rem);position:relative}
+.steps::before{content:"";position:absolute;top:34px;left:12%;right:12%;height:2px;background:var(--gradient-glow);opacity:.5}
+.step{display:flex;flex-direction:column;align-items:flex-start;position:relative}
+.step__dial{display:flex;align-items:center;justify-content:center;width:68px;height:68px;border-radius:50%;background:var(--bg-secondary);box-shadow:var(--nm-out);border:1px solid var(--border-default);font-family:var(--font-mono);font-weight:700;color:var(--accent-glow);margin-bottom:1.25rem}
+.step h3{margin-bottom:.5rem}
+.step p{color:var(--text-secondary);font-size:.95rem}
+@media(max-width:800px){.steps{grid-template-columns:1fr}.steps::before{display:none}}
+/* Testimonials */
+.quote__stars{display:flex;gap:2px;color:var(--accent-glow);margin-bottom:1rem}
+.quote__stars .icon{font-size:18px;font-variation-settings:'FILL' 1}
+.quote blockquote{font-family:var(--font-display);font-style:italic;font-size:1.1rem;line-height:1.45;margin-bottom:1.25rem;color:var(--text-primary)}
+.quote figcaption{font-size:.88rem;color:var(--text-secondary)}
+.quote figcaption strong{color:var(--text-primary);font-weight:600}
+/* Pricing */
+.pricing .card{align-items:stretch}
+.price__name{font-family:var(--font-mono);font-size:.8rem;letter-spacing:.14em;color:var(--text-secondary);text-transform:uppercase}
+.price__amount{font-family:var(--font-display);font-size:2.4rem;font-weight:700;margin:.4rem 0 .2rem}
+.price__amount span{font-family:var(--font-base);font-size:.9rem;font-weight:400;color:var(--text-secondary)}
+.price__list{list-style:none;margin:1.25rem 0 1.75rem;display:flex;flex-direction:column;gap:.65rem;flex:1}
+.price__list li{display:flex;align-items:center;gap:.6rem;font-size:.92rem;color:var(--text-primary)}
+.price__list .icon{font-size:20px;color:var(--text-success)}
+.price__list li.is-off{color:var(--text-secondary);opacity:.65}
+.price__list li.is-off .icon{color:var(--text-secondary)}
+.card--featured{position:relative;border:2px solid transparent;background:linear-gradient(var(--bg-secondary),var(--bg-secondary)) padding-box,var(--gradient-glow) border-box;box-shadow:var(--nm-out),var(--glow-md);transform:scale(1.03)}
+@media(hover:hover) and (pointer:fine){.card--featured:hover{transform:scale(1.03) translateY(-2px)}}
+.card__badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--gradient-glow);color:var(--text-on-primary);font-family:var(--font-mono);font-size:.68rem;font-weight:700;letter-spacing:.14em;padding:.35rem .9rem;border-radius:999px;box-shadow:var(--glow-sm);white-space:nowrap}
+@media(max-width:800px){.card--featured{transform:none}.card--featured:hover{transform:translateY(-2px)}}
+/* FAQ */
+.faq{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:1rem}
+.faq details{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);overflow:hidden}
+.faq summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:56px;padding:1rem 1.4rem;cursor:pointer;font-weight:600;font-size:1rem;list-style:none;color:var(--text-primary)}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary .icon{transition:transform var(--transition-normal) var(--ease-standard);color:var(--accent-glow);flex-shrink:0}
+.faq details[open] summary .icon{transform:rotate(180deg)}
+.faq summary:focus-visible{outline:2px solid var(--accent-glow);outline-offset:-2px}
+.faq details p{padding:0 1.4rem 1.25rem;color:var(--text-secondary);font-size:.95rem}
+/* CTA band */
+.cta-band{position:relative;background:var(--gradient-warm);color:var(--text-on-primary);text-align:center;overflow:hidden}
+.cta-band::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 50% 60% at 50% 100%,rgba(201,136,74,.4),transparent 70%);pointer-events:none}
+.cta-band .container{position:relative}
+.cta-band h2{color:var(--text-on-primary)}
+.cta-band p{color:rgba(244,234,217,.85);margin:0 auto 2rem}
+.cta-form{display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap;max-width:520px;margin:0 auto}
+.input-group{display:flex;flex-direction:column;gap:.4rem;flex:1 1 260px;min-width:0;text-align:left}
+.input-group label{font-size:.85rem;font-weight:600;color:var(--text-on-primary)}
+.input-group input{min-height:48px;padding:.7rem 1rem;border-radius:var(--radius-md);border:1px solid rgba(244,234,217,.4);background:rgba(14,10,7,.35);color:var(--text-on-primary);font-family:var(--font-base);font-size:1rem;width:100%;transition:border-color var(--transition-fast),box-shadow var(--transition-fast)}
+.input-group input::placeholder{color:rgba(244,234,217,.55)}
+.input-group input:focus{outline:none;border-color:var(--accent-glow);box-shadow:var(--glow-sm)}
+.input-group input.input--error{border-color:var(--text-error)}
+.input-group input.input--valid{border-color:var(--text-success)}
+.input-group__hint{font-size:.78rem;color:rgba(244,234,217,.7)}
+.input-group__error{font-size:.82rem;min-height:1.2em;color:#f0a89a}
+.input-group__error.is-success{color:#8fd6ae}
+.cta-form .btn{align-self:flex-start;margin-top:1.55rem}
+@media(max-width:560px){.cta-form .btn{margin-top:0;width:100%}}
+/* Footer */
+.footer{border-top:1px solid var(--border-default);padding:3.5rem 0 2rem;background:var(--bg-secondary)}
+.footer__grid{display:flex;flex-wrap:wrap;gap:2.5rem;align-items:flex-start}
+.footer__brand{flex:1 1 260px;min-width:0}
+.footer__brand p{color:var(--text-secondary);font-size:.9rem;margin-top:.75rem;max-width:32ch}
+.footer__col{flex:1 1 140px;min-width:120px}
+.footer__col h4{font-size:.8rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-secondary);margin-bottom:.9rem;font-family:var(--font-mono);font-weight:700}
+.footer__col ul{list-style:none;display:flex;flex-direction:column;gap:.55rem}
+.footer__col a{text-decoration:none;color:var(--text-primary);font-size:.9rem}
+.footer__col a:focus-visible{outline:2px solid var(--accent-glow);outline-offset:2px;border-radius:3px}
+@media(hover:hover) and (pointer:fine){.footer__col a:hover{color:var(--accent-glow)}}
+.footer__bottom{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--border-default);font-size:.82rem;color:var(--text-secondary)}
+.social{display:flex;gap:.5rem}
+.social a{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-md);color:var(--text-secondary);border:1px solid var(--border-default);transition:color var(--transition-fast),box-shadow var(--transition-fast)}
+.social a:focus-visible{outline:2px solid var(--accent-glow);outline-offset:2px}
+@media(hover:hover) and (pointer:fine){.social a:hover{color:var(--accent-glow);box-shadow:var(--glow-sm)}}
+/* Reveal */
+.reveal{opacity:0;transform:translateY(18px);transition:opacity 500ms var(--ease-standard),transform 500ms var(--ease-standard)}
+.reveal.is-visible{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){
+html{scroll-behavior:auto}
+*,*::before,*::after{animation:none!important;transition-duration:.01ms!important}
+.reveal{opacity:1;transform:none}
+}
+@media(prefers-reduced-transparency:reduce){body::after{opacity:.02}}
+</style>
 </head>
 <body>
-  <!-- skip link -->
-  <a class="skip-link" href="#main">Skip to main content</a>
-
-  <header role="banner">
-    <h1 class="brand">BETWEEN STATIONS <span class="material-symbols-outlined" aria-hidden="true">graphic_eq</span></h1>
-    <nav class="nav-links">
-      <a href="#features" aria-current="page">Frequencies</a>
-      <a href="#how-it-works">How It Works</a>
-      <a href="#pricing">Pricing</a>
-      <a href="#faq">FAQ</a>
-    </nav>
-    <div class="theme-toggle" role="button" aria-pressed="false" aria-label="Toggle dark mode">
-      <span class="material-symbols-outlined" id="theme-icon">light_mode</span>
-    </div>
-    <a class="btn btn--primary" href="#tune">Listen Now</a>
-  </header>
-
-  <main id="main" role="main">
-    <!-- Hero -->
-    <section class="hero" id="hero">
-      <div class="hero-copy">
-        <h1>For the hours nobody claims.</h1>
-        <p>Hand‑tuned music, warm static, and low‑voiced hosts for people awake in the small hours. Stream the night radio wherever you are.</p>
-        <div class="hero-ctas">
-          <a class="btn btn--primary" href="#tune">Tune in free</a>
-          <a class="btn btn--ghost" href="#frequencies">Browse frequencies</a>
-        </div>
-      </div>
-      <div class="tuner-card" id="tune">
-        <div class="dial-well">
-          <div class="tick-marks">
-            <span>87.7</span><span>91.3</span><span>98.1</span><span>104.1</span>
-          </div>
-          <div class="needle"></div>
-        </div>
-        <div class="waveform">
-          <div class="bar" style="animation-delay:0s"></div>
-          <div class="bar" style="animation-delay:.2s"></div>
-          <div class="bar" style="animation-delay:.4s"></div>
-          <div class="bar" style="animation-delay:.6s"></div>
-          <div class="bar" style="animation-delay:.8s"></div>
-        </div>
-        <div class="on-air">
-          <span class="material-symbols-outlined" aria-hidden="true">live_tv</span>
-          <span>Live now</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- Features -->
-    <section class="features" id="features">
-      <div class="features-grid">
-        <article class="feature-card">
-          <div class="feature-icon"><span class="material-symbols-outlined">tune</span></div>
-          <h3>Hand‑tuned frequencies</h3>
-          <p>Every broadcast is curated by hand. No algorithms, no skip‑through—just warm selections that meet you in the quiet.</p>
-        </article>
-        <article class="feature-card">
-          <div class="feature-icon"><span class="material-symbols-outlined">noise_aware</span></div>
-          <h3>Warm static bed</h3>
-          <p>A gentle veil of static that settles like a blanket. Stay present, or let it lull you deeper.</p>
-        </article>
-        <article class="feature-card">
-          <div class="feature-icon"><span class="material-symbols-outlined">bedtime</span></div>
-          <h3>Sleep‑timer drift‑off</h3>
-          <p>The station fades as you fall asleep. Wake to a new frequency or silence—your choice.</p>
-        </article>
-      </div>
-    </section>
-
-    <!-- How It Works -->
-    <section class="steps" id="how-it-works">
-      <div class="steps-header">
-        <div class="step"><div class="step-number">01</div><h3>Pick your hour</h3><p>Choose a frequency block that matches your mood—midnight driving, dawn writing, or early‑morning reflection.</p></div>
-        <div class="step"><div class="step-number">02</div><h3>Press play</h3><p>Let the broadcast run. The subtle drift is the point—each moment unique.</p></div>
-        <div class="step"><div class="step-number">03</div><h3>Set drift‑off</h3><p>Activate the sleep timer. The station signs off with you, leaving only the memory of the night.</p></div>
-      </div>
-      <hr class="signal-line">
-    </section>
-
-    <!-- Testimonials -->
-    <section class="testimonials" id="testimonials">
-      <div class="test-grid">
-        <article class="test-card">
-          <div class="stars"><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span></div>
-          <blockquote>"I tune in every night after shift. It’s like a warm conversation with the wind."</blockquote>
-          <div class="attribution">
-            <span>Night‑shift ER nurse</span>
-            <span>• 5 out of 5</span>
-          </div>
-        </article>
-        <article class="test-card">
-          <div class="stars"><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span></div>
-          <blockquote>"The static bed helps me focus when the city never sleeps. Honest radio."</blockquote>
-          <div class="attribution">
-            <span>Long‑haul driver</span>
-            <span>• 5 out of 5</span>
-          </div>
-        </article>
-        <article class="test-card">
-          <div class="stars"><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span></div>
-          <blockquote>"Writing until dawn became something I look forward to. The hosts feel like old friends."</blockquote>
-          <div class="attribution">
-            <span>Novelist</span>
-            <span>• 5 out of 5</span>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <!-- Pricing -->
-    <section class="pricing" id="pricing">
-      <div class="pricing-grid">
-        <article class="pricing-card card--featured">
-          <span class="badge">MOST TUNED‑IN</span>
-          <h3>Static</h3>
-          <div class="price">Free</div>
-          <ul>
-            <li><span class="material-symbols-outlined">check</span> One frequency</li>
-            <li><span class="material-symbols-outlined">check</span> 30‑minute drift‑off timer</li>
-            <li><span class="material-symbols-outlined">close</span> All other frequencies</li>
-          </ul>
-          <a class="btn btn--primary" href="#signup">Tune in free</a>
-        </article>
-        <article class="pricing-card">
-          <h3>Signal</h3>
-          <div class="price">$6 / mo</div>
-          <ul>
-            <li><span class="material-symbols-outlined">check</span> All frequencies</li>
-            <li><span class="material-symbols-outlined">check</span> Downloads</li>
-            <li><span class="material-symbols-outlined">check</span> Unlimited drift‑off timer</li>
-          </ul>
-          <a class="btn btn--ghost" href="#signup">Start trial</a>
-        </article>
-        <article class="pricing-card">
-          <h3>Shortwave</h3>
-          <div class="price">$60 / yr</div>
-          <ul>
-            <li><span class="material-symbols-outlined">check</span> Everything in Signal</li>
-            <li><span class="material-symbols-outlined">check</span> Full archive</li>
-            <li><span class="material-symbols-outlined">check</span> Lossless stream</li>
-          </ul>
-          <a class="btn btn--ghost" href="#signup">Subscribe</a>
-        </article>
-      </div>
-    </section>
-
-    <!-- FAQ -->
-    <section class="faq" id="faq">
-      <div class="faq-list">
-        <div class="faq-summary" aria-controls="q1" aria-expanded="false">
-          <span>Is it really free?</span>
-          <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
-        </div>
-        <div class="faq-content" id="q1"><p>Yes. The Static tier is free forever. No credit card, no trial period.</p></div>
-
-        <div class="faq-summary" aria-controls="q2" aria-expanded="false">
-          <span>What plays at 3 AM?</span>
-          <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
-        </div>
-        <div class="faq-content" id="q2"><p>Our night‑owl curators rotate ambient, jazz, folk, and spoken‑word selections hand‑picked for the late hours.</p></div>
-
-        <div class="faq-summary" aria-controls="q3" aria-expanded="false">
-          <span>Can I download broadcasts?</span>
-          <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
-        </div>
-        <div class="faq-content" id="q3"><p>Download is available with the Signal tier ($6 / mo). Save your favorite episodes for offline listening.</p></div>
-
-        <div class="faq-summary" aria-controls="q4" aria-expanded="false">
-          <span>How does the drift‑off timer work?</span>
-          <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
-        </div>
-        <div class="faq-content" id="q4"><p>Set a sleep duration. The broadcast’s volume fades over that period, then silence follows. You can wake to a new frequency or stop entirely.</p></div>
-
-        <div class="faq-summary" aria-controls="q5" aria-expanded="false">
-          <span>Which devices are supported?</span>
-          <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
-        </div>
-        <div class="faq-content" id="q5"><p>Any device with a modern browser—phones, tablets, laptops, smart speakers via casting.</p></div>
-      </div>
-    </section>
-
-    <!-- Final CTA -->
-    <section class="final-cta" id="final-cta">
-      <div class="headline">The night is long. Stay tuned.</div>
-      <p>Join thousands of listeners who call the small hours home. Enter your email and we’ll send you a frequency the moment you’re awake.</p>
-      <form class="form" action="#" method="get">
-        <input type="email" placeholder="you@domain.com" required>
-        <button class="btn btn--primary is-loading" type="submit">Subscribe</button>
-      </form>
-    </section>
-  </main>
-
-  <footer role="contentinfo">
-    <div class="footer-top">
-      <div class="footer-col">
-        <h4>BETWEEN STATIONS</h4>
-        <ul>
-          <li><a href="#frequencies">Frequencies</a></li>
-          <li><a href="#schedule">Schedule</a></li>
-          <li><a href="#archive">Archive</a></li>
-        </ul>
-      </div>
-      <div class="footer-col">
-        <h4>About</h4>
-        <ul>
-          <li><a href="#about">About</a></li>
-          <li><a href="#hosts">Hosts</a></li>
-          <li><a href="#careers">Careers</a></li>
-        </ul>
-      </div>
-      <div class="footer-col">
-        <h4>Help</h4>
-        <ul>
-          <li><a href="#privacy">Privacy</a></li>
-          <li><a href="#terms">Terms</a></li>
-          <li><a href="#cookies">Cookies</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="footer-social">
-      <a class="material-symbols-outlined" href="#" aria-label="RSS feed">rss_feed</a>
-      <a class="material-symbols-outlined" href="#" aria-label="Podcasts">podcasts</a>
-      <a class="material-symbols-outlined" href="#" aria-label="Mail">mail</a>
-      <a class="material-symbols-outlined" href="#" aria-label="Public">public</a>
-    </div>
-    <div class="footer-bottom">
-      <span class="year">2026</span> BETWEEN STATIONS — Broadcasting nightly from somewhere between midnight and morning.
-    </div>
-  </footer>
-
-  <script>
-    // Theme toggle + persistence
-    (function(){
-      const html = document.documentElement;
-      const toggle = document.querySelector('.theme-toggle');
-      const icon = document.getElementById('theme-icon');
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
-      let stored = localStorage.getItem('bstations-theme');
-      if(stored){ html.classList.add(stored); toggle.setAttribute('aria-pressed', stored==='dark'); icon.textContent = stored==='dark'?'dark_mode':'light_mode'; }
-      else{ html.classList.add(prefersDark.matches?'dark':'light'); toggle.setAttribute('aria-pressed', prefersDark.matches); icon.textContent = prefersDark.matches?'dark_mode':'light_mode'; }
-      toggle.addEventListener('click',()=>{
-        if(html.classList.contains('dark')){
-          html.classList.remove('dark'); localStorage.setItem('bstations-theme','light'); toggle.setAttribute('aria-pressed','false'); icon.textContent='light_mode';
-        }else{
-          html.classList.add('dark'); localStorage.setItem('bstations-theme','dark'); toggle.setAttribute('aria-pressed','true'); icon.textContent='dark_mode';
-        }
-      });
-    })();
-
-    // Mobile menu (simple toggle)
-    (function(){
-      const btn = document.querySelector('.mobile-menu-btn');
-      const links = document.querySelector('.nav-links');
-      if(!btn) return;
-      btn.addEventListener('click',()=>{
-        const expanded = btn.getAttribute('aria-expanded')=== 'true';
-        btn.setAttribute('aria-expanded',!expanded);
-        links.hidden = !expanded;
-      });
-    })();
-
-    // Final CTA form simulate submit
-    (function(){
-      const form = document.querySelector('.final-cta form');
-      const btn = form.querySelector('button');
-      const live = document.createElement('div');
-      live.setAttribute('role','status'); live.setAttribute('aria-live','polite'); live.style.position='absolute'; live.style.left=-9999px; form.appendChild(live);
-      form.addEventListener('submit',function(e){
-        e.preventDefault();
-        const input = form.querySelector('input');
-        if(!input.value.match(/^[^@]+@[^@]+$/)){
-          live.textContent='Please enter a valid email.';
-          return;
-        }
-        btn.classList.add('is-loading');
-        btn.setAttribute('aria-disabled','true');
-        live.textContent='Sending…';
-        setTimeout(function(){
-          btn.classList.remove('is-loading');
-          btn.removeAttribute('aria-disabled');
-          live.textContent='You’re on the frequency ✓';
-          setTimeout(()=>{ live.textContent=''; }, 3000);
-        },800);
-      });
-    })();
-  </script>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="header">
+<div class="container header__inner">
+<a class="brand" href="#top"><span class="icon" aria-hidden="true">graphic_eq</span>BETWEEN STATIONS</a>
+<nav class="nav nav--desktop" aria-label="Primary">
+<a class="nav__link" href="#frequencies">Frequencies</a>
+<a class="nav__link" href="#how">How It Works</a>
+<a class="nav__link" href="#pricing">Pricing</a>
+<a class="nav__link" href="#faq">FAQ</a>
+</nav>
+<div class="header__actions">
+<button id="theme-toggle" class="icon-btn" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+<span class="icon icon--sun" aria-hidden="true">light_mode</span>
+<span class="icon icon--moon" aria-hidden="true">dark_mode</span>
+</button>
+<a class="btn btn--primary btn--sm" href="#listen">Listen Now</a>
+<button class="icon-btn menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="mobile-nav" aria-label="Open menu"><span class="icon" aria-hidden="true">menu</span></button>
+</div>
+</div>
+<nav class="mobile-nav" id="mobile-nav" aria-label="Mobile">
+<a href="#frequencies">Frequencies</a>
+<a href="#how">How It Works</a>
+<a href="#pricing">Pricing</a>
+<a href="#faq">FAQ</a>
+</nav>
+</header>
+<main id="main">
+<section class="hero" id="top" aria-labelledby="hero-title">
+<div class="container hero__inner">
+<div class="hero__copy">
+<h1 id="hero-title">For the hours nobody claims.</h1>
+<p>Hand-tuned music, warm static, and low-voiced hosts, broadcasting through the small hours for anyone still awake.</p>
+<div class="hero__ctas">
+<a class="btn btn--primary" href="#listen" id="listen"><span class="icon" aria-hidden="true">play_arrow</span>Tune in free</a>
+<a class="btn btn--ghost" href="#frequencies">Browse frequencies</a>
+</div>
+<p class="freq-strip">87.7 NIGHT DRIVE &middot; 91.3 STATIC GARDEN &middot; 98.1 LAST CALL &middot; 104.1 FIRST LIGHT</p>
+</div>
+<div class="tuner" aria-label="Now playing on 91.3 Static Garden">
+<div class="tuner__top">
+<span class="onair"><span class="onair__dot" aria-hidden="true"></span>ON AIR<span class="sr-only">, live now</span></span>
+<span class="tuner__freq">91.3 <span class="mono" style="font-size:.8rem"></span>MHz</span>
+</div>
+<div class="tuner__dial" aria-hidden="true">
+<div class="tuner__ticks"></div>
+<div class="tuner__needle"></div>
+<div class="tuner__labels"><span>87</span><span>92</span><span>98</span><span>104</span><span>108</span></div>
+</div>
+<div class="tuner__wave" aria-hidden="true">
+<span class="tuner__bar"></span><span class="tuner__bar"></span><span class="tuner__bar"></span><span class="tuner__bar"></span><span class="tuner__bar"></span><span class="tuner__bar"></span>
+</div>
+<div class="tuner__meta"><span>NOW: STATIC GARDEN</span><span>03:12 AM</span></div>
+</div>
+</div>
+</section>
+<section id="frequencies" aria-labelledby="feat-title">
+<div class="container">
+<div class="section-head reveal">
+<h2 id="feat-title">Built for the awake</h2>
+<p>Three things we obsess over so your nights sound right.</p>
+</div>
+<div class="grid-3">
+<article class="card reveal">
+<span class="card__chip"><span class="icon" aria-hidden="true">tune</span></span>
+<h3>Hand-tuned frequencies</h3>
+<p>Every block is sequenced by a human host, not a queue. Records chosen for 2 AM, introduced in a low voice.</p>
+</article>
+<article class="card reveal">
+<span class="card__chip"><span class="icon" aria-hidden="true">noise_aware</span></span>
+<h3>A warm static bed</h3>
+<p>A soft layer of tape hiss and room tone sits under every broadcast, so the silence between songs never feels empty.</p>
+</article>
+<article class="card reveal">
+<span class="card__chip"><span class="icon" aria-hidden="true">bedtime</span></span>
+<h3>Drift-off timer</h3>
+<p>Set a window and the station slowly lowers itself, fading the broadcast out as you fall asleep.</p>
+</article>
+</div>
+</div>
+</section>
+<section id="how" aria-labelledby="how-title">
+<div class="container">
+<div class="section-head reveal">
+<h2 id="how-title">How it works</h2>
+<p>No accounts to configure, no playlists to build. Just a dial.</p>
+</div>
+<div class="steps">
+<div class="step reveal">
+<span class="step__dial">01</span>
+<h3>Pick your hour</h3>
+<p>Choose a frequency block that matches your night, from late drives to first light.</p>
+</div>
+<div class="step reveal">
+<span class="step__dial">02</span>
+<h3>Press play, let it run</h3>
+<p>The broadcast carries itself. Skips and shuffles are off by design; the drift is the point.</p>
+</div>
+<div class="step reveal">
+<span class="step__dial">03</span>
+<h3>Set the drift-off</h3>
+<p>When you are ready to sleep, the station signs off with you, fading to quiet static.</p>
+</div>
+</div>
+</div>
+</section>
+<section aria-labelledby="voices-title">
+<div class="container">
+<div class="section-head reveal">
+<h2 id="voices-title">Voices from the night</h2>
+<p>Listeners who keep the dial warm.</p>
+</div>
+<div class="grid-3">
+<figure class="card quote reveal">
+<div class="quote__stars" aria-hidden="true"><span class="icon">star</span><span class="icon">star</span><span class="icon">star</span><span class="icon">star</span><span class="icon">star</span></div>
+<span class="sr-only">Rated 5 out of 5</span>
+<blockquote>&ldquo;After a twelve-hour shift, the drive home at 4 AM used to feel endless. Now it feels like someone is riding along.&rdquo;</blockquote>
+<figcaption><strong>Mara Okafor</strong><br>ER nurse, night rotation</figcaption>
+</figure>
+<figure class="card quote reveal">
+<div class="quote__stars" aria-hidden="true"><span class="icon">star</span><span class="icon">star</span><span class="icon">star</span><span class="icon">star</span><span class="icon">star</span></div>
+<span class="sr-only">Rated 5 out of 5</span>
+<blockquote>&ldquo;Eight hundred miles of interstate and the only thing that keeps me company is 87.7. The hosts talk like they know the road too.&rdquo;</blockquote>
+<figcaption><strong>Dale Whitfield</strong><br>Long-haul driver</figcaption>
+</figure>
+<figure class="card quote reveal">
+<div class="quote__stars" aria-hidden="true"><span class="icon">star</span><span class="icon">star</span><span class="icon">star</span><span class="icon">star</span><span class="icon">star</span></div>
+<span class="sr-only">Rated 5 out of 5</span>
+<blockquote>&ldquo;I write until dawn, and Static Garden is the only thing that has never broken a sentence for me. It just hums along.&rdquo;</blockquote>
+<figcaption><strong>Ines Vidal</strong><br>Novelist</figcaption>
+</figure>
+</div>
+</div>
+</section>
+<section class="pricing" id="pricing" aria-labelledby="pricing-title">
+<div class="container">
+<div class="section-head reveal">
+<h2 id="pricing-title">Choose your signal</h2>
+<p>Start free. Stay as long as the night does.</p>
+</div>
+<div class="grid-3">
+<article class="card reveal">
+<p class="price__name">Static</p>
+<p class="price__amount">$0 <span>/ forever</span></p>
+<ul class="price__list">
+<li><span class="icon" aria-hidden="true">check</span>One frequency, rotating weekly</li>
+<li><span class="icon" aria-hidden="true">check</span>30-minute drift-off timer</li>
+<li><span class="icon" aria-hidden="true">check</span>Live broadcast stream</li>
+<li class="is-off"><span class="icon" aria-hidden="true">close</span>Downloads and archive</li>
+</ul>
+<a class="btn btn--ghost" href="#listen">Start free</a>
+</article>
+<article class="card card--featured reveal">
+<span class="card__badge">MOST TUNED-IN</span>
+<p class="price__name">Signal</p>
+<p class="price__amount">$6 <span>/ month</span></p>
+<ul class="price__list">
+<li><span class="icon" aria-hidden="true">check</span>All four frequencies, always on</li>
+<li><span class="icon" aria-hidden="true">check</span>Offline downloads</li>
+<li><span class="icon" aria-hidden="true">check</span>Unlimited drift-off timer</li>
+<li><span class="icon" aria-hidden="true">check</span>Host request line</li>
+</ul>
+<a class="btn btn--primary" href="#listen">Get Signal</a>
+</article>
+<article class="card reveal">
+<p class="price__name">Shortwave</p>
+<p class="price__amount">$60 <span>/ year</span></p>
+<ul class="price__list">
+<li><span class="icon" aria-hidden="true">check</span>Everything in Signal</li>
+<li><span class="icon" aria-hidden="true">check</span>Full broadcast archive</li>
+<li><span class="icon" aria-hidden="true">check</span>Lossless stream quality</li>
+<li><span class="icon" aria-hidden="true">check</span>Two months free, yearly</li>
+</ul>
+<a class="btn btn--ghost" href="#listen">Go Shortwave</a>
+</article>
+</div>
+</div>
+</section>
+<section id="faq" aria-labelledby="faq-title">
+<div class="container">
+<div class="section-head reveal">
+<h2 id="faq-title">Common questions</h2>
+<p>Asked by listeners, answered by the booth.</p>
+</div>
+<div class="faq reveal">
+<details>
+<summary>Is it really free?<span class="icon" aria-hidden="true">expand_more</span></summary>
+<p>Yes. The Static tier costs nothing and asks for no card. One rotating frequency, the live stream, and a 30-minute drift-off timer, for as long as you like.</p>
+</details>
+<details>
+<summary>What plays at 3 AM?<span class="icon" aria-hidden="true">expand_more</span></summary>
+<p>The deepest block of the night: slow records, long ambient pieces, and the quietest host segments. Around 4 AM the dial warms back up toward First Light.</p>
+</details>
+<details>
+<summary>Can I download broadcasts?<span class="icon" aria-hidden="true">expand_more</span></summary>
+<p>Signal and Shortwave listeners can save any broadcast for offline listening. Downloads stay in the app and travel with you, no connection required.</p>
+</details>
+<details>
+<summary>How does the drift-off timer work?<span class="icon" aria-hidden="true">expand_more</span></summary>
+<p>Pick a window from 15 minutes to 2 hours. The volume lowers gradually, the music thins to static, and the stream closes itself so you never wake to a dead phone.</p>
+</details>
+<details>
+<summary>Which devices are supported?<span class="icon" aria-hidden="true">expand_more</span></summary>
+<p>Any modern browser, plus iOS and Android apps. CarPlay and Android Auto are supported, and Shortwave adds a lossless desktop player.</p>
+</details>
+</div>
+</div>
+</section>
+<section class="cta-band" aria-labelledby="cta-title">
+<div class="container">
+<h2 id="cta-title">The night is long. Stay tuned.</h2>
+<p>Leave an email and we will send you the frequency schedule, once a week, after dark.</p>
+<form class="cta-form" id="cta-form" novalidate>
+<div class="input-group">
+<label for="email">Email address</label>
+<input type="email" id="email" name="email" autocomplete="email" placeholder="you@nightmail.com" aria-describedby="email-hint email-error" required>
+<span class="input-group__hint" id="email-hint">One email a week. Unsubscribe anytime.</span>
+<span class="input-group__error" id="email-error" role="status" aria-live="polite"></span>
+</div>
+<button class="btn btn--primary" id="cta-submit" type="submit"><span class="icon" aria-hidden="true" id="cta-icon">podcasts</span><span id="cta-label">Get the schedule</span></button>
+</form>
+</div>
+</section>
+</main>
+<footer class="footer">
+<div class="container">
+<div class="footer__grid">
+<div class="footer__brand">
+<a class="brand" href="#top"><span class="icon" aria-hidden="true">graphic_eq</span>BETWEEN STATIONS</a>
+<p>Broadcasting nightly from somewhere between midnight and morning.</p>
+</div>
+<div class="footer__col">
+<h4>Station</h4>
+<ul><li><a href="#">Frequencies</a></li><li><a href="#">Schedule</a></li><li><a href="#">Archive</a></li></ul>
+</div>
+<div class="footer__col">
+<h4>Company</h4>
+<ul><li><a href="#">About</a></li><li><a href="#">Hosts</a></li><li><a href="#">Careers</a></li><li><a href="#">Press</a></li></ul>
+</div>
+<div class="footer__col">
+<h4>Support</h4>
+<ul><li><a href="#">Help</a></li><li><a href="#">Privacy</a></li><li><a href="#">Terms</a></li><li><a href="#">Cookies</a></li></ul>
+</div>
+</div>
+<div class="footer__bottom">
+<span>&copy; <span id="year">2026</span> Between Stations. All rights reserved.</span>
+<div class="social">
+<a href="#" aria-label="RSS feed"><span class="icon" aria-hidden="true">rss_feed</span></a>
+<a href="#" aria-label="Podcast"><span class="icon" aria-hidden="true">podcasts</span></a>
+<a href="#" aria-label="Email us"><span class="icon" aria-hidden="true">mail</span></a>
+<a href="#" aria-label="Web stream"><span class="icon" aria-hidden="true">public</span></a>
+</div>
+</div>
+</div>
+</footer>
+<script>
+(function(){
+var root=document.documentElement;
+var toggle=document.getElementById("theme-toggle");
+function applyTheme(t){root.dataset.theme=t;var dark=t==="dark";toggle.setAttribute("aria-pressed",String(dark));toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");}
+applyTheme(root.dataset.theme==="dark"?"dark":"light");
+toggle.addEventListener("click",function(){var next=root.dataset.theme==="dark"?"light":"dark";localStorage.setItem("theme",next);applyTheme(next);});
+var menuBtn=document.getElementById("menu-btn");
+var mobileNav=document.getElementById("mobile-nav");
+function closeMenu(){mobileNav.classList.remove("is-open");menuBtn.setAttribute("aria-expanded","false");menuBtn.setAttribute("aria-label","Open menu");}
+menuBtn.addEventListener("click",function(){var open=mobileNav.classList.toggle("is-open");menuBtn.setAttribute("aria-expanded",String(open));menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");});
+mobileNav.addEventListener("click",function(e){if(e.target.tagName==="A")closeMenu();});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")closeMenu();});
+document.getElementById("year").textContent=new Date().getFullYear();
+var form=document.getElementById("cta-form");
+var email=document.getElementById("email");
+var err=document.getElementById("email-error");
+var submit=document.getElementById("cta-submit");
+var label=document.getElementById("cta-label");
+var icon=document.getElementById("cta-icon");
+form.addEventListener("submit",function(e){
+e.preventDefault();
+var val=email.value.trim();
+email.classList.remove("input--error","input--valid");
+err.classList.remove("is-success");
+if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val)){
+email.classList.add("input--error");
+err.textContent="That address does not look right. Check it and try again.";
+email.focus();
+return;
+}
+submit.classList.add("is-loading");
+label.textContent="Tuning in";
+icon.textContent="progress_activity";
+err.textContent="";
+setTimeout(function(){
+submit.classList.remove("is-loading");
+email.classList.add("input--valid");
+icon.textContent="check";
+label.textContent="You're on the frequency";
+err.classList.add("is-success");
+err.textContent="Confirmed. The first schedule arrives after dark.";
+},800);
+});
+var reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+if(!reduced&&"IntersectionObserver" in window){
+var els=document.querySelectorAll(".reveal");
+var io=new IntersectionObserver(function(entries){
+entries.forEach(function(en,i){
+if(en.isIntersecting){
+en.target.style.transitionDelay=(i%3)*70+"ms";
+en.target.classList.add("is-visible");
+io.unobserve(en.target);
+}
+});
+},{threshold:.12});
+els.forEach(function(el){io.observe(el);});
+}else{
+document.querySelectorAll(".reveal").forEach(function(el){el.classList.add("is-visible");});
+}
+})();
+</script>
 </body>
 </html>

@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>opencode - the AI coding agent that lives in your terminal</title>
+<meta name="description" content="opencode is an open-source, terminal-native AI coding agent. Keyboard-first, model-agnostic, local-first.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='13' font-size='14' fill='%2330d158'%3E%3E%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";}document.documentElement.dataset.theme=t;})();
+</script>
+<style>
+@layer tokens{
+:root{
+--bg-primary:#fdfcfc;--bg-secondary:#f4f2f1;--bg-inverted:#201d1d;
+--text-primary:#201d1d;--text-secondary:#6d6a6a;--text-inverted:#fdfcfc;
+--link:#0066cc;--text-success:#1e8e3e;--text-error:#d70015;--text-warning:#b25000;
+--border-default:rgba(15,0,0,0.12);--border-error:#d70015;--border-success:#1e8e3e;
+--primary:#007aff;
+--radius-sm:4px;--radius-md:4px;--radius-lg:4px;
+--shadow-sm:0 1px 2px rgba(15,0,0,0.10);--shadow-md:0 6px 16px rgba(15,0,0,0.16);
+--spacing-gap:1rem;--spacing-section:clamp(4rem,10vw,7rem);
+--transition-fast:120ms;--transition-normal:200ms;--ease-standard:cubic-bezier(0.2,0,0,1);
+--z-nav:50;--z-dropdown:100;--z-modal:200;--z-toast:300;
+--font-base:'Berkeley Mono','IBM Plex Mono',ui-monospace,Menlo,monospace;
+color-scheme:light;
+}
+:root[data-theme="dark"]{
+--bg-primary:#201d1d;--bg-secondary:#2a2626;--bg-inverted:#fdfcfc;
+--text-primary:#fdfcfc;--text-secondary:#9a9898;--text-inverted:#201d1d;
+--link:#409cff;--text-success:#30d158;--text-error:#ff3b30;--text-warning:#ff9f0a;
+--border-default:rgba(253,252,252,0.14);--border-error:#ff3b30;--border-success:#30d158;
+--shadow-sm:0 1px 2px rgba(0,0,0,0.4);--shadow-md:0 6px 16px rgba(0,0,0,0.5);
+color-scheme:dark;
+}
+}
+@layer base{
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);font-size:1rem;font-weight:400;line-height:1.5;background:var(--bg-primary);color:var(--text-primary);overflow-x:hidden}
+h1,h2,h3{font-weight:700;line-height:1.15}
+h1{font-size:clamp(2rem,5vw,3.25rem);letter-spacing:-0.02em}
+h2{font-size:clamp(1.5rem,3vw,2rem)}
+h3{font-size:1.125rem}
+p{max-width:65ch}
+a{color:var(--link);text-decoration:underline;text-underline-offset:3px;transition:color var(--transition-normal) var(--ease-standard),text-decoration-thickness var(--transition-normal) var(--ease-standard)}
+a:hover{color:var(--link);text-decoration-thickness:2px}
+a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+::selection{background:var(--primary);color:#fff}
+section{scroll-margin-top:5rem;padding-block:var(--spacing-section)}
+.material-symbols-outlined{font-family:'Material Symbols Outlined';font-size:1.25rem;line-height:1;user-select:none}
+}
+@layer components{
+.container{max-width:1080px;margin-inline:auto;padding-inline:1.25rem}
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.skip-link{position:absolute;top:-3rem;left:1rem;z-index:var(--z-toast);background:var(--bg-inverted);color:var(--text-inverted);padding:0.5rem 1rem;border-radius:var(--radius-sm);transition:top var(--transition-normal) var(--ease-standard)}
+.skip-link:focus{top:0.5rem}
+/* header */
+.site-header{position:sticky;top:0;z-index:var(--z-nav);background:var(--bg-primary);border-bottom:1px solid var(--border-default)}
+.site-header__bar{display:flex;align-items:center;justify-content:space-between;height:64px;gap:1rem}
+.site-header__logo{font-weight:700;font-size:1.0625rem;color:var(--text-primary);text-decoration:none}
+.site-header__logo .prompt{color:var(--text-success)}
+.site-header__nav{display:flex;align-items:center;gap:1.5rem}
+.site-header__nav a{color:var(--text-primary);font-weight:500;font-size:0.9375rem}
+.site-header__nav a:hover{color:var(--link)}
+.site-header__actions{display:flex;align-items:center;gap:1rem}
+.icon-btn{display:flex;align-items:center;justify-content:center;width:44px;height:44px;background:transparent;border:1px solid var(--border-default);border-radius:var(--radius-sm);color:var(--text-primary);cursor:pointer;transition:border-color var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard)}
+.icon-btn:hover{border-color:var(--primary);color:var(--link)}
+.icon-btn:active{transform:scale(0.97)}
+.menu-btn{display:none}
+.mobile-panel{display:none;position:absolute;top:64px;left:0;right:0;z-index:var(--z-dropdown);background:var(--bg-primary);border-bottom:1px solid var(--border-default);flex-direction:column;align-items:flex-start;padding:1rem 1.25rem;gap:1rem}
+.mobile-panel a{color:var(--text-primary);font-weight:500;min-height:44px;display:flex;align-items:center}
+.mobile-panel--open{display:flex}
+/* button */
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;padding:4px 20px;font-family:var(--font-base);font-weight:500;font-size:0.9375rem;border-radius:var(--radius-sm);background:var(--bg-inverted);color:var(--text-inverted);border:1px solid var(--bg-inverted);cursor:pointer;text-decoration:none;transition:filter var(--transition-fast) var(--ease-standard),transform var(--transition-fast) var(--ease-standard)}
+.btn::after{content:"";position:absolute;inset:-6px}
+@media (hover:hover) and (pointer:fine){.btn:hover{filter:brightness(1.15)}}
+.btn:active{transform:scale(0.97)}
+.btn--loading{pointer-events:none}
+.btn--loading .btn__label{visibility:hidden}
+.btn--loading::before{content:"";position:absolute;width:1em;height:1em;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.7s linear infinite}
+.btn[disabled]{opacity:0.5;filter:grayscale(1);cursor:not-allowed}
+.btn--success{background:var(--text-success);border-color:var(--text-success);color:#fff}
+.btn--error{background:var(--text-error);border-color:var(--text-error);color:#fff}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* hero */
+.hero{padding-top:clamp(3rem,6vw,5rem)}
+.hero__grid{display:flex;align-items:center;gap:clamp(2rem,5vw,4rem)}
+.hero__copy{flex:1 1 0;min-width:0}
+.hero__eyebrow{color:var(--text-secondary);font-size:0.875rem;margin-bottom:1rem}
+.hero__sub{color:var(--text-secondary);margin-top:1.25rem}
+.hero__ctas{display:flex;align-items:center;gap:1.5rem;margin-top:1.75rem;flex-wrap:wrap}
+.hero__visual{flex:1 1 0;min-width:0}
+/* terminal */
+.terminal{background:#201d1d;border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-md);overflow:hidden;color:#fdfcfc}
+.terminal__bar{display:flex;align-items:center;gap:0.5rem;padding:0.625rem 0.875rem;border-bottom:1px solid rgba(253,252,252,0.14)}
+.terminal__dot{width:10px;height:10px;border-radius:50%}
+.terminal__dot--red{background:#ff3b30}.terminal__dot--yellow{background:#ff9f0a}.terminal__dot--green{background:#30d158}
+.terminal__title{flex:1;text-align:center;color:#9a9898;font-size:0.8125rem}
+.terminal__body{padding:1rem 0.875rem 1.25rem;font-size:0.875rem;display:flex;flex-direction:column;align-items:flex-start;gap:0.375rem}
+.terminal__line{white-space:pre-wrap;word-break:break-word}
+.terminal__prompt{color:#30d158}
+.terminal__flag{color:#409cff}
+.terminal__ok{color:#30d158}
+.terminal__warn{color:#ff9f0a}
+.terminal__err{color:#ff3b30}
+.terminal__dim{color:#9a9898}
+.terminal__cursor{display:inline-block;color:#fdfcfc;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+/* sections */
+.section-head{margin-bottom:2.5rem}
+.section-head h2 .hash{color:var(--text-secondary);font-weight:400}
+.section-head p{color:var(--text-secondary);margin-top:0.75rem}
+.grid-3{display:grid;grid-template-columns:1fr;gap:var(--spacing-gap)}
+@media(min-width:1024px){.grid-3{grid-template-columns:repeat(3,1fr)}}
+/* card */
+.card{display:flex;flex-direction:column;align-items:flex-start;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:1.5rem;gap:var(--spacing-gap);transition:transform var(--transition-normal) var(--ease-standard),border-color var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard)}
+@media (hover:hover) and (pointer:fine){.card:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--primary) 40%,var(--border-default));box-shadow:var(--shadow-md)}}
+.card:focus-within{border-color:var(--primary)}
+.card__icon{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border:1px solid var(--border-default);border-radius:var(--radius-sm);color:var(--primary)}
+.card p{color:var(--text-secondary)}
+.card__code{background:var(--bg-primary);border:1px solid var(--border-default);border-radius:var(--radius-sm);padding:2px 8px;font-size:0.8125rem}
+.card--skeleton{position:relative;overflow:hidden;color:transparent}
+.card--skeleton::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(128,128,128,0.12),transparent);animation:shimmer 1.4s linear infinite}
+@keyframes shimmer{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+.card--empty{align-items:center;text-align:center;color:var(--text-secondary)}
+/* steps */
+.steps{list-style:none;counter-reset:step}
+.step{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:0.5rem;padding-left:1.5rem;border-left:1px solid var(--border-default)}
+.step__index{font-weight:700;color:var(--primary);font-size:0.875rem}
+.step p{color:var(--text-secondary)}
+@media(min-width:1024px){
+.step{padding-left:0;border-left:none;padding-top:1.5rem;border-top:1px solid var(--border-default)}
+.step::before{content:">";position:absolute;top:1.5rem;right:-1.25rem;color:var(--text-secondary)}
+.step:last-child::before{content:none}
+}
+/* testimonials */
+.quote-card__mark{color:var(--text-success);font-weight:700}
+.quote-card blockquote{font-size:0.9375rem}
+.quote-card__by{font-size:0.875rem}
+.quote-card__by strong{font-weight:500;color:var(--text-primary)}
+.quote-card__by span{color:var(--text-secondary)}
+/* pricing */
+.pricing-card__name{font-size:1.125rem}
+.pricing-card__price{font-weight:700;font-size:1.75rem}
+.pricing-card__price span{font-size:0.875rem;font-weight:400;color:var(--text-secondary)}
+.pricing-card__list{list-style:none;display:flex;flex-direction:column;align-items:flex-start;gap:0.5rem;font-size:0.9375rem}
+.pricing-card__list li{display:flex;align-items:center;gap:0.5rem}
+.pricing-card__list .material-symbols-outlined{color:var(--text-success);font-size:1.125rem}
+.pricing-card .btn{margin-top:auto}
+.pricing-card--featured{border-color:var(--primary)}
+:root[data-theme="dark"] .pricing-card--featured{border-color:var(--primary)}
+.chip{display:inline-flex;align-items:center;border:1px solid var(--primary);color:var(--link);border-radius:var(--radius-sm);padding:2px 8px;font-size:0.75rem;font-weight:500}
+/* faq */
+.faq details{border-bottom:1px solid var(--border-default)}
+.faq details:first-child{border-top:1px solid var(--border-default)}
+.faq summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.125rem 0;font-weight:500;cursor:pointer;list-style:none;transition:color var(--transition-normal) var(--ease-standard)}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary:hover{color:var(--link)}
+.faq summary .material-symbols-outlined{transition:transform var(--transition-normal) var(--ease-standard);color:var(--text-secondary)}
+.faq details[open] summary .material-symbols-outlined{transform:rotate(180deg)}
+.faq details p{color:var(--text-secondary);padding-bottom:1.25rem}
+/* cta band */
+.cta-band{background:var(--bg-secondary);border-block:1px solid var(--border-default);text-align:center}
+.cta-band p{color:var(--text-secondary);margin:0.75rem auto 1.75rem}
+.install-bar{display:flex;align-items:center;justify-content:space-between;gap:1rem;max-width:520px;margin:1.75rem auto 0;border:1px solid var(--border-default);border-radius:var(--radius-sm);background:var(--bg-primary);padding:0.5rem 0.5rem 0.5rem 1rem}
+.install-bar code{font-size:0.875rem;overflow-x:auto;white-space:nowrap}
+.install-bar .prompt{color:var(--text-success)}
+/* footer */
+.site-footer{padding-block:3rem 2rem}
+.site-footer__grid{display:grid;grid-template-columns:1fr;gap:2rem}
+@media(min-width:768px){.site-footer__grid{grid-template-columns:repeat(3,1fr)}}
+.site-footer h3{font-size:0.875rem;margin-bottom:0.75rem}
+.site-footer ul{list-style:none;display:flex;flex-direction:column;align-items:flex-start;gap:0.5rem}
+.site-footer ul a{color:var(--text-secondary);font-size:0.875rem}
+.site-footer ul a:hover{color:var(--link)}
+.site-footer__bottom{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid var(--border-default);font-size:0.8125rem;color:var(--text-secondary)}
+.site-footer__bottom nav{display:flex;align-items:center;gap:1.25rem}
+.site-footer__bottom a{color:var(--text-secondary);font-size:0.8125rem}
+/* reveal */
+.reveal{opacity:0;transform:translateY(12px);transition:opacity 400ms var(--ease-standard),transform 400ms var(--ease-standard)}
+.reveal--in{opacity:1;transform:none}
+}
+@layer utilities{
+@media(max-width:767px){
+.site-header__nav,.site-header__actions .btn,.site-header__actions .gh-link{display:none}
+.menu-btn{display:flex}
+.hero__grid{flex-direction:column;align-items:stretch}
+}
+}
+@media (prefers-reduced-motion:reduce){
+html{scroll-behavior:auto}
+*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}
+.terminal__cursor{animation:none}
+.reveal{opacity:1;transform:none}
+}
+@media (prefers-reduced-transparency:reduce){.card--skeleton::after{display:none}}
+@media (prefers-contrast:more){.card,.terminal,.install-bar{border-width:2px}}
+</style>
+</head>
+<body id="top">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="container site-header__bar">
+    <a class="site-header__logo" href="#top"><span class="prompt">❯</span> opencode</a>
+    <nav class="site-header__nav" aria-label="Primary">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="site-header__actions">
+      <button id="theme-toggle" class="icon-btn" type="button" aria-pressed="true" aria-label="Switch to light mode">
+        <span class="material-symbols-outlined" id="theme-icon">light_mode</span>
+      </button>
+      <a class="gh-link" href="https://github.com" rel="noreferrer">GitHub</a>
+      <a class="btn" href="#get-started"><span class="btn__label">Get started</span></a>
+      <button class="icon-btn menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="mobile-panel" aria-label="Open menu">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+    </div>
+    <nav class="mobile-panel" id="mobile-panel" aria-label="Mobile">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a href="https://github.com" rel="noreferrer">GitHub</a>
+      <a href="#get-started">Get started</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <!-- Hero -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="container hero__grid">
+      <div class="hero__copy">
+        <p class="hero__eyebrow">open source · MIT · v1.0</p>
+        <h1 id="hero-title">The AI coding agent that lives in your terminal.</h1>
+        <p class="hero__sub">opencode reads your repo, edits files, runs tests, and ships patches. No IDE plugin, no browser tab, no lock-in.</p>
+        <div class="hero__ctas">
+          <a class="btn" href="#get-started"><span class="btn__label">Get started</span></a>
+          <a href="https://github.com" rel="noreferrer">Read the docs</a>
+        </div>
+      </div>
+      <div class="hero__visual">
+        <figure class="terminal" aria-label="Terminal session demo">
+          <div class="terminal__bar">
+            <span class="terminal__dot terminal__dot--red"></span>
+            <span class="terminal__dot terminal__dot--yellow"></span>
+            <span class="terminal__dot terminal__dot--green"></span>
+            <span class="terminal__title">~/project, opencode</span>
+          </div>
+          <div class="terminal__body">
+            <span class="terminal__line"><span class="terminal__prompt">$</span> opencode <span class="terminal__flag">--model</span> claude-sonnet-4</span>
+            <span class="terminal__line terminal__dim">indexed 412 files in 1.8s</span>
+            <span class="terminal__line"><span class="terminal__prompt">❯</span> fix the flaky auth test and rerun the suite</span>
+            <span class="terminal__line terminal__dim">editing src/auth/session.ts (+14 -6)</span>
+            <span class="terminal__line terminal__ok">✓ tests passed (128/128)</span>
+            <span class="terminal__line terminal__warn">! 1 deprecation warning in src/db/client.ts</span>
+            <span class="terminal__line terminal__err">✗ lint: unused import in demo/broken.ts</span>
+            <span class="terminal__line"><span class="terminal__prompt">$</span> <span class="terminal__cursor">▌</span></span>
+          </div>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" aria-labelledby="features-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="features-title"><span class="hash">#</span> features</h2>
+        <p>Built for people who already live in a shell.</p>
+      </div>
+      <div class="grid-3">
+        <article class="card reveal">
+          <span class="card__icon"><span class="material-symbols-outlined">keyboard</span></span>
+          <h3>Keyboard-first TUI</h3>
+          <p>A fast terminal interface with vim-style navigation, fuzzy file pickers, and zero mouse dependency.</p>
+          <code class="card__code">opencode --vim</code>
+        </article>
+        <article class="card reveal">
+          <span class="card__icon"><span class="material-symbols-outlined">hub</span></span>
+          <h3>Bring your own model</h3>
+          <p>Point opencode at Anthropic, OpenAI, Google, or a local model over Ollama. Swap providers per session.</p>
+          <code class="card__code">opencode --provider ollama</code>
+        </article>
+        <article class="card reveal">
+          <span class="card__icon"><span class="material-symbols-outlined">lock</span></span>
+          <h3>Local-first privacy</h3>
+          <p>Your code stays on your machine. Only the prompts you approve leave, over your own API keys.</p>
+          <code class="card__code">opencode --offline</code>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section id="how" aria-labelledby="how-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="how-title"><span class="hash">#</span> how it works</h2>
+        <p>Three commands from install to first shipped patch.</p>
+      </div>
+      <ol class="grid-3 steps">
+        <li class="step reveal">
+          <span class="step__index">01</span>
+          <h3>$ install</h3>
+          <p>One npm package, no daemon, no account. Works on macOS, Linux, and Windows via WSL.</p>
+        </li>
+        <li class="step reveal">
+          <span class="step__index">02</span>
+          <h3>$ connect</h3>
+          <p>Drop in an API key or point at a local model. opencode detects your repo, toolchain, and test runner.</p>
+        </li>
+        <li class="step reveal">
+          <span class="step__index">03</span>
+          <h3>$ ship</h3>
+          <p>Describe the change in plain English. Review the diff, run the tests, commit when you are happy.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section id="testimonials" aria-labelledby="testimonials-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="testimonials-title"><span class="hash">#</span> what people say</h2>
+      </div>
+      <div class="grid-3">
+        <article class="card quote-card reveal">
+          <blockquote><span class="quote-card__mark">&gt;</span> I replaced three IDE plugins with one binary. The diff review loop is the fastest I have used.</blockquote>
+          <p class="quote-card__by"><strong>Mara Jensen</strong> <span>@maraj · staff engineer, Northwind Labs</span></p>
+        </article>
+        <article class="card quote-card reveal">
+          <blockquote><span class="quote-card__mark">&gt;</span> Running it against a local model means our client code never leaves the network. That sold our security team.</blockquote>
+          <p class="quote-card__by"><strong>Devon Achebe</strong> <span>@devon_a · platform lead, Ferrous Systems Co.</span></p>
+        </article>
+        <article class="card quote-card reveal">
+          <blockquote><span class="quote-card__mark">&gt;</span> It fixed a flaky test that had haunted our CI for months, then explained exactly why the fix works.</blockquote>
+          <p class="quote-card__by"><strong>Priya Raghavan</strong> <span>@priyar · open-source maintainer</span></p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section id="pricing" aria-labelledby="pricing-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="pricing-title"><span class="hash">#</span> pricing</h2>
+        <p>The core is free forever. Pay for hosted models and team features.</p>
+      </div>
+      <div class="grid-3">
+        <article class="card pricing-card reveal">
+          <h3 class="pricing-card__name">Free</h3>
+          <p class="pricing-card__price">$0</p>
+          <p>The full open-source agent with your own keys.</p>
+          <ul class="pricing-card__list">
+            <li><span class="material-symbols-outlined">check</span>Full TUI agent, MIT licensed</li>
+            <li><span class="material-symbols-outlined">check</span>Any provider or local model</li>
+            <li><span class="material-symbols-outlined">check</span>Community support</li>
+          </ul>
+          <a class="btn" href="#get-started"><span class="btn__label">Download</span></a>
+        </article>
+        <article class="card pricing-card pricing-card--featured reveal">
+          <span class="chip">recommended</span>
+          <h3 class="pricing-card__name">Pro</h3>
+          <p class="pricing-card__price">$20<span>/mo</span></p>
+          <p>Hosted models and priority throughput, no keys to manage.</p>
+          <ul class="pricing-card__list">
+            <li><span class="material-symbols-outlined">check</span>Everything in Free</li>
+            <li><span class="material-symbols-outlined">check</span>Hosted frontier models included</li>
+            <li><span class="material-symbols-outlined">check</span>Session sync across machines</li>
+          </ul>
+          <a class="btn" href="#get-started"><span class="btn__label">Start Pro</span></a>
+        </article>
+        <article class="card pricing-card reveal">
+          <h3 class="pricing-card__name">Team</h3>
+          <p class="pricing-card__price">$40<span>/user/mo</span></p>
+          <p>Shared config, audit logs, and SSO for engineering orgs.</p>
+          <ul class="pricing-card__list">
+            <li><span class="material-symbols-outlined">check</span>Everything in Pro</li>
+            <li><span class="material-symbols-outlined">check</span>SSO and audit logs</li>
+            <li><span class="material-symbols-outlined">check</span>Shared agent rules and prompts</li>
+          </ul>
+          <a class="btn" href="#get-started"><span class="btn__label">Contact sales</span></a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" aria-labelledby="faq-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="faq-title"><span class="hash">#</span> faq</h2>
+      </div>
+      <div class="faq">
+        <details>
+          <summary>What do I need to install opencode?<span class="material-symbols-outlined">expand_more</span></summary>
+          <p>Node.js 18 or later and a terminal. Install with one npm command; there are no daemons, accounts, or background services.</p>
+        </details>
+        <details>
+          <summary>Which models and providers are supported?<span class="material-symbols-outlined">expand_more</span></summary>
+          <p>Anthropic, OpenAI, Google, Mistral, and any OpenAI-compatible endpoint, including local models through Ollama or llama.cpp. You can switch providers mid-session.</p>
+        </details>
+        <details>
+          <summary>Does my code leave my machine?<span class="material-symbols-outlined">expand_more</span></summary>
+          <p>Only the context included in a prompt you approve is sent to your chosen provider. With a local model and the offline flag, nothing leaves your machine at all.</p>
+        </details>
+        <details>
+          <summary>What license is opencode released under?<span class="material-symbols-outlined">expand_more</span></summary>
+          <p>MIT. You can use, modify, and redistribute it freely, including in commercial products.</p>
+        </details>
+        <details>
+          <summary>Can I self-host the Pro features?<span class="material-symbols-outlined">expand_more</span></summary>
+          <p>Yes. The Team tier includes a self-hosted relay for model routing, audit logs, and SSO, deployable as a single container.</p>
+        </details>
+        <details>
+          <summary>What is actually free?<span class="material-symbols-outlined">expand_more</span></summary>
+          <p>The entire agent: TUI, tools, providers, and offline mode. Paid tiers only add hosted models, sync, and team administration.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="cta-band" id="get-started" aria-labelledby="cta-title">
+    <div class="container">
+      <h2 id="cta-title">Start coding with opencode</h2>
+      <p>Install in ten seconds. Your first patch is one prompt away.</p>
+      <a class="btn" href="https://github.com" rel="noreferrer"><span class="btn__label">Get started</span></a>
+      <div class="install-bar">
+        <code><span class="prompt">$</span> npm install -g opencode-ai</code>
+        <button class="icon-btn" id="copy-btn" type="button" aria-label="Copy install command">
+          <span class="material-symbols-outlined" id="copy-icon">content_copy</span>
+        </button>
+      </div>
+      <p class="visually-hidden" aria-live="polite" id="copy-status"></p>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="site-footer__grid">
+      <div>
+        <h3>Product</h3>
+        <ul>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+          <li><a href="https://github.com" rel="noreferrer">Changelog</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Resources</h3>
+        <ul>
+          <li><a href="https://github.com" rel="noreferrer">Docs</a></li>
+          <li><a href="https://github.com" rel="noreferrer">GitHub</a></li>
+          <li><a href="https://discord.com" rel="noreferrer">Discord</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Company</h3>
+        <ul>
+          <li><a href="https://github.com" rel="noreferrer">Blog</a></li>
+          <li><a href="https://github.com" rel="noreferrer">Contact</a></li>
+          <li><a href="https://github.com" rel="noreferrer">License</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="site-footer__bottom">
+      <p>© 2026 opencode · MIT License</p>
+      <nav aria-label="Legal">
+        <a href="https://github.com" rel="noreferrer">Privacy</a>
+        <a href="https://github.com" rel="noreferrer">Terms</a>
+        <a href="https://github.com" rel="noreferrer">Status</a>
+      </nav>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+var root=document.documentElement;
+var toggle=document.getElementById("theme-toggle");
+var icon=document.getElementById("theme-icon");
+function applyTheme(t){
+root.dataset.theme=t;
+var dark=t==="dark";
+toggle.setAttribute("aria-pressed",String(dark));
+toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+icon.textContent=dark?"light_mode":"dark_mode";
+}
+applyTheme(root.dataset.theme==="light"?"light":"dark");
+toggle.addEventListener("click",function(){
+var next=root.dataset.theme==="dark"?"light":"dark";
+localStorage.setItem("theme",next);
+applyTheme(next);
+});
+
+var menuBtn=document.getElementById("menu-btn");
+var panel=document.getElementById("mobile-panel");
+function closeMenu(){
+panel.classList.remove("mobile-panel--open");
+menuBtn.setAttribute("aria-expanded","false");
+menuBtn.setAttribute("aria-label","Open menu");
+menuBtn.querySelector(".material-symbols-outlined").textContent="menu";
+}
+function openMenu(){
+panel.classList.add("mobile-panel--open");
+menuBtn.setAttribute("aria-expanded","true");
+menuBtn.setAttribute("aria-label","Close menu");
+menuBtn.querySelector(".material-symbols-outlined").textContent="close";
+var first=panel.querySelector("a");
+if(first)first.focus();
+}
+menuBtn.addEventListener("click",function(){
+if(panel.classList.contains("mobile-panel--open")){closeMenu();menuBtn.focus();}else{openMenu();}
+});
+document.addEventListener("keydown",function(e){
+if(e.key==="Escape"&&panel.classList.contains("mobile-panel--open")){closeMenu();menuBtn.focus();}
+});
+document.addEventListener("click",function(e){
+if(panel.classList.contains("mobile-panel--open")&&!panel.contains(e.target)&&!menuBtn.contains(e.target)){closeMenu();}
+});
+panel.addEventListener("click",function(e){
+if(e.target.closest("a"))closeMenu();
+});
+
+var copyBtn=document.getElementById("copy-btn");
+var copyIcon=document.getElementById("copy-icon");
+var copyStatus=document.getElementById("copy-status");
+var copyTimer=null;
+copyBtn.addEventListener("click",function(){
+var cmd="npm install -g opencode-ai";
+function done(){
+copyIcon.textContent="check";
+copyIcon.style.color="var(--text-success)";
+copyStatus.textContent="Copied to clipboard";
+clearTimeout(copyTimer);
+copyTimer=setTimeout(function(){
+copyIcon.textContent="content_copy";
+copyIcon.style.color="";
+copyStatus.textContent="";
+},2000);
+}
+if(navigator.clipboard&&navigator.clipboard.writeText){
+navigator.clipboard.writeText(cmd).then(done).catch(function(){copyStatus.textContent="Copy failed";});
+}else{
+var ta=document.createElement("textarea");
+ta.value=cmd;document.body.appendChild(ta);ta.select();
+try{document.execCommand("copy");done();}catch(err){copyStatus.textContent="Copy failed";}
+document.body.removeChild(ta);
+}
+});
+
+var reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+if(!reduced&&"IntersectionObserver" in window){
+var items=document.querySelectorAll(".reveal");
+var io=new IntersectionObserver(function(entries){
+entries.forEach(function(en){
+if(en.isIntersecting){
+var el=en.target;
+var idx=Array.prototype.indexOf.call(el.parentNode.children,el);
+el.style.transitionDelay=(Math.max(idx,0)*60)+"ms";
+el.classList.add("reveal--in");
+io.unobserve(el);
+}
+});
+},{threshold:0.15});
+items.forEach(function(el){io.observe(el);});
+}else{
+document.querySelectorAll(".reveal").forEach(function(el){el.classList.add("reveal--in");});
+}
+
+var faqItems=document.querySelectorAll(".faq details");
+faqItems.forEach(function(d){
+d.addEventListener("toggle",function(){
+if(d.open){faqItems.forEach(function(o){if(o!==d)o.open=false;});}
+});
+});
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gridline - A desk for design research</title>
+<script>
+(function(){var t=localStorage.getItem("gridline-theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500;1,6..72,600&family=Hanken+Grotesk:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --primary:#1F2BE0; --secondary:#5560E5;
+  --bg-primary:#F0EBDE; --bg-secondary:#F7F3E9;
+  --text-primary:#1F2BE0; --text-secondary:#5560E5;
+  --text-success:#1F7A4B; --text-error:#B3261E;
+  --border-default:rgba(31,43,224,0.2);
+  --border-success:rgba(31,122,75,0.5); --border-error:rgba(179,38,30,0.5);
+  --grid-line:rgba(31,43,224,0.1); --ring:rgba(31,43,224,0.15);
+  --font-display:'Newsreader',Georgia,serif; --font-base:'Hanken Grotesk','Helvetica Neue',sans-serif; --font-mono:'DM Mono','Courier New',monospace;
+  --radius-sm:2px; --radius-md:4px; --radius-lg:8px;
+  --shadow-sm:0 2px 10px rgba(31,43,224,0.1); --shadow-md:0 10px 30px rgba(31,43,224,0.16);
+  --spacing-gap:1.5rem; --spacing-section:clamp(4rem,12vh,7rem);
+  --transition-fast:200ms; --transition-normal:250ms;
+  --ease-standard:cubic-bezier(0.4,0,0.2,1);
+  --z-dropdown:100; --z-modal:1000; --z-toast:1100;
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --primary:#F0EBDE; --secondary:#5560E5;
+  --bg-primary:#0C1034; --bg-secondary:#151A4D;
+  --text-primary:#F0EBDE; --text-secondary:#A9B1F5;
+  --text-success:#7ED9A6; --text-error:#FF9C94;
+  --border-default:rgba(85,96,229,0.35);
+  --border-success:rgba(126,217,166,0.45); --border-error:rgba(255,156,148,0.45);
+  --grid-line:rgba(85,96,229,0.14); --ring:rgba(240,235,222,0.12);
+  --shadow-sm:0 2px 10px rgba(3,5,20,0.4); --shadow-md:0 10px 30px rgba(3,5,20,0.55);
+  color-scheme:dark;
+}
+/* ============ BASE ============ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:auto}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+body{font-family:var(--font-base);font-size:1.0625rem;line-height:1.6;color:var(--text-primary);background:var(--bg-primary);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:linear-gradient(var(--grid-line) 1px,transparent 1px),linear-gradient(90deg,var(--grid-line) 1px,transparent 1px);background-size:32px 32px}
+[hidden]{display:none!important}
+h1,h2,h3{font-family:var(--font-display);font-style:italic;font-weight:500;line-height:1.1;letter-spacing:-0.02em}
+a{color:var(--primary);text-decoration:none}
+a:hover{text-decoration:underline;text-underline-offset:4px}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+section{scroll-margin-top:5rem}
+.container{max-width:1140px;margin-inline:auto;padding-inline:clamp(1.25rem,5vw,2.5rem)}
+.mono{font-family:var(--font-mono)}
+.skip-link{position:absolute;left:1rem;top:-4rem;z-index:var(--z-toast);background:var(--primary);color:var(--bg-primary);padding:.75rem 1.25rem;border-radius:var(--radius-sm);font-weight:600;transition:top var(--transition-fast) var(--ease-standard)}
+.skip-link:focus{top:1rem;text-decoration:none}
+/* ============ BUTTONS ============ */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:.7rem 1.5rem;font-family:var(--font-base);font-weight:600;font-size:1rem;border-radius:var(--radius-sm);border:1px solid transparent;cursor:pointer;transition:all var(--transition-fast) var(--ease-standard);position:relative;text-decoration:none}
+.btn:hover{text-decoration:none}
+.btn:active{transform:scale(0.97)}
+.btn--primary{background:var(--primary);color:var(--bg-primary)}
+.btn--primary:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.btn--secondary{background:transparent;color:var(--primary);border-color:var(--border-default)}
+.btn--secondary:hover{background:var(--ring);box-shadow:var(--shadow-sm);transform:translateY(-2px)}
+.btn--paper{background:var(--bg-primary);color:var(--primary)}
+.btn--paper:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.btn--inverse{background:transparent;color:inherit;border-color:currentColor}
+.btn--inverse:hover{background:var(--bg-primary);color:var(--text-primary);border-color:var(--bg-primary)}
+.btn--danger{background:transparent;color:var(--text-error);border:1px dashed var(--border-error)}
+.btn:disabled,.btn.is-disabled{opacity:.5;filter:grayscale(1);cursor:not-allowed;transform:none;box-shadow:none}
+.btn.is-loading{pointer-events:none;color:transparent!important}
+.btn.is-loading::after{content:"";position:absolute;width:16px;height:16px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;color:var(--bg-primary);animation:spin 600ms linear infinite}
+.btn--secondary.is-loading::after,.btn--inverse.is-loading::after{color:var(--primary)}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* ============ CARDS ============ */
+.card{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:2rem;display:flex;flex-direction:column;gap:1rem;transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard),border-color var(--transition-normal) var(--ease-standard)}
+@media (hover:hover) and (pointer:fine){
+  .card--interactive:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);border-color:var(--primary)}
+}
+.card--interactive:focus-within{border-color:var(--primary);box-shadow:var(--shadow-sm)}
+.skeleton{background:linear-gradient(90deg,var(--ring) 25%,transparent 50%,var(--ring) 75%);background-size:200% 100%;animation:shimmer 1.4s linear infinite;border-radius:var(--radius-sm)}
+@keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+.empty-state{display:flex;flex-direction:column;align-items:center;gap:.75rem;padding:3rem 1.5rem;text-align:center;border:1px dashed var(--border-default);border-radius:var(--radius-md)}
+/* ============ FORMS ============ */
+.input-group{display:flex;flex-direction:column;align-items:flex-start;gap:.4rem;text-align:left}
+.input-group__label{font-weight:600;font-size:.9rem}
+.input-group__control{display:flex;gap:.75rem;width:100%}
+.input-group input{flex:1;min-height:44px;padding:.7rem 1rem;font-family:var(--font-base);font-size:1rem;color:var(--text-primary);background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-sm);transition:border-color var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard)}
+.input-group input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--ring)}
+.input-group input[aria-invalid="true"]{border-color:var(--border-error)}
+.input-group.is-valid input{border-color:var(--border-success)}
+.input-group__hint{font-family:var(--font-mono);font-size:.8rem}
+.input-group__error{display:flex;align-items:center;gap:.35rem;font-family:var(--font-mono);font-size:.8rem;color:var(--text-error)}
+.input-group__error .material-symbols-outlined{font-size:1rem}
+/* ============ HEADER ============ */
+.header{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--bg-primary);border-bottom:1px solid var(--border-default)}
+@supports (backdrop-filter:blur(8px)){.header{background:color-mix(in srgb,var(--bg-primary) 88%,transparent);backdrop-filter:blur(8px)}}
+.header__inner{display:flex;align-items:center;justify-content:space-between;gap:1rem;height:68px}
+.brand{display:flex;align-items:baseline;gap:.6rem;color:var(--text-primary)}
+.brand:hover{text-decoration:none}
+.brand__name{font-family:var(--font-display);font-style:italic;font-weight:600;font-size:1.5rem;letter-spacing:-0.02em}
+.brand__tag{font-family:var(--font-mono);font-size:.7rem;border:1px solid var(--border-default);border-radius:var(--radius-sm);padding:.15rem .45rem}
+.nav{display:flex;align-items:center;gap:1.75rem}
+.nav__link{font-weight:500;font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-primary)}
+.header__actions{display:flex;align-items:center;gap:.75rem}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;background:transparent;color:var(--text-primary);border:1px solid var(--border-default);border-radius:var(--radius-sm);cursor:pointer;transition:all var(--transition-fast) var(--ease-standard)}
+.icon-btn:hover{background:var(--ring)}
+.icon-btn:active{transform:scale(0.97)}
+.icon-btn .material-symbols-outlined{font-size:1.25rem}
+.menu-btn{display:none}
+@media (max-width:767px){
+  .menu-btn{display:inline-flex}
+  .nav{position:absolute;top:68px;left:0;right:0;flex-direction:column;align-items:stretch;gap:0;background:var(--bg-primary);border-bottom:1px solid var(--border-default);padding:.5rem 1.25rem 1rem;display:none}
+  .nav.is-open{display:flex}
+  .nav__link{padding:.85rem 0;border-bottom:1px solid var(--border-default)}
+  .header .btn--primary{display:none}
+}
+/* ============ HERO ============ */
+.hero{min-height:92vh;display:flex;align-items:center;padding-top:clamp(2rem,6vh,4rem);padding-bottom:var(--spacing-section)}
+.hero__inner{display:flex;flex-direction:column;justify-content:center;gap:1.5rem;position:relative;width:100%}
+.hero__eyebrow{font-family:var(--font-mono);font-size:.8rem;letter-spacing:.14em;text-transform:uppercase}
+.hero__title{font-size:clamp(2.75rem,7vw,5.5rem);max-width:14ch}
+.hero__sub{max-width:52ch;font-size:1.125rem}
+.hero__ctas{display:flex;flex-wrap:wrap;gap:1rem;margin-top:.5rem}
+.hero__stats{display:flex;flex-wrap:wrap;gap:0;margin-top:2rem;border-top:1px solid var(--border-default)}
+.hero__stat{display:flex;flex-direction:column;gap:.15rem;padding:1.25rem 2rem 0 0;margin-right:2rem;border-right:1px solid var(--border-default)}
+.hero__stat:last-child{border-right:none;margin-right:0}
+.hero__stat-num{font-family:var(--font-mono);font-size:1.5rem;font-weight:500}
+.hero__stat-label{font-family:var(--font-mono);font-size:.75rem;letter-spacing:.08em;text-transform:uppercase}
+.stairs{position:absolute;width:8px;height:8px;background:var(--secondary);pointer-events:none}
+.stairs--hero{top:0;right:clamp(0px,4vw,3rem);box-shadow:8px -8px 0 var(--secondary),16px -16px 0 var(--secondary),24px -24px 0 var(--secondary),32px -32px 0 var(--secondary),40px -40px 0 var(--secondary)}
+@media (max-width:640px){.stairs--hero{display:none}}
+/* ============ SECTIONS ============ */
+.section{padding-block:var(--spacing-section);border-top:1px solid var(--border-default)}
+.section-head{display:flex;flex-direction:column;gap:.75rem;margin-bottom:3rem;max-width:65ch}
+.section-head__eyebrow{font-family:var(--font-mono);font-size:.8rem;letter-spacing:.14em;text-transform:uppercase}
+.section-head__title{font-size:clamp(2rem,4.5vw,3rem)}
+.section-head__body{max-width:60ch}
+/* Features */
+.features__grid{display:flex;flex-direction:column;gap:var(--spacing-gap)}
+@media (min-width:768px){.features__grid{flex-direction:row;align-items:stretch}}
+.features__grid .card{flex:1}
+.card__icon{display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;border:1px solid var(--border-default);border-radius:var(--radius-sm);color:var(--primary)}
+.card__icon .material-symbols-outlined{font-size:1.5rem}
+.card__index{font-family:var(--font-mono);font-size:.75rem;letter-spacing:.1em}
+.card__title{font-size:1.5rem}
+.card__body{font-size:1rem}
+/* Steps */
+.steps{display:flex;flex-direction:column;gap:2.5rem;position:relative}
+@media (min-width:768px){
+  .steps{flex-direction:row;align-items:flex-start;gap:var(--spacing-gap)}
+  .steps::before{content:"";position:absolute;top:2rem;left:8%;right:8%;height:1px;background:var(--border-default)}
+}
+.step{flex:1;display:flex;flex-direction:column;gap:.75rem;position:relative}
+.step__num{font-family:var(--font-mono);font-size:3rem;font-weight:500;line-height:1;color:var(--text-secondary)}
+.step__title{font-size:1.4rem}
+.step__stairs{width:8px;height:8px;background:var(--secondary);box-shadow:8px -8px 0 var(--secondary),16px -16px 0 var(--secondary),24px -24px 0 var(--secondary);margin-top:.5rem}
+@media (max-width:767px){.step__stairs{display:none}}
+/* Testimonials */
+.quotes{display:flex;flex-direction:column;gap:var(--spacing-gap)}
+@media (min-width:768px){.quotes{flex-direction:row;align-items:stretch}}
+.quote{flex:1;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:2rem;display:flex;flex-direction:column;gap:1.25rem;position:relative}
+.quote::before{content:"\201C";font-family:var(--font-display);font-style:italic;font-size:4rem;line-height:.6;color:var(--secondary);margin-top:1rem}
+.quote__text{font-family:var(--font-display);font-style:italic;font-size:1.35rem;line-height:1.4}
+.quote__attr{font-family:var(--font-mono);font-size:.8rem;border-top:1px solid var(--border-default);padding-top:1rem}
+/* Pricing */
+.pricing__grid{display:flex;flex-direction:column;gap:var(--spacing-gap)}
+@media (min-width:1024px){.pricing__grid{flex-direction:row;align-items:stretch}}
+.tier{flex:1;display:flex;flex-direction:column;gap:1.25rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:2.25rem}
+.tier--featured{background:var(--primary);color:var(--bg-primary);box-shadow:var(--shadow-md)}
+.tier__badge{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;border:1px solid currentColor;border-radius:var(--radius-sm);padding:.25rem .6rem;align-self:flex-start}
+.tier__name{font-size:1.6rem}
+.tier__price{font-family:var(--font-mono);font-size:2.25rem;font-weight:500}
+.tier__price small{font-size:.9rem;font-weight:400}
+.tier__list{list-style:none;display:flex;flex-direction:column;gap:.65rem;flex:1}
+.tier__list li{display:flex;align-items:center;gap:.6rem;font-size:.95rem}
+.tier__list .material-symbols-outlined{font-size:1.1rem;flex-shrink:0}
+.tier .btn{width:100%}
+/* FAQ */
+.faq{border-top:1px solid var(--border-default)}
+.faq__item{border-bottom:1px solid var(--border-default)}
+.faq__question{display:flex;align-items:center;justify-content:space-between;gap:1rem;width:100%;min-height:44px;padding:1.25rem 0;background:none;border:none;cursor:pointer;font-family:var(--font-base);font-weight:600;font-size:1.05rem;color:var(--text-primary);text-align:left}
+.faq__question .material-symbols-outlined{transition:transform var(--transition-normal) var(--ease-standard);flex-shrink:0}
+.faq__question[aria-expanded="true"] .material-symbols-outlined{transform:rotate(180deg)}
+.faq__answer{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--transition-normal) var(--ease-standard)}
+.faq__answer.is-open{grid-template-rows:1fr}
+.faq__answer-inner{overflow:hidden}
+.faq__answer p{padding:0 0 1.25rem;max-width:65ch}
+/* CTA band */
+.cta-band{position:relative;background:var(--primary);color:var(--bg-primary);padding-block:var(--spacing-section);overflow:hidden}
+.cta-band::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(color-mix(in srgb,var(--bg-primary) 12%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--bg-primary) 12%,transparent) 1px,transparent 1px);background-size:32px 32px}
+.cta-band__inner{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:1.5rem;max-width:640px}
+.cta-band__title{font-size:clamp(2rem,5vw,3.25rem)}
+.cta-band .input-group{width:100%;color:var(--bg-primary)}
+.cta-band .input-group input{background:var(--bg-primary);color:var(--text-primary);border-color:transparent}
+.cta-band .input-group__hint{color:inherit;opacity:.85}
+.cta-band .input-group__error{color:var(--text-error)}
+:root[data-theme="dark"] .cta-band .input-group__error{color:#B3261E}
+.cta-band__stairs{position:absolute;width:8px;height:8px;background:var(--bg-primary);opacity:.6;pointer-events:none}
+.cta-band__stairs--tl{top:24px;left:24px;box-shadow:8px 8px 0 var(--bg-primary),16px 16px 0 var(--bg-primary)}
+.cta-band__stairs--br{bottom:24px;right:24px;box-shadow:-8px -8px 0 var(--bg-primary),-16px -16px 0 var(--bg-primary)}
+@media (max-width:640px){.cta-band__stairs{display:none}}
+/* Toast */
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translate(-50%,1rem);z-index:var(--z-toast);display:flex;align-items:center;gap:.6rem;background:var(--bg-secondary);color:var(--text-primary);border:1px solid var(--border-success);border-radius:var(--radius-md);padding:.85rem 1.25rem;box-shadow:var(--shadow-md);opacity:0;pointer-events:none;transition:opacity var(--transition-normal) var(--ease-standard),transform var(--transition-normal) var(--ease-standard)}
+.toast.is-visible{opacity:1;transform:translate(-50%,0)}
+.toast .material-symbols-outlined{color:var(--text-success)}
+/* Footer */
+.footer{border-top:1px solid var(--border-default);padding-block:3.5rem 2rem}
+.footer__top{display:flex;flex-direction:column;gap:2.5rem}
+@media (min-width:768px){.footer__top{flex-direction:row;align-items:flex-start;justify-content:space-between}}
+.footer__brand{display:flex;flex-direction:column;gap:.75rem;max-width:280px}
+.footer__cols{display:flex;flex-wrap:wrap;gap:2.5rem}
+.footer__col{display:flex;flex-direction:column;align-items:flex-start;gap:.6rem;min-width:130px}
+.footer__col-title{font-family:var(--font-mono);font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;margin-bottom:.35rem}
+.footer__col a{font-size:.92rem;color:var(--text-primary)}
+.footer__bottom{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1rem;margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--border-default);font-family:var(--font-mono);font-size:.78rem}
+/* Reveal */
+.reveal{opacity:1}
+.js .reveal{opacity:0;transform:translateY(12px);transition:opacity 500ms var(--ease-standard),transform 500ms var(--ease-standard)}
+.js .reveal.is-in{opacity:1;transform:none}
+/* Reduced motion / transparency */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  .js .reveal{transform:none;transition:opacity 200ms ease}
+  .btn:active{transform:none}
+  .faq__answer{transition:none}
+}
+@media (prefers-reduced-transparency:reduce){
+  .header{background:var(--bg-primary);backdrop-filter:none}
+}
+@media (max-width:767px){
+  .hero{min-height:auto;padding-top:3rem}
+  .hero__stat{padding-right:1.25rem;margin-right:1.25rem}
+  .input-group__control{flex-direction:column;align-items:stretch}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="header">
+  <div class="container header__inner">
+    <a class="brand" href="#top" aria-label="Gridline home">
+      <span class="brand__name">Gridline</span>
+      <span class="brand__tag">Vol. 01</span>
+    </a>
+    <nav class="nav" id="site-nav" aria-label="Primary">
+      <a class="nav__link" href="#features">Features</a>
+      <a class="nav__link" href="#how">Method</a>
+      <a class="nav__link" href="#pricing">Pricing</a>
+      <a class="nav__link" href="#faq">FAQ</a>
+    </nav>
+    <div class="header__actions">
+      <button class="icon-btn" id="theme-toggle" type="button" aria-pressed="false" aria-label="Activate dark theme">
+        <span class="material-symbols-outlined" id="theme-icon" aria-hidden="true">dark_mode</span>
+      </button>
+      <a class="btn btn--primary" href="#pricing">Start free</a>
+      <button class="icon-btn menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">
+        <span class="material-symbols-outlined" aria-hidden="true">menu</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <!-- HERO -->
+  <section class="hero" id="top" aria-labelledby="hero-title">
+    <div class="container hero__inner">
+      <span class="stairs stairs--hero" aria-hidden="true"></span>
+      <p class="hero__eyebrow">A desk for design research</p>
+      <h1 class="hero__title" id="hero-title">Field notes, kept in good order.</h1>
+      <p class="hero__sub">Gridline gives research teams one quiet place to capture observations, tag what matters, and publish findings as readable bulletins.</p>
+      <div class="hero__ctas">
+        <a class="btn btn--primary" href="#pricing">Start free</a>
+        <a class="btn btn--secondary" href="#how">Read the method</a>
+      </div>
+      <div class="hero__stats">
+        <div class="hero__stat"><span class="hero__stat-num">4 min</span><span class="hero__stat-label">Median note entry</span></div>
+        <div class="hero__stat"><span class="hero__stat-num">120+</span><span class="hero__stat-label">Research desks active</span></div>
+        <div class="hero__stat"><span class="hero__stat-num">Weekly</span><span class="hero__stat-label">Bulletin cadence</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section" id="features" aria-labelledby="features-title">
+    <div class="container">
+      <div class="section-head reveal">
+        <p class="section-head__eyebrow">What the desk holds</p>
+        <h2 class="section-head__title" id="features-title">Three habits, one workspace</h2>
+        <p class="section-head__body">Each part of Gridline mirrors a step researchers already take. Nothing extra, nothing missing.</p>
+      </div>
+      <div class="features__grid">
+        <article class="card card--interactive reveal">
+          <span class="card__icon"><span class="material-symbols-outlined" aria-hidden="true">edit_note</span></span>
+          <span class="card__index">01</span>
+          <h3 class="card__title">Capture field notes</h3>
+          <p class="card__body">Write observations the moment they happen, with timestamps, context, and attachments kept together.</p>
+        </article>
+        <article class="card card--interactive reveal">
+          <span class="card__icon"><span class="material-symbols-outlined" aria-hidden="true">sell</span></span>
+          <span class="card__index">02</span>
+          <h3 class="card__title">Tag and synthesize</h3>
+          <p class="card__body">Group notes under shared tags, then trace patterns across sessions without leaving the desk.</p>
+        </article>
+        <article class="card card--interactive reveal">
+          <span class="card__icon"><span class="material-symbols-outlined" aria-hidden="true">newspaper</span></span>
+          <span class="card__index">03</span>
+          <h3 class="card__title">Publish bulletins</h3>
+          <p class="card__body">Turn tagged insights into a dated bulletin your whole team can read, cite, and build on.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="section" id="how" aria-labelledby="how-title">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2 class="section-head__title" id="how-title">How a finding travels</h2>
+        <p class="section-head__body">From a hallway remark to a published insight, the path is short and always traceable.</p>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <span class="step__num">1</span>
+          <h3 class="step__title">Note it down</h3>
+          <p>Open a fresh entry during or right after a session. Plain text first, structure later.</p>
+          <span class="step__stairs" aria-hidden="true"></span>
+        </div>
+        <div class="step reveal">
+          <span class="step__num">2</span>
+          <h3 class="step__title">Mark the pattern</h3>
+          <p>Apply tags from your team's shared vocabulary so related observations gather on their own.</p>
+          <span class="step__stairs" aria-hidden="true"></span>
+        </div>
+        <div class="step reveal">
+          <span class="step__num">3</span>
+          <h3 class="step__title">Issue the bulletin</h3>
+          <p>Collect the strongest tags into a short bulletin and send it to everyone who needs it.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="section" id="stories" aria-labelledby="stories-title">
+    <div class="container">
+      <div class="section-head reveal">
+        <p class="section-head__eyebrow">From the reading room</p>
+        <h2 class="section-head__title" id="stories-title">Researchers on the record</h2>
+      </div>
+      <div class="quotes">
+        <blockquote class="quote reveal">
+          <p class="quote__text">Our synthesis meetings used to start from a blank wall. Now they start from last week's tags.</p>
+          <footer class="quote__attr">Mara Ellison, Research Lead, Fernwald Studio</footer>
+        </blockquote>
+        <blockquote class="quote reveal">
+          <p class="quote__text">The bulletin format forced us to write for readers, not for ourselves. Stakeholders actually reply now.</p>
+          <footer class="quote__attr">Tomas Reyes, Design Researcher, Northlight Health</footer>
+        </blockquote>
+        <blockquote class="quote reveal">
+          <p class="quote__text">I stopped losing observations between the field and the write-up. That alone paid for the seats.</p>
+          <footer class="quote__attr">Priya Anand, Principal Investigator, Civic Patterns Lab</footer>
+        </blockquote>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="section" id="pricing" aria-labelledby="pricing-title">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2 class="section-head__title" id="pricing-title">Pick a desk size</h2>
+        <p class="section-head__body">Every plan includes unlimited notes and bulletins. Seats scale with your team.</p>
+      </div>
+      <div class="pricing__grid">
+        <article class="tier reveal">
+          <h3 class="tier__name">Sketchbook</h3>
+          <p class="tier__price">$0 <small>/ forever</small></p>
+          <ul class="tier__list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>One researcher, one desk</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Unlimited field notes</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Up to 20 tags</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Monthly bulletin</li>
+          </ul>
+          <a class="btn btn--secondary" href="#cta">Start free</a>
+        </article>
+        <article class="tier tier--featured reveal">
+          <span class="tier__badge">Most popular</span>
+          <h3 class="tier__name">Research Desk</h3>
+          <p class="tier__price">$18 <small>/ seat / month</small></p>
+          <ul class="tier__list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Unlimited tags and desks</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Weekly bulletins with citations</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Shared tag vocabulary</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Export to CSV and Markdown</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Priority email support</li>
+          </ul>
+          <a class="btn btn--inverse" href="#cta">Start free</a>
+        </article>
+        <article class="tier reveal">
+          <h3 class="tier__name">Institute</h3>
+          <p class="tier__price">$49 <small>/ seat / month</small></p>
+          <ul class="tier__list">
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Everything in Research Desk</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Cross-desk pattern reports</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>SSO and audit log</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">check</span>Dedicated onboarding session</li>
+          </ul>
+          <a class="btn btn--secondary" href="#cta">Start free</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq" aria-labelledby="faq-title">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2 class="section-head__title" id="faq-title">Questions from the inbox</h2>
+      </div>
+      <div class="faq reveal">
+        <div class="faq__item">
+          <h3><button class="faq__question" type="button" aria-expanded="false" aria-controls="faq-a1" id="faq-q1">What exactly is Gridline?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button></h3>
+          <div class="faq__answer" id="faq-a1" role="region" aria-labelledby="faq-q1"><div class="faq__answer-inner"><p>Gridline is a shared workspace for design research. Teams record field notes, organize them with tags, and publish periodic bulletins that summarize what the evidence says.</p></div></div>
+        </div>
+        <div class="faq__item">
+          <h3><button class="faq__question" type="button" aria-expanded="false" aria-controls="faq-a2" id="faq-q2">Who can read my notes?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button></h3>
+          <div class="faq__answer" id="faq-a2" role="region" aria-labelledby="faq-q2"><div class="faq__answer-inner"><p>Only members of your desk. Notes are private by default, encrypted in transit and at rest, and never used to train models or sold to anyone.</p></div></div>
+        </div>
+        <div class="faq__item">
+          <h3><button class="faq__question" type="button" aria-expanded="false" aria-controls="faq-a3" id="faq-q3">Can I export my research?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button></h3>
+          <div class="faq__answer" id="faq-a3" role="region" aria-labelledby="faq-q3"><div class="faq__answer-inner"><p>Yes. Every desk exports to CSV and Markdown at any time, including tags, timestamps, and bulletin history. Your data leaves with you, intact.</p></div></div>
+        </div>
+        <div class="faq__item">
+          <h3><button class="faq__question" type="button" aria-expanded="false" aria-controls="faq-a4" id="faq-q4">How does seat billing work?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button></h3>
+          <div class="faq__answer" id="faq-a4" role="region" aria-labelledby="faq-q4"><div class="faq__answer-inner"><p>You pay per active seat per month. Adding a seat prorates to the day; removing one credits the remainder. Observers who only read bulletins are always free.</p></div></div>
+        </div>
+        <div class="faq__item">
+          <h3><button class="faq__question" type="button" aria-expanded="false" aria-controls="faq-a5" id="faq-q5">Can we migrate notes from other tools?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button></h3>
+          <div class="faq__answer" id="faq-a5" role="region" aria-labelledby="faq-q5"><div class="faq__answer-inner"><p>Gridline imports CSV and Markdown archives, mapping columns to notes and tags. Most teams finish a migration in an afternoon, and we help on Institute plans.</p></div></div>
+        </div>
+        <div class="faq__item">
+          <h3><button class="faq__question" type="button" aria-expanded="false" aria-controls="faq-a6" id="faq-q6">Is Gridline accessible?<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button></h3>
+          <div class="faq__answer" id="faq-a6" role="region" aria-labelledby="faq-q6"><div class="faq__answer-inner"><p>The app targets WCAG 2.2 AA: full keyboard operation, visible focus, reduced-motion support, and contrast-checked themes. We publish an annual accessibility report.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="cta-band" id="cta" aria-labelledby="cta-title">
+    <span class="cta-band__stairs cta-band__stairs--tl" aria-hidden="true"></span>
+    <span class="cta-band__stairs cta-band__stairs--br" aria-hidden="true"></span>
+    <div class="container">
+      <div class="cta-band__inner">
+        <h2 class="cta-band__title" id="cta-title">Open your desk this week.</h2>
+        <form class="input-group" id="cta-form" novalidate>
+          <label class="input-group__label" for="cta-email">Work email</label>
+          <div class="input-group__control">
+            <input type="email" id="cta-email" name="email" autocomplete="email" placeholder="you@studio.com" aria-describedby="cta-hint cta-error" required>
+            <button class="btn btn--paper" id="cta-submit" type="submit">Start free</button>
+          </div>
+          <p class="input-group__hint" id="cta-hint">We send one setup link. No newsletter unless you ask.</p>
+          <p class="input-group__error" id="cta-error" role="alert" hidden><span class="material-symbols-outlined" aria-hidden="true">error</span><span id="cta-error-text">Enter a valid email address.</span></p>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden>
+  <span class="material-symbols-outlined" aria-hidden="true">check</span>
+  <span id="toast-text">Desk reserved. Check your inbox for the setup link.</span>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__top">
+      <div class="footer__brand">
+        <a class="brand" href="#top" aria-label="Gridline home">
+          <span class="brand__name">Gridline</span>
+          <span class="brand__tag">Vol. 01</span>
+        </a>
+        <p>A quiet desk where design research is captured, tagged, and published in good order.</p>
+      </div>
+      <div class="footer__cols">
+        <div class="footer__col">
+          <p class="footer__col-title">Product</p>
+          <a href="#features">Features</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#how">Method</a>
+          <a href="#faq">FAQ</a>
+        </div>
+        <div class="footer__col">
+          <p class="footer__col-title">Company</p>
+          <a href="#stories">About the desk</a>
+          <a href="#stories">Reading room</a>
+          <a href="#cta">Contact</a>
+          <a href="#top">Careers</a>
+        </div>
+        <div class="footer__col">
+          <p class="footer__col-title">Resources</p>
+          <a href="#how">Field guide</a>
+          <a href="#faq">Tag vocabulary</a>
+          <a href="#stories">Bulletin archive</a>
+          <a href="#faq">Accessibility report</a>
+        </div>
+        <div class="footer__col">
+          <p class="footer__col-title">Legal</p>
+          <a href="#top">Privacy notice</a>
+          <a href="#top">Terms of use</a>
+          <a href="#top">Data processing</a>
+          <a href="#top">Security</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span>&copy; <span id="year">2026</span> Gridline Research Desk. All rights reserved.</span>
+      <span>Set in Newsreader, Hanken Grotesk, and DM Mono.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  document.documentElement.classList.add("js");
+
+  /* Theme toggle */
+  var root=document.documentElement;
+  var toggle=document.getElementById("theme-toggle");
+  var icon=document.getElementById("theme-icon");
+  function applyTheme(t){
+    root.dataset.theme=t;
+    var dark=t==="dark";
+    toggle.setAttribute("aria-pressed",String(dark));
+    toggle.setAttribute("aria-label",dark?"Activate light theme":"Activate dark theme");
+    icon.textContent=dark?"light_mode":"dark_mode";
+  }
+  applyTheme(root.dataset.theme==="dark"?"dark":"light");
+  toggle.addEventListener("click",function(){
+    var next=root.dataset.theme==="dark"?"light":"dark";
+    localStorage.setItem("gridline-theme",next);
+    applyTheme(next);
+  });
+
+  /* Mobile menu */
+  var menuBtn=document.getElementById("menu-btn");
+  var nav=document.getElementById("site-nav");
+  function closeMenu(){
+    nav.classList.remove("is-open");
+    menuBtn.setAttribute("aria-expanded","false");
+    menuBtn.setAttribute("aria-label","Open menu");
+  }
+  menuBtn.addEventListener("click",function(){
+    var open=nav.classList.toggle("is-open");
+    menuBtn.setAttribute("aria-expanded",String(open));
+    menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");
+    if(open){var first=nav.querySelector("a");if(first)first.focus();}
+  });
+  nav.addEventListener("click",function(e){if(e.target.closest("a"))closeMenu();});
+  document.addEventListener("keydown",function(e){
+    if(e.key==="Escape"&&nav.classList.contains("is-open")){closeMenu();menuBtn.focus();}
+  });
+  document.addEventListener("click",function(e){
+    if(nav.classList.contains("is-open")&&!e.target.closest(".header__inner"))closeMenu();
+  });
+
+  /* FAQ accordion */
+  var questions=document.querySelectorAll(".faq__question");
+  questions.forEach(function(q){
+    q.addEventListener("click",function(){
+      var panel=document.getElementById(q.getAttribute("aria-controls"));
+      var open=q.getAttribute("aria-expanded")==="true";
+      q.setAttribute("aria-expanded",String(!open));
+      panel.classList.toggle("is-open",!open);
+    });
+  });
+
+  /* CTA form states */
+  var form=document.getElementById("cta-form");
+  var email=document.getElementById("cta-email");
+  var submit=document.getElementById("cta-submit");
+  var errorBox=document.getElementById("cta-error");
+  var errorText=document.getElementById("cta-error-text");
+  var toast=document.getElementById("toast");
+  var toastTimer=null;
+  function showError(msg){
+    errorText.textContent=msg;
+    errorBox.hidden=false;
+    email.setAttribute("aria-invalid","true");
+    form.classList.remove("is-valid");
+  }
+  function clearError(){
+    errorBox.hidden=true;
+    email.removeAttribute("aria-invalid");
+  }
+  email.addEventListener("input",clearError);
+  form.addEventListener("submit",function(e){
+    e.preventDefault();
+    var val=email.value.trim();
+    if(!val){showError("An email address is required.");email.focus();return;}
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val)){showError("Enter a valid email address.");email.focus();return;}
+    clearError();
+    submit.classList.add("is-loading");
+    submit.setAttribute("aria-busy","true");
+    submit.disabled=true;
+    setTimeout(function(){
+      submit.classList.remove("is-loading");
+      submit.removeAttribute("aria-busy");
+      submit.disabled=false;
+      form.classList.add("is-valid");
+      toast.hidden=false;
+      requestAnimationFrame(function(){toast.classList.add("is-visible");});
+      if(toastTimer)clearTimeout(toastTimer);
+      toastTimer=setTimeout(function(){
+        toast.classList.remove("is-visible");
+        setTimeout(function(){toast.hidden=true;},300);
+      },3000);
+      form.reset();
+    },1200);
+  });
+
+  /* Reveal on scroll */
+  var revealEls=document.querySelectorAll(".reveal");
+  if("IntersectionObserver" in window){
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(en,i){
+        if(en.isIntersecting){
+          en.target.style.transitionDelay=(i%3)*60+"ms";
+          en.target.classList.add("is-in");
+          io.unobserve(en.target);
+        }
+      });
+    },{threshold:0.12});
+    revealEls.forEach(function(el){io.observe(el);});
+  }else{
+    revealEls.forEach(function(el){el.classList.add("is-in");});
+  }
+
+  /* Footer year */
+  document.getElementById("year").textContent="2026";
+})();
+</script>
+</body>
+</html>

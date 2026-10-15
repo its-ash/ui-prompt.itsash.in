@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nimbus - Surf the Net, Totally Holographic</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<style>
+:root{
+  --color-bg:#062c31;--color-surface:#0d4750;--color-surface-strong:#135b66;
+  --color-border:#00e5ff;--color-text:#eafffc;--color-text-muted:#9fd9d4;
+  --color-primary:#00e5ff;--color-accent:#ff6ec7;--color-lime:#a6ff3d;
+  --color-on-primary:#04262b;--color-on-accent:#3d0a2c;
+  --radius-sm:4px;--radius-md:12px;--radius-lg:24px;--radius-pill:999px;
+  --shadow-sm:0 2px 8px rgba(0,229,255,.25);--shadow-md:0 8px 20px rgba(0,229,255,.28);--shadow-lg:0 18px 40px rgba(0,229,255,.32);
+  --font-sans:'Roboto Mono','Courier New',monospace;
+  --font-display:'Orbitron','Verdana',sans-serif;
+  --font-mono:'Courier New',monospace;
+  --text-xs:.75rem;--text-sm:.875rem;--text-base:1rem;--text-lg:1.125rem;
+  --text-xl:1.375rem;--text-2xl:1.75rem;--text-3xl:2.25rem;--text-4xl:3rem;--text-5xl:4rem;
+  --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-6:24px;
+  --space-8:32px;--space-12:48px;--space-16:64px;--space-24:96px;
+  --ease-standard:cubic-bezier(.4,0,.2,1);
+  --holo-gradient:linear-gradient(120deg,#00e5ff,#ff6ec7,#a6ff3d,#00e5ff);
+  --wave-bg:radial-gradient(120% 90% at 20% 0%,rgba(0,229,255,.18),transparent 55%),radial-gradient(100% 80% at 90% 100%,rgba(255,110,199,.14),transparent 55%);
+  --z-dropdown:100;--z-modal:200;--z-toast:300;
+}
+:root[data-theme="light"]{
+  --color-bg:#e6f7f7;--color-surface:#d8f0ee;--color-surface-strong:#c2e6e3;
+  --color-border:#0090a8;--color-text:#062c31;--color-text-muted:#2c5a5e;
+  --color-primary:#007e94;--color-accent:#c2187f;--color-lime:#4d8a00;
+  --color-on-primary:#eafffc;--color-on-accent:#fff0f8;
+  --shadow-sm:0 2px 8px rgba(0,120,140,.18);--shadow-md:0 8px 20px rgba(0,120,140,.22);--shadow-lg:0 18px 40px rgba(0,120,140,.26);
+  --wave-bg:radial-gradient(120% 90% at 20% 0%,rgba(0,144,168,.14),transparent 55%),radial-gradient(100% 80% at 90% 100%,rgba(194,24,127,.10),transparent 55%);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font-sans);font-size:var(--text-base);line-height:1.6;
+  color:var(--color-text);background:var(--color-bg);
+  background-image:var(--wave-bg);background-attachment:fixed;
+  overflow-x:hidden;transition:background-color .3s var(--ease-standard),color .3s var(--ease-standard);
+}
+img{max-width:100%;display:block}
+h1,h2,h3{font-family:var(--font-display);line-height:1.12;letter-spacing:-.01em;font-weight:700}
+a{color:var(--color-primary);text-decoration:none}
+:focus-visible{outline:2px solid var(--color-accent);outline-offset:2px;border-radius:var(--radius-sm)}
+.skip-link{position:absolute;left:var(--space-4);top:-60px;z-index:var(--z-toast);background:var(--color-primary);color:var(--color-on-primary);padding:var(--space-3) var(--space-4);border-radius:var(--radius-sm);transition:top .2s var(--ease-standard)}
+.skip-link:focus{top:var(--space-4)}
+.container{max-width:1200px;margin:0 auto;padding-left:1.25rem;padding-right:1.25rem}
+@media(min-width:768px){.container{padding-left:2rem;padding-right:2rem}}
+section{padding-top:clamp(4rem,8vw,7rem);padding-bottom:clamp(4rem,8vw,7rem)}
+.section-title{font-size:clamp(var(--text-2xl),4vw,var(--text-4xl));margin-bottom:var(--space-4)}
+.section-sub{color:var(--color-text-muted);max-width:60ch;margin-bottom:var(--space-12)}
+.icon{font-family:'Material Symbols Rounded';font-style:normal;font-weight:normal;font-size:24px;line-height:1;display:inline-block;vertical-align:middle}
+/* ---------- NAV ---------- */
+.nav{
+  position:sticky;top:var(--space-3);z-index:var(--z-dropdown);
+  max-width:1200px;margin:var(--space-3) auto 0;
+  display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);
+  padding:var(--space-2) var(--space-4);min-height:64px;
+  border:2px solid transparent;border-radius:var(--radius-pill);
+  background:linear-gradient(var(--color-surface),var(--color-surface)) padding-box,var(--holo-gradient) border-box;
+  box-shadow:var(--shadow-sm);backdrop-filter:blur(10px);
+}
+.nav__logo{display:flex;align-items:center;gap:var(--space-2);font-family:var(--font-display);font-weight:900;font-size:var(--text-lg);color:var(--color-text);letter-spacing:.02em}
+.nav__logo .icon{color:var(--color-primary)}
+.nav__links{display:flex;align-items:center;gap:var(--space-6);list-style:none}
+.nav__links a{color:var(--color-text-muted);font-size:var(--text-sm);padding:var(--space-2) 0;transition:color .2s var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.nav__links a:hover{color:var(--color-primary)}}
+.nav__actions{display:flex;align-items:center;gap:var(--space-2)}
+.nav__toggle,.nav__menu{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:44px;min-height:44px;border:2px solid var(--color-border);border-radius:var(--radius-pill);
+  background:var(--color-surface-strong);color:var(--color-text);cursor:pointer;
+  transition:transform .15s var(--ease-standard),box-shadow .2s var(--ease-standard);
+}
+@media(hover:hover) and (pointer:fine){.nav__toggle:hover,.nav__menu:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}}
+.nav__toggle:active,.nav__menu:active{transform:scale(.97)}
+.nav__menu{display:none}
+.icon-sun{display:none}
+:root[data-theme="light"] .icon-sun{display:inline-block}
+:root[data-theme="light"] .icon-moon{display:none}
+@media(max-width:767px){
+  .nav{flex-wrap:wrap;border-radius:var(--radius-lg)}
+  .nav__menu{display:inline-flex}
+  .nav__links{display:none;flex-direction:column;align-items:flex-start;gap:var(--space-2);width:100%;padding:var(--space-3) 0}
+  .nav__links.is-open{display:flex}
+}
+/* ---------- BUTTONS ---------- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:var(--space-3);
+  min-height:44px;padding:var(--space-3) var(--space-6);
+  font-family:var(--font-sans);font-size:var(--text-base);font-weight:500;
+  color:var(--color-text);background:var(--color-surface-strong);
+  border:2px solid var(--color-border);border-radius:var(--radius-pill);cursor:pointer;
+  transition:transform .15s var(--ease-standard),box-shadow .2s var(--ease-standard),opacity .2s var(--ease-standard);
+}
+@media(hover:hover) and (pointer:fine){.btn:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}}
+.btn:active{transform:scale(.97)}
+.btn:disabled,.btn.is-disabled{opacity:.5;filter:grayscale(1);cursor:not-allowed;transform:none}
+.btn--primary{
+  border:2px solid transparent;
+  background:linear-gradient(var(--color-surface-strong),var(--color-surface-strong)) padding-box,var(--holo-gradient) border-box;
+  box-shadow:var(--shadow-sm);
+}
+.btn--primary .btn__label{background:var(--holo-gradient);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700}
+:root[data-theme="light"] .btn--primary .btn__label{background:linear-gradient(120deg,#007e94,#c2187f,#4d8a00);-webkit-background-clip:text;background-clip:text}
+/* ---------- BADGE ---------- */
+.badge{
+  display:inline-flex;align-items:center;gap:var(--space-2);
+  padding:var(--space-1) var(--space-4);border-radius:var(--radius-pill);
+  font-size:var(--text-xs);letter-spacing:.14em;text-transform:uppercase;font-weight:500;
+  color:var(--color-primary);border:1px solid var(--color-border);background:var(--color-surface);
+}
+/* ---------- HERO ---------- */
+.section-hero{padding-top:clamp(3rem,6vw,6rem)}
+.hero{display:flex;align-items:center;gap:var(--space-12)}
+.hero__content{flex:1 1 55%;display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-6)}
+.hero__title{font-size:clamp(var(--text-3xl),6vw,var(--text-5xl));font-weight:900;position:relative}
+.hero__title .glitch{position:relative;display:inline-block}
+.hero__title .glitch::before,.hero__title .glitch::after{content:attr(data-text);position:absolute;inset:0;opacity:0}
+.hero__title .glitch::before{color:var(--color-primary);transform:translate(2px,-2px)}
+.hero__title .glitch::after{color:var(--color-accent);transform:translate(-2px,2px)}
+@media(hover:hover) and (pointer:fine){
+  .hero__title:hover .glitch::before{opacity:.8;animation:glitch-a .6s steps(2) infinite}
+  .hero__title:hover .glitch::after{opacity:.8;animation:glitch-b .6s steps(2) infinite}
+}
+@keyframes glitch-a{0%{transform:translate(2px,-2px)}50%{transform:translate(-3px,1px)}100%{transform:translate(2px,-2px)}}
+@keyframes glitch-b{0%{transform:translate(-2px,2px)}50%{transform:translate(3px,-1px)}100%{transform:translate(-2px,2px)}}
+.hero__sub{color:var(--color-text-muted);font-size:var(--text-lg);max-width:34ch}
+.hero__ctas{display:flex;align-items:center;gap:var(--space-4);flex-wrap:wrap}
+.hero__visual{flex:1 1 45%;display:flex;align-items:center;justify-content:center}
+.yinyang{
+  width:min(320px,70vw);aspect-ratio:1;border-radius:50%;position:relative;
+  border:3px solid transparent;
+  background:
+    radial-gradient(circle at 50% 25%,var(--color-surface) 12%,transparent 13%),
+    radial-gradient(circle at 50% 75%,var(--color-primary) 12%,transparent 13%),
+    radial-gradient(circle at 50% 25%,var(--color-primary) 50%,transparent 51%),
+    radial-gradient(circle at 50% 75%,var(--color-surface) 50%,transparent 51%),
+    linear-gradient(90deg,var(--color-primary) 50%,var(--color-surface) 50%);
+  background-color:var(--color-surface);
+  box-shadow:var(--shadow-lg),inset 0 0 60px rgba(0,229,255,.25);
+  animation:spin-slow 40s linear infinite;
+}
+.yinyang::after{
+  content:"";position:absolute;inset:-14px;border-radius:50%;
+  border:2px dashed var(--color-accent);opacity:.6;
+  animation:spin-slow 60s linear infinite reverse;
+}
+@keyframes spin-slow{to{transform:rotate(360deg)}}
+@media(max-width:767px){.hero{flex-direction:column;align-items:flex-start}.hero__visual{width:100%}}
+/* ---------- WAVE DIVIDER ---------- */
+.wave{height:28px;background:radial-gradient(circle at 14px -6px,transparent 16px,var(--color-surface) 17px);background-size:28px 28px;background-repeat:repeat-x;opacity:.7}
+/* ---------- CARDS / FEATURES ---------- */
+.grid-3{display:flex;gap:var(--space-6);align-items:stretch}
+.grid-3>*{flex:1 1 0}
+.card{
+  display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-4);
+  padding:var(--space-8);border-radius:var(--radius-lg);
+  border:2px solid transparent;
+  background:linear-gradient(var(--color-surface),var(--color-surface)) padding-box,var(--holo-gradient) border-box;
+  box-shadow:var(--shadow-sm);
+  transition:transform .2s var(--ease-standard),box-shadow .2s var(--ease-standard);
+}
+@media(hover:hover) and (pointer:fine){.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}}
+.card:focus-within{border-color:var(--color-accent)}
+.card__icon{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:56px;height:56px;border-radius:var(--radius-md);
+  background:var(--color-surface-strong);color:var(--color-primary);font-size:28px;
+}
+.card__icon .icon{font-size:28px}
+.card h3{font-size:var(--text-xl)}
+.card p{color:var(--color-text-muted);font-size:var(--text-sm)}
+.card--tint{background:linear-gradient(var(--color-surface-strong),var(--color-surface-strong)) padding-box,var(--holo-gradient) border-box}
+@media(max-width:767px){.grid-3{flex-direction:column}}
+/* ---------- STEPS ---------- */
+.steps{display:flex;align-items:stretch;gap:0;list-style:none;counter-reset:step}
+.step{flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-3);padding:var(--space-6);position:relative}
+.step__num{font-family:var(--font-mono);font-size:var(--text-3xl);font-weight:700;color:var(--color-lime)}
+.step h3{font-size:var(--text-lg)}
+.step p{color:var(--color-text-muted);font-size:var(--text-sm)}
+.step+.step::before{content:"";position:absolute;left:0;top:var(--space-8);width:2px;height:60%;border-left:2px dashed var(--color-primary);opacity:.5}
+@media(max-width:767px){.steps{flex-direction:column}.step+.step::before{left:var(--space-8);top:0;width:60%;height:2px;border-left:none;border-top:2px dashed var(--color-primary)}}
+/* ---------- TESTIMONIALS ---------- */
+.quote{display:flex;flex-direction:column;gap:var(--space-4)}
+.quote__text{font-size:var(--text-base);color:var(--color-text)}
+.quote__text::before{content:"\201C";color:var(--color-accent);font-size:var(--text-2xl);font-family:var(--font-display)}
+.quote__text::after{content:"\201D";color:var(--color-accent);font-family:var(--font-display)}
+.quote__who{display:flex;align-items:center;gap:var(--space-3)}
+.avatar{
+  width:48px;height:48px;border-radius:50%;flex-shrink:0;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-weight:700;font-size:var(--text-sm);
+  color:var(--color-on-primary);background:var(--color-primary);
+}
+.avatar--pink{background:var(--color-accent);color:var(--color-on-accent)}
+.quote__name{font-weight:500;font-size:var(--text-sm)}
+.quote__role{color:var(--color-text-muted);font-size:var(--text-xs)}
+/* ---------- PRICING ---------- */
+.pricing-tier{display:flex;flex-direction:column;gap:var(--space-4);padding:var(--space-8);border-radius:var(--radius-lg);border:2px solid var(--color-border);background:var(--color-surface);position:relative;transition:transform .2s var(--ease-standard),box-shadow .2s var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.pricing-tier:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}}
+.pricing-tier--featured{
+  border:2px solid transparent;
+  background:linear-gradient(var(--color-surface-strong),var(--color-surface-strong)) padding-box,var(--holo-gradient) border-box;
+  box-shadow:var(--shadow-md);
+}
+:root[data-theme="dark"] .pricing-tier--featured{background:linear-gradient(var(--color-surface-strong),var(--color-surface-strong)) padding-box,var(--holo-gradient) border-box}
+.pricing-tier__badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);white-space:nowrap}
+.pricing-tier__name{font-family:var(--font-display);font-size:var(--text-lg)}
+.pricing-tier__price{font-family:var(--font-display);font-size:var(--text-4xl);font-weight:900}
+.pricing-tier__price span{font-size:var(--text-sm);color:var(--color-text-muted);font-weight:400;font-family:var(--font-sans)}
+.pricing-tier__list{list-style:none;display:flex;flex-direction:column;gap:var(--space-2);flex:1}
+.pricing-tier__list li{display:flex;align-items:center;gap:var(--space-2);font-size:var(--text-sm);color:var(--color-text-muted)}
+.pricing-tier__list .icon{color:var(--color-lime);font-size:20px}
+/* ---------- FAQ ---------- */
+.faq{display:flex;flex-direction:column;gap:var(--space-4);max-width:760px}
+.faq details{border:2px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface);transition:border-color .2s var(--ease-standard)}
+.faq details[open]{border-color:var(--color-accent)}
+.faq summary{
+  display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);
+  padding:var(--space-4) var(--space-6);cursor:pointer;list-style:none;
+  font-weight:500;min-height:44px;
+}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary .icon{color:var(--color-primary);transition:transform .25s var(--ease-standard)}
+.faq details[open] summary .icon{transform:rotate(180deg)}
+.faq__body{padding:0 var(--space-6) var(--space-6);color:var(--color-text-muted);font-size:var(--text-sm)}
+/* ---------- CTA BAND ---------- */
+.cta-band{
+  border:2px solid transparent;border-radius:var(--radius-lg);
+  background:linear-gradient(var(--color-surface-strong),var(--color-surface-strong)) padding-box,var(--holo-gradient) border-box;
+  box-shadow:var(--shadow-lg);
+  padding:var(--space-16) var(--space-8);
+  display:flex;flex-direction:column;align-items:center;gap:var(--space-6);text-align:center;
+}
+.cta-band h2{font-size:clamp(var(--text-2xl),4vw,var(--text-4xl))}
+.cta-band p{color:var(--color-text-muted);max-width:52ch}
+/* ---------- FORM ---------- */
+.newsletter{display:flex;flex-direction:column;gap:var(--space-2);width:100%;max-width:480px}
+.newsletter label{font-size:var(--text-sm);font-weight:500}
+.newsletter__row{display:flex;gap:var(--space-3);align-items:stretch}
+.input{
+  flex:1;min-height:44px;padding:var(--space-3) var(--space-4);
+  font-family:var(--font-sans);font-size:var(--text-base);
+  color:var(--color-text);background:var(--color-bg);
+  border:2px solid var(--color-border);border-radius:var(--radius-pill);
+  transition:border-color .2s var(--ease-standard),box-shadow .2s var(--ease-standard);
+}
+.input::placeholder{color:var(--color-text-muted)}
+.input:focus{outline:none;border-color:var(--color-accent);box-shadow:0 0 0 3px rgba(255,110,199,.25)}
+.input:disabled{opacity:.5;cursor:not-allowed}
+.newsletter__help{color:var(--color-text-muted);font-size:var(--text-xs)}
+.newsletter__error{display:none;align-items:center;gap:var(--space-2);color:var(--color-accent);font-size:var(--text-xs)}
+.newsletter.is-invalid .input{border-color:var(--color-accent)}
+.newsletter.is-invalid .newsletter__error{display:flex}
+.newsletter.is-valid .input{border-color:var(--color-lime)}
+.newsletter__ok{display:none;color:var(--color-lime);font-size:var(--text-sm)}
+.newsletter.is-valid .newsletter__ok{display:block}
+@media(max-width:520px){.newsletter__row{flex-direction:column}}
+/* ---------- FOOTER ---------- */
+.footer{border-top:2px solid var(--color-border);padding:var(--space-16) 0 var(--space-8);background:var(--color-surface)}
+.footer__grid{display:flex;gap:var(--space-12);align-items:flex-start;flex-wrap:wrap}
+.footer__brand{flex:2 1 260px;display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-3)}
+.footer__col{flex:1 1 140px;display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2)}
+.footer__col h4{font-family:var(--font-display);font-size:var(--text-sm);letter-spacing:.08em;text-transform:uppercase;margin-bottom:var(--space-2)}
+.footer__col a{color:var(--color-text-muted);font-size:var(--text-sm);padding:var(--space-1) 0}
+@media(hover:hover) and (pointer:fine){.footer__col a:hover{color:var(--color-primary)}}
+.footer__social{display:flex;gap:var(--space-3)}
+.footer__social a{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;border:1px solid var(--color-border);color:var(--color-text-muted);transition:color .2s var(--ease-standard),transform .15s var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.footer__social a:hover{color:var(--color-primary);transform:translateY(-2px)}}
+.footer__bottom{margin-top:var(--space-12);padding-top:var(--space-6);border-top:1px dashed var(--color-border);display:flex;justify-content:space-between;gap:var(--space-4);flex-wrap:wrap;color:var(--color-text-muted);font-size:var(--text-xs)}
+@media(max-width:767px){.footer__grid{flex-direction:column}}
+/* ---------- REVEAL / MOTION ---------- */
+.reveal{opacity:1}
+.js .reveal{opacity:0;transform:translateY(16px);transition:opacity .5s var(--ease-standard),transform .5s var(--ease-standard)}
+.js .reveal.is-visible{opacity:1;transform:none}
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:opacity .2s ease!important;transform:none!important}
+  .js .reveal{opacity:1;transform:none}
+  .yinyang,.yinyang::after{animation:none!important}
+}
+@media (prefers-reduced-transparency: reduce){
+  .nav{backdrop-filter:none}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="nav container">
+  <a class="nav__logo" href="#top"><span class="icon" aria-hidden="true">waves</span>NIMBUS</a>
+  <nav aria-label="Primary">
+    <ul class="nav__links" id="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#how">How It Works</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+  </nav>
+  <div class="nav__actions">
+    <button class="nav__toggle" id="theme-toggle" type="button" aria-pressed="true" aria-label="Switch to light mode">
+      <span class="icon icon-moon" aria-hidden="true">dark_mode</span>
+      <span class="icon icon-sun" aria-hidden="true">light_mode</span>
+    </button>
+    <button class="nav__menu" id="nav-menu" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">
+      <span class="icon" aria-hidden="true">menu</span>
+    </button>
+  </div>
+</header>
+
+<main id="main">
+  <!-- HERO -->
+  <section class="section-hero" id="top">
+    <div class="container hero">
+      <div class="hero__content">
+        <span class="badge"><span class="icon" aria-hidden="true" style="font-size:14px">water_drop</span>EST. 2012 &middot; STILL WET</span>
+        <h1 class="hero__title">Surf the net.<br><span class="glitch" data-text="Totally holographic.">Totally holographic.</span></h1>
+        <p class="hero__sub">Nimbus is the ocean-deep dashboard your dad's 1998 screensaver warned you about. Dive in.</p>
+        <div class="hero__ctas">
+          <a class="btn btn--primary" href="#pricing"><span class="btn__label">Dive In</span><span class="icon" aria-hidden="true">scuba_diving</span></a>
+          <a class="btn" href="#how">How It Works</a>
+        </div>
+      </div>
+      <div class="hero__visual" aria-hidden="true">
+        <div class="yinyang"></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="wave" aria-hidden="true"></div>
+
+  <!-- FEATURES -->
+  <section id="features">
+    <div class="container">
+      <h2 class="section-title">Built for the deep web. The wet one.</h2>
+      <p class="section-sub">Three reasons dolphins keep emailing us about Nimbus.</p>
+      <div class="grid-3">
+        <article class="card reveal">
+          <span class="card__icon"><span class="icon" aria-hidden="true">tsunami</span></span>
+          <h3>Wave Sync</h3>
+          <p>Your data ripples across every device in real time. Lag is a land concept and we do not recognize it here.</p>
+        </article>
+        <article class="card card--tint reveal">
+          <span class="card__icon"><span class="icon" aria-hidden="true">hologram</span></span>
+          <h3>Holo Rendering</h3>
+          <p>Every chart ships with a cyan-to-pink gradient by default. Scientists call it unnecessary. We call it correct.</p>
+        </article>
+        <article class="card reveal">
+          <span class="card__icon"><span class="icon" aria-hidden="true">sailing</span></span>
+          <h3>Tide Alerts</h3>
+          <p>Notifications arrive on a lunar schedule. Slightly inconvenient, spiritually essential, fully configurable.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="how">
+    <div class="container">
+      <h2 class="section-title">Three steps to full submersion</h2>
+      <p class="section-sub">No wetsuit required. A mild tolerance for gradients helps.</p>
+      <ol class="steps">
+        <li class="step reveal">
+          <span class="step__num">01</span>
+          <h3>Make a splash</h3>
+          <p>Create your account in under a minute. We only ask for an email and your favorite ocean.</p>
+        </li>
+        <li class="step reveal">
+          <span class="step__num">02</span>
+          <h3>Cast the net</h3>
+          <p>Connect your tools. Nimbus pulls everything into one shimmering, slightly damp dashboard.</p>
+        </li>
+        <li class="step reveal">
+          <span class="step__num">03</span>
+          <h3>Ride the current</h3>
+          <p>Watch reports flow in on the tide. Export anytime, or just stare at the gradients. Both are valid.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <div class="wave" aria-hidden="true"></div>
+
+  <!-- TESTIMONIALS -->
+  <section id="testimonials">
+    <div class="container">
+      <h2 class="section-title">Voices from below sea level</h2>
+      <p class="section-sub">Real quotes from real users, recorded at various depths.</p>
+      <div class="grid-3">
+        <article class="card quote reveal">
+          <p class="quote__text">I opened Nimbus and a dolphin sound played. I have never trusted software more.</p>
+          <div class="quote__who">
+            <span class="avatar" aria-hidden="true">MK</span>
+            <div><p class="quote__name">Mara Kowalski</p><p class="quote__role">Design Lead, Coral Systems</p></div>
+          </div>
+        </article>
+        <article class="card card--tint quote reveal">
+          <p class="quote__text">Our sprint velocity went up 40 percent. Our office humidity also went up 40 percent. Worth it.</p>
+          <div class="quote__who">
+            <span class="avatar avatar--pink" aria-hidden="true">DA</span>
+            <div><p class="quote__name">Devon Achebe</p><p class="quote__role">Engineering Manager, Tidepool Labs</p></div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section id="pricing">
+    <div class="container">
+      <h2 class="section-title">Pick your depth</h2>
+      <p class="section-sub">Every tier includes unlimited waves and one complimentary yin-yang.</p>
+      <div class="grid-3">
+        <article class="pricing-tier reveal">
+          <h3 class="pricing-tier__name">Shallow End</h3>
+          <p class="pricing-tier__price">$0 <span>/ forever</span></p>
+          <ul class="pricing-tier__list">
+            <li><span class="icon" aria-hidden="true">check</span>1 dashboard, lightly misted</li>
+            <li><span class="icon" aria-hidden="true">check</span>Weekly tide reports</li>
+            <li><span class="icon" aria-hidden="true">check</span>Community reef access</li>
+          </ul>
+          <a class="btn" href="#cta">Dive In</a>
+        </article>
+        <article class="pricing-tier pricing-tier--featured reveal">
+          <span class="badge pricing-tier__badge">MOST HOLY</span>
+          <h3 class="pricing-tier__name">Open Water</h3>
+          <p class="pricing-tier__price">$12 <span>/ month</span></p>
+          <ul class="pricing-tier__list">
+            <li><span class="icon" aria-hidden="true">check</span>Unlimited dashboards, fully soaked</li>
+            <li><span class="icon" aria-hidden="true">check</span>Real-time wave sync</li>
+            <li><span class="icon" aria-hidden="true">check</span>Holo rendering on everything</li>
+            <li><span class="icon" aria-hidden="true">check</span>Priority dolphin support</li>
+          </ul>
+          <a class="btn btn--primary" href="#cta"><span class="btn__label">Dive In</span></a>
+        </article>
+        <article class="pricing-tier reveal">
+          <h3 class="pricing-tier__name">The Abyss</h3>
+          <p class="pricing-tier__price">$49 <span>/ month</span></p>
+          <ul class="pricing-tier__list">
+            <li><span class="icon" aria-hidden="true">check</span>Everything in Open Water</li>
+            <li><span class="icon" aria-hidden="true">check</span>Dedicated submarine instance</li>
+            <li><span class="icon" aria-hidden="true">check</span>Custom glitch intensity</li>
+          </ul>
+          <a class="btn" href="#cta">Dive In</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq">
+    <div class="container">
+      <h2 class="section-title">Questions from the surface</h2>
+      <p class="section-sub">Answered honestly, with mild irony.</p>
+      <div class="faq">
+        <details>
+          <summary>Is Nimbus actually underwater?<span class="icon" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__body">Legally, no. Spiritually, it has never left the ocean. Our servers are in a normal data center, but the dashboards are extremely moist in feeling.</p>
+        </details>
+        <details>
+          <summary>Can I turn off the holographic gradients?<span class="icon" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__body">You can reduce them in settings. We will know, and we will respect your choice, quietly, from behind a coral reef.</p>
+        </details>
+        <details>
+          <summary>What happens to my data if I cancel?<span class="icon" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__body">You can export everything before you go. After 30 days your data is released back into the sea, meaning securely deleted, forever.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section id="cta">
+    <div class="container">
+      <div class="cta-band reveal">
+        <h2>The water is fine. The gradients are finer.</h2>
+        <p>Join thousands of teams already floating. Get the occasional tide report in your inbox.</p>
+        <form class="newsletter" id="newsletter-form" novalidate>
+          <label for="newsletter-email">Email address</label>
+          <div class="newsletter__row">
+            <input class="input" id="newsletter-email" name="email" type="email" placeholder="you@opensea.example" autocomplete="email" required>
+            <button class="btn btn--primary" type="submit"><span class="btn__label">Dive In</span></button>
+          </div>
+          <p class="newsletter__help">One email per lunar cycle. Unsubscribe anytime.</p>
+          <p class="newsletter__error" id="newsletter-error" aria-live="polite"><span class="icon" aria-hidden="true" style="font-size:16px">error</span>Please enter a valid email address.</p>
+          <p class="newsletter__ok" aria-live="polite">You are in. Welcome to the reef.</p>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <a class="nav__logo" href="#top"><span class="icon" aria-hidden="true">waves</span>NIMBUS</a>
+        <p class="quote__role">As seen on your dad's 1998 screensaver. Now with 300 percent more hologram.</p>
+        <div class="footer__social">
+          <a href="#top" aria-label="Community forum"><span class="icon" aria-hidden="true">forum</span></a>
+          <a href="#top" aria-label="Video channel"><span class="icon" aria-hidden="true">play_circle</span></a>
+          <a href="#top" aria-label="RSS feed"><span class="icon" aria-hidden="true">rss_feed</span></a>
+        </div>
+      </div>
+      <div class="footer__col">
+        <h4>Product</h4>
+        <a href="#features">Features</a>
+        <a href="#how">How It Works</a>
+        <a href="#pricing">Pricing</a>
+      </div>
+      <div class="footer__col">
+        <h4>Company</h4>
+        <a href="#testimonials">Testimonials</a>
+        <a href="#faq">FAQ</a>
+        <a href="#cta">Contact</a>
+      </div>
+      <div class="footer__col">
+        <h4>Legal</h4>
+        <a href="#top">Privacy</a>
+        <a href="#top">Terms</a>
+        <a href="#top">Maritime Law</a>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <p>&copy; 2026 Nimbus Aquatic Systems. All rights reserved, above and below sea level.</p>
+      <p>Made with salt water and CSS.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  document.documentElement.classList.add("js");
+
+  var root=document.documentElement;
+  var toggle=document.getElementById("theme-toggle");
+  function syncToggle(){
+    var dark=root.dataset.theme==="dark";
+    toggle.setAttribute("aria-pressed",String(dark));
+    toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+  }
+  syncToggle();
+  toggle.addEventListener("click",function(){
+    root.dataset.theme=root.dataset.theme==="dark"?"light":"dark";
+    localStorage.setItem("theme",root.dataset.theme);
+    syncToggle();
+  });
+
+  var menu=document.getElementById("nav-menu");
+  var links=document.getElementById("nav-links");
+  function closeMenu(){links.classList.remove("is-open");menu.setAttribute("aria-expanded","false");menu.setAttribute("aria-label","Open menu");}
+  menu.addEventListener("click",function(){
+    var open=links.classList.toggle("is-open");
+    menu.setAttribute("aria-expanded",String(open));
+    menu.setAttribute("aria-label",open?"Close menu":"Open menu");
+  });
+  links.addEventListener("click",function(e){if(e.target.tagName==="A")closeMenu();});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape")closeMenu();});
+
+  var reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if(!reduced&&"IntersectionObserver" in window){
+    var items=document.querySelectorAll(".reveal");
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){
+          var el=entry.target;
+          var idx=Array.prototype.indexOf.call(el.parentNode.children,el);
+          el.style.transitionDelay=(Math.min(idx,4)*70)+"ms";
+          el.classList.add("is-visible");
+          io.unobserve(el);
+        }
+      });
+    },{threshold:.15});
+    items.forEach(function(el){io.observe(el);});
+  }else{
+    document.querySelectorAll(".reveal").forEach(function(el){el.classList.add("is-visible");});
+  }
+
+  var form=document.getElementById("newsletter-form");
+  var email=document.getElementById("newsletter-email");
+  form.addEventListener("submit",function(e){
+    e.preventDefault();
+    var valid=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim());
+    form.classList.toggle("is-invalid",!valid);
+    form.classList.toggle("is-valid",valid);
+    if(valid){form.reset();}
+  });
+  email.addEventListener("input",function(){form.classList.remove("is-invalid","is-valid");});
+})();
+</script>
+</body>
+</html>

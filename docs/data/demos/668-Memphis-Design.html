@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nimbus - Design tools with the volume turned up</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet">
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --primary:#FF71CE; --secondary:#FFCE5C; --accent-teal:#86CCCA; --accent-blue:#6A7BB4;
+  --on-accent:#1A1A2E; --on-deep:#FFF8E7;
+  --bg-primary:#FFF8E7; --bg-secondary:#FEF3D8; --surface:#FEFEFE;
+  --text-primary:#1A1A2E; --text-secondary:#4A4A62;
+  --text-success:#0E7A4E; --text-error:#C2255C;
+  --border-default:#1A1A2E; --border-error:#C2255C; --border-success:#0E7A4E;
+  --pattern-dot:rgba(26,26,46,.14); --squiggle-color:#FF71CE; --sticker-bg:#FFCE5C;
+  --radius-sm:.5rem; --radius-md:.9rem; --radius-lg:1.4rem;
+  --shadow-sm:4px 4px 0 #1A1A2E; --shadow-md:7px 7px 0 #1A1A2E;
+  --spacing-gap:1.5rem;
+  --transition-fast:150ms; --transition-normal:300ms; --ease-standard:cubic-bezier(.22,1,.36,1);
+  --z-dropdown:100; --z-modal:200; --z-toast:300;
+  --font-display:"Archivo Black",sans-serif; --font-base:"Work Sans",sans-serif;
+}
+:root[data-theme="dark"]{
+  --bg-primary:#14141F; --bg-secondary:#1C1C2C; --surface:#232336;
+  --text-primary:#FFF8E7; --text-secondary:#C9C4B4;
+  --text-success:#5BD9A3; --text-error:#FF8FB8;
+  --border-default:#FFF8E7; --border-error:#FF8FB8; --border-success:#5BD9A3;
+  --pattern-dot:rgba(255,248,231,.16); --squiggle-color:#FFCE5C; --sticker-bg:#FF71CE;
+  --shadow-sm:4px 4px 0 #000; --shadow-md:7px 7px 0 #000;
+}
+/* ============ BASE ============ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;overflow-x:hidden;transition:background var(--transition-normal),color var(--transition-normal)}
+h1,h2,h3{font-family:var(--font-display);line-height:1.1;letter-spacing:-.02em;font-weight:400}
+img{max-width:100%}
+a{color:inherit}
+section{scroll-margin-top:5.5rem;padding:clamp(4rem,8vw,7rem) 0}
+.wrap{max-width:1200px;margin:0 auto;padding:0 clamp(1.25rem,4vw,2rem)}
+.material-symbols-rounded{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;font-size:1.25em;line-height:1}
+:focus-visible{outline:3px solid var(--accent-blue);outline-offset:3px;border-radius:var(--radius-sm)}
+/* ============ MEMPHIS DECOR ============ */
+.decor{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.decor>*{position:absolute}
+.shape-triangle{width:90px;height:80px;background:var(--primary);clip-path:polygon(50% 0,100% 100%,0 100%)}
+.shape-circle{width:70px;height:70px;border-radius:50%;background:var(--accent-teal)}
+.shape-ring{width:64px;height:64px;border-radius:50%;border:10px solid var(--secondary);background:transparent}
+.shape-half{width:80px;height:40px;border-radius:80px 80px 0 0;background:var(--accent-blue)}
+.shape-zigzag{width:120px;height:18px;background:repeating-linear-gradient(135deg,var(--primary) 0 8px,transparent 8px 16px);clip-path:polygon(0 100%,8% 0,16% 100%,24% 0,32% 100%,40% 0,48% 100%,56% 0,64% 100%,72% 0,80% 100%,88% 0,100% 100%)}
+.shape-dots{width:110px;height:110px;background-image:radial-gradient(var(--pattern-dot) 3px,transparent 3.5px);background-size:16px 16px}
+.shape-plus{width:34px;height:34px}
+.shape-plus::before,.shape-plus::after{content:"";position:absolute;background:var(--accent-blue)}
+.shape-plus::before{left:50%;top:0;bottom:0;width:10px;transform:translateX(-50%)}
+.shape-plus::after{top:50%;left:0;right:0;height:10px;transform:translateY(-50%)}
+.squiggle{display:inline-block;position:relative}
+.squiggle::after{content:"";position:absolute;left:0;right:0;bottom:-.18em;height:.22em;background:radial-gradient(circle at 6px -3px,transparent 7px,var(--squiggle-color) 8px,var(--squiggle-color) 10px,transparent 11px);background-size:16px 12px;background-repeat:repeat-x}
+/* ============ BUTTONS ============ */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:.7rem 1.5rem;font-family:var(--font-base);font-weight:700;font-size:1rem;border:3px solid var(--border-default);border-radius:var(--radius-md);cursor:pointer;text-decoration:none;transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast),filter var(--transition-fast);box-shadow:var(--shadow-sm);background:var(--surface);color:var(--text-primary)}
+.btn--primary{background:var(--primary);color:var(--on-accent)}
+.btn--secondary{background:var(--secondary);color:var(--on-accent)}
+.btn--outline{background:transparent;border-style:dashed;box-shadow:none;color:var(--text-primary)}
+.btn--danger{background:var(--text-error);color:var(--on-deep)}
+@media (hover:hover) and (pointer:fine){
+  .btn:hover{transform:translate(-2px,-2px);box-shadow:var(--shadow-md);filter:brightness(1.05)}
+  .btn--outline:hover{box-shadow:var(--shadow-sm)}
+}
+.btn:active{transform:scale(.97)}
+.btn:disabled,.btn[aria-busy="true"]{opacity:.55;cursor:not-allowed;filter:grayscale(.4)}
+/* ============ HEADER ============ */
+.header{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--bg-primary);border-bottom:3px solid var(--border-default)}
+.header__inner{display:flex;align-items:center;gap:1rem;height:68px;max-width:1200px;margin:0 auto;padding:0 clamp(1.25rem,4vw,2rem)}
+.logo{display:flex;align-items:center;gap:.6rem;text-decoration:none;font-family:var(--font-display);font-size:1.25rem;letter-spacing:-.02em}
+.logo__mark{position:relative;width:34px;height:34px;flex:none}
+.logo__mark::before{content:"";position:absolute;inset:0;background:var(--primary);clip-path:polygon(50% 0,100% 100%,0 100%)}
+.logo__mark::after{content:"";position:absolute;right:-4px;bottom:-2px;width:16px;height:16px;border-radius:50%;background:var(--secondary);border:3px solid var(--border-default)}
+.nav{margin-left:auto;display:flex;align-items:center;gap:.25rem}
+.nav__link{padding:.55rem .85rem;border-radius:var(--radius-sm);text-decoration:none;font-weight:600;font-size:.95rem;transition:background var(--transition-fast)}
+@media (hover:hover){.nav__link:hover{background:var(--bg-secondary)}}
+.header__actions{display:flex;align-items:center;gap:.6rem;margin-left:.5rem}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border:3px solid var(--border-default);border-radius:50%;background:var(--surface);color:var(--text-primary);cursor:pointer;transition:transform var(--transition-fast)}
+@media (hover:hover){.icon-btn:hover{transform:rotate(15deg)}}
+.icon-btn:active{transform:scale(.95)}
+.icon-btn .sun{display:none}
+:root[data-theme="dark"] .icon-btn .sun{display:block}
+:root[data-theme="dark"] .icon-btn .moon{display:none}
+.menu-btn{display:none}
+@media (max-width:820px){
+  .nav{position:fixed;top:68px;left:0;right:0;flex-direction:column;align-items:stretch;background:var(--bg-primary);border-bottom:3px solid var(--border-default);padding:1rem 1.25rem 1.5rem;gap:.35rem;transform:translateY(-130%);transition:transform var(--transition-normal) var(--ease-standard)}
+  .nav--open{transform:translateY(0)}
+  .nav__link{padding:.9rem 1rem;border:2px dashed var(--border-default)}
+  .menu-btn{display:inline-flex}
+  .header .btn{display:none}
+}
+/* ============ HERO ============ */
+.hero{position:relative;padding-top:clamp(3rem,6vw,5rem)}
+.hero__grid{position:relative;z-index:1;display:flex;align-items:center;gap:clamp(2rem,5vw,4rem)}
+.hero__copy{flex:1 1 55%}
+.hero__sticker{display:inline-block;background:var(--sticker-bg);color:var(--on-accent);font-weight:700;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;padding:.45rem 1.1rem;border:3px dashed var(--border-default);border-radius:999px;transform:rotate(-3deg);margin-bottom:1.4rem}
+.hero__title{font-size:clamp(2.4rem,5.5vw,4rem);margin-bottom:1.1rem}
+.hero__sub{font-size:1.125rem;color:var(--text-secondary);max-width:34ch;margin-bottom:1.8rem}
+.hero__ctas{display:flex;flex-wrap:wrap;gap:.9rem}
+.hero__art{flex:1 1 45%;position:relative;min-height:340px}
+.hero__art .shape-triangle{top:8%;left:6%;transform:rotate(-12deg)}
+.hero__art .shape-circle{top:52%;left:0;width:56px;height:56px}
+.hero__art .shape-ring{top:12%;right:8%}
+.hero__art .shape-zigzag{bottom:14%;left:12%;transform:rotate(6deg)}
+.hero__art .shape-dots{top:30%;right:0}
+.hero__art .shape-plus{bottom:6%;right:22%}
+.hero__art .shape-half{bottom:30%;left:38%;transform:rotate(24deg)}
+.hero__card{position:absolute;top:22%;left:18%;right:14%;background:var(--surface);border:3px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);padding:1.4rem;transform:rotate(2deg)}
+.hero__card-row{display:flex;align-items:center;gap:.7rem;padding:.45rem 0;font-weight:600;font-size:.95rem}
+.hero__card-row .material-symbols-rounded{color:var(--accent-blue)}
+.hero__chip{display:inline-block;margin-top:.6rem;background:var(--accent-teal);color:var(--on-accent);font-size:.75rem;font-weight:700;padding:.2rem .7rem;border-radius:999px;border:2px solid var(--border-default)}
+@media (max-width:820px){.hero__grid{flex-direction:column}.hero__art{width:100%;min-height:280px}}
+/* ============ SECTION HEADS ============ */
+.sec-head{max-width:60ch;margin-bottom:3rem}
+.sec-head h2{font-size:clamp(1.8rem,3.5vw,2.6rem);margin-bottom:.7rem}
+.sec-head p{color:var(--text-secondary);max-width:52ch}
+/* ============ FEATURES ============ */
+.features{background:var(--bg-secondary);border-top:3px solid var(--border-default);border-bottom:3px solid var(--border-default);position:relative}
+.features__grid{display:flex;gap:var(--spacing-gap);align-items:stretch}
+.card{background:var(--surface);border:3px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:1.8rem;display:flex;flex-direction:column;gap:.8rem;flex:1;transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast)}
+@media (hover:hover){.card:hover{transform:translateY(-4px) rotate(-.5deg);box-shadow:var(--shadow-md)}}
+.card:focus-within{border-color:var(--accent-blue)}
+.card:nth-child(2){transform:translateY(1.4rem)}
+@media (hover:hover){.card:nth-child(2):hover{transform:translateY(calc(1.4rem - 4px)) rotate(.5deg)}}
+.badge{width:64px;height:64px;display:flex;align-items:center;justify-content:center;border:3px solid var(--border-default);color:var(--on-accent)}
+.badge .material-symbols-rounded{font-size:1.8rem}
+.badge--tri{background:var(--primary);clip-path:polygon(50% 0,100% 100%,0 100%);border:none}
+.badge--tri .material-symbols-rounded{transform:translateY(8px)}
+.badge--circ{background:var(--secondary);border-radius:50%}
+.badge--half{background:var(--accent-teal);border-radius:64px 64px 0 0}
+.badge--half .material-symbols-rounded{transform:translateY(8px)}
+.card h3{font-size:1.2rem}
+.card p{color:var(--text-secondary);font-size:.98rem}
+@media (max-width:820px){.features__grid{flex-direction:column}.card:nth-child(2){transform:none}}
+/* ============ STEPS ============ */
+.steps__row{display:flex;gap:var(--spacing-gap);position:relative;align-items:flex-start}
+.steps__row::before{content:"";position:absolute;top:34px;left:8%;right:8%;border-top:4px dashed var(--border-default);z-index:0}
+.step{flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:.8rem;position:relative;z-index:1}
+.step__num{width:68px;height:68px;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:1.5rem;border:3px solid var(--border-default);color:var(--on-accent)}
+.step:nth-child(1) .step__num{background:var(--accent-blue);color:var(--on-deep);border-radius:50%}
+.step:nth-child(2) .step__num{background:var(--primary);clip-path:polygon(50% 0,100% 100%,0 100%);border:none;padding-top:14px}
+.step:nth-child(3) .step__num{background:var(--secondary);transform:rotate(45deg);border-radius:var(--radius-sm)}
+.step:nth-child(3) .step__num span{transform:rotate(-45deg)}
+.step h3{font-size:1.15rem}
+.step p{color:var(--text-secondary);font-size:.95rem;max-width:30ch}
+@media (max-width:820px){.steps__row{flex-direction:column}.steps__row::before{display:none}}
+/* ============ TESTIMONIALS ============ */
+.testi{position:relative}
+.testi__grid{display:flex;gap:var(--spacing-gap);align-items:stretch;position:relative;z-index:1}
+.testi__card{flex:1;background:var(--surface);border:3px dashed var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:2rem;display:flex;flex-direction:column;gap:1rem}
+.testi__card:nth-child(1){transform:rotate(-1.2deg)}
+.testi__card:nth-child(2){transform:rotate(1.2deg) translateY(1rem)}
+.testi__card .material-symbols-rounded{font-size:2rem;color:var(--primary)}
+.testi__card blockquote{font-size:1.05rem;font-weight:500}
+.testi__who{display:flex;align-items:center;gap:.8rem;margin-top:auto}
+.avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;border:3px solid var(--border-default);color:var(--on-accent);flex:none}
+.avatar--a{background:var(--accent-blue);color:var(--on-deep)}
+.avatar--b{background:var(--primary)}
+.testi__who small{display:block;color:var(--text-secondary)}
+.testi .shape-dots{top:-30px;right:4%;width:140px;height:140px}
+.testi .shape-zigzag{bottom:-10px;left:3%}
+@media (max-width:820px){.testi__grid{flex-direction:column}.testi__card{transform:none!important}}
+/* ============ PRICING ============ */
+.pricing{background:var(--bg-secondary);border-top:3px solid var(--border-default);border-bottom:3px solid var(--border-default)}
+.pricing__grid{display:flex;gap:var(--spacing-gap);align-items:stretch}
+.tier{flex:1;background:var(--surface);border:3px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:2rem;display:flex;flex-direction:column;gap:1rem;position:relative}
+.tier--featured{background:var(--accent-blue);color:var(--on-deep);border-width:4px;box-shadow:var(--shadow-md);transform:scale(1.04)}
+:root[data-theme="dark"] .tier--featured{background:#3D4A7A;color:var(--on-deep)}
+.tier__sticker{position:absolute;top:-16px;right:-12px;background:var(--sticker-bg);color:var(--on-accent);font-weight:700;font-size:.72rem;letter-spacing:.12em;padding:.4rem .9rem;border:3px solid var(--border-default);border-radius:999px;transform:rotate(6deg)}
+.tier__name{font-weight:700;text-transform:uppercase;letter-spacing:.1em;font-size:.85rem}
+.tier__price{font-family:var(--font-display);font-size:2.6rem;letter-spacing:-.02em}
+.tier__price small{font-family:var(--font-base);font-size:.9rem;font-weight:500;opacity:.8}
+.tier ul{list-style:none;display:flex;flex-direction:column;gap:.55rem;margin:.4rem 0 1rem}
+.tier li{display:flex;align-items:center;gap:.55rem;font-size:.95rem}
+.tier li .material-symbols-rounded{font-size:1.15rem;color:var(--text-success)}
+.tier--featured li .material-symbols-rounded{color:var(--secondary)}
+.tier .btn{margin-top:auto;width:100%}
+@media (max-width:820px){.pricing__grid{flex-direction:column}.tier--featured{transform:none}}
+/* ============ FAQ ============ */
+.faq__list{max-width:760px;display:flex;flex-direction:column}
+.faq details{border-bottom:3px dashed var(--border-default)}
+.faq summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;cursor:pointer;list-style:none;padding:1.3rem .25rem;font-weight:700;font-size:1.05rem;min-height:44px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary .material-symbols-rounded{transition:transform var(--transition-normal) var(--ease-standard);flex:none}
+.faq details[open] summary .material-symbols-rounded{transform:rotate(180deg)}
+.faq details[open] summary{color:var(--accent-blue)}
+:root[data-theme="dark"] .faq details[open] summary{color:var(--accent-teal)}
+.faq details p{padding:0 .25rem 1.4rem;color:var(--text-secondary);max-width:60ch}
+/* ============ CTA BAND ============ */
+.cta-band{position:relative;background:var(--primary);border-top:3px solid var(--border-default);border-bottom:3px solid var(--border-default);overflow:hidden}
+.cta-band .decor .shape-dots{width:100%;height:100%;background-image:radial-gradient(rgba(26,26,46,.18) 3px,transparent 3.5px);background-size:22px 22px}
+.cta-band__inner{position:relative;z-index:1;text-align:center;max-width:640px;margin:0 auto}
+.cta-band h2{font-size:clamp(1.9rem,4vw,2.8rem);color:var(--on-accent);margin-bottom:.8rem}
+.cta-band p{color:var(--on-accent);margin-bottom:1.8rem;font-weight:500}
+.cta-form{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap}
+.input-group{display:flex;flex-direction:column;gap:.3rem;text-align:left;flex:1;min-width:240px;max-width:360px}
+.input-group label{font-weight:700;font-size:.85rem;color:var(--on-accent)}
+.input-group input{min-height:48px;padding:.6rem 1rem;border:3px solid var(--border-default);border-radius:var(--radius-md);font:inherit;background:var(--surface);color:var(--text-primary)}
+.input-group input:focus{outline:3px solid var(--accent-blue);outline-offset:2px}
+.input-group--error input{border-color:var(--border-error)}
+.input-group__msg{font-size:.82rem;font-weight:600;min-height:1.2em;color:var(--on-accent)}
+.input-group--error .input-group__msg{color:#5C0E2E}
+:root[data-theme="dark"] .input-group--error .input-group__msg{color:#2B0A18}
+/* ============ FOOTER ============ */
+.footer{background:var(--bg-secondary);padding:3.5rem 0 2rem}
+.footer__grid{display:flex;flex-wrap:wrap;gap:2.5rem;align-items:flex-start}
+.footer__brand{flex:1 1 260px;display:flex;flex-direction:column;gap:.8rem}
+.footer__brand p{color:var(--text-secondary);font-size:.95rem;max-width:32ch}
+.footer nav{display:flex;flex-direction:column;gap:.5rem;min-width:130px}
+.footer nav h3{font-family:var(--font-base);font-weight:700;font-size:.8rem;text-transform:uppercase;letter-spacing:.12em;margin-bottom:.4rem}
+.footer nav a{text-decoration:none;color:var(--text-secondary);font-size:.95rem;padding:.2rem 0}
+@media (hover:hover){.footer nav a:hover{color:var(--text-primary);text-decoration:underline}}
+.footer__bottom{display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between;margin-top:3rem;padding-top:1.5rem;border-top:3px dashed var(--border-default);font-size:.9rem;color:var(--text-secondary)}
+.footer__bottom a{font-weight:600}
+/* ============ MODAL ============ */
+.modal{position:fixed;inset:0;z-index:var(--z-modal);display:flex;align-items:center;justify-content:center;padding:1.25rem;background:rgba(20,20,31,.6);opacity:0;pointer-events:none;transition:opacity var(--transition-normal)}
+.modal--open{opacity:1;pointer-events:auto}
+.modal__box{background:var(--surface);border:4px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);max-width:440px;width:100%;padding:2.2rem;position:relative;transform:scale(.95);transition:transform var(--transition-normal) var(--ease-standard)}
+.modal--open .modal__box{transform:scale(1)}
+.modal__close{position:absolute;top:.9rem;right:.9rem}
+.modal h2{font-size:1.5rem;margin-bottom:.5rem}
+.modal__sub{color:var(--text-secondary);font-size:.95rem;margin-bottom:1.4rem}
+.modal form{display:flex;flex-direction:column;gap:1rem}
+.modal .input-group label{color:var(--text-primary)}
+.modal .input-group__msg{color:var(--text-error)}
+.modal__success{text-align:center;padding:1.5rem 0}
+.modal__success .material-symbols-rounded{font-size:3.4rem;color:var(--text-success)}
+.modal__success p{font-weight:600;margin-top:.6rem}
+/* ============ TOAST ============ */
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translate(-50%,140%);z-index:var(--z-toast);display:flex;align-items:center;gap:.6rem;background:var(--text-primary);color:var(--bg-primary);padding:.85rem 1.4rem;border-radius:var(--radius-md);border:3px solid var(--border-default);font-weight:600;transition:transform var(--transition-normal) var(--ease-standard);max-width:90vw}
+.toast--show{transform:translate(-50%,0)}
+.toast--success .material-symbols-rounded{color:var(--text-success)}
+:root[data-theme="dark"] .toast--success .material-symbols-rounded{color:#5BD9A3}
+/* ============ REVEAL ============ */
+.reveal{opacity:0;transform:translateY(22px)}
+.reveal--in{opacity:1;transform:none;transition:opacity .5s var(--ease-standard),transform .5s var(--ease-standard)}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition-duration:.01ms!important}
+  .reveal{opacity:1;transform:none}
+}
+@media (prefers-reduced-transparency:reduce){.modal{background:rgba(20,20,31,.92)}}
+</style>
+</head>
+<body>
+
+<!-- ============ HEADER ============ -->
+<header class="header">
+  <div class="header__inner">
+    <a class="logo" href="#top" aria-label="Nimbus home"><span class="logo__mark" aria-hidden="true"></span>Nimbus</a>
+    <nav class="nav" id="nav" aria-label="Primary">
+      <a class="nav__link" href="#features">Features</a>
+      <a class="nav__link" href="#how">How it works</a>
+      <a class="nav__link" href="#pricing">Pricing</a>
+      <a class="nav__link" href="#faq">FAQ</a>
+    </nav>
+    <div class="header__actions">
+      <button class="icon-btn" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-rounded moon" aria-hidden="true">dark_mode</span>
+        <span class="material-symbols-rounded sun" aria-hidden="true">light_mode</span>
+      </button>
+      <button class="btn btn--primary" type="button" data-open-modal>Start free</button>
+      <button class="icon-btn menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="nav" aria-label="Open menu">
+        <span class="material-symbols-rounded" aria-hidden="true">menu</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+<!-- ============ HERO ============ -->
+<section class="hero" aria-labelledby="hero-title">
+  <div class="wrap hero__grid">
+    <div class="hero__copy">
+      <span class="hero__sticker">Now with 400% more squiggle</span>
+      <h1 class="hero__title" id="hero-title">Make decks that refuse to be <span class="squiggle">boring</span></h1>
+      <p class="hero__sub">Nimbus is the presentation kit for teams who think beige is a cry for help.</p>
+      <div class="hero__ctas">
+        <button class="btn btn--primary" type="button" data-open-modal>Start free</button>
+        <a class="btn btn--outline" href="#features">See features</a>
+      </div>
+    </div>
+    <div class="hero__art" aria-hidden="true">
+      <div class="decor">
+        <span class="shape-triangle"></span><span class="shape-circle"></span><span class="shape-ring"></span>
+        <span class="shape-zigzag"></span><span class="shape-dots"></span><span class="shape-plus"></span><span class="shape-half"></span>
+      </div>
+      <div class="hero__card">
+        <div class="hero__card-row"><span class="material-symbols-rounded">bolt</span>Q3 launch, but make it confetti</div>
+        <div class="hero__card-row"><span class="material-symbols-rounded">palette</span>12 shapes dropped on slide 4</div>
+        <div class="hero__card-row"><span class="material-symbols-rounded">celebration</span>Client applauded the zigzag</div>
+        <span class="hero__chip">Exported 2 min ago</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FEATURES ============ -->
+<section class="features" id="features" aria-labelledby="features-title">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 id="features-title">Built for loud ideas</h2>
+      <p>Every tool in Nimbus exists to get the weird idea out of your head and onto the slide.</p>
+    </div>
+    <div class="features__grid">
+      <article class="card reveal">
+        <span class="badge badge--tri"><span class="material-symbols-rounded" aria-hidden="true">shapes</span></span>
+        <h3>Shape cannon</h3>
+        <p>Fire triangles, squiggles, and half-moons onto any canvas. Every shape snaps to the grid or gleefully ignores it.</p>
+      </article>
+      <article class="card reveal">
+        <span class="badge badge--circ"><span class="material-symbols-rounded" aria-hidden="true">format_paint</span></span>
+        <h3>Clash checker</h3>
+        <p>Picks color pairs that fight just enough. Pink on yellow on teal, tuned so the text still passes contrast checks.</p>
+      </article>
+      <article class="card reveal">
+        <span class="badge badge--half"><span class="material-symbols-rounded" aria-hidden="true">groups</span></span>
+        <h3>Party mode</h3>
+        <p>Up to twenty cursors on one deck, each trailing confetti. Comment, vote, and sticker-bomb slides together live.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section class="steps" id="how" aria-labelledby="how-title">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 id="how-title">Three steps to loud</h2>
+      <p>From blank page to boardroom riot in about the time it takes to find the marker that works.</p>
+    </div>
+    <div class="steps__row">
+      <div class="step reveal">
+        <span class="step__num"><span>1</span></span>
+        <h3>Pick a pattern</h3>
+        <p>Start from forty Memphis-inspired templates or a blank canvas with the dots already on.</p>
+      </div>
+      <div class="step reveal">
+        <span class="step__num"><span>2</span></span>
+        <h3>Throw shapes</h3>
+        <p>Drag in geometry, tilt it six degrees, and let the clash checker keep your colors honest.</p>
+      </div>
+      <div class="step reveal">
+        <span class="step__num"><span>3</span></span>
+        <h3>Ship the deck</h3>
+        <p>Export to PDF, share a live link, or present straight from Nimbus with confetti on demand.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="testi" aria-labelledby="testi-title">
+  <div class="decor" aria-hidden="true"><span class="shape-dots"></span><span class="shape-zigzag"></span></div>
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 id="testi-title">People are yelling about it</h2>
+      <p>In a good way. Mostly in all caps.</p>
+    </div>
+    <div class="testi__grid">
+      <article class="testi__card reveal">
+        <span class="material-symbols-rounded" aria-hidden="true">format_quote</span>
+        <blockquote>Our all-hands deck used to be a lullaby. Nimbus turned it into the part of the meeting people photograph.</blockquote>
+        <div class="testi__who">
+          <span class="avatar avatar--a" aria-hidden="true">MR</span>
+          <div><strong>Marta Reyes</strong><small>Brand Lead, Papercut Studio</small></div>
+        </div>
+      </article>
+      <article class="testi__card reveal">
+        <span class="material-symbols-rounded" aria-hidden="true">format_quote</span>
+        <blockquote>I put one zigzag on a pricing slide and closed the deal. Correlation is not causation, but I am not removing it.</blockquote>
+        <div class="testi__who">
+          <span class="avatar avatar--b" aria-hidden="true">DO</span>
+          <div><strong>David Okafor</strong><small>Founder, Loop &amp; Pin</small></div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRICING ============ -->
+<section class="pricing" id="pricing" aria-labelledby="pricing-title">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 id="pricing-title">Pick your volume</h2>
+      <p>Every plan includes the full shape library and unlimited squiggles. Cancel whenever.</p>
+    </div>
+    <div class="pricing__grid">
+      <article class="tier reveal">
+        <span class="tier__name">Doodle</span>
+        <p class="tier__price">$0<small> /forever</small></p>
+        <ul>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>3 decks, unlimited slides</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Core shape pack</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>PDF export</li>
+        </ul>
+        <button class="btn btn--outline" type="button" data-open-modal data-tier="Doodle">Start free</button>
+      </article>
+      <article class="tier tier--featured reveal">
+        <span class="tier__sticker">MOST POPULAR</span>
+        <span class="tier__name">Boombox</span>
+        <p class="tier__price">$12<small> /seat per month</small></p>
+        <ul>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Unlimited decks and patterns</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Party mode for 20 guests</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Clash checker pro</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Live link sharing</li>
+        </ul>
+        <button class="btn btn--secondary" type="button" data-open-modal data-tier="Boombox">Start free</button>
+      </article>
+      <article class="tier reveal">
+        <span class="tier__name">Blowout</span>
+        <p class="tier__price">$29<small> /seat per month</small></p>
+        <ul>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Everything in Boombox</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Custom brand palettes</li>
+          <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Priority human support</li>
+        </ul>
+        <button class="btn btn--outline" type="button" data-open-modal data-tier="Blowout">Start free</button>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section class="faq" id="faq" aria-labelledby="faq-title">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 id="faq-title">Fair questions</h2>
+      <p>Asked by real humans before they pressed the pink button.</p>
+    </div>
+    <div class="faq__list">
+      <details>
+        <summary>Is Nimbus only for designers?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+        <p>No. If you can drag a triangle, you can use Nimbus. Templates handle the composition; you handle the opinions.</p>
+      </details>
+      <details>
+        <summary>Can I import my old slides?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+        <p>Yes. Drop in a PowerPoint or PDF and Nimbus converts it into editable slides, then offers to add exactly one tasteful zigzag.</p>
+      </details>
+      <details>
+        <summary>What happens after the free trial?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+        <p>You keep the Doodle plan forever at no cost. Paid features pause, your decks stay put, and nothing gets deleted.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="cta-band" aria-labelledby="cta-title">
+  <div class="decor" aria-hidden="true"><span class="shape-dots"></span></div>
+  <div class="wrap cta-band__inner">
+    <h2 id="cta-title">Your next deck could be the fun one</h2>
+    <p>Leave an email and we will send your invite plus a starter pack of patterns.</p>
+    <form class="cta-form" id="cta-form" novalidate>
+      <div class="input-group" id="cta-group">
+        <label for="cta-email">Work email</label>
+        <input id="cta-email" name="email" type="email" autocomplete="email" placeholder="you@studio.com" aria-describedby="cta-msg" required>
+        <span class="input-group__msg" id="cta-msg" aria-live="polite"></span>
+      </div>
+      <button class="btn btn--secondary" type="submit" id="cta-submit">Get the invite</button>
+    </form>
+  </div>
+</section>
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <a class="logo" href="#top"><span class="logo__mark" aria-hidden="true"></span>Nimbus</a>
+        <p>Presentation tools for teams who refuse to ship a beige slide.</p>
+      </div>
+      <nav aria-label="Product">
+        <h3>Product</h3>
+        <a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#how">How it works</a>
+      </nav>
+      <nav aria-label="Company">
+        <h3>Company</h3>
+        <a href="#top">About</a><a href="#top">Careers</a><a href="#top">Press kit</a>
+      </nav>
+      <nav aria-label="Support">
+        <h3>Support</h3>
+        <a href="#faq">FAQ</a><a href="#top">Contact</a><a href="#top">Status</a>
+      </nav>
+    </div>
+    <div class="footer__bottom">
+      <span>© 2026 Nimbus Studio Inc. All rights reserved.</span>
+      <a href="#top">Back to top</a>
+    </div>
+  </div>
+</footer>
+
+<!-- ============ MODAL ============ -->
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+  <div class="modal__box">
+    <button class="icon-btn modal__close" id="modal-close" type="button" aria-label="Close dialog">
+      <span class="material-symbols-rounded" aria-hidden="true">close</span>
+    </button>
+    <div id="modal-form-wrap">
+      <h2 id="modal-title">Start your free trial</h2>
+      <p class="modal__sub" id="modal-sub">Fourteen days of Boombox. No card required.</p>
+      <form id="modal-form" novalidate>
+        <div class="input-group" id="m-name-group">
+          <label for="m-name">Your name</label>
+          <input id="m-name" name="name" type="text" autocomplete="name" placeholder="Rita Moreno" aria-describedby="m-name-msg" required>
+          <span class="input-group__msg" id="m-name-msg" aria-live="polite"></span>
+        </div>
+        <div class="input-group" id="m-email-group">
+          <label for="m-email">Work email</label>
+          <input id="m-email" name="email" type="email" autocomplete="email" placeholder="rita@studio.com" aria-describedby="m-email-msg" required>
+          <span class="input-group__msg" id="m-email-msg" aria-live="polite"></span>
+        </div>
+        <button class="btn btn--primary" type="submit" id="modal-submit">Create account</button>
+      </form>
+    </div>
+    <div class="modal__success" id="modal-success" hidden>
+      <span class="material-symbols-rounded" aria-hidden="true">check_circle</span>
+      <p>You are on the list. Check your inbox for the confetti.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TOAST ============ -->
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span class="material-symbols-rounded" id="toast-icon" aria-hidden="true">check_circle</span>
+  <span id="toast-text"></span>
+</div>
+
+<script>
+(function(){
+"use strict";
+var root=document.documentElement;
+
+/* Theme toggle */
+var toggle=document.getElementById("theme-toggle");
+function paintToggle(){
+  var dark=root.dataset.theme==="dark";
+  toggle.setAttribute("aria-pressed",String(dark));
+  toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+}
+paintToggle();
+toggle.addEventListener("click",function(){
+  root.dataset.theme=root.dataset.theme==="dark"?"light":"dark";
+  localStorage.setItem("theme",root.dataset.theme);
+  paintToggle();
+});
+
+/* Mobile menu */
+var menuBtn=document.getElementById("menu-btn"),nav=document.getElementById("nav");
+function closeMenu(){nav.classList.remove("nav--open");menuBtn.setAttribute("aria-expanded","false");}
+menuBtn.addEventListener("click",function(){
+  var open=nav.classList.toggle("nav--open");
+  menuBtn.setAttribute("aria-expanded",String(open));
+});
+nav.addEventListener("click",function(e){if(e.target.closest(".nav__link"))closeMenu();});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")closeMenu();});
+
+/* Toast */
+var toast=document.getElementById("toast"),toastText=document.getElementById("toast-text"),toastIcon=document.getElementById("toast-icon"),toastTimer;
+function showToast(msg,icon){
+  toastText.textContent=msg;toastIcon.textContent=icon||"check_circle";
+  toast.classList.add("toast--show","toast--success");
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){toast.classList.remove("toast--show");},4000);
+}
+
+/* Validation helpers */
+var emailRe=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+function setField(group,input,msgEl,ok,msg){
+  group.classList.toggle("input-group--error",!ok);
+  input.setAttribute("aria-invalid",String(!ok));
+  msgEl.textContent=ok?"":msg;
+}
+
+/* Modal */
+var modal=document.getElementById("modal"),modalBox=modal.querySelector(".modal__box"),
+    modalClose=document.getElementById("modal-close"),modalForm=document.getElementById("modal-form"),
+    modalSub=document.getElementById("modal-sub"),modalSubmit=document.getElementById("modal-submit"),
+    formWrap=document.getElementById("modal-form-wrap"),successBox=document.getElementById("modal-success"),
+    lastTrigger=null;
+function openModal(tier,trigger){
+  lastTrigger=trigger||null;
+  modalSub.textContent=tier?("Fourteen days of "+tier+". No card required."):"Fourteen days of Boombox. No card required.";
+  formWrap.hidden=false;successBox.hidden=true;
+  modal.hidden=false;
+  requestAnimationFrame(function(){modal.classList.add("modal--open");});
+  document.body.style.overflow="hidden";
+  modalClose.focus();
+}
+function closeModal(){
+  modal.classList.remove("modal--open");
+  document.body.style.overflow="";
+  setTimeout(function(){modal.hidden=true;if(lastTrigger)lastTrigger.focus();},300);
+}
+document.querySelectorAll("[data-open-modal]").forEach(function(b){
+  b.addEventListener("click",function(){openModal(b.getAttribute("data-tier"),b);});
+});
+modalClose.addEventListener("click",closeModal);
+modal.addEventListener("click",function(e){if(e.target===modal)closeModal();});
+document.addEventListener("keydown",function(e){
+  if(modal.hidden)return;
+  if(e.key==="Escape")closeModal();
+  if(e.key==="Tab"){
+    var f=modalBox.querySelectorAll("button,input,[href]");
+    var list=Array.prototype.filter.call(f,function(el){return !el.disabled && el.offsetParent!==null;});
+    if(!list.length)return;
+    var first=list[0],last=list[list.length-1];
+    if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+    else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+  }
+});
+modalForm.addEventListener("submit",function(e){
+  e.preventDefault();
+  var name=document.getElementById("m-name"),email=document.getElementById("m-email");
+  var okN=name.value.trim().length>=2, okE=emailRe.test(email.value.trim());
+  setField(document.getElementById("m-name-group"),name,document.getElementById("m-name-msg"),okN,"Please enter your name.");
+  setField(document.getElementById("m-email-group"),email,document.getElementById("m-email-msg"),okE,"That email looks off. Try again.");
+  if(!okN||!okE)return;
+  modalSubmit.setAttribute("aria-busy","true");modalSubmit.disabled=true;modalSubmit.textContent="Setting up...";
+  setTimeout(function(){
+    modalSubmit.removeAttribute("aria-busy");modalSubmit.disabled=false;modalSubmit.textContent="Create account";
+    formWrap.hidden=true;successBox.hidden=false;
+    showToast("Trial started. Welcome to the loud side.","celebration");
+  },900);
+});
+
+/* CTA form */
+var ctaForm=document.getElementById("cta-form");
+ctaForm.addEventListener("submit",function(e){
+  e.preventDefault();
+  var email=document.getElementById("cta-email"),btn=document.getElementById("cta-submit");
+  var ok=emailRe.test(email.value.trim());
+  setField(document.getElementById("cta-group"),email,document.getElementById("cta-msg"),ok,"Enter a valid email to get your invite.");
+  if(!ok)return;
+  btn.setAttribute("aria-busy","true");btn.disabled=true;btn.textContent="Sending...";
+  setTimeout(function(){
+    btn.removeAttribute("aria-busy");btn.disabled=false;btn.textContent="Get the invite";
+    email.value="";
+    showToast("Invite sent. Check your inbox.","mark_email_read");
+  },900);
+});
+
+/* Scroll reveal */
+if("IntersectionObserver" in window && !window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){en.target.classList.add("reveal--in");io.unobserve(en.target);}
+    });
+  },{threshold:.15});
+  document.querySelectorAll(".reveal").forEach(function(el,i){
+    el.style.transitionDelay=(i%3)*70+"ms";
+    io.observe(el);
+  });
+}else{
+  document.querySelectorAll(".reveal").forEach(function(el){el.classList.add("reveal--in");});
+}
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MODULAR - The Patchbay Synth</title>
+<meta name="description" content="MODULAR is a desktop patchbay synth with a 48-point matrix, analog-modeled engine and full CV/MIDI connectivity. Pre-order now.">
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t="light";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet">
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --primary:#3e2c1a; --secondary:#8a7050;
+  --bg-primary:#d8cfc0; --bg-secondary:#fefefe;
+  --text-primary:#171310; --text-secondary:#5c4630;
+  --text-on-dark:#f2ead9; --text-on-dark-dim:#d8cfc0;
+  --text-success:#2f6b4a; --text-error:#b3402b;
+  --border-default:rgba(62,44,26,.18); --border-success:#2f6b4a; --border-error:#b3402b;
+  --radius-sm:8px; --radius-md:16px; --radius-lg:28px;
+  --shadow-sm:0 2px 6px rgba(23,19,16,.10);
+  --shadow-md:0 8px 24px rgba(23,19,16,.14);
+  --shadow-neu-out:6px 6px 14px rgba(23,19,16,.16),-6px -6px 14px rgba(254,254,254,.75);
+  --shadow-neu-out-lg:10px 10px 24px rgba(23,19,16,.20),-10px -10px 24px rgba(254,254,254,.85);
+  --shadow-neu-in:inset 4px 4px 10px rgba(23,19,16,.16),inset -4px -4px 10px rgba(254,254,254,.7);
+  --spacing-gap:1.5rem;
+  --transition-fast:150ms; --transition-normal:300ms;
+  --ease-standard:cubic-bezier(.4,0,.2,1);
+  --z-dropdown:100; --z-modal:200; --z-toast:300;
+  --gradient-warm:linear-gradient(135deg,#3e2c1a,#2c1e10);
+  --gradient-cable:linear-gradient(90deg,#8a7050,#d8cfc0,#8a7050);
+  --gradient-panel:radial-gradient(ellipse at 30% 20%,rgba(254,254,254,.5),transparent 60%);
+  --font-heading:"Space Grotesk",sans-serif; --font-base:"Inter",sans-serif; --font-mono:"Space Mono",monospace;
+  --nav-bg:rgba(216,207,192,.85);
+}
+:root[data-theme="dark"]{
+  --primary:#3e2c1a; --secondary:#c9a97e;
+  --bg-primary:#1c130a; --bg-secondary:#2c1e10;
+  --text-primary:#f2ead9; --text-secondary:#c4a87f;
+  --text-on-dark:#f2ead9; --text-on-dark-dim:#d8cfc0;
+  --text-success:#7cc79c; --text-error:#e08a72;
+  --border-default:rgba(216,207,192,.2); --border-success:#7cc79c; --border-error:#e08a72;
+  --shadow-sm:0 2px 6px rgba(0,0,0,.4);
+  --shadow-md:0 8px 24px rgba(0,0,0,.5);
+  --shadow-neu-out:6px 6px 14px rgba(0,0,0,.55),-6px -6px 14px rgba(216,207,192,.06);
+  --shadow-neu-out-lg:10px 10px 24px rgba(0,0,0,.6),-10px -10px 24px rgba(216,207,192,.08);
+  --shadow-neu-in:inset 4px 4px 10px rgba(0,0,0,.55),inset -4px -4px 10px rgba(216,207,192,.06);
+  --gradient-warm:linear-gradient(135deg,#4a3620,#2c1e10);
+  --gradient-cable:linear-gradient(90deg,#c9a97e,#5c4630,#c9a97e);
+  --gradient-panel:radial-gradient(ellipse at 30% 20%,rgba(201,169,126,.08),transparent 60%);
+  --nav-bg:rgba(28,19,10,.85);
+}
+/* ============ BASE ============ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;font-size:1rem;overflow-x:hidden;transition:background var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard)}
+img{max-width:100%}
+h1,h2,h3{font-family:var(--font-heading);letter-spacing:-.02em;line-height:1.1;font-weight:700}
+h2{font-size:clamp(1.75rem,3.5vw,2.5rem);margin-bottom:.75rem}
+h3{font-size:1.25rem}
+p{max-width:65ch}
+a{color:inherit}
+section{padding:clamp(4rem,8vw,7rem) 0}
+[hidden]{display:none!important}
+.container{max-width:1200px;margin:0 auto;padding:0 1.25rem}
+@media(min-width:768px){.container{padding:0 2rem}}
+.mono{font-family:var(--font-mono);font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-secondary)}
+.section-head{max-width:44rem;margin-bottom:3rem}
+.section-head p{color:var(--text-secondary);font-size:1.0625rem}
+.icon{font-family:"Material Symbols Rounded";font-style:normal;font-weight:normal;font-size:1.5rem;line-height:1;display:inline-block;vertical-align:middle;user-select:none}
+.skip-link{position:absolute;left:1rem;top:-4rem;z-index:var(--z-toast);background:var(--primary);color:var(--text-on-dark);padding:.75rem 1.25rem;border-radius:var(--radius-sm);text-decoration:none;transition:top var(--transition-fast) var(--ease-standard)}
+.skip-link:focus{top:1rem}
+:focus-visible{outline:2px solid var(--secondary);outline-offset:3px;border-radius:var(--radius-sm)}
+/* ============ BUTTONS ============ */
+.btn{display:flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;min-width:44px;padding:.75rem 1.5rem;border-radius:var(--radius-md);border:none;font-family:var(--font-base);font-weight:600;font-size:1rem;text-decoration:none;cursor:pointer;transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard),filter var(--transition-fast) var(--ease-standard);white-space:nowrap}
+.btn--primary{background:var(--gradient-warm);color:var(--text-on-dark);box-shadow:var(--shadow-md)}
+.btn--secondary{background:var(--bg-primary);color:var(--text-primary);box-shadow:var(--shadow-neu-out)}
+.btn--danger{background:var(--text-error);color:#fefefe;box-shadow:var(--shadow-md)}
+.btn:disabled,.btn.is-loading{opacity:.5;filter:grayscale(.6);cursor:not-allowed;pointer-events:none}
+.btn.is-loading .icon{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(hover:hover) and (pointer:fine){
+  .btn--primary:hover{filter:brightness(1.15);transform:translateY(-1px)}
+  .btn--secondary:hover{box-shadow:var(--shadow-neu-out-lg);transform:translateY(-1px)}
+}
+.btn:active{transform:scale(.97);box-shadow:var(--shadow-neu-in)}
+/* ============ HEADER ============ */
+.header{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--nav-bg);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border-default)}
+.header__inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:1rem}
+.brand{display:flex;flex-direction:column;line-height:1.1;text-decoration:none}
+.brand__name{font-family:var(--font-heading);font-weight:700;font-size:1.25rem;letter-spacing:.18em}
+.brand__tag{font-family:var(--font-mono);font-size:.625rem;letter-spacing:.2em;text-transform:uppercase;color:var(--text-secondary)}
+.nav{display:flex;align-items:center;gap:1.5rem}
+.nav__link{text-decoration:none;font-weight:500;font-size:.9375rem;color:var(--text-secondary);padding:.5rem 0;min-height:44px;display:flex;align-items:center;transition:color var(--transition-fast)}
+@media(hover:hover) and (pointer:fine){.nav__link:hover{color:var(--text-primary)}}
+.header__actions{display:flex;align-items:center;gap:.75rem}
+.theme-toggle{width:44px;height:44px;border-radius:50%;border:none;background:var(--bg-primary);box-shadow:var(--shadow-neu-out);color:var(--text-primary);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform var(--transition-fast),box-shadow var(--transition-fast)}
+.theme-toggle:active{transform:scale(.95);box-shadow:var(--shadow-neu-in)}
+.theme-toggle .icon{font-size:1.25rem}
+.menu-btn{display:none;width:44px;height:44px;border:none;border-radius:var(--radius-sm);background:var(--bg-primary);box-shadow:var(--shadow-neu-out);color:var(--text-primary);cursor:pointer;align-items:center;justify-content:center}
+@media(max-width:900px){
+  .menu-btn{display:flex}
+  .nav{position:fixed;inset:0;background:var(--bg-primary);flex-direction:column;justify-content:center;gap:2rem;transform:translateY(-100%);transition:transform var(--transition-normal) var(--ease-standard)}
+  .nav.is-open{transform:translateY(0)}
+  .nav__link{font-size:1.5rem;font-family:var(--font-heading)}
+  .header .btn--primary{display:none}
+}
+/* ============ HERO ============ */
+.hero{padding-top:clamp(3rem,6vw,5rem);background:var(--gradient-panel)}
+.hero__inner{display:flex;align-items:center;gap:3rem}
+.hero__copy{flex:1 1 50%;min-width:0}
+.hero__badge{display:inline-flex;align-items:center;gap:.5rem;font-family:var(--font-mono);font-size:.75rem;letter-spacing:.14em;padding:.5rem 1rem;border-radius:999px;background:var(--bg-primary);box-shadow:var(--shadow-neu-in);color:var(--text-secondary);margin-bottom:1.5rem}
+.hero__title{font-size:clamp(2.5rem,5.5vw,4rem);margin-bottom:1.25rem}
+.hero__title em{font-style:italic;background:linear-gradient(120deg,var(--secondary),var(--text-secondary));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero__sub{font-size:1.125rem;color:var(--text-secondary);margin-bottom:2rem;max-width:34rem}
+.hero__ctas{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+/* synth panel */
+.hero__panel{flex:1 1 46%;min-width:0;display:flex;justify-content:center}
+.synth{width:100%;max-width:26rem;background:var(--bg-primary);border-radius:var(--radius-lg);box-shadow:var(--shadow-neu-out-lg);padding:1.75rem;display:flex;flex-direction:column;gap:1.5rem;position:relative;overflow:hidden}
+.synth__row{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.synth__label{font-family:var(--font-mono);font-size:.625rem;letter-spacing:.18em;color:var(--text-secondary)}
+.knob{width:3.25rem;height:3.25rem;border-radius:50%;background:var(--bg-primary);box-shadow:var(--shadow-neu-out);position:relative;transition:transform var(--transition-normal) var(--ease-standard)}
+.knob::before{content:"";position:absolute;inset:.375rem;border-radius:50%;background:conic-gradient(var(--secondary) 0 40%,var(--border-default) 40% 100%)}
+.knob::after{content:"";position:absolute;inset:1.1rem;border-radius:50%;background:var(--bg-primary);box-shadow:var(--shadow-neu-in)}
+@media(hover:hover) and (pointer:fine){.knob:hover{transform:rotate(45deg)}}
+.jacks{display:flex;align-items:center;gap:1rem;justify-content:center}
+.jack{width:2rem;height:2rem;border-radius:50%;background:radial-gradient(circle at 50% 50%,#171310 0 30%,var(--bg-primary) 32%);box-shadow:var(--shadow-neu-in)}
+.cable{height:.5rem;border-radius:999px;background:var(--gradient-cable);background-size:200% 100%;box-shadow:var(--shadow-sm);animation:flow 3s linear infinite}
+.cable--a{width:70%;margin:0 auto}
+.cable--b{width:45%;margin:0 auto}
+@keyframes flow{to{background-position:200% 0}}
+.synth__lights{display:flex;gap:.5rem}
+.synth__light{width:.625rem;height:.625rem;border-radius:50%;background:var(--text-success);box-shadow:0 0 6px var(--text-success)}
+.synth__light:nth-child(2){background:var(--secondary);box-shadow:0 0 6px var(--secondary)}
+@media(max-width:860px){.hero__inner{flex-direction:column;align-items:stretch}.hero__panel{justify-content:center}}
+/* ============ FEATURES ============ */
+.features__grid{display:flex;align-items:stretch;gap:var(--spacing-gap)}
+.card{flex:1;min-width:0;background:var(--bg-primary);border-radius:var(--radius-lg);box-shadow:var(--shadow-neu-out);padding:2rem;display:flex;flex-direction:column;gap:1rem;transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard)}
+@media(hover:hover) and (pointer:fine){.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-neu-out-lg)}}
+.card:focus-within{outline:2px solid var(--secondary);outline-offset:3px}
+.card__socket{width:3.5rem;height:3.5rem;border-radius:50%;background:var(--bg-primary);box-shadow:var(--shadow-neu-in);display:flex;align-items:center;justify-content:center;color:var(--text-secondary)}
+.card p{color:var(--text-secondary);font-size:.9375rem}
+@media(max-width:768px){.features__grid{flex-direction:column}}
+/* ============ STEPS ============ */
+.steps{background:var(--gradient-panel)}
+.steps__row{display:flex;align-items:stretch;gap:var(--spacing-gap)}
+.step{flex:1;min-width:0;background:var(--bg-secondary);border-radius:var(--radius-lg);box-shadow:var(--shadow-neu-out);padding:2rem;display:flex;flex-direction:column;gap:.75rem;border:1px solid var(--border-default)}
+.step__num{font-family:var(--font-mono);font-size:2rem;font-weight:700;color:var(--secondary)}
+.step__icon{color:var(--text-secondary)}
+.step p{color:var(--text-secondary);font-size:.9375rem}
+@media(max-width:768px){.steps__row{flex-direction:column}}
+/* ============ TESTIMONIALS ============ */
+.quotes{display:flex;align-items:stretch;gap:var(--spacing-gap)}
+.quote{flex:1;min-width:0}
+.quote__stars{color:var(--secondary);display:flex;gap:.125rem}
+.quote__stars .icon{font-size:1.125rem}
+.quote blockquote{font-size:1rem;line-height:1.6}
+.quote__who{display:flex;align-items:center;gap:.875rem;margin-top:auto}
+.avatar{width:3rem;height:3rem;border-radius:50%;background:var(--gradient-warm);color:var(--text-on-dark);display:flex;align-items:center;justify-content:center;font-family:var(--font-heading);font-weight:700;font-size:.875rem;flex-shrink:0}
+.quote__name{font-weight:600;font-size:.9375rem}
+.quote__role{font-size:.8125rem;color:var(--text-secondary)}
+@media(max-width:768px){.quotes{flex-direction:column}}
+/* ============ PRICING ============ */
+.pricing__grid{display:flex;align-items:stretch;gap:var(--spacing-gap)}
+.price-card{flex:1;min-width:0;position:relative}
+.price-card--featured{background:var(--bg-secondary);border:2px solid var(--secondary);transform:scale(1.02)}
+:root[data-theme="dark"] .price-card--featured{background:var(--bg-secondary);border-color:var(--secondary)}
+.price-card__badge{position:absolute;top:-.875rem;left:50%;transform:translateX(-50%);background:var(--gradient-warm);color:var(--text-on-dark);font-family:var(--font-mono);font-size:.6875rem;letter-spacing:.14em;text-transform:uppercase;padding:.375rem 1rem;border-radius:999px;white-space:nowrap}
+.price-card__price{font-family:var(--font-mono);font-size:2.5rem;font-weight:700;letter-spacing:-.02em}
+.price-card__price span{font-size:.875rem;color:var(--text-secondary);font-weight:400}
+.price-card__list{list-style:none;display:flex;flex-direction:column;gap:.625rem;flex:1}
+.price-card__list li{display:flex;align-items:center;gap:.625rem;font-size:.9375rem}
+.price-card__list .icon{font-size:1.125rem;color:var(--text-success)}
+.pricing__fine{margin-top:2rem;font-size:.8125rem;color:var(--text-secondary);text-align:center;max-width:100%}
+@media(max-width:820px){.pricing__grid{flex-direction:column}.price-card--featured{transform:none}}
+/* ============ FAQ ============ */
+.faq__list{max-width:48rem;display:flex;flex-direction:column;gap:1rem}
+.faq__item{background:var(--bg-primary);border-radius:var(--radius-md);box-shadow:var(--shadow-neu-out);overflow:hidden}
+.faq__question{width:100%;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.125rem 1.5rem;min-height:44px;background:none;border:none;font-family:var(--font-base);font-weight:600;font-size:1rem;color:var(--text-primary);text-align:left;cursor:pointer}
+.faq__question .icon{transition:transform var(--transition-normal) var(--ease-standard);color:var(--text-secondary);flex-shrink:0}
+.faq__question[aria-expanded="true"] .icon{transform:rotate(180deg)}
+.faq__panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--transition-normal) var(--ease-standard)}
+.faq__panel.is-open{grid-template-rows:1fr}
+.faq__panel-inner{overflow:hidden}
+.faq__panel p{padding:0 1.5rem 1.25rem;color:var(--text-secondary);font-size:.9375rem}
+/* ============ CTA ============ */
+.cta__panel{background:var(--gradient-warm);border-radius:var(--radius-lg);padding:clamp(2.5rem,6vw,4.5rem);color:var(--text-on-dark);position:relative;overflow:hidden;box-shadow:var(--shadow-md)}
+.cta__panel h2{color:var(--text-on-dark)}
+.cta__panel p{color:var(--text-on-dark-dim);margin-bottom:2rem}
+.cta__deco{position:absolute;right:-2rem;top:-2rem;width:10rem;height:10rem;border-radius:50%;background:radial-gradient(circle at 50% 50%,rgba(216,207,192,.15) 0 30%,transparent 32%);pointer-events:none}
+.input-group{display:flex;flex-direction:column;gap:.5rem;max-width:26rem}
+.input-group label{font-weight:600;font-size:.9375rem}
+.input-group__row{display:flex;align-items:stretch;gap:.75rem;flex-wrap:wrap}
+.input-group input{flex:1;min-width:12rem;min-height:44px;padding:.75rem 1.25rem;border-radius:var(--radius-md);border:2px solid transparent;background:rgba(216,207,192,.12);box-shadow:inset 3px 3px 8px rgba(0,0,0,.35);color:var(--text-on-dark);font-family:var(--font-base);font-size:1rem;transition:border-color var(--transition-fast)}
+.input-group input::placeholder{color:rgba(216,207,192,.55)}
+.input-group input:focus{outline:none;border-color:var(--secondary)}
+.input-group.is-invalid input{border-color:var(--text-error)}
+.input-group.is-valid input{border-color:var(--text-success)}
+.input-group__msg{font-size:.875rem;min-height:1.4em;display:flex;align-items:center;gap:.375rem}
+.input-group__msg .icon{font-size:1.125rem}
+.input-group__msg--error{color:#f0a892}
+.input-group__msg--ok{color:#a8e0bf}
+.cta .btn--primary{background:var(--bg-primary);color:var(--text-primary);box-shadow:var(--shadow-md)}
+/* ============ FOOTER ============ */
+.footer{border-top:1px solid var(--border-default);padding:3.5rem 0 2rem}
+.footer__grid{display:flex;align-items:flex-start;gap:3rem;flex-wrap:wrap}
+.footer__brand{flex:1 1 16rem;min-width:12rem}
+.footer__brand p{color:var(--text-secondary);font-size:.9375rem;margin-top:.75rem}
+.footer__col{display:flex;flex-direction:column;gap:.25rem;min-width:8rem}
+.footer__col h4{font-family:var(--font-mono);font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:.5rem}
+.footer__col a{text-decoration:none;font-size:.9375rem;color:var(--text-primary);padding:.5rem 0;min-height:44px;display:flex;align-items:center;opacity:.85}
+@media(hover:hover) and (pointer:fine){.footer__col a:hover{opacity:1;text-decoration:underline}}
+.footer__bottom{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--border-default);font-size:.8125rem;color:var(--text-secondary)}
+.social{display:flex;gap:.5rem}
+.social a{width:44px;height:44px;border-radius:50%;background:var(--bg-primary);box-shadow:var(--shadow-neu-out);display:flex;align-items:center;justify-content:center;color:var(--text-primary);text-decoration:none}
+.social .icon{font-size:1.25rem}
+/* ============ MODAL ============ */
+.modal{position:fixed;inset:0;z-index:var(--z-modal);display:flex;align-items:center;justify-content:center;padding:1.25rem;background:rgba(23,19,16,.6);backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity var(--transition-normal) var(--ease-standard)}
+.modal.is-open{opacity:1;pointer-events:auto}
+.modal__panel{background:var(--bg-primary);border-radius:var(--radius-lg);box-shadow:var(--shadow-neu-out-lg);max-width:32rem;width:100%;padding:2.5rem;position:relative;transform:scale(.96);opacity:0;transition:transform var(--transition-normal) var(--ease-standard),opacity var(--transition-normal) var(--ease-standard)}
+.modal.is-open .modal__panel{transform:scale(1);opacity:1}
+.modal__close{position:absolute;top:1rem;right:1rem;width:44px;height:44px;border:none;border-radius:50%;background:var(--bg-primary);box-shadow:var(--shadow-neu-out);color:var(--text-primary);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.modal__body{margin-top:1.5rem;min-height:8rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;text-align:center}
+.modal__body p{color:var(--text-secondary)}
+.modal__spin{animation:spin 1s linear infinite;font-size:2.5rem;color:var(--secondary)}
+body.modal-open{overflow:hidden}
+/* ============ REVEAL / MOTION PREFS ============ */
+.reveal{opacity:0;transform:translateY(1.25rem);transition:opacity 500ms var(--ease-standard),transform 500ms var(--ease-standard)}
+.reveal.is-visible{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:150ms!important}
+  .cable{animation:none}
+  .reveal{transform:none;transition:opacity 200ms ease}
+}
+@media(prefers-reduced-transparency:reduce){
+  .header{background:var(--bg-primary);backdrop-filter:none}
+  .modal{background:rgba(23,19,16,.85);backdrop-filter:none}
+}
+@media(max-width:640px){
+  .synth{padding:1.25rem}
+  .cta__deco{display:none}
+  .hero__ctas .btn{flex:1 1 auto}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="header">
+  <div class="container header__inner">
+    <a class="brand" href="#top" aria-label="MODULAR home">
+      <span class="brand__name">MODULAR</span>
+      <span class="brand__tag">the patchbay synth</span>
+    </a>
+    <nav class="nav" id="site-nav" aria-label="Primary">
+      <a class="nav__link" href="#features">Features</a>
+      <a class="nav__link" href="#how">How It Works</a>
+      <a class="nav__link" href="#testimonials">Testimonials</a>
+      <a class="nav__link" href="#pricing">Pricing</a>
+      <a class="nav__link" href="#faq">FAQ</a>
+    </nav>
+    <div class="header__actions">
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="icon" id="theme-icon">dark_mode</span>
+      </button>
+      <a class="btn btn--primary" href="#pricing">Pre-order</a>
+      <button class="menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">
+        <span class="icon">menu</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <!-- HERO -->
+  <section class="hero" id="top" aria-labelledby="hero-title">
+    <div class="container hero__inner">
+      <div class="hero__copy">
+        <span class="hero__badge"><span class="icon" style="font-size:1rem">album</span>OS 2.0, NOW SHIPPING</span>
+        <h1 class="hero__title" id="hero-title">MODULAR. Patch your <em>own sound.</em></h1>
+        <p class="hero__sub">A desktop patchbay synth with a 48-point matrix, an analog-modeled engine and full CV and MIDI connectivity.</p>
+        <div class="hero__ctas">
+          <a class="btn btn--primary" href="#pricing">Pre-order, $499</a>
+          <button class="btn btn--secondary" type="button" id="demo-open"><span class="icon">play_circle</span>Watch the demo</button>
+        </div>
+      </div>
+      <div class="hero__panel" aria-hidden="true">
+        <div class="synth">
+          <div class="synth__row">
+            <span class="synth__label">MOD-01</span>
+            <div class="synth__lights"><span class="synth__light"></span><span class="synth__light"></span></div>
+          </div>
+          <div class="synth__row">
+            <div class="knob"></div><div class="knob"></div><div class="knob"></div><div class="knob"></div>
+          </div>
+          <div class="cable cable--a"></div>
+          <div class="jacks">
+            <span class="jack"></span><span class="jack"></span><span class="jack"></span><span class="jack"></span><span class="jack"></span>
+          </div>
+          <div class="cable cable--b"></div>
+          <div class="synth__row">
+            <span class="synth__label">PATCH 03</span>
+            <span class="synth__label">OUT</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features" aria-labelledby="features-title">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2 id="features-title">Built like hardware. Thinks like software.</h2>
+        <p>Every module on the panel is a real signal path you can reroute, save and recall.</p>
+      </div>
+      <div class="features__grid">
+        <article class="card reveal">
+          <div class="card__socket"><span class="icon">cable</span></div>
+          <span class="mono">MOD-01</span>
+          <h3>48-point patch matrix</h3>
+          <p>Route any source to any destination with zero menu diving. Every patch you make can be stored as a preset and recalled mid-performance.</p>
+        </article>
+        <article class="card reveal">
+          <div class="card__socket"><span class="icon">tune</span></div>
+          <span class="mono">MOD-02</span>
+          <h3>Analog-modeled engine</h3>
+          <p>Four oscillators, two filters and a drive stage modeled on classic discrete circuits, calibrated against the original hardware in our lab.</p>
+        </article>
+        <article class="card reveal">
+          <div class="card__socket"><span class="icon">graphic_eq</span></div>
+          <span class="mono">MOD-03</span>
+          <h3>CV and MIDI connectivity</h3>
+          <p>Talks to your Eurorack, your DAW and your vintage gear at once. Eight CV outs, MIDI over USB and DIN, plus clock sync in both directions.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="steps" id="how" aria-labelledby="how-title">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2 id="how-title">From silence to signal in three moves</h2>
+        <p>No manual required. The panel layout follows the signal flow, so your hands learn it first.</p>
+      </div>
+      <div class="steps__row">
+        <article class="step reveal">
+          <span class="step__num">01</span>
+          <span class="icon step__icon">cable</span>
+          <h3>Patch it</h3>
+          <p>Plug a virtual cable between any two points on the matrix. The panel lights the path so you always see what is connected.</p>
+        </article>
+        <article class="step reveal">
+          <span class="step__num">02</span>
+          <span class="icon step__icon">tune</span>
+          <h3>Shape it</h3>
+          <p>Sweep the filters, drive the stage, modulate with four LFOs. Every knob movement can be recorded as automation.</p>
+        </article>
+        <article class="step reveal">
+          <span class="step__num">03</span>
+          <span class="icon step__icon">piano</span>
+          <h3>Play it</h3>
+          <p>Trigger from MIDI, CV gate or the built-in sequencer. Save the whole state as a scene and recall it live.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section id="testimonials" aria-labelledby="quotes-title">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2 id="quotes-title">Producers on the patch</h2>
+        <p>What early users say after their first month with the unit.</p>
+      </div>
+      <div class="quotes">
+        <article class="card quote reveal">
+          <div class="quote__stars" aria-label="5 out of 5 stars"><span class="icon">star</span><span class="icon">star</span><span class="icon">star</span><span class="icon">star</span><span class="icon">star</span></div>
+          <blockquote>&ldquo;The matrix changed how I write. I patch first, think later, and half my last EP came from accidents I could actually save.&rdquo;</blockquote>
+          <div class="quote__who"><span class="avatar" aria-hidden="true">MK</span><div><div class="quote__name">Mara Kessler</div><div class="quote__role">Producer, Berlin</div></div></div>
+        </article>
+        <article class="card quote reveal">
+          <div class="quote__stars" aria-label="5 out of 5 stars"><span class="icon">star</span><span class="icon">star</span><span class="icon">star</span><span class="icon">star</span><span class="icon">star</span></div>
+          <blockquote>&ldquo;It sits between my Eurorack and my laptop and just works. Clock is rock solid, and the filters sound expensive.&rdquo;</blockquote>
+          <div class="quote__who"><span class="avatar" aria-hidden="true">DO</span><div><div class="quote__name">Daniel Okafor</div><div class="quote__role">Mix engineer, Lagos</div></div></div>
+        </article>
+        <article class="card quote reveal">
+          <div class="quote__stars" aria-label="5 out of 5 stars"><span class="icon">star</span><span class="icon">star</span><span class="icon">star</span><span class="icon">star</span><span class="icon">star</span></div>
+          <blockquote>&ldquo;I toured with it for six weeks. Scene recall between songs took one button press, every single night.&rdquo;</blockquote>
+          <div class="quote__who"><span class="avatar" aria-hidden="true">SL</span><div><div class="quote__name">Sofia Lindqvist</div><div class="quote__role">Live performer, Stockholm</div></div></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="steps" id="pricing" aria-labelledby="pricing-title">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2 id="pricing-title">Pick your rack</h2>
+        <p>Every tier includes the full synth engine and free firmware updates for two years.</p>
+      </div>
+      <div class="pricing__grid">
+        <article class="card price-card reveal">
+          <h3>MODULAR Kit</h3>
+          <div class="price-card__price">$399</div>
+          <ul class="price-card__list">
+            <li><span class="icon">check_circle</span>Full synth engine</li>
+            <li><span class="icon">check_circle</span>24-point patch matrix</li>
+            <li><span class="icon">check_circle</span>USB MIDI and audio</li>
+            <li><span class="icon">check_circle</span>64 scene memories</li>
+          </ul>
+          <a class="btn btn--secondary" href="#cta">Pre-order</a>
+        </article>
+        <article class="card price-card price-card--featured reveal">
+          <span class="price-card__badge">Most Popular</span>
+          <h3>MODULAR Studio</h3>
+          <div class="price-card__price">$499</div>
+          <ul class="price-card__list">
+            <li><span class="icon">check_circle</span>Everything in Kit</li>
+            <li><span class="icon">check_circle</span>48-point patch matrix</li>
+            <li><span class="icon">check_circle</span>8 CV outputs, DIN MIDI</li>
+            <li><span class="icon">check_circle</span>256 scene memories</li>
+            <li><span class="icon">check_circle</span>Built-in sequencer</li>
+          </ul>
+          <a class="btn btn--primary" href="#cta">Pre-order</a>
+        </article>
+        <article class="card price-card reveal">
+          <h3>MODULAR Lifetime</h3>
+          <div class="price-card__price">$749</div>
+          <ul class="price-card__list">
+            <li><span class="icon">check_circle</span>Everything in Studio</li>
+            <li><span class="icon">check_circle</span>Lifetime firmware updates</li>
+            <li><span class="icon">check_circle</span>Priority support</li>
+            <li><span class="icon">check_circle</span>Exclusive sound packs</li>
+          </ul>
+          <a class="btn btn--secondary" href="#cta">Pre-order</a>
+        </article>
+      </div>
+      <p class="pricing__fine">Prices in USD, excluding local taxes and shipping. Units ship in order of reservation. 30-day return window on all tiers.</p>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" aria-labelledby="faq-title">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2 id="faq-title">Questions, answered</h2>
+        <p>The details people ask about most before patching in.</p>
+      </div>
+      <div class="faq__list">
+        <div class="faq__item reveal">
+          <button class="faq__question" type="button" aria-expanded="false" aria-controls="faq-p1" id="faq-q1">Does MODULAR work with my DAW, or is it standalone?<span class="icon" aria-hidden="true">expand_more</span></button>
+          <div class="faq__panel" id="faq-p1" role="region" aria-labelledby="faq-q1"><div class="faq__panel-inner"><p>Both. It runs as a standalone desktop instrument and as a VST3, AU and AAX plug-in inside any major DAW. Patches sync between the two modes automatically.</p></div></div>
+        </div>
+        <div class="faq__item reveal">
+          <button class="faq__question" type="button" aria-expanded="false" aria-controls="faq-p2" id="faq-q2">Where do you ship?<span class="icon" aria-hidden="true">expand_more</span></button>
+          <div class="faq__panel" id="faq-p2" role="region" aria-labelledby="faq-q2"><div class="faq__panel-inner"><p>We ship to North America, the EU, the UK, Australia, Japan and South Korea at launch, with more regions added through 2026. Shipping costs are calculated at checkout.</p></div></div>
+        </div>
+        <div class="faq__item reveal">
+          <button class="faq__question" type="button" aria-expanded="false" aria-controls="faq-p3" id="faq-q3">What warranty is included?<span class="icon" aria-hidden="true">expand_more</span></button>
+          <div class="faq__panel" id="faq-p3" role="region" aria-labelledby="faq-q3"><div class="faq__panel-inner"><p>Every unit carries a two-year hardware warranty covering parts and labor. Lifetime tier owners get priority repair turnaround.</p></div></div>
+        </div>
+        <div class="faq__item reveal">
+          <button class="faq__question" type="button" aria-expanded="false" aria-controls="faq-p4" id="faq-q4">How do firmware updates work?<span class="icon" aria-hidden="true">expand_more</span></button>
+          <div class="faq__panel" id="faq-p4" role="region" aria-labelledby="faq-q4"><div class="faq__panel-inner"><p>Updates install over USB in about two minutes using the free MODULAR Utility app. All tiers receive updates for two years; Lifetime owners receive them forever.</p></div></div>
+        </div>
+        <div class="faq__item reveal">
+          <button class="faq__question" type="button" aria-expanded="false" aria-controls="faq-p5" id="faq-q5">Can I return it if it is not for me?<span class="icon" aria-hidden="true">expand_more</span></button>
+          <div class="faq__panel" id="faq-p5" role="region" aria-labelledby="faq-q5"><div class="faq__panel-inner"><p>Yes. You have 30 days from delivery to return the unit in its original packaging for a full refund, no questions asked.</p></div></div>
+        </div>
+        <div class="faq__item reveal">
+          <button class="faq__question" type="button" aria-expanded="false" aria-controls="faq-p6" id="faq-q6">What are the system requirements?<span class="icon" aria-hidden="true">expand_more</span></button>
+          <div class="faq__panel" id="faq-p6" role="region" aria-labelledby="faq-q6"><div class="faq__panel-inner"><p>For plug-in mode: macOS 12 or later, or Windows 10 or later, with 8 GB of RAM and a USB-C port. Standalone mode needs nothing but the included power supply.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="cta" id="cta" aria-labelledby="cta-title">
+    <div class="container">
+      <div class="cta__panel reveal">
+        <span class="cta__deco" aria-hidden="true"></span>
+        <h2 id="cta-title">Get patch notes from the lab</h2>
+        <p>Sound demos, firmware news and restock alerts. One email a month, no noise.</p>
+        <form class="input-group" id="news-form" novalidate>
+          <label for="news-email">Email address</label>
+          <div class="input-group__row">
+            <input type="email" id="news-email" name="email" placeholder="you@studio.com" autocomplete="email" required aria-describedby="news-msg">
+            <button class="btn btn--primary" type="submit" id="news-btn">Subscribe</button>
+          </div>
+          <p class="input-group__msg" id="news-msg" aria-live="polite"></p>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <a class="brand" href="#top"><span class="brand__name">MODULAR</span><span class="brand__tag">the patchbay synth</span></a>
+        <p>A desktop patchbay synth for people who like to touch their sound.</p>
+      </div>
+      <nav class="footer__col" aria-label="Product">
+        <h4>Product</h4>
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+      <nav class="footer__col" aria-label="Resources">
+        <h4>Resources</h4>
+        <a href="#how">Documentation</a>
+        <a href="#testimonials">Community</a>
+        <a href="#cta">Support</a>
+      </nav>
+      <nav class="footer__col" aria-label="Company">
+        <h4>Company</h4>
+        <a href="#top">About</a>
+        <a href="#top">Privacy</a>
+        <a href="#top">Terms</a>
+      </nav>
+    </div>
+    <div class="footer__bottom">
+      <span>&copy; <span id="year">2026</span> MODULAR Audio Instruments. All rights reserved.</span>
+      <div class="social">
+        <a href="#top" aria-label="Community forum"><span class="icon">forum</span></a>
+        <a href="#top" aria-label="Video channel"><span class="icon">play_circle</span></a>
+        <a href="#top" aria-label="RSS feed"><span class="icon">rss_feed</span></a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- MODAL -->
+<div class="modal" id="demo-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+  <div class="modal__panel">
+    <button class="modal__close" type="button" id="modal-close" aria-label="Close demo"><span class="icon">close</span></button>
+    <h2 id="modal-title">MODULAR in three minutes</h2>
+    <div class="modal__body" id="modal-body">
+      <span class="icon modal__spin" aria-hidden="true">progress_activity</span>
+      <p>Loading the demo&hellip;</p>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+/* ---- Theme toggle ---- */
+var root=document.documentElement;
+var toggle=document.getElementById("theme-toggle");
+var icon=document.getElementById("theme-icon");
+function applyTheme(t){
+  root.dataset.theme=t;
+  var dark=t==="dark";
+  toggle.setAttribute("aria-pressed",String(dark));
+  toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+  icon.textContent=dark?"light_mode":"dark_mode";
+}
+applyTheme(root.dataset.theme==="dark"?"dark":"light");
+toggle.addEventListener("click",function(){
+  var next=root.dataset.theme==="dark"?"light":"dark";
+  localStorage.setItem("theme",next);
+  applyTheme(next);
+});
+/* ---- Mobile menu ---- */
+var menuBtn=document.getElementById("menu-btn");
+var nav=document.getElementById("site-nav");
+function closeMenu(){nav.classList.remove("is-open");menuBtn.setAttribute("aria-expanded","false");menuBtn.setAttribute("aria-label","Open menu");menuBtn.querySelector(".icon").textContent="menu";}
+menuBtn.addEventListener("click",function(){
+  var open=nav.classList.toggle("is-open");
+  menuBtn.setAttribute("aria-expanded",String(open));
+  menuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");
+  menuBtn.querySelector(".icon").textContent=open?"close":"menu";
+});
+nav.addEventListener("click",function(e){if(e.target.closest(".nav__link"))closeMenu();});
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&nav.classList.contains("is-open")){closeMenu();menuBtn.focus();}});
+/* ---- FAQ accordion ---- */
+var questions=document.querySelectorAll(".faq__question");
+questions.forEach(function(q){
+  q.addEventListener("click",function(){
+    var open=q.getAttribute("aria-expanded")==="true";
+    q.setAttribute("aria-expanded",String(!open));
+    document.getElementById(q.getAttribute("aria-controls")).classList.toggle("is-open",!open);
+  });
+});
+/* ---- Modal ---- */
+var modal=document.getElementById("demo-modal");
+var modalBody=document.getElementById("modal-body");
+var openBtn=document.getElementById("demo-open");
+var closeBtn=document.getElementById("modal-close");
+var lastFocus=null,loadTimer=null;
+function trapFocus(e){
+  if(e.key!=="Tab")return;
+  var f=modal.querySelectorAll("button, [href], input, [tabindex]:not([tabindex='-1'])");
+  var first=f[0],last=f[f.length-1];
+  if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+  else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+}
+function openModal(){
+  lastFocus=document.activeElement;
+  modal.hidden=false;
+  requestAnimationFrame(function(){modal.classList.add("is-open");});
+  document.body.classList.add("modal-open");
+  modalBody.innerHTML='<span class="icon modal__spin" aria-hidden="true">progress_activity</span><p>Loading the demo&hellip;</p>';
+  clearTimeout(loadTimer);
+  loadTimer=setTimeout(function(){
+    modalBody.innerHTML='<span class="icon" style="font-size:3rem;color:var(--text-success)" aria-hidden="true">graphic_eq</span><p><strong>Demo ready.</strong> Watch Mara Kessler build a bass patch from silence on the 48-point matrix, then save it as a scene.</p><a class="btn btn--primary" href="#pricing" id="modal-cta">Pre-order, $499</a>';
+    var cta=document.getElementById("modal-cta");
+    cta.addEventListener("click",function(){closeModal();});
+  },800);
+  document.addEventListener("keydown",trapFocus);
+  closeBtn.focus();
+}
+function closeModal(){
+  modal.classList.remove("is-open");
+  document.body.classList.remove("modal-open");
+  document.removeEventListener("keydown",trapFocus);
+  clearTimeout(loadTimer);
+  setTimeout(function(){modal.hidden=true;},300);
+  if(lastFocus)lastFocus.focus();
+}
+openBtn.addEventListener("click",openModal);
+closeBtn.addEventListener("click",closeModal);
+modal.addEventListener("click",function(e){if(e.target===modal)closeModal();});
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&!modal.hidden)closeModal();});
+/* ---- Newsletter ---- */
+var form=document.getElementById("news-form");
+var email=document.getElementById("news-email");
+var msg=document.getElementById("news-msg");
+var subBtn=document.getElementById("news-btn");
+form.addEventListener("submit",function(e){
+  e.preventDefault();
+  var val=email.value.trim();
+  form.classList.remove("is-valid","is-invalid");
+  msg.className="input-group__msg";
+  if(!val||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)){
+    form.classList.add("is-invalid");
+    msg.classList.add("input-group__msg--error");
+    msg.innerHTML='<span class="icon" aria-hidden="true">error</span>Please enter a valid email address.';
+    email.focus();
+    return;
+  }
+  subBtn.classList.add("is-loading");
+  subBtn.innerHTML='<span class="icon" aria-hidden="true">progress_activity</span>Sending';
+  msg.textContent="";
+  setTimeout(function(){
+    subBtn.classList.remove("is-loading");
+    subBtn.textContent="Subscribe";
+    form.classList.add("is-valid");
+    msg.classList.add("input-group__msg--ok");
+    msg.innerHTML='<span class="icon" aria-hidden="true">check_circle</span>You\u2019re on the list. First patch notes arrive next month.';
+    email.value="";
+  },900);
+});
+/* ---- Reveal on scroll ---- */
+var revealEls=document.querySelectorAll(".reveal");
+if("IntersectionObserver" in window){
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){
+        var el=en.target;
+        setTimeout(function(){el.classList.add("is-visible");},(Array.prototype.indexOf.call(el.parentNode.children,el)%3)*70);
+        io.unobserve(el);
+      }
+    });
+  },{threshold:.12});
+  revealEls.forEach(function(el){io.observe(el);});
+}else{
+  revealEls.forEach(function(el){el.classList.add("is-visible");});
+}
+/* ---- Footer year ---- */
+document.getElementById("year").textContent=new Date().getFullYear()<2026?"2026":new Date().getFullYear();
+})();
+</script>
+</body>
+</html>

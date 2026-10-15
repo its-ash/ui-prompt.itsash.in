@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mycel - Living Materials Platform</title>
+<script>
+(function(){var t=localStorage.getItem('theme');if(t!=='dark'&&t!=='light'){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<style>
+/* ---------- TOKENS ---------- */
+:root{
+  --radius-sm:40% 60% 55% 45% / 45% 40% 60% 55%;
+  --radius-md:60% 40% 55% 45% / 50% 55% 45% 50%;
+  --radius-lg:55% 45% 60% 40% / 45% 55% 40% 60%;
+  --radius-pill:999px;
+  --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-6:24px;--space-8:32px;--space-12:48px;--space-16:64px;--space-24:96px;
+  --transition-fast:150ms;--transition-normal:250ms;
+  --ease-standard:cubic-bezier(0.4,0,0.2,1);
+  --z-dropdown:1000;--z-modal:1100;--z-toast:1200;
+  --font-base:'Space Grotesk','IBM Plex Sans',system-ui,sans-serif;
+  --font-display:'Space Grotesk','IBM Plex Mono',sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,monospace;
+  --text-xs:.75rem;--text-sm:.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.375rem;--text-2xl:1.75rem;--text-3xl:2.25rem;--text-4xl:3rem;
+  color-scheme:light;
+  --bg-primary:#e9f2ea;--bg-secondary:#dcebe0;--bg-elevated:#cfe3d6;--membrane:#c6dfcd;
+  --border-default:#4f8a68;
+  --primary:#0b7a43;--primary-bright:#39ff8c;--text-on-primary:#06180f;
+  --secondary:#8f1cae;--accent:var(--secondary);
+  --text-primary:#0a1410;--text-secondary:#3f6050;
+  --text-success:#0b7a43;--text-error:#c2183f;
+  --border-success:rgba(11,122,67,.55);--border-error:rgba(194,24,63,.55);
+  --shadow-sm:0 0 10px rgba(11,122,67,.20);--shadow-md:0 0 22px rgba(11,122,67,.25);--shadow-lg:0 0 40px rgba(11,122,67,.30);
+  --vein-texture:radial-gradient(circle at 30% 20%,rgba(11,122,67,.10) 0%,transparent 35%),radial-gradient(circle at 75% 70%,rgba(143,28,174,.08) 0%,transparent 40%);
+  --glow-border:1px solid rgba(11,122,67,.45);
+  --ring:rgba(11,122,67,.35);
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg-primary:#0a1410;--bg-secondary:#10201a;--bg-elevated:#16291f;--membrane:#1f3d2c;
+  --border-default:#2f6b4c;
+  --primary:#39ff8c;--primary-bright:#39ff8c;--text-on-primary:#06180f;
+  --secondary:#d63bff;--accent:var(--secondary);
+  --text-primary:#e6f5ea;--text-secondary:#9fc9ac;
+  --text-success:#39ff8c;--text-error:#ff5c7a;
+  --border-success:rgba(57,255,140,.55);--border-error:rgba(255,92,122,.55);
+  --shadow-sm:0 0 10px rgba(57,255,140,.25);--shadow-md:0 0 22px rgba(57,255,140,.30);--shadow-lg:0 0 40px rgba(57,255,140,.35);
+  --vein-texture:radial-gradient(circle at 30% 20%,rgba(57,255,140,.12) 0%,transparent 35%),radial-gradient(circle at 75% 70%,rgba(214,59,255,.10) 0%,transparent 40%);
+  --glow-border:1px solid rgba(57,255,140,.5);
+  --ring:rgba(57,255,140,.4);
+}
+/* ---------- BASE ---------- */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:auto}
+@media (prefers-reduced-motion: no-preference){html{scroll-behavior:smooth}}
+body{
+  font-family:var(--font-base);font-size:var(--text-base);line-height:1.6;
+  background:var(--vein-texture),var(--bg-primary);color:var(--text-primary);
+  overflow-x:clip;min-height:100dvh;
+}
+img,svg{max-width:100%;height:auto}
+[hidden]{display:none!important}
+h1,h2,h3{font-family:var(--font-display);line-height:1.12;letter-spacing:-0.02em;font-weight:700}
+h2{font-size:clamp(1.75rem,4vw,2.5rem)}
+p{max-width:65ch}
+a{color:var(--primary);text-decoration:none}
+a:hover{text-decoration:underline}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.material-symbols-rounded{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;font-size:1.4em;line-height:1}
+.container{max-width:1200px;margin-inline:auto;padding-inline:1.25rem;width:100%}
+@media(min-width:768px){.container{padding-inline:2rem}}
+.skip-link{position:absolute;left:1rem;top:-4rem;z-index:var(--z-toast);background:var(--primary-bright);color:var(--text-on-primary);padding:var(--space-3) var(--space-6);border-radius:var(--radius-md);font-weight:600;transition:top var(--transition-fast) var(--ease-standard)}
+.skip-link:focus{top:1rem;text-decoration:none}
+section{padding-block:clamp(4rem,8vw,7rem);scroll-margin-top:5.5rem}
+.section__head{max-width:44rem;margin-bottom:var(--space-12)}
+.section__eyebrow{font-family:var(--font-mono);font-size:var(--text-xs);letter-spacing:.18em;text-transform:uppercase;color:var(--secondary);display:block;margin-bottom:var(--space-3)}
+.section__sub{color:var(--text-secondary);margin-top:var(--space-4);font-size:var(--text-lg)}
+/* ---------- BUTTONS ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;font-family:var(--font-base);font-weight:600;font-size:var(--text-base);padding:var(--space-3) var(--space-6);min-height:44px;min-width:44px;border-radius:var(--radius-md);background:var(--bg-elevated);color:var(--text-primary);border:var(--glow-border);box-shadow:var(--shadow-sm);cursor:pointer;transition:box-shadow var(--transition-normal) var(--ease-standard),transform var(--transition-fast) var(--ease-standard),filter var(--transition-fast) var(--ease-standard);position:relative;text-decoration:none;white-space:nowrap}
+.btn:hover{text-decoration:none}
+@media (hover:hover) and (pointer:fine){.btn:hover{box-shadow:var(--shadow-md);filter:brightness(1.08)}}
+.btn:active{transform:scale(.97)}
+.btn--primary{background:var(--primary-bright);color:var(--text-on-primary);border-color:transparent}
+.btn--secondary{background:var(--membrane);color:var(--text-primary)}
+.btn--danger{background:var(--text-error);color:#fff;border-color:transparent}
+.btn:disabled,.btn--disabled{opacity:.5;filter:grayscale(.6);cursor:not-allowed}
+.btn--loading{pointer-events:none}
+.btn--loading .btn__label{opacity:0}
+.btn--loading::after{content:"";position:absolute;width:1.25rem;height:1.25rem;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite}
+.btn--success{border-color:var(--border-success);color:var(--text-success);background:var(--bg-elevated)}
+.btn--error{border-color:var(--border-error);color:var(--text-error);background:var(--bg-elevated)}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* ---------- BADGE ---------- */
+.badge{display:inline-flex;align-items:center;gap:.5rem;font-family:var(--font-mono);font-size:var(--text-xs);letter-spacing:.14em;text-transform:uppercase;padding:var(--space-2) var(--space-4);border-radius:var(--radius-pill);background:var(--vein-texture),var(--membrane);border:var(--glow-border);box-shadow:var(--shadow-sm);color:var(--text-primary)}
+/* ---------- NAV ---------- */
+.nav{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--vein-texture),var(--bg-secondary);border-bottom:var(--glow-border);box-shadow:var(--shadow-sm)}
+.nav__inner{display:flex;align-items:center;gap:var(--space-6);height:64px;max-width:1200px;margin-inline:auto;padding-inline:1.25rem}
+@media(min-width:768px){.nav__inner{padding-inline:2rem}}
+.nav__brand{display:flex;align-items:center;gap:.5rem;font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);color:var(--text-primary)}
+.nav__brand:hover{text-decoration:none}
+.nav__brand .material-symbols-rounded{color:var(--primary);font-size:1.6rem}
+.nav__links{display:flex;align-items:center;gap:var(--space-6);margin-left:auto;list-style:none}
+.nav__links a{color:var(--text-secondary);font-weight:500;font-size:var(--text-sm)}
+.nav__links a:hover{color:var(--primary);text-decoration:none}
+.nav__actions{display:flex;align-items:center;gap:var(--space-3);margin-left:auto}
+.nav__links + .nav__actions{margin-left:0}
+.theme-toggle{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-sm);background:var(--bg-elevated);border:var(--glow-border);box-shadow:var(--shadow-sm);color:var(--primary);cursor:pointer;transition:box-shadow var(--transition-normal) var(--ease-standard),transform var(--transition-fast) var(--ease-standard)}
+.theme-toggle:active{transform:scale(.97)}
+.theme-toggle .icon-sun{display:none}
+:root[data-theme="dark"] .theme-toggle .icon-sun{display:block}
+:root[data-theme="dark"] .theme-toggle .icon-moon{display:none}
+.nav__toggle{display:none;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-sm);background:var(--bg-elevated);border:var(--glow-border);color:var(--text-primary);cursor:pointer}
+.nav__toggle:active{transform:scale(.97)}
+.nav__cta{display:inline-flex}
+@media(max-width:767px){
+  .nav__toggle{display:inline-flex}
+  .nav__links{display:none;position:absolute;top:64px;left:0;right:0;flex-direction:column;align-items:stretch;gap:0;background:var(--bg-secondary);border-bottom:var(--glow-border);box-shadow:var(--shadow-md);padding:var(--space-3)}
+  .nav__links[data-open="true"]{display:flex}
+  .nav__links a{display:block;padding:var(--space-3) var(--space-4);font-size:var(--text-base)}
+  .nav__cta{display:none}
+}
+/* ---------- HERO ---------- */
+.hero{padding-top:clamp(3rem,6vw,5rem);padding-bottom:clamp(4rem,8vw,6rem)}
+.hero__grid{display:flex;align-items:center;gap:var(--space-12);flex-wrap:wrap}
+.hero__copy{flex:1 1 22rem;min-width:0}
+.hero__copy h1{font-size:clamp(2.25rem,5vw,3.75rem);margin-block:var(--space-4)}
+.hero__copy h1 em{font-style:italic;color:var(--primary)}
+.hero__sub{color:var(--text-secondary);font-size:var(--text-lg);margin-bottom:var(--space-8)}
+.hero__ctas{display:flex;align-items:center;gap:var(--space-4);flex-wrap:wrap}
+.hero__visual{flex:1 1 18rem;min-width:0;display:flex;align-items:center;justify-content:center;position:relative}
+.organism{position:relative;width:min(100%,22rem);aspect-ratio:1;display:flex;align-items:center;justify-content:center}
+.organism__ring{position:absolute;border-radius:50%;border:1px solid var(--border-default);opacity:.5}
+.organism__ring--1{inset:0}
+.organism__ring--2{inset:12%;opacity:.35}
+.organism__ring--3{inset:24%;opacity:.25}
+.organism__core{position:absolute;inset:20%;border-radius:var(--radius-lg);background:var(--vein-texture),var(--membrane);border:var(--glow-border);box-shadow:var(--shadow-lg);animation:breathe 6s ease-in-out infinite}
+.organism__blob{position:absolute;border-radius:var(--radius-sm);border:var(--glow-border);box-shadow:var(--shadow-md)}
+.organism__blob--a{width:26%;height:26%;top:6%;right:10%;background:var(--vein-texture),var(--bg-elevated);animation:breathe 6s ease-in-out infinite 1.5s}
+.organism__blob--b{width:18%;height:18%;bottom:8%;left:8%;background:var(--vein-texture),var(--membrane);animation:breathe 6s ease-in-out infinite 3s}
+.organism__nucleus{position:absolute;inset:38%;border-radius:var(--radius-md);background:var(--primary-bright);opacity:.85;box-shadow:var(--shadow-lg);animation:breathe 6s ease-in-out infinite .7s}
+@keyframes breathe{0%,100%{filter:brightness(1)}50%{filter:brightness(1.25)}}
+/* ---------- CARDS / FEATURES ---------- */
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-6)}
+@media(max-width:900px){.grid-3{grid-template-columns:1fr}}
+.card{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-4);background:var(--vein-texture),var(--bg-secondary);border:var(--glow-border);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);padding:var(--space-6);transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard)}
+@media (hover:hover) and (pointer:fine){.card--interactive:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}}
+.card:focus-within{border-color:var(--primary)}
+.card h3{font-size:var(--text-xl)}
+.card p{color:var(--text-secondary);font-size:var(--text-base)}
+.card__chip{display:inline-flex;align-items:center;justify-content:center;width:3.25rem;height:3.25rem;border-radius:var(--radius-sm);background:var(--vein-texture),var(--membrane);border:var(--glow-border);box-shadow:var(--shadow-sm);color:var(--primary);flex-shrink:0}
+.card__chip .material-symbols-rounded{font-size:1.6rem}
+.card--empty,.empty-state{align-items:center;justify-content:center;text-align:center;color:var(--text-secondary);gap:var(--space-3)}
+.card--empty .material-symbols-rounded{font-size:2.5rem;color:var(--border-default)}
+.skeleton-line{display:block;height:.9em;border-radius:var(--radius-pill);background:linear-gradient(90deg,var(--bg-elevated) 25%,var(--membrane) 50%,var(--bg-elevated) 75%);background-size:200% 100%;animation:shimmer 1.4s linear infinite}
+@keyframes shimmer{to{background-position:-200% 0}}
+/* ---------- STEPS ---------- */
+.steps{display:flex;align-items:stretch;gap:var(--space-6);position:relative;flex-wrap:wrap}
+.steps__vein{position:absolute;top:2.4rem;left:8%;right:8%;height:2px;background:linear-gradient(90deg,transparent,var(--primary),var(--secondary),transparent);opacity:.5}
+.step{flex:1 1 14rem;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-3);position:relative}
+.step__num{font-family:var(--font-mono);font-size:var(--text-sm);letter-spacing:.15em;color:var(--secondary);background:var(--bg-primary);padding:var(--space-1) var(--space-2);border-radius:var(--radius-sm)}
+.step h3{font-size:var(--text-lg)}
+.step p{color:var(--text-secondary);font-size:var(--text-sm)}
+@media(max-width:767px){.steps{flex-direction:column}.steps__vein{display:none}}
+/* ---------- TESTIMONIALS ---------- */
+.testimonial blockquote{font-size:var(--text-base);color:var(--text-primary)}
+.testimonial blockquote p{max-width:none}
+.testimonial figcaption{display:flex;align-items:center;gap:var(--space-3);margin-top:auto}
+.testimonial__avatar{display:inline-flex;align-items:center;justify-content:center;width:2.75rem;height:2.75rem;border-radius:var(--radius-sm);background:var(--vein-texture),var(--membrane);border:var(--glow-border);font-family:var(--font-mono);font-size:var(--text-sm);font-weight:500;color:var(--primary)}
+.testimonial__name{font-weight:600;font-size:var(--text-sm)}
+.testimonial__role{color:var(--text-secondary);font-size:var(--text-xs)}
+/* ---------- PRICING ---------- */
+.pricing-card{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-4);background:var(--vein-texture),var(--bg-secondary);border:var(--glow-border);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);padding:var(--space-8)}
+.pricing-card__tier{font-family:var(--font-mono);font-size:var(--text-sm);letter-spacing:.15em;text-transform:uppercase;color:var(--secondary)}
+.pricing-card__price{font-family:var(--font-mono);font-size:var(--text-3xl);font-weight:500}
+.pricing-card__price span{font-size:var(--text-sm);color:var(--text-secondary)}
+.pricing-card ul{list-style:none;display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-3);width:100%}
+.pricing-card li{display:flex;align-items:center;gap:.5rem;font-size:var(--text-sm);color:var(--text-secondary)}
+.pricing-card li .material-symbols-rounded{color:var(--primary);font-size:1.15rem}
+.pricing-card .btn{width:100%;margin-top:auto}
+:root .pricing-card--featured,:root[data-theme="dark"] .pricing-card--featured{border:1px solid var(--primary);box-shadow:var(--shadow-lg);background:var(--vein-texture),var(--bg-elevated)}
+.pricing-card__flag{align-self:flex-end;font-family:var(--font-mono);font-size:var(--text-xs);letter-spacing:.12em;text-transform:uppercase;background:var(--primary-bright);color:var(--text-on-primary);padding:var(--space-1) var(--space-3);border-radius:var(--radius-pill);font-weight:500}
+/* ---------- FAQ ---------- */
+.faq{max-width:48rem;display:flex;flex-direction:column;gap:var(--space-3)}
+.faq details{background:var(--vein-texture),var(--bg-secondary);border:var(--glow-border);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);overflow:hidden}
+.faq summary{display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);cursor:pointer;padding:var(--space-4) var(--space-6);font-weight:600;font-family:var(--font-display);font-size:var(--text-base);list-style:none;min-height:44px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary .material-symbols-rounded{color:var(--primary);transition:transform var(--transition-normal) var(--ease-standard);flex-shrink:0}
+.faq details[open] summary .material-symbols-rounded{transform:rotate(180deg)}
+.faq details[open]{box-shadow:var(--shadow-md)}
+.faq__body{padding:0 var(--space-6) var(--space-6);color:var(--text-secondary);font-size:var(--text-sm)}
+/* ---------- CTA ---------- */
+.cta-band{background:var(--vein-texture),var(--membrane);border:var(--glow-border);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);padding:clamp(2rem,5vw,4rem);display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-6)}
+.cta-form{display:flex;align-items:flex-end;gap:var(--space-4);flex-wrap:wrap;width:100%}
+.input-group{display:flex;flex-direction:column;align-items:stretch;gap:var(--space-2);flex:1 1 16rem;min-width:0}
+.input-group label{font-weight:600;font-size:var(--text-sm)}
+.input-group__hint{font-size:var(--text-xs);color:var(--text-secondary)}
+.input{width:100%;min-height:44px;padding:var(--space-3) var(--space-4);border-radius:var(--radius-sm);background:var(--bg-primary);border:var(--glow-border);color:var(--text-primary);font-family:var(--font-base);font-size:var(--text-base);transition:box-shadow var(--transition-fast) var(--ease-standard),border-color var(--transition-fast) var(--ease-standard)}
+.input::placeholder{color:var(--text-secondary)}
+.input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--ring)}
+.input--error{border-color:var(--border-error)}
+.input--valid{border-color:var(--border-success)}
+.input-group__error{display:none;align-items:center;gap:.4rem;font-size:var(--text-xs);color:var(--text-error)}
+.input-group__error[data-visible="true"]{display:flex}
+.input-group__error .material-symbols-rounded{font-size:1rem}
+.form-status{font-size:var(--text-sm);color:var(--text-success);display:flex;align-items:center;gap:.5rem}
+/* ---------- FOOTER ---------- */
+.footer{border-top:var(--glow-border);background:var(--vein-texture),var(--bg-secondary);padding-block:var(--space-12) var(--space-8)}
+.footer__grid{display:flex;align-items:flex-start;gap:var(--space-12);flex-wrap:wrap}
+.footer__brand{flex:1 1 16rem;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-3)}
+.footer__brand p{color:var(--text-secondary);font-size:var(--text-sm)}
+.footer__cols{display:flex;align-items:flex-start;gap:var(--space-12);flex-wrap:wrap;flex:2 1 24rem}
+.footer__col{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2);min-width:8rem}
+.footer__col h3{font-size:var(--text-sm);font-family:var(--font-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--text-secondary);font-weight:500;margin-bottom:var(--space-2)}
+.footer__col a{color:var(--text-primary);font-size:var(--text-sm)}
+.footer__bottom{display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);flex-wrap:wrap;margin-top:var(--space-12);padding-top:var(--space-6);border-top:1px solid var(--border-default);font-size:var(--text-xs);color:var(--text-secondary)}
+.footer__mono{font-family:var(--font-mono);letter-spacing:.12em;text-transform:uppercase}
+/* ---------- REVEAL ---------- */
+.reveal{opacity:1}
+.js .reveal{opacity:0;transform:translateY(12px);transition:opacity 400ms ease-out,transform 400ms ease-out}
+.js .reveal--in{opacity:1;transform:none}
+/* ---------- MOTION PREFS ---------- */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:150ms!important}
+  .organism__core,.organism__blob,.organism__nucleus{animation:none}
+  .js .reveal{transform:none;transition:opacity 200ms ease}
+}
+@media (prefers-reduced-transparency: reduce){
+  .nav{background:var(--bg-secondary)}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="nav">
+  <div class="nav__inner">
+    <a class="nav__brand" href="#top" aria-label="Mycel home">
+      <span class="material-symbols-rounded" aria-hidden="true">biotech</span>Mycel
+    </a>
+    <ul class="nav__links" id="nav-links">
+      <li><a href="#features">Strains</a></li>
+      <li><a href="#process">Process</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+    <div class="nav__actions">
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="true" aria-label="Switch to light mode">
+        <span class="material-symbols-rounded icon-moon" aria-hidden="true">dark_mode</span>
+        <span class="material-symbols-rounded icon-sun" aria-hidden="true">light_mode</span>
+      </button>
+      <a class="btn btn--primary nav__cta" href="#cultivate">Start a culture</a>
+      <button class="nav__toggle" id="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">
+        <span class="material-symbols-rounded" aria-hidden="true">menu</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <!-- HERO -->
+  <section class="hero" id="top" aria-labelledby="hero-title">
+    <div class="container hero__grid">
+      <div class="hero__copy">
+        <span class="badge"><span class="material-symbols-rounded" aria-hidden="true">genetics</span>// SPECIMEN 042 · CULTURE-READY</span>
+        <h1 id="hero-title">Grow your next material, <em>don't manufacture it</em></h1>
+        <p class="hero__sub">Mycel is a living-materials platform that cultures programmable bio-polymers from engineered mycelium strains.</p>
+        <div class="hero__ctas">
+          <a class="btn btn--primary" href="#cultivate">Start a culture</a>
+          <a class="btn btn--secondary" href="#process">See the process</a>
+        </div>
+      </div>
+      <div class="hero__visual" aria-hidden="true">
+        <div class="organism">
+          <div class="organism__ring organism__ring--1"></div>
+          <div class="organism__ring organism__ring--2"></div>
+          <div class="organism__ring organism__ring--3"></div>
+          <div class="organism__core"></div>
+          <div class="organism__nucleus"></div>
+          <div class="organism__blob organism__blob--a"></div>
+          <div class="organism__blob organism__blob--b"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features" aria-labelledby="features-title">
+    <div class="container">
+      <div class="section__head">
+        <span class="section__eyebrow">// STRAIN CATALOG · SEQ-07</span>
+        <h2 id="features-title">Three strains, one substrate</h2>
+        <p class="section__sub">Each strain is sequenced, contained, and tuned for a specific class of grown material.</p>
+      </div>
+      <div class="grid-3">
+        <article class="card card--interactive reveal">
+          <span class="card__chip"><span class="material-symbols-rounded" aria-hidden="true">grain</span></span>
+          <h3>Dermis strain</h3>
+          <p>A flexible membrane polymer for wearables and soft robotics. Cultures to full tensile strength in nine days.</p>
+        </article>
+        <article class="card card--interactive reveal">
+          <span class="card__chip"><span class="material-symbols-rounded" aria-hidden="true">hub</span></span>
+          <h3>Cortex strain</h3>
+          <p>A rigid structural lattice for packaging and interiors. Grows around any mold and composts in six weeks.</p>
+        </article>
+        <article class="card card--interactive reveal">
+          <span class="card__chip"><span class="material-symbols-rounded" aria-hidden="true">sensors</span></span>
+          <h3>Lumen strain</h3>
+          <p>A bioluminescent surface layer that responds to touch and temperature. No wiring, no batteries, just light.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROCESS -->
+  <section id="process" aria-labelledby="process-title">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="process-title">From spore to sheet in three stages</h2>
+        <p class="section__sub">The incubation pipeline runs in sealed benchtop vessels monitored by the Mycel console.</p>
+      </div>
+      <div class="steps">
+        <div class="steps__vein" aria-hidden="true"></div>
+        <div class="step reveal">
+          <span class="step__num">01 / INOCULATE</span>
+          <span class="card__chip"><span class="material-symbols-rounded" aria-hidden="true">water_drop</span></span>
+          <h3>Seed the substrate</h3>
+          <p>Combine your chosen strain with a nutrient substrate inside a sterile vessel.</p>
+        </div>
+        <div class="step reveal">
+          <span class="step__num">02 / INCUBATE</span>
+          <span class="card__chip"><span class="material-symbols-rounded" aria-hidden="true">cycle</span></span>
+          <h3>Guide the growth</h3>
+          <p>The console tunes humidity, light, and pH while the colony knits itself into shape.</p>
+        </div>
+        <div class="step reveal">
+          <span class="step__num">03 / HARVEST</span>
+          <span class="card__chip"><span class="material-symbols-rounded" aria-hidden="true">science</span></span>
+          <h3>Cure and ship</h3>
+          <p>Heat-cure the finished sheet, then cut, coat, or laminate it like any textile.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section id="voices" aria-labelledby="voices-title">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="voices-title">Notes from the lab bench</h2>
+      </div>
+      <div class="grid-3">
+        <figure class="card testimonial reveal">
+          <blockquote><p>&ldquo;We replaced molded foam packaging with Cortex sheets and cut our material waste by half in one quarter.&rdquo;</p></blockquote>
+          <figcaption>
+            <span class="testimonial__avatar" aria-hidden="true">RK</span>
+            <span><span class="testimonial__name">Rena Kowalczyk</span><br><span class="testimonial__role">Materials Lead, Fieldpack</span></span>
+          </figcaption>
+        </figure>
+        <figure class="card testimonial reveal">
+          <blockquote><p>&ldquo;The Lumen strain gave our exhibit walls a living glow visitors could feel. Nothing else comes close.&rdquo;</p></blockquote>
+          <figcaption>
+            <span class="testimonial__avatar" aria-hidden="true">DA</span>
+            <span><span class="testimonial__name">Dario Anselm</span><br><span class="testimonial__role">Creative Director, Studio Vessel</span></span>
+          </figcaption>
+        </figure>
+        <figure class="card testimonial reveal">
+          <blockquote><p>&ldquo;Containment paperwork used to take weeks. Mycel's sealed vessels passed our biosafety review in days.&rdquo;</p></blockquote>
+          <figcaption>
+            <span class="testimonial__avatar" aria-hidden="true">MO</span>
+            <span><span class="testimonial__name">Dr. Mina Okafor</span><br><span class="testimonial__role">Biosafety Officer, Halden Labs</span></span>
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section id="pricing" aria-labelledby="pricing-title">
+    <div class="container">
+      <div class="section__head">
+        <span class="section__eyebrow">// CULTIVATION PLANS</span>
+        <h2 id="pricing-title">Pick a colony size</h2>
+        <p class="section__sub">Every plan includes strain sequencing, vessel telemetry, and containment certification.</p>
+      </div>
+      <div class="grid-3">
+        <article class="pricing-card reveal">
+          <span class="pricing-card__tier">Spore</span>
+          <p class="pricing-card__price">$89<span> /mo</span></p>
+          <ul>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>1 benchtop vessel</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>2 strain cultures per month</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Community lab support</li>
+          </ul>
+          <a class="btn" href="#cultivate">Start a culture</a>
+        </article>
+        <article class="pricing-card pricing-card--featured reveal">
+          <span class="pricing-card__flag">Recommended</span>
+          <span class="pricing-card__tier">Colony</span>
+          <p class="pricing-card__price">$349<span> /mo</span></p>
+          <ul>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>6 vessels, shared telemetry</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Unlimited strain cultures</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Containment certification</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Priority lab support</li>
+          </ul>
+          <a class="btn btn--primary" href="#cultivate">Start a culture</a>
+        </article>
+        <article class="pricing-card reveal">
+          <span class="pricing-card__tier">Ecosystem</span>
+          <p class="pricing-card__price">$1,190<span> /mo</span></p>
+          <ul>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Dedicated growth racks</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Custom strain engineering</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>On-site biosafety audits</li>
+          </ul>
+          <a class="btn" href="#cultivate">Start a culture</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" aria-labelledby="faq-title">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="faq-title">Containment questions, answered</h2>
+      </div>
+      <div class="faq">
+        <details class="reveal">
+          <summary>Are the strains safe to culture outside a lab?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <div class="faq__body"><p>Yes. Every Mycel strain is non-pathogenic, non-sporulating, and growth-locked to its nutrient substrate. Remove the substrate and the colony stops within hours.</p></div>
+        </details>
+        <details class="reveal">
+          <summary>How does the console integrate with our facility?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <div class="faq__body"><p>Vessels connect over standard Wi-Fi and report telemetry to the Mycel console. An open API lets you pipe growth data into your existing monitoring stack.</p></div>
+        </details>
+        <details class="reveal">
+          <summary>What happens to harvested material at end of life?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <div class="faq__body"><p>All three strains are fully compostable. Cured sheets break down in industrial compost within six weeks, leaving no synthetic residue.</p></div>
+        </details>
+        <details class="reveal">
+          <summary>Do you offer ethics and biosafety documentation?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <div class="faq__body"><p>Every shipment includes full sequencing records, containment certificates, and an ethics dossier reviewed by our independent biosafety board.</p></div>
+        </details>
+        <details class="reveal">
+          <summary>What support is included during incubation?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <div class="faq__body"><p>Colony and Ecosystem plans include live support from our cultivation team, with remote vessel diagnostics and replacement cultures if a batch fails.</p></div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section id="cultivate" aria-labelledby="cta-title">
+    <div class="container">
+      <div class="cta-band">
+        <span class="section__eyebrow">// INOCULATION WAITLIST · SEQ-08</span>
+        <h2 id="cta-title">Reserve your first vessel</h2>
+        <p class="section__sub">Leave a work email and our cultivation team will prepare your starter substrate.</p>
+        <form class="cta-form" id="cta-form" novalidate>
+          <div class="input-group">
+            <label for="email">Work email</label>
+            <input class="input" id="email" name="email" type="email" autocomplete="email" placeholder="you@lab.example" aria-describedby="email-hint email-error" required>
+            <span class="input-group__hint" id="email-hint">We only write when your vessel is ready.</span>
+            <span class="input-group__error" id="email-error" role="alert"><span class="material-symbols-rounded" aria-hidden="true">error</span><span id="email-error-text">Enter a valid email address.</span></span>
+          </div>
+          <button class="btn btn--primary" id="cta-submit" type="submit"><span class="btn__label">Start a culture</span></button>
+        </form>
+        <p class="form-status" id="form-status" role="status" aria-live="polite" hidden><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Culture reserved. Check your inbox for incubation instructions.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <a class="nav__brand" href="#top"><span class="material-symbols-rounded" aria-hidden="true">biotech</span>Mycel</a>
+        <p>Living materials, cultured on demand. Grown in sealed vessels, certified for the world outside.</p>
+      </div>
+      <nav class="footer__cols" aria-label="Footer">
+        <div class="footer__col">
+          <h3>Product</h3>
+          <a href="#features">Strains</a><a href="#process">Process</a><a href="#pricing">Pricing</a>
+        </div>
+        <div class="footer__col">
+          <h3>Company</h3>
+          <a href="#">About</a><a href="#">Careers</a><a href="#">Press</a>
+        </div>
+        <div class="footer__col">
+          <h3>Resources</h3>
+          <a href="#faq">FAQ</a><a href="#">Biosafety docs</a><a href="#">API reference</a>
+        </div>
+        <div class="footer__col">
+          <h3>Legal</h3>
+          <a href="#">Privacy</a><a href="#">Terms</a><a href="#">Containment policy</a>
+        </div>
+      </nav>
+    </div>
+    <div class="footer__bottom">
+      <span>© 2026 Mycel Bioworks. All rights reserved.</span>
+      <span class="footer__mono">// STRAIN REGISTRY v4 · CONTAINMENT CLASS BSL-1</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  document.body.classList.add('js');
+
+  /* Theme toggle */
+  var toggle=document.getElementById('theme-toggle');
+  function applyTheme(t){
+    document.documentElement.dataset.theme=t;
+    var dark=t==='dark';
+    toggle.setAttribute('aria-pressed',String(dark));
+    toggle.setAttribute('aria-label',dark?'Switch to light mode':'Switch to dark mode');
+  }
+  applyTheme(document.documentElement.dataset.theme);
+  toggle.addEventListener('click',function(){
+    var next=document.documentElement.dataset.theme==='dark'?'light':'dark';
+    localStorage.setItem('theme',next);
+    applyTheme(next);
+  });
+
+  /* Mobile nav */
+  var navToggle=document.getElementById('nav-toggle');
+  var navLinks=document.getElementById('nav-links');
+  function setMenu(open){
+    navLinks.dataset.open=String(open);
+    navToggle.setAttribute('aria-expanded',String(open));
+    navToggle.setAttribute('aria-label',open?'Close menu':'Open menu');
+    navToggle.querySelector('.material-symbols-rounded').textContent=open?'close':'menu';
+  }
+  navToggle.addEventListener('click',function(){setMenu(navLinks.dataset.open!=='true');});
+  navLinks.addEventListener('click',function(e){if(e.target.closest('a'))setMenu(false);});
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'&&navLinks.dataset.open==='true'){setMenu(false);navToggle.focus();}
+  });
+
+  /* Reveal on scroll */
+  var revealEls=document.querySelectorAll('.reveal');
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){en.target.classList.add('reveal--in');io.unobserve(en.target);}
+      });
+    },{threshold:.12});
+    revealEls.forEach(function(el,i){el.style.transitionDelay=(i%3)*60+'ms';io.observe(el);});
+  }else{
+    revealEls.forEach(function(el){el.classList.add('reveal--in');});
+  }
+
+  /* CTA form */
+  var form=document.getElementById('cta-form');
+  var email=document.getElementById('email');
+  var errBox=document.getElementById('email-error');
+  var submitBtn=document.getElementById('cta-submit');
+  var status=document.getElementById('form-status');
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    var val=email.value.trim();
+    var valid=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val);
+    if(!valid){
+      email.classList.add('input--error');
+      email.classList.remove('input--valid');
+      email.setAttribute('aria-invalid','true');
+      errBox.dataset.visible='true';
+      email.focus();
+      return;
+    }
+    email.classList.remove('input--error');
+    email.classList.add('input--valid');
+    email.removeAttribute('aria-invalid');
+    errBox.dataset.visible='false';
+    submitBtn.classList.add('btn--loading');
+    submitBtn.setAttribute('aria-busy','true');
+    setTimeout(function(){
+      submitBtn.classList.remove('btn--loading');
+      submitBtn.classList.add('btn--success');
+      submitBtn.removeAttribute('aria-busy');
+      submitBtn.querySelector('.btn__label').textContent='Culture reserved';
+      status.hidden=false;
+      form.reset();
+    },1000);
+  });
+  email.addEventListener('input',function(){
+    if(email.classList.contains('input--error')){
+      email.classList.remove('input--error');
+      email.removeAttribute('aria-invalid');
+      errBox.dataset.visible='false';
+    }
+  });
+})();
+</script>
+</body>
+</html>

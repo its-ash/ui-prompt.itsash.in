@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nimbus — Safe Conversational AI You Can Trust</title>
+<meta name="description" content="Nimbus is conversational AI with guardrails, citations, and human oversight.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap">
+<style>
+:root{--primary:#1A73E8;--primary-strong:#1557B0;--secondary:#34A853;--accent-cyan:#00BCD4;--accent-yellow:#FBBC05;--accent-red:#EA4335;--bg-primary:#fefefe;--bg-secondary:#F8F9FA;--bg-surface:#fff;--on-primary:#fff;--text-primary:#3C4043;--text-secondary:#5F6368;--text-success:#188038;--text-error:#D93025;--border-default:#DADCE0;--border-success:#34A853;--border-error:#EA4335;--radius-sm:6px;--radius-md:8px;--radius-lg:16px;--shadow-sm:0 2px 8px rgba(0,0,0,.1);--shadow-md:0 8px 24px rgba(0,0,0,.12);--gap:1.5rem;--tf:.15s ease-in-out;--t:.3s ease-in-out;--glow:rgba(26,115,232,.14);--hero-a:#F8F9FA;--hero-b:#fff;--z-header:900;--font:"Roboto",Arial,sans-serif}
+.dark{--primary:#8AB4F8;--primary-strong:#A8C7FA;--secondary:#81C995;--accent-cyan:#4DD0E1;--accent-yellow:#FDD663;--accent-red:#F28B82;--bg-primary:#202124;--bg-secondary:#292A2D;--bg-surface:#303134;--on-primary:#202124;--text-primary:#E8EAED;--text-secondary:#9AA0A6;--text-success:#81C995;--text-error:#F28B82;--border-default:#3C4043;--border-success:#81C995;--border-error:#F28B82;--shadow-sm:0 2px 8px rgba(0,0,0,.4);--shadow-md:0 8px 24px rgba(0,0,0,.5);--glow:rgba(138,180,248,.16);--hero-a:#202124;--hero-b:#171719;color-scheme:dark}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font:400 clamp(15px,1.4vw,17px)/1.6 var(--font);background:var(--bg-primary);color:var(--text-primary)}
+section[id]{scroll-margin-top:84px}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+h1,h2,h3{line-height:1.2;letter-spacing:-.02em;color:var(--text-primary)}
+h1{font-size:clamp(1.9rem,4.6vw,3rem)}
+h2{font-size:clamp(1.5rem,3.4vw,2.1rem)}
+p{color:var(--text-secondary)}
+ul{list-style:none}
+.material-symbols-rounded{line-height:1}
+.wrap{max-width:1100px;margin-inline:auto;padding-inline:clamp(1rem,4vw,1.75rem)}
+.skip{position:fixed;top:.75rem;left:-999px;z-index:1100;background:var(--primary);color:var(--on-primary);font-weight:500;padding:.7rem 1.1rem;border-radius:var(--radius-md)}
+.skip:focus{left:.75rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;min-width:44px;padding:.55rem 1.25rem;border:1px solid transparent;border-radius:var(--radius-md);font:inherit;font-weight:500;text-decoration:none;cursor:pointer;color:var(--text-primary);background:var(--bg-surface);transition:var(--tf)}
+.btn:hover{box-shadow:var(--shadow-sm)}
+.btn:active{transform:scale(.97)}
+.btn--primary{background:var(--primary);color:var(--on-primary)}
+.btn--primary:hover{background:var(--primary-strong)}
+.btn--secondary{border-color:var(--border-default);color:var(--primary)}
+.btn--secondary:hover{border-color:var(--primary)}
+.btn--danger{background:var(--accent-red);color:var(--on-primary)}
+.btn.is-loading{position:relative;pointer-events:none;color:transparent}
+.btn.is-loading::after{content:"";position:absolute;width:18px;height:18px;border:2px solid var(--on-primary);border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite}
+.btn.is-success{background:var(--secondary);color:var(--on-primary)}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border:1px solid var(--border-default);border-radius:var(--radius-md);background:var(--bg-surface);color:var(--text-primary);cursor:pointer;transition:var(--tf)}
+.icon-btn:hover{border-color:var(--primary);color:var(--primary)}
+.icon-btn:active{transform:scale(.97)}
+.chip{display:inline-flex;align-items:center;gap:.4rem;padding:.45rem .85rem;border:1px solid var(--border-default);border-radius:999px;background:var(--bg-surface);font-size:.85rem;font-weight:500;color:var(--text-secondary);transition:var(--t)}
+.chip .material-symbols-rounded{font-size:1.05rem;color:var(--primary)}
+.chip .chip__check{opacity:0;transform:scale(.3);color:var(--text-success);transition:var(--t)}
+.chip:hover{border-color:var(--border-success)}
+.chip:hover .chip__check{opacity:1;transform:scale(1)}
+.chip-row{display:flex;flex-wrap:wrap;gap:.6rem}
+.trust-glow{box-shadow:var(--glow)}
+.site-header{position:sticky;top:0;z-index:var(--z-header);background:var(--bg-primary);transition:var(--t)}
+.site-header.is-scrolled{box-shadow:var(--shadow-md)}
+.nav-row{display:flex;align-items:center;justify-content:space-between;gap:var(--gap);min-height:64px}
+.brand{display:inline-flex;align-items:center;gap:.5rem;font-size:1.2rem;font-weight:700;text-decoration:none;color:var(--text-primary)}
+.brand .material-symbols-rounded{color:var(--primary);font-variation-settings:'FILL' 1}
+.nav-links{display:flex;align-items:center;gap:1.4rem}
+.nav-links a{padding:.5rem 0;font-weight:500;text-decoration:none;color:var(--text-secondary);transition:var(--tf)}
+.nav-links a:hover{color:var(--primary)}
+.nav-actions{display:flex;align-items:center;gap:.7rem}
+.menu-btn{display:none}
+.hero{padding:clamp(3rem,7vw,4.5rem) 0 clamp(2.5rem,6vw,3.5rem);background:linear-gradient(to bottom,var(--hero-a),var(--hero-b))}
+.hero__grid{display:flex;flex-wrap:wrap;align-items:center;gap:clamp(1.5rem,4vw,3.5rem)}
+.hero__copy{flex:1 1 420px;display:flex;flex-direction:column;align-items:flex-start;gap:var(--gap)}
+.hero__sub{max-width:34em}
+.hero__ctas{display:flex;flex-wrap:wrap;gap:.9rem}
+.conversation-flow-animation{flex:1 1 320px;max-width:440px;margin-inline:auto;display:flex;flex-direction:column;align-items:center;gap:.8rem;padding:1.4rem;background:var(--bg-surface);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-md)}
+.bubble{max-width:88%;padding:.65rem .95rem;border-radius:var(--radius-lg);font-size:.92rem;line-height:1.45;animation:rise .5s ease .2s backwards}
+.bubble--user{align-self:flex-end;background:var(--primary);color:var(--on-primary);border-bottom-right-radius:var(--radius-sm)}
+.bubble--ai{align-self:flex-start;display:flex;align-items:center;gap:.5rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-left:3px solid var(--accent-cyan);border-bottom-left-radius:var(--radius-sm);animation-delay:.8s}
+.bubble--ai .material-symbols-rounded{color:var(--accent-cyan)}
+.bubble:nth-child(3){animation-delay:1.5s}
+.bubble--typing{align-self:flex-start;display:flex;gap:.3rem;padding:.85rem 1rem;background:var(--bg-secondary);border:1px solid var(--border-default);animation-delay:2.1s}
+.bubble--typing span{width:7px;height:7px;border-radius:50%;background:var(--accent-cyan);animation:blink 1.2s infinite}
+.bubble--typing span:nth-child(2){animation-delay:.15s}
+.bubble--typing span:nth-child(3){animation-delay:.3s}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}}
+@keyframes blink{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
+@keyframes spin{to{transform:rotate(1turn)}}
+.research-strip{display:flex;flex-wrap:wrap;gap:var(--gap);margin-top:calc(var(--gap)*1.75)}
+.research-progress{flex:1 1 220px;display:flex;flex-direction:column;gap:.45rem}
+.research-progress--bias{--w:94%}.research-progress--harm{--w:99.2%}.research-progress--eval{--w:98%}
+.research-progress__label{display:flex;justify-content:space-between;align-items:center;font-size:.85rem;font-weight:500}
+.research-progress__label strong{color:var(--text-success)}
+.research-progress__track{height:8px;border-radius:999px;background:var(--border-default);overflow:hidden}
+.research-progress__fill{height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,var(--secondary),var(--accent-cyan));transition:width 1.2s ease}
+.research-progress.is-visible .research-progress__fill{width:var(--w)}
+.section{padding:clamp(3rem,8vw,4.5rem) 0}
+.section--alt{background:var(--bg-secondary);border-top:1px solid var(--border-default)}
+.section__head{display:flex;flex-direction:column;align-items:center;gap:.5rem;text-align:center;max-width:640px;margin:0 auto calc(var(--gap)*1.75)}
+.eyebrow{font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--primary)}
+.section__sub{font-size:1.03rem}
+.grid-3{display:flex;flex-wrap:wrap;gap:calc(var(--gap)*1.25)}/* stretch keeps cards equal height */
+.card{display:flex;flex-direction:column;align-items:flex-start;gap:.8rem;flex:1 1 280px;padding:1.5rem;background:var(--bg-surface);border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);transition:var(--t)}
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.card:focus-within{border-color:var(--primary);box-shadow:var(--shadow-md),var(--glow)}
+.card__icon{display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:50%;background:color-mix(in srgb,var(--primary) 14%,transparent);color:var(--primary)}
+.card__icon .material-symbols-rounded{font-size:1.5rem}
+.card__text{font-size:.95rem}
+.card__link{display:inline-flex;align-items:center;gap:.3rem;margin-top:auto;font-weight:500;font-size:.95rem;color:var(--primary);text-decoration:none}
+.card__link .material-symbols-rounded{font-size:1.1rem;transition:var(--t)}
+.card__link:hover .material-symbols-rounded{transform:translateX(4px)}
+.reveal{opacity:0;transform:translateY(18px)}
+.reveal.is-visible{opacity:1;transform:none}
+.steps .reveal:nth-child(2){transition-delay:.15s}
+.steps .reveal:nth-child(3){transition-delay:.3s}
+.ai-safety-diagram{position:relative}
+.ai-safety-diagram::before{content:"";position:absolute;top:52px;left:8%;right:8%;height:3px;border-radius:999px;opacity:.4;background:linear-gradient(90deg,var(--primary),var(--accent-cyan),var(--secondary),var(--primary));background-size:200% 100%;animation:slide 4s linear infinite}
+@keyframes slide{to{background-position:-200% 0}}
+.step{flex:1 1 240px;align-items:center;text-align:center;gap:.6rem}
+.step__badge{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;background:var(--primary);color:var(--on-primary);font-size:.8rem;font-weight:700}
+.card--tier{flex:1 1 260px}
+.tier__price{font-size:2rem;font-weight:700;line-height:1.1;color:var(--text-primary)}
+.tier__price span{font-size:.9rem;font-weight:400;color:var(--text-secondary)}
+.tier__list{display:flex;flex-direction:column;gap:.55rem;font-size:.93rem}
+.tier__list li{display:flex;align-items:center;gap:.5rem}
+.tier__list li::before{content:"check_circle";font-family:'Material Symbols Rounded';font-size:1.15rem;color:var(--text-success)}
+.card--featured{position:relative;border:2px solid var(--primary);box-shadow:var(--shadow-md),var(--glow)}
+.badge--featured{position:absolute;top:-13px;left:50%;transform:translateX(-50%);display:inline-flex;align-items:center;gap:.3rem;padding:.3rem .8rem;border-radius:999px;background:var(--primary);color:var(--on-primary);font-size:.75rem;font-weight:700;white-space:nowrap}
+.badge--featured .material-symbols-rounded{font-size:.9rem}
+.billing-note{margin-top:calc(var(--gap)*1.5);text-align:center;font-size:.85rem}
+.card--quote{flex:1 1 320px}
+.quote__icon{font-size:2rem;color:var(--accent-cyan)}
+.stars{display:flex;gap:.15rem}
+.stars .material-symbols-rounded{font-size:1.1rem;color:var(--accent-yellow);font-variation-settings:'FILL' 1}
+.quote__author{display:flex;align-items:center;gap:.8rem;margin-top:auto}
+.avatar{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;flex-shrink:0;font-size:.9rem;font-weight:700}
+.avatar--a{background:color-mix(in srgb,var(--primary) 16%,transparent);color:var(--primary-strong)}
+.avatar--b{background:color-mix(in srgb,var(--secondary) 18%,transparent);color:var(--text-success)}
+.quote__who{display:flex;flex-direction:column;line-height:1.35;font-size:.95rem}
+.faq{display:flex;flex-direction:column;gap:.75rem;max-width:760px;margin-inline:auto}
+.faq details{background:var(--bg-surface);border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);transition:var(--t)}
+.faq details[open]{border-color:var(--primary);box-shadow:var(--shadow-sm),var(--glow)}
+.faq summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:48px;padding:.9rem 1.25rem;font-weight:500;color:var(--text-primary);cursor:pointer;list-style:none}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary .material-symbols-rounded{color:var(--text-secondary);transition:var(--t)}
+.faq details[open] summary .material-symbols-rounded{transform:rotate(180deg);color:var(--primary)}
+.faq__a{padding:0 1.25rem 1.1rem;font-size:.95rem;animation:rise .35s ease}
+.cta-panel{display:flex;flex-direction:column;align-items:center;text-align:center;gap:.9rem;max-width:680px;margin-inline:auto;padding:clamp(2rem,6vw,3.2rem);background:var(--bg-surface);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-md),var(--glow)}
+.cta-form{display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-end;gap:var(--gap);width:100%}
+.input-group{display:flex;flex-direction:column;align-items:flex-start;gap:.4rem;flex:1 1 260px}
+.input-group__label{font-size:.85rem;font-weight:500;color:var(--text-primary)}
+.input-group input{width:100%;min-height:44px;padding:.5rem .9rem;border:1px solid var(--border-default);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary);font:inherit;transition:var(--tf)}
+.input-group input:focus-visible{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--glow)}
+.input-group.is-invalid input{border-color:var(--border-error)}
+.input-group.is-valid input{border-color:var(--border-success)}
+.input-group__error{display:flex;align-items:center;gap:.35rem;min-height:1.3em;font-size:.85rem;color:var(--text-error)}
+.input-group__error:empty{display:none}
+.input-group__error .material-symbols-rounded{font-size:1rem}
+.cta-status{min-height:1.4em;font-weight:500;color:var(--text-success)}
+.cta-status:empty{display:none}
+.cta-note{display:flex;align-items:center;gap:.4rem;font-size:.85rem}
+.cta-note .material-symbols-rounded{font-size:1rem;color:var(--text-success)}
+.site-footer{padding:clamp(2.5rem,6vw,4rem) 0 1.5rem;background:var(--bg-secondary);border-top:1px solid var(--border-default)}
+.footer-grid{display:flex;flex-wrap:wrap;gap:calc(var(--gap)*2)}
+.footer-brand{flex:1 1 280px;display:flex;flex-direction:column;align-items:flex-start;gap:1rem}
+.footer-brand>p{max-width:32em;font-size:.95rem}
+.footer-col{flex:1 1 150px;display:flex;flex-direction:column;align-items:flex-start;gap:.55rem}
+.footer-col h3{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em}
+.footer-col a{font-size:.92rem;text-decoration:none;color:var(--text-secondary);transition:var(--tf)}
+.footer-col a:hover{color:var(--primary)}
+.footer-bottom{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:.75rem;margin-top:2.5rem;padding-top:var(--gap);border-top:1px solid var(--border-default);font-size:.85rem}
+@media(max-width:840px){
+.menu-btn{display:inline-flex}
+.nav-links{display:none;position:absolute;top:100%;left:0;right:0;flex-direction:column;align-items:flex-start;gap:.2rem;padding:1rem clamp(1rem,4vw,1.75rem);background:var(--bg-primary);border-bottom:1px solid var(--border-default);box-shadow:var(--shadow-md)}
+.nav-links.is-open{display:flex}
+.nav-links a{width:100%;padding:.7rem 0;font-size:1.05rem}
+.ai-safety-diagram::before{display:none}
+}
+@media(max-width:480px){.nav-actions .btn{display:none}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="wrap nav-row">
+    <a class="brand" href="#top"><span class="material-symbols-rounded" aria-hidden="true">verified_user</span>Nimbus</a>
+    <nav class="nav-links" id="navLinks" aria-label="Primary">
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="nav-actions">
+      <button class="icon-btn" id="themeToggle" type="button" aria-pressed="false" aria-label="Switch to dark mode"><span class="material-symbols-rounded" id="themeIcon" aria-hidden="true">dark_mode</span></button>
+      <a class="btn btn--primary" href="#pricing">Get Started</a>
+      <button class="icon-btn menu-btn" id="menuBtn" type="button" aria-expanded="false" aria-controls="navLinks" aria-label="Open menu"><span class="material-symbols-rounded" id="menuIcon" aria-hidden="true">menu</span></button>
+    </div>
+  </div>
+</header>
+<main id="main">
+<section class="hero" id="top" aria-labelledby="heroTitle">
+  <div class="wrap">
+    <div class="hero__grid">
+      <div class="hero__copy">
+        <span class="chip trust-glow"><span class="material-symbols-rounded" aria-hidden="true">verified_user</span>Responsible AI · 2026</span>
+        <h1 id="heroTitle">Conversational AI you can actually trust</h1>
+        <p class="hero__sub">Nimbus cites its sources, flags uncertainty, and hands off to humans when stakes are high — safe AI for teams that answer to regulators.</p>
+        <div class="hero__ctas">
+          <a class="btn btn--primary" href="#pricing">Start a Safe Conversation<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+          <a class="btn btn--secondary" href="#how-it-works">See How It Works</a>
+        </div>
+        <ul class="chip-row">
+          <li class="chip"><span class="material-symbols-rounded" aria-hidden="true">lock</span>Private by design<span class="material-symbols-rounded chip__check" aria-hidden="true">check_circle</span></li>
+          <li class="chip"><span class="material-symbols-rounded" aria-hidden="true">verified_user</span>Independently audited<span class="material-symbols-rounded chip__check" aria-hidden="true">check_circle</span></li>
+          <li class="chip"><span class="material-symbols-rounded" aria-hidden="true">supervisor_account</span>Human oversight<span class="material-symbols-rounded chip__check" aria-hidden="true">check_circle</span></li>
+        </ul>
+      </div>
+      <div class="conversation-flow-animation" role="img" aria-label="Chat mockup: Nimbus summarizes a compliance report with cited sources and a confidence score, then shows a typing indicator while answering a follow-up.">
+        <p class="bubble bubble--user">Can you summarize last quarter's compliance report?</p>
+        <p class="bubble bubble--ai"><span class="material-symbols-rounded" aria-hidden="true">shield</span><span>Done — three sections, each citing its source document. Confidence: high.</span></p>
+        <p class="bubble bubble--user">What changed versus Q2?</p>
+        <p class="bubble bubble--typing" aria-hidden="true"><span></span><span></span><span></span></p>
+      </div>
+    </div>
+    <div class="research-strip">
+      <div class="research-progress research-progress--bias"><p class="research-progress__label">Bias reduction<strong>94%</strong></p><div class="research-progress__track"><div class="research-progress__fill"></div></div></div>
+      <div class="research-progress research-progress--harm"><p class="research-progress__label">Harm-free responses<strong>99.2%</strong></p><div class="research-progress__track"><div class="research-progress__fill"></div></div></div>
+      <div class="research-progress research-progress--eval"><p class="research-progress__label">Safety eval pass<strong>98%</strong></p><div class="research-progress__track"><div class="research-progress__fill"></div></div></div>
+    </div>
+  </div>
+</section>
+<section class="section" id="features" aria-labelledby="featuresTitle">
+  <div class="wrap">
+    <div class="section__head">
+      <p class="eyebrow">Why Nimbus</p>
+      <h2 id="featuresTitle">Built responsibly, by default</h2>
+      <p class="section__sub">Guardrails, citations, and review controls aren't add-ons here — they're the architecture.</p>
+    </div>
+    <div class="grid-3">
+      <article class="card reveal">
+        <span class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">verified_user</span></span>
+        <h3>Transparent by Design</h3>
+        <p class="card__text">Every answer ships with its sources and a short reasoning trail, so your team verifies claims instead of trusting a black box.</p>
+        <a class="card__link" href="#faq">Learn more<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+      </article>
+      <article class="card reveal">
+        <span class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">supervisor_account</span></span>
+        <h3>Human Oversight</h3>
+        <p class="card__text">Set review thresholds, approve sensitive replies, and escalate anything uncertain to a person — all in one click.</p>
+        <a class="card__link" href="#faq">Learn more<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+      </article>
+      <article class="card reveal">
+        <span class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">lock</span></span>
+        <h3>Privacy First</h3>
+        <p class="card__text">Conversations are end-to-end encrypted and never used for training. Delete any thread — and its history — whenever you like.</p>
+        <a class="card__link" href="#faq">Learn more<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+      </article>
+    </div>
+  </div>
+</section>
+<section class="section section--alt" id="how-it-works" aria-labelledby="howTitle">
+  <div class="wrap">
+    <div class="section__head">
+      <p class="eyebrow">How It Works</p>
+      <h2 id="howTitle">Guardrails at every step</h2>
+      <p class="section__sub">A safety pipeline you can actually see — from your question to a verified answer.</p>
+    </div>
+    <div class="grid-3 steps ai-safety-diagram">
+      <article class="card step reveal"><span class="step__badge">01</span><span class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">forum</span></span><h3>You ask</h3><p class="card__text">Ask in plain language. Nimbus classifies intent and checks permissions before anything else runs.</p></article>
+      <article class="card step reveal"><span class="step__badge">02</span><span class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">shield</span></span><h3>Guardrails reason</h3><p class="card__text">Safety models screen for harm and bias, then ground the draft in verified, cited sources.</p></article>
+      <article class="card step reveal"><span class="step__badge">03</span><span class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">check_circle</span></span><h3>Verified answer</h3><p class="card__text">You get a confidence score, linked sources, and a one-click feedback loop for human review.</p></article>
+    </div>
+  </div>
+</section>
+<section class="section" id="pricing" aria-labelledby="pricingTitle">
+  <div class="wrap">
+    <div class="section__head">
+      <p class="eyebrow">Pricing</p>
+      <h2 id="pricingTitle">Simple plans, serious safety</h2>
+      <p class="section__sub">Every tier ships with audited guardrails. Upgrade for scale and deeper review.</p>
+    </div>
+    <div class="grid-3">
+      <article class="card card--tier reveal">
+        <h3>Starter</h3>
+        <p class="tier__price">$0<span> / forever</span></p>
+        <p class="card__text">For personal use and small pilots.</p>
+        <ul class="tier__list"><li>200 conversations / month</li><li>Core guardrails &amp; citations</li><li>Community support</li></ul>
+        <a class="btn btn--secondary" href="#cta">Start Free</a>
+      </article>
+      <article class="card card--tier card--featured reveal">
+        <span class="badge--featured"><span class="material-symbols-rounded" aria-hidden="true">star</span>Most Trusted</span>
+        <h3>Pro</h3>
+        <p class="tier__price">$20<span> / user / mo</span></p>
+        <p class="card__text">For teams that ship daily.</p>
+        <ul class="tier__list"><li>Unlimited conversations</li><li>Expanded guardrails &amp; audit log</li><li>Human review escalations</li><li>Priority support</li></ul>
+        <a class="btn btn--primary" href="#cta">Go Pro</a>
+      </article>
+      <article class="card card--tier reveal">
+        <h3>Enterprise</h3>
+        <p class="tier__price">Custom</p>
+        <p class="card__text">For regulated industries.</p>
+        <ul class="tier__list"><li>SSO &amp; SCIM provisioning</li><li>Independent safety audits</li><li>Dedicated review team</li></ul>
+        <a class="btn btn--secondary" href="#cta">Contact Sales</a>
+      </article>
+    </div>
+    <p class="billing-note">Prices in USD, billed per user. Cancel anytime; your data is exportable and deletable.</p>
+  </div>
+</section>
+<section class="section section--alt" id="testimonials" aria-labelledby="testimonialsTitle">
+  <div class="wrap">
+    <div class="section__head">
+      <p class="eyebrow">Trusted by careful teams</p>
+      <h2 id="testimonialsTitle">Safety officers approve. Teams get going.</h2>
+    </div>
+    <div class="grid-3">
+      <figure class="card card--quote reveal">
+        <span class="material-symbols-rounded quote__icon" aria-hidden="true">format_quote</span>
+        <div class="stars" role="img" aria-label="Rated 5 out of 5 stars"><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span></div>
+        <blockquote class="card__text">"Nimbus is the first AI tool our compliance team approved without a single condition. The audit trail and inline citations made the review almost boring — exactly what you want."</blockquote>
+        <figcaption class="quote__author"><span class="avatar avatar--a" aria-hidden="true">SO</span><span class="quote__who"><strong>Sarah Okafor</strong><span>Head of Trust &amp; Safety, Northline Fintech</span></span></figcaption>
+      </figure>
+      <figure class="card card--quote reveal">
+        <span class="material-symbols-rounded quote__icon" aria-hidden="true">format_quote</span>
+        <div class="stars" role="img" aria-label="Rated 5 out of 5 stars"><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span><span class="material-symbols-rounded" aria-hidden="true">star</span></div>
+        <blockquote class="card__text">"We put Nimbus in front of 400 clinicians. Every answer arrives with a confidence score and its sources — the bar healthcare sets, finally met."</blockquote>
+        <figcaption class="quote__author"><span class="avatar avatar--b" aria-hidden="true">DR</span><span class="quote__who"><strong>Daniel Reyes</strong><span>CTO, Meridian Health Platform</span></span></figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+<section class="section" id="faq" aria-labelledby="faqTitle">
+  <div class="wrap">
+    <div class="section__head">
+      <p class="eyebrow">FAQ</p>
+      <h2 id="faqTitle">Fair questions, straight answers</h2>
+    </div>
+    <div class="faq">
+      <details>
+        <summary>How does Nimbus prevent harmful or inaccurate outputs?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+        <p class="faq__a">Every request passes intent checks and safety guardrails before generation, and every answer is grounded in verified sources with a confidence score. Low-confidence or sensitive replies are routed to a human reviewer instead of guessing.</p>
+      </details>
+      <details>
+        <summary>Is my data used to train your models?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+        <p class="faq__a">No. Conversations are end-to-end encrypted, never used for training, and fully deletable on request. Enterprise plans can pin all data to a single region for added control.</p>
+      </details>
+      <details>
+        <summary>What safety standards does Nimbus comply with?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+        <p class="faq__a">We're independently audited against the NIST AI Risk Management Framework and ISO/IEC 42001, with SOC 2 Type II reports available under NDA. Audit results are summarized publicly each quarter.</p>
+      </details>
+    </div>
+  </div>
+</section>
+<section class="section section--alt" id="cta" aria-labelledby="ctaTitle">
+  <div class="wrap">
+    <div class="cta-panel">
+      <h2 id="ctaTitle">Build with AI you can trust</h2>
+      <p>Join the teams putting responsible conversational AI to work — with the receipts to prove it.</p>
+      <form class="cta-form" id="ctaForm" novalidate>
+        <div class="input-group" id="emailGroup">
+          <label class="input-group__label" for="email">Work email</label>
+          <input id="email" name="email" type="email" autocomplete="email" placeholder="you@company.com" aria-describedby="emailError" required>
+          <p class="input-group__error" id="emailError" aria-live="polite"></p>
+        </div>
+        <button class="btn btn--primary" id="ctaBtn" type="submit">Request Access</button>
+      </form>
+      <p class="cta-status" id="ctaStatus" role="status"></p>
+      <p class="cta-note"><span class="material-symbols-rounded" aria-hidden="true">lock</span>No spam. Your data stays private.</p>
+    </div>
+  </div>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="#top"><span class="material-symbols-rounded" aria-hidden="true">verified_user</span>Nimbus</a>
+        <p>Conversational AI with guardrails, citations, and humans in the loop — built for teams that answer to regulators.</p>
+        <ul class="chip-row">
+          <li class="chip"><span class="material-symbols-rounded" aria-hidden="true">lock</span>End-to-end encrypted</li>
+          <li class="chip"><span class="material-symbols-rounded" aria-hidden="true">verified_user</span>Audited</li>
+          <li class="chip"><span class="material-symbols-rounded" aria-hidden="true">supervisor_account</span>Human-reviewed</li>
+        </ul>
+      </div>
+      <nav class="footer-col" aria-label="Product"><h3>Product</h3><a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#top">Security</a><a href="#top">Changelog</a></nav>
+      <nav class="footer-col" aria-label="Company"><h3>Company</h3><a href="#top">About</a><a href="#top">Careers</a><a href="#top">Trust Center</a><a href="#top">Contact</a></nav>
+      <nav class="footer-col" aria-label="Resources"><h3>Resources</h3><a href="#faq">Documentation</a><a href="#top">Safety Evaluations</a><a href="#top">API Status</a><a href="#top">Blog</a></nav>
+      <nav class="footer-col" aria-label="Legal"><h3>Legal</h3><a href="#top">Privacy</a><a href="#top">Terms</a><a href="#top">Responsible AI Policy</a><a href="#top">DPA</a></nav>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 Nimbus AI, Inc. All rights reserved.</p>
+      <p>Audited quarterly. Reviewed by humans.</p>
+    </div>
+  </div>
+</footer>
+<script>
+(function(){var d=document,r=d.documentElement,K='nimbus-theme';
+if(localStorage.getItem(K)=='dark')r.classList.add('dark');
+var tB=d.getElementById('themeToggle'),tI=d.getElementById('themeIcon');
+function st(){var dk=r.classList.contains('dark');tB.setAttribute('aria-pressed',dk);tB.setAttribute('aria-label',dk?'Switch to light mode':'Switch to dark mode');tI.textContent=dk?'light_mode':'dark_mode'}
+tB.onclick=function(){r.classList.toggle('dark');localStorage.setItem(K,r.classList.contains('dark')?'dark':'light');st()};st();
+var h=d.querySelector('.site-header'),sc=function(){h.classList.toggle('is-scrolled',scrollY>4)};
+addEventListener('scroll',sc,{passive:true});sc();
+var mB=d.getElementById('menuBtn'),mI=d.getElementById('menuIcon'),nv=d.getElementById('navLinks');
+function cn(){nv.classList.remove('is-open');mB.setAttribute('aria-expanded','false');mI.textContent='menu'}
+mB.onclick=function(){var o=nv.classList.toggle('is-open');mB.setAttribute('aria-expanded',o);mI.textContent=o?'close':'menu'};
+nv.addEventListener('click',function(e){if(e.target.closest('a'))cn()});
+addEventListener('keydown',function(e){if(e.key=='Escape')cn()});
+var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('is-visible');io.unobserve(e.target)}})},{threshold:.25});
+d.querySelectorAll('.reveal,.research-progress').forEach(function(el){io.observe(el)});
+var f=d.getElementById('ctaForm'),g=d.getElementById('emailGroup'),em=d.getElementById('email'),er=d.getElementById('emailError'),b=d.getElementById('ctaBtn'),s=d.getElementById('ctaStatus');
+f.onsubmit=function(e){e.preventDefault();var v=em.value.trim();
+if(!/^\S+@\S+\.\S+$/.test(v)){g.classList.add('is-invalid');er.innerHTML='<span class="material-symbols-rounded" aria-hidden="true">error</span>Please enter a valid work email.';em.focus();return}
+g.classList.remove('is-invalid');g.classList.add('is-valid');er.textContent='';
+b.classList.add('is-loading');b.setAttribute('aria-busy','true');
+setTimeout(function(){b.classList.remove('is-loading');b.classList.add('is-success');b.setAttribute('aria-busy','false');b.innerHTML='<span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Request received';s.textContent="Thanks — we'll be in touch.";em.disabled=true},900)};
+em.oninput=function(){g.classList.remove('is-invalid','is-valid');er.textContent=''};
+})();
+</script>
+</body>
+</html>

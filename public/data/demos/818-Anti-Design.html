@@ -1,1077 +1,681 @@
 <!DOCTYPE html>
-<html lang="en" class="light">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nimbus - The Unpolished Tool</title>
-<link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Rounded" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Open+Sans&family=Permanent+Marker&family=VT323&display=swap" rel="stylesheet">
+<title>GRIDRUIN - The Deliberately Broken Layout Tool</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Archivo+Black&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
 <style>
-/* Anti-Design — design tokens */
-/* 2016–present | Reaction against polished 'design-by-committee' minimalism */
-/* Reference specification: references/00-flagship-implementation-specs/anti-design.md */
-:root {
-  /* color */
-  --color-bg: #ffe600;
-  --color-surface: #ff00ff;
-  --color-surface-strong: #00ffff;
-  --color-border: #000000;
-  --color-text: #000000;
-  --color-text-muted: #1a1a1a;
-  --color-primary: #0000ff;
-  --color-accent: #ff0000;
+/* Anti-Design tokens, mis-registered print, clashing system fonts, zero radius */
+:root{
+  --color-bg:#ffe600; --color-surface:#ff00ff; --color-surface-strong:#00ffff;
+  --color-border:#000000; --color-text:#000000; --color-text-muted:#1a1a1a;
+  --color-primary:#0000ff; --color-accent:#ff0000; --color-on-primary:#ffffff;
+  --color-input:#fefefe;
+  --primary:var(--color-primary); --secondary:var(--color-accent);
+  --bg-primary:var(--color-bg); --bg-secondary:var(--color-surface);
+  --text-primary:var(--color-text); --text-secondary:var(--color-text-muted);
+  --text-success:#006400; --text-error:#b30000;
+  --border-default:var(--color-border); --border-error:#b30000; --border-success:#006400;
+  --focus-color:#0000ff;
+  --radius-sm:0px; --radius-md:0px; --radius-lg:0px; --radius-pill:0px;
+  --shadow-sm:3px 3px 0 #ff0000;
+  --shadow-md:5px 5px 0 #0000ff,-3px -3px 0 #00ffff;
+  --shadow-lg:8px 8px 0 #ff0000,-5px -5px 0 #0000ff;
+  --font-sans:'Times New Roman',Times,serif;
+  --font-display:'Comic Sans MS','Chalkboard SE','Archivo Black',cursive;
+  --font-mono:'Courier New','Space Mono',monospace;
+  --font-base:var(--font-sans);
+  --text-xs:.7rem; --text-sm:.9rem; --text-base:1rem; --text-lg:1.2rem;
+  --text-xl:1.6rem; --text-2xl:2.1rem; --text-3xl:2.8rem;
+  --text-4xl:3.6rem; --text-5xl:4.8rem;
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px;
+  --space-6:24px; --space-8:32px; --space-12:48px; --space-16:64px; --space-24:96px;
+  --spacing-gap:var(--space-4);
+  --transition-fast:60ms; --transition-normal:120ms; --ease-standard:steps(1);
+  --z-dropdown:1000; --z-modal:1100; --z-toast:1200;
+  --tilt-a:rotate(-1.6deg); --tilt-b:rotate(1.1deg);
+  color-scheme:light;
+}
+/* Dark mode, validated pairs: #fff on #1a1a1a = 17.7:1; neon surfaces keep #000 text */
+:root[data-theme="dark"]{
+  --color-bg:#1a1a1a; --color-text:#ffffff; --color-text-muted:#d9d9d9;
+  --color-border:#fefefe; --color-input:#111111;
+  --text-success:#00ff00; --text-error:#ff4d4d;
+  --border-error:#ff4d4d; --border-success:#00ff00;
+  --focus-color:#ffff00;
+  --shadow-sm:3px 3px 0 #ff0000;
+  --shadow-md:5px 5px 0 #00ffff,-3px -3px 0 #ff00ff;
+  --shadow-lg:8px 8px 0 #ff0000,-5px -5px 0 #00ffff;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font-base); font-size:var(--text-base); line-height:1.55;
+  background:var(--bg-primary); color:var(--text-primary);
+  overflow-x:clip;
+}
+main{overflow-x:clip}
+h1,h2,h3{line-height:1.1;letter-spacing:-0.01em}
+img{max-width:100%}
+a{color:var(--text-primary)}
+a:focus-visible,summary:focus-visible{outline:4px dashed var(--focus-color);outline-offset:4px}
+.container{max-width:1200px;margin:0 auto;padding-left:1.25rem;padding-right:1.25rem}
+@media(min-width:768px){.container{padding-left:2rem;padding-right:2rem}}
+section{padding-top:clamp(4rem,8vw,7rem);padding-bottom:clamp(4rem,8vw,7rem)}
+.section-title{font-family:var(--font-display);font-size:clamp(2rem,5vw,var(--text-4xl));margin-bottom:var(--space-4)}
+.section-sub{font-family:var(--font-mono);font-size:var(--text-lg);max-width:60ch;margin-bottom:var(--space-12)}
+.material-symbols-rounded{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;font-size:1.5rem;line-height:1}
 
-  /* mandatory canonical aliases */
-  --primary: var(--color-primary);
-  --secondary: var(--color-accent);
-  --bg-primary: var(--color-bg);
-  --bg-secondary: var(--color-surface);
-  --text-primary: var(--color-text);
-  --text-secondary: var(--color-text-muted);
-  --text-success: #006400;   /* must validate ≥4.5:1 on every surface it renders on */
-  --text-error: #b30000;     /* decorative #ff0000 is reserved for borders/shadows/large display text only */
-  --border-default: var(--color-border);
-  --border-error: #b30000;
-  --border-success: #006400;
-  --focus-color: #0000ff;    /* redefined in dark mode — see 1.3 */
+/* ---------- NAV ---------- */
+.nav{
+  position:sticky;top:0;z-index:var(--z-dropdown);
+  background:var(--color-surface-strong);color:#000;
+  border:3px solid #000;box-shadow:var(--shadow-md);
+  transform:var(--tilt-a);
+  margin:var(--space-2);
+}
+.nav__inner{display:flex;align-items:center;gap:var(--space-4);min-height:64px;flex-wrap:wrap;padding:var(--space-2) var(--space-4)}
+.nav__brand{font-family:var(--font-display);font-weight:700;font-size:var(--text-xl);text-decoration:none;color:#000;transform:var(--tilt-b)}
+.nav__links{display:flex;align-items:center;gap:var(--space-4);list-style:none;margin-left:auto}
+.nav__links a{font-family:var(--font-mono);font-weight:700;text-transform:uppercase;font-size:var(--text-sm);color:#000;text-decoration:underline;text-underline-offset:4px;min-height:44px;display:inline-flex;align-items:center}
+@media(hover:hover) and (pointer:fine){.nav__links a:hover{background:#000;color:var(--color-surface-strong)}}
+.nav__toggle-btn{display:none;margin-left:auto;min-width:44px;min-height:44px;background:#000;color:var(--color-surface-strong);border:3px solid #000;font-family:var(--font-mono);font-weight:700;cursor:pointer;align-items:center;justify-content:center;gap:.4rem;padding:0 .8rem}
+@media(max-width:767px){
+  .nav__toggle-btn{display:inline-flex}
+  .nav__links{display:none;flex-basis:100%;flex-direction:column;align-items:flex-start;margin-left:0;padding:var(--space-2) 0}
+  .nav__links.is-open{display:flex}
+}
+#theme-toggle{
+  min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;
+  background:#000;color:#ffe600;border:3px solid #000;cursor:pointer;
+  transition:background var(--transition-fast) var(--ease-standard);
+}
+:root[data-theme="dark"] #theme-toggle{background:#fefefe;color:#1a1a1a;border-color:#fefefe}
+@media(hover:hover) and (pointer:fine){#theme-toggle:hover{transform:var(--tilt-b)}}
+#theme-toggle .icon-sun{display:none}
+:root[data-theme="dark"] #theme-toggle .icon-sun{display:inline-block}
+:root[data-theme="dark"] #theme-toggle .icon-moon{display:none}
 
-  /* radius: none, deliberately harsh defaults */
-  --radius-sm: 0px; --radius-md: 0px; --radius-lg: 0px; --radius-pill: 0px;
+/* ---------- BUTTONS ---------- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
+  font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);
+  min-height:44px;padding:.6rem 1.4rem;
+  background:var(--color-input);color:#000;
+  border:3px solid #000;box-shadow:var(--shadow-sm);
+  transform:var(--tilt-b);cursor:pointer;text-decoration:none;
+  transition:transform var(--transition-normal) var(--ease-standard),background var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard);
+}
+@media(hover:hover) and (pointer:fine){.btn:hover{background:#d0d0d0;transform:rotate(0deg)}}
+.btn:focus-visible{outline:4px dashed var(--focus-color);outline-offset:4px}
+.btn:active{box-shadow:none;transform:translate(3px,3px)}
+.btn--primary{background:var(--color-primary);color:var(--color-on-primary)}
+@media(hover:hover) and (pointer:fine){.btn--primary:hover{background:#0000aa}}
+.btn--danger{background:var(--color-input);color:var(--text-error);border-color:var(--border-error)}
+.btn[disabled]{opacity:.5;filter:grayscale(1);cursor:not-allowed;transform:none}
+.btn--loading{pointer-events:none}
+.btn--loading .btn__spin{animation:spin 1s steps(8) infinite}
+.btn--success{border-color:var(--border-success);color:var(--text-success)}
+.btn--error{border-color:var(--border-error);color:var(--text-error)}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-  /* shadow: clashing double offset, mimicking mis-registered print */
-  --shadow-sm: 3px 3px 0 #ff0000;
-  --shadow-md: 5px 5px 0 #0000ff, -3px -3px 0 #00ffff;
-  --shadow-lg: 8px 8px 0 #ff0000, -5px -5px 0 #0000ff;
+/* ---------- BADGE ---------- */
+.badge{
+  display:inline-flex;align-items:center;gap:.4rem;
+  font-family:var(--font-mono);font-weight:700;text-transform:uppercase;font-size:var(--text-xs);
+  background:var(--color-accent);color:#fff;border:3px solid #000;
+  padding:.3rem .8rem;transform:var(--tilt-a);box-shadow:var(--shadow-sm);
+}
+:root[data-theme="dark"] .badge{border-color:#000}
 
-  /* font: deliberately clashing default-browser choices */
-  --font-sans: 'Times New Roman', Times, serif, 'Open Sans', sans-serif;
-  --font-display: 'Comic Sans MS', 'Chalkboard SE', cursive, 'Permanent Marker', cursive;
-  --font-mono: 'Courier New', monospace, 'VT323', monospace;
-  --font-base: var(--font-sans);
+/* ---------- HERO ---------- */
+.hero{padding-top:var(--space-12)}
+.hero__grid{display:flex;align-items:center;gap:var(--space-12);flex-wrap:wrap}
+.hero__text{flex:1 1 320px;display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-6)}
+.hero__title{font-family:var(--font-display);font-size:clamp(2.4rem,6vw,var(--text-5xl));letter-spacing:-0.02em}
+.hero__title em{font-style:italic;color:var(--color-primary)}
+:root[data-theme="dark"] .hero__title em{color:#00ffff}
+.hero__sub{font-family:var(--font-mono);font-size:var(--text-lg);max-width:34ch}
+.hero__ctas{display:flex;gap:var(--space-4);flex-wrap:wrap}
+.hero__visual{flex:1 1 300px;display:flex;align-items:center;justify-content:center;min-height:280px}
+.frame{
+  position:relative;width:min(100%,420px);aspect-ratio:4/3;
+  background:var(--color-surface);border:3px solid #000;
+  box-shadow:var(--shadow-lg);transform:var(--tilt-a);
+}
+.frame__bar{position:absolute;left:8%;top:10%;width:70%;height:18%;background:var(--color-surface-strong);border:3px solid #000;transform:var(--tilt-b)}
+.frame__block{position:absolute;right:6%;bottom:12%;width:45%;height:38%;background:var(--color-bg);border:3px solid #000;box-shadow:var(--shadow-sm);transform:rotate(2.4deg)}
+:root[data-theme="dark"] .frame__block{background:#fefefe}
+.frame__tag{position:absolute;left:-4%;bottom:-8%;font-family:var(--font-mono);font-weight:700;font-size:var(--text-sm);background:var(--color-primary);color:var(--color-on-primary);border:3px solid #000;padding:.3rem .8rem;transform:rotate(-3deg)}
+.marquee{border-top:3px solid var(--border-default);border-bottom:3px solid var(--border-default);background:var(--color-surface);color:#000;overflow:hidden;padding:var(--space-2) 0;margin-top:var(--space-12)}
+.marquee__track{display:flex;gap:var(--space-8);white-space:nowrap;font-family:var(--font-mono);font-weight:700;text-transform:uppercase;font-size:var(--text-lg);animation:marquee 18s linear infinite;width:max-content}
+@keyframes marquee{to{transform:translateX(-50%)}}
 
-  /* text: default browser sizes exaggerated */
-  --text-xs: 0.7rem; --text-sm: 0.9rem; --text-base: 1rem; --text-lg: 1.2rem;
-  --text-xl: 1.6rem; --text-2xl: 2.1rem; --text-3xl: 2.8rem;
-  --text-4xl: 3.6rem; --text-5xl: 4.8rem;
+/* ---------- CARDS ---------- */
+.card-row{display:flex;align-items:flex-start;gap:var(--space-8);flex-wrap:wrap} /* exception: tilted cards of differing heights must not stretch */
+.card{
+  flex:1 1 260px;display:flex;flex-direction:column;gap:var(--space-4);
+  background:var(--bg-secondary);color:#000;
+  border:3px solid #000;box-shadow:var(--shadow-lg);
+  padding:var(--space-8);
+  transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal) var(--ease-standard);
+}
+.card:nth-child(odd){transform:var(--tilt-a)}
+.card:nth-child(even){transform:var(--tilt-b)}
+@media(hover:hover) and (pointer:fine){
+  .card:hover{transform:rotate(0deg);box-shadow:9px 9px 0 #ff0000,-6px -6px 0 #0000ff}
+}
+.card:focus-within{border-style:dashed;border-color:var(--focus-color)}
+.card h3{font-family:var(--font-display);font-size:var(--text-xl)}
+.card p{font-size:var(--text-base)}
+.card .material-symbols-rounded{font-size:2.4rem}
+.card--strong{background:var(--color-surface-strong)}
+.card--empty{background:var(--color-input);align-items:center;text-align:center}
+.card--skeleton{position:relative;overflow:hidden;min-height:220px}
+.card--skeleton::after{
+  content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(90deg,rgba(0,0,0,.12) 0 24px,transparent 24px 48px);
+  animation:shimmer 1.2s steps(6) infinite;
+}
+@keyframes shimmer{to{transform:translateX(48px)}}
 
-  /* space */
-  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
-  --space-6: 24px; --space-8: 32px; --space-12: 48px; --space-16: 64px; --space-24: 96px;
-  --spacing-gap: var(--space-4);
+/* ---------- STEPS ---------- */
+.steps{list-style:none;display:flex;align-items:flex-start;gap:var(--space-8);flex-wrap:wrap;counter-reset:step}
+.steps li{
+  flex:1 1 240px;display:flex;flex-direction:column;gap:var(--space-3);
+  background:var(--color-input);color:#000;border:3px solid #000;
+  box-shadow:var(--shadow-md);padding:var(--space-8);position:relative;
+}
+.steps li:nth-child(1){transform:var(--tilt-b)}
+.steps li:nth-child(2){transform:var(--tilt-a)}
+.steps li:nth-child(3){transform:rotate(2deg)}
+.steps__num{
+  font-family:var(--font-display);font-size:var(--text-4xl);line-height:1;
+  color:var(--color-accent);transform:translate(-10px,-24px) rotate(-4deg);
+  text-shadow:3px 3px 0 var(--color-primary);
+}
+.steps h3{font-family:var(--font-mono);font-size:var(--text-lg);text-transform:uppercase}
 
-  /* transitions: abrupt, no easing — but durations exist so state changes are perceivable */
-  --transition-fast: 60ms; --transition-normal: 120ms; --ease-standard: steps(1);
+/* ---------- TESTIMONIALS ---------- */
+.card--testimonial blockquote{font-size:var(--text-lg);font-style:italic}
+.card--testimonial cite{font-family:var(--font-mono);font-size:var(--text-sm);font-style:normal}
+.card--testimonial .badge{align-self:flex-start}
 
-  /* elevation/stacking */
-  --z-dropdown: 1000; --z-modal: 1100; --z-toast: 1200;
+/* ---------- PRICING ---------- */
+.price{font-family:var(--font-display);font-size:var(--text-3xl);color:var(--color-primary)}
+.card--strong .price{color:#000;text-shadow:3px 3px 0 var(--color-accent)}
+.price small{font-size:var(--text-base);font-family:var(--font-mono)}
+.price-list{list-style:none;display:flex;flex-direction:column;gap:var(--space-2);font-size:var(--text-base)}
+.price-list li{display:flex;align-items:center;gap:.5rem}
+.price-list .no{text-decoration:line-through}
+.tier-badge{align-self:flex-start}
 
-  /* intentional misregistration rotation */
-  --tilt-a: rotate(-1.6deg);
-  --tilt-b: rotate(1.1deg);
+/* ---------- FAQ ---------- */
+.faq{max-width:760px;display:flex;flex-direction:column;gap:var(--space-4)}
+.faq__item{background:var(--color-input);color:#000;border:3px dashed #000;box-shadow:var(--shadow-sm)}
+.faq__item:nth-child(odd){transform:var(--tilt-a)}
+.faq__item:nth-child(even){transform:var(--tilt-b)}
+.faq__item summary{
+  cursor:pointer;list-style:none;display:flex;align-items:center;gap:var(--space-3);
+  font-family:var(--font-mono);font-weight:700;font-size:var(--text-lg);
+  padding:var(--space-4);min-height:44px;
+}
+.faq__item summary::-webkit-details-marker{display:none}
+.faq__item summary::before{content:attr(data-num);font-family:var(--font-display);color:var(--color-accent)}
+.faq__item summary .material-symbols-rounded{margin-left:auto;transition:transform var(--transition-fast) var(--ease-standard)}
+.faq__item[open] summary .material-symbols-rounded{transform:rotate(180deg)}
+.faq__item .faq__body{padding:0 var(--space-4) var(--space-4);font-size:var(--text-base)}
 
-  /* color-scheme for light mode */
-  color-scheme: light;
+/* ---------- CTA ---------- */
+.cta{background:var(--color-surface-strong);color:#000;border-top:3px solid #000;border-bottom:3px solid #000}
+.cta__title{font-family:var(--font-display);font-size:clamp(2.2rem,6vw,var(--text-4xl));transform:var(--tilt-a);margin-bottom:var(--space-6)}
+.cta__sub{font-family:var(--font-mono);font-size:var(--text-lg);margin-bottom:var(--space-8);max-width:52ch}
+.input-group{display:flex;flex-direction:column;gap:var(--space-2);max-width:520px}
+.input-group label{font-family:var(--font-mono);font-weight:700;text-transform:uppercase;font-size:var(--text-sm)}
+.input-row{display:flex;gap:var(--space-4);flex-wrap:wrap;align-items:flex-start}
+.input{
+  flex:1 1 240px;min-height:44px;padding:.6rem .9rem;font-family:var(--font-mono);font-size:var(--text-base);
+  background:var(--color-input);color:#000;border:3px solid #000;border-radius:0;
 }
+.input::placeholder{font-style:italic;color:#444}
+:root[data-theme="dark"] .input::placeholder{color:#bbb}
+.input:focus-visible{outline:4px dashed var(--focus-color);outline-offset:4px}
+.input--valid{border-color:var(--border-success)}
+.input--invalid{border-color:var(--border-error)}
+.input-helper{font-size:var(--text-sm);font-family:var(--font-mono)}
+.input-error{font-size:var(--text-sm);font-family:var(--font-mono);font-weight:700;color:var(--text-error);display:flex;align-items:center;gap:.4rem;min-height:1.4em}
+.cta .input-error{color:#b30000}
+.form-note{margin-top:var(--space-4);font-weight:700;display:none;align-items:center;gap:.4rem}
+.form-note.is-visible{display:flex}
+.form-note--ok{color:var(--text-success)}
+.cta .form-note--ok{color:#006400}
 
-/* Dark mode overrides */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg: #1a1a1a;
-    --color-text: #ffffff;
-    --color-text-muted: #d9d9d9;
-    --color-border: #fefefe;
-    --focus-color: #ffff00;
-    --text-success: #00ff00;
-    --text-error: #ff4d4d;
-    --border-error: #ff4d4d;
-    --border-success: #00ff00;
-    /* Neon surfaces keep black text for contrast */
-    --color-surface: #ff00ff;
-    --color-surface-strong: #00ffff;
-    color-scheme: dark;
-  }
+/* ---------- TOAST ---------- */
+.toast{
+  position:fixed;bottom:var(--space-6);right:var(--space-6);z-index:var(--z-toast);
+  display:flex;align-items:center;gap:var(--space-3);
+  background:var(--color-input);color:#000;border:3px solid #000;box-shadow:var(--shadow-md);
+  padding:var(--space-4);max-width:min(90vw,380px);
+  font-family:var(--font-mono);font-weight:700;
+  transform:translateY(150%);opacity:0;
+  transition:transform var(--transition-normal) var(--ease-standard),opacity var(--transition-normal) var(--ease-standard);
 }
-.dark {
-  --color-bg: #1a1a1a;
-  --color-text: #ffffff;
-  --color-text-muted: #d9d9d9;
-  --color-border: #fefefe;
-  --focus-color: #ffff00;
-  --text-success: #00ff00;
-  --text-error: #ff4d4d;
-  --border-error: #ff4d4d;
-  --border-success: #00ff00;
-  /* Neon surfaces keep black text for contrast */
-  --color-surface: #ff00ff;
-  --color-surface-strong: #00ffff;
-  color-scheme: dark;
-}
+.toast.is-visible{transform:translateY(0);opacity:1}
+.toast--success{border-color:var(--border-success)}
+.toast--success .material-symbols-rounded{color:var(--text-success)}
+.toast--error{border-color:var(--border-error)}
+.toast--error .material-symbols-rounded{color:var(--text-error)}
+.toast__close{background:none;border:3px solid #000;min-width:44px;min-height:44px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:inherit}
 
-/* Base styles */
-* {
-  box-sizing: border-box;
-}
-html {
-  font-size: 100%;
-}
-body {
-  margin: 0;
-  font-family: var(--font-base);
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  line-height: 1.5;
-  overflow-x: clip;
-}
-a {
-  color: var(--text-primary);
-  text-decoration: underline;
-}
-h1, h2, h3, h4, h5, h6 {
-  margin: 0 0 var(--space-2) 0;
-  font-weight: bold;
-  font-family: var(--font-display);
-}
-p {
-  margin: 0 0 var(--space-4) 0;
-}
-.material-symbols-rounded {
-  font-variation-settings:
-  'FILL' 0,
-  'wght' 400,
-  'GRAD' 0,
-  'opsz' 24;
-}
+/* ---------- FOOTER ---------- */
+footer{background:#000;color:#ffe600;padding:var(--space-16) 0 var(--space-8);border-top:3px solid var(--border-default)}
+:root[data-theme="dark"] footer{color:#1a1a1a;background:#fefefe}
+.footer__grid{display:flex;align-items:flex-start;gap:var(--space-12);flex-wrap:wrap}
+.footer__brand{font-family:var(--font-display);font-size:var(--text-2xl);transform:var(--tilt-a)}
+.footer__col{display:flex;flex-direction:column;gap:var(--space-2)}
+.footer__col h4{font-family:var(--font-mono);text-transform:uppercase;font-size:var(--text-sm);margin-bottom:var(--space-2)}
+.footer__col a{color:inherit;font-size:var(--text-sm);min-height:44px;display:inline-flex;align-items:center;text-decoration:underline;text-underline-offset:4px}
+.footer__col a:focus-visible{outline:4px dashed var(--focus-color);outline-offset:4px;text-decoration-style:dashed}
+.footer__legal{margin-top:var(--space-12);font-family:var(--font-mono);font-size:var(--text-sm);opacity:.85}
 
-/* Nav */
-.nav {
-  position: sticky;
-  top: 0;
-  z-index: var(--z-dropdown);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-4) var(--space-6);
-  background-color: var(--bg-secondary);
-  border: 3px solid var(--border-default);
-  box-shadow: var(--shadow-md);
-  transform: var(--tilt-a);
-  gap: var(--space-4);
-  flex-wrap: wrap;
-}
-.nav__brand {
-  font-size: var(--text-3xl);
-  font-family: var(--font-display);
-  text-decoration: none;
-}
-.nav__links {
-  display: flex;
-  gap: var(--space-4);
-  flex-wrap: wrap;
-}
-.nav__link {
-  padding: var(--space-2) var(--space-4);
-  text-decoration: none;
-  font-family: var(--font-display);
-}
-.nav__toggle {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
-  background: none;
-  border: 3px solid var(--border-default);
-  color: var(--text-primary);
-  font-family: var(--font-display);
-  cursor: pointer;
-  transform: var(--tilt-b);
-  transition: transform var(--transition-normal) var(--ease-standard);
-}
-.nav__toggle:hover {
-  transform: rotate(0deg);
-}
-.nav__toggle:focus-visible {
-  outline: 4px dashed var(--focus-color);
-  outline-offset: 4px;
-}
-.nav__toggle[aria-pressed="true"] .dark-mode-icon,
-.nav__toggle[aria-pressed="false"] .light-mode-icon {
-  display: none;
-}
-.nav__toggle[aria-pressed="true"] .light-mode-icon,
-.nav__toggle[aria-pressed="false"] .dark-mode-icon {
-  display: inline-block;
-}
-
-/* Hero */
-.hero {
-  padding: var(--space-24) var(--space-6);
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-}
-.hero::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-color: var(--bg-secondary);
-  border: 3px solid var(--border-default);
-  box-shadow: var(--shadow-lg);
-  transform: var(--tilt-a);
-  z-index: -1;
-}
-.hero__title {
-  font-size: clamp(var(--text-3xl), 8vw, var(--text-5xl));
-  margin-bottom: var(--space-4);
-  line-height: 1.1;
-}
-.hero__subtitle {
-  font-family: var(--font-mono);
-  font-size: var(--text-lg);
-  margin-bottom: var(--space-6);
-  color: var(--text-muted);
-}
-.hero__ctas {
-  display: flex;
-  gap: var(--space-4);
-  justify-content: center;
-  flex-wrap: wrap;
-}
-.hero__badge {
-  display: inline-block;
-  padding: var(--space-2) var(--space-4);
-  background-color: var(--color-surface);
-  border: 3px solid var(--border-default);
-  color: var(--text-primary);
-  font-family: var(--font-display);
-  font-size: var(--text-sm);
-  transform: var(--tilt-b);
-  margin: var(--space-4) 0;
-}
-.hero__marquee {
-  display: flex;
-  gap: var(--space-8);
-  overflow: hidden;
-  margin-top: var(--space-8);
-  font-family: var(--font-mono);
-  font-size: var(--text-xl);
-  color: var(--text-primary);
-  white-space: nowrap;
-}
-.hero__marquee span {
-  display: inline-block;
-  padding: 0 var(--space-4);
-  animation: marquee 10s linear infinite;
-}
-@keyframes marquee {
-  0% { transform: translateX(100%); }
-  100% { transform: translateX(-100%); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .hero__marquee span {
-    animation: none;
-  }
-}
-
-/* Buttons */
-.btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-6);
-  font-family: var(--font-display);
-  font-weight: bold;
-  border: 3px solid var(--border-default);
-  background-color: transparent;
-  color: var(--text-primary);
-  cursor: pointer;
-  min-height: 44px;
-  min-width: 44px;
-  transform: var(--tilt-b);
-  box-shadow: var(--shadow-sm);
-  transition: background-color var(--transition-fast) var(--ease-standard),
-              transform var(--transition-normal) var(--ease-standard);
-}
-.btn:hover {
-  background-color: #d0d0d0;
-  transform: rotate(0deg);
-}
-.btn:focus-visible {
-  outline: 4px dashed var(--focus-color);
-  outline-offset: 4px;
-}
-.btn:active {
-  box-shadow: none;
-  transform: translate(3px, 3px);
-}
-.btn--loading {
-  pointer-events: none;
-  opacity: 0.7;
-}
-.btn--loading .btn__loading-icon {
-  display: inline-block;
-  animation: spin 1s linear infinite;
-}
-.btn--loading .btn__label {
-  visibility: hidden;
-}
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .btn--loading .btn__loading-icon {
-    animation: none;
-  }
-  .btn--loading .btn__label {
-    visibility: visible;
-  }
-}
-.btn--primary {
-  --btn-bg: var(--color-primary);
-  --btn-text: #ffffff;
-}
-.btn--primary:hover {
-  background-color: var(--btn-bg);
-  color: var(--btn-text);
-}
-.btn {
-  background-color: var(--btn-bg, transparent);
-  color: var(--btn-text, var(--text-primary));
-}
-.btn--success {
-  --btn-bg: var(--color-surface);
-  --btn-text: var(--text-success);
-  border-color: var(--border-success);
-}
-.btn--success:hover {
-  background-color: var(--btn-bg);
-  color: var(--btn-text);
-}
-.btn--error {
-  --btn-bg: var(--color-surface);
-  --btn-text: var(--text-error);
-  border-color: var(--border-error);
-}
-.btn--error:hover {
-  background-color: var(--btn-bg);
-  color: var(--btn-text);
-}
-.btn--danger {
-  --btn-bg: var(--color-surface);
-  --btn-text: #b30000;
-  border-color: var(--border-error);
-}
-.btn--danger:hover {
-  background-color: var(--btn-bg);
-  color: var(--btn-text);
-}
-.btn__loading-icon,
-.btn__success-icon,
-.btn__error-icon {
-  display: none;
-}
-.btn--loading .btn__loading-icon,
-.btn--success .btn__success-icon,
-.btn--error .btn__error-icon {
-  display: inline-block;
-}
-.btn--loading .btn__label,
-.btn--success .btn__label,
-.btn--error .btn__label {
-  display: none;
+@media(max-width:767px){
+  .hero__grid,.card-row,.steps,.footer__grid{flex-direction:column;align-items:stretch}
+  .card,.steps li{transform:none}
+  .frame{transform:none}
+  .steps__num{transform:translate(0,-24px)}
 }
 
-/* Cards */
-.card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  padding: var(--space-6);
-  background-color: var(--bg-secondary);
-  border: 3px solid var(--border-default);
-  box-shadow: var(--shadow-lg);
-  transform: var(--tilt-a);
-  transition: transform var(--transition-normal) var(--ease-standard),
-              box-shadow var(--transition-normal) var(--ease-standard);
-}
-.card:hover {
-  transform: var(--tilt-b);
-  box-shadow: 9px 9px 0 #ff0000, -6px -6px 0 #0000ff;
-}
-.card:focus-within {
-  border-color: var(--focus-color);
-  outline: 4px dashed var(--focus-color);
-  outline-offset: 4px;
-}
-.card--feature {
-  text-align: center;
-}
-.card--feature .material-symbols-rounded {
-  font-size: var(--text-3xl);
-}
-.card--testimonial {
-  background-color: var(--bg-secondary);
-}
-.card--testimonial blockquote {
-  margin: 0;
-  font-style: italic;
-}
-.card--testimonial cite {
-  display: block;
-  margin-top: var(--space-2);
-  font-size: var(--text-sm);
-  font-family: var(--font-display);
-}
-.card--pricing {
-  text-align: center;
-}
-.card--pricing .price {
-  font-size: var(--text-4xl);
-  font-family: var(--font-display);
-  margin: var(--space-4) 0;
-}
-.card--pricing .badge {
-  align-self: center;
-}
-.card--skeleton {
-  background: repeating-linear-gradient(
-    90deg,
-    var(--bg-secondary) 0px,
-    var(--bg-secondary) 40px,
-    #f0f0f0 40px,
-    #f0f0f0 80px
-  );
-  background-size: 200% 100%;
-  animation: shimmer 2s linear infinite;
-}
-@keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .card--skeleton {
-    animation: none;
-    background: var(--bg-secondary);
-  }
-}
-
-/* Inputs */
-.input-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  max-width: 100%;
-}
-.input-group label {
-  font-weight: bold;
-  font-family: var(--font-display);
-}
-.input {
-  padding: var(--space-3) var(--space-4);
-  font-family: var(--font-base);
-  font-size: var(--text-base);
-  border: 3px solid var(--border-default);
-  background-color: #fefefe;
-  color: var(--text-primary);
-  border-radius: var(--radius-sm);
-  transition: border-color var(--transition-fast) var(--ease-standard);
-}
-.input:focus {
-  outline: 4px dashed var(--focus-color);
-  outline-offset: 4px;
-  border-color: var(--focus-color);
-}
-.input--valid {
-  border-color: var(--border-success);
-}
-.input--invalid {
-  border-color: var(--border-error);
-}
-.input-error {
-  min-height: 1.5em;
-  font-size: var(--text-sm);
-  font-family: var(--font-mono);
-  color: var(--text-error);
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-.input-error .material-symbols-rounded {
-  font-size: var(--text-xl);
-}
-
-/* Badge */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
-  font-family: var(--font-display);
-  font-size: var(--text-sm);
-  border: 3px solid var(--border-default);
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
-  transform: var(--tilt-b);
-}
-.badge--accent {
-  background-color: var(--color-accent);
-  color: #ffffff;
-}
-
-/* Toast */
-.toast {
-  position: fixed;
-  bottom: var(--space-6);
-  right: var(--space-6);
-  z-index: var(--z-toast);
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-4) var(--space-6);
-  border: 3px solid var(--border-default);
-  box-shadow: var(--shadow-lg);
-  transform: var(--tilt-a);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity var(--transition-fast) var(--ease-standard);
-}
-.toast--visible {
-  opacity: 1;
-  pointer-events: all;
-}
-.toast--success {
-  background-color: var(--bg-secondary);
-  border-color: var(--border-success);
-}
-.toast--error {
-  background-color: var(--bg-secondary);
-  border-color: var(--border-error);
-}
-.toast__icon {
-  font-size: var(--text-xl);
-}
-.toast__message {
-  font-family: var(--font-base);
-}
-
-/* Features */
-.features {
-  display: flex;
-  gap: var(--space-6);
-  padding: var(--space-24) var(--space-6);
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.features::-webkit-scrollbar {
-  display: none;
-}
-.features .card {
-  flex: 0 0 280px;
-}
-
-/* How It Works */
-.how-it-works {
-  padding: var(--space-24) var(--space-6);
-}
-.how-it-works ol {
-  counter-reset: step;
-  list-style: none;
-  padding: 0;
-  display: flex;
-  gap: var(--space-6);
-}
-.how-it-works li {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-.how-it-works li::before {
-  counter-increment: step;
-  content: counter(step);
-  font-family: var(--font-display);
-  font-size: var(--text-5xl);
-  color: var(--text-primary);
-  transform: var(--tilt-a);
-  margin-bottom: var(--space-4);
-}
-.how-it-works .step-title {
-  font-family: var(--font-mono);
-  font-weight: bold;
-  margin: var(--space-2) 0;
-}
-
-/* Testimonials */
-.testimonials {
-  display: flex;
-  gap: var(--space-6);
-  padding: var(--space-24) var(--space-6);
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.testimonials::-webkit-scrollbar {
-  display: none;
-}
-.testimonials .card {
-  flex: 0 0 300px;
-}
-
-/* Pricing */
-.pricing {
-  display: flex;
-  gap: var(--space-6);
-  padding: var(--space-24) var(--space-6);
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.pricing::-webkit-scrollbar {
-  display: none;
-}
-.pricing .card {
-  flex: 0 0 280px;
-}
-.pricing .card--highlighted {
-  background-color: var(--color-surface-strong);
-  transform: var(--tilt-b);
-}
-.pricing .card--highlighted:hover {
-  transform: var(--tilt-a);
-  box-shadow: 9px 9px 0 #ff0000, -6px -6px 0 #0000ff;
-}
-.pricing .features-list {
-  list-style: none;
-  padding: 0;
-  margin: var(--space-4) 0;
-  text-align: left;
-}
-.pricing .features-list li {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  margin: var(--space-2) 0;
-  font-family: var(--font-mono);
-}
-.pricing .features-list li .material-symbols-rounded {
-  font-size: var(--text-lg);
-}
-
-/* FAQ */
-.faq {
-  padding: var(--space-24) var(--space-6);
-}
-.faq details {
-  border: 3px solid var(--border-default);
-  margin: var(--space-4) 0;
-  padding: var(--space-4);
-  background-color: var(--bg-secondary);
-}
-.faq summary {
-  font-family: var(--font-display);
-  font-weight: bold;
-  list-style: none;
-  padding: var(--space-2) 0;
-  cursor: pointer;
-}
-.faq summary::-webkit-details-marker {
-  display: none;
-}
-.faq summary::after {
-  content: "+";
-  float: right;
-  font-size: var(--text-xl);
-  transform: var(--tilt-b);
-}
-.faq details[open] summary::after {
-  content: "−";
-  transform: rotate(90deg) var(--tilt-b);
-}
-.faq summary:focus-visible {
-  outline: 4px dashed var(--focus-color);
-  outline-offset: 4px;
-}
-.faq .faq-panel {
-  margin-top: var(--space-4);
-  font-family: var(--font-base);
-}
-
-/* Final CTA */
-.final-cta {
-  padding: var(--space-24) var(--space-6);
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-}
-.final-cta::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-color: var(--bg-secondary);
-  border: 3px solid var(--border-default);
-  box-shadow: var(--shadow-lg);
-  transform: var(--tilt-a);
-  z-index: -1;
-}
-.final-cta__title {
-  font-size: clamp(var(--text-3xl), 10vw, var(--text-5xl));
-  margin-bottom: var(--space-8);
-  line-height: 1.1;
-}
-.final-cta__form {
-  max-width: 480px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-.final-cta__submit {
-  align-self: center;
-}
-
-/* Footer */
-.footer {
-  padding: var(--space-24) var(--space-6);
-  background-color: var(--bg-secondary);
-  border-top: 3px solid var(--border-default);
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-6);
-  justify-content: space-between;
-}
-.footer__section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-.footer__title {
-  font-family: var(--font-display);
-  font-size: var(--text-lg);
-  margin-bottom: var(--space-4);
-}
-.footer__link {
-  text-decoration: none;
-  font-family: var(--font-mono);
-}
-.footer__link:focus-visible {
-  text-decoration: underline;
-  text-decoration-style: dashed;
-  text-decoration-color: var(--focus-color);
-}
-.footer__copyright {
-  margin-top: var(--space-16);
-  font-size: var(--text-sm);
-  color: var(--text-muted);
-  text-align: center;
-  width: 100%;
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .marquee__track{animation:none}
+  .card--skeleton::after{animation:none}
+  .btn--loading .btn__spin{animation:none}
+  *{transition-duration:.01ms!important}
+}
+@media(prefers-contrast:more){
+  .card,.faq__item,.steps li{border-width:4px}
 }
 </style>
 </head>
 <body>
-<nav class="nav">
-  <a href="#hero" class="nav__brand">Nimbus</a>
-  <div class="nav__links">
-    <a href="#features" class="nav__link">Features</a>
-    <a href="#how-it-works" class="nav__link">How It Works</a>
-    <a href="#testimonials" class="nav__link">Testimonials</a>
-    <a href="#pricing" class="nav__link">Pricing</a>
-    <a href="#faq" class="nav__link">FAQ</a>
-    <a href="#final-cta" class="nav__link">Contact</a>
+
+<nav class="nav" aria-label="Main navigation">
+  <div class="nav__inner">
+    <a class="nav__brand" href="#top">GRIDRUIN</a>
+    <button class="nav__toggle-btn" id="nav-menu-btn" aria-expanded="false" aria-controls="nav-links">
+      <span class="material-symbols-rounded" aria-hidden="true">menu</span>MENU
+    </button>
+    <ul class="nav__links" id="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#how">Process</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#faq">FAQ</a></li>
+      <li>
+        <button id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+          <span class="material-symbols-rounded icon-moon" aria-hidden="true">dark_mode</span>
+          <span class="material-symbols-rounded icon-sun" aria-hidden="true">light_mode</span>
+        </button>
+      </li>
+    </ul>
   </div>
-  <button class="nav__toggle" id="theme-toggle" aria-pressed="false" aria-label="Toggle dark mode">
-    <span class="light-mode-icon material-symbols-rounded">dark_mode</span>
-    <span class="dark-mode-icon material-symbols-rounded">light_mode</span>
-  </button>
 </nav>
 
-<section class="hero" id="hero" aria-labelledby="hero-title">
-  <h1 class="hero__title" id="hero-title">Embrace the Glitch</h1>
-  <p class="hero__subtitle">A tool so raw it laughs at your Figma prototypes.</p>
-  <div class="hero__ctas">
-    <button class="btn btn--primary">Get Started</button>
-    <button class="btn">Learn More</button>
-  </div>
-  <div class="hero__badge">Anti-Design Certified</div>
-  <div class="hero__marquee" aria-hidden="true">
-    <span>GLITCH</span><span>GLITCH</span><span>GLITCH</span><span>GLITCH</span><span>GLITCH</span>
-  </div>
-</section>
+<main id="top">
 
-<section class="features" id="features">
-  <div class="card card--feature">
-    <span class="material-symbols-rounded">bolt</span>
-    <h3>Instant Chaos</h3>
-    <p>Zero setup. Maximum disruption. Your workflow, now with 200% more entropy.</p>
-  </div>
-  <div class="card card--feature">
-    <span class="material-symbols-rounded">palette</span>
-    <h3>Clash Mode</h3>
-    <p>Intentionally ugly palettes that make your boss question your life choices.</p>
-  </div>
-  <div class="card card--feature">
-    <span class="material-symbols-rounded">code</span>
-    <h3>Broken by Design</h3>
-    <p>Semantic HTML? We prefer tables for layout and Comic Sans for headers.</p>
-  </div>
-</section>
-
-<section class="how-it-works" id="how-it-works">
-  <h2>How It Works</h2>
-  <ol>
-    <li>
-      <div class="step-title">Install</div>
-      <p>Copy-paste one line. Ignore the warnings. Feel the power.</p>
-    </li>
-    <li>
-      <div class="step-title">Configure</div>
-      <p>Edit the config file with Notepad. Yes, really.</p>
-    </li>
-    <li>
-      <div class="step-title">Glitch</div>
-      <p>Watch as your UI transforms into a beautiful disaster.</p>
-    </li>
-  </ol>
-</section>
-
-<section class="testimonials" id="testimonials">
-  <h2>What People Are Saying</h2>
-  <div class="card card--testimonial">
-    <blockquote>"Finally, a tool that understands my aesthetic vision of controlled chaos."</blockquote>
-    <cite>— Alex, Digital Anarchist</cite>
-  </div>
-  <div class="card card--testimonial">
-    <blockquote>"My design team quit. My users are confused. I've never been happier."</blockquote>
-    <cite>— Sam, Startup Founder</cite>
-  </div>
-  <div class="card card--testimonial">
-    <blockquote>"It's like if Geocities and Brutalism had a baby raised by wolves."</blockquote>
-    <cite>— Taylor, UI Rebel</cite>
-  </div>
-</section>
-
-<section class="pricing" id="pricing">
-  <h2>Pricing Tiers</h2>
-  <div class="card card--pricing">
-    <h3>Hobbyist</h3>
-    <div class="price">$0</div>
-    <p>For the brave souls who enjoy pain.</p>
-    <ul class="features-list">
-      <li><span class="material-symbols-rounded">check_circle</span> Basic glitching</li>
-      <li><span class="material-symbols-rounded">check_circle</span> Community support</li>
-      <li><span class="material-symbols-rounded">close</span> No updates</li>
-    </ul>
-    <button class="btn">Choose Free</button>
-  </div>
-  <div class="card card--pricing card--highlighted">
-    <h3>Professional</h3>
-    <div class="price">$19<span class="text-xs">/mo</span></div>
-    <div class="badge">MOST POPULAR</div>
-    <p>For when you need to impress your art school friends.</p>
-    <ul class="features-list">
-      <li><span class="material-symbols-rounded">check_circle</span> Advanced clashing</li>
-      <li><span class="material-symbols-rounded">check_circle</span> Priority chaos</li>
-      <li><span class="material-symbols-rounded">check_circle</span> 24/7 scream support</li>
-    </ul>
-    <button class="btn btn--primary">Get Professional</button>
-  </div>
-  <div class="card card--pricing">
-    <h3>Enterprise</h3>
-    <div class="price">$99<span class="text-xs">/mo</span></div>
-    <p>For corporations that want to look intentionally terrible.</p>
-    <ul class="features-list">
-      <li><span class="material-symbols-rounded">check_circle</span> Custom entropy levels</li>
-      <li><span class="material-symbols-rounded">check_circle</span> Dedicated glitch engineer</li>
-      <li><span class="material-symbols-rounded">check_circle</span> SLA: 99.9% ugliness</li>
-    </ul>
-    <button class="btn">Contact Sales</button>
-  </div>
-</section>
-
-<section class="faq" id="faq">
-  <h2>Frequently Questioned Answers</h2>
-  <details class="faq__item">
-    <summary>Why does it look like this?</summary>
-    <div class="faq-panel">
-      <p>Because polished design is soulless. We embrace the raw, the unrefined, the beautifully broken.</p>
-    </div>
-  </details>
-  <details class="faq__item">
-    <summary>Is this accessible?</summary>
-    <div class="faq-panel">
-      <p>Yes! We prioritize usable chaos: proper contrast, keyboard navigation, and screen reader friendliness.</p>
-    </div>
-  </details>
-  <details class="faq__item">
-    <summary>Can I use this for my bank?</summary>
-    <div class="faq-panel">
-      <p>Only if you want your customers to question their life choices. We recommend against it.</p>
-    </div>
-  </details>
-  <details class="faq__item">
-    <summary>Do you offer refunds?</summary>
-    <div class="faq-panel">
-      <p>Refunds are for people who regret their decisions. We sell enlightenment through discomfort.</p>
-    </div>
-  </details>
-  <details class="faq__item">
-    <summary>How do I report a bug?</summary>
-    <div class="faq-panel">
-      <p>If it's ugly, it's working. If it's beautiful, that's the bug. Email us at chaos@nimbus.example.</p>
-    </div>
-  </details>
-</section>
-
-<section class="final-cta" id="final-cta">
-  <h2 class="final-cta__title" id="final-cta-title">Ready to Embrace the Ugly?</h2>
-  <form class="final-cta__form" id="cta-form">
-    <label for="email-input" class="visually-hidden">Email Address</label>
-    <div class="input-group">
-      <label for="email-input">Email Address</label>
-      <input type="email" id="email-input" class="input" placeholder="your@email.com" required>
-      <div class="input-error" aria-live="polite" aria-atomic="true">
-        <span class="material-symbols-rounded">error</span>
-        <span id="email-error">Please enter a valid email address</span>
+  <!-- HERO -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="container">
+      <div class="hero__grid">
+        <div class="hero__text">
+          <span class="badge">No templates were harmed</span>
+          <h1 class="hero__title" id="hero-title">Layouts that <em>refuse</em> to behave.</h1>
+          <p class="hero__sub">GRIDRUIN is a page builder that breaks the grid on purpose, so your site looks like a human made it.</p>
+          <div class="hero__ctas">
+            <a class="btn btn--primary" href="#cta">Start ruining</a>
+            <a class="btn" href="#how">See the damage</a>
+          </div>
+        </div>
+        <div class="hero__visual" aria-hidden="true">
+          <div class="frame">
+            <div class="frame__bar"></div>
+            <div class="frame__block"></div>
+            <span class="frame__tag">mis-registered on purpose</span>
+          </div>
+        </div>
+      </div>
+      <div class="marquee" aria-hidden="true">
+        <div class="marquee__track">
+          <span>Break the grid</span><span>Clash the type</span><span>Ship it ugly</span><span>Break the grid</span><span>Clash the type</span><span>Ship it ugly</span>
+          <span>Break the grid</span><span>Clash the type</span><span>Ship it ugly</span><span>Break the grid</span><span>Clash the type</span><span>Ship it ugly</span>
+        </div>
       </div>
     </div>
-    <button type="submit" class="btn btn--primary" id="cta-submit">
-      <span class="btn__label">Subscribe</span>
-      <span class="btn__loading-icon material-symbols-rounded">progress_activity</span>
-    </button>
-  </form>
-</section>
+  </section>
 
-<footer class="footer">
-  <div class="footer__section">
-    <div class="footer__title">Product</div>
-    <a href="#features" class="footer__link">Features</a>
-    <a href="#how-it-works" class="footer__link">How It Works</a>
-    <a href="#pricing" class="footer__link">Pricing</a>
+  <!-- FEATURES -->
+  <section id="features" aria-labelledby="features-title">
+    <div class="container">
+      <h2 class="section-title" id="features-title">Built wrong, on purpose</h2>
+      <p class="section-sub">Three tools that undo a decade of design-by-committee polish.</p>
+      <div class="card-row">
+        <article class="card card--feature">
+          <span class="material-symbols-rounded" aria-hidden="true">grid_off</span>
+          <h3>Grid Breaker</h3>
+          <p>Drag any element one pixel off and GRIDRUIN keeps it there. No snap, no smart guides, no mercy.</p>
+        </article>
+        <article class="card card--feature">
+          <span class="material-symbols-rounded" aria-hidden="true">font_download_off</span>
+          <h3>Type Clasher</h3>
+          <p>Pairs serif, mono, and display faces that should never meet. It refuses to suggest a harmonious alternative.</p>
+        </article>
+        <article class="card card--feature">
+          <span class="material-symbols-rounded" aria-hidden="true">format_color_fill</span>
+          <h3>Ink Misregister</h3>
+          <p>Offset double shadows in clashing inks, like a print plate slipped. Every surface looks hand-pulled.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="how" aria-labelledby="how-title">
+    <div class="container">
+      <h2 class="section-title" id="how-title">Three steps to a worse website</h2>
+      <p class="section-sub">The process is short. The results are loud.</p>
+      <ol class="steps">
+        <li>
+          <span class="steps__num" aria-hidden="true">1</span>
+          <h3>Import</h3>
+          <p>Drop in your clean, boring layout. GRIDRUIN reads the structure and keeps the content intact.</p>
+        </li>
+        <li>
+          <span class="steps__num" aria-hidden="true">2</span>
+          <h3>Ruin</h3>
+          <p>Pick a ruin level. Tilts, clashing shadows, and mixed type are applied while contrast and keyboard flow stay legal.</p>
+        </li>
+        <li>
+          <span class="steps__num" aria-hidden="true">3</span>
+          <h3>Ship</h3>
+          <p>Export static HTML that passes accessibility checks. Ugly on the surface, correct underneath.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section id="testimonials" aria-labelledby="testimonials-title">
+    <div class="container">
+      <h2 class="section-title" id="testimonials-title">People who stopped polishing</h2>
+      <p class="section-sub">Real quotes from teams that shipped the rough draft.</p>
+      <div class="card-row">
+        <article class="card card--testimonial">
+          <span class="badge">MK, Art Director</span>
+          <blockquote>&ldquo;Our conversion rate went up. I have no explanation and I have stopped asking for one.&rdquo;</blockquote>
+          <cite>Marta Kowalcek, Art Director at Felt Press</cite>
+        </article>
+        <article class="card card--testimonial">
+          <span class="badge">DR, Founder</span>
+          <blockquote>&ldquo;Investors called the site confrontational. They wired the money the same week.&rdquo;</blockquote>
+          <cite>Dev Ramachandran, Founder of Plainwrap</cite>
+        </article>
+        <article class="card card--testimonial">
+          <span class="badge">SO, Engineer</span>
+          <blockquote>&ldquo;It is the only builder whose output passes our a11y audit while looking like a zine.&rdquo;</blockquote>
+          <cite>Sara Okafor, Frontend Lead at North Kiosk</cite>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section id="pricing" aria-labelledby="pricing-title">
+    <div class="container">
+      <h2 class="section-title" id="pricing-title">Pay for less polish</h2>
+      <p class="section-sub">Every tier includes the accessibility floor. The mess is free.</p>
+      <div class="card-row">
+        <article class="card">
+          <h3>Sketch</h3>
+          <p class="price">$0 <small>/ forever</small></p>
+          <ul class="price-list">
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>3 ruined pages</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Grid Breaker tool</li>
+            <li class="no"><span class="material-symbols-rounded" aria-hidden="true">close</span><span>Type Clasher</span></li>
+            <li class="no"><span class="material-symbols-rounded" aria-hidden="true">close</span><span>Custom ink pairs</span></li>
+          </ul>
+          <a class="btn" href="#cta">Start free</a>
+        </article>
+        <article class="card card--strong">
+          <span class="badge tier-badge">Most popular</span>
+          <h3>Poster</h3>
+          <p class="price">$19 <small>/ month</small></p>
+          <ul class="price-list">
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Unlimited pages</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>All three ruin tools</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Custom ink pairs</li>
+            <li class="no"><span class="material-symbols-rounded" aria-hidden="true">close</span><span>Team ruin review</span></li>
+          </ul>
+          <a class="btn btn--primary" href="#cta">Start ruining</a>
+        </article>
+        <article class="card">
+          <h3>Billboard</h3>
+          <p class="price">$79 <small>/ month</small></p>
+          <ul class="price-list">
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Everything in Poster</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Team ruin review</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Print-plate export</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Priority support</li>
+          </ul>
+          <a class="btn" href="#cta">Start ruining</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" aria-labelledby="faq-title">
+    <div class="container">
+      <h2 class="section-title" id="faq-title">Questions, answered badly but honestly</h2>
+      <p class="section-sub">Five things people ask before they stop asking.</p>
+      <div class="faq">
+        <details class="faq__item">
+          <summary data-num="01">Is the broken look actually accessible?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <div class="faq__body"><p>Yes. The chaos is decoration only. Contrast, focus order, keyboard support, and semantic structure are enforced and audited on every export.</p></div>
+        </details>
+        <details class="faq__item">
+          <summary data-num="02">Can I keep my existing content?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <div class="faq__body"><p>Yes. GRIDRUIN re-skins structure, it does not rewrite copy. Your words stay exactly where you put them.</p></div>
+        </details>
+        <details class="faq__item">
+          <summary data-num="03">What if my client hates it?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <div class="faq__body"><p>Lower the ruin level to ten percent. They get a slightly crooked, memorable site and never find out how far it could have gone.</p></div>
+        </details>
+        <details class="faq__item">
+          <summary data-num="04">Does it work on mobile?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <div class="faq__body"><p>Yes. Tilts and overlaps flatten into a clean single column under 768px. Nothing scrolls sideways, ever.</p></div>
+        </details>
+        <details class="faq__item">
+          <summary data-num="05">Can I export the code?<span class="material-symbols-rounded" aria-hidden="true">expand_more" </span></summary>
+          <div class="faq__body"><p>Every plan exports static HTML and CSS you own outright. No runtime, no lock-in, no tracking scripts.</p></div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="cta" id="cta" aria-labelledby="cta-title">
+    <div class="container">
+      <h2 class="cta__title" id="cta-title">Stop polishing. Ship the rough draft.</h2>
+      <p class="cta__sub">Leave your email and we send one ruined template per week. Unsubscribe whenever good taste returns.</p>
+      <form class="input-group" id="cta-form" novalidate>
+        <label for="cta-email">Email address</label>
+        <div class="input-row">
+          <input class="input" id="cta-email" name="email" type="email" autocomplete="email" placeholder="you@roughdraft.studio" aria-describedby="cta-helper cta-error" required>
+          <button class="btn btn--primary" id="cta-submit" type="submit">
+            <span class="material-symbols-rounded btn__spin" id="cta-spin" aria-hidden="true" hidden>progress_activity</span>
+            <span id="cta-submit-label">Get the files</span>
+          </button>
+        </div>
+        <p class="input-helper" id="cta-helper">One email per week. No polish, no spam.</p>
+        <p class="input-error" id="cta-error" aria-live="polite"></p>
+      </form>
+      <p class="form-note form-note--ok" id="cta-success" aria-live="polite">
+        <span class="material-symbols-rounded" aria-hidden="true">check_circle</span>
+        You are on the list. First ruined template lands Friday.
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="footer__grid">
+      <p class="footer__brand">GRIDRUIN</p>
+      <div class="footer__col">
+        <h4>Product</h4>
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#how">Process</a>
+      </div>
+      <div class="footer__col">
+        <h4>Company</h4>
+        <a href="#testimonials">Customers</a>
+        <a href="#faq">FAQ</a>
+        <a href="#cta">Newsletter</a>
+      </div>
+      <div class="footer__col">
+        <h4>Legal</h4>
+        <a href="#top">Privacy</a>
+        <a href="#top">Terms</a>
+        <a href="#top">Accessibility</a>
+      </div>
+    </div>
+    <p class="footer__legal">Copyright 2026 GRIDRUIN Studio. All wrongs reserved.</p>
   </div>
-  <div class="footer__section">
-    <div class="footer__title">Company</div>
-    <a href="#final-cta" class="footer__link">Contact</a>
-    <a href="#" class="footer__link">About</a>
-    <a href="#" class="footer__link">Blog</a>
-  </div>
-  <div class="footer__section">
-    <div class="footer__title">Legal</div>
-    <a href="#" class="footer__link">Privacy</a>
-    <a href="#" class="footer__link">Terms</a>
-  </div>
-  <div class="footer__copyright">© 2026 Nimbus. All rights reserved.</div>
 </footer>
 
 <div class="toast" id="toast" role="status" aria-live="polite">
-  <span class="toast__icon material-symbols-rounded">check_circle</span>
-  <span class="toast__message">Subscribed successfully!</span>
+  <span class="material-symbols-rounded" id="toast-icon" aria-hidden="true">check_circle</span>
+  <span id="toast-msg">Done.</span>
+  <button class="toast__close" id="toast-close" type="button" aria-label="Dismiss notification">
+    <span class="material-symbols-rounded" aria-hidden="true">close</span>
+  </button>
 </div>
 
 <script>
-// Theme management
-const htmlEl = document.documentElement;
-const themeToggle = document.getElementById('theme-toggle');
-const STORAGE_KEY = 'nimbus-theme';
+(function(){
+  "use strict";
 
-function setTheme(isDark) {
-  if (isDark) {
-    htmlEl.classList.add('dark');
-    htmlEl.classList.remove('light');
-    themeToggle.setAttribute('aria-pressed', 'true');
-  } else {
-    htmlEl.classList.add('light');
-    htmlEl.classList.remove('dark');
-    themeToggle.setAttribute('aria-pressed', 'false');
+  /* ---- Theme toggle ---- */
+  var root=document.documentElement;
+  var toggle=document.getElementById("theme-toggle");
+  function applyTheme(t){
+    root.dataset.theme=t;
+    var dark=t==="dark";
+    toggle.setAttribute("aria-pressed",String(dark));
+    toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
   }
-  localStorage.setItem(STORAGE_KEY, isDark ? 'dark' : 'light');
-}
+  applyTheme(root.dataset.theme==="dark"?"dark":"light");
+  toggle.addEventListener("click",function(){
+    var next=root.dataset.theme==="dark"?"light":"dark";
+    localStorage.setItem("theme",next);
+    applyTheme(next);
+  });
 
-function initTheme() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved === 'dark') {
-    setTheme(true);
-  } else if (saved === 'light') {
-    setTheme(false);
-  } else {
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    setTheme(prefersDark);
-  }
-}
-
-themeToggle.addEventListener('click', () => {
-  const isDark = !htmlEl.classList.contains('dark');
-  setTheme(isDark);
-});
-
-// Form handling
-const form = document.getElementById('cta-form');
-const emailInput = document.getElementById('email-input');
-const submitBtn = document.getElementById('cta-submit');
-const errorEl = document.getElementById('email-error');
-const toast = document.getElementById('toast');
-
-function showToast(message, type = 'success') {
-  toast.querySelector('.toast__message').textContent = message;
-  toast.className = `toast toast--${type}`;
-  toast.classList.add('toast--visible');
-  setTimeout(() => {
-    toast.classList.remove('toast--visible');
-  }, 4000);
-}
-
-function validateEmail(email) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-form.addEventListener('submit', (e) => {
-  e.preventDefault();
-  const email = emailInput.value.trim();
-  
-  if (!validateEmail(email)) {
-    emailInput.classList.add('input--invalid');
-    emailInput.classList.remove('input--valid');
-    errorEl.textContent = 'Please enter a valid email address';
-    return;
-  }
-  
-  emailInput.classList.add('input--valid');
-  emailInput.classList.remove('input--invalid');
-  errorEl.textContent = '';
-  
-  // Simulate loading
-  submitBtn.classList.add('btn--loading');
-  submitBtn.disabled = true;
-  
-  setTimeout(() => {
-    submitBtn.classList.remove('btn--loading');
-    submitBtn.disabled = false;
-    showToast('Thanks for subscribing! Get ready for glorious ugliness.', 'success');
-    form.reset();
-    emailInput.classList.remove('input--valid');
-  }, 1500);
-});
-
-// FAQ accordion (native details/summary needs no JS for basic functionality)
-// Enhanced for focus styles
-document.querySelectorAll('details').forEach(detail => {
-  detail.addEventListener('toggle', () => {
-    if (detail.open) {
-      detail.firstElementChild.focus();
+  /* ---- Mobile nav ---- */
+  var menuBtn=document.getElementById("nav-menu-btn");
+  var navLinks=document.getElementById("nav-links");
+  menuBtn.addEventListener("click",function(){
+    var open=navLinks.classList.toggle("is-open");
+    menuBtn.setAttribute("aria-expanded",String(open));
+  });
+  navLinks.addEventListener("click",function(e){
+    if(e.target.closest("a")){navLinks.classList.remove("is-open");menuBtn.setAttribute("aria-expanded","false");}
+  });
+  document.addEventListener("keydown",function(e){
+    if(e.key==="Escape"&&navLinks.classList.contains("is-open")){
+      navLinks.classList.remove("is-open");menuBtn.setAttribute("aria-expanded","false");menuBtn.focus();
     }
   });
-});
 
-// Prevent double submission on rapid clicks
-let isSubmitting = false;
-form.addEventListener('submit', (e) => {
-  if (isSubmitting) {
-    e.preventDefault();
-    return;
+  /* ---- Toast ---- */
+  var toast=document.getElementById("toast");
+  var toastMsg=document.getElementById("toast-msg");
+  var toastIcon=document.getElementById("toast-icon");
+  var toastTimer=null;
+  function showToast(kind,msg){
+    toast.classList.remove("toast--success","toast--error");
+    toast.classList.add(kind==="error"?"toast--error":"toast--success");
+    toastIcon.textContent=kind==="error"?"error":"check_circle";
+    toastMsg.textContent=msg;
+    toast.classList.add("is-visible");
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(hideToast,4000);
   }
-  isSubmitting = true;
-  setTimeout(() => { isSubmitting = false; }, 2000);
-});
+  function hideToast(){toast.classList.remove("is-visible");}
+  document.getElementById("toast-close").addEventListener("click",hideToast);
 
-// Initialize theme on load
-initTheme();
+  /* ---- CTA form ---- */
+  var form=document.getElementById("cta-form");
+  var input=document.getElementById("cta-email");
+  var errBox=document.getElementById("cta-error");
+  var submitBtn=document.getElementById("cta-submit");
+  var submitLabel=document.getElementById("cta-submit-label");
+  var spin=document.getElementById("cta-spin");
+  var successNote=document.getElementById("cta-success");
+  var busy=false;
+  var EMAIL_RE=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  var reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  form.addEventListener("submit",function(e){
+    e.preventDefault();
+    if(busy)return;
+    var val=input.value.trim();
+    errBox.textContent="";
+    input.classList.remove("input--valid","input--invalid");
+    if(!EMAIL_RE.test(val)){
+      input.classList.add("input--invalid");
+      errBox.innerHTML="";
+      var ic=document.createElement("span");
+      ic.className="material-symbols-rounded";ic.setAttribute("aria-hidden","true");ic.textContent="error";
+      errBox.appendChild(ic);
+      errBox.appendChild(document.createTextNode("That email does not parse. Check it and retry."));
+      input.focus();
+      showToast("error","Invalid email address.");
+      return;
+    }
+    busy=true;
+    input.classList.add("input--valid");
+    submitBtn.classList.add("btn--loading");
+    submitBtn.setAttribute("aria-disabled","true");
+    spin.hidden=false;
+    submitLabel.textContent=reduced?"LOADING...":"Sending";
+    setTimeout(function(){
+      busy=false;
+      submitBtn.classList.remove("btn--loading");
+      submitBtn.classList.add("btn--success");
+      submitBtn.removeAttribute("aria-disabled");
+      spin.hidden=true;
+      submitLabel.textContent="Sent";
+      successNote.classList.add("is-visible");
+      showToast("success","Subscribed. First file lands Friday.");
+      form.reset();
+      input.classList.remove("input--valid");
+      setTimeout(function(){
+        submitBtn.classList.remove("btn--success");
+        submitLabel.textContent="Get the files";
+      },3000);
+    },900);
+  });
+})();
 </script>
 </body>
 </html>

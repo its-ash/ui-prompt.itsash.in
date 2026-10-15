@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HELIOS-9 // Mission Control</title>
+<script>
+(function(){var t=localStorage.getItem("helios-theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<style>
+:root{
+--primary:#FFB347;--secondary:#8A8272;--bg-primary:#F5F0E4;--bg-secondary:#E8DCC8;--bg-raised:#EFE7D3;
+--text-primary:#0C0F14;--text-secondary:#5C5546;--accent-text:#A36200;--border-default:#D6CBB2;
+--text-success:#15803D;--border-success:#16A34A;--text-error:#B3261E;--border-error:#DC2626;
+--on-amber:#0C0F14;--glow:rgba(255,179,71,.35);--grid-line:rgba(12,15,20,.05);
+--radius-sm:6px;--radius-md:12px;--radius-lg:20px;
+--shadow-sm:0 1px 3px rgba(92,85,70,.18);--shadow-md:0 10px 30px rgba(92,85,70,.22);
+--tr-fast:140ms;--tr-norm:280ms;--ease:cubic-bezier(.4,0,.2,1);--z-nav:900;--z-modal:1050;
+--grad-ink:linear-gradient(100deg,#0C0F14 20%,#A36200 90%);
+}
+:root[data-theme="dark"]{
+--bg-primary:#0C0F14;--bg-secondary:#11151C;--bg-raised:#141922;
+--text-primary:#E8DCC8;--text-secondary:#A9A28E;--accent-text:#FFB347;--border-default:#2A2F3A;
+--text-success:#4ADE80;--border-success:#22C55E;--text-error:#F87171;--border-error:#EF4444;
+--on-amber:#0C0F14;--glow:rgba(255,179,71,.14);--grid-line:rgba(232,220,200,.05);
+--shadow-sm:0 1px 3px rgba(0,0,0,.5);--shadow-md:0 10px 30px rgba(0,0,0,.6);
+--grad-ink:linear-gradient(100deg,#FFB347 10%,#E8DCC8 90%);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{font-family:'Inter',sans-serif;background:var(--bg-primary);color:var(--text-primary);line-height:1.6;overflow-x:hidden;transition:background var(--tr-norm) var(--ease),color var(--tr-norm) var(--ease)}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+background:radial-gradient(ellipse 60% 45% at 70% -5%,var(--glow),transparent 70%),repeating-linear-gradient(0deg,var(--grid-line) 0 1px,transparent 1px 56px),repeating-linear-gradient(90deg,var(--grid-line) 0 1px,transparent 1px 56px);
+-webkit-mask-image:radial-gradient(ellipse 90% 70% at 50% 0%,#000 30%,transparent 100%);mask-image:radial-gradient(ellipse 90% 70% at 50% 0%,#000 30%,transparent 100%)}
+main,header,footer{position:relative;z-index:1}
+h1,h2,h3{font-family:'Space Grotesk',sans-serif;letter-spacing:-.02em;line-height:1.12}
+.mono{font-family:'JetBrains Mono',monospace}
+.wrap{max-width:72rem;margin:0 auto;padding:0 clamp(1.25rem,4vw,2rem)}
+section{padding:clamp(4rem,8vw,7rem) 0;scroll-margin-top:5rem}
+[hidden]{display:none!important}
+.material-symbols-rounded{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;font-size:1.25rem;line-height:1}
+.skip{position:absolute;left:-9999px;top:0;background:var(--primary);color:var(--on-amber);padding:.75rem 1rem;z-index:1200;border-radius:var(--radius-sm)}
+.skip:focus{left:1rem;top:1rem}
+/* NAV */
+.nav{position:sticky;top:0;z-index:var(--z-nav);background:color-mix(in srgb,var(--bg-primary) 82%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-default)}
+.nav__inner{display:flex;align-items:center;gap:1rem;height:64px}
+.nav__brand{display:flex;align-items:center;gap:.6rem;text-decoration:none;color:var(--text-primary);font-family:'JetBrains Mono',monospace;font-weight:700;font-size:.82rem;letter-spacing:.04em;white-space:nowrap}
+.nav__logo{width:34px;height:34px;border-radius:var(--radius-sm);background:linear-gradient(135deg,var(--primary),#e08a00);display:flex;align-items:center;justify-content:center;color:var(--on-amber);flex:none}
+.nav__links{display:flex;align-items:center;gap:1.4rem;margin-left:auto;list-style:none}
+.nav__links a{color:var(--text-secondary);text-decoration:none;font-size:.9rem;font-weight:500;transition:color var(--tr-fast)}
+.nav__links a:hover{color:var(--accent-text)}
+.nav__toggle,.nav__menu-btn{width:44px;height:44px;border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);border-radius:var(--radius-sm);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color var(--tr-fast)}
+.nav__toggle:hover{border-color:var(--primary)}
+.nav__menu-btn{display:none;margin-left:auto}
+.icon-moon{display:none}
+:root[data-theme="dark"] .icon-sun{display:none}
+:root[data-theme="dark"] .icon-moon{display:block}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:.7rem 1.4rem;border-radius:var(--radius-sm);font-family:'JetBrains Mono',monospace;font-weight:700;font-size:.85rem;letter-spacing:.03em;text-decoration:none;cursor:pointer;border:1px solid transparent;transition:transform var(--tr-fast) var(--ease),box-shadow var(--tr-fast),filter var(--tr-fast)}
+.btn--primary{background:linear-gradient(135deg,var(--primary),#f09a1e);color:var(--on-amber);box-shadow:var(--shadow-sm)}
+.btn--secondary{background:transparent;border-color:var(--border-default);color:var(--text-primary)}
+.btn:active{transform:scale(.97)}
+@media(hover:hover) and (pointer:fine){
+.btn--primary:hover{filter:brightness(1.06);box-shadow:var(--shadow-md)}
+.btn--secondary:hover{border-color:var(--primary);color:var(--accent-text)}
+}
+.btn:focus-visible,a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible{outline:2px solid var(--accent-text);outline-offset:2px}
+/* HERO */
+.hero{padding-top:clamp(3rem,6vw,5rem)}
+.hero__grid{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(2rem,4vw,3.5rem);align-items:center}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.14em;color:var(--accent-text);text-transform:uppercase;font-weight:500}
+.hero h1{font-size:clamp(2.25rem,5vw,3.6rem);margin:.9rem 0 1rem}
+.grad-text{background:var(--grad-ink);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero__sub{color:var(--text-secondary);max-width:34rem;font-size:1.05rem}
+.hero__ctas{display:flex;gap:.8rem;margin-top:1.6rem;flex-wrap:wrap}
+.telemetry{display:flex;gap:.7rem;margin-top:1.8rem;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:.5rem;font-family:'JetBrains Mono',monospace;font-size:.7rem;letter-spacing:.08em;color:var(--text-secondary);border:1px solid var(--border-default);background:var(--bg-secondary);padding:.45rem .8rem;border-radius:999px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--border-success);animation:pulse 2.4s ease-out infinite;flex:none}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.5)}70%{box-shadow:0 0 0 9px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+/* RADAR */
+.radar{position:relative;aspect-ratio:1/1;width:100%;max-width:440px;margin:0 auto;border-radius:50%;border:1px solid var(--border-default);background:
+repeating-radial-gradient(circle at 50% 50%,transparent 0 21%,var(--border-default) 21% calc(21% + 1px)),radial-gradient(circle at 50% 50%,var(--bg-secondary),var(--bg-primary));overflow:hidden}
+.radar__sweep{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,rgba(255,179,71,.5),transparent 70deg,transparent);animation:spin 12s linear infinite}
+.radar__core{position:absolute;top:50%;left:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:var(--primary);animation:pulse 2s ease-out infinite}
+.radar__tag{position:absolute;font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.1em;color:var(--text-secondary)}
+.radar__tag--tl{top:8%;left:10%}.radar__tag--br{bottom:8%;right:10%}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* SECTION HEADERS */
+.sec-head{max-width:44rem;margin-bottom:2.6rem}
+.sec-head h2{font-size:clamp(1.7rem,3.4vw,2.4rem);margin:.7rem 0 .7rem}
+.sec-head p{color:var(--text-secondary)}
+/* CARDS */
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(1rem,3vw,2rem)}
+.card{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);padding:1.6rem;display:flex;flex-direction:column;gap:.8rem;transition:transform var(--tr-norm) var(--ease),box-shadow var(--tr-norm),border-color var(--tr-norm)}
+@media(hover:hover) and (pointer:fine){.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);border-color:var(--primary)}}
+.card__icon{width:48px;height:48px;border-radius:var(--radius-sm);background:linear-gradient(135deg,rgba(255,179,71,.35),rgba(255,179,71,.08));display:flex;align-items:center;justify-content:center;color:var(--accent-text)}
+.card__idx{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--text-secondary);letter-spacing:.12em}
+.card h3{font-size:1.15rem}
+.card p{color:var(--text-secondary);font-size:.94rem}
+.card__link{color:var(--accent-text);font-weight:600;font-size:.88rem;text-decoration:none;display:inline-flex;align-items:center;gap:.3rem;margin-top:auto}
+.card__link:hover{text-decoration:underline}
+/* STEPS */
+.steps{position:relative}
+.step{display:flex;flex-direction:column;gap:.7rem;padding:1.4rem;border:1px solid var(--border-default);border-radius:var(--radius-md);background:var(--bg-raised)}
+.step__num{font-family:'JetBrains Mono',monospace;font-size:2rem;font-weight:700;color:var(--accent-text);line-height:1}
+.step p{color:var(--text-secondary);font-size:.94rem}
+/* PRICING */
+.price-card{align-items:stretch}
+.price-card .price{font-family:'JetBrains Mono',monospace;font-size:2rem;font-weight:700}
+.price-card ul{list-style:none;display:flex;flex-direction:column;gap:.55rem;margin:.4rem 0 1.2rem}
+.price-card li{display:flex;align-items:center;gap:.55rem;font-size:.9rem;color:var(--text-secondary)}
+.price-card li .material-symbols-rounded{color:var(--text-success);font-size:1.1rem}
+.card--featured{position:relative;border:2px solid var(--primary);background:var(--bg-raised)}
+:root[data-theme="dark"] .card--featured{border-color:var(--primary)}
+.badge{align-self:flex-start;font-family:'JetBrains Mono',monospace;font-size:.65rem;letter-spacing:.12em;font-weight:700;color:var(--on-amber);padding:.35rem .7rem;border-radius:999px;background:linear-gradient(110deg,#e08a00 30%,var(--primary) 50%,#e08a00 70%);background-size:200% 100%;animation:shimmer 3s linear infinite}
+@keyframes shimmer{to{background-position:-200% 0}}
+.billing{display:inline-flex;align-items:center;gap:.7rem;margin-bottom:2rem;font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--text-secondary)}
+.billing button{border:1px solid var(--border-default);background:var(--bg-secondary);color:var(--text-primary);border-radius:999px;padding:.5rem 1rem;cursor:pointer;font:inherit;min-height:44px}
+.billing button[aria-pressed="true"]{background:var(--primary);color:var(--on-amber);border-color:var(--primary);font-weight:700}
+/* TESTIMONIALS */
+.quote-card{align-items:flex-start}
+.quote-card .material-symbols-rounded{color:var(--primary);font-size:1.8rem}
+.quote-card blockquote{font-size:.98rem}
+.quote-card figcaption{display:flex;align-items:center;gap:.8rem;margin-top:.4rem}
+.avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--primary),#b96a00);color:var(--on-amber);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:.85rem;flex:none}
+.quote-card figcaption span{display:block;font-size:.8rem;color:var(--text-secondary)}
+.quote-card figcaption strong{font-size:.9rem}
+/* FAQ */
+.faq{display:flex;flex-direction:column;gap:.8rem;max-width:46rem}
+.faq details{border:1px solid var(--border-default);border-radius:var(--radius-md);background:var(--bg-secondary);overflow:hidden}
+.faq summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;cursor:pointer;padding:1.1rem 1.3rem;font-weight:600;font-family:'Space Grotesk',sans-serif;list-style:none;min-height:44px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary .material-symbols-rounded{transition:transform var(--tr-norm) var(--ease);color:var(--accent-text)}
+.faq details[open] summary .material-symbols-rounded{transform:rotate(180deg)}
+.faq details p{padding:0 1.3rem 1.2rem;color:var(--text-secondary);font-size:.94rem}
+/* CTA BAND */
+.cta-band{background:linear-gradient(120deg,#0C0F14,#1c1610);color:#E8DCC8;border-radius:var(--radius-lg);padding:clamp(2.5rem,6vw,4rem);text-align:center}
+.cta-band h2{font-size:clamp(1.7rem,3.4vw,2.4rem);margin-bottom:.7rem}
+.cta-band p{color:#A9A28E;max-width:32rem;margin:0 auto 1.6rem}
+.cta-form{display:flex;gap:.7rem;max-width:30rem;margin:0 auto;flex-wrap:wrap;justify-content:center}
+.cta-form input{flex:1;min-width:220px;min-height:44px;padding:.7rem 1rem;border-radius:var(--radius-sm);border:1px solid var(--border-default);background:#F5F0E4;color:#0C0F14;font:inherit}
+.form-msg{margin-top:.9rem;font-family:'JetBrains Mono',monospace;font-size:.78rem;min-height:1.2em}
+.form-msg--ok{color:#4ADE80}.form-msg--err{color:#F87171}
+/* FOOTER */
+footer{background:#0C0F14;color:#E8DCC8;padding:3rem 0 2rem;margin-top:2rem}
+:root[data-theme="dark"] footer{background:#080a0e;border-top:1px solid var(--border-default)}
+.footer__inner{display:flex;flex-wrap:wrap;gap:2rem;align-items:center;justify-content:space-between}
+.footer__inner nav{display:flex;gap:1.4rem;flex-wrap:wrap}
+footer a{color:#A9A28E;text-decoration:none;font-size:.88rem}
+footer a:hover{color:var(--primary);text-decoration:underline}
+.footer__copy{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:#A9A28E;letter-spacing:.06em;margin-top:1.6rem}
+/* MODAL */
+.modal{position:fixed;inset:0;z-index:var(--z-modal);display:flex;align-items:center;justify-content:center;padding:1.25rem;background:rgba(12,15,20,.55);backdrop-filter:blur(6px);opacity:0;transition:opacity var(--tr-norm) var(--ease)}
+.modal--open{opacity:1}
+.modal__box{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);max-width:30rem;width:100%;padding:2rem;transform:scale(.96);transition:transform var(--tr-norm) var(--ease);position:relative}
+.modal--open .modal__box{transform:scale(1)}
+.modal__close{position:absolute;top:.8rem;right:.8rem;width:44px;height:44px;border:none;background:transparent;color:var(--text-secondary);cursor:pointer;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center}
+.modal__close:hover{color:var(--accent-text)}
+.modal__box p{color:var(--text-secondary);margin-top:.8rem;font-size:.94rem}
+/* REVEAL */
+.js .reveal{opacity:0;transform:translateY(16px);transition:opacity .5s var(--ease),transform .5s var(--ease)}
+.js .reveal--in{opacity:1;transform:none}
+.js .grid3>.reveal:nth-child(2){transition-delay:70ms}
+.js .grid3>.reveal:nth-child(3){transition-delay:140ms}
+/* RESPONSIVE */
+@media(max-width:900px){.hero__grid{grid-template-columns:1fr}.radar{max-width:340px}}
+@media(max-width:768px){
+.grid3{grid-template-columns:1fr}
+.nav__links{display:none;position:absolute;top:64px;left:0;right:0;flex-direction:column;align-items:stretch;background:var(--bg-primary);border-bottom:1px solid var(--border-default);padding:1rem 1.25rem;gap:.2rem}
+.nav__links--open{display:flex}
+.nav__links a{display:block;padding:.7rem 0;min-height:44px}
+.nav__menu-btn{display:flex}
+.nav__cta{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+html{scroll-behavior:auto}
+*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.15s!important}
+.js .reveal{opacity:1;transform:none}
+.radar__sweep{animation:none}
+.dot,.radar__core{animation:none}
+}
+@media(prefers-reduced-transparency:reduce){.nav{background:var(--bg-primary);backdrop-filter:none}.modal{background:rgba(12,15,20,.85);backdrop-filter:none}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="nav">
+<div class="wrap nav__inner">
+<a class="nav__brand" href="#top"><span class="nav__logo"><span class="material-symbols-rounded" aria-hidden="true">sunny</span></span>HELIOS-9 // MISSION CONTROL</a>
+<button class="nav__menu-btn" id="menu-btn" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu"><span class="material-symbols-rounded" aria-hidden="true">menu</span></button>
+<ul class="nav__links" id="nav-links">
+<li><a href="#features">Features</a></li>
+<li><a href="#sequence">Sequence</a></li>
+<li><a href="#pricing">Pricing</a></li>
+<li><a href="#faq">FAQ</a></li>
+</ul>
+<button class="nav__toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+<span class="material-symbols-rounded icon-sun" aria-hidden="true">light_mode</span>
+<span class="material-symbols-rounded icon-moon" aria-hidden="true">dark_mode</span>
+</button>
+<a class="btn btn--primary nav__cta" href="#pricing">Initiate Launch</a>
+</div>
+</header>
+<main id="main">
+<section class="hero" id="top" aria-labelledby="hero-title">
+<div class="wrap hero__grid">
+<div>
+<p class="eyebrow">// SOLAR OPERATIONS PLATFORM, MISSION 09</p>
+<h1 id="hero-title">Command your fleet from <span class="grad-text">one console.</span></h1>
+<p class="hero__sub">HELIOS-9 streams telemetry, automates course correction, and keeps every satellite in your constellation accountable.</p>
+<div class="hero__ctas">
+<a class="btn btn--primary" href="#pricing"><span class="material-symbols-rounded" aria-hidden="true">rocket_launch</span>Initiate Launch</a>
+<button class="btn btn--secondary" id="brief-btn" type="button">View Mission Brief</button>
+</div>
+<div class="telemetry" aria-label="Live system status">
+<span class="chip"><span class="dot" aria-hidden="true"></span>ALL SYSTEMS NOMINAL</span>
+<span class="chip"><span class="dot" aria-hidden="true"></span>UPLINK 98.7%</span>
+<span class="chip"><span class="dot" aria-hidden="true"></span>SOLAR FLUX STABLE</span>
+</div>
+</div>
+<div class="radar" aria-hidden="true">
+<div class="radar__sweep"></div>
+<div class="radar__core"></div>
+<span class="radar__tag radar__tag--tl">ORB-04 // TRACK</span>
+<span class="radar__tag radar__tag--br">ALT 542 KM</span>
+</div>
+</div>
+</section>
+
+<section id="features" aria-labelledby="features-title">
+<div class="wrap">
+<div class="sec-head">
+<p class="eyebrow">// INSTRUMENTATION</p>
+<h2 id="features-title">Built for operators, not spectators</h2>
+<p>Every panel in the console earns its place. Three systems carry the mission.</p>
+</div>
+<div class="grid3">
+<article class="card reveal">
+<span class="card__idx">01</span>
+<span class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">insights</span></span>
+<h3>Real-Time Telemetry</h3>
+<p>Downlink streams render in under 400ms, with anomaly flags surfaced before they become incidents.</p>
+<a class="card__link" href="#pricing">Learn more<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+</article>
+<article class="card reveal">
+<span class="card__idx">02</span>
+<span class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">explore</span></span>
+<h3>Autonomous Course Correction</h3>
+<p>Drift beyond your threshold and HELIOS-9 computes and executes the burn plan on its own.</p>
+<a class="card__link" href="#pricing">Learn more<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+</article>
+<article class="card reveal">
+<span class="card__idx">03</span>
+<span class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">shield</span></span>
+<h3>Radiation-Hardened Security</h3>
+<p>Command links are signed end to end, with key rotation on every orbital pass.</p>
+<a class="card__link" href="#pricing">Learn more<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+</article>
+</div>
+</div>
+</section>
+
+<section id="sequence" aria-labelledby="sequence-title">
+<div class="wrap">
+<div class="sec-head">
+<h2 id="sequence-title">Mission sequence</h2>
+<p>From first calibration to live command in three steps.</p>
+</div>
+<div class="grid3 steps">
+<div class="step reveal"><span class="step__num">01</span><h3>Calibrate</h3><p>Define mission parameters, orbital windows, and alert thresholds in one guided pass.</p></div>
+<div class="step reveal"><span class="step__num">02</span><h3>Launch</h3><p>Deploy your constellation profile with a single command. No manual uplink scripting.</p></div>
+<div class="step reveal"><span class="step__num">03</span><h3>Command</h3><p>Watch live dashboards, receive alerts, and issue corrections from any terminal.</p></div>
+</div>
+</div>
+</section>
+
+<section id="pricing" aria-labelledby="pricing-title">
+<div class="wrap">
+<div class="sec-head">
+<p class="eyebrow">// FLIGHT PLANS</p>
+<h2 id="pricing-title">Choose your orbit</h2>
+<p>Start free, scale when your constellation does.</p>
+</div>
+<div class="billing">
+<span>Billing:</span>
+<button type="button" id="bill-monthly" aria-pressed="true">Monthly</button>
+<button type="button" id="bill-annual" aria-pressed="false">Annual (2 mo free)</button>
+</div>
+<div class="grid3">
+<article class="card price-card reveal">
+<span class="card__idx">TIER // PROBE</span>
+<h3>Probe</h3>
+<p class="price" data-monthly="$0" data-annual="$0">$0</p>
+<p>For ground crews running their first bird.</p>
+<ul>
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span>1 satellite tracked</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span>15-minute telemetry refresh</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span>Community support channel</li>
+</ul>
+<button class="btn btn--secondary" type="button">Initiate Launch</button>
+</article>
+<article class="card price-card card--featured reveal">
+<span class="badge">MOST POPULAR</span>
+<span class="card__idx">TIER // ORBITER</span>
+<h3>Orbiter</h3>
+<p class="price" data-monthly="$49/mo" data-annual="$41/mo">$49/mo</p>
+<p>For teams flying operational constellations.</p>
+<ul>
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span>Up to 25 satellites</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span>Sub-second telemetry stream</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span>Autonomous course correction</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span>Priority uplink support</li>
+</ul>
+<button class="btn btn--primary" type="button">Initiate Launch</button>
+</article>
+<article class="card price-card reveal">
+<span class="card__idx">TIER // FLAGSHIP</span>
+<h3>Flagship</h3>
+<p class="price" data-monthly="Custom" data-annual="Custom">Custom</p>
+<p>For agencies and fleets with mission-critical orbits.</p>
+<ul>
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span>Unlimited satellites</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span>Dedicated ground station routing</li>
+<li><span class="material-symbols-rounded" aria-hidden="true">check</span>On-call flight engineer</li>
+</ul>
+<button class="btn btn--secondary" type="button">Initiate Launch</button>
+</article>
+</div>
+</div>
+</section>
+
+<section id="testimonials" aria-labelledby="testimonials-title">
+<div class="wrap">
+<div class="sec-head">
+<h2 id="testimonials-title">Signals from the field</h2>
+<p>Operators who trust HELIOS-9 with their orbits.</p>
+</div>
+<div class="grid3" style="grid-template-columns:repeat(2,1fr)" id="quote-grid">
+<figure class="card quote-card reveal">
+<span class="material-symbols-rounded" aria-hidden="true">format_quote</span>
+<blockquote>“We cut anomaly response from hours to minutes. The console reads like a checklist, not a puzzle.”</blockquote>
+<figcaption><span class="avatar" aria-hidden="true">MV</span><div><strong>Dr. Mara Voss</strong><span>Flight Director, Aegis Orbital</span></div></figcaption>
+</figure>
+<figure class="card quote-card reveal">
+<span class="material-symbols-rounded" aria-hidden="true">format_quote</span>
+<blockquote>“Autonomous correction paid for itself in the first quarter. Our operators finally sleep through the night pass.”</blockquote>
+<figcaption><span class="avatar" aria-hidden="true">TK</span><div><strong>Tomasz Krajewski</strong><span>Chief Engineer, Meridian Spaceworks</span></div></figcaption>
+</figure>
+</div>
+</div>
+</section>
+
+<section id="faq" aria-labelledby="faq-title">
+<div class="wrap">
+<div class="sec-head">
+<h2 id="faq-title">Mission FAQ</h2>
+<p>Answers before you transmit.</p>
+</div>
+<div class="faq">
+<details>
+<summary>How long does onboarding take?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+<p>Most crews calibrate and connect their first satellite in under an hour. The guided sequence handles credentials, orbital parameters, and alert routing.</p>
+</details>
+<details>
+<summary>Does HELIOS-9 work with existing ground stations?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+<p>Yes. We support standard CCSDS links and integrate with major ground station networks, so your current hardware keeps working.</p>
+</details>
+<details>
+<summary>Can I cancel or change tiers mid-mission?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+<p>Anytime. Upgrades apply immediately, downgrades take effect at the next billing cycle, and your telemetry history is never deleted.</p>
+</details>
+</div>
+</div>
+</section>
+
+<section aria-labelledby="cta-title">
+<div class="wrap">
+<div class="cta-band">
+<h2 id="cta-title">Ready for liftoff?</h2>
+<p>Join the waitlist and get your first orbital window briefing within 24 hours.</p>
+<form class="cta-form" id="cta-form" novalidate>
+<label for="cta-email" class="mono" style="position:absolute;left:-9999px">Email address</label>
+<input id="cta-email" name="email" type="email" placeholder="flight@youragency.com" autocomplete="email" required>
+<button class="btn btn--primary" type="submit" id="cta-submit">Initiate Launch</button>
+</form>
+<p class="form-msg" id="form-msg" aria-live="polite"></p>
+</div>
+</div>
+</section>
+</main>
+
+<footer>
+<div class="wrap">
+<div class="footer__inner">
+<a class="nav__brand" href="#top" style="color:#E8DCC8"><span class="nav__logo"><span class="material-symbols-rounded" aria-hidden="true">sunny</span></span>HELIOS-9</a>
+<nav aria-label="Footer">
+<a href="#features">Features</a><a href="#sequence">Sequence</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a>
+</nav>
+</div>
+<p class="footer__copy">© 2026 HELIOS-9 // MISSION CONTROL. All systems nominal.</p>
+</div>
+</footer>
+
+<div class="modal" id="brief-modal" hidden>
+<div class="modal__box" role="dialog" aria-modal="true" aria-labelledby="brief-title">
+<button class="modal__close" id="brief-close" type="button" aria-label="Close dialog"><span class="material-symbols-rounded" aria-hidden="true">close</span></button>
+<p class="eyebrow">// TRANSMISSION 09-A</p>
+<h2 id="brief-title" style="font-size:1.4rem;margin-top:.5rem">Mission Brief</h2>
+<p id="brief-body">Decrypting transmission…</p>
+</div>
+</div>
+
+<script>
+(function(){
+document.documentElement.classList.add("js");
+var root=document.documentElement;
+/* Theme toggle */
+var tBtn=document.getElementById("theme-toggle");
+function setTheme(t){root.dataset.theme=t;localStorage.setItem("helios-theme",t);
+var dark=t==="dark";tBtn.setAttribute("aria-pressed",String(dark));
+tBtn.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");}
+setTheme(root.dataset.theme==="dark"?"dark":"light");
+tBtn.addEventListener("click",function(){setTheme(root.dataset.theme==="dark"?"light":"dark");});
+/* Mobile menu */
+var mBtn=document.getElementById("menu-btn"),links=document.getElementById("nav-links");
+mBtn.addEventListener("click",function(){
+var open=links.classList.toggle("nav__links--open");
+mBtn.setAttribute("aria-expanded",String(open));
+mBtn.setAttribute("aria-label",open?"Close menu":"Open menu");});
+links.addEventListener("click",function(e){if(e.target.tagName==="A"){links.classList.remove("nav__links--open");mBtn.setAttribute("aria-expanded","false");}});
+document.addEventListener("keydown",function(e){if(e.key==="Escape"){links.classList.remove("nav__links--open");mBtn.setAttribute("aria-expanded","false");closeModal();}});
+/* Reveal */
+if("IntersectionObserver" in window){
+var io=new IntersectionObserver(function(es){es.forEach(function(en){if(en.isIntersecting){en.target.classList.add("reveal--in");io.unobserve(en.target);}});},{threshold:.12});
+document.querySelectorAll(".reveal").forEach(function(el){io.observe(el);});
+}else{document.querySelectorAll(".reveal").forEach(function(el){el.classList.add("reveal--in");});}
+/* Billing toggle */
+var bm=document.getElementById("bill-monthly"),ba=document.getElementById("bill-annual");
+function setBilling(annual){
+bm.setAttribute("aria-pressed",String(!annual));ba.setAttribute("aria-pressed",String(annual));
+document.querySelectorAll(".price").forEach(function(p){p.textContent=annual?p.dataset.annual:p.dataset.monthly;});}
+bm.addEventListener("click",function(){setBilling(false);});
+ba.addEventListener("click",function(){setBilling(true);});
+/* Modal */
+var modal=document.getElementById("brief-modal"),briefBtn=document.getElementById("brief-btn"),
+briefClose=document.getElementById("brief-close"),briefBody=document.getElementById("brief-body"),
+briefText="HELIOS-9 consolidates telemetry, autonomous correction, and signed command links into one console. Mission 09 opens general access this quarter, with Orbiter crews receiving priority orbital windows and a dedicated flight engineer review before first burn.",
+lastFocus=null,briefTimer=null;
+function openModal(){lastFocus=document.activeElement;modal.hidden=false;
+requestAnimationFrame(function(){modal.classList.add("modal--open");});
+briefBody.textContent="Decrypting transmission…";
+clearTimeout(briefTimer);
+briefTimer=setTimeout(function(){briefBody.textContent=briefText;},900);
+briefClose.focus();}
+function closeModal(){if(modal.hidden)return;modal.classList.remove("modal--open");
+setTimeout(function(){modal.hidden=true;if(lastFocus)lastFocus.focus();},280);}
+briefBtn.addEventListener("click",openModal);
+briefClose.addEventListener("click",closeModal);
+modal.addEventListener("click",function(e){if(e.target===modal)closeModal();});
+modal.addEventListener("keydown",function(e){
+if(e.key!=="Tab")return;
+var f=modal.querySelectorAll("button");var first=f[0],last=f[f.length-1];
+if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}});
+/* CTA form */
+var form=document.getElementById("cta-form"),email=document.getElementById("cta-email"),
+msg=document.getElementById("form-msg"),submitBtn=document.getElementById("cta-submit");
+form.addEventListener("submit",function(e){
+e.preventDefault();
+var v=email.value.trim();
+msg.className="form-msg";
+if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)){
+msg.textContent="// ERROR: enter a valid email address";msg.classList.add("form-msg--err");
+email.style.borderColor="var(--border-error)";email.focus();return;}
+email.style.borderColor="";
+submitBtn.disabled=true;submitBtn.textContent="Transmitting…";
+setTimeout(function(){
+submitBtn.disabled=false;submitBtn.textContent="Initiate Launch";
+msg.textContent="// CONFIRMED: you are on the manifest. Briefing inbound.";
+msg.classList.add("form-msg--ok");form.reset();},1100);});
+})();
+</script>
+</body>
+</html>

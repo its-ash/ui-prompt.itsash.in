@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Datacore | High-Performance Data Infrastructure</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cabin:wght@400;600&family=Inter:ital,wght@0,400;0,700;1,400&family=Instrument+Serif:ital@1&family=Manrope:wght@400;500;700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+    
+    <!-- HLS.js for Video -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+    <style>
+        :root {
+            /* Colors - Dark Theme (Default) */
+            --primary: #7b39fc;
+            --primary-hover: #6a2ce0;
+            --secondary: #2b2344;
+            --secondary-hover: #352b54;
+            --accent: #f87b52;
+            --bg-primary: #000000;
+            --bg-secondary: #0a0a0c;
+            --text-primary: #fefefe;
+            --text-secondary: rgba(232,228,245,0.72);
+            --text-on-accent: #000000;
+            --border-default: rgba(164,132,215,0.3);
+            --glass-bg: rgba(85,80,110,0.2);
+            --glass-border: rgba(164,132,215,0.4);
+            --text-success: #4ade80;
+            --text-error: #f87171;
+            
+            /* Tokens */
+            --radius-sm: 6px;
+            --radius-md: 12px;
+            --radius-lg: 24px;
+            --shadow-sm: 0 4px 12px rgba(0,0,0,0.5);
+            --shadow-md: 0 12px 24px rgba(0,0,0,0.6);
+            --spacing-gap: 2rem;
+            --transition-fast: 150ms;
+            --transition-normal: 300ms;
+            --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+            
+            /* Z-Index */
+            --z-video: 0;
+            --z-overlay: 1;
+            --z-content: 2;
+            --z-navbar: 100;
+            --z-drawer: 200;
+            
+            /* Typography */
+            --font-base: 'Manrope', sans-serif;
+            --font-heading: 'Inter', sans-serif;
+            --font-button: 'Cabin', sans-serif;
+            --font-accent: 'Instrument Serif', serif;
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #f8f9fa;
+            --bg-secondary: #ffffff;
+            --text-primary: #1a1a1a;
+            --text-secondary: #4a4a4a;
+            --border-default: rgba(0,0,0,0.1);
+            --glass-bg: rgba(255,255,255,0.6);
+            --glass-border: rgba(0,0,0,0.1);
+            --secondary: #e2e8f0;
+            --secondary-hover: #cbd5e1;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        [hidden] { display: none !important; }
+
+        body {
+            font-family: var(--font-base);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Typography */
+        h1, h2, h3 { font-family: var(--font-heading); line-height: 1.1; font-weight: 700; letter-spacing: -0.03em; }
+        .text-accent { font-family: var(--font-accent); font-style: italic; font-weight: 400; }
+        .eyebrow { 
+            text-transform: uppercase; 
+            font-size: 0.75rem; 
+            font-weight: 700; 
+            letter-spacing: 0.1em; 
+            color: var(--primary); 
+            margin-bottom: 1rem; 
+            display: block; 
+        }
+
+        /* Layout Components */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        section {
+            padding: clamp(4rem, 8vw, 7rem) 0;
+        }
+        .section-header {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto 4rem auto;
+        }
+        .section-header h2 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            margin-bottom: 1rem;
+        }
+        .section-header p {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+        }
+
+        /* Navbar */
+        .navbar {
+            position: sticky;
+            top: 0;
+            height: 72px;
+            background: var(--bg-primary);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-default);
+            z-index: var(--z-navbar);
+            display: flex;
+            align-items: center;
+        }
+        .nav-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+        .logo-box {
+            width: 32px;
+            height: 32px;
+            background: white;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: black;
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color var(--transition-fast);
+        }
+        .nav-links a:hover { color: var(--text-primary); }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-md);
+            font-family: var(--font-button);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-normal) var(--ease-standard);
+            border: none;
+            min-height: 44px;
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn--primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn--primary:hover { background: var(--primary-hover); box-shadow: 0 0 20px rgba(123, 57, 252, 0.4); }
+        .btn--secondary {
+            background: var(--secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--glass-border);
+        }
+        .btn--secondary:hover { background: var(--secondary-hover); }
+        .btn--ghost {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-default);
+        }
+        .btn--ghost:hover { border-color: var(--primary); color: var(--text-primary); }
+        .btn--loading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Theme Toggle */
+        #theme-toggle {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 1px solid var(--border-default);
+            background: var(--glass-bg);
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+        }
+
+        /* Hero Section */
+        .hero {
+            position: relative;
+            min-height: 90vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            padding: 0;
+        }
+        .hero__video-container {
+            position: absolute;
+            inset: 0;
+            z-index: var(--z-video);
+        }
+        .hero__video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .hero__overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: var(--z-overlay);
+        }
+        .hero__poster {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 3;
+            transition: opacity var(--transition-normal) ease;
+        }
+        .hero__poster.fade-out { opacity: 0; pointer-events: none; }
+        
+        .hero__content {
+            position: relative;
+            z-index: var(--z-content);
+            text-align: center;
+            max-width: 900px;
+            padding: 0 2rem;
+        }
+        .hero__badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 1rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(12px);
+            border-radius: 100px;
+            color: var(--text-primary);
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-bottom: 2rem;
+        }
+        .badge-tag {
+            background: var(--accent);
+            color: var(--text-on-accent);
+            font-weight: 700;
+            padding: 0.1rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+        }
+        .hero__title {
+            font-size: clamp(2.75rem, 6.5vw, 4.75rem);
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+        .hero__subtitle {
+            font-size: clamp(1.1rem, 2vw, 1.3rem);
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+            max-width: 650px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .hero__ctas {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--spacing-gap);
+        }
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            transition: all var(--transition-normal) var(--ease-standard);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .card--glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+        }
+        .card:hover {
+            transform: translateY(-8px);
+            border-color: var(--primary);
+            box-shadow: var(--shadow-md);
+        }
+        .card__icon {
+            width: 48px;
+            height: 48px;
+            background: var(--primary);
+            color: white;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .card h3 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .card p { color: var(--text-secondary); }
+
+        /* How it Works */
+        .steps-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 3rem;
+            position: relative;
+        }
+        .step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+        .step__number {
+            width: 64px;
+            height: 64px;
+            background: var(--bg-primary);
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin: 0 auto 1.5rem auto;
+            transition: all var(--transition-normal);
+        }
+        .step:hover .step__number {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 0 20px var(--primary);
+        }
+        .steps-line {
+            position: absolute;
+            top: 32px;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background: var(--border-default);
+            z-index: 1;
+        }
+
+        /* Testimonials */
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        .testimonial-card {
+            padding: 2rem;
+            border-left: 4px solid var(--primary);
+        }
+        .testimonial-quote {
+            font-size: 1.1rem;
+            font-style: italic;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), #a855f7);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+            color: white;
+        }
+        .author-info h4 { font-size: 1rem; margin: 0; }
+        .author-info p { font-size: 0.8rem; color: var(--text-secondary); }
+
+        /* Pricing */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            align-items: center;
+        }
+        .pricing-card {
+            text-align: center;
+            padding: 3rem 2rem;
+            position: relative;
+        }
+        .pricing-card--featured {
+            border: 2px solid var(--primary);
+            transform: scale(1.05);
+            z-index: 2;
+        }
+        .featured-badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.75rem;
+            border-radius: 100px;
+        }
+        .price {
+            font-size: 3rem;
+            font-weight: 700;
+            margin: 1.5rem 0;
+        }
+        .price span { font-size: 1rem; color: var(--text-secondary); }
+        .pricing-features {
+            list-style: none;
+            margin: 2rem 0;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .pricing-features li {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+        .pricing-features .material-symbols-rounded { color: var(--primary); font-size: 1.2rem; }
+
+        /* FAQ */
+        .faq-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .faq-item {
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+        .faq-trigger {
+            width: 100%;
+            padding: 1.5rem;
+            background: var(--bg-secondary);
+            border: none;
+            color: var(--text-primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-family: var(--font-heading);
+            font-weight: 600;
+            font-size: 1.1rem;
+            text-align: left;
+        }
+        .faq-panel {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows var(--transition-normal) ease;
+        }
+        .faq-panel[aria-hidden="false"] { grid-template-rows: 1fr; }
+        .faq-content {
+            overflow: hidden;
+            padding: 0 1.5rem;
+            color: var(--text-secondary);
+        }
+        .faq-content-inner { padding-bottom: 1.5rem; }
+        .faq-trigger .material-symbols-rounded {
+            transition: transform var(--transition-normal);
+        }
+        .faq-trigger[aria-expanded="true"] .material-symbols-rounded {
+            transform: rotate(180deg);
+        }
+
+        /* Final CTA */
+        .cta-band {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius-lg);
+            padding: 4rem 2rem;
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+        .cta-form {
+            display: flex;
+            gap: 0.75rem;
+            max-width: 500px;
+            margin: 2.5rem auto 0 auto;
+            flex-wrap: wrap;
+        }
+        .input-group {
+            flex: 1;
+            min-width: 260px;
+            text-align: left;
+            position: relative;
+        }
+        .input-group label {
+            display: block;
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+        .input-group input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-family: var(--font-base);
+            transition: border-color var(--transition-fast);
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(123, 57, 252, 0.2);
+        }
+        .input-group input.error { border-color: var(--text-error); }
+        .error-msg {
+            color: var(--text-error);
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+        .input-group input.error + .error-msg { display: block; }
+
+        /* Footer */
+        footer {
+            background: var(--bg-primary);
+            border-top: 1px solid var(--border-default);
+            padding: 4rem 0 2rem 0;
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 3rem;
+            margin-bottom: 4rem;
+        }
+        .footer-brand p {
+            color: var(--text-secondary);
+            margin-top: 1rem;
+            max-width: 300px;
+        }
+        .footer-links h4 {
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+        }
+        .footer-links ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .footer-links a {
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            transition: color var(--transition-fast);
+        }
+        .footer-links a:hover { color: var(--primary); }
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-default);
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+        .social-links {
+            display: flex;
+            gap: 1rem;
+        }
+        .social-link {
+            color: var(--text-secondary);
+            transition: color var(--transition-fast);
+            cursor: pointer;
+        }
+        .social-link:hover { color: var(--primary); }
+
+        /* Mobile Drawer */
+        .drawer {
+            position: fixed;
+            inset: 0;
+            background: black;
+            z-index: var(--z-drawer);
+            display: flex;
+            flex-direction: column;
+            padding: 2rem;
+            transform: translateX(100%);
+            transition: transform var(--transition-normal) var(--ease-standard);
+        }
+        .drawer.open { transform: translateX(0); }
+        .drawer-close {
+            align-self: flex-end;
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+        .drawer-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            margin-top: 4rem;
+            text-align: center;
+        }
+        .drawer-nav a {
+            color: white;
+            font-size: 2rem;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links, .nav-cta { display: none; }
+            .hamburger { display: flex !important; }
+            .hero__ctas { flex-direction: column; }
+            .steps-container { flex-direction: column; gap: 4rem; }
+            .steps-line { display: none; }
+            .footer-grid { grid-template-columns: 1fr 1fr; }
+            .pricing-card--featured { transform: scale(1); }
+            .navbar { height: 64px; }
+        }
+
+        .hamburger {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            width: 44px;
+            height: 44px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * { transition: none !important; animation: none !important; }
+            .hero__video { display: none; }
+            .hero__poster { opacity: 1 !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="#" class="nav-logo">
+                <div class="logo-box">
+                    <span class="material-symbols-rounded">command</span>
+                </div>
+                Datacore
+            </a>
+            
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="#pricing">Pricing</a>
+                <a href="#faq">FAQ</a>
+            </div>
+
+            <div class="nav-cta" style="display: flex; align-items: center; gap: 1rem;">
+                <button id="theme-toggle" aria-label="Switch theme" aria-pressed="false">
+                    <span class="material-symbols-rounded" id="theme-icon">light_mode</span>
+                </button>
+                <a href="#signup" class="btn btn--primary">Start for free</a>
+            </div>
+
+            <button class="hamburger" aria-label="Open Menu" aria-expanded="false" aria-controls="mobile-drawer">
+                <span class="material-symbols-rounded">menu</span>
+            </button>
+        </div>
+    </nav>
+
+    <div id="mobile-drawer" class="drawer">
+        <button class="drawer-close">
+            <span class="material-symbols-rounded">close</span>
+        </button>
+        <div class="drawer-nav">
+            <a href="#features">Features</a>
+            <a href="#how-it-works">How It Works</a>
+            <a href="#pricing">Pricing</a>
+            <a href="#faq">FAQ</a>
+            <a href="#signup" class="btn btn--primary" style="margin: 0 auto; font-size: 1.25rem;">Start for free</a>
+        </div>
+    </div>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero__video-container">
+                <!-- TODO: Replace with actual Cloudflare Stream manifest URL -->
+                <video id="hero-video" class="hero__video" muted autoplay loop playsinline aria-hidden="true">
+                    <source src="https://customer-xyz.cloudflarestream.com/manifest/video.m3u8" type="application/x-mpegURL">
+                </video>
+                <div class="hero__overlay"></div>
+                <!-- TODO: Replace with actual poster image -->
+                <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1920&q=80" alt="" class="hero__poster" id="hero-poster">
+            </div>
+            
+            <div class="hero__content">
+                <div class="hero__badge">
+                    <span class="badge-tag">New</span>
+                    <span>v2.0 Edge Sync is now live</span>
+                </div>
+                <h1 class="hero__title">
+                    The data <span class="text-accent">backbone</span> for modern SaaS
+                </h1>
+                <p class="hero__subtitle">
+                    Deploy global data pipelines in minutes. Scale to billions of events with sub-millisecond latency and built-in observability.
+                </p>
+                <div class="hero__ctas">
+                    <a href="#signup" class="btn btn--primary">Start for free</a>
+                    <a href="#" class="btn btn--secondary">Book a demo</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="container">
+            <div class="section-header">
+                <span class="eyebrow">Capabilities</span>
+                <h2>Engineered for <span class="text-accent">performance</span></h2>
+                <p>Stop managing infrastructure and start building features. Datacore handles the heavy lifting of data distribution.</p>
+            </div>
+            <div class="features-grid">
+                <div class="card card--glass">
+                    <div class="card__icon"><span class="material-symbols-rounded">bolt</span></div>
+                    <h3>Real-time Pipelines</h3>
+                    <p>Stream data across your entire stack with zero lag. Built-in transformation engines ensure data is clean before it hits your DB.</p>
+                </div>
+                <div class="card card--glass">
+                    <div class="card__icon"><span class="material-symbols-rounded">language</span></div>
+                    <h3>Global Edge Sync</h3>
+                    <p>Automatically replicate data to 150+ edge locations. Your users get local-speed access regardless of where they are.</p>
+                </div>
+                <div class="card card--glass">
+                    <div class="card__icon"><span class="material-symbols-rounded">visibility</span></div>
+                    <h3>Deep Observability</h3>
+                    <p>Full trace visibility from ingestion to delivery. Debug bottlenecks with millisecond precision using our visual explorer.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- How it Works Section -->
+        <section id="how-it-works" style="background: var(--bg-secondary);">
+            <div class="container">
+                <div class="section-header">
+                    <span class="eyebrow">Workflow</span>
+                    <h2>Three steps to <span class="text-accent">scale</span></h2>
+                </div>
+                <div class="steps-container">
+                    <div class="steps-line"></div>
+                    <div class="step">
+                        <div class="step__number">01</div>
+                        <h3>Connect Sources</h3>
+                        <p>Integrate your existing databases or APIs with a single click using our pre-built connectors.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step__number">02</div>
+                        <h3>Define Logic</h3>
+                        <p>Set up transformation rules and routing logic using our intuitive visual flow builder.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step__number">03</div>
+                        <h3>Deploy Global</h3>
+                        <p>Push your pipeline to the edge. Datacore handles the replication and consistency automatically.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Testimonials Section -->
+        <section class="container">
+            <div class="section-header">
+                <span class="eyebrow">Trust</span>
+                <h2>Loved by <span class="text-accent">engineers</span></h2>
+            </div>
+            <div class="testimonials-grid">
+                <div class="card testimonial-card">
+                    <p class="testimonial-quote">"Datacore reduced our data latency by 80%. We no longer worry about regional outages or sync conflicts."</p>
+                    <div class="testimonial-author">
+                        <div class="avatar">MK</div>
+                        <div class="author-info">
+                            <h4>Marcus Kane</h4>
+                            <p>CTO at FluxStream</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card testimonial-card">
+                    <p class="testimonial-quote">"The most intuitive data infrastructure I've ever used. The observability tools are a complete game-changer."</p>
+                    <div class="testimonial-author">
+                        <div class="avatar">SL</div>
+                        <div class="author-info">
+                            <h4>Sarah Lin</h4>
+                            <p>Lead Engineer at NovaCloud</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pricing Section -->
+        <section id="pricing" style="background: var(--bg-secondary);">
+            <div class="container">
+                <div class="section-header">
+                    <span class="eyebrow">Pricing</span>
+                    <h2>Simple, <span class="text-accent">predictable</span> plans</h2>
+                </div>
+                <div class="pricing-grid">
+                    <div class="card pricing-card">
+                        <h3>Starter</h3>
+                        <div class="price">$0<span>/mo</span></div>
+                        <ul class="pricing-features">
+                            <li><span class="material-symbols-rounded">check</span> 10GB Data Transfer</li>
+                            <li><span class="material-symbols-rounded">check</span> 3 Edge Locations</li>
+                            <li><span class="material-symbols-rounded">check</span> Community Support</li>
+                        </ul>
+                        <a href="#signup" class="btn btn--secondary" style="width: 100%;">Get Started</a>
+                    </div>
+                    <div class="card pricing-card pricing-card--featured">
+                        <div class="featured-badge">Most Popular</div>
+                        <h3>Growth</h3>
+                        <div class="price">$79<span>/mo</span></div>
+                        <ul class="pricing-features">
+                            <li><span class="material-symbols-rounded">check</span> 500GB Data Transfer</li>
+                            <li><span class="material-symbols-rounded">check</span> All Edge Locations</li>
+                            <li><span class="material-symbols-rounded">check</span> Priority Support</li>
+                            <li><span class="material-symbols-rounded">check</span> Advanced Observability</li>
+                        </ul>
+                        <a href="#signup" class="btn btn--primary" style="width: 100%;">Start Free Trial</a>
+                    </div>
+                    <div class="card pricing-card">
+                        <h3>Scale</h3>
+                        <div class="price">$249<span>/mo</span></div>
+                        <ul class="pricing-features">
+                            <li><span class="material-symbols-rounded">check</span> Unlimited Transfer</li>
+                            <li><span class="material-symbols-rounded">check</span> Custom SLA</li>
+                            <li><span class="material-symbols-rounded">check</span> Dedicated Account Manager</li>
+                        </ul>
+                        <a href="#signup" class="btn btn--secondary" style="width: 100%;">Contact Sales</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section id="faq" class="container">
+            <div class="section-header">
+                <span class="eyebrow">FAQ</span>
+                <h2>Common <span class="text-accent">questions</span></h2>
+            </div>
+            <div class="faq-container">
+                <div class="faq-item">
+                    <button class="faq-trigger" aria-expanded="false">
+                        How does the edge synchronization work?
+                        <span class="material-symbols-rounded">expand_more</span>
+                    </button>
+                    <div class="faq-panel" aria-hidden="true">
+                        <div class="faq-content">
+                            <div class="faq-content-inner">
+                                Datacore uses a proprietary conflict-free replicated data type (CRDT) system to ensure that data is synchronized across all global nodes with strong eventual consistency.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-trigger" aria-expanded="false">
+                        Can I migrate from another provider?
+                        <span class="material-symbols-rounded">expand_more</span>
+                    </button>
+                    <div class="faq-panel" aria-hidden="true">
+                        <div class="faq-content">
+                            <div class="faq-content-inner">
+                                Yes, we provide dedicated migration scripts and a white-glove onboarding service for Enterprise customers to ensure zero-downtime transitions.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-trigger" aria-expanded="false">
+                        What are the security standards?
+                        <span class="material-symbols-rounded">expand_more</span>
+                    </button>
+                    <div class="faq-panel" aria-hidden="true">
+                        <div class="faq-content">
+                            <div class="faq-content-inner">
+                                We are SOC2 Type II compliant and all data is encrypted at rest using AES-256 and in transit via TLS 1.3.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Final CTA -->
+        <section id="signup" class="container">
+            <div class="cta-band">
+                <h2 style="font-size: clamp(2rem, 4vw, 3rem);">Ready to <span class="text-accent">accelerate</span>?</h2>
+                <p style="color: var(--text-secondary); margin-top: 1rem;">Join 2,000+ companies building the future of the web on Datacore.</p>
+                
+                <form class="cta-form" id="cta-form">
+                    <div class="input-group">
+                        <label for="email">Work Email</label>
+                        <input type="email" id="email" required placeholder="name@company.com">
+                        <span class="error-msg" aria-live="polite">Please enter a valid email address.</span>
+                    </div>
+                    <button type="submit" class="btn btn--primary" id="submit-btn">
+                        <span>Get Started</span>
+                    </button>
+                </form>
+                <div id="form-success" class="error-msg" style="color: var(--text-success); margin-top: 1rem; display: none;" aria-live="polite">
+                    Welcome aboard! Check your inbox to verify your account.
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="#" class="nav-logo">
+                        <div class="logo-box">
+                            <span class="material-symbols-rounded">command</span>
+                        </div>
+                        Datacore
+                    </a>
+                    <p>Building the high-performance data infrastructure for the next generation of SaaS applications.</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Product</h4>
+                    <ul>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#pricing">Pricing</a></li>
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">API Reference</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Careers</a></li>
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="#">Community</a></li>
+                        <li><a href="#">Status</a></li>
+                        <li><a href="#">Security</a></li>
+                        <li><a href="#">Legal</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Datacore Inc. All rights reserved.</p>
+                <div class="social-links">
+                    <span class="social-link material-symbols-rounded">public</span>
+                    <span class="social-link material-symbols-rounded">code</span>
+                    <span class="social-link material-symbols-rounded">mail</span>
+                    <span class="social-link material-symbols-rounded">rss_feed</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        (function() {
+            // Theme Management
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeIcon = document.getElementById('theme-icon');
+            const html = document.documentElement;
+
+            const setTheme = (theme) => {
+                html.dataset.theme = theme;
+                localStorage.setItem('theme', theme);
+                themeToggle.setAttribute('aria-pressed', theme === 'light');
+                themeIcon.textContent = theme === 'light' ? 'dark_mode' : 'light_mode';
+            };
+
+            const savedTheme = localStorage.getItem('theme') || 
+                               (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+            setTheme(savedTheme);
+
+            themeToggle.addEventListener('click', () => {
+                const current = html.dataset.theme;
+                setTheme(current === 'dark' ? 'light' : 'dark');
+            });
+
+            // Mobile Drawer
+            const hamburger = document.querySelector('.hamburger');
+            const drawer = document.getElementById('mobile-drawer');
+            const drawerClose = document.querySelector('.drawer-close');
+            const drawerLinks = document.querySelectorAll('.drawer-nav a');
+
+            const toggleDrawer = (open) => {
+                drawer.classList.toggle('open', open);
+                hamburger.setAttribute('aria-expanded', open);
+                document.body.style.overflow = open ? 'hidden' : '';
+            };
+
+            hamburger.addEventListener('click', () => toggleDrawer(true));
+            drawerClose.addEventListener('click', () => toggleDrawer(false));
+            drawerLinks.forEach(link => link.addEventListener('click', () => toggleDrawer(false)));
+            
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && drawer.classList.contains('open')) toggleDrawer(false);
+            });
+
+            // HLS Video Setup
+            const video = document.getElementById('hero-video');
+            const poster = document.getElementById('hero-poster');
+            const videoSrc = video.querySelector('source').src;
+
+            if (Hls.isSupported()) {
+                const hls = new Hls();
+                hls.loadSource(videoSrc);
+                hls.attachMedia(video);
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = videoSrc;
+            }
+
+            video.addEventListener('playing', () => {
+                poster.classList.add('fade-out');
+                setTimeout(() => poster.hidden = true, 300);
+            });
+
+            // FAQ Accordion
+            const faqTriggers = document.querySelectorAll('.faq-trigger');
+            faqTriggers.forEach(trigger => {
+                trigger.addEventListener('click', () => {
+                    const expanded = trigger.getAttribute('aria-expanded') === 'true';
+                    const panel = trigger.nextElementSibling;
+                    
+                    // Close others
+                    faqTriggers.forEach(t => {
+                        t.setAttribute('aria-expanded', 'false');
+                        t.nextElementSibling.setAttribute('aria-hidden', 'true');
+                    });
+
+                    if (!expanded) {
+                        trigger.setAttribute('aria-expanded', 'true');
+                        panel.setAttribute('aria-hidden', 'false');
+                    }
+                });
+            });
+
+            // Form Handling
+            const form = document.getElementById('cta-form');
+            const submitBtn = document.getElementById('submit-btn');
+            const emailInput = document.getElementById('email');
+            const successMsg = document.getElementById('form-success');
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                // Simple validation
+                if (!emailInput.value.includes('@')) {
+                    emailInput.classList.add('error');
+                    return;
+                }
+                emailInput.classList.remove('error');
+
+                // Loading state
+                submitBtn.classList.add('btn--loading');
+                submitBtn.innerHTML = '<div class="spinner"></div>';
+
+                // Simulate API call
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                submitBtn.classList.remove('btn--loading');
+                submitBtn.innerHTML = '<span>Get Started</span>';
+                form.hidden = true;
+                successMsg.style.display = 'block';
+            });
+
+            // Intersection Observer for Reveal
+            const observerOptions = { threshold: 0.1 };
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.card, .step').forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                el.style.transition = 'all 0.6s ease-out';
+                observer.observe(el);
+            });
+        })();
+    </script>
+</body>
+</html>

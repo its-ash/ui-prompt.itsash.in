@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nimbus Spatial - Mixed Reality Collaboration Platform</title>
+<script>
+(function(){var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";}document.documentElement.dataset.theme=t;})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Orbitron:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet">
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --primary:#0088B8; --secondary:#C400C4; --accent-green:#1A8A1A; --accent-yellow:#8A7A00; --accent-hot-pink:#D4006E; --accent-sky:#0077B8;
+  --bg-primary:#F1F1F9; --bg-secondary:#E9E9F5; --bg-elevated:#FEFEFE;
+  --text-primary:#1B1B2A; --text-secondary:#4A4A66; --text-on-accent:#FFFFFF;
+  --text-success:#0E7A3D; --text-error:#C22525;
+  --border-default:#C9C9DE; --border-error:#C22525; --border-success:#0E7A3A;
+  --glow-cyan:0 0 12px rgba(0,136,184,.35),0 0 32px rgba(0,136,184,.18);
+  --glow-magenta:0 0 12px rgba(196,0,196,.3),0 0 32px rgba(196,0,196,.15);
+  --glow-pink:0 0 12px rgba(212,0,110,.3);
+  --grid-line:rgba(0,136,184,.10);
+  --radius-sm:.5rem; --radius-md:.75rem; --radius-lg:1.25rem;
+  --shadow-sm:0 2px 8px rgba(27,27,42,.08); --shadow-md:0 12px 32px rgba(27,27,42,.14);
+  --spacing-gap:1.5rem; --transition-fast:150ms; --transition-normal:300ms; --ease-standard:cubic-bezier(.22,1,.36,1);
+  --z-dropdown:60; --z-modal:80; --z-toast:90;
+  --font-display:'Space Grotesk',sans-serif; --font-base:'Inter',sans-serif; --font-mark:'Orbitron',sans-serif;
+}
+:root[data-theme="dark"]{
+  --primary:#00FFFF; --secondary:#FF00FF; --accent-green:#00FF00; --accent-yellow:#FFFF00; --accent-hot-pink:#FF0080; --accent-sky:#00CCFF;
+  --bg-primary:#1F1F2E; --bg-secondary:#262638; --bg-elevated:#2A2A40;
+  --text-primary:#FFFFFF; --text-secondary:#A9A9CC; --text-on-accent:#10101E;
+  --text-success:#4ADE80; --text-error:#FF6B6B;
+  --border-default:#3A3A55; --border-error:#FF6B6B; --border-success:#4ADE80;
+  --glow-cyan:0 0 14px rgba(0,255,255,.5),0 0 44px rgba(0,255,255,.22);
+  --glow-magenta:0 0 14px rgba(255,0,255,.45),0 0 44px rgba(255,0,255,.2);
+  --glow-pink:0 0 14px rgba(255,0,128,.45);
+  --grid-line:rgba(0,255,255,.08);
+  --shadow-sm:0 2px 10px rgba(0,0,10,.35); --shadow-md:0 14px 40px rgba(0,0,16,.5);
+}
+/* ============ BASE ============ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;overflow-x:clip;transition:background var(--transition-normal),color var(--transition-normal)}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(var(--grid-line) 1px,transparent 1px),linear-gradient(90deg,var(--grid-line) 1px,transparent 1px);
+  background-size:48px 48px}
+main,header,footer{position:relative;z-index:1}
+h1,h2,h3{font-family:var(--font-display);letter-spacing:-.02em;line-height:1.12}
+img{max-width:100%}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--primary);outline-offset:3px;border-radius:var(--radius-sm)}
+.skip-link{position:absolute;left:1rem;top:-4rem;background:var(--primary);color:var(--text-on-accent);padding:.6rem 1rem;border-radius:var(--radius-sm);z-index:var(--z-toast);transition:top var(--transition-fast)}
+.skip-link:focus{top:1rem}
+.container{max-width:1200px;margin:0 auto;padding-inline:1.25rem}
+section{padding-block:clamp(4rem,8vw,7rem)}
+.section-head{max-width:40rem;margin:0 auto 3rem;text-align:center}
+.section-head h2{font-size:clamp(1.75rem,3.5vw,2.5rem);margin-bottom:.75rem}
+.section-head p{color:var(--text-secondary);max-width:55ch;margin:0 auto}
+.material-symbols-rounded{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
+/* ============ HOLO PRIMITIVES ============ */
+.holo-text{background:linear-gradient(100deg,var(--primary),var(--secondary),var(--accent-sky),var(--primary));background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:holoShift 8s linear infinite}
+@keyframes holoShift{to{background-position:300% 0}}
+.holo-border{position:relative}
+.holo-border::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;background:linear-gradient(120deg,var(--primary),var(--secondary),var(--accent-sky));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+/* ============ BUTTONS ============ */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:.7rem 1.5rem;border-radius:var(--radius-md);font:600 .95rem var(--font-base);border:1px solid transparent;cursor:pointer;text-decoration:none;transition:transform var(--transition-fast) var(--ease-standard),box-shadow var(--transition-normal),background var(--transition-normal),border-color var(--transition-normal);position:relative}
+.btn:active{transform:scale(.97)}
+.btn--primary{background:var(--primary);color:var(--text-on-accent);box-shadow:var(--glow-cyan)}
+.btn--secondary{background:transparent;color:var(--text-primary);border-color:var(--secondary)}
+.btn--ghost{background:transparent;color:var(--text-secondary)}
+.btn:disabled,.btn.is-loading{opacity:.55;cursor:not-allowed;filter:grayscale(.4)}
+@media(hover:hover) and (pointer:fine){
+  .btn--primary:hover{box-shadow:0 0 18px rgba(0,255,255,.6),0 0 60px rgba(0,255,255,.3);filter:brightness(1.08)}
+  .btn--secondary:hover{border-color:var(--primary);box-shadow:var(--glow-cyan)}
+  .btn--ghost:hover{color:var(--primary)}
+}
+.btn.is-success{border-color:var(--border-success);color:var(--text-success)}
+.btn.is-error{border-color:var(--border-error);color:var(--text-error)}
+.btn .spinner{width:1.1em;height:1.1em;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* ============ HEADER ============ */
+.site-header{position:sticky;top:0;z-index:var(--z-dropdown);background:color-mix(in srgb,var(--bg-primary) 82%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-default)}
+.nav{display:flex;align-items:center;gap:1.5rem;height:68px}
+.nav__logo{display:flex;align-items:center;gap:.5rem;font:700 1.05rem var(--font-mark);letter-spacing:.06em;text-decoration:none;color:var(--text-primary)}
+.nav__logo .material-symbols-rounded{color:var(--primary);font-size:1.6rem}
+.nav__links{display:flex;align-items:center;gap:1.5rem;list-style:none;margin-left:auto}
+.nav__links a{text-decoration:none;color:var(--text-secondary);font-size:.92rem;font-weight:500;transition:color var(--transition-fast)}
+@media(hover:hover) and (pointer:fine){.nav__links a:hover{color:var(--primary)}}
+.nav__actions{display:flex;align-items:center;gap:.75rem}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-elevated);color:var(--text-primary);cursor:pointer;transition:box-shadow var(--transition-normal),transform var(--transition-fast)}
+.icon-btn:active{transform:scale(.95)}
+@media(hover:hover) and (pointer:fine){.icon-btn:hover{box-shadow:var(--glow-cyan);border-color:var(--primary)}}
+.nav__toggle{display:none}
+@media(max-width:768px){
+  .nav__links{position:fixed;top:68px;left:0;right:0;flex-direction:column;align-items:stretch;background:var(--bg-elevated);border-bottom:1px solid var(--border-default);padding:1rem 1.25rem;gap:.25rem;transform:translateY(-8px);opacity:0;pointer-events:none;transition:opacity var(--transition-fast),transform var(--transition-fast)}
+  .nav__links.is-open{transform:none;opacity:1;pointer-events:auto}
+  .nav__links a{display:block;padding:.7rem .5rem}
+  .nav__toggle{display:inline-flex}
+  .nav__cta{display:none}
+}
+/* ============ HERO ============ */
+.hero{min-height:calc(100dvh - 68px);display:flex;align-items:center;padding-top:clamp(2rem,5vw,4rem)}
+.hero__grid{display:flex;align-items:center;gap:3rem;width:100%}
+.hero__copy{flex:1 1 52%;display:flex;flex-direction:column;align-items:flex-start;gap:1.25rem}
+.hero__badge{display:inline-flex;align-items:center;gap:.5rem;font:600 .72rem var(--font-mark);letter-spacing:.14em;text-transform:uppercase;color:var(--primary);padding:.45rem 1rem;border-radius:999px;background:var(--bg-elevated)}
+.hero__title{font-size:clamp(2.25rem,5vw,3.75rem);line-height:1.08}
+.hero__sub{color:var(--text-secondary);font-size:1.08rem;max-width:46ch}
+.hero__ctas{display:flex;gap:1rem;flex-wrap:wrap}
+.hero__stage{flex:1 1 48%;perspective:1000px;display:flex;align-items:center;justify-content:center;min-height:340px}
+.hud{position:relative;width:100%;max-width:460px;aspect-ratio:4/3;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);transform:rotateY(-10deg) rotateX(6deg);transform-style:preserve-3d;box-shadow:var(--shadow-md),var(--glow-cyan);overflow:hidden;animation:hudFloat 7s ease-in-out infinite}
+@keyframes hudFloat{0%,100%{transform:rotateY(-10deg) rotateX(6deg) translateY(0)}50%{transform:rotateY(-7deg) rotateX(4deg) translateY(-10px)}}
+.hud::before{content:"";position:absolute;inset:0;background-image:linear-gradient(var(--grid-line) 1px,transparent 1px),linear-gradient(90deg,var(--grid-line) 1px,transparent 1px);background-size:32px 32px}
+.hud::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.02) 0 2px,transparent 2px 5px)}
+.hud__sweep{position:absolute;inset:0;background:linear-gradient(105deg,transparent 30%,rgba(0,255,255,.12) 50%,transparent 70%);background-size:250% 100%;animation:sweep 5s linear infinite}
+@keyframes sweep{to{background-position:-250% 0}}
+.hud__ring{position:absolute;top:50%;left:50%;width:56%;aspect-ratio:1;transform:translate(-50%,-50%) translateZ(30px);border:1px solid var(--primary);border-radius:50%;box-shadow:var(--glow-cyan),inset var(--glow-cyan)}
+.hud__ring::before{content:"";position:absolute;inset:18%;border:1px dashed var(--secondary);border-radius:50%;animation:spin 14s linear infinite}
+.hud__core{position:absolute;top:50%;left:50%;width:14%;aspect-ratio:1;transform:translate(-50%,-50%) translateZ(50px);background:radial-gradient(circle,var(--primary),transparent 70%);border-radius:50%}
+.chip{position:absolute;display:flex;align-items:center;gap:.4rem;padding:.45rem .8rem;background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:var(--radius-sm);font:600 .68rem var(--font-mark);letter-spacing:.08em;box-shadow:var(--shadow-sm);transform:translateZ(60px)}
+.chip .material-symbols-rounded{font-size:1rem}
+.chip--a{top:10%;left:6%;color:var(--primary);animation:chipFloat 5s ease-in-out infinite}
+.chip--b{bottom:14%;right:7%;color:var(--secondary);animation:chipFloat 6s ease-in-out 1s infinite}
+.chip--c{top:22%;right:10%;color:var(--accent-sky);animation:chipFloat 5.5s ease-in-out .5s infinite}
+@keyframes chipFloat{0%,100%{transform:translateZ(60px) translateY(0)}50%{transform:translateZ(60px) translateY(-8px)}}
+@media(max-width:900px){.hero__grid{flex-direction:column}.hero__stage{min-height:280px;width:100%}.hud{transform:none;animation:none}}
+/* ============ CARDS ============ */
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--spacing-gap)}
+@media(max-width:768px){.grid-3{grid-template-columns:1fr}}
+.card{display:flex;flex-direction:column;align-items:flex-start;gap:1rem;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:1.75rem;box-shadow:var(--shadow-sm);transition:transform var(--transition-normal) var(--ease-standard),box-shadow var(--transition-normal),border-color var(--transition-normal);transform:perspective(900px) rotateX(var(--tilt-x,0deg)) rotateY(var(--tilt-y,0deg))}
+.card:focus-within{border-color:var(--primary);box-shadow:var(--glow-cyan)}
+@media(hover:hover) and (pointer:fine){.card:hover{transform:perspective(900px) rotateX(var(--tilt-x,0deg)) rotateY(var(--tilt-y,0deg)) translateY(-4px);box-shadow:var(--shadow-md),var(--glow-cyan);border-color:var(--primary)}}
+.card__icon{display:flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:var(--radius-md);background:var(--bg-elevated);border:1px solid var(--border-default);font-size:1.5rem}
+.card__icon .material-symbols-rounded{font-size:1.6rem}
+.card--feature:nth-child(1) .card__icon{color:var(--primary);box-shadow:var(--glow-cyan)}
+.card--feature:nth-child(2) .card__icon{color:var(--secondary);box-shadow:var(--glow-magenta)}
+.card--feature:nth-child(3) .card__icon{color:var(--accent-sky)}
+.card h3{font-size:1.15rem}
+.card p{color:var(--text-secondary);font-size:.95rem}
+/* ============ STEPS ============ */
+.steps{display:flex;align-items:stretch;gap:var(--spacing-gap);position:relative}
+.steps::before{content:"";position:absolute;top:34px;left:12%;right:12%;height:2px;background:linear-gradient(90deg,var(--primary),var(--secondary),var(--accent-sky));background-size:200% 100%;animation:holoShift 6s linear infinite;opacity:.6}
+.step{flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:.9rem;position:relative}
+.step__num{display:flex;align-items:center;justify-content:center;width:68px;height:68px;border-radius:50%;background:var(--bg-elevated);font:700 1.15rem var(--font-mark);border:1px solid var(--border-default)}
+.step:nth-child(1) .step__num{color:var(--primary);box-shadow:var(--glow-cyan)}
+.step:nth-child(2) .step__num{color:var(--secondary);box-shadow:var(--glow-magenta)}
+.step:nth-child(3) .step__num{color:var(--accent-sky);box-shadow:0 0 14px rgba(0,204,255,.4)}
+.step h3{font-size:1.1rem}
+.step p{color:var(--text-secondary);font-size:.93rem}
+@media(max-width:768px){.steps{flex-direction:column}.steps::before{display:none}}
+/* ============ TESTIMONIALS ============ */
+.card--testimonial blockquote{font-size:1rem;color:var(--text-primary)}
+.card--testimonial blockquote::before{content:"\201C";color:var(--primary);font-size:1.6rem;line-height:0;vertical-align:-.3em;margin-right:.15rem}
+.stars{display:flex;gap:2px;color:var(--accent-yellow)}
+.stars .material-symbols-rounded{font-variation-settings:'FILL' 1,'wght' 400;font-size:1.1rem}
+.person{display:flex;align-items:center;gap:.8rem;margin-top:auto}
+.person__avatar{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;font:700 .85rem var(--font-display)}
+.person__name{font-weight:600;font-size:.9rem}
+.person__role{color:var(--text-secondary);font-size:.8rem}
+/* ============ PRICING ============ */
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--spacing-gap);align-items:stretch}
+@media(max-width:768px){.pricing-grid{grid-template-columns:1fr}}
+.card--pricing{align-items:stretch}
+.card--pricing .price{font:700 2.2rem var(--font-display);letter-spacing:-.03em}
+.card--pricing .price span{font:500 .85rem var(--font-base);color:var(--text-secondary)}
+.card--pricing ul{list-style:none;display:flex;flex-direction:column;gap:.6rem;flex:1}
+.card--pricing li{display:flex;align-items:center;gap:.55rem;font-size:.92rem;color:var(--text-secondary)}
+.card--pricing li .material-symbols-rounded{color:var(--text-success);font-size:1.15rem}
+.card--featured{position:relative;border:1px solid transparent;background:var(--bg-elevated);box-shadow:var(--shadow-md),var(--glow-magenta)}
+:root[data-theme="dark"] .card--featured{background:var(--bg-elevated);box-shadow:var(--shadow-md),var(--glow-magenta)}
+@media(min-width:769px){.card--featured{transform:scale(1.03)}.card--featured:hover{transform:scale(1.03) translateY(-4px)}}
+.card__badge{align-self:flex-start;font:700 .68rem var(--font-mark);letter-spacing:.12em;text-transform:uppercase;color:var(--text-on-accent);background:linear-gradient(90deg,var(--secondary),var(--accent-hot-pink));padding:.35rem .85rem;border-radius:999px}
+/* ============ FAQ ============ */
+.faq{max-width:46rem;margin:0 auto;display:flex;flex-direction:column;gap:.85rem}
+.faq__item{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);overflow:hidden}
+.faq__question{display:flex;align-items:center;justify-content:space-between;gap:1rem;width:100%;padding:1.1rem 1.25rem;cursor:pointer;font:600 .98rem var(--font-base);list-style:none;color:var(--text-primary)}
+.faq__question::-webkit-details-marker{display:none}
+.faq__question .material-symbols-rounded{color:var(--primary);transition:transform var(--transition-normal) var(--ease-standard)}
+.faq__item[open] .faq__question .material-symbols-rounded{transform:rotate(180deg)}
+.faq__answer{padding:0 1.25rem 1.2rem;color:var(--text-secondary);font-size:.93rem}
+/* ============ CTA ============ */
+.cta-band{background:linear-gradient(120deg,color-mix(in srgb,var(--primary) 14%,var(--bg-secondary)),color-mix(in srgb,var(--secondary) 14%,var(--bg-secondary)));border-block:1px solid var(--border-default)}
+.cta-band .container{display:flex;flex-direction:column;align-items:center;text-align:center;gap:1.25rem}
+.cta-band h2{font-size:clamp(1.75rem,3.5vw,2.5rem)}
+.cta-band p{color:var(--text-secondary);max-width:48ch}
+.signup{display:flex;flex-direction:column;gap:.5rem;width:100%;max-width:30rem;margin-top:.5rem}
+.input-group{display:flex;flex-direction:column;gap:.4rem;text-align:left}
+.input-group label{font-weight:600;font-size:.88rem}
+.input-group__row{display:flex;gap:.6rem}
+.input-group input{flex:1;min-height:48px;padding:.7rem 1rem;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-elevated);color:var(--text-primary);font:400 .95rem var(--font-base);transition:border-color var(--transition-fast),box-shadow var(--transition-fast)}
+.input-group input:focus{outline:none;border-color:var(--primary);box-shadow:var(--glow-cyan)}
+.input-group input.is-valid{border-color:var(--border-success)}
+.input-group input.is-invalid{border-color:var(--border-error)}
+.input-group__hint{font-size:.8rem;color:var(--text-secondary)}
+.input-group__error{display:flex;align-items:center;gap:.35rem;font-size:.82rem;color:var(--text-error);min-height:1.2em}
+.form-status{font-size:.9rem;min-height:1.4em;display:flex;align-items:center;justify-content:center;gap:.4rem}
+.form-status.is-ok{color:var(--text-success)}
+@media(max-width:520px){.input-group__row{flex-direction:column}}
+/* ============ FOOTER ============ */
+.site-footer{border-top:1px solid transparent;border-image:linear-gradient(90deg,var(--primary),var(--secondary),var(--accent-sky)) 1;background:var(--bg-secondary);padding:3.5rem 0 2rem}
+.footer-grid{display:flex;gap:3rem;flex-wrap:wrap;justify-content:space-between}
+.footer-grid nav{display:flex;flex-direction:column;gap:.55rem}
+.footer-grid h4{font:600 .8rem var(--font-mark);letter-spacing:.12em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:.4rem}
+.footer-grid a{color:var(--text-secondary);text-decoration:none;font-size:.9rem;transition:color var(--transition-fast)}
+@media(hover:hover) and (pointer:fine){.footer-grid a:hover{color:var(--primary)}}
+.footer-bottom{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid var(--border-default);color:var(--text-secondary);font-size:.85rem}
+.socials{display:flex;gap:.6rem}
+/* ============ REVEAL ============ */
+.js-enabled .reveal{opacity:0;transform:translateY(22px);transition:opacity .6s var(--ease-standard),transform .6s var(--ease-standard)}
+.js-enabled .reveal.is-visible{opacity:1;transform:none}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:150ms!important}
+  .hud,.chip,.hud__sweep,.hud__ring::before{animation:none!important}
+  .hud{transform:none}
+  .js-enabled .reveal{transform:none;transition:opacity 200ms ease}
+  html{scroll-behavior:auto}
+}
+@media (prefers-reduced-transparency: reduce){.site-header{background:var(--bg-primary);backdrop-filter:none}}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="container nav">
+    <a class="nav__logo" href="#top" aria-label="Nimbus Spatial home">
+      <span class="material-symbols-rounded" aria-hidden="true">view_in_ar</span>NIMBUS
+    </a>
+    <ul class="nav__links" id="nav-menu">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#how-it-works">How It Works</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+    <div class="nav__actions">
+      <button class="icon-btn" id="theme-toggle" type="button" aria-pressed="true" aria-label="Switch to light mode">
+        <span class="material-symbols-rounded" id="theme-icon" aria-hidden="true">light_mode</span>
+      </button>
+      <a class="btn btn--primary nav__cta" href="#pricing">Start Free</a>
+      <button class="icon-btn nav__toggle" id="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-menu" aria-label="Open menu">
+        <span class="material-symbols-rounded" aria-hidden="true">menu</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <!-- HERO -->
+  <section class="hero" id="top">
+    <div class="container hero__grid">
+      <div class="hero__copy">
+        <span class="hero__badge holo-border"><span class="material-symbols-rounded" aria-hidden="true">deployed_code</span>2025+ Spatial Computing</span>
+        <h1 class="hero__title">Your work, placed in the room with <span class="holo-text">mixed reality</span></h1>
+        <p class="hero__sub">Nimbus Spatial turns headsets and phones into shared workspaces where 3D models, data, and teammates occupy the same physical space.</p>
+        <div class="hero__ctas">
+          <a class="btn btn--primary" href="#pricing"><span class="material-symbols-rounded" aria-hidden="true">rocket_launch</span>Start Free</a>
+          <a class="btn btn--secondary" href="#how-it-works">See How It Works</a>
+        </div>
+      </div>
+      <div class="hero__stage" aria-hidden="true">
+        <div class="hud">
+          <div class="hud__sweep"></div>
+          <div class="hud__ring"></div>
+          <div class="hud__core"></div>
+          <div class="chip chip--a"><span class="material-symbols-rounded">sensors</span>SPATIAL SYNC</div>
+          <div class="chip chip--b"><span class="material-symbols-rounded">groups</span>4 IN SESSION</div>
+          <div class="chip chip--c"><span class="material-symbols-rounded">3d_rotation</span>MODEL LOCKED</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2>Built for spatial teams</h2>
+        <p>Everything you need to review, annotate, and decide inside a shared 3D scene.</p>
+      </div>
+      <div class="grid-3">
+        <article class="card card--feature reveal">
+          <div class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">3d_rotation</span></div>
+          <h3>True-scale model review</h3>
+          <p>Walk around CAD, BIM, and scan data at 1:1 scale. Snap measurements and section cuts land where your hands are.</p>
+        </article>
+        <article class="card card--feature reveal">
+          <div class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">layers</span></div>
+          <h3>Persistent spatial layers</h3>
+          <p>Pin annotations, dashboards, and documents to real walls and tables. They stay anchored between sessions.</p>
+        </article>
+        <article class="card card--feature reveal">
+          <div class="card__icon"><span class="material-symbols-rounded" aria-hidden="true">sensors</span></div>
+          <h3>Cross-device presence</h3>
+          <p>Headset, tablet, or browser: every participant sees the same scene with live avatars and gaze indicators.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="how-it-works">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2>From file to shared space in minutes</h2>
+        <p>Three steps, no engine code, no scene baking.</p>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <div class="step__num">01</div>
+          <h3>Import your model</h3>
+          <p>Drop in FBX, glTF, Revit, or point-cloud files. Nimbus optimizes geometry for headsets automatically.</p>
+        </div>
+        <div class="step reveal">
+          <div class="step__num">02</div>
+          <h3>Anchor it to your room</h3>
+          <p>Scan the space once. The model locks to the floor plan and stays put for every future session.</p>
+        </div>
+        <div class="step reveal">
+          <div class="step__num">03</div>
+          <h3>Invite your team</h3>
+          <p>Share a link. Colleagues join from any device and see your annotations, pointers, and voice in place.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section id="testimonials">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2>Teams already working this way</h2>
+      </div>
+      <div class="grid-3">
+        <article class="card card--testimonial reveal">
+          <div class="stars" aria-label="5 out of 5 stars"><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span></div>
+          <blockquote>Design reviews that took a week of screen shares now finish in one afternoon. Clients understand the building before a single render.</blockquote>
+          <div class="person"><div class="person__avatar" aria-hidden="true">MK</div><div><div class="person__name">Mara Kessler</div><div class="person__role">Principal Architect, Studio Halden</div></div></div>
+        </article>
+        <article class="card card--testimonial reveal">
+          <div class="stars" aria-label="5 out of 5 stars"><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span></div>
+          <blockquote>Our factory layout team caught a conveyor clash at full scale that every 2D drawing had missed for months.</blockquote>
+          <div class="person"><div class="person__avatar" aria-hidden="true">DO</div><div><div class="person__name">David Okafor</div><div class="person__role">Manufacturing Lead, Kestrel Robotics</div></div></div>
+        </article>
+        <article class="card card--testimonial reveal">
+          <div class="stars" aria-label="5 out of 5 stars"><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span><span class="material-symbols-rounded">star</span></div>
+          <blockquote>Half our team is remote. Nimbus is the first tool where a headset user and a laptop user genuinely feel like they are in the same room.</blockquote>
+          <div class="person"><div class="person__avatar" aria-hidden="true">SL</div><div><div class="person__name">Sofia Lindqvist</div><div class="person__role">VP Product, Northfield Medical</div></div></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section id="pricing">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2>Pick your space</h2>
+        <p>Start free, upgrade when your team and models grow.</p>
+      </div>
+      <div class="pricing-grid">
+        <article class="card card--pricing reveal">
+          <h3>Explorer</h3>
+          <div class="price">$0 <span>/ forever</span></div>
+          <ul>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>1 anchored room</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Models up to 200 MB</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>3 guests per session</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Browser and mobile join</li>
+          </ul>
+          <a class="btn btn--secondary" href="#cta">Start Free</a>
+        </article>
+        <article class="card card--pricing card--featured holo-border reveal">
+          <span class="card__badge">Most Popular</span>
+          <h3>Creator</h3>
+          <div class="price">$24 <span>/ user / month</span></div>
+          <ul>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Unlimited anchored rooms</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Models up to 5 GB</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>16 participants per session</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Session recording and playback</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Revit and Rhino plugins</li>
+          </ul>
+          <a class="btn btn--primary" href="#cta">Start Free</a>
+        </article>
+        <article class="card card--pricing reveal">
+          <h3>Studio</h3>
+          <div class="price">$59 <span>/ user / month</span></div>
+          <ul>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Everything in Creator</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>SSO and SCIM provisioning</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Private cloud or on-prem</li>
+            <li><span class="material-symbols-rounded" aria-hidden="true">check</span>Dedicated success engineer</li>
+          </ul>
+          <a class="btn btn--secondary" href="#cta">Start Free</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2>Common questions</h2>
+      </div>
+      <div class="faq reveal">
+        <details class="faq__item">
+          <summary class="faq__question">What hardware do I need?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__answer">Nimbus runs on Meta Quest 3, Apple Vision Pro, and Magic Leap 2 natively. Teammates without a headset can join the same session from any modern browser, tablet, or phone with full view and annotation access.</p>
+        </details>
+        <details class="faq__item">
+          <summary class="faq__question">Where is my spatial data stored?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__answer">Room scans are processed on-device and stored as encrypted anchor maps, never as raw camera imagery. Models and session data live in SOC 2 compliant storage, with EU or US region pinning on Creator and Studio plans.</p>
+        </details>
+        <details class="faq__item">
+          <summary class="faq__question">Can remote and in-room people collaborate together?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__answer">Yes. Every session is hybrid by default. In-room participants see anchored content in passthrough, while remote participants see a live virtual copy of the same room with everyone's avatars and pointers.</p>
+        </details>
+        <details class="faq__item">
+          <summary class="faq__question">How does billing work for guests?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__answer">Guests join with a link and never need a paid seat. You only pay for workspace members who create and manage rooms. You can change or cancel your plan at any time from the billing dashboard.</p>
+        </details>
+        <details class="faq__item">
+          <summary class="faq__question">What support is included?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+          <p class="faq__answer">All plans include documentation and community support. Creator adds 24-hour email response, and Studio includes a dedicated success engineer plus onboarding sessions for your team.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="cta-band" id="cta">
+    <div class="container reveal">
+      <h2>Put your next review <span class="holo-text">in the room</span></h2>
+      <p>Join the early access list and get a Creator workspace free for your first 60 days.</p>
+      <form class="signup" id="signup-form" novalidate>
+        <div class="input-group">
+          <label for="email">Work email</label>
+          <div class="input-group__row">
+            <input type="email" id="email" name="email" autocomplete="email" placeholder="you@company.com" aria-describedby="email-hint email-error" required>
+            <button class="btn btn--primary" id="signup-btn" type="submit"><span class="btn__label">Request Access</span></button>
+          </div>
+          <span class="input-group__hint" id="email-hint">We send one invite email. No newsletters.</span>
+          <span class="input-group__error" id="email-error" role="alert"></span>
+        </div>
+        <p class="form-status" id="form-status" aria-live="polite"></p>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <nav aria-label="Product"><h4>Product</h4><a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#">Changelog</a><a href="#">Roadmap</a></nav>
+      <nav aria-label="Company"><h4>Company</h4><a href="#">About</a><a href="#">Careers</a><a href="#">Press Kit</a><a href="#">Contact</a></nav>
+      <nav aria-label="Resources"><h4>Resources</h4><a href="#">Documentation</a><a href="#">Device Setup</a><a href="#">API Reference</a><a href="#">Community</a></nav>
+      <nav aria-label="Legal"><h4>Legal</h4><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Security</a><a href="#">DPA</a></nav>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 Nimbus Spatial, Inc. All rights reserved.</span>
+      <div class="socials">
+        <a class="icon-btn" href="#" aria-label="Nimbus on X"><span class="material-symbols-rounded" aria-hidden="true">share</span></a>
+        <a class="icon-btn" href="#" aria-label="Nimbus on LinkedIn"><span class="material-symbols-rounded" aria-hidden="true">work</span></a>
+        <a class="icon-btn" href="#" aria-label="Nimbus on YouTube"><span class="material-symbols-rounded" aria-hidden="true">play_circle</span></a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  document.documentElement.classList.add("js-enabled");
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* Theme toggle */
+  var root = document.documentElement,
+      toggle = document.getElementById("theme-toggle"),
+      icon = document.getElementById("theme-icon");
+  function applyTheme(t){
+    root.dataset.theme = t;
+    var dark = t === "dark";
+    toggle.setAttribute("aria-pressed", String(dark));
+    toggle.setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode");
+    icon.textContent = dark ? "light_mode" : "dark_mode";
+  }
+  applyTheme(root.dataset.theme === "light" ? "light" : "dark");
+  toggle.addEventListener("click", function(){
+    var next = root.dataset.theme === "dark" ? "light" : "dark";
+    localStorage.setItem("theme", next);
+    applyTheme(next);
+  });
+
+  /* Mobile nav */
+  var navToggle = document.getElementById("nav-toggle"),
+      menu = document.getElementById("nav-menu");
+  function closeMenu(){
+    menu.classList.remove("is-open");
+    navToggle.setAttribute("aria-expanded","false");
+    navToggle.setAttribute("aria-label","Open menu");
+    navToggle.querySelector(".material-symbols-rounded").textContent = "menu";
+  }
+  navToggle.addEventListener("click", function(){
+    var open = menu.classList.toggle("is-open");
+    navToggle.setAttribute("aria-expanded", String(open));
+    navToggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+    navToggle.querySelector(".material-symbols-rounded").textContent = open ? "close" : "menu";
+  });
+  menu.addEventListener("click", function(e){ if(e.target.tagName === "A") closeMenu(); });
+  document.addEventListener("keydown", function(e){ if(e.key === "Escape") closeMenu(); });
+
+  /* Scroll reveals with stagger */
+  var reveals = document.querySelectorAll(".reveal");
+  if("IntersectionObserver" in window && !reduced){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){
+          var el = en.target, sibs = Array.prototype.slice.call(el.parentElement.children).filter(function(c){return c.classList.contains("reveal");});
+          el.style.transitionDelay = (sibs.indexOf(el) * 70) + "ms";
+          el.classList.add("is-visible");
+          io.unobserve(el);
+        }
+      });
+    },{threshold:.15});
+    reveals.forEach(function(el){ io.observe(el); });
+  } else {
+    reveals.forEach(function(el){ el.classList.add("is-visible"); });
+  }
+
+  /* Card tilt (fine pointers only) */
+  if(!reduced && window.matchMedia("(hover: hover) and (pointer: fine)").matches){
+    document.querySelectorAll(".card").forEach(function(card){
+      card.addEventListener("pointermove", function(e){
+        var r = card.getBoundingClientRect(),
+            x = (e.clientX - r.left) / r.width - .5,
+            y = (e.clientY - r.top) / r.height - .5;
+        card.style.setProperty("--tilt-y", (x * 5).toFixed(2) + "deg");
+        card.style.setProperty("--tilt-x", (-y * 5).toFixed(2) + "deg");
+      });
+      card.addEventListener("pointerleave", function(){
+        card.style.setProperty("--tilt-x","0deg");
+        card.style.setProperty("--tilt-y","0deg");
+      });
+    });
+  }
+
+  /* Signup form: loading -> success/error */
+  var form = document.getElementById("signup-form"),
+      email = document.getElementById("email"),
+      err = document.getElementById("email-error"),
+      status = document.getElementById("form-status"),
+      btn = document.getElementById("signup-btn"),
+      label = btn.querySelector(".btn__label");
+  form.addEventListener("submit", function(e){
+    e.preventDefault();
+    err.textContent = ""; status.textContent = ""; status.classList.remove("is-ok");
+    email.classList.remove("is-valid","is-invalid");
+    var val = email.value.trim();
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val)){
+      email.classList.add("is-invalid");
+      err.innerHTML = "";
+      var ic = document.createElement("span");
+      ic.className = "material-symbols-rounded"; ic.setAttribute("aria-hidden","true"); ic.textContent = "error";
+      err.appendChild(ic); err.appendChild(document.createTextNode("Enter a valid work email address."));
+      email.focus();
+      return;
+    }
+    email.classList.add("is-valid");
+    btn.classList.add("is-loading"); btn.disabled = true;
+    var sp = document.createElement("span"); sp.className = "spinner"; sp.setAttribute("aria-hidden","true");
+    label.textContent = "Sending"; btn.insertBefore(sp, label);
+    setTimeout(function(){
+      btn.classList.remove("is-loading"); btn.disabled = false;
+      sp.remove(); label.textContent = "Request Access";
+      btn.classList.add("is-success");
+      var ok = document.createElement("span");
+      ok.className = "material-symbols-rounded"; ok.setAttribute("aria-hidden","true"); ok.textContent = "check_circle";
+      status.classList.add("is-ok");
+      status.appendChild(ok);
+      status.appendChild(document.createTextNode("You're on the list. Watch your inbox for an invite."));
+      form.reset();
+      email.classList.remove("is-valid");
+      setTimeout(function(){ btn.classList.remove("is-success"); }, 3000);
+    }, 1400);
+  });
+})();
+</script>
+</body>
+</html>
