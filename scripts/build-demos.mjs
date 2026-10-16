@@ -4,7 +4,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { MODELS as DEFAULT_MODELS, callModel, looksLikeHtml, requireKey } from './lib/nvidia.mjs';
 import { createChecker, launch } from './lib/darkcheck.mjs';
-import { createQuality, stripEmDashes } from './lib/quality.mjs';
+import { createQuality, repairHtml, stripEmDashes } from './lib/quality.mjs';
 
 const DEMO_DIR = path.resolve('design/demos');
 const STATE_FILE = path.resolve('.demo-state.json');
@@ -82,7 +82,7 @@ async function buildDemo(file, checker, quality) {
   let best = null;
   let fixes = '';
   for (let round = 1; round <= ROUNDS; round++) {
-    const html = stripEmDashes(await callModel(SYSTEM, base + fixes, looksLikeHtml, 32000, MODELS, TIMEOUT_MS));
+    const html = repairHtml(stripEmDashes(await callModel(SYSTEM, base + fixes, looksLikeHtml, 32000, MODELS, TIMEOUT_MS)));
     const probe = path.join(os.tmpdir(), `pd-demo-${id}-${process.pid}.html`);
     fs.writeFileSync(probe, html);
     const dark = await checker.check(probe);
