@@ -14,10 +14,10 @@ Prompt library site. Users filter by category, open a design full view, copy the
 - `make deploy` - build docs, commit to main, push
 - `make process` - regenerate prompts from `design/raw` via `design/agent.md` (needs `OPENROUTER_API_KEY`)
 - `make categorize` - regenerate `design/categories.json`
-- `make demos` - build missing demo pages in `design/demos` via NVIDIA (needs `NVIDIA_API_KEY` in `.env`); skips done demos. System prompt = output rules + `design/design-brief.md`; each page must pass the Playwright dark-mode check. Env: `DEMO_ONLY=id1,id2` (rebuild those), `DEMO_MODELS=moonshotai/kimi-k3,google/gemma-4-31b-it` (best quality), `DEMO_NOTE="..."` (redesign notes), `DEMO_TIMEOUT_MS`
+- `make demos` - build missing demo pages in `design/demos` via NVIDIA (needs `NVIDIA_API_KEY` in `.env`); skips done demos. System prompt = output rules + `design/design-brief.md`; each page must pass the Playwright dark-mode check. Env: `DEMO_ONLY=id1,id2` (rebuild those), `DEMO_MODELS=...` (override model list), `DEMO_NOTE="..."` (redesign notes), `DEMO_TIMEOUT_MS`
 - `make thumbs` - screenshot new/changed demos to `design/thumbs/*.jpg` (Playwright); also runs in `npm run generate`
 - `make check-dark` - Playwright check that each demo has a working dark mode (toggle click or prefers-color-scheme); results in `design/dark-check.json`
-- `make fix-dark` - NVIDIA (kimi-k3, gemma-4 fallback) writes `html[data-theme="dark"]` CSS for demos with no dark mode; the script injects it plus a standard toggle (`#pd-dark`, `#pd-theme-init`, `#pd-theme-toggle`) and verifies in Playwright before saving
+- `make fix-dark` - NVIDIA (nemotron-3-super, gpt-oss fallback) writes `html[data-theme="dark"]` CSS for demos with no dark mode; the script injects it plus a standard toggle (`#pd-dark`, `#pd-theme-init`, `#pd-theme-toggle`) and verifies in Playwright before saving
 - `make redo-dark` - same, but also re-does pages already patched; `node scripts/fix-dark.mjs --reinject` refreshes only the injected toggle script
 - `make brand` - render `public/og.png` (1200x630 share image), `apple-touch-icon.png` and `favicon.ico` from `public/favicon.svg`
 
@@ -38,7 +38,7 @@ Prompt library site. Users filter by category, open a design full view, copy the
 - ALWAYS generate or redesign demos through `scripts/build-demos.mjs` so the NVIDIA system prompt includes `design/design-brief.md` (distilled from the `design` skill). Never call NVIDIA for page design without it.
 - The NVIDIA system prompt = output rules + full text of `design/skills/website-design.md` + `design/skills/website-layout.md` (copies of the `website-design` / `website-layout` skills) + `design/design-brief.md`. Check with `DEMO_DRY=1 node scripts/build-demos.mjs`.
 - `make redesign FROM=400` regenerates every demo from that number (resumable via `.redesign-state.json`; delete it to start over), then re-checks dark mode, thumbs and site data.
-- Default models: `moonshotai/kimi-k3`, fallback `google/gemma-4-31b-it` (benchmarked best on NVIDIA free tier). Nemotron spends its budget on reasoning.
+- Default models: `nvidia/nemotron-3-super-120b-a12b`, fallback `openai/gpt-oss-20b` (re-benchmarked 2026-10-16 on a full page with the full system prompt). `moonshotai/kimi-k3` reached end of life on NVIDIA on 2026-10-15 (HTTP 410); `kimi-k2.6` and `mistral-large*` are listed but not enabled for this key (404); `gemma-4-31b-it` and `deepseek-v4.1-flash` hit NVIDIA's 300s gateway timeout (504) on long prompts; `glm-5.3` spends the whole budget reasoning. The NVIDIA client uses an undici Agent with no headers timeout because long prompts queue for minutes.
 - Redesign one page: `DEMO_ONLY=<id> DEMO_NOTE="<audit of current page>" make demos`, then check both modes, mobile, console, and fix leftovers by hand.
 
 ## SEO

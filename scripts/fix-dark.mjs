@@ -9,8 +9,8 @@ const DEMO_DIR = path.resolve('design/demos');
 const CHECK_FILE = path.resolve('design/dark-check.json');
 const CONCURRENCY = Number(process.env.DEMO_CONCURRENCY ?? 6);
 const ROUNDS = 3;
-// Benchmarked on this task: kimi-k3 writes the most complete dark CSS; gemma-4 is a fast fallback. Nemotron spends its budget reasoning.
-const MODELS = (process.env.DARK_MODELS ?? 'moonshotai/kimi-k3,google/gemma-4-31b-it').split(',').map((m) => m.trim()).filter(Boolean);
+// kimi-k3 reached end of life on NVIDIA (2026-10-15); gemma/deepseek hit the 300s gateway timeout on long prompts.
+const MODELS = (process.env.DARK_MODELS ?? 'nvidia/nemotron-3-super-120b-a12b,openai/gpt-oss-20b').split(',').map((m) => m.trim()).filter(Boolean);
 const TIMEOUT_MS = Number(process.env.DARK_TIMEOUT_MS ?? 600000);
 const REDO = process.argv.includes('--redo');
 const ONLY = process.env.DEMO_ONLY ? process.env.DEMO_ONLY.split(',').map((s) => s.trim()) : null;

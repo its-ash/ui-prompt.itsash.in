@@ -63,6 +63,7 @@ Before building, decide silently: page kind, audience, vibe, and what makes THIS
 - Responsive rules come AFTER the base rules they override (source order), or they silently lose.
 - Specificity: theme overrides like :root[data-theme="dark"] .card beat plain .card--featured; give variant rules matching specificity in dark mode.
 - Every icon class you use (material-symbols-rounded / -outlined / -sharp) has its own Google Fonts <link>; otherwise raw words like dark_mode appear.
+- Material Symbols has NO brand/social icons (twitter, x, github, linkedin, facebook, instagram, discord, youtube). Use small inline SVG marks for social links.
 - Copyright year 2026. No scroll cues. No em-dashes anywhere in visible text, title or aria-labels.
 - Declare each script variable once with const/let inside an IIFE; all inline scripts share global scope.
 

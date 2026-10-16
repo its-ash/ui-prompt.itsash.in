@@ -1,8 +1,12 @@
 import process from 'node:process';
+import { Agent, fetch } from 'undici';
+
+// NVIDIA can queue long prompts for minutes before sending headers; Node's default 300s headers timeout aborted those as 'fetch failed'.
+const dispatcher = new Agent({ headersTimeout: 0, bodyTimeout: 600000, connectTimeout: 30000 });
 
 const NVIDIA_URL = 'https://integrate.api.nvidia.com/v1/chat/completions';
 export const NVIDIA_KEY = process.env.NVIDIA_API_KEY ?? '';
-export const MODELS = (process.env.NVIDIA_MODELS ?? 'moonshotai/kimi-k3,google/gemma-4-31b-it')
+export const MODELS = (process.env.NVIDIA_MODELS ?? 'nvidia/nemotron-3-super-120b-a12b,openai/gpt-oss-20b')
   .split(',')
   .map((m) => m.trim())
   .filter(Boolean);
@@ -16,6 +20,7 @@ export function requireKey(tag) {
 
 async function callNvidia(system, model, userPrompt, maxTokens, timeoutMs = TIMEOUT_MS) {
   const res = await fetch(NVIDIA_URL, {
+    dispatcher,
     method: 'POST',
     headers: { Authorization: `Bearer ${NVIDIA_KEY}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({

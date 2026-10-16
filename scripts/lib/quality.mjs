@@ -37,7 +37,19 @@ export async function createQuality(browser) {
           const fam = c.replace(/-/g, '+').replace('material+symbols+', 'material+symbols+').toLowerCase();
           return !links.some((h) => h.includes(fam.replace('material+icons', 'material+icons')));
         });
+        // An icon-font glyph renders ~1em wide; a raw ligature word in a fallback font is much wider.
+        const rawIcons = [...document.querySelectorAll('[class*="material-symbols"], [class*="material-icons"]')]
+          .filter((e) => {
+            const t = (e.textContent ?? '').trim();
+            const fs = parseFloat(getComputedStyle(e).fontSize) || 16;
+            if (t.length < 4 || !/^[a-z0-9_]+$/.test(t)) return false;
+            const r = document.createRange();
+            r.selectNodeContents(e);
+            return r.getBoundingClientRect().width > fs * 1.6;
+          })
+          .map((e) => e.textContent.trim());
         return {
+          rawIcons: [...new Set(rawIcons)].slice(0, 4),
           firstCta,
           h1: !!h1,
           h1Height: h1 ? h1.getBoundingClientRect().height : 0,
@@ -49,6 +61,7 @@ export async function createQuality(browser) {
       if (!d.h1) issues.push('there is no <h1> in the hero');
       if (d.firstCta === null) issues.push('the hero has no visible CTA button');
       else if (d.firstCta > DESKTOP.height) issues.push(`the hero CTA ends at ${Math.round(d.firstCta)}px, below the 800px first viewport; shorten the hero (headline max 2-3 lines, smaller display size, less top padding)`);
+      if (d.rawIcons.length) issues.push(`icon ligatures render as raw words (${d.rawIcons.join(', ')}); load the exact icon font family via <link> and use its class, or use inline SVG icons`);
       if (d.missingFonts.length) issues.push(`icon classes ${d.missingFonts.join(', ')} are used but their Google Fonts <link> is missing, so raw ligature words show`);
       if (d.year) issues.push('footer copyright year must be 2026');
       if (d.scrollCue) issues.push('remove the scroll cue in the hero');
@@ -79,9 +92,13 @@ export async function createQuality(browser) {
         const btn = mp.locator('header button[aria-expanded]').filter({ visible: true }).first();
         await btn.click({ timeout: 2000 }).catch(() => {});
         await mp.waitForTimeout(400);
-        const opened = await mp.evaluate(() =>
-          [...document.querySelectorAll('header nav a')].some((a) => a.getBoundingClientRect().height > 0 && getComputedStyle(a).visibility !== 'hidden')
-        );
+        const ctrl = await btn.getAttribute('aria-controls').catch(() => null);
+        const opened = await mp.evaluate((id) => {
+          const shown = (a) => a.getBoundingClientRect().height > 0 && getComputedStyle(a).visibility !== 'hidden';
+          const scope = id && document.getElementById(id);
+          const links = scope ? [...scope.querySelectorAll('a')] : [...document.querySelectorAll('header a, nav a, [role="dialog"] a')];
+          return links.filter(shown).length >= 2;
+        }, ctrl);
         if (!opened) issues.push('the mobile menu button does not reveal the nav links');
       }
     } finally {
