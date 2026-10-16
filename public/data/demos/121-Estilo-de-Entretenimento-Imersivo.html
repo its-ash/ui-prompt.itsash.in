@@ -1,1595 +1,361 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chronica - Signal Lost</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chronica - Signal Lost, the series you write as you watch</title>
+<meta name="description" content="Chronica streams Signal Lost, an interactive series where every choice rewrites the next episode, with AI picks tuned to the stories you love.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+(()=>{let t=null;try{t=localStorage.getItem('theme')}catch(e){}
+const d=t==='dark'||t==='light'?t:(matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');
+document.documentElement.dataset.theme=d;})();
+</script>
 <style>
-:root {
-  color-scheme: light;
-  --primary: #E50914;
-  --primary-hover: #F40612;
-  --secondary: #FFD700;
-  --accent-purple: #800080;
-  --accent-blue: #0000FF;
-  --bg-primary: #FEFEFE;
-  --bg-secondary: #F5F5F5;
-  --text-primary: #000000;
-  --text-secondary: #666666;
-  --text-success: #2ECC71;
-  --text-error: #FF5252;
-  --border-default: #DDDDDD;
-  --border-error: #FF5252;
-  --border-success: #2ECC71;
-  --glow-red: 0 0 10px rgba(229, 9, 20, 0.5);
-  --shadow-inset: inset 0 0 20px rgba(0,0,0,0.05);
-  --shadow-sm: 0 2px 8px rgba(0,0,0,0.1);
-  --shadow-md: 0 8px 24px rgba(0,0,0,0.15);
-  --blur-panel: blur(10px) saturate(1.5);
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 16px;
-  --spacing-gap: 1.5rem;
-  --transition-fast: 0.2s ease-in-out;
-  --transition-normal: 0.4s ease-in-out;
-  --ease-standard: ease-in-out;
-  --z-dropdown: 1000;
-  --z-modal: 2000;
-  --z-toast: 3000;
-  --font-display: "Bebas Neue", "Helvetica Neue", Arial, sans-serif;
-  --font-base: "Inter", "Helvetica Neue", Arial, sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
-}
-:root[data-theme="dark"] {
-  --bg-primary: #000000;
-  --bg-secondary: #222222;
-  --text-primary: #FFFFFF;
-  --text-secondary: #CCCCCC;
-  --border-default: #333333;
-  --shadow-inset: inset 0 0 20px rgba(0,0,0,0.7);
-  --shadow-sm: 0 2px 8px rgba(0,0,0,0.5);
-  --shadow-md: 0 8px 24px rgba(0,0,0,0.7);
-}
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 16px; scroll-behavior: smooth; }
-body {
-  font-family: var(--font-base);
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  line-height: 1.6;
-}
-a { color: inherit; text-decoration: none; }
-button { cursor: pointer; font: inherit; }
-.container {
-  width: 90%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1rem;
-}
-.section {
-  padding: clamp(3rem, 6vw, 8rem) 0;
-}
-.section__title {
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 4vw, 3.5rem);
-  text-align: center;
-  margin-bottom: 2rem;
-  letter-spacing: -0.02em;
-}
-.btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  height: 3rem;
-  min-width: 8rem;
-  padding: 0 1.5rem;
-  border: none;
-  border-radius: var(--radius-md);
-  font-weight: 600;
-  font-size: 1rem;
-  transition: background-color var(--transition-normal), box-shadow var(--transition-normal), transform var(--transition-fast);
-  position: relative;
-  overflow: hidden;
-}
-.btn--primary {
-  background: var(--primary);
-  color: var(--text-primary);
-}
-.btn--primary:hover {
-  background: var(--primary-hover);
-  box-shadow: var(--glow-red);
-}
-.btn--primary:active {
-  transform: scale(0.97);
-}
-.btn--ghost {
-  background: transparent;
-  border: 1px solid var(--text-secondary);
-  color: var(--text-primary);
-  backdrop-filter: var(--blur-panel);
-}
-.btn--ghost:hover {
-  background: rgba(255,255,255,0.05);
-  box-shadow: var(--glow-red);
-}
-.btn--gold {
-  background: var(--secondary);
-  color: #000;
-}
-.btn--gold:hover {
-  background: #ffed4a;
-}
-.btn--danger {
-  border: 2px solid var(--text-error);
-  color: var(--text-error);
-  background: transparent;
-}
-.btn--danger:hover {
-  background: rgba(255,82,82,0.1);
-}
-.btn.is-loading {
-  pointer-events: none;
-  opacity: 0.7;
-}
-.btn.is-loading::after {
-  content: '';
-  position: absolute;
-  width: 1rem;
-  height: 1rem;
-  border: 2px solid currentColor;
-  border-top-color: transparent;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-.btn.is-success {
-  background: var(--text-success);
-  color: #000;
-}
-.btn.is-error {
-  background: var(--text-error);
-  color: #fff;
-}
-.card {
-  display: flex;
-  flex-direction: column;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
-  transition: transform var(--transition-normal), box-shadow var(--transition-normal), border-color var(--transition-normal);
-}
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--primary);
-}
-.card:focus-within {
-  border-color: var(--primary);
-}
-.card--skeleton {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-}
-@keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-.card--empty {
-  text-align: center;
-  padding: 3rem;
-}
-.card--empty .material-symbols-rounded {
-  font-size: 4rem;
-  color: var(--text-secondary);
-  margin-bottom: 1rem;
-}
-.input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-.input-group__label {
-  font-weight: 500;
-  margin-bottom: 0.25rem;
-}
-.input-group__input {
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font: inherit;
-  transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
-}
-.input-group__input:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(229,9,20,0.35);
-}
-.input-group__input.is-valid {
-  border-color: var(--border-success);
-}
-.input-group__input.is-invalid {
-  border-color: var(--border-error);
-}
-.input-group__error {
-  font-size: 0.875rem;
-  color: var(--text-error);
-  min-height: 1.25rem;
-}
-.modal {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: var(--z-modal);
-}
-.modal[aria-hidden="false"] {
-  display: flex;
-}
-.modal__overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.8);
-  backdrop-filter: var(--blur-panel);
-}
-.modal__dialog {
-  position: relative;
-  margin: auto;
-  background: var(--bg-secondary);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  width: min(90vw, 800px);
-  max-height: 90vh;
-  overflow: hidden;
-  animation: modalFadeIn var(--transition-normal) forwards;
-}
-@keyframes modalFadeIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
-}
-.modal__close-btn {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background: transparent;
-  border: none;
-  font-size: 1.5rem;
-  color: var(--text-primary);
-  width: 2.5rem;
-  height: 2.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.modal__close-btn:hover {
-  color: var(--primary);
-}
-.modal__content {
-  padding: 2rem;
-}
-.modal__title {
-  font-family: var(--font-display);
-  font-size: 1.75rem;
-  margin-bottom: 1.5rem;
-  text-align: center;
-}
-.modal__video-container {
-  position: relative;
-  padding-bottom: 56.25%;
-  height: 0;
-  overflow: hidden;
-}
-.modal__video-container video {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-.header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3.5rem;
-  background: transparent;
-  backdrop-filter: var(--blur-panel);
-  z-index: var(--z-dropdown);
-  transition: background-color var(--transition-normal);
-}
-.header--scrolled {
-  background: rgba(0,0,0,0.6);
-  backdrop-filter: var(--blur-panel);
-  border-bottom: 1px solid var(--border-default);
-}
-.header__container {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 100%;
-  padding: 0 1rem;
-}
-.header__logo {
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  color: var(--primary);
-  text-decoration: none;
-}
-.header__nav-list {
-  display: flex;
-  gap: 2rem;
-  list-style: none;
-}
-.header__nav-link {
-  font-weight: 500;
-  position: relative;
-  padding: 0.5rem 0;
-}
-.header__nav-link::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background: var(--primary);
-  transition: width var(--transition-normal);
-}
-.header__nav-link:hover::after,
-.header__nav-link:focus-visible::after {
-  width: 100%;
-}
-.header__actions {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-.header__theme-toggle {
-  width: 2.5rem;
-  height: 2.5rem;
-  border: none;
-  background: transparent;
-  color: var(--text-primary);
-  font-size: 1.25rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-sm);
-  transition: background-color var(--transition-normal);
-}
-.header__theme-toggle:hover {
-  background: rgba(255,255,255,0.05);
-}
-.header__menu-btn {
-  display: none;
-  width: 2.5rem;
-  height: 2.5rem;
-  border: none;
-  background: transparent;
-  color: var(--text-primary);
-  font-size: 1.25rem;
-  align-items: center;
-  justify-content: center;
-}
-@media (max-width: 767px) {
-  .header__nav {
-    position: fixed;
-    top: 3.5rem;
-    right: 0;
-    height: calc(100vh - 3.5rem);
-    width: 250px;
-    background: var(--bg-secondary);
-    backdrop-filter: var(--blur-panel);
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 2rem;
-    gap: 1.5rem;
-    transform: translateX(100%);
-    transition: transform var(--transition-normal);
-    z-index: var(--z-dropdown);
-  }
-  .header__nav[aria-expanded="true"] {
-    transform: translateX(0);
-  }
-  .header__nav-list {
-    flex-direction: column;
-    width: 100%;
-  }
-  .header__menu-btn {
-    display: flex;
-  }
-}
-.hero {
-  position: relative;
-  min-height: 100svh;
-  overflow: hidden;
-}
-.video-background {
-  position: absolute;
-  inset: 0;
-}
-.video-background video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.video-background::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
-}
-.hero__container {
-  position: relative;
-  z-index: 2;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 2rem;
-}
-.hero__content {
-  flex: 1;
-  max-width: 500px;
-}
-.hero__eyebrow {
-  font-family: var(--font-mono);
-  font-size: 0.875rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--accent-purple);
-  margin-bottom: 1rem;
-}
-.hero__title {
-  font-family: var(--font-display);
-  font-size: clamp(2.5rem, 8vw, 4.5rem);
-  line-height: 1.1;
-  text-shadow: var(--glow-red);
-  margin-bottom: 1.5rem;
-  letter-spacing: -0.03em;
-}
-.hero__tagline {
-  font-size: 1.25rem;
-  color: var(--text-secondary);
-  max-width: 400px;
-  margin-bottom: 2rem;
-}
-.hero__ctas {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-.hero__ai-pick {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: rgba(0,0,0,0.4);
-  backdrop-filter: var(--blur-panel);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: var(--radius-md);
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
-  color: var(--text-primary);
-  margin-top: 2rem;
-}
-.hero__ai-pick .material-symbols-rounded {
-  font-size: 1.25rem;
-}
-.hero__covers {
-  flex: 0 0 350px;
-  display: flex;
-  flex-direction: column;
-}
-.hero__covers-title {
-  font-family: var(--font-display);
-  font-size: 1.25rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 1rem;
-  color: var(--text-secondary);
-}
-.covers-list {
-  display: flex;
-  gap: 1rem;
-  overflow-x: auto;
-  padding-bottom: 1rem;
-}
-.cover {
-  flex: 0 0 180px;
-  position: relative;
-}
-.cover__image {
-  width: 100%;
-  height: 270px;
-  background: linear-gradient(45deg, #1a1a1a, #000);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-}
-.cover__title {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: rgba(0,0,0,0.6);
-  color: var(--text-primary);
-  padding: 0.5rem;
-  font-size: 0.875rem;
-  text-align: center;
-}
-.cover__btn {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(0,0,0,0.6);
-  color: var(--text-primary);
-  border: none;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity var(--transition-normal);
-}
-.cover:hover .cover__btn {
-  opacity: 1;
-}
-.covers-list:hover .cover:not(:hover) {
-  filter: blur(2px);
-  opacity: 0.6;
-}
-.covers-list .cover:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 20px rgba(229,9,20,0.5);
-}
-.hero__scroll-cue {
-  position: absolute;
-  bottom: 2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  color: var(--text-secondary);
-  font-size: 1.5rem;
-  animation: pulse 2s infinite;
-}
-@keyframes pulse {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 1; }
-}
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--spacing-gap);
-}
-.card__icon {
-  width: 4rem;
-  height: 4rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 1.5rem;
-}
-.card__icon .material-symbols-rounded {
-  font-size: 2rem;
-}
-.card__title {
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  margin-bottom: 0.75rem;
-  text-align: center;
-}
-.card__copy {
-  flex-grow: 1;
-  text-align: center;
-  padding: 0 1.5rem;
-  color: var(--text-secondary);
-}
-.steps-list {
-  display: grid;
-  gap: 2rem;
-}
-.step {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-}
-.step__number {
-  font-family: var(--font-mono);
-  font-size: 1.5rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  min-width: 2.5rem;
-  text-align: center;
-}
-.step__icon {
-  width: 3rem;
-  height: 3rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: rgba(229,9,20,0.1);
-}
-.step__icon .material-symbols-rounded {
-  font-size: 1.5rem;
-  color: var(--primary);
-}
-.step__content {
-  flex: 1;
-}
-.step__title {
-  font-size: 1.25rem;
-  margin-bottom: 0.5rem;
-}
-.step__copy {
-  color: var(--text-secondary);
-  font-size: 0.95rem;
-}
-@media (max-width: 767px) {
-  .step {
-    flex-direction: column;
-    text-align: center;
-  }
-  .step__icon {
-    margin: 0 auto 1rem;
-  }
-}
-.testimonials-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: var(--spacing-gap);
-}
-.card--testimonial {
-  text-align: center;
-  padding: 2rem;
-}
-.testimonial__quote {
-  font-style: italic;
-  margin-bottom: 1.5rem;
-  color: var(--text-secondary);
-  line-height: 1.5;
-}
-.testimonial__rating {
-  margin-bottom: 1.5rem;
-  color: var(--secondary);
-}
-.testimonial__rating .material-symbols-rounded {
-  font-size: 1.25rem;
-}
-.testimonial__avatar {
-  width: 4rem;
-  height: 4rem;
-  border-radius: 50%;
-  background: var(--bg-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 1rem;
-  font-weight: 600;
-}
-.testimonial__info {
-  text-align: left;
-}
-.testimonial__name {
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-}
-.testimonial__role {
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-}
-.pricing-tiers {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--spacing-gap);
-}
-.pricing__tier {
-  text-align: center;
-  padding: 2rem;
-  position: relative;
-}
-.pricing__tier--popular {
-  border: 2px solid var(--primary);
-  box-shadow: var(--glow-red);
-  transform: scale(1.03);
-  z-index: 2;
-}
-.pricing__badge {
-  position: absolute;
-  top: -0.75rem;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--primary);
-  color: #fff;
-  padding: 0.25rem 0.75rem;
-  border-radius: var(--radius-sm);
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-.pricing__tier-title {
-  font-family: var(--font-display);
-  font-size: 1.75rem;
-  margin-bottom: 1rem;
-}
-.pricing__tier-price {
-  font-size: 2.25rem;
-  font-weight: 700;
-  margin-bottom: 1.5rem;
-}
-.pricing__tier-price span {
-  font-size: 1rem;
-  font-weight: 400;
-}
-.pricing__features {
-  list-style: none;
-  text-align: left;
-  margin-bottom: 2rem;
-  padding: 0 1.5rem;
-}
-.pricing__features li {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
-  color: var(--text-secondary);
-}
-.pricing__features .material-symbols-rounded {
-  color: var(--secondary);
-}
-.pricing__ai-recommends {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: rgba(255,215,0,0.1);
-  border: 1px solid var(--secondary);
-  border-radius: var(--radius-md);
-  padding: 0.5rem 1rem;
-  margin: 0 auto 1.5rem;
-  max-width: fit-content;
-}
-.pricing__ai-recommends .material-symbols-rounded {
-  color: var(--secondary);
-}
-.faq-list {
-  display: grid;
-  gap: 1rem;
-}
-.faq__item {
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-}
-.faq__question {
-  width: 100%;
-  text-align: left;
-  padding: 1.5rem;
-  background: transparent;
-  border: none;
-  font: inherit;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.faq__question[aria-expanded="true"] {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-}
-.faq__question .material-symbols-rounded {
-  transition: transform var(--transition-normal);
-}
-.faq__question[aria-expanded="true"] .material-symbols-rounded {
-  transform: rotate(180deg);
-}
-.faq__answer {
-  padding: 0 1.5rem;
-  max-height: 0;
-  overflow: hidden;
-  background: var(--bg-secondary);
-  transition: max-height var(--transition-normal) ease;
-}
-.faq__answer[aria-hidden="false"] {
-  max-height: 20rem;
-}
-.cta-band {
-  position: relative;
-  overflow: hidden;
-}
-.cta-band::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at center, rgba(229,9,20,0.15) 0%, transparent 70%);
-}
-.cta-band__container {
-  position: relative;
-  z-index: 2;
-  text-align: center;
-  padding: 4rem 2rem;
-}
-.cta-band__title {
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 6vw, 3rem);
-  margin-bottom: 2rem;
-  color: var(--text-primary);
-  text-shadow: var(--glow-red);
-}
-.cta-band__form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  max-width: 500px;
-  margin: 0 auto;
-}
-.cta-band__btn {
-  width: 100%;
-  padding: 1rem;
-  font-size: 1.125rem;
-}
-.cta-band__message {
-  margin-top: 1rem;
-  min-height: 1.5rem;
-}
-.footer {
-  background: var(--bg-secondary);
-  border-top: 1px solid var(--border-default);
-}
-.footer__content {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2rem;
-  align-items: start;
-  padding: 3rem 0;
-}
-.footer__logo {
-  flex: 1 1 200px;
-}
-.footer__logo span {
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  color: var(--primary);
-}
-.footer__columns {
-  flex: 2 1 300px;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1.5rem;
-}
-.footer__column-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  color: var(--text-primary);
-}
-.footer__column-list {
-  list-style: none;
-}
-.footer__column-list li {
-  margin-bottom: 0.5rem;
-}
-.footer__column-list a {
-  color: var(--text-secondary);
-  transition: color var(--transition-normal);
-}
-.footer__column-list a:hover {
-  color: var(--text-primary);
-}
-.footer__social {
-  flex: 1 1 200px;
-  display: flex;
-  gap: 1rem;
-}
-.footer__social-link {
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.05);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color var(--transition-normal);
-}
-.footer__social-link:hover {
-  background: rgba(255,255,255,0.1);
-}
-.footer__copyright {
-  text-align: center;
-  padding: 1.5rem 0;
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  border-top: 1px solid var(--border-default);
-  margin-top: 2rem;
-}
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-  .hero__scroll-cue { animation: none; }
-  .modal__dialog { animation: none; }
-  .btn.is-loading::after { animation: none; }
-  .card--skeleton { animation: none; background: #e0e0e0; }
-}
-@media (prefers-reduced-transparency: reduce) {
-  .btn--ghost,
-  .hero__ai-pick,
-  .video-background::after,
-  .modal__overlay,
-  .footer__content {
-    backdrop-filter: none;
-  }
-  .btn--ghost { background: rgba(0,0,0,0.05); }
-  .hero__ai-pick { background: rgba(0,0,0,0.2); }
-  .video-background::after { background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent); }
-  .modal__overlay { background: rgba(0,0,0,0.6); }
-  .footer__content { background: var(--bg-secondary); }
-}
+:root{
+  --primary:#e50914;--primary-hover:#f40612;--secondary:#ffd700;--purple:#800080;--blue:#0000ff;
+  --bg-primary:#000;--bg-secondary:#161616;--bg-card:#222;--text-primary:#fff;--text-secondary:#cccccc;--border:#333;
+  --on-primary:#fff;--scrim:linear-gradient(90deg,rgba(0,0,0,.92) 0%,rgba(0,0,0,.7) 45%,rgba(0,0,0,.15) 100%);
+  --font-display:'Bebas Neue',Impact,sans-serif;--font-base:'Inter',system-ui,sans-serif;--radius:10px;--ease:cubic-bezier(.22,1,.36,1);
+}
+:root[data-theme="light"]{
+  --primary:#c2070f;--primary-hover:#a3060d;--secondary:#8a6d00;
+  --bg-primary:#f7f3ee;--bg-secondary:#efe8df;--bg-card:#fefefe;--text-primary:#141414;--text-secondary:#4a4440;--border:#ddd3c6;
+  --scrim:linear-gradient(90deg,rgba(247,243,238,.95) 0%,rgba(247,243,238,.82) 45%,rgba(247,243,238,.1) 100%);
+}
+[hidden]{display:none!important}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg-primary);color:var(--text-primary);font:400 1rem/1.6 var(--font-base);-webkit-font-smoothing:antialiased;transition:background-color .3s,color .3s}
+h1,h2,h3{margin:0;font-family:var(--font-display);font-weight:400;letter-spacing:.02em;line-height:.95}
+p{margin:0}a{color:inherit}img{display:block;width:100%;height:100%;object-fit:cover}
+.container{max-width:1240px;margin:0 auto;padding:0 1.25rem}
+@media(min-width:768px){.container{padding:0 2rem}}
+:focus-visible{outline:3px solid var(--secondary);outline-offset:3px}
+.skip{position:absolute;left:1rem;top:-4rem;background:var(--primary);color:#fff;padding:.6rem 1rem;border-radius:6px;z-index:100}.skip:focus{top:1rem}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.55rem;min-height:50px;padding:0 1.5rem;border-radius:6px;font:700 1rem/1 var(--font-base);text-decoration:none;border:0;cursor:pointer;white-space:nowrap;transition:background-color .2s,transform .15s var(--ease)}
+.btn:active{transform:scale(.97)}
+.btn svg{width:18px;height:18px}
+.btn--primary{background:var(--primary);color:#fff}
+.btn--ghost{background:rgba(128,128,128,.28);color:var(--text-primary);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+@media(hover:hover) and (pointer:fine){.btn--primary:hover{background:var(--primary-hover)}.btn--ghost:hover{background:rgba(128,128,128,.4)}}
+
+.header{position:fixed;top:0;left:0;right:0;z-index:50;background:linear-gradient(180deg,rgba(0,0,0,.75),transparent);color:#fff;transition:background-color .3s}
+.header:not(.is-solid) .nav a{color:#e6e6e6}
+.header:not(.is-solid) .icon-btn{color:#fff}
+.header.is-solid{color:var(--text-primary)}
+.header.is-solid{background:var(--bg-primary);box-shadow:0 1px 0 var(--border)}
+.header__inner{height:72px;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.logo{font:400 2rem/1 var(--font-display);letter-spacing:.06em;color:var(--primary);text-decoration:none}
+.nav{display:flex;gap:1.6rem}
+.nav a{text-decoration:none;font-weight:500;font-size:.95rem;color:var(--text-secondary)}
+.nav a:hover{color:var(--text-primary)}
+.actions{display:flex;align-items:center;gap:.5rem}
+.icon-btn{width:44px;height:44px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:rgba(128,128,128,.22);color:var(--text-primary);border:0;cursor:pointer}
+.icon-btn svg{width:19px;height:19px}
+.menu-btn{display:none}
+.header .btn{min-height:44px;padding:0 1.1rem}
+@media(max-width:900px){
+  .menu-btn{display:inline-flex}.header .btn--primary{display:none}
+  .nav{display:none;position:absolute;top:100%;left:0;right:0;flex-direction:column;gap:0;padding:.5rem 1.25rem 1rem;background:var(--bg-secondary);border-bottom:1px solid var(--border)}
+  .nav.is-open{display:flex}.nav a{padding:.85rem 0;border-bottom:1px solid var(--border);font-size:1.05rem}.nav a:last-child{border:0}
+}
+
+/* hero */
+.hero{position:relative;min-height:min(100dvh,860px);display:flex;align-items:center;padding:110px 0 3rem;isolation:isolate;overflow:hidden}
+.hero__art{position:absolute;inset:0;z-index:-2}
+.hero__art img{object-position:70% 50%}
+.hero{color:#fff;background:#000}
+.hero::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(0,0,0,.9) 0%,rgba(0,0,0,.66) 48%,rgba(0,0,0,.2) 100%)}
+.hero .meta,.hero .lead{color:#d6d6d6}
+.hero .badge{color:#ffd700}
+.hero .meta .rating{color:#ffd700}
+.hero h1 span{color:#ff1f2b}
+.hero .btn--primary{background:#e50914}
+.hero .btn--ghost{color:#fff}
+@media(max-width:700px){.hero::before{background:linear-gradient(180deg,rgba(0,0,0,.55),rgba(0,0,0,.85))}}
+.hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:120px;z-index:-1;background:linear-gradient(0deg,var(--bg-primary),transparent)}
+.badge{display:inline-flex;align-items:center;gap:.5rem;font-weight:700;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:var(--secondary)}
+.badge b{background:var(--primary);color:#fff;padding:.2rem .5rem;border-radius:4px;letter-spacing:.06em}
+.hero h1{font-size:clamp(4rem,10vw,8.5rem);margin:.8rem 0 .25rem;text-shadow:0 0 40px rgba(229,9,20,.35)}
+.hero h1 span{color:var(--primary)}
+.meta{display:flex;flex-wrap:wrap;gap:.4rem .9rem;font-size:.92rem;color:var(--text-secondary);margin-bottom:1rem}
+.meta .rating{color:var(--secondary);font-weight:700}
+.lead{font-size:1.15rem;color:var(--text-secondary);max-width:34rem}
+.ctas{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:1.75rem}
+
+/* rows */
+.row{padding:1rem 0 3.5rem}
+.row__head{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;margin-bottom:1rem}
+.row__head h2{font-size:clamp(1.8rem,3vw,2.4rem)}
+.chip{display:inline-flex;align-items:center;gap:.4rem;font-size:.78rem;font-weight:700;color:#141414;background:var(--secondary);padding:.3rem .65rem;border-radius:999px}
+:root[data-theme="light"] .chip{color:#fefefe}
+.posters{display:grid;grid-template-columns:repeat(6,1fr);gap:.9rem}
+.poster{margin:0;position:relative;aspect-ratio:2/3;border-radius:var(--radius);overflow:hidden;background:var(--bg-card);transition:transform .35s var(--ease),box-shadow .35s}
+.poster::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.88) 0%,transparent 55%)}
+.poster figcaption{position:absolute;left:.8rem;right:.8rem;bottom:.75rem;z-index:1;color:#fff}
+.poster b{display:block;font:400 1.35rem/1 var(--font-display);letter-spacing:.03em}
+.poster span{font-size:.75rem;color:#ddd}
+.poster .match{position:absolute;top:.6rem;left:.6rem;z-index:1;font-size:.72rem;font-weight:700;color:#141414;background:#ffd700;padding:.2rem .45rem;border-radius:4px}
+@media(hover:hover) and (pointer:fine){.poster:hover{transform:scale(1.04);box-shadow:0 18px 40px -16px rgba(229,9,20,.55)}}
+
+/* sections */
+.section{padding:clamp(4rem,8vw,6rem) 0}
+.section--alt{background:var(--bg-secondary)}
+.head{max-width:40rem;margin-bottom:clamp(2rem,4vw,3rem)}
+.head h2{font-size:clamp(2.4rem,5vw,3.8rem)}
+.head p{margin-top:.75rem;color:var(--text-secondary);font-size:1.05rem}
+
+.bento{display:grid;grid-template-columns:1.35fr 1fr;grid-template-rows:auto auto;gap:1rem}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:1.75rem;display:flex;flex-direction:column;gap:.7rem}
+.card h3{font-size:2rem}
+.card p{color:var(--text-secondary)}
+.card--lead{grid-row:span 2;padding:0;overflow:hidden}
+.card--lead .choice{padding:1.75rem;display:grid;gap:.75rem}
+.card--lead .shot{height:260px;position:relative}
+.card--lead .shot::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,var(--bg-card),transparent 60%)}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.5rem}
+.opt{border:1px solid var(--border);border-radius:8px;padding:.75rem .9rem;font-weight:600;font-size:.92rem;background:transparent;color:var(--text-primary);cursor:pointer;text-align:left;min-height:48px;transition:border-color .2s,background-color .2s}
+.opt.is-picked{border-color:var(--primary);background:color-mix(in srgb,var(--primary) 16%,transparent)}
+.timer{height:4px;border-radius:2px;background:var(--border);overflow:hidden}
+.timer i{display:block;height:100%;width:62%;background:var(--primary)}
+.icon{width:44px;height:44px;border-radius:10px;display:grid;place-items:center;background:color-mix(in srgb,var(--primary) 16%,transparent);color:var(--primary)}
+.icon svg{width:22px;height:22px}
+
+.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.step{border-top:3px solid var(--primary);padding-top:1.25rem}
+.step__n{font:400 4rem/1 var(--font-display);color:color-mix(in srgb,var(--text-primary) 22%,transparent)}
+.step h3{font-size:1.9rem;margin:.4rem 0 .5rem}
+.step p{color:var(--text-secondary)}
+
+.quotes{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.quote{margin:0;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:1.6rem;display:flex;flex-direction:column;gap:1.1rem}
+.stars{color:var(--secondary);letter-spacing:.15em;font-size:.95rem}
+.quote blockquote{margin:0;font-size:1.05rem}
+.who{display:flex;align-items:center;gap:.7rem;margin-top:auto}
+.avatar{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--primary),var(--purple))}
+.who b{display:block;font-size:.95rem}.who span{font-size:.85rem;color:var(--text-secondary)}
+
+.tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;align-items:stretch}
+.tier{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:2rem 1.75rem;display:flex;flex-direction:column;gap:1rem}
+.tier--pop{border:2px solid var(--primary);box-shadow:0 0 50px -18px rgba(229,9,20,.6)}
+.tier__flag{align-self:flex-start;font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:var(--primary);padding:.3rem .65rem;border-radius:4px}
+.tier h3{font-size:2.1rem}
+.price{font:400 3rem/1 var(--font-display)}
+.price small{font:500 .9rem var(--font-base);color:var(--text-secondary)}
+.tier ul{list-style:none;margin:0;padding:0;display:grid;gap:.55rem;flex:1;color:var(--text-secondary)}
+.tier li{display:flex;gap:.55rem}
+.tier li::before{content:"";flex-shrink:0;width:8px;height:8px;margin-top:.55rem;border-radius:50%;background:var(--primary)}
+.tier .btn{width:100%}
+
+.faq{display:grid;gap:.6rem;max-width:52rem}
+.faq details{background:var(--bg-card);border:1px solid var(--border);border-radius:8px}
+.faq summary{list-style:none;display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:1.15rem 1.4rem;cursor:pointer;font-weight:600;font-size:1.05rem;min-height:58px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";font-size:1.8rem;font-weight:300;line-height:1;transition:transform .3s var(--ease)}
+.faq details[open] summary::after{transform:rotate(45deg)}
+.faq details p{padding:0 1.4rem 1.25rem;color:var(--text-secondary)}
+
+.cta{position:relative;border-radius:18px;overflow:hidden;padding:clamp(2.5rem,6vw,4rem);text-align:center;isolation:isolate}
+.cta img{position:absolute;inset:0;z-index:-2}
+.cta::before{content:"";position:absolute;inset:0;z-index:-1;background:rgba(0,0,0,.78)}
+.cta h2{font-size:clamp(2.6rem,6vw,4.6rem);color:#fff}
+.cta p{color:#ddd;margin:.75rem auto 0;max-width:32rem}
+.form{display:grid;gap:.4rem;max-width:34rem;margin:1.75rem auto 0;text-align:left}
+.form label{font-weight:600;font-size:.9rem;color:#fff}
+.form__row{display:flex;gap:.6rem}
+.form input{flex:1;min-width:0;min-height:52px;padding:0 1.1rem;border-radius:6px;border:1px solid #555;background:rgba(0,0,0,.6);color:#fff;font:400 1rem var(--font-base)}
+.form input::placeholder{color:#aaa}
+.form input:focus{outline:none;border-color:#ffd700}
+.form input[aria-invalid="true"]{border-color:#ff6b6b}
+.form__msg{min-height:1.4em;font-size:.9rem;color:#9ff0a8}
+.form__msg.is-error{color:#ffb3b3}
+
+.footer{padding:3.5rem 0 2rem;border-top:1px solid var(--border);margin-top:clamp(4rem,8vw,6rem)}
+.footer__grid{display:grid;grid-template-columns:1.4fr repeat(3,1fr);gap:2rem}
+.footer h4{font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-secondary);margin:0 0 .9rem}
+.footer ul{list-style:none;margin:0;padding:0;display:grid;gap:.5rem}
+.footer a{text-decoration:none;color:var(--text-secondary)}
+.footer a:hover{color:var(--text-primary)}
+.footer__about p{color:var(--text-secondary);margin-top:.75rem;max-width:18rem}
+.footer__base{margin-top:2.5rem;font-size:.85rem;color:var(--text-secondary)}
+
+.js .reveal{opacity:0;transform:translateY(14px);transition:opacity .6s var(--ease),transform .6s var(--ease)}
+.js .reveal.is-in{opacity:1;transform:none}
+
+@media(max-width:1000px){.posters{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:900px){.bento{grid-template-columns:1fr}.card--lead{grid-row:auto}.steps,.quotes,.tiers{grid-template-columns:1fr}.footer__grid{grid-template-columns:1fr 1fr}.footer__about{grid-column:1/-1}}
+@media(max-width:560px){.posters{grid-template-columns:repeat(2,1fr)}.form__row{flex-direction:column}.opts{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:.01ms!important;animation:none!important;scroll-behavior:auto!important}.js .reveal{opacity:1;transform:none}}
+@media(prefers-reduced-transparency:reduce){.btn--ghost{backdrop-filter:none;background:var(--bg-card)}}
 </style>
-<style id="pd-icon-fix">.material-symbols-rounded{font-family:'Material Symbols Rounded'!important;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;word-wrap:normal;direction:ltr;font-feature-settings:'liga';-webkit-font-feature-settings:'liga'}</style>
 </head>
 <body>
-<header class="header">
-  <div class="header__container">
-    <a href="#" class="header__logo">Chronica</a>
-    <nav class="header__nav" id="header-nav">
-      <ul class="header__nav-list">
-        <li><a href="#features" class="header__nav-link">Features</a></li>
-        <li><a href="#how-it-works" class="header__nav-link">How It Works</a></li>
-        <li><a href="#testimonials" class="header__nav-link">Testimonials</a></li>
-        <li><a href="#pricing" class="header__nav-link">Pricing</a></li>
-        <li><a href="#faq" class="header__nav-link">FAQ</a></li>
-      </ul>
-    </nav>
-    <div class="header__actions">
-      <button id="theme-toggle" class="header__theme-toggle" aria-pressed="false" aria-label="Switch to dark mode">
-        <span class="material-symbols-rounded">dark_mode</span>
-      </button>
-      <button class="header__btn btn btn--primary">Start Watching</button>
-      <button class="header__btn btn btn--ghost" id="trailer-btn">Watch Trailer</button>
+<a class="skip" href="#main">Skip to content</a>
+<header class="header" id="header">
+  <div class="container header__inner">
+    <a class="logo" href="#top" aria-label="Chronica home">CHRONICA</a>
+    <nav class="nav" id="site-nav" aria-label="Primary"><a href="#picks">For you</a><a href="#features">Features</a><a href="#how">How it works</a><a href="#pricing">Plans</a><a href="#faq">FAQ</a></nav>
+    <div class="actions">
+      <button class="icon-btn" id="theme-toggle" type="button" aria-pressed="true" aria-label="Switch to light mode"></button>
+      <a class="btn btn--primary" href="#pricing">Start free</a>
+      <button class="icon-btn menu-btn" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
     </div>
-    <button class="header__menu-btn" id="menu-btn" aria-expanded="false" aria-controls="header-nav">
-      <span class="material-symbols-rounded">menu</span>
-    </button>
   </div>
 </header>
 
-<main>
-  <section class="hero" id="hero">
-    <div class="video-background">
-      <video autoplay muted loop playsinline poster="https://picsum.photos/seed/signal-lost-keyart/1400/900">
-        <source src="assets/series-background.mp4" type="video/mp4">
-      </video>
-    </div>
-    <div class="hero__container">
-      <div class="hero__content">
-        <div class="hero__eyebrow">AI-Powered Interactive Series</div>
-        <h1 class="hero__title">Signal Lost</h1>
-        <p class="hero__tagline">An interactive series that adapts to your choices.</p>
-        <div class="hero__ctas">
-          <button class="btn btn--primary hero__cta-primary">
-            <span class="material-symbols-rounded">play_arrow</span> Start Watching
-          </button>
-          <button class="btn btn--ghost hero__cta-secondary" id="hero-trailer-btn">
-            <span class="material-symbols-rounded">movie</span> Watch Trailer
-          </button>
-        </div>
-        <div class="hero__ai-pick">
-          <span class="material-symbols-rounded">auto_awesome</span>
-          <span>AI Pick for You</span>
-        </div>
-      </div>
-      <div class="hero__covers">
-        <h2 class="hero__covers-title">Selected for You</h2>
-        <div class="covers-list">
-          <div class="cover">
-            <div class="cover__image" style="background-image: url('https://picsum.photos/seed/signal-lost-1/400/600');"></div>
-            <div class="cover__title">Episode 1: The Awakening</div>
-            <button class="cover__btn btn btn--ghost">
-              <span class="material-symbols-rounded">play_arrow</span> Play
-            </button>
-          </div>
-          <div class="cover">
-            <div class="cover__image" style="background-image: url('https://picsum.photos/seed/signal-lost-2/400/600');"></div>
-            <div class="cover__title">Episode 2: The Choice</div>
-            <button class="cover__btn btn btn--ghost">
-              <span class="material-symbols-rounded">play_arrow</span> Play
-            </button>
-          </div>
-          <div class="cover">
-            <div class="cover__image" style="background-image: url('https://picsum.photos/seed/signal-lost-3/400/600');"></div>
-            <div class="cover__title">Episode 3: The Consequence</div>
-            <button class="cover__btn btn btn--ghost">
-              <span class="material-symbols-rounded">play_arrow</span> Play
-            </button>
-          </div>
-          <div class="cover">
-            <div class="cover__image" style="background-image: url('https://picsum.photos/seed/signal-lost-4/400/600');"></div>
-            <div class="cover__title">Episode 4: The Revelation</div>
-            <button class="cover__btn btn btn--ghost">
-              <span class="material-symbols-rounded">play_arrow</span> Play
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="hero__scroll-cue">
-      <span class="material-symbols-rounded">arrow_downward</span>
-    </div>
-  </section>
-
-  <section class="section" id="features">
+<main id="main">
+  <section class="hero" id="top">
+    <div class="hero__art"><img src="https://picsum.photos/id/1079/1600/1000" alt="A ring of sparks spinning in a dark industrial yard" width="1600" height="1000" fetchpriority="high"></div>
     <div class="container">
-      <h2 class="section__title">Features</h2>
-      <div class="features-grid">
-        <div class="card">
-          <div class="card__icon">
-            <span class="material-symbols-rounded" style="color: var(--accent-purple);">auto_awesome</span>
-          </div>
-          <h3 class="card__title">AI-Driven Storytelling</h3>
-          <p class="card__copy">The narrative evolves based on your decisions, creating a unique journey every time.</p>
-        </div>
-        <div class="card">
-          <div class="card__icon">
-            <span class="material-symbols-rounded" style="color: var(--primary);">tune</span>
-          </div>
-          <h3 class="card__title">Interactive Choices</h3>
-          <p class="card__copy">Your decisions directly impact the story's direction and ending.</p>
-        </div>
-        <div class="card">
-          <div class="card__icon">
-            <span class="material-symbols-rounded" style="color: var(--secondary);">movie</span>
-          </div>
-          <h3 class="card__title">Cinematic 4K Streaming</h3>
-          <p class="card__copy">Experience studio-quality visuals and immersive sound on any device.</p>
-        </div>
+      <span class="badge"><b>NEW</b> Chronica original · Season one</span>
+      <h1>Signal <span>Lost</span></h1>
+      <p class="meta"><span class="rating">98% match</span><span>2026</span><span>8 episodes</span><span>Sci-fi thriller</span><span>4K HDR</span></p>
+      <p class="lead">An interactive series that rewrites itself around you. Every choice changes the next episode, and no two viewers ever see the same ending.</p>
+      <div class="ctas">
+        <a class="btn btn--primary" href="#pricing"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>Start watching</a>
+        <a class="btn btn--ghost" href="#features"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9.5v5l4-2.5z" fill="currentColor"/></svg>Watch trailer</a>
       </div>
     </div>
   </section>
 
-  <section class="section" id="how-it-works">
+  <section class="row" id="picks">
     <div class="container">
-      <h2 class="section__title">How It Works</h2>
-      <ol class="steps-list">
-        <li class="step">
-          <div class="step__number">01</div>
-          <div class="step__icon">
-            <span class="material-symbols-rounded">person_add</span>
+      <div class="row__head"><h2>Picked for you tonight</h2><span class="chip">AI recommends</span></div>
+      <div class="posters">
+        <figure class="poster"><img src="https://picsum.photos/id/1019/400/600" alt="Storm clouds breaking over a dark sea" loading="lazy" width="400" height="600"><span class="match">97%</span><figcaption><b>Low Tide</b><span>Ep 2 · The Choice</span></figcaption></figure>
+        <figure class="poster"><img src="https://picsum.photos/id/1078/400/600" alt="Lit windows of a tower block at night" loading="lazy" width="400" height="600"><span class="match">95%</span><figcaption><b>Night Shift</b><span>Thriller</span></figcaption></figure>
+        <figure class="poster"><img src="https://picsum.photos/id/1047/400/600" alt="Narrow brick alley between tall buildings" loading="lazy" width="400" height="600"><span class="match">93%</span><figcaption><b>Backchannel</b><span>Mystery</span></figcaption></figure>
+        <figure class="poster"><img src="https://picsum.photos/id/1074/400/600" alt="Lioness staring into the camera" loading="lazy" width="400" height="600"><span class="match">91%</span><figcaption><b>Apex</b><span>Nature drama</span></figcaption></figure>
+        <figure class="poster"><img src="https://picsum.photos/id/137/400/600" alt="Light at the end of a dark tunnel" loading="lazy" width="400" height="600"><span class="match">90%</span><figcaption><b>Null Horizon</b><span>Space epic</span></figcaption></figure>
+        <figure class="poster"><img src="https://picsum.photos/id/111/400/600" alt="Vintage car parked on a city street" loading="lazy" width="400" height="600"><span class="match">88%</span><figcaption><b>Getaway</b><span>Crime</span></figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt" id="features">
+    <div class="container">
+      <div class="head reveal"><h2>Storytelling, rewired</h2><p>A live story engine meets festival-grade production.</p></div>
+      <div class="bento">
+        <article class="card card--lead reveal">
+          <div class="shot"><img src="https://picsum.photos/id/1047/900/520" alt="Rain-wet alley at dusk" loading="lazy" width="900" height="520"></div>
+          <div class="choice">
+            <h3>Your call, live</h3>
+            <p>At the turning points the stream pauses for ten seconds. Decide, and the next scene is already rolling.</p>
+            <div class="timer" aria-hidden="true"><i></i></div>
+            <div class="opts" role="group" aria-label="Example choice">
+              <button class="opt is-picked" type="button" aria-pressed="true">Follow the signal</button>
+              <button class="opt" type="button" aria-pressed="false">Cut the power</button>
+            </div>
           </div>
-          <div class="step__content">
-            <h3 class="step__title">Create your profile</h3>
-            <p class="step__copy">Tell us about your tastes and preferences so our AI knows what resonates with you.</p>
-          </div>
-        </li>
-        <li class="step">
-          <div class="step__number">02</div>
-          <div class="step__icon">
-            <span class="material-symbols-rounded">smart_toy</span>
-          </div>
-          <div class="step__content">
-            <h3 class="step__title">The AI learns your taste</h3>
-            <p class="step__copy">As you watch, our AI analyzes your reactions to refine future recommendations.</p>
-          </div>
-        </li>
-        <li class="step">
-          <div class="step__number">03</div>
-          <div class="step__icon">
-            <span class="material-symbols-rounded">arrow_forward</span>
-          </div>
-          <div class="step__content">
-            <h3 class="step__title">Choose your path</h3>
-            <p class="step__copy">At key moments, you decide what happens next, shaping a story that's uniquely yours.</p>
-          </div>
-        </li>
+        </article>
+        <article class="card reveal"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 3l1.8 4.6L18 9.4l-4.2 1.8L12 16l-1.8-4.8L6 9.4l4.2-1.8z"/><path d="M19 15l.7 1.8L21.5 18l-1.8.7L19 21l-.7-2.3L16.5 18l1.8-1.2z"/></svg></span><h3>Picks that know you</h3><p>Recommendations learn from the choices you make, not just the titles you finish.</p></article>
+        <article class="card reveal"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8M12 17v4"/></svg></span><h3>Cinema at home</h3><p>4K HDR, Dolby Atmos and adaptive streaming on every screen you own.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="how">
+    <div class="container">
+      <div class="head reveal"><h2>Three steps into the story</h2></div>
+      <ol class="steps">
+        <li class="step reveal"><span class="step__n">01</span><h3>Create a profile</h3><p>Tell us three shows you love. Your first picks are ready in seconds.</p></li>
+        <li class="step reveal"><span class="step__n">02</span><h3>Press play</h3><p>Watch on TV, laptop or phone and pick up exactly where you left off.</p></li>
+        <li class="step reveal"><span class="step__n">03</span><h3>Make the call</h3><p>Choose at each turning point and watch the series reshape around you.</p></li>
       </ol>
     </div>
   </section>
 
-  <section class="section" id="testimonials">
+  <section class="section section--alt" id="reviews">
     <div class="container">
-      <h2 class="section__title">What Viewers Say</h2>
-      <div class="testimonials-grid">
-        <div class="card card--testimonial">
-          <blockquote class="testimonial__quote">
-            “I've never experienced a story that felt so personal. Each choice mattered.”
-          </blockquote>
-          <div class="testimonial__rating">
-            <span class="material-symbols-rounded" aria-label="Rated 5 out of 5 stars">star</span>
-            <span class="material-symbols-rounded" aria-label="Rated 5 out of 5 stars">star</span>
-            <span class="material-symbols-rounded" aria-label="Rated 5 out of 5 stars">star</span>
-            <span class="material-symbols-rounded" aria-label="Rated 5 out of 5 stars">star</span>
-            <span class="material-symbols-rounded" aria-label="Rated 5 out of 5 stars">star</span>
-          </div>
-          <div class="testimonial__avatar">JS</div>
-          <div class="testimonial__info">
-            <h3 class="testimonial__name">Jordan Smith</h3>
-            <p class="testimonial__role">UX Designer</p>
-          </div>
-        </div>
-        <div class="card card--testimonial">
-          <blockquote class="testimonial__quote">
-            “The way the story changes based on my decisions is mind-blowing. I've watched it three times and got different endings each time.”
-          </blockquote>
-          <div class="testimonial__rating">
-            <span class="material-symbols-rounded" aria-label="Rated 5 out of 5 stars">star</span>
-            <span class="material-symbols-rounded" aria-label="Rated 5 out of 5 stars">star</span>
-            <span class="material-symbols-rounded" aria-label="Rated 5 out of 5 stars">star</span>
-            <span class="material-symbols-rounded" aria-label="Rated 5 out of 5 stars">star</span>
-            <span class="material-symbols-rounded" aria-label="Rated 5 out of 5 stars">star</span>
-          </div>
-          <div class="testimonial__avatar">AL</div>
-          <div class="testimonial__info">
-            <h3 class="testimonial__name">Alex Lee</h3>
-            <p class="testimonial__role">Film Critic</p>
-          </div>
-        </div>
-        <div class="card card--testimonial">
-          <blockquote class="testimonial__quote">
-            “Finally, a show that treats me like an active participant, not just a passive viewer. The AI gets me.”
-          </blockquote>
-          <div class="testimonial__rating">
-            <span class="material-symbols-rounded" aria-label="Rated 5 out of 5 stars">star</span>
-            <span class="material-symbols-rounded" aria-label="Rated 5 out of 5 stars">star</span>
-            <span class="material-symbols-rounded" aria-label="Rated 5 out of 5 stars">star</span>
-            <span class="material-symbols-rounded" aria-label="Rated 5 out of 5 stars">star</span>
-            <span class="material-symbols-rounded" aria-label="Rated 5 out of 5 stars">star</span>
-          </div>
-          <div class="testimonial__avatar">MC</div>
-          <div class="testimonial__info">
-            <h3 class="testimonial__name">Morgan Chen</h3>
-            <p class="testimonial__role">Storyteller</p>
-          </div>
-        </div>
+      <div class="head reveal"><h2>What viewers are saying</h2></div>
+      <div class="quotes">
+        <figure class="quote reveal"><span class="stars" aria-label="5 out of 5 stars">★★★★★</span><blockquote>“My partner and I watched the same episode and argued about two completely different endings.”</blockquote><figcaption class="who"><span class="avatar">LR</span><span><b>Lena Ruiz</b><span>Viewer since launch</span></span></figcaption></figure>
+        <figure class="quote reveal"><span class="stars" aria-label="5 out of 5 stars">★★★★★</span><blockquote>“The ten-second choices are pure tension. I have not looked at my phone once.”</blockquote><figcaption class="who"><span class="avatar">DK</span><span><b>Daniel Kwon</b><span>Film critic, Frame Rate</span></span></figcaption></figure>
+        <figure class="quote reveal"><span class="stars" aria-label="4 out of 5 stars">★★★★☆</span><blockquote>“The recommendations are spookily good. It found three shows I never would have tried.”</blockquote><figcaption class="who"><span class="avatar">AO</span><span><b>Amara Obi</b><span>Premium member</span></span></figcaption></figure>
       </div>
     </div>
   </section>
 
   <section class="section" id="pricing">
     <div class="container">
-      <h2 class="section__title">Choose Your Plan</h2>
-      <div class="pricing-tiers">
-        <div class="pricing__tier">
-          <h3 class="pricing__tier-title">Viewer</h3>
-          <p class="pricing__tier-price">$8.99<span>/month</span></p>
-          <ul class="pricing__features">
-            <li><span class="material-symbols-rounded">check</span> Standard Definition</li>
-            <li><span class="material-symbols-rounded">check</span> Single Screen</li>
-            <li><span class="material-symbols-rounded">check</span> Access to Basic Library</li>
-          </ul>
-          <button class="btn btn--primary pricing__cta">Select Plan</button>
-        </div>
-        <div class="pricing__tier pricing__tier--popular">
-          <div class="pricing__badge">Most Popular</div>
-          <h3 class="pricing__tier-title">Director</h3>
-          <p class="pricing__tier-price">$14.99<span>/month</span></p>
-          <ul class="pricing__features">
-            <li><span class="material-symbols-rounded">check</span> High Definition</li>
-            <li><span class="material-symbols-rounded">check</span> Two Screens</li>
-            <li><span class="material-symbols-rounded">check</span> AI-Powered Recommendations</li>
-            <li><span class="material-symbols-rounded">check</span> Early Access to New Episodes</li>
-          </ul>
-          <div class="pricing__ai-recommends">
-            <span class="material-symbols-rounded">auto_awesome</span>
-            <span>AI Recommends</span>
-          </div>
-          <button class="btn btn--primary pricing__cta">Select Plan</button>
-        </div>
-        <div class="pricing__tier">
-          <h3 class="pricing__tier-title">Studio</h3>
-          <p class="pricing__tier-price">$24.99<span>/month</span></p>
-          <ul class="pricing__features">
-            <li><span class="material-symbols-rounded">check</span> Ultra HD 4K</li>
-            <li><span class="material-symbols-rounded">check</span> Four Screens</li>
-            <li><span class="material-symbols-rounded">check</span> Offline Downloads</li>
-            <li><span class="material-symbols-rounded">check</span> Family Sharing</li>
-          </ul>
-          <button class="btn btn--primary pricing__cta">Select Plan</button>
-        </div>
+      <div class="head reveal"><h2>Pick your plan</h2><p>Cancel anytime. Every plan includes Signal Lost.</p></div>
+      <div class="tiers">
+        <article class="tier reveal"><h3>Basic</h3><p class="price">$7 <small>/ month</small></p><ul><li>HD on one screen</li><li>Interactive episodes</li><li>Ads between episodes</li></ul><a class="btn btn--ghost" href="#join">Choose Basic</a></article>
+        <article class="tier tier--pop reveal"><span class="tier__flag">Most popular</span><h3>Standard</h3><p class="price">$13 <small>/ month</small></p><ul><li>Full HD on two screens</li><li>No ads</li><li>AI picks and downloads</li><li>Shared choices with friends</li></ul><a class="btn btn--primary" href="#join">Start free</a></article>
+        <article class="tier reveal"><h3>Premium</h3><p class="price">$19 <small>/ month</small></p><ul><li>4K HDR on four screens</li><li>Dolby Atmos</li><li>Early access to new seasons</li></ul><a class="btn btn--ghost" href="#join">Choose Premium</a></article>
       </div>
     </div>
   </section>
 
-  <section class="section" id="faq">
+  <section class="section section--alt" id="faq">
     <div class="container">
-      <h2 class="section__title">Frequently Asked Questions</h2>
-      <div class="faq-list">
-        <div class="faq__item">
-          <button class="faq__question" aria-expanded="false" aria-controls="faq-answer-1">
-            <span class="material-symbols-rounded">expand_more</span>
-            How does the AI personalize the story?
-          </button>
-          <div class="faq__answer" id="faq-answer-1" role="region">
-            <p>Our AI analyzes your choices and viewing patterns to adapt the narrative in real-time, ensuring a unique experience tailored to your preferences.</p>
-          </div>
-        </div>
-        <div class="faq__item">
-          <button class="faq__question" aria-expanded="false" aria-controls="faq-answer-2">
-            <span class="material-symbols-rounded">expand_more</span>
-            Is my data private and secure?
-          </button>
-          <div class="faq__answer" id="faq-answer-2" role="region">
-            <p>Absolutely. We use end-to-end encryption and never sell your data. Your viewing history stays yours alone.</p>
-          </div>
-        </div>
-        <div class="faq__item">
-          <button class="faq__question" aria-expanded="false" aria-controls="faq-answer-3">
-            <span class="material-symbols-rounded">expand_more</span>
-            Can I watch offline?
-          </button>
-          <div class="faq__answer" id="faq-answer-3" role="region">
-            <p>Yes! Director and Studio plans include offline downloads so you can enjoy Signal Lost anywhere, even without internet.</p>
-          </div>
-        </div>
-        <div class="faq__item">
-          <button class="faq__question" aria-expanded="false" aria-controls="faq-answer-4">
-            <span class="material-symbols-rounded">expand_more</span>
-            What devices are supported?
-          </button>
-          <div class="faq__answer" id="faq-answer-4" role="region">
-            <p>Signal Lost works on iOS, Android, web browsers, smart TVs, and gaming consoles. One account, simultaneous streaming based on your plan.</p>
-          </div>
-        </div>
-        <div class="faq__item">
-          <button class="faq__question" aria-expanded="false" aria-controls="faq-answer-5">
-            <span class="material-symbols-rounded">expand_more</span>
-            How often are new episodes released?
-          </button>
-          <div class="faq__answer" id="faq-answer-5" role="region">
-            <p>New episodes drop weekly for Director and Studio plans. Viewer plan gets access two weeks after initial release.</p>
-          </div>
-        </div>
+      <div class="head reveal"><h2>Questions</h2></div>
+      <div class="faq">
+        <details class="reveal"><summary>What happens if I don't choose in time?</summary><p>The story follows the path most viewers like you picked, so it never stops for you.</p></details>
+        <details class="reveal"><summary>Can I go back and try another path?</summary><p>Yes. Rewind to any turning point from the episode map and explore the other branch.</p></details>
+        <details class="reveal"><summary>Which devices are supported?</summary><p>Smart TVs, Apple TV, Android TV, game consoles, phones, tablets and any modern browser.</p></details>
+        <details class="reveal"><summary>Is there a free trial?</summary><p>The first episode of Signal Lost is free for everyone. Standard includes a 7-day free trial.</p></details>
       </div>
     </div>
   </section>
 
-  <section class="section cta-band" id="cta">
+  <section class="section" id="join">
     <div class="container">
-      <h2 class="cta-band__title">Get Early Access to Signal Lost</h2>
-      <form class="cta-band__form" id="cta-form">
-        <div class="input-group">
-          <label for="cta-email" class="input-group__label">Email address</label>
-          <input type="email" id="cta-email" class="input-group__input" placeholder="you@example.com" required>
-          <div class="input-group__error" aria-live="polite"></div>
-        </div>
-        <button type="submit" class="btn btn--primary cta-band__btn">Get Early Access</button>
-      </form>
-      <div class="cta-band__message" id="cta-message" aria-live="polite"></div>
+      <div class="cta reveal">
+        <img src="https://picsum.photos/id/1079/1400/700" alt="" loading="lazy" width="1400" height="700">
+        <h2>Ready to lose the signal?</h2>
+        <p>Enter your email to start your free week. The first episode is waiting.</p>
+        <form class="form" id="signup" novalidate>
+          <label for="email">Email address</label>
+          <div class="form__row">
+            <input id="email" type="email" autocomplete="email" placeholder="you@example.com" aria-describedby="email-msg" required>
+            <button class="btn btn--primary" type="submit">Get started</button>
+          </div>
+          <p class="form__msg" id="email-msg" aria-live="polite"></p>
+        </form>
+      </div>
     </div>
   </section>
 </main>
 
 <footer class="footer">
   <div class="container">
-    <div class="footer__content">
-      <div class="footer__logo">
-        <span>Chronica</span>
-      </div>
-      <div class="footer__columns">
-        <div class="footer__column">
-          <h3 class="footer__column-title">Product</h3>
-          <ul class="footer__column-list">
-            <li><a href="#">Features</a></li>
-            <li><a href="#">How It Works</a></li>
-            <li><a href="#">Pricing</a></li>
-            <li><a href="#">Roadmap</a></li>
-          </ul>
-        </div>
-        <div class="footer__column">
-          <h3 class="footer__column-title">Company</h3>
-          <ul class="footer__column-list">
-            <li><a href="#">About</a></li>
-            <li><a href="#">Blog</a></li>
-            <li><a href="#">Careers</a></li>
-            <li><a href="#">Press</a></li>
-          </ul>
-        </div>
-        <div class="footer__column">
-          <h3 class="footer__column-title">Support</h3>
-          <ul class="footer__column-list">
-            <li><a href="#">Help Center</a></li>
-            <li><a href="#">Contact Us</a></li>
-            <li><a href="#">Status</a></li>
-          </ul>
-        </div>
-        <div class="footer__column">
-          <h3 class="footer__column-title">Legal</h3>
-          <ul class="footer__column-list">
-            <li><a href="#">Terms of Service</a></li>
-            <li><a href="#">Privacy Policy</a></li>
-            <li><a href="#">Cookie Policy</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="footer__social">
-        <a href="#" class="footer__social-link" aria-label="Twitter">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/>
-          </svg>
-        </a>
-        <a href="#" class="footer__social-link" aria-label="YouTube">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 21a2.78 2.78 0 0 0 2.22 1.06h9.71a2.78 2.78 0 0 0 2.22-1.06A29 29 0 0 0 23 11.75a29 29 0 0 0 .46-5.33z"/>
-            <polygon points="12 8 8 12 16 12" fill="currentColor"/>
-          </svg>
-        </a>
-      </div>
-      <p class="footer__copyright">&copy; 2026 Chronica. All rights reserved.</p>
+    <div class="footer__grid">
+      <div class="footer__about"><a class="logo" href="#top">CHRONICA</a><p>Stories that change because you were watching.</p></div>
+      <div><h4>Watch</h4><ul><li><a href="#picks">For you</a></li><li><a href="#">Originals</a></li><li><a href="#pricing">Plans</a></li></ul></div>
+      <div><h4>Company</h4><ul><li><a href="#">About</a></li><li><a href="#">Careers</a></li><li><a href="#">Press</a></li></ul></div>
+      <div><h4>Help</h4><ul><li><a href="#faq">FAQ</a></li><li><a href="#">Devices</a></li><li><a href="#">Privacy</a></li></ul></div>
     </div>
+    <p class="footer__base">© 2026 Chronica Studios. All rights reserved.</p>
   </div>
 </footer>
 
-<div class="modal" id="trailer-modal" tabindex="-1" aria-labelledby="trailer-modal-label" aria-hidden="true">
-  <div class="modal__overlay" data-trap-focus></div>
-  <div class="modal__dialog" role="document">
-    <button class="modal__close-btn" aria-label="Close trailer">
-      <span class="material-symbols-rounded">close</span>
-    </button>
-    <div class="modal__content">
-      <h2 class="modal__title">Signal Lost - Trailer</h2>
-      <div class="modal__video-container">
-        <video controls playsinline>
-          <source src="assets/trailer.mp4" type="video/mp4">
-        </video>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="toast-container" id="toast-container" aria-live="polite"></div>
-
 <script>
-// Theme toggle functionality
-const themeToggle = document.getElementById('theme-toggle');
-const htmlElement = document.documentElement;
-
-// Check for saved theme preference or use system preference
-const getCurrentTheme = () => {
-  const savedTheme = localStorage.getItem('theme');
-  if (savedTheme) return savedTheme;
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-};
-
-const setTheme = (theme) => {
-  htmlElement.dataset.theme = theme;
-  localStorage.setItem('theme', theme);
-  // Update toggle button
-  themeToggle.setAttribute('aria-pressed', theme === 'dark');
-  themeToggle.setAttribute('aria-label', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
-  const icon = themeToggle.querySelector('.material-symbols-rounded');
-  icon.textContent = theme === 'dark' ? 'light_mode' : 'dark_mode';
-};
-
-// Initialize theme
-const currentTheme = getCurrentTheme();
-setTheme(currentTheme);
-
-// Theme toggle click handler
-themeToggle.addEventListener('click', () => {
-  const newTheme = htmlElement.dataset.theme === 'dark' ? 'light' : 'dark';
-  setTheme(newTheme);
-});
-
-// Mobile menu
-const menuBtn = document.getElementById('menu-btn');
-const headerNav = document.getElementById('header-nav');
-menuBtn.addEventListener('click', () => {
-  const isExpanded = menuBtn.getAttribute('aria-expanded') === 'true';
-  menuBtn.setAttribute('aria-expanded', !isExpanded);
-  headerNav.setAttribute('aria-expanded', !isExpanded);
-});
-
-// Close mobile menu when clicking a link
-const navLinks = headerNav.querySelectorAll('.header__nav-link');
-navLinks.forEach(link => {
-  link.addEventListener('click', () => {
-    if (window.innerWidth <= 767) {
-      menuBtn.setAttribute('aria-expanded', 'false');
-      headerNav.setAttribute('aria-expanded', 'false');
-    }
-  });
-});
-
-// Close mobile menu on ESC
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && headerNav.getAttribute('aria-expanded') === 'true') {
-    menuBtn.setAttribute('aria-expanded', 'false');
-    headerNav.setAttribute('aria-expanded', 'false');
-  }
-});
-
-// Trailer modal
-const trailerBtns = document.querySelectorAll('#trailer-btn, #hero-trailer-btn');
-const trailerModal = document.getElementById('trailer-modal');
-const closeBtn = trailerModal.querySelector('.modal__close-btn');
-const overlay = trailerModal.querySelector('.modal__overlay');
-
-const openModal = () => {
-  trailerModal.setAttribute('aria-hidden', 'false');
-  // Prevent background scrolling
-  document.body.style.overflow = 'hidden';
-};
-
-const closeModal = () => {
-  trailerModal.setAttribute('aria-hidden', 'true');
-  // Allow background scrolling
-  document.body.style.overflow = '';
-  // Pause video
-  const video = trailerModal.querySelector('video');
-  if (video) video.pause();
-};
-
-trailerBtns.forEach(btn => {
-  btn.addEventListener('click', openModal);
-});
-
-closeBtn.addEventListener('click', closeModal);
-overlay.addEventListener('click', closeModal);
-
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && trailerModal.getAttribute('aria-hidden') === 'false') {
-    closeModal();
-  }
-});
-
-// Focus trap for modal
-const trapFocus = (element) => {
-  const focusableElements = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-  const firstFocusableElement = element.querySelectorAll(focusableElements)[0];
-  const focusableContent = element.querySelectorAll(focusableElements);
-  const lastFocusableElement = focusableContent[focusableContent.length - 1];
-
-  element.addEventListener('keydown', function(e) {
-    if (e.key === 'Tab') {
-      if (e.shiftShift) {
-        if (document.activeElement === firstFocusableElement) {
-          e.preventDefault();
-          lastFocusableElement.focus();
-        }
-      } else {
-        if (document.activeElement === lastFocusableElement) {
-          e.preventDefault();
-          firstFocusableElement.focus();
-        }
-      }
-    }
-    if (e.key === 'Escape') {
-      closeModal();
-    }
-  });
-};
-
-// FAQ accordion
-const faqQuestions = document.querySelectorAll('.faq__question');
-faqQuestions.forEach(question => {
-  question.addEventListener('click', () => {
-    const isExpanded = question.getAttribute('aria-expanded') === 'true';
-    // Close all other questions
-    faqQuestions.forEach(q => {
-      if (q !== question) {
-        q.setAttribute('aria-expanded', 'false');
-        const answer = q.nextElementSibling;
-        answer.setAttribute('aria-hidden', 'true');
-      }
-    });
-    // Toggle current question
-    question.setAttribute('aria-expanded', !isExpanded);
-    const answer = question.nextElementSibling;
-    answer.setAttribute('aria-hidden', isExpanded);
-  });
-});
-
-// Form validation and submission
-const ctaForm = document.getElementById('cta-form');
-const ctaEmail = document.getElementById('cta-email');
-const ctaError = ctaForm.querySelector('.input-group__error');
-const ctaBtn = ctaForm.querySelector('.cta-band__btn');
-const ctaMessage = document.getElementById('cta-message');
-
-const validateEmail = (email) => {
-  const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-  return re.test(String(email).toLowerCase());
-};
-
-ctaForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-  const email = ctaEmail.value.trim();
-  
-  if (!validateEmail(email)) {
-    ctaEmail.classList.add('is-invalid');
-    ctaError.textContent = 'Please enter a valid email address';
-    ctaBtn.classList.add('is-error');
-    return;
-  }
-  
-  // Valid email
-  ctaEmail.classList.remove('is-invalid');
-  ctaEmail.classList.add('is-valid');
-  ctaError.textContent = '';
-  ctaBtn.classList.remove('is-error');
-  ctaBtn.classList.add('is-loading');
-  
-  // Simulate API call
-  setTimeout(() => {
-    ctaBtn.classList.remove('is-loading');
-    ctaBtn.classList.add('is-success');
-    ctaMessage.textContent = 'Thank you! We\'ll be in touch soon.';
-    ctaForm.reset();
-    setTimeout(() => {
-      ctaBtn.classList.remove('is-success');
-      ctaMessage.textContent = '';
-    }, 3000);
-  }, 1500);
-});
-
-// Pricing tier button loading states
-const pricingButtons = document.querySelectorAll('.pricing__cta');
-pricingButtons.forEach(button => {
-  button.addEventListener('click', () => {
-    button.classList.add('is-loading');
-    setTimeout(() => {
-      button.classList.remove('is-loading');
-      button.classList.add('is-success');
-      setTimeout(() => {
-        button.classList.remove('is-success');
-      }, 2000);
-    }, 1500);
-  });
-});
-
-// Intersection Observer for staggered reveal
-const observerOptions = {
-  threshold: 0.1,
-  rootMargin: '0px 0px -50px 0px'
-};
-
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('revealed');
-      observer.unobserve(entry.target);
-    }
-  });
-}, observerOptions);
-
-// Observe sections for reveal
-document.querySelectorAll('.section').forEach(section => {
-  section.style.opacity = '0';
-  section.style.transform = 'translateY(20px)';
-  section.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
-  observer.observe(section);
-});
-
-// Add revealed class to trigger transition
-const revealSections = () => {
-  document.querySelectorAll('.section.revealed').forEach(section => {
-    section.style.opacity = '1';
-    section.style.transform = 'translateY(0)';
-  });
-};
-
-// Run on load and scroll
-window.addEventListener('load', revealSections);
-window.addEventListener('scroll', revealSections);
-
-// Reduce motion handling
-if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-  document.documentElement.style.setProperty('--transition-normal', '0s');
-  document.documentElement.style.setProperty('--transition-fast', '0s');
-}
-
-// Reduce transparency handling
-if (window.matchMedia('(prefers-reduced-transparency: reduce)').matches) {
-  document.documentElement.style.setProperty('--blur-panel', 'none');
-}
+(()=>{
+  const root=document.documentElement;root.classList.add('js');
+  const tg=document.getElementById('theme-toggle');
+  const sun='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+  const moon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+  const sync=()=>{const d=root.dataset.theme==='dark';tg.setAttribute('aria-pressed',String(d));tg.setAttribute('aria-label',d?'Switch to light mode':'Switch to dark mode');tg.innerHTML=d?sun:moon;};
+  tg.addEventListener('click',()=>{root.dataset.theme=root.dataset.theme==='dark'?'light':'dark';try{localStorage.setItem('theme',root.dataset.theme)}catch(e){}sync();});sync();
+  const header=document.getElementById('header'),hero=document.getElementById('top');
+  if('IntersectionObserver' in window){new IntersectionObserver(([e])=>header.classList.toggle('is-solid',!e.isIntersecting),{rootMargin:'-80px 0px 0px 0px'}).observe(hero);}
+  const mb=document.querySelector('.menu-btn'),nav=document.getElementById('site-nav');
+  const set=o=>{nav.classList.toggle('is-open',o);mb.setAttribute('aria-expanded',String(o));mb.setAttribute('aria-label',o?'Close menu':'Open menu');header.classList.toggle('is-solid',o||header.classList.contains('is-solid'));};
+  mb.addEventListener('click',()=>set(!nav.classList.contains('is-open')));nav.addEventListener('click',e=>{if(e.target.closest('a'))set(false);});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&nav.classList.contains('is-open')){set(false);mb.focus();}});
+  document.querySelectorAll('.opt').forEach(o=>o.addEventListener('click',()=>{document.querySelectorAll('.opt').forEach(x=>{x.classList.toggle('is-picked',x===o);x.setAttribute('aria-pressed',String(x===o));});}));
+  const io='IntersectionObserver' in window?new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('is-in');io.unobserve(e.target);}}),{threshold:.12}):null;
+  document.querySelectorAll('.reveal').forEach((el,i)=>{el.style.transitionDelay=(i%3)*70+'ms';io?io.observe(el):el.classList.add('is-in');});
+  const f=document.getElementById('signup'),em=document.getElementById('email'),msg=document.getElementById('email-msg'),btn=f.querySelector('button');
+  f.addEventListener('submit',e=>{e.preventDefault();const ok=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em.value.trim());em.setAttribute('aria-invalid',String(!ok));msg.classList.toggle('is-error',!ok);
+    if(!ok){msg.textContent='Please enter a valid email, like name@example.com.';return;}
+    btn.disabled=true;btn.textContent='Starting...';setTimeout(()=>{btn.disabled=false;btn.textContent='Get started';msg.textContent='Your free week has started. Check your inbox.';f.reset();},900);});
+})();
 </script>
 </body>
 </html>

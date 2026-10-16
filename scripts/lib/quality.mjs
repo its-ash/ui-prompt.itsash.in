@@ -55,7 +55,7 @@ export async function createQuality(browser) {
           h1Height: h1 ? h1.getBoundingClientRect().height : 0,
           missingFonts,
           year: /20(1\d|2[0-5])\b/.test(document.querySelector('footer')?.innerText ?? ''),
-          scrollCue: /\bscroll( down| to explore)?\b/i.test(document.body.innerText.slice(0, 1500)),
+          scrollCue: /\b(scroll down|scroll to explore|scroll for more)\b|^\s*scroll\s*$/im.test(document.body.innerText.slice(0, 1500)),
         };
       });
       if (!d.h1) issues.push('there is no <h1> in the hero');
