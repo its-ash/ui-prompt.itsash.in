@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nimbus - Ship faster with AI-native code review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet">
+<style>
+:root {
+  --color-page-cream: #fffef2;
+  --color-ink-black: #191918;
+  --color-rule-black: #000000;
+  --color-warm-stone: #75756f;
+  --color-linen-beige: #edece0;
+  --color-ash-gray: #bab9b0;
+  --color-amber-signal: #fcaa2d;
+
+  --primary: var(--color-amber-signal);
+  --secondary: var(--color-linen-beige);
+  --bg-primary: var(--color-page-cream);
+  --bg-secondary: var(--color-linen-beige);
+  --text-primary: var(--color-ink-black);
+  --text-secondary: var(--color-warm-stone);
+  --text-success: #2e6b3a;
+  --text-error: #b03a2e;
+  --border-default: var(--color-rule-black);
+  --border-error: #b03a2e;
+  --border-success: #2e6b3a;
+
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 2px;
+  --radius-badge: 800px;
+  --radius-icon: 800px;
+  --shadow-sm: none;
+  --shadow-md: none;
+
+  --spacing-4: 4px; --spacing-8: 8px; --spacing-12: 12px; --spacing-16: 16px;
+  --spacing-20: 20px; --spacing-24: 24px; --spacing-32: 32px; --spacing-40: 40px;
+  --spacing-48: 48px; --spacing-60: 60px; --spacing-64: 64px; --spacing-96: 96px;
+  --spacing-gap: 24px;
+
+  --transition-fast: 150ms ease-out;
+  --transition-normal: 250ms ease-out;
+  --ease-standard: ease-out;
+  --z-dropdown: 50; --z-modal: 100; --z-toast: 150;
+
+  --font-base: 'Instrument Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --text-mono-xs: 10px; --text-mono-sm: 12px; --text-caption: 14px;
+  --text-body-sm: 16px; --text-body: 18px; --text-subheading: 20px;
+  --text-heading: 36px; --text-heading-lg: 40px; --text-display: 64px;
+}
+:root[data-theme="dark"] {
+  --bg-primary: var(--color-ink-black);
+  --bg-secondary: #2a2a28;
+  --text-primary: var(--color-page-cream);
+  --text-secondary: var(--color-ash-gray);
+  --border-default: var(--color-page-cream);
+  --secondary: #2a2a28;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg-primary: var(--color-ink-black);
+    --bg-secondary: #2a2a28;
+    --text-primary: var(--color-page-cream);
+    --text-secondary: var(--color-ash-gray);
+    --border-default: var(--color-page-cream);
+    --secondary: #2a2a28;
+  }
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-base);
+  font-size: var(--text-body);
+  line-height: 1.5;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  -webkit-font-smoothing: antialiased;
+  transition: background var(--transition-normal), color var(--transition-normal);
+}
+a { color: inherit; text-decoration: none; }
+img { max-width: 100%; display: block; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+
+.container { max-width: 1200px; margin: 0 auto; padding: 0 40px; }
+@media (max-width: 768px) { .container { padding: 0 20px; } }
+
+.section { padding: var(--spacing-60) 0; border-top: 1px solid var(--border-default); }
+.section--first { border-top: none; }
+
+/* Nav */
+.nav { position: sticky; top: 0; z-index: var(--z-dropdown); background: var(--bg-primary); border-bottom: 1px solid var(--border-default); height: 72px; display: flex; align-items: center; }
+.nav__inner { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+.nav__logo { display: flex; align-items: center; gap: 10px; font-weight: 500; }
+.nav__logo-icon { width: 28px; height: 28px; border-radius: var(--radius-icon); background: var(--color-amber-signal); display: flex; align-items: center; justify-content: center; color: var(--color-ink-black); font-family: var(--font-mono); font-size: 12px; font-weight: 700; }
+.nav__links { display: flex; align-items: center; gap: 32px; list-style: none; }
+.nav__link { font-size: var(--text-body-sm); color: var(--text-secondary); transition: color var(--transition-fast); }
+.nav__link:hover { color: var(--text-primary); }
+.nav__actions { display: flex; align-items: center; gap: 16px; }
+.nav__app-link { font-family: var(--font-mono); font-size: var(--text-mono-sm); letter-spacing: 0.04em; text-transform: uppercase; }
+.nav__toggle { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-default); border-radius: var(--radius-sm); color: var(--text-primary); }
+.nav__toggle .material-symbols-rounded { font-size: 20px; }
+.nav__menu-btn { display: none; width: 44px; height: 44px; align-items: center; justify-content: center; border: 1px solid var(--border-default); border-radius: var(--radius-sm); color: var(--text-primary); }
+@media (max-width: 768px) {
+  .nav__links { display: none; flex-direction: column; position: absolute; top: 72px; left: 0; right: 0; background: var(--bg-primary); border-bottom: 1px solid var(--border-default); padding: 20px; gap: 16px; }
+  .nav__links.is-open { display: flex; }
+  .nav__menu-btn { display: flex; }
+}
+
+/* Buttons */
+.btn { display: flex; align-items: center; justify-content: center; gap: 0.5rem; min-height: 44px; min-width: 44px; padding: 10px 20px; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: var(--text-mono-sm); letter-spacing: 0.04em; text-transform: uppercase; transition: transform var(--transition-fast), filter var(--transition-fast), opacity var(--transition-fast); }
+.btn:active { transform: scale(0.97); }
+.btn:focus-visible { outline: 2px solid var(--color-amber-signal); outline-offset: 2px; }
+.btn--primary { background: var(--color-amber-signal); color: var(--color-ink-black); }
+.btn--primary:hover { filter: brightness(0.95); }
+.btn--ghost { background: transparent; border: 1px solid var(--border-default); color: var(--text-primary); }
+.btn--ghost:hover { background: var(--bg-secondary); }
+.btn:disabled { opacity: 0.5; filter: grayscale(1); cursor: not-allowed; }
+.btn .material-symbols-rounded { font-size: 16px; }
+
+/* Hero */
+.hero { padding: var(--spacing-60) 0; }
+.hero__grid { display: flex; gap: var(--spacing-40); align-items: center; }
+.hero__left { flex: 0 0 60%; }
+.hero__right { flex: 0 0 40%; }
+.hero__headline { font-size: var(--text-display); line-height: 1.10; letter-spacing: -0.05em; font-weight: 400; margin-bottom: var(--spacing-24); }
+.hero__headline .accent { color: var(--color-amber-signal); }
+.hero__body { font-size: var(--text-body); line-height: 1.5; color: var(--text-secondary); margin-bottom: var(--spacing-24); max-width: 480px; }
+.hero__cta-pair { display: flex; gap: var(--spacing-12); flex-wrap: wrap; }
+@media (max-width: 768px) {
+  .hero__grid { flex-direction: column; }
+  .hero__left, .hero__right { flex: 1 1 100%; }
+  .hero__headline { font-size: var(--text-heading-lg); }
+}
+
+/* Trust strip */
+.trust { padding: var(--spacing-40) 0; }
+.trust__label { font-family: var(--font-mono); font-size: var(--text-mono-sm); letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-secondary); margin-bottom: var(--spacing-24); }
+.trust__logos { display: flex; align-items: center; gap: 60px; flex-wrap: wrap; opacity: 0.6; filter: grayscale(1); }
+.trust__logo { font-family: var(--font-mono); font-size: var(--text-caption); letter-spacing: 0.04em; color: var(--text-secondary); }
+
+/* Features */
+.features__grid { display: flex; gap: var(--spacing-24); flex-wrap: wrap; }
+.feature-card { flex: 1 1 300px; background: var(--bg-secondary); border: 1px solid var(--border-default); border-radius: var(--radius-sm); padding: var(--spacing-24); display: flex; flex-direction: column; gap: var(--spacing-12); transition: transform var(--transition-fast); }
+.feature-card:hover { transform: translateY(-2px); }
+.feature-card__icon { width: 40px; height: 40px; border-radius: var(--radius-icon); background: var(--bg-primary); border: 1px solid var(--border-default); display: flex; align-items: center; justify-content: center; color: var(--text-primary); }
+.feature-card__icon .material-symbols-rounded { font-size: 20px; }
+.feature-card__title { font-size: var(--text-subheading); font-weight: 500; line-height: 1.06; letter-spacing: -0.03em; }
+.feature-card__body { font-size: var(--text-body-sm); color: var(--text-secondary); line-height: 1.5; }
+
+/* How it works */
+.steps { display: flex; flex-direction: column; gap: var(--spacing-24); }
+.step { display: flex; gap: var(--spacing-24); align-items: flex-start; padding-left: var(--spacing-16); border-left: 2px solid var(--color-amber-signal); }
+.step__num { font-family: var(--font-mono); font-size: var(--text-mono-sm); color: var(--color-amber-signal); }
+.step__title { font-size: var(--text-subheading); font-weight: 500; margin-bottom: var(--spacing-8); }
+.step__body { font-size: var(--text-body-sm); color: var(--text-secondary); line-height: 1.5; }
+
+/* Code window */
+.code-band { position: relative; min-height: 400px; background: linear-gradient(135deg, #d4c9a8 0%, #b8a880 100%); overflow: hidden; display: flex; align-items: center; padding: var(--spacing-40) 0; }
+.code-window { background: var(--color-ink-black); border-radius: var(--radius-sm); padding: var(--spacing-24); max-width: 560px; width: 100%; margin-left: 40px; }
+.code-window__bar { display: flex; gap: 8px; margin-bottom: var(--spacing-16); }
+.code-window__dot { width: 8px; height: 8px; border-radius: 50%; }
+.code-window__dot--red { background: #ff5f57; }
+.code-window__dot--yellow { background: #febc2e; }
+.code-window__dot--green { background: #28c840; }
+.code-window__code { font-family: var(--font-mono); font-size: var(--text-mono-sm); line-height: 1.6; color: var(--color-page-cream); white-space: pre; overflow-x: auto; }
+.code-kw { color: var(--color-amber-signal); }
+.code-str { color: var(--color-linen-beige); }
+.code-cm { color: var(--color-warm-stone); }
+
+/* Concentric circles */
+.circles { display: flex; justify-content: center; align-items: center; padding: var(--spacing-60) 0; }
+.circles__wrap { position: relative; width: 320px; height: 320px; }
+.circles__ring { position: absolute; border: 1px solid var(--border-default); border-radius: 50%; display: flex; align-items: flex-start; justify-content: center; }
+.circles__ring--outer { inset: 0; }
+.circles__ring--mid { inset: 60px; }
+.circles__ring--inner { inset: 120px; background: var(--color-warm-stone); }
+.circles__label { font-size: var(--text-caption); color: var(--text-secondary); margin-top: -20px; }
+.circles__glyph { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 32px; height: 32px; border-radius: var(--radius-icon); background: var(--color-amber-signal); display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--color-ink-black); }
+
+/* Timeline */
+.timeline { padding: var(--spacing-40) 0; }
+.timeline__ticks { display: flex; gap: 2px; height: 40px; align-items: flex-end; overflow: hidden; }
+.timeline__tick { width: 1px; background: var(--border-default); height: 12px; }
+.timeline__tick--amber { background: var(--color-amber-signal); height: 24px; }
+.timeline__labels { display: flex; justify-content: space-between; margin-top: var(--spacing-8); font-family: var(--font-mono); font-size: var(--text-mono-xs); color: var(--text-secondary); letter-spacing: 0.4px; }
+
+/* Testimonials */
+.testimonials { display: flex; flex-direction: column; gap: var(--spacing-24); }
+.testimonial { padding: var(--spacing-24) 0; border-bottom: 1px solid var(--border-default); }
+.testimonial__quote { font-size: var(--text-body); line-height: 1.5; margin-bottom: var(--spacing-12); max-width: 65ch; }
+.testimonial__attr { font-family: var(--font-mono); font-size: var(--text-mono-sm); color: var(--text-secondary); letter-spacing: 0.04em; }
+
+/* Pricing */
+.pricing { display: flex; gap: var(--spacing-24); flex-wrap: wrap; }
+.pricing__tier { flex: 1 1 280px; border: 1px solid var(--border-default); border-radius: var(--radius-sm); padding: var(--spacing-24); display: flex; flex-direction: column; gap: var(--spacing-12); }
+.pricing__tier--recommended { border-color: var(--color-amber-signal); }
+.pricing__name { font-size: var(--text-subheading); font-weight: 500; }
+.pricing__price { font-size: var(--text-heading); font-weight: 400; letter-spacing: -0.03em; }
+.pricing__features { list-style: none; display: flex; flex-direction: column; gap: var(--spacing-8); font-size: var(--text-body-sm); color: var(--text-secondary); }
+.pricing__features li::before { content: ", "; color: var(--color-amber-signal); }
+
+/* FAQ */
+.faq { display: flex; flex-direction: column; }
+.faq__item { border-bottom: 1px solid var(--border-default); padding: 20px 40px; }
+.faq__summary { display: flex; align-items: center; justify-content: space-between; cursor: pointer; list-style: none; font-size: var(--text-body); }
+.faq__summary::-webkit-details-marker { display: none; }
+.faq__icon { font-size: 20px; transition: transform var(--transition-fast); }
+details[open] .faq__icon { transform: rotate(45deg); }
+.faq__answer { padding-top: var(--spacing-12); font-size: var(--text-body-sm); color: var(--text-secondary); line-height: 1.5; max-width: 65ch; }
+
+/* Final CTA */
+.final-cta { padding: var(--spacing-60) 0; }
+.final-cta__headline { font-size: var(--text-heading-lg); line-height: 1.1; letter-spacing: -0.04em; margin-bottom: var(--spacing-24); }
+.final-cta__headline .accent { color: var(--color-amber-signal); }
+.final-cta__pair { display: flex; gap: var(--spacing-12); flex-wrap: wrap; }
+
+/* Footer */
+.footer { border-top: 1px solid var(--border-default); padding: var(--spacing-40) 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--spacing-16); }
+.footer__copy { font-family: var(--font-mono); font-size: var(--text-mono-xs); color: var(--text-secondary); letter-spacing: 0.4px; }
+.footer__links { display: flex; gap: var(--spacing-16); }
+.footer__link { font-family: var(--font-mono); font-size: var(--text-mono-xs); color: var(--text-secondary); letter-spacing: 0.4px; text-transform: uppercase; }
+
+/* Reveal */
+.reveal { opacity: 0; transform: translateY(12px); transition: opacity 400ms ease-out, transform 400ms ease-out; }
+.reveal.is-visible { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: opacity 200ms ease; }
+}
+
+/* Hidden helper */
+[hidden] { display: none !important; }
+
+@media (prefers-reduced-transparency: reduce) {
+  .code-window { backdrop-filter: none; }
+}
+</style>
+<style id="pd-icon-fix">.material-symbols-rounded{font-family:'Material Symbols Rounded'!important;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;word-wrap:normal;direction:ltr;font-feature-settings:'liga';-webkit-font-feature-settings:'liga'}</style>
+</head>
+<body>
+<header class="nav">
+  <div class="container nav__inner">
+    <a href="#" class="nav__logo">
+      <span class="nav__logo-icon">N</span>
+      <span>Nimbus</span>
+    </a>
+    <button class="nav__menu-btn" id="menu-btn" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links">
+      <span class="material-symbols-rounded">menu</span>
+    </button>
+    <ul class="nav__links" id="nav-links">
+      <li><a class="nav__link" href="#features">Features</a></li>
+      <li><a class="nav__link" href="#how">How it works</a></li>
+      <li><a class="nav__link" href="#pricing">Pricing</a></li>
+      <li><a class="nav__link" href="#faq">FAQ</a></li>
+    </ul>
+    <div class="nav__actions">
+      <a class="nav__app-link" href="#">APP</a>
+      <a class="btn btn--primary" href="#cta">Start free <span class="material-symbols-rounded">arrow_outward</span></a>
+      <button class="nav__toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-rounded" id="theme-icon">dark_mode</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="hero section section--first">
+    <div class="container">
+      <div class="hero__grid">
+        <div class="hero__left">
+          <h1 class="hero__headline">Ship code that <span class="accent">reviewers love</span> on the first pass.</h1>
+        </div>
+        <div class="hero__right">
+          <p class="hero__body">Nimbus reviews every pull request in seconds, flags real bugs, and writes the summary your team actually reads. No setup, no config files.</p>
+          <div class="hero__cta-pair">
+            <a class="btn btn--primary" href="#cta">Start free <span class="material-symbols-rounded">arrow_outward</span></a>
+            <a class="btn btn--ghost" href="#how">See how it works</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="trust section">
+    <div class="container">
+      <p class="trust__label">Trusted by the best leading brands</p>
+      <div class="trust__logos">
+        <span class="trust__logo">Vercel</span>
+        <span class="trust__logo">Linear</span>
+        <span class="trust__logo">Stripe</span>
+        <span class="trust__logo">Notion</span>
+        <span class="trust__logo">Figma</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="features" class="section">
+    <div class="container">
+      <h2 class="text-heading" style="font-size: var(--text-heading); font-weight: 500; letter-spacing: -0.03em; margin-bottom: var(--spacing-24);">Features that earn their place.</h2>
+      <div class="features__grid">
+        <article class="feature-card reveal">
+          <div class="feature-card__icon"><span class="material-symbols-rounded">bug_report</span></div>
+          <h3 class="feature-card__title">Real bug detection</h3>
+          <p class="feature-card__body">Catches null derefs, race conditions, and off-by-one errors before they reach main.</p>
+        </article>
+        <article class="feature-card reveal">
+          <div class="feature-card__icon"><span class="material-symbols-rounded">summarize</span></div>
+          <h3 class="feature-card__title">Auto summaries</h3>
+          <p class="feature-card__body">Writes a clear, human-readable PR summary with risk level and changed areas.</p>
+        </article>
+        <article class="feature-card reveal">
+          <div class="feature-card__icon"><span class="material-symbols-rounded">speed</span></div>
+          <h3 class="feature-card__title">Sub-second reviews</h3>
+          <p class="feature-card__body">Reviews land in under a second, so your flow never stalls waiting on CI.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="how" class="section">
+    <div class="container">
+      <h2 style="font-size: var(--text-heading); font-weight: 500; letter-spacing: -0.03em; margin-bottom: var(--spacing-24);">How it works.</h2>
+      <div class="steps">
+        <div class="step reveal">
+          <span class="step__num">01</span>
+          <div>
+            <h3 class="step__title">Connect your repo</h3>
+            <p class="step__body">One-click GitHub install. No tokens, no config files, no YAML.</p>
+          </div>
+        </div>
+        <div class="step reveal">
+          <span class="step__num">02</span>
+          <div>
+            <h3 class="step__title">Open a pull request</h3>
+            <p class="step__body">Nimbus reads the diff and posts a review within seconds.</p>
+          </div>
+        </div>
+        <div class="step reveal">
+          <span class="step__num">03</span>
+          <div>
+            <h3 class="step__title">Merge with confidence</h3>
+            <p class="step__body">Address the flagged items, then ship. Every review is auditable.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="code-band section">
+    <div class="code-window">
+      <div class="code-window__bar">
+        <span class="code-window__dot code-window__dot--red"></span>
+        <span class="code-window__dot code-window__dot--yellow"></span>
+        <span class="code-window__dot code-window__dot--green"></span>
+      </div>
+      <pre class="code-window__code"><span class="code-cm">// nimbus review --pr 482</span>
+<span class="code-kw">const</span> review = <span class="code-kw">await</span> nimbus.review(pr);
+<span class="code-kw">if</span> (review.risk === <span class="code-str">'high'</span>) {
+  console.log(review.summary);
+}</pre>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <h2 style="font-size: var(--text-heading); font-weight: 500; letter-spacing: -0.03em; margin-bottom: var(--spacing-24);">Built in layers.</h2>
+      <div class="circles">
+        <div class="circles__wrap">
+          <div class="circles__ring circles__ring--outer"><span class="circles__label">Context</span></div>
+          <div class="circles__ring circles__ring--mid"><span class="circles__label">Analysis</span></div>
+          <div class="circles__ring circles__ring--inner"></div>
+          <div class="circles__glyph">N</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="timeline section">
+    <div class="container">
+      <div class="timeline__ticks" id="ticks"></div>
+      <div class="timeline__labels">
+        <span>v3.001</span>
+        <span>v3.851</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <h2 style="font-size: var(--text-heading); font-weight: 500; letter-spacing: -0.03em; margin-bottom: var(--spacing-24);">What teams say.</h2>
+      <div class="testimonials">
+        <article class="testimonial reveal">
+          <p class="testimonial__quote">"Nimbus cut our review time in half and caught a race condition we missed for weeks."</p>
+          <p class="testimonial__attr">Maya Chen, Staff Engineer, Linear</p>
+        </article>
+        <article class="testimonial reveal">
+          <p class="testimonial__quote">"The summaries are the first thing I read every morning. Genuinely useful."</p>
+          <p class="testimonial__attr">Jonas Weber, Engineering Lead, Vercel</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing" class="section">
+    <div class="container">
+      <h2 style="font-size: var(--text-heading); font-weight: 500; letter-spacing: -0.03em; margin-bottom: var(--spacing-24);">Pricing.</h2>
+      <div class="pricing">
+        <div class="pricing__tier">
+          <h3 class="pricing__name">Starter</h3>
+          <p class="pricing__price">$0</p>
+          <ul class="pricing__features">
+            <li>Up to 5 repos</li>
+            <li>Basic reviews</li>
+            <li>Community support</li>
+          </ul>
+          <a class="btn btn--ghost" href="#cta">Start free</a>
+        </div>
+        <div class="pricing__tier pricing__tier--recommended">
+          <h3 class="pricing__name">Team</h3>
+          <p class="pricing__price">$29</p>
+          <ul class="pricing__features">
+            <li>Unlimited repos</li>
+            <li>Deep analysis</li>
+            <li>Priority support</li>
+          </ul>
+          <a class="btn btn--primary" href="#cta">Start free <span class="material-symbols-rounded">arrow_outward</span></a>
+        </div>
+        <div class="pricing__tier">
+          <h3 class="pricing__name">Enterprise</h3>
+          <p class="pricing__price">Custom</p>
+          <ul class="pricing__features">
+            <li>SSO &amp; audit logs</li>
+            <li>Dedicated support</li>
+            <li>Custom SLAs</li>
+          </ul>
+          <a class="btn btn--ghost" href="#cta">Contact sales</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq" class="section">
+    <div class="container">
+      <h2 style="font-size: var(--text-heading); font-weight: 500; letter-spacing: -0.03em; margin-bottom: var(--spacing-24);">FAQ.</h2>
+      <div class="faq">
+        <details class="faq__item">
+          <summary class="faq__summary">Does Nimbus store my code? <span class="material-symbols-rounded faq__icon">add</span></summary>
+          <p class="faq__answer">No. Diffs are processed in memory and discarded after review.</p>
+        </details>
+        <details class="faq__item">
+          <summary class="faq__summary">Which languages are supported? <span class="material-symbols-rounded faq__icon">add</span></summary>
+          <p class="faq__answer">TypeScript, Python, Go, Rust, and Java at launch.</p>
+        </details>
+        <details class="faq__item">
+          <summary class="faq__summary">Can I self-host? <span class="material-symbols-rounded faq__icon">add</span></summary>
+          <p class="faq__answer">Enterprise plans include a self-hosted option with full support.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section id="cta" class="final-cta section">
+    <div class="container">
+      <h2 class="final-cta__headline">Start shipping <span class="accent">better code</span> today.</h2>
+      <div class="final-cta__pair">
+        <a class="btn btn--primary" href="#">Start free <span class="material-symbols-rounded">arrow_outward</span></a>
+        <a class="btn btn--ghost" href="#">Talk to sales</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="container footer">
+  <p class="footer__copy">© 2026 Nimbus. All rights reserved.</p>
+  <nav class="footer__links">
+    <a class="footer__link" href="#">Privacy</a>
+    <a class="footer__link" href="#">Terms</a>
+    <a class="footer__link" href="#">Status</a>
+  </nav>
+</footer>
+
+<script>
+(function () {
+  const root = document.documentElement;
+  const stored = localStorage.getItem('theme');
+  let theme = (stored === 'dark' || stored === 'light') ? stored : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  root.dataset.theme = theme;
+
+  const toggle = document.getElementById('theme-toggle');
+  const icon = document.getElementById('theme-icon');
+  function apply(t) {
+    root.dataset.theme = t;
+    toggle.setAttribute('aria-pressed', t === 'dark' ? 'true' : 'false');
+    toggle.setAttribute('aria-label', t === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+    icon.textContent = t === 'dark' ? 'light_mode' : 'dark_mode';
+  }
+  apply(theme);
+  toggle.addEventListener('click', function () {
+    theme = theme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('theme', theme);
+    apply(theme);
+  });
+
+  const menuBtn = document.getElementById('menu-btn');
+  const navLinks = document.getElementById('nav-links');
+  menuBtn.addEventListener('click', function () {
+    const open = navLinks.classList.toggle('is-open');
+    menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  navLinks.querySelectorAll('a').forEach(function (a) {
+    a.addEventListener('click', function () { navLinks.classList.remove('is-open'); menuBtn.setAttribute('aria-expanded', 'false'); });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { navLinks.classList.remove('is-open'); menuBtn.setAttribute('aria-expanded', 'false'); }
+  });
+
+  const ticks = document.getElementById('ticks');
+  for (let i = 0; i < 200; i++) {
+    const t = document.createElement('span');
+    t.className = 'timeline__tick' + (i % 17 === 0 ? ' timeline__tick--amber' : '');
+    ticks.appendChild(t);
+  }
+
+  const io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) { e.target.classList.add('is-visible'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+})();
+</script>
+</body>
+</html>

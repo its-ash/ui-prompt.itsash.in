@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nimbus - Incident Response, Simplified</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,500,0,0&display=swap" rel="stylesheet">
+<style>
+:root{
+--color-ink:#100f12;--color-snow:#fbfaff;--color-paper:#ffffff;--color-graphite:#44434e;--color-slate:#65646e;--color-mist:#787685;--color-lavender-wash:#ebe5ff;--color-lilac-edge:#d9cffa;--color-iris:#8d6fde;--color-amethyst:#4a3e8a;--color-rose-drift:#f5bbc3;--color-dawn-viol:linear-gradient(112deg,rgb(119,72,246),rgb(245,187,195) 80%);
+--text-success:#2e7d32;--text-error:#c62828;--border-default:#d9cffa;--border-error:#c62828;--border-success:#2e7d32;
+--radius-sm:6.92px;--radius-md:17.3px;--radius-lg:34.6px;--radius-pill:1440px;
+--shadow-sm:0 1px 2px rgba(16,15,18,.06);--shadow-md:0 4px 16px rgba(16,15,18,.08);--shadow-hero:0 24px 60px rgba(16,15,18,.18);--shadow-floating:0 12px 40px rgba(16,15,18,.14);--shadow-phone:0 8px 30px rgba(16,15,18,.2);
+--spacing-gap:1.5rem;--transition-fast:150ms ease-out;--transition-normal:250ms ease-out;--ease-standard:cubic-bezier(.4,0,.2,1);
+--z-dropdown:100;--z-modal:200;--z-toast:300;
+--font-base:'Inter',system-ui,sans-serif;
+--text-caption:10px;--text-body:14px;--text-heading:31px;--text-display:52px;
+--lh-caption:1.4;--lh-body:1.6;--lh-heading:1.15;--lh-display:1.05;
+--ls-caption:-.009em;--ls-body:-.010em;--ls-heading:-.013em;--ls-display:-.015em;
+--bg:#fbfaff;--surface:#ffffff;--text:#100f12;--text-muted:#65646e;--border:#d9cffa;
+}
+:root[data-theme="dark"]{
+--color-ink:#f4f2fa;--color-snow:#0e0d12;--color-paper:#17161c;--color-graphite:#a8a6b2;--color-slate:#c4c2cc;--color-mist:#8a8896;--color-lavender-wash:#2a2640;--color-lilac-edge:#3a3556;--color-iris:#b39af0;--color-amethyst:#d4c8ff;--color-rose-drift:#f5bbc3;
+--text-success:#66bb6a;--text-error:#ef5350;--border-default:#3a3556;--border-error:#ef5350;--border-success:#66bb6a;
+--bg:#0e0d12;--surface:#17161c;--text:#f4f2fa;--text-muted:#c4c2cc;--border:#3a3556;
+--shadow-sm:0 1px 2px rgba(0,0,0,.3);--shadow-md:0 4px 16px rgba(0,0,0,.4);--shadow-hero:0 24px 60px rgba(0,0,0,.5);--shadow-floating:0 12px 40px rgba(0,0,0,.45);--shadow-phone:0 8px 30px rgba(0,0,0,.5);
+}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e0d12;--surface:#17161c;--text:#f4f2fa;--text-muted:#c4c2cc;--border:#3a3556;--color-ink:#f4f2fa;--color-snow:#0e0d12;--color-paper:#17161c;--color-graphite:#a8a6b2;--color-slate:#c4c2cc;--color-mist:#8a8896;--color-lavender-wash:#2a2640;--color-lilac-edge:#3a3556;--color-iris:#b39af0;--color-amethyst:#d4c8ff;}}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);font-size:var(--text-body);line-height:var(--lh-body);letter-spacing:var(--ls-body);color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+.container{max-width:1200px;margin:0 auto;padding:0 2rem}
+@media(max-width:768px){.container{padding:0 1.25rem}}
+section{padding:clamp(4rem,8vw,7rem) 0}
+h1,h2,h3{font-weight:200;letter-spacing:var(--ls-display);line-height:var(--lh-display)}
+h1{font-size:var(--text-display)}
+h2{font-size:var(--text-heading);letter-spacing:var(--ls-heading);line-height:var(--lh-heading)}
+h3{font-size:var(--text-heading);letter-spacing:var(--ls-heading);line-height:var(--lh-heading)}
+p{color:var(--text-muted)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:9px 21px;border-radius:var(--radius-pill);font-weight:500;font-size:var(--text-body);border:none;cursor:pointer;transition:var(--transition-normal);font-family:var(--font-base)}
+.btn:focus-visible{outline:2px solid var(--color-iris);outline-offset:2px}
+.btn:active{transform:scale(.97)}
+.btn--filled{background:var(--color-ink);color:var(--color-snow)}
+.btn--filled:hover{filter:brightness(1.1)}
+.btn--ghost{background:transparent;color:var(--color-ink)}
+.btn--outlined{background:transparent;color:var(--color-iris);border:1.5px solid var(--color-iris)}
+.btn--outlined:hover{color:var(--color-amethyst);border-color:var(--color-amethyst)}
+.btn--navlogin{background:transparent;color:var(--color-ink);border:1px solid var(--color-paper)}
+.nav{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--bg);border-bottom:1px solid var(--border);height:64px;display:flex;align-items:center}
+.nav .container{display:flex;align-items:center;justify-content:space-between;width:100%}
+.nav-links{display:flex;align-items:center;gap:1rem}
+.nav-links a{padding:6px 14px;border-radius:var(--radius-pill);font-weight:500;font-size:var(--text-body);color:var(--color-ink)}
+.nav-links a:hover{background:var(--color-lavender-wash)}
+.nav-actions{display:flex;align-items:center;gap:.75rem}
+.theme-toggle{width:44px;height:44px;border-radius:var(--radius-pill);border:1px solid var(--border);background:var(--surface);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.menu-btn{display:none;width:44px;height:44px;border-radius:var(--radius-pill);border:1px solid var(--border);background:var(--surface);color:var(--text);align-items:center;justify-content:center;cursor:pointer}
+@media(max-width:768px){.nav-links{display:none}.menu-btn{display:flex}.nav-links.open{display:flex;flex-direction:column;position:absolute;top:64px;left:0;right:0;background:var(--surface);padding:1rem;border-bottom:1px solid var(--border)}}
+.hero{background:var(--color-dawn-viol);position:relative;overflow:hidden;min-height:100dvh;display:flex;align-items:center}
+.hero::before{content:'';position:absolute;inset:0;background:url('https://picsum.photos/seed/mountain-dawn/1600/900') center/cover;opacity:.4;mix-blend-mode:overlay}
+.hero-inner{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:center;padding:4rem 0}
+.hero h1{color:#fff;font-size:var(--text-display);font-weight:200;letter-spacing:var(--ls-display)}
+.hero p{color:rgba(255,255,255,.85);max-width:560px;font-weight:500}
+.hero-ctas{display:flex;gap:1rem;flex-wrap:wrap;margin-top:1.5rem}
+.hero .btn--filled{background:#fff;color:var(--color-ink)}
+.hero .btn--ghost{color:#fff;border:1px solid rgba(255,255,255,.6)}
+@media(max-width:768px){.hero-inner{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:28px;transition:var(--transition-normal)}
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
+@media(max-width:768px){.features-grid{grid-template-columns:1fr}}
+.feature-icon{color:var(--color-iris);font-size:32px;margin-bottom:1rem}
+.feature-card h3{font-size:var(--text-heading);font-weight:200;margin-bottom:.5rem}
+.feature-card p{font-size:var(--text-body)}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem}
+@media(max-width:768px){.steps{grid-template-columns:1fr}}
+.step-num{font-size:var(--text-display);font-weight:200;color:var(--color-iris);line-height:1}
+.testimonials-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.5rem}
+@media(max-width:768px){.testimonials-grid{grid-template-columns:1fr}}
+.quote{font-size:var(--text-body);font-style:italic;color:var(--text);margin-bottom:1rem}
+.author{font-weight:600;font-size:var(--text-body)}
+.role{font-size:var(--text-caption);color:var(--text-muted)}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;align-items:start}
+@media(max-width:768px){.pricing-grid{grid-template-columns:1fr}}
+.pricing-card.highlighted{background:var(--color-lavender-wash);border-color:var(--color-iris)}
+.price{font-size:var(--text-display);font-weight:200;margin:.5rem 0}
+.faq details{border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem 1.25rem;margin-bottom:1rem;background:var(--surface)}
+.faq summary{cursor:pointer;font-weight:500;color:var(--color-ink);list-style:none}
+.faq summary::-webkit-details-marker{display:none}
+.faq details p{margin-top:.75rem}
+.cta-band{background:var(--color-lavender-wash);text-align:center;padding:clamp(4rem,8vw,7rem) 0}
+.cta-band h2{margin-bottom:1rem}
+.footer{border-top:1px solid var(--border);padding:3rem 0 2rem}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:2rem}
+@media(max-width:768px){.footer-grid{grid-template-columns:1fr 1fr}}
+.footer a{display:block;color:var(--text-muted);font-size:var(--text-body);margin-bottom:.5rem}
+.footer a:hover{color:var(--color-iris)}
+.logo-cloud{display:grid;grid-template-columns:repeat(6,1fr);gap:1.25rem;opacity:.5;margin-top:2rem}
+@media(max-width:768px){.logo-cloud{grid-template-columns:repeat(3,1fr)}}
+.logo-cloud span{font-weight:600;font-size:var(--text-body);color:var(--color-ink);text-align:center}
+.floating{position:absolute;bottom:-2rem;right:2rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem;box-shadow:var(--shadow-floating);width:220px}
+@media(max-width:768px){.floating{display:none}}
+.pill-label{display:inline-block;background:var(--color-lavender-wash);color:var(--color-amethyst);font-size:10px;font-weight:500;padding:3px 10px;border-radius:var(--radius-pill);margin-bottom:1rem}
+.section-label{font-size:var(--text-caption);text-transform:uppercase;letter-spacing:.1em;color:var(--color-iris);font-weight:500;margin-bottom:.5rem}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+[hidden]{display:none!important}
+</style>
+<style id="pd-icon-fix">.material-symbols-rounded{font-family:'Material Symbols Rounded'!important;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;word-wrap:normal;direction:ltr;font-feature-settings:'liga';-webkit-font-feature-settings:'liga'}</style>
+</head>
+<body>
+<script>
+(function(){const t=localStorage.getItem('theme');const d=t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=d?'dark':'light';})();
+</script>
+<nav class="nav">
+<div class="container">
+<a href="#" style="font-weight:600;font-size:18px;color:var(--color-ink)">Nimbus</a>
+<div class="nav-links" id="nav-links">
+<a href="#features">Features</a><a href="#how">How it works</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a>
+</div>
+<div class="nav-actions">
+<button class="btn btn--navlogin" type="button">Log in</button>
+<button class="btn btn--filled" type="button">Start free</button>
+<button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode"><span class="material-symbols-rounded" id="theme-icon">dark_mode</span></button>
+<button class="menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="nav-links"><span class="material-symbols-rounded">menu</span></button>
+</div>
+</div>
+</nav>
+<section class="hero">
+<div class="container hero-inner">
+<div>
+<span class="pill-label">Incident response</span>
+<h1>Resolve incidents before they reach your users.</h1>
+<p>Nimbus turns noisy alerts into clear, actionable incidents. Route, assign, and resolve, all from one calm workspace.</p>
+<div class="hero-ctas">
+<button class="btn btn--filled" type="button">Start free trial</button>
+<button class="btn btn--ghost" type="button">Watch demo</button>
+</div>
+</div>
+<div style="position:relative">
+<div class="card floating">
+<div style="font-weight:600;margin-bottom:.5rem">INC-2041</div>
+<div style="font-size:12px;color:var(--text-muted)">API latency spike</div>
+<div style="margin-top:.75rem;display:flex;gap:.5rem"><span style="background:var(--color-lavender-wash);color:var(--color-amethyst);padding:2px 8px;border-radius:var(--radius-pill);font-size:10px">In progress</span></div>
+</div>
+</div>
+</div>
+<div class="container">
+<div class="logo-cloud">
+<span>Acme</span><span>Globex</span><span>Initech</span><span>Umbrella</span><span>Hooli</span><span>Stark</span>
+</div>
+</div>
+</section>
+<section id="features">
+<div class="container">
+<h2>Everything you need to stay calm under pressure.</h2>
+<p style="max-width:65ch;margin-bottom:2rem">Built for on-call engineers who value clarity over noise.</p>
+<div class="features-grid">
+<div class="card feature-card"><span class="material-symbols-rounded feature-icon">notifications_active</span><h3>Smart alerting</h3><p>Dedupe, group, and route alerts to the right responder in seconds.</p></div>
+<div class="card feature-card"><span class="material-symbols-rounded feature-icon">timeline</span><h3>Live timeline</h3><p>Every event, decision, and update captured in one shared thread.</p></div>
+<div class="card feature-card"><span class="material-symbols-rounded feature-icon">groups</span><h3>Team rituals</h3><p>Post-incident reviews that actually improve your systems.</p></div>
+</div>
+</div>
+</section>
+<section id="how">
+<div class="container">
+<h2>How it works</h2>
+<div class="steps">
+<div><div class="step-num">01</div><h3 style="margin:.5rem 0">Connect</h3><p>Plug in your monitoring tools in minutes.</p></div>
+<div><div class="step-num">02</div><h3 style="margin:.5rem 0">Route</h3><p>Nimbus assigns the right owner automatically.</p></div>
+<div><div class="step-num">03</div><h3 style="margin:.5rem 0">Resolve</h3><p>Track progress and close with a clear summary.</p></div>
+</div>
+</div>
+</section>
+<section id="testimonials">
+<div class="container">
+<h2>Loved by on-call teams</h2>
+<div class="testimonials-grid">
+<div class="card"><p class="quote">"Nimbus cut our mean time to resolve by half. The timeline alone is worth it."</p><div class="author">Maya Chen</div><div class="role">Engineering Lead, Northwind</div></div>
+<div class="card"><p class="quote">"Finally, alerts that don't wake the whole team. Routing is spot on."</p><div class="author">Jordan Reyes</div><div class="role">SRE Manager, Lumen</div></div>
+</div>
+</div>
+</section>
+<section id="pricing">
+<div class="container">
+<h2>Simple, honest pricing</h2>
+<div class="pricing-grid">
+<div class="card"><h3>Starter</h3><div class="price">$0</div><p>For small teams getting started.</p><button class="btn btn--outlined" style="margin-top:1rem" type="button">Get started</button></div>
+<div class="card highlighted"><h3>Pro</h3><div class="price">$29</div><p>For growing teams that need power.</p><button class="btn btn--filled" style="margin-top:1rem" type="button">Start free trial</button></div>
+<div class="card"><h3>Enterprise</h3><div class="price">Custom</div><p>For organizations with advanced needs.</p><button class="btn btn--outlined" style="margin-top:1rem" type="button">Contact sales</button></div>
+</div>
+</div>
+</section>
+<section id="faq" class="faq">
+<div class="container">
+<h2>Frequently asked questions</h2>
+<details><summary>How does Nimbus integrate with my tools?</summary><p>Connect via native integrations or webhooks in minutes.</p></details>
+<details><summary>Is there a free plan?</summary><p>Yes, Starter is free for small teams forever.</p></details>
+<details><summary>Can I export my data?</summary><p>Export all incidents and timelines as CSV or JSON anytime.</p></details>
+</div>
+</section>
+<section class="cta-band">
+<div class="container">
+<h2>Ready to bring calm to your on-call?</h2>
+<p style="margin-bottom:1.5rem">Start free. No credit card required.</p>
+<button class="btn btn--filled" type="button">Start free trial</button>
+</div>
+</section>
+<footer class="footer">
+<div class="container">
+<div class="footer-grid">
+<div><strong>Nimbus</strong><p style="margin-top:.5rem">Calm incident response for modern teams.</p></div>
+<div><a href="#">Product</a><a href="#">Pricing</a><a href="#">Docs</a></div>
+<div><a href="#">Company</a><a href="#">About</a><a href="#">Careers</a></div>
+<div><a href="#">Legal</a><a href="#">Privacy</a><a href="#">Terms</a></div>
+</div>
+<p style="margin-top:2rem;font-size:var(--text-caption);color:var(--text-muted)">© 2026 Nimbus. All rights reserved.</p>
+</div>
+</footer>
+<script>
+(function(){
+const btn=document.getElementById('theme-toggle');
+const icon=document.getElementById('theme-icon');
+function apply(t){
+document.documentElement.dataset.theme=t;
+const dark=t==='dark';
+btn.setAttribute('aria-pressed',String(dark));
+btn.setAttribute('aria-label',dark?'Switch to light mode':'Switch to dark mode');
+icon.textContent=dark?'light_mode':'dark_mode';
+}
+apply(document.documentElement.dataset.theme);
+btn.addEventListener('click',function(){const next=document.documentElement.dataset.theme==='dark'?'light':'dark';localStorage.setItem('theme',next);apply(next);});
+const menu=document.getElementById('menu-btn');
+const links=document.getElementById('nav-links');
+menu.addEventListener('click',function(){const o=links.classList.toggle('open');menu.setAttribute('aria-expanded',String(o));});
+links.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){links.classList.remove('open');menu.setAttribute('aria-expanded','false');});});
+})();
+</script>
+</body>
+</html>

@@ -47,7 +47,7 @@ for (const [id, meta] of Object.entries(cats)) {
   if (hasThumb) fs.copyFileSync(thumbPath, path.join(OUT_DIR, 'thumbs', `${id}.jpg`));
 }
 
-index.sort((a, b) => a.id.localeCompare(b.id));
+index.sort((a, b) => a.id.localeCompare(b.id, 'en', { numeric: true }));
 const categories = [...categoriesSet].sort();
 
 fs.writeFileSync(

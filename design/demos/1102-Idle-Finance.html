@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nimbus - Idle Finance-inspired DeFi Terminal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Source+Sans+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<script>
+(function(){var t=localStorage.getItem('theme');if(t!=='dark'&&t!=='light'){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}document.documentElement.dataset.theme=t;})();
+</script>
+<style>
+:root{
+ --primary:#6ae4ff;
+ --secondary:#34edb3;
+ --bg-primary:#17202e;
+ --bg-secondary:#202a3e;
+ --text-primary:#ffffff;
+ --text-secondary:#cdd0d6;
+ --text-success:#34edb3;
+ --text-error:#ff6b6b;
+ --border-default:#000000;
+ --border-error:#ff6b6b;
+ --border-success:#34edb3;
+ --color-horizon-glow:radial-gradient(circle, rgb(8,33,143) 40%, rgb(41,138,203) 100%);
+ --color-yield-gradient:linear-gradient(73.6deg, rgb(52,237,179) 2.11%, rgb(0,209,255));
+ --radius-sm:4px;
+ --radius-md:8px;
+ --radius-lg:15px;
+ --radius-pill:80px;
+ --spacing-gap:16px;
+ --transition-fast:150ms ease;
+ --transition-normal:250ms ease;
+ --ease-standard:cubic-bezier(.4,0,.2,1);
+ --z-dropdown:100;
+ --z-modal:200;
+ --z-toast:300;
+ --font-base:'Open Sans',sans-serif;
+ --font-mono:'Source Sans Pro',sans-serif;
+}
+:root[data-theme="dark"]{ }
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+.container{max-width:1200px;margin:0 auto;padding:0 2rem}
+@media(max-width:768px){.container{padding:0 1.25rem}}
+section{padding:clamp(4rem,8vw,7rem) 0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:12px 20px;border-radius:var(--radius-pill);font-family:var(--font-base);font-size:14px;font-weight:600;cursor:pointer;border:none;transition:var(--transition-normal)}
+.btn-primary{background:#ffffff;color:#000000}
+.btn-primary:hover{filter:brightness(.92)}
+.btn-ghost{background:transparent;color:var(--primary);border:1px solid var(--primary);border-radius:var(--radius-md)}
+.btn:active{transform:scale(.97)}
+.btn:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.nav{position:sticky;top:0;z-index:var(--z-dropdown);display:flex;align-items:center;justify-content:space-between;height:72px;padding:0 2rem;backdrop-filter:blur(8px);background:rgba(23,32,46,.7)}
+.nav-links{display:flex;gap:2rem;align-items:center}
+.nav-links a{font-size:14px;color:var(--text-primary)}
+@media(max-width:768px){.nav-links{display:none}.nav-links.open{display:flex;flex-direction:column;position:absolute;top:72px;left:0;right:0;background:var(--bg-primary);padding:1rem 2rem;gap:1rem}.menu-btn{display:inline-flex}}
+.menu-btn{display:none;align-items:center;justify-content:center;min-width:44px;min-height:44px;background:transparent;border:1px solid var(--border-default);color:var(--text-primary);border-radius:var(--radius-md);cursor:pointer}
+.theme-toggle{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;background:transparent;border:1px solid var(--border-default);color:var(--text-primary);border-radius:var(--radius-md);cursor:pointer}
+.hero{position:relative;overflow:hidden;background:var(--bg-primary)}
+.hero::before{content:'';position:absolute;inset:0;background:var(--color-horizon-glow);opacity:.35;pointer-events:none}
+.hero-inner{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:center}
+@media(max-width:768px){.hero-inner{grid-template-columns:1fr}}
+.hero h1{font-size:clamp(2.25rem,5vw,4rem);font-weight:700;letter-spacing:-.036em;line-height:1.1}
+.hero h1 span{color:var(--primary)}
+.hero p{color:var(--text-secondary);max-width:65ch;margin-top:1rem}
+.hero-ctas{display:flex;gap:1rem;margin-top:1.5rem;flex-wrap:wrap}
+.yield-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:2rem}
+@media(max-width:768px){.yield-row{grid-template-columns:1fr}}
+.yield-card{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:24px;display:flex;flex-direction:column;gap:1rem}
+.yield-card .apy{font-size:36px;font-weight:700}
+.yield-card .tvl{display:inline-block;padding:4px 12px;border-radius:var(--radius-pill);background:var(--bg-primary);font-family:var(--font-mono);font-size:12px}
+.features{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+@media(max-width:768px){.features{grid-template-columns:1fr}}
+.card{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:24px}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+@media(max-width:768px){.steps{grid-template-columns:1fr}}
+.testimonials{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem}
+@media(max-width:768px){.testimonials{grid-template-columns:1fr}}
+.pricing{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+@media(max-width:768px){.pricing{grid-template-columns:1fr}}
+.pricing .highlight{border-color:var(--primary)}
+.faq details{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:1rem;margin-bottom:1rem}
+.footer{background:var(--bg-secondary);padding:2rem 0}
+.footer-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
+@media(max-width:768px){.footer-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.footer-grid{grid-template-columns:1fr}}
+.reveal{opacity:0;transform:translateY(12px);transition:opacity .4s ease,transform .4s ease}
+.reveal.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:opacity .2s ease}}
+</style>
+<style id="pd-icon-fix">.material-symbols-rounded{font-family:'Material Symbols Rounded'!important;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;word-wrap:normal;direction:ltr;font-feature-settings:'liga';-webkit-font-feature-settings:'liga'}</style>
+</head>
+<body>
+<nav class="nav">
+  <div style="display:flex;align-items:center;gap:.5rem"><span class="material-symbols-rounded">bolt</span><strong>Nimbus</strong></div>
+  <div class="nav-links" id="navLinks">
+    <a href="#features">Features</a>
+    <a href="#how">How it works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#faq">FAQ</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:.5rem">
+    <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="navLinks">Menu</button>
+    <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode"><span class="material-symbols-rounded" id="themeIcon">dark_mode</span></button>
+    <a class="btn btn-primary" href="#cta">Start earning</a>
+  </div>
+</nav>
+<section class="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <div>
+        <h1>Put idle <span>capital</span> to work</h1>
+        <p>Nimbus routes your stablecoins across vetted yield markets in real time, so your treasury never sleeps.</p>
+        <div class="hero-ctas">
+          <a class="btn btn-primary" href="#cta">Start earning</a>
+          <a class="btn btn-ghost" href="#how">See how it works</a>
+        </div>
+      </div>
+      <div class="yield-row">
+        <div class="yield-card"><div>USDC Vault</div><div class="apy">8.4%</div><span class="tvl">TVL $42.1M</span></div>
+        <div class="yield-card"><div>ETH Lend</div><div class="apy">5.2%</div><span class="tvl">TVL $18.7M</span></div>
+        <div class="yield-card"><div>BTC Earn</div><div class="apy">4.1%</div><span class="tvl">TVL $9.3M</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+<section id="features">
+  <div class="container">
+    <h2>Features</h2>
+    <div class="features">
+      <div class="card"><h3>Auto-routing</h3><p>Capital moves to the best rate automatically.</p></div>
+      <div class="card"><h3>Risk filters</h3><p>Only audited protocols make the cut.</p></div>
+      <div class="card"><h3>Live dashboard</h3><p>Track yield, TVL and positions in real time.</p></div>
+    </div>
+  </div>
+</section>
+<section id="how">
+  <div class="container">
+    <h2>How it works</h2>
+    <div class="steps">
+      <div class="card"><span class="material-symbols-rounded">account_balance_wallet</span><h3>Deposit</h3><p>Connect a wallet and fund your vault.</p></div>
+      <div class="card"><span class="material-symbols-rounded">swap_horiz</span><h3>Route</h3><p>Nimbus allocates across markets.</p></div>
+      <div class="card"><span class="material-symbols-rounded">trending_up</span><h3>Earn</h3><p>Yield accrues and compounds.</p></div>
+    </div>
+  </div>
+</section>
+<section>
+  <div class="container">
+    <h2>What teams say</h2>
+    <div class="testimonials">
+      <div class="card"><p>"Nimbus took our idle treasury from zero to productive in a day."</p><strong>Maya Chen</strong><span style="color:var(--text-secondary)">CFO, Lumen Labs</span></div>
+      <div class="card"><p>"The dashboard is the cleanest DeFi tool we have used."</p><strong>Diego Rivas</strong><span style="color:var(--text-secondary)">Founder, Arcadia</span></div>
+    </div>
+  </div>
+</section>
+<section id="pricing">
+  <div class="container">
+    <h2>Pricing</h2>
+    <div class="pricing">
+      <div class="card"><h3>Starter</h3><p>$0/mo</p><ul><li>1 vault</li><li>Basic routing</li></ul><a class="btn btn-ghost" href="#cta">Start</a></div>
+      <div class="card highlight"><h3>Pro</h3><p>$49/mo</p><ul><li>Unlimited vaults</li><li>Advanced routing</li></ul><a class="btn btn-primary" href="#cta">Start</a></div>
+      <div class="card"><h3>Enterprise</h3><p>Custom</p><ul><li>SLA</li><li>Dedicated support</li></ul><a class="btn btn-ghost" href="#cta">Contact</a></div>
+    </div>
+  </div>
+</section>
+<section id="faq">
+  <div class="container">
+    <h2>FAQ</h2>
+    <details><summary>Is my capital safe?</summary><p>Only audited protocols are used.</p></details>
+    <details><summary>How are fees charged?</summary><p>A small performance fee on yield.</p></details>
+    <details><summary>Can I withdraw anytime?</summary><p>Yes, withdrawals are instant.</p></details>
+  </div>
+</section>
+<section id="cta">
+  <div class="container" style="text-align:center">
+    <h2>Ready to earn?</h2>
+    <a class="btn btn-primary" href="#">Start earning</a>
+  </div>
+</section>
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div><strong>Nimbus</strong></div>
+      <div><a href="#">Docs</a></div>
+      <div><a href="#">Security</a></div>
+      <div><a href="#">Terms</a></div>
+    </div>
+    <p style="margin-top:1rem;color:var(--text-secondary)">Copyright 2026 Nimbus</p>
+  </div>
+</footer>
+<script>
+(function(){
+ var btn=document.getElementById('theme-toggle');
+ var icon=document.getElementById('themeIcon');
+ function sync(){
+  var d=document.documentElement.dataset.theme==='dark';
+  btn.setAttribute('aria-pressed',String(d));
+  btn.setAttribute('aria-label',d?'Switch to light mode':'Switch to dark mode');
+  icon.textContent=d?'light_mode':'dark_mode';
+ }
+ sync();
+ btn.addEventListener('click',function(){
+  var d=document.documentElement.dataset.theme!=='dark';
+  document.documentElement.dataset.theme=d?'dark':'light';
+  localStorage.setItem('theme',d?'dark':'light');
+  sync();
+ });
+ var m=document.getElementById('menuBtn');
+ var nl=document.getElementById('navLinks');
+ m.addEventListener('click',function(){nl.classList.toggle('open');m.setAttribute('aria-expanded',String(nl.classList.contains('open')));});
+ nl.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){nl.classList.remove('open');m.setAttribute('aria-expanded','false');});});
+ var io=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting)e.target.classList.add('in');});},{threshold:.1});
+ document.querySelectorAll('.reveal').forEach(function(el){io.observe(el);});
+})();
+</script>
+</body>
+</html>

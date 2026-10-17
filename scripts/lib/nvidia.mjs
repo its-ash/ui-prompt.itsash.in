@@ -4,17 +4,20 @@ import { Agent, fetch } from 'undici';
 // NVIDIA can queue long prompts for minutes before sending headers; Node's default 300s headers timeout aborted those as 'fetch failed'.
 const dispatcher = new Agent({ headersTimeout: 0, bodyTimeout: 600000, connectTimeout: 30000 });
 
-const NVIDIA_URL = 'https://integrate.api.nvidia.com/v1/chat/completions';
-export const NVIDIA_KEY = process.env.NVIDIA_API_KEY ?? '';
-export const MODELS = (process.env.NVIDIA_MODELS ?? 'nvidia/nemotron-3-super-120b-a12b,openai/gpt-oss-20b')
+// LLM_URL/LLM_KEY/LLM_MODELS point every script at any OpenAI-compatible router; NVIDIA is the fallback.
+const NVIDIA_URL = `${(process.env.LLM_URL ?? 'https://integrate.api.nvidia.com/v1').replace(/\/+$/, '')}/chat/completions`;
+export const NVIDIA_KEY = process.env.LLM_KEY ?? process.env.NVIDIA_API_KEY ?? '';
+export const MODELS = (process.env.LLM_MODELS ?? process.env.NVIDIA_MODELS ?? 'nvidia/nemotron-3-super-120b-a12b,openai/gpt-oss-20b')
   .split(',')
   .map((m) => m.trim())
   .filter(Boolean);
+// Router models think until the 300s gateway cut-off; LLM_REASONING=none makes them answer directly.
+const REASONING = process.env.LLM_REASONING ? { reasoning_effort: process.env.LLM_REASONING } : {};
 const TIMEOUT_MS = Number(process.env.DEMO_TIMEOUT_MS ?? 1500000);
 
 export function requireKey(tag) {
   if (NVIDIA_KEY) return;
-  console.error(`[${tag}] NVIDIA_API_KEY is not set (add it to .env)`);
+  console.error(`[${tag}] LLM_KEY or NVIDIA_API_KEY is not set (add it to .env)`);
   process.exit(1);
 }
 
@@ -31,6 +34,7 @@ async function callNvidia(system, model, userPrompt, maxTokens, timeoutMs = TIME
       ],
       max_tokens: maxTokens,
       temperature: 0.5,
+      ...REASONING,
       stream: true,
     }),
     signal: AbortSignal.timeout(timeoutMs),
@@ -54,12 +58,12 @@ async function callNvidia(system, model, userPrompt, maxTokens, timeoutMs = TIME
   return out.trim();
 }
 
-export async function callModel(system, userPrompt, accept = looksLikeHtml, maxTokens = 16000, models = MODELS, timeoutMs = TIMEOUT_MS) {
+export async function callModel(system, userPrompt, accept = looksLikeHtml, maxTokens = 16000, models = MODELS, timeoutMs = TIMEOUT_MS, clean = cleanHtml) {
   let lastErr;
   for (let attempt = 1; attempt <= 6; attempt++) {
     const model = models[(attempt - 1) % models.length];
     try {
-      const out = cleanHtml(await callNvidia(system, model, userPrompt, maxTokens, timeoutMs));
+      const out = clean(await callNvidia(system, model, userPrompt, maxTokens, timeoutMs));
       if (accept(out)) return out;
       throw new Error(`${model} weak output (len ${out.length})`);
     } catch (err) {

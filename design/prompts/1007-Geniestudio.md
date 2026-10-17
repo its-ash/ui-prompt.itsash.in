@@ -1,0 +1,174 @@
+# Coding AI Prompt — Geniestudio-Inspired Landing Page (Fictional Brand)
+
+## 1. Project Overview & Brand Fictionalization
+
+Build a complete, responsive landing page for a **fictional brand and product** invented by you (e.g., a SaaS tool, creative platform, or productivity app). **Never use the real brand name "Geniestudio," its logo, trademarks, or product names anywhere in the markup, copy, or assets.** All user-facing copy must be written in English. Invent realistic, on-brand headlines, subheads, feature descriptions, testimonials, pricing tier names, FAQ questions, and footer links. Placeholders are permitted only where content is genuinely unspecified.
+
+Deliverables: separate `index.html`, `style.css`, and `script.js` files. No inline `<script>` blocks beyond a single deferred entry-point reference. No inline `style="..."` attributes anywhere in the HTML.
+
+## 2. CSS-First Architecture & Zero Inline CSS
+
+- All styling lives strictly inside `style.css`. No inline CSS in HTML.
+- Target all design properties, layout rules, and states via class or ID selectors only.
+- HTML must remain clean, semantic, and agnostic of visual styling so the look can change by editing CSS alone.
+- Enforce one consistent class-naming convention (BEM) across the entire deliverable — never mix conventions.
+
+## 3. CSS Variables & Theme Tokens
+
+Store all visual tokens in `:root` (and theme classes) using CSS variables. Include every token below.
+
+**Colors:**
+`--color-sky-tint: #ebf5ff;`
+`--color-paper-white: #ffffff;`
+`--color-bone-white: #fafdff;`
+`--color-mist-gray: #f6f7f8;`
+`--color-ink: #0a0d12;`
+`--color-charcoal: #181d27;`
+`--color-graphite: #535862;`
+`--color-fog: #93979f;`
+`--color-slate-shadow: #3b3d41;`
+`--color-iris-blue: linear-gradient(rgb(71, 157, 255) 11.43%, rgb(0, 105, 224) 78.2%);`
+`--color-sky-blue: #0099ff;`
+`--color-lavender-wash: #f1e6ff;`
+`--color-mint-wash: #d3f6e3;`
+`--color-powder-blue: #cce7ff;`
+`--color-solar-gradient: linear-gradient(rgb(255, 249, 224) 0%, rgb(255, 236, 163) 100%);`
+`--color-violet-gradient: linear-gradient(rgb(244, 235, 255) 0%, rgb(228, 204, 255) 100%);`
+`--color-aqua-gradient: linear-gradient(rgb(229, 246, 255) 0%, rgb(194, 233, 255) 100%);`
+`--color-peach-gradient: linear-gradient(rgb(255, 242, 235) 0%, rgb(255, 209, 184) 100%);`
+
+Also map these to the required generic tokens: `--primary`, `--secondary`, `--bg-primary`, `--bg-secondary`, `--text-primary`, `--text-secondary`, `--text-success`, `--text-error`, `--border-default`, `--border-error`, `--border-success`.
+
+**Contrast pairing rule:** Light backgrounds pair with dark text; dark backgrounds pair with light text — enforce for every theme, not just default.
+
+**Light mode background:** Do not default to pure white. Use `#ebf5ff` (sky tint) as the page canvas. Where a white/near-white is needed, use `#fafdff` (bone white) for cards and `#ffffff` only for elevated overlays/modals.
+
+**Typography tokens:**
+`--font-aeonik` — Google Font substitute: Inter (weight 500 only). Bind display/headings to this.
+`--font-geist` — Google Font substitute: Inter (weights 500, 600). Bind body/UI to this.
+`--font-base` must be set.
+
+Type scale tokens: `--text-caption` (10px), `--text-body-sm` (14px), `--text-body` (16px), `--text-body-lg` (18px), `--text-subheading` (20px), `--text-heading-sm` (24px), `--text-heading` (32px), `--text-heading-lg` (48px), `--text-display` (72px), `--text-hero` (148px). Each with matching line-height and letter-spacing per spec.
+
+**Shapes & spacing:**
+`--radius-sm: 16px;` `--radius-md: 24px;` `--radius-lg: 32px;` `--radius-pill: 9999px;`
+`--shadow-sm`, `--shadow-md`, `--shadow-lg: rgba(4, 69, 144, 0.08) 0px 14px 20px 4px;`
+`--shadow-subtle: rgba(10, 13, 18, 0.8) 0px 1px 2px 0px, 0 0 0 1px #0a0d12;`
+Spacing tokens: `--spacing-8` through `--spacing-160` per the 8px base scale.
+`--spacing-gap`, `--transition-fast`, `--transition-normal`, `--ease-standard`.
+Elevation/stacking: `--z-dropdown`, `--z-modal`, `--z-toast`.
+
+## 4. Mandatory Dark Mode
+
+- Provide dark mode color tokens under `@media (prefers-color-scheme: dark)` and a `.dark` class selector.
+- Background and text CSS variables must switch seamlessly without HTML restructuring.
+- Persist user theme choice via `localStorage`, falling back to `prefers-color-scheme` on first visit.
+- Include a visible toggle control with correct `aria-pressed`/`aria-label` state.
+
+## 5. Flexbox Layout & Mobile-First
+
+- Build all layout structures with Flexbox (`display: flex`).
+- Every flex container must default to `align-items: center` unless an explicitly justified exception exists.
+- All flex layouts must be mobile-responsive out of the box (rows → columns on small viewports). Prevent horizontal scrolling.
+
+## 6. Framework & Tailwind
+
+Use Tailwind CSS (or clean custom CSS driven by Tailwind's `@layer` / `@apply`) unless another framework is requested. All utility classes must map back to CSS variables or generic reusable class names (`.btn`, `.card`, `.input-group`).
+
+## 7. Typography & Icons
+
+- Use Google Fonts for text: Inter (substitute for Aeonik and Geist). Include `<link>` or `@import` tags and bind to `--font-base`.
+- Use Google Material Symbols/Icons for all icons. Forbid raw inline SVGs or local icon files.
+
+## 8. Component Specifications
+
+### Button
+- Default: Flex layout (`display: flex; align-items: center; justify-content: center; gap: 0.5rem;`). Minimum touch target 44x44px.
+- Hover: Visual shift (brightness/shadow) with `cursor: pointer`.
+- Focus: Distinct focus ring using CSS variables.
+- Active/Pressed: `transform: scale(0.97)`.
+- Loading: Disables interactions, prevents double-clicks, renders CSS spinner or animated Google Icon without distorting dimensions.
+- Disabled: `opacity: 0.5`, greyscale, `cursor: not-allowed`.
+- Success/Error: Temporary feedback styles driven by `--text-success` / `--text-error`.
+
+Primary CTA: `#181d27` background, `#ffffff` text, 32px radius (or 9999px pill), 12px 32px padding, Geist 16px weight 500, letter-spacing -0.01em, tight shadow ring (`0 1px 2px rgba(10,13,18,0.8), 0 0 0 1px #0a0d12`). Secondary CTA: same fill, 16px radius, 8px 16px padding, Geist 14px weight 500.
+
+### Card
+- Default: Flexible Flexbox, subtle borders, elevation via `--bg-secondary` and CSS variables.
+- Hover: Elevation/shadow shift or `transform: translateY(-2px)`.
+- Focus-within: Highlights card borders when child link/button receives focus.
+- Loading (Skeleton): Shimmer animation in CSS to prevent layout jumps.
+- Empty State: Structured fallback with Google Icon and guidance text.
+
+Feature Card: `#fafdff` background, 32px radius, 40px padding all sides, no border, no shadow. Pastel Category Tile: solid pastel background (`#f1e6ff`, `#d3f6e3`, `#cce7ff`, `#fff2be`), 32px radius, 40px padding, no border. Testimonial Card: `#fafdff`, 32px radius, 40px padding, pull-quote Geist 18px `#535862`, divider, then avatar + name (Geist 16px weight 500 `#0a0d12`) + role (Geist 14px `#93979f`) and brand logo right. Cards bleed off viewport edges in continuous horizontal marquee.
+
+### Form & Input
+- States: Empty, Focused (outline ring), Filled, Valid (success border/icon), Invalid (error border, red text, error icon), Disabled, Read-only.
+- Structure: Flex container wrapping label, input field, dedicated error feedback container.
+
+### Modal / Popup
+- States: Opening, Open, Loading, Success/Error, Closing — all animated via CSS transitions.
+- UX: Centered flex container (`align-items: center`), backdrop overlay, Google Icon close button, keyboard focus trapping, close via `Esc` or overlay click.
+
+## 9. Core UX & Micro-Interactions
+
+- Responsive by default: fluid sizing, responsive breakpoints, no horizontal overflow.
+- Smooth animations: CSS transitions on all state changes (`transition: var(--transition-normal)`), respecting `prefers-reduced-motion`.
+- Accessibility: sufficient contrast in both light and dark modes; never rely solely on color for state. Semantic HTML5, correct ARIA roles/labels, logical DOM/focus order, full keyboard operability, `aria-live` regions for dynamic feedback.
+- Mandatory visual feedback on every click, hover, or submission.
+- Destructive actions (`.btn-danger`) visually distinct in both themes.
+
+## 10. Style-Specific Rules (Geniestudio-Inspired)
+
+**Do:**
+- Weight 500 (not 600/700) for all display and heading type — mid-weight, never bold.
+- 32px border-radius on all content cards; 9999px on all interactive pills/tags.
+- Page canvas `#ebf5ff`, card surfaces `#fafdff` — pale blue-to-bone-white shift is the primary depth mechanism.
+- Dark fill `#181d27` for all filled buttons; reserve `#0069e0` for accent borders and inline highlight text only.
+- Heading tracking -0.02em, body tracking -0.01em; never default or positive letter-spacing.
+- Let 3D illustrations float in canvas without cards/borders/backgrounds — they are brand voice, not decoration.
+- Iris gradient (`71,157,255 → 0,105,224`) only for thin 3px accent borders (hero gradient banner); never as button fill or large surface.
+
+**Don't:**
+- No bold weights (600+) for display headlines — Aeonik 500 is the ceiling.
+- No 90° sharp corners — minimum 16px, default 32px, pill 9999px.
+- No saturated blue (`#0069e0`) as button fill — outline/accent only.
+- No box-shadows on content cards — depth comes from canvas/surface color shift.
+- No body-weight black (`#000000`) for text — use `#0a0d12`.
+- No more than two pastel washes per section.
+- No display type below 48px or display sizes for body content.
+
+**Motion:** Marquee scrolls continuous for logo strips and testimonial walls. FAQ accordions use `grid-template-rows` transition at 0.65s ease. Scroll-triggered reveals use `cubic-bezier(0.16, 1, 0.3, 1)`. Marquee uses custom `linear()` timing function for organic scroll. Durations 0.3–0.65s.
+
+**Layout:** Max-width 1200px centered. Hero is centered text+illustration stack: 148px headline above a single 3D render, one dark CTA below — no left/right split. Sections alternate between centered single-column editorial stacks and full-bleed horizontal bands (marquee strips, category tile rows). Cards in 3-column grids for features; continuous horizontal marquee for testimonials. Vertical section gaps 80–120px; element gaps 24–40px. Nav: logo left, two text links center, single filled CTA right, single row. Footer: wide centered CTA block + 4-column link grid.
+
+**Imagery:** 3D-rendered illustrations — soft, rounded, dimensional, pastel-colored objects (lavender, mint, peach, powder blue) with one vivid iris-blue accent per scene. Float in canvas as isolated subjects, no background, no shadow plate, no lifestyle staging. Playful, toy-like, clay-render style. No photography, no product screenshots, no abstract patterns. Use placeholder image elements (e.g., colored rounded divs or `https://placehold.co` URLs) styled to suggest these illustrations.
+
+## 11. Required Page Sections
+
+Build all of the following sections in order:
+
+1. **Hero** — centered Aeonik 148px weight 500 headline in `#0a0d12` with -2.96px tracking, a single 3D-rendered illustration floating below on transparent background, one filled CTA button (`#181d27`, `#ffffff` text, 32px radius, 12px 32px padding, Geist 16px weight 500). Include a ghost nav link row above.
+2. **Features** — 3 feature cards in a grid: `#fafdff` background, 32px radius, 40px padding, Aeonik 48px weight 500 title in `#0a0d12` with -0.96px tracking, Geist 18px body in `#535862`. No border, no shadow.
+3. **How It Works** — 3 steps, each with a numbered indicator, heading, and description. Centered editorial stack.
+4. **Testimonials** — testimonial cards in a continuous horizontal marquee: `#fafdff`, 32px radius, 40px padding, Geist 18px quote in `#535862`, Geist 16px name in `#0a0d12`, Geist 14px role in `#93979f`, brand logo at right.
+5. **Pricing** — 3 tiers with card layout, price, feature list, CTA button. Middle tier visually emphasized.
+6. **FAQ** — accordion rows: `#fafdff`, 32px radius, 40px padding. Question Geist 18–20px weight 500 `#0a0d12`, answer Geist 16px `#93979f`. Animated open/close via `grid-template-rows` transition at 0.65s ease.
+7. **Final CTA** — wide centered CTA block with headline and dark filled button.
+8. **Footer** — 4-column link grid + secondary links.
+
+## 12. Deliverable Checklist
+
+- [ ] `index.html`, `style.css`, `script.js` as separate files.
+- [ ] BEM class naming throughout.
+- [ ] All tokens in `:root`.
+- [ ] Dark mode via media query + `.dark` class + localStorage persistence + toggle.
+- [ ] Google Fonts (Inter) + Google Material Symbols loaded.
+- [ ] Flexbox with `align-items: center` default.
+- [ ] Mobile-responsive, no horizontal scroll.
+- [ ] All component states implemented (button, card, form, modal where applicable).
+- [ ] `prefers-reduced-motion` respected.
+- [ ] ARIA labels, semantic HTML, keyboard operability.
+- [ ] Fictional brand name and copy only — no real brand references.
+
+Output only the three files' contents as requested. No preamble, no closing commentary.

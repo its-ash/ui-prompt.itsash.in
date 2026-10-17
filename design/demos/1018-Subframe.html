@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Framecraft - Design workbench for product teams</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<script>
+(function(){var t=localStorage.getItem('theme');if(t!=='dark'&&t!=='light'){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}document.documentElement.dataset.theme=t;})();
+</script>
+<style>
+:root{
+--color-page-canvas:#fafafa;
+--color-hairline-border:#e5e7eb;
+--color-card-surface:#ededed;
+--color-divider-mid:#dadada;
+--color-graphite:#242424;
+--color-ink-black:#171717;
+--color-pencil:#5c5c5c;
+--color-faint-graphite:#a3a3a3;
+--primary:var(--color-graphite);
+--secondary:var(--color-card-surface);
+--bg-primary:var(--color-page-canvas);
+--bg-secondary:var(--color-card-surface);
+--text-primary:var(--color-ink-black);
+--text-secondary:var(--color-pencil);
+--text-success:#171717;
+--text-error:#171717;
+--border-default:var(--color-hairline-border);
+--border-error:var(--color-ink-black);
+--border-success:var(--color-ink-black);
+--radius-sm:16px;
+--radius-md:24px;
+--radius-lg:9999px;
+--shadow-sm:inset 0 4px 4px -2px rgba(255,255,255,0.25),inset 0 -4px 4px -2px rgba(0,0,0,0.25),inset -2px 0 2px -2px rgba(255,255,255,0.1);
+--spacing-gap:8px;
+--spacing-8:8px;--spacing-16:16px;--spacing-24:24px;--spacing-32:32px;--spacing-48:48px;--spacing-64:64px;--spacing-96:96px;--spacing-128:128px;--spacing-192:192px;
+--transition-fast:150ms ease;--transition-normal:250ms ease;--ease-standard:cubic-bezier(0.4,0,0.2,1);
+--z-dropdown:1000;--z-modal:2000;--z-toast:3000;
+--font-inter:'Inter',sans-serif;
+--font-instrument-serif:'Instrument Serif',serif;
+--font-fragment-mono:'JetBrains Mono',monospace;
+--font-ui-monospace:'SF Mono',Menlo,monospace;
+--text-caption:12px;--text-body-sm:14px;--text-body:18px;--text-subheading:24px;--text-heading-sm:28px;--text-heading:48px;--text-display:96px;
+}
+:root[data-theme="dark"]{
+--color-page-canvas:#171717;
+--color-hairline-border:#2a2a2a;
+--color-card-surface:#242424;
+--color-divider-mid:#2a2a2a;
+--color-graphite:#fafafa;
+--color-ink-black:#fafafa;
+--color-pencil:#a3a3a3;
+--color-faint-graphite:#5c5c5c;
+--primary:var(--color-graphite);
+--secondary:var(--color-card-surface);
+--bg-primary:var(--color-page-canvas);
+--bg-secondary:var(--color-card-surface);
+--text-primary:var(--color-ink-black);
+--text-secondary:var(--color-pencil);
+--border-default:var(--color-hairline-border);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--font-inter);font-weight:500;font-size:var(--text-body);line-height:1.6;color:var(--text-primary);background:var(--bg-primary);-webkit-font-smoothing:antialiased;}
+img{max-width:100%;display:block;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;}
+.container{max-width:1200px;margin:0 auto;padding:0 2rem;}
+section{padding:var(--spacing-64) 0;}
+@media(max-width:768px){section{padding:var(--spacing-48) 0;} .container{padding:0 1.25rem;}}
+/* Nav */
+.nav{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--bg-primary);padding:var(--spacing-16) 0;}
+.nav__inner{display:flex;align-items:center;justify-content:space-between;gap:var(--spacing-16);}
+.nav__logo{font-family:var(--font-inter);font-weight:700;font-size:18px;letter-spacing:-0.025em;}
+.nav__links{display:flex;align-items:center;gap:var(--spacing-32);}
+.nav__link{font-size:14px;font-weight:500;color:var(--color-faint-graphite);transition:color var(--transition-fast);}
+.nav__link:hover{color:var(--color-ink-black);}
+.nav__actions{display:flex;align-items:center;gap:var(--spacing-16);}
+.nav__login{font-size:14px;font-weight:500;color:var(--color-faint-graphite);}
+.nav__login:hover{color:var(--color-ink-black);}
+.nav__toggle{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-sm);color:var(--text-primary);transition:background var(--transition-fast);}
+.nav__toggle:hover{background:var(--bg-secondary);}
+.nav__menu-btn{display:none;width:44px;height:44px;align-items:center;justify-content:center;border-radius:var(--radius-sm);}
+@media(max-width:768px){
+.nav__links{display:none;flex-direction:column;position:absolute;top:100%;left:0;right:0;background:var(--bg-primary);padding:var(--spacing-16) 2rem;border-bottom:1px solid var(--border-default);}
+.nav__links.is-open{display:flex;}
+.nav__menu-btn{display:flex;}
+}
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;min-height:44px;padding:8px 20px;border-radius:var(--radius-sm);font-size:14px;font-weight:500;transition:all var(--transition-fast);cursor:pointer;}
+.btn--filled{background:var(--color-graphite);color:var(--color-page-canvas);box-shadow:var(--shadow-sm);}
+.btn--filled:hover{filter:brightness(1.1);}
+.btn--ghost{background:transparent;border:1px solid var(--border-default);color:var(--text-primary);}
+.btn--ghost:hover{background:var(--bg-secondary);}
+.btn:active{transform:scale(0.97);}
+.btn:focus-visible{outline:2px solid var(--text-primary);outline-offset:2px;}
+.btn:disabled{opacity:0.5;filter:grayscale(1);cursor:not-allowed;}
+/* Pill */
+.pill{display:inline-flex;align-items:center;background:var(--color-graphite);color:var(--color-page-canvas);border-radius:var(--radius-lg);padding:8px 16px;font-size:14px;font-weight:500;gap:var(--spacing-8);}
+.pill__seg{padding:4px 12px;border-radius:var(--radius-lg);}
+.pill__seg--active{background:var(--color-page-canvas);color:var(--color-graphite);}
+/* Hero */
+.hero{text-align:center;padding:var(--spacing-96) 0 var(--spacing-64);}
+.hero__headline{font-size:var(--text-display);font-weight:700;line-height:1.0;letter-spacing:-0.05em;margin-bottom:var(--spacing-16);}
+.hero__serif{font-family:var(--font-instrument-serif);font-weight:400;font-size:96px;line-height:1.0;letter-spacing:-0.025em;display:inline;}
+.hero__sub{font-size:var(--text-body);color:var(--text-secondary);max-width:60ch;margin:0 auto var(--spacing-32);}
+.hero__ctas{display:flex;align-items:center;justify-content:center;gap:var(--spacing-16);flex-wrap:wrap;}
+/* Logo strip */
+.logos{display:flex;align-items:center;justify-content:center;gap:var(--spacing-64);flex-wrap:wrap;padding:var(--spacing-48) 0;}
+.logos__item{font-family:var(--font-inter);font-weight:600;font-size:18px;color:var(--color-faint-graphite);letter-spacing:-0.025em;}
+/* Section header */
+.section-head{margin-bottom:var(--spacing-48);}
+.section-head__title{font-size:var(--text-heading);font-weight:700;line-height:1.13;letter-spacing:-0.025em;margin-bottom:var(--spacing-16);}
+.section-head__sub{font-size:var(--text-body);color:var(--text-secondary);max-width:65ch;}
+/* Cards */
+.card{background:var(--bg-secondary);border-radius:var(--radius-md);padding:var(--spacing-24);transition:transform var(--transition-normal);}
+.card:hover{transform:translateY(-2px);}
+.card__title{font-size:18px;font-weight:600;margin-bottom:var(--spacing-8);letter-spacing:-0.025em;}
+.card__body{font-size:14px;color:var(--text-secondary);line-height:1.5;}
+.card__icon{width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-sm);background:var(--bg-primary);margin-bottom:var(--spacing-16);color:var(--text-primary);}
+.card__icon .material-symbols-rounded{font-size:20px;}
+/* Grid */
+.grid-3{display:flex;gap:var(--spacing-24);flex-wrap:wrap;}
+.grid-3 > *{flex:1 1 300px;}
+/* Steps */
+.steps{display:flex;flex-direction:column;gap:var(--spacing-32);}
+.step{display:flex;gap:var(--spacing-24);align-items:flex-start;}
+.step__num{font-family:var(--font-fragment-mono);font-size:14px;color:var(--color-faint-graphite);min-width:32px;padding-top:4px;}
+.step__icon{width:48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-sm);background:var(--bg-secondary);flex-shrink:0;}
+.step__icon .material-symbols-rounded{font-size:24px;}
+.step__title{font-size:18px;font-weight:600;margin-bottom:var(--spacing-8);letter-spacing:-0.025em;}
+.step__body{font-size:14px;color:var(--text-secondary);}
+/* Testimonials */
+.testimonial{background:var(--bg-secondary);border-radius:var(--radius-md);padding:var(--spacing-24);}
+.testimonial__quote{font-size:18px;line-height:1.5;margin-bottom:var(--spacing-16);}
+.testimonial__author{display:flex;align-items:center;gap:var(--spacing-16);}
+.testimonial__avatar{width:40px;height:40px;border-radius:50%;background:var(--color-graphite);color:var(--color-page-canvas);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;}
+.testimonial__name{font-weight:600;font-size:14px;}
+.testimonial__role{font-size:12px;color:var(--text-secondary);}
+/* Pricing */
+.pricing{display:flex;gap:var(--spacing-24);flex-wrap:wrap;}
+.pricing__tier{flex:1 1 300px;background:var(--bg-secondary);border-radius:var(--radius-md);padding:var(--spacing-32);display:flex;flex-direction:column;gap:var(--spacing-16);}
+.pricing__tier--featured{background:var(--color-graphite);color:var(--color-page-canvas);}
+.pricing__tier--featured .pricing__price,.pricing__tier--featured .pricing__name,.pricing__tier--featured .pricing__feature{color:var(--color-page-canvas);}
+.pricing__tier--featured .pricing__feature{color:var(--color-faint-graphite);}
+.pricing__name{font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-secondary);}
+.pricing__price{font-size:48px;font-weight:700;letter-spacing:-0.025em;}
+.pricing__price span{font-size:14px;font-weight:500;}
+.pricing__feature{font-size:14px;color:var(--text-secondary);display:flex;align-items:center;gap:var(--spacing-8);}
+.pricing__feature .material-symbols-rounded{font-size:16px;}
+/* FAQ */
+.faq{display:flex;flex-direction:column;gap:var(--spacing-16);}
+.faq__item{background:var(--bg-secondary);border-radius:var(--radius-md);padding:var(--spacing-24);}
+.faq__item summary{font-weight:600;cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:var(--spacing-16);}
+.faq__item summary::-webkit-details-marker{display:none;}
+.faq__item summary .material-symbols-rounded{transition:transform var(--transition-fast);}
+.faq__item[open] summary .material-symbols-rounded{transform:rotate(180deg);}
+.faq__item p{margin-top:var(--spacing-16);color:var(--text-secondary);font-size:14px;line-height:1.6;}
+/* CTA band */
+.cta-band{text-align:center;padding:var(--spacing-96) 0;}
+.cta-band__title{font-size:var(--text-heading);font-weight:700;letter-spacing:-0.025em;margin-bottom:var(--spacing-16);}
+.cta-band__sub{color:var(--text-secondary);margin-bottom:var(--spacing-32);}
+/* Footer */
+.footer{padding:var(--spacing-48) 0;border-top:1px solid var(--border-default);}
+.footer__inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--spacing-16);}
+.footer__links{display:flex;gap:var(--spacing-24);}
+.footer__link{font-size:14px;color:var(--text-secondary);}
+.footer__link:hover{color:var(--text-primary);}
+.footer__copy{font-size:12px;color:var(--color-faint-graphite);}
+/* Showcase frame */
+.frame{border:1px solid var(--border-default);border-radius:var(--radius-md);overflow:hidden;}
+.frame__bar{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--border-default);background:var(--bg-secondary);}
+.frame__dot{width:10px;height:10px;border-radius:50%;background:var(--color-faint-graphite);}
+.frame__body{padding:var(--spacing-32);background:var(--bg-primary);min-height:200px;display:flex;align-items:center;justify-content:center;}
+.frame__placeholder{font-family:var(--font-fragment-mono);font-size:12px;color:var(--color-faint-graphite);}
+/* Reveal */
+.reveal{opacity:0;transform:translateY(20px);transition:opacity 0.6s ease,transform 0.6s ease;}
+.reveal.is-visible{opacity:1;transform:none;}
+@media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:opacity 200ms ease;}}
+/* Dark mode icon swap */
+[data-theme="dark"] .icon-sun{display:none;}
+[data-theme="light"] .icon-moon{display:none;}
+@media(prefers-color-scheme:dark){:root:not([data-theme]) .icon-sun{display:none;} :root:not([data-theme]) .icon-moon{display:inline;}
+</style>
+<style id="pd-icon-fix">.material-symbols-rounded{font-family:'Material Symbols Rounded'!important;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;word-wrap:normal;direction:ltr;font-feature-settings:'liga';-webkit-font-feature-settings:'liga'}</style>
+</head>
+<body>
+<nav class="nav">
+<div class="container nav__inner">
+<a href="#" class="nav__logo">Framecraft</a>
+<div class="nav__links" id="nav-links">
+<a href="#features" class="nav__link">Pricing</a>
+<a href="#docs" class="nav__link">Docs</a>
+<a href="#blog" class="nav__link">Blog</a>
+</div>
+<div class="nav__actions">
+<a href="#" class="nav__login">Log in</a>
+<a href="#" class="btn btn--filled">Start for free</a>
+<button class="nav__toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+<span class="material-symbols-rounded icon-sun">light_mode</span>
+<span class="material-symbols-rounded icon-moon">dark_mode</span>
+</button>
+<button class="nav__menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">
+<span class="material-symbols-rounded">menu</span>
+</button>
+</div>
+</div>
+</nav>
+
+<section class="hero">
+<div class="container">
+<div class="pill" style="margin:0 auto var(--spacing-32);"><span class="pill__seg pill__seg--active">New</span><span class="pill__seg">v2.0 shipped</span></div>
+<h1 class="hero__headline">Design at the speed of <span class="hero__serif">thought</span></h1>
+<p class="hero__sub">Framecraft is the monochrome workbench where product teams sketch, iterate, and ship interfaces without the noise.</p>
+<div class="hero__ctas">
+<a href="#" class="btn btn--filled">Start for free</a>
+<a href="#" class="btn btn--ghost"><span class="material-symbols-rounded">play_arrow</span> Watch demo</a>
+</div>
+</div>
+</section>
+
+<section>
+<div class="container">
+<div class="logos">
+<span class="logos__item">Linear</span>
+<span class="logos__item">Vercel</span>
+<span class="logos__item">Stripe</span>
+<span class="logos__item">Notion</span>
+<span class="logos__item">Figma</span>
+</div>
+</div>
+</section>
+
+<section id="features">
+<div class="container">
+<div class="section-head">
+<h2 class="section-head__title">Built for focus</h2>
+<p class="section-head__sub">Every surface is tuned to remove distraction. Monochrome by design, so your work speaks first.</p>
+</div>
+<div class="grid-3">
+<div class="card">
+<div class="card__icon"><span class="material-symbols-rounded">grid_view</span></div>
+<h3 class="card__title">Component library</h3>
+<p class="card__body">A complete set of primitives, ready to compose. No configuration, no theming debt.</p>
+</div>
+<div class="card">
+<div class="card__icon"><span class="material-symbols-rounded">bolt</span></div>
+<h3 class="card__title">Instant preview</h3>
+<p class="card__body">See changes as you type. No build step, no refresh, no waiting.</p>
+</div>
+<div class="card">
+<div class="card__icon"><span class="material-symbols-rounded">code</span></div>
+<h3 class="card__title">Clean export</h3>
+<p class="card__body">Ship production-ready markup. Semantic, accessible, and yours to own.</p>
+</div>
+</div>
+</div>
+</section>
+
+<section>
+<div class="container">
+<div class="section-head">
+<h2 class="section-head__title">How it works</h2>
+<p class="section-head__sub">Three steps from idea to shipped interface.</p>
+</div>
+<div class="steps">
+<div class="step">
+<span class="step__num">01</span>
+<div class="step__icon"><span class="material-symbols-rounded">edit</span></div>
+<div>
+<h3 class="step__title">Sketch</h3>
+<p class="step__body">Start from a blank canvas or a template. Drag, type, and arrange.</p>
+</div>
+</div>
+<div class="step">
+<span class="step__num">02</span>
+<div class="step__icon"><span class="material-symbols-rounded">tune</span></div>
+<div>
+<h3 class="step__title">Refine</h3>
+<p class="step__body">Tighten spacing, type, and color. Every token is editable inline.</p>
+</div>
+</div>
+<div class="step">
+<span class="step__num">03</span>
+<div class="step__icon"><span class="material-symbols-rounded">rocket_launch</span></div>
+<div>
+<h3 class="step__title">Ship</h3>
+<p class="step__body">Export clean code or publish a live link in one click.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section>
+<div class="container">
+<div class="section-head">
+<h2 class="section-head__title">Loved by teams</h2>
+</div>
+<div class="grid-3">
+<div class="testimonial">
+<p class="testimonial__quote">"Framecraft replaced three tools in our workflow. The monochrome canvas keeps everyone focused."</p>
+<div class="testimonial__author">
+<div class="testimonial__avatar">AK</div>
+<div>
+<div class="testimonial__name">Aria Kim</div>
+<div class="testimonial__role">Design Lead, Linear</div>
+</div>
+</div>
+</div>
+<div class="testimonial">
+<p class="testimonial__quote">"The export quality is genuinely production-ready. We ship straight from Framecraft."</p>
+<div class="testimonial__author">
+<div class="testimonial__avatar">MT</div>
+<div>
+<div class="testimonial__name">Marcus Tate</div>
+<div class="testimonial__role">Engineer, Vercel</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section>
+<div class="container">
+<div class="section-head">
+<h2 class="section-head__title">Pricing</h2>
+<p class="section-head__sub">Simple, transparent pricing. No surprises.</p>
+</div>
+<div class="pricing">
+<div class="pricing__tier">
+<div class="pricing__name">Starter</div>
+<div class="pricing__price">$0<span>/mo</span></div>
+<div class="pricing__feature"><span class="material-symbols-rounded">check</span> 3 projects</div>
+<div class="pricing__feature"><span class="material-symbols-rounded">check</span> Community support</div>
+<a href="#" class="btn btn--ghost" style="margin-top:auto;">Get started</a>
+</div>
+<div class="pricing__tier pricing__tier--featured">
+<div class="pricing__name">Pro</div>
+<div class="pricing__price">$19<span>/mo</span></div>
+<div class="pricing__feature"><span class="material-symbols-rounded">check</span> Unlimited projects</div>
+<div class="pricing__feature"><span class="material-symbols-rounded">check</span> Priority support</div>
+<a href="#" class="btn btn--filled" style="margin-top:auto;background:#fafafa;color:#242424;">Get started</a>
+</div>
+<div class="pricing__tier">
+<div class="pricing__name">Team</div>
+<div class="pricing__price">$49<span>/mo</span></div>
+<div class="pricing__feature"><span class="material-symbols-rounded">check</span> Everything in Pro</div>
+<div class="pricing__feature"><span class="material-symbols-rounded">check</span> SSO &amp; audit logs</div>
+<a href="#" class="btn btn--ghost" style="margin-top:auto;">Contact sales</a>
+</div>
+</div>
+</div>
+</section>
+
+<section>
+<div class="container">
+<div class="section-head">
+<h2 class="section-head__title">Questions</h2>
+</div>
+<div class="faq">
+<details class="faq__item">
+<summary>Is there a free plan? <span class="material-symbols-rounded">expand_more</span></summary>
+<p>Yes. The Starter plan is free forever with 3 projects and community support.</p>
+</details>
+<details class="faq__item">
+<summary>Can I export my code? <span class="material-symbols-rounded">expand_more</span></summary>
+<p>Absolutely. Export clean, semantic HTML and CSS anytime.</p>
+</details>
+<details class="faq__item">
+<summary>Do you support dark mode? <span class="material-symbols-rounded">expand_more</span></summary>
+<p>Yes. Toggle between light and dark themes with one click.</p>
+</details>
+</div>
+</div>
+</section>
+
+<section class="cta-band">
+<div class="container">
+<h2 class="cta-band__title">Start building today</h2>
+<p class="cta-band__sub">Join thousands of teams shipping faster with Framecraft.</p>
+<a href="#" class="btn btn--filled">Start for free</a>
+</div>
+</section>
+
+<footer class="footer">
+<div class="container footer__inner">
+<div class="nav__logo">Framecraft</div>
+<div class="footer__links">
+<a href="#" class="footer__link">Pricing</a>
+<a href="#" class="footer__link">Docs</a>
+<a href="#" class="footer__link">Blog</a>
+</div>
+<div class="footer__copy">© 2026 Framecraft. All rights reserved.</div>
+</div>
+</footer>
+
+<script>
+(function(){
+var toggle=document.getElementById('theme-toggle');
+var menuBtn=document.getElementById('menu-btn');
+var navLinks=document.getElementById('nav-links');
+function updateToggle(){
+var t=document.documentElement.dataset.theme;
+toggle.setAttribute('aria-pressed',t==='dark'?'true':'false');
+toggle.setAttribute('aria-label',t==='dark'?'Switch to light mode':'Switch to dark mode');
+}
+updateToggle();
+toggle.addEventListener('click',function(){
+var t=document.documentElement.dataset.theme==='dark'?'light':'dark';
+document.documentElement.dataset.theme=t;
+localStorage.setItem('theme',t);
+updateToggle();
+});
+menuBtn.addEventListener('click',function(){
+var open=navLinks.classList.toggle('is-open');
+menuBtn.setAttribute('aria-expanded',open?'true':'false');
+});
+navLinks.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){navLinks.classList.remove('is-open');menuBtn.setAttribute('aria-expanded','false');});});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){navLinks.classList.remove('is-open');menuBtn.setAttribute('aria-expanded','false');}});
+// reveal
+var obs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('is-visible');obs.unobserve(e.target);}});},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(function(el){obs.observe(el);});
+})();
+</script>
+</body>
+</html>

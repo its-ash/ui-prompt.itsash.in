@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vela - Crypto infrastructure for builders</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Source+Serif+4:wght@400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+<script>
+(function(){
+  var t = localStorage.getItem('theme');
+  if (t !== 'dark' && t !== 'light') {
+    t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  document.documentElement.dataset.theme = t;
+})();
+</script>
+<style>
+:root {
+  --color-canvas: #ffffff;
+  --color-obsidian-ink: #010110;
+  --color-carbon: #111117;
+  --color-graphite: #22222a;
+  --color-fog: #73737c;
+  --color-ash: #d9d9d9;
+  --color-iris-pulse: #635bff;
+  --color-deep-teal: #072723;
+
+  --primary: #010110;
+  --secondary: #635bff;
+  --bg-primary: #fefefe;
+  --bg-secondary: #ffffff;
+  --text-primary: #010110;
+  --text-secondary: #73737c;
+  --text-success: #0a7a3d;
+  --text-error: #b42318;
+  --border-default: rgba(1,1,16,0.15);
+  --border-error: #b42318;
+  --border-success: #0a7a3d;
+
+  --radius-sm: 2px;
+  --radius-md: 8px;
+  --radius-lg: 100px;
+  --shadow-sm: 0 1px 2px rgba(1,1,16,0.06);
+  --shadow-md: 0 4px 12px rgba(1,1,16,0.08);
+
+  --spacing-gap: 1.5rem;
+  --transition-fast: 150ms ease;
+  --transition-normal: 200ms ease;
+  --ease-standard: ease;
+
+  --z-dropdown: 100;
+  --z-modal: 200;
+  --z-toast: 300;
+
+  --font-base: 'Inter', sans-serif;
+  --font-display: 'Source Serif 4', serif;
+
+  --text-caption: 0.75rem;
+  --text-body-sm: 0.875rem;
+  --text-body: 1rem;
+  --text-subheading: 1.125rem;
+  --text-heading-sm: 1.25rem;
+  --text-heading: 1.75rem;
+  --text-heading-lg: 3.5rem;
+  --text-display: 4.75rem;
+
+  --on-primary: #ffffff;
+  --on-secondary: #ffffff;
+  --on-dark: #ffffff;
+  --on-light: #010110;
+}
+
+:root[data-theme="dark"] {
+  --primary: #f5f5f7;
+  --secondary: #8b85ff;
+  --bg-primary: #0a0a12;
+  --bg-secondary: #111117;
+  --text-primary: #f5f5f7;
+  --text-secondary: #a0a0aa;
+  --text-success: #4ade80;
+  --text-error: #f87171;
+  --border-default: rgba(245,245,247,0.15);
+  --border-error: #f87171;
+  --border-success: #4ade80;
+  --color-canvas: #0a0a12;
+  --color-obsidian-ink: #f5f5f7;
+  --color-carbon: #1a1a22;
+  --color-graphite: #2a2a34;
+  --color-fog: #a0a0aa;
+  --color-ash: #3a3a44;
+  --color-iris-pulse: #8b85ff;
+  --color-deep-teal: #0a3a34;
+  --on-primary: #0a0a12;
+  --on-secondary: #0a0a12;
+  --on-dark: #f5f5f7;
+  --on-light: #010110;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: var(--font-base);
+  font-size: var(--text-body);
+  line-height: 1.6;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  -webkit-font-smoothing: antialiased;
+}
+[hidden] { display: none !important; }
+
+h1,h2,h3 { margin: 0; font-weight: 400; }
+p { margin: 0; }
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; border: none; background: none; cursor: pointer; }
+
+.container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+@media (max-width: 768px) { .container { padding: 0 1.25rem; } }
+
+.section { padding: clamp(4rem, 8vw, 7rem) 0; }
+.section--band { background: var(--color-carbon); color: var(--on-dark); }
+.section--band .text-secondary { color: var(--color-fog); }
+
+.eyebrow {
+  font-size: var(--text-caption);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+.display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--text-display);
+  line-height: 1.03;
+  letter-spacing: -0.03em;
+}
+@media (max-width: 768px) { .display { font-size: 2.5rem; } }
+
+.heading-lg {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--text-heading-lg);
+  line-height: 1.07;
+  letter-spacing: -0.03em;
+}
+@media (max-width: 768px) { .heading-lg { font-size: 2.25rem; } }
+
+.heading {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--text-heading);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.subheading {
+  font-size: var(--text-subheading);
+  line-height: 1.5;
+  color: var(--text-secondary);
+  max-width: 65ch;
+}
+
+.body-sm { font-size: var(--text-body-sm); line-height: 1.5; color: var(--text-secondary); }
+
+/* Announcement bar */
+.announcement {
+  background: var(--color-iris-pulse);
+  color: #ffffff;
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 13px;
+  font-weight: 500;
+}
+.announcement__text { text-align: center; }
+.announcement__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #ffffff;
+  color: #ffffff;
+  padding: 6px 14px;
+  border-radius: var(--radius-lg);
+  font-size: 13px;
+  transition: var(--transition-fast);
+}
+.announcement__pill:hover { background: rgba(255,255,255,0.15); }
+
+/* Nav */
+.nav {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-default);
+  height: 64px;
+  position: sticky;
+  top: 0;
+  z-index: var(--z-dropdown);
+  backdrop-filter: blur(8px);
+}
+@media (prefers-reduced-transparency: reduce) { .nav { backdrop-filter: none; } }
+.nav__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  gap: 1rem;
+}
+.nav__logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+.nav__dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--color-obsidian-ink);
+}
+:root[data-theme="dark"] .nav__dot { background: var(--color-obsidian-ink); }
+.nav__suffix { font-weight: 400; font-size: 13px; color: var(--text-secondary); margin-left: 4px; }
+.nav__links {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+.nav__link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 13px;
+  color: var(--text-primary);
+  transition: var(--transition-fast);
+}
+.nav__link .material-symbols-rounded { font-size: 14px; }
+.nav__link:hover { color: var(--color-iris-pulse); }
+.nav__right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.nav__textlink { font-size: 14px; color: var(--text-primary); }
+.nav__textlink:hover { color: var(--color-iris-pulse); }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 12px 20px;
+  border-radius: var(--radius-lg);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  transition: var(--transition-normal);
+  cursor: pointer;
+}
+.btn:active { transform: scale(0.97); }
+.btn:focus-visible { outline: 2px solid var(--color-iris-pulse); outline-offset: 2px; }
+.btn--primary { background: var(--color-obsidian-ink); color: var(--on-primary); }
+.btn--primary:hover { filter: brightness(1.1); }
+.btn--ghost { background: transparent; border: 1px solid var(--color-obsidian-ink); color: var(--color-obsidian-ink); }
+.btn--ghost:hover { background: var(--color-obsidian-ink); color: var(--on-primary); }
+.btn--pill { padding: 6px 14px; font-size: 13px; border: 1px solid var(--color-obsidian-ink); color: var(--color-obsidian-ink); background: transparent; }
+.btn--pill:hover { background: var(--color-obsidian-ink); color: var(--on-primary); }
+.btn--header { padding: 6px 14px; font-size: 13px; border: 1px solid #ffffff; color: #ffffff; background: transparent; }
+.btn--header:hover { background: #ffffff; color: var(--color-obsidian-ink); }
+.btn__arrow { font-size: 14px; }
+.btn--disabled { opacity: 0.5; filter: grayscale(1); cursor: not-allowed; }
+
+.theme-toggle {
+  width: 44px; height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-default);
+  color: var(--text-primary);
+  transition: var(--transition-fast);
+}
+.theme-toggle:hover { background: var(--bg-secondary); }
+.theme-toggle .material-symbols-rounded { font-size: 20px; }
+
+.nav__hamburger {
+  display: none;
+  width: 44px; height: 44px;
+  align-items: center; justify-content: center;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+}
+.nav__mobile { display: none; }
+@media (max-width: 768px) {
+  .nav__links { display: none; }
+  .nav__right .nav__textlink { display: none; }
+  .nav__hamburger { display: inline-flex; }
+  .nav__mobile {
+    position: absolute;
+    top: 64px; left: 0; right: 0;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-default);
+    padding: 1rem 1.25rem;
+    display: none;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .nav__mobile.is-open { display: flex; }
+  .nav__mobile .nav__link { flex-direction: row; justify-content: flex-start; }
+}
+
+/* Hero */
+.hero {
+  padding: clamp(3rem, 6vw, 6rem) 0;
+}
+.hero__grid {
+  display: flex;
+  align-items: center;
+  gap: 3rem;
+  flex-wrap: wrap;
+}
+.hero__text { flex: 1 1 420px; min-width: 0; }
+.hero__visual { flex: 1 1 420px; min-width: 0; position: relative; min-height: 420px; }
+.hero__wash {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-md);
+  background: radial-gradient(ellipse at 30% 40%, #0a7a3d 0%, #072723 40%, transparent 70%),
+              linear-gradient(135deg, #0a3a34 0%, #010110 100%);
+  opacity: 0.9;
+}
+.hero__card {
+  position: absolute;
+  background: #ffffff;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+  padding: 16px;
+  box-shadow: var(--shadow-md);
+}
+.hero__card--phone {
+  top: 10%; left: 8%; width: 160px; height: 280px;
+  transform: rotate(-6deg);
+}
+.hero__card--dash {
+  bottom: 8%; right: 6%; width: 260px; height: 180px;
+  transform: rotate(4deg);
+}
+.hero__card-title { font-size: 12px; font-weight: 500; color: var(--color-obsidian-ink); margin-bottom: 8px; }
+.hero__bar { height: 8px; border-radius: 4px; background: var(--color-ash); margin-bottom: 6px; }
+.hero__bar--accent { background: var(--color-iris-pulse); width: 60%; }
+.hero__dotrow { display: flex; gap: 6px; margin-top: 8px; }
+.hero__dot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-ash); }
+.hero__dot--on { background: var(--color-iris-pulse); }
+.hero__cta-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2rem; }
+
+/* Logo strip */
+.logos { padding: 2rem 0; border-top: 1px solid var(--border-default); border-bottom: 1px solid var(--border-default); }
+.logos__row { display: flex; align-items: center; justify-content: space-between; gap: 2rem; flex-wrap: wrap; }
+.logo-mark { font-weight: 700; font-size: 18px; letter-spacing: -0.02em; color: var(--text-secondary); opacity: 0.6; }
+
+/* Features */
+.features__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-top: 3rem;
+}
+@media (max-width: 768px) { .features__grid { grid-template-columns: 1fr; } }
+.card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  transition: var(--transition-normal);
+}
+.card:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+.card__icon {
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-sm);
+  background: rgba(99,91,255,0.1);
+  color: var(--color-iris-pulse);
+  margin-bottom: 1rem;
+}
+.card__title { font-size: var(--text-heading-sm); font-weight: 500; color: var(--text-primary); margin-bottom: 0.5rem; }
+.card__body { font-size: var(--text-body-sm); color: var(--text-secondary); line-height: 1.5; }
+
+/* How it works */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin-top: 3rem;
+}
+@media (max-width: 768px) { .steps { grid-template-columns: 1fr; } }
+.step__num {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  line-height: 1;
+  color: var(--color-iris-pulse);
+  margin-bottom: 1rem;
+}
+.step__title { font-size: var(--text-heading-sm); font-weight: 500; margin-bottom: 0.5rem; }
+.step__body { font-size: var(--text-body-sm); color: var(--text-secondary); }
+
+/* Testimonials */
+.testimonials__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-top: 3rem;
+}
+@media (max-width: 768px) { .testimonials__grid { grid-template-columns: 1fr; } }
+.testimonial { padding: 24px; border: 1px solid var(--border-default); border-radius: var(--radius-md); background: var(--bg-secondary); }
+.testimonial__quote { font-size: var(--text-body); line-height: 1.6; color: var(--text-primary); margin-bottom: 1.5rem; }
+.testimonial__quote::before { content: "\201C"; font-family: var(--font-display); font-size: 2rem; color: var(--color-iris-pulse); line-height: 1; }
+.testimonial__attr { display: flex; align-items: center; gap: 0.75rem; }
+.testimonial__avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--color-iris-pulse);
+  color: #ffffff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 14px;
+}
+.testimonial__name { font-weight: 500; font-size: var(--text-body-sm); }
+.testimonial__role { font-size: var(--text-caption); color: var(--text-secondary); }
+
+/* Pricing */
+.pricing__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-top: 3rem;
+}
+@media (max-width: 768px) { .pricing__grid { grid-template-columns: 1fr; } }
+.pricing-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: 32px 24px;
+  display: flex; flex-direction: column; gap: 1rem;
+}
+.pricing-card--featured { border: 2px solid var(--color-obsidian-ink); }
+.pricing-card__name { font-size: var(--text-heading-sm); font-weight: 500; }
+.pricing-card__price { font-family: var(--font-display); font-size: 2.5rem; line-height: 1; letter-spacing: -0.03em; }
+.pricing-card__price span { font-size: var(--text-body-sm); color: var(--text-secondary); font-family: var(--font-base); }
+.pricing-card__features { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.pricing-card__features li { font-size: var(--text-body-sm); color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem; }
+.pricing-card__features .material-symbols-rounded { font-size: 16px; color: var(--text-success); }
+
+/* FAQ */
+.faq { max-width: 760px; margin: 3rem auto 0; }
+.faq__item {
+  border-bottom: 1px solid var(--border-default);
+  padding: 1.25rem 0;
+}
+.faq__q {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-weight: 500;
+  font-size: var(--text-body);
+  cursor: pointer;
+  list-style: none;
+}
+.faq__q::-webkit-details-marker { display: none; }
+.faq__a { margin-top: 0.75rem; color: var(--text-secondary); font-size: var(--text-body-sm); line-height: 1.6; }
+.faq__icon { transition: transform var(--transition-fast); }
+details[open] .faq__icon { transform: rotate(180deg); }
+
+/* Final CTA */
+.cta-band {
+  text-align: center;
+  padding: clamp(4rem, 8vw, 7rem) 0;
+}
+.cta-band .display { margin-bottom: 1rem; }
+.cta-band .subheading { margin: 0 auto 2rem; }
+
+/* Footer */
+.footer {
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-default);
+  padding: 4rem 0 2rem;
+  position: relative;
+  overflow: hidden;
+}
+.footer::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 60%;
+  background-image: radial-gradient(circle, var(--color-ash) 1px, transparent 1px);
+  background-size: 12px 12px;
+  opacity: 0.2;
+  pointer-events: none;
+}
+.footer__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2rem;
+  position: relative;
+}
+@media (max-width: 768px) { .footer__grid { grid-template-columns: repeat(2, 1fr); } }
+.footer__heading { font-weight: 700; font-size: 14px; color: var(--text-primary); margin-bottom: 1rem; }
+.footer__links { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.footer__link { font-size: 14px; color: var(--text-secondary); }
+.footer__link:hover { color: var(--color-iris-pulse); }
+.footer__bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-default);
+  flex-wrap: wrap;
+  gap: 1rem;
+  position: relative;
+}
+.footer__copy { font-size: 12px; color: var(--text-secondary); }
+.footer__quote { font-size: 14px; color: var(--text-secondary); font-style: italic; }
+.footer__social { display: flex; gap: 0.75rem; }
+.footer__social a { color: var(--text-primary); }
+.footer__social svg { width: 16px; height: 16px; fill: currentColor; }
+
+/* Dark feature band */
+.darkband__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-top: 3rem;
+}
+@media (max-width: 768px) { .darkband__grid { grid-template-columns: 1fr; } }
+.darkcard {
+  background: var(--color-graphite);
+  border-radius: var(--radius-md);
+  padding: 24px 32px;
+  color: var(--on-dark);
+}
+.darkcard__title { font-size: 18px; font-weight: 500; color: #ffffff; margin-bottom: 0.5rem; }
+.darkcard__body { font-size: 14px; color: var(--color-fog); line-height: 1.5; }
+
+/* Reveal */
+.reveal { opacity: 0; transform: translateY(12px); transition: opacity 400ms ease, transform 400ms ease; }
+.reveal.is-visible { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: opacity 200ms ease; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card:hover, .btn:active { transform: none; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .nav { backdrop-filter: none; background: var(--bg-secondary); }
+}
+</style>
+<style id="pd-icon-fix">.material-symbols-rounded{font-family:'Material Symbols Rounded'!important;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;word-wrap:normal;direction:ltr;font-feature-settings:'liga';-webkit-font-feature-settings:'liga'}</style>
+</head>
+<body>
+
+<div class="announcement">
+  <span class="announcement__text">Vela raises $42M Series B to expand global payments infrastructure</span>
+  <a class="announcement__pill" href="#cta">Read the post <span class="material-symbols-rounded" style="font-size:14px">arrow_forward</span></a>
+</div>
+
+<nav class="nav">
+  <div class="container nav__inner">
+    <a class="nav__logo" href="#">
+      <span class="nav__dot"></span>
+      Vela<span class="nav__suffix">infra</span>
+    </a>
+    <div class="nav__links">
+      <a class="nav__link" href="#features"><span class="material-symbols-rounded">grid_view</span>Product</a>
+      <a class="nav__link" href="#how"><span class="material-symbols-rounded">route</span>Solutions</a>
+      <a class="nav__link" href="#pricing"><span class="material-symbols-rounded">payments</span>Pricing</a>
+      <a class="nav__link" href="#faq"><span class="material-symbols-rounded">help</span>Docs</a>
+    </div>
+    <div class="nav__right">
+      <a class="nav__textlink" href="#">Log in</a>
+      <a class="btn btn--pill" href="#cta">Get started</a>
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-rounded" id="theme-icon">dark_mode</span>
+      </button>
+      <button class="nav__hamburger" id="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-mobile" aria-label="Open menu">
+        <span class="material-symbols-rounded">menu</span>
+      </button>
+    </div>
+  </div>
+  <div class="nav__mobile" id="nav-mobile">
+    <a class="nav__link" href="#features">Product</a>
+    <a class="nav__link" href="#how">Solutions</a>
+    <a class="nav__link" href="#pricing">Pricing</a>
+    <a class="nav__link" href="#faq">Docs</a>
+  </div>
+</nav>
+
+<main>
+<section class="hero">
+  <div class="container hero__grid">
+    <div class="hero__text">
+      <p class="eyebrow">Crypto infrastructure</p>
+      <h1 class="display">Build financial products that move money globally.</h1>
+      <p class="subheading">Vela gives developers embedded wallets, on-ramps, and compliance tooling in one API. Ship in days, not quarters.</p>
+      <div class="hero__cta-row">
+        <a class="btn btn--primary" href="#cta">Start building <span class="material-symbols-rounded btn__arrow">arrow_forward</span></a>
+        <a class="btn btn--ghost" href="#how">See how it works</a>
+      </div>
+    </div>
+    <div class="hero__visual">
+      <div class="hero__wash"></div>
+      <div class="hero__card hero__card--phone">
+        <div class="hero__card-title">Wallet</div>
+        <div class="hero__bar hero__bar--accent"></div>
+        <div class="hero__bar" style="width:80%"></div>
+        <div class="hero__bar" style="width:50%"></div>
+        <div class="hero__dotrow">
+          <span class="hero__dot hero__dot--on"></span>
+          <span class="hero__dot"></span>
+          <span class="hero__dot"></span>
+        </div>
+      </div>
+      <div class="hero__card hero__card--dash">
+        <div class="hero__card-title">Settlements</div>
+        <div class="hero__bar hero__bar--accent"></div>
+        <div class="hero__bar" style="width:90%"></div>
+        <div class="hero__bar" style="width:70%"></div>
+        <div class="hero__bar" style="width:40%"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="logos">
+  <div class="container logos__row">
+    <span class="logo-mark">NORTHWIND</span>
+    <span class="logo-mark">LUMEN</span>
+    <span class="logo-mark">ATLAS</span>
+    <span class="logo-mark">KITE</span>
+    <span class="logo-mark">ORBIT</span>
+  </div>
+</section>
+
+<section class="section" id="features">
+  <div class="container">
+    <h2 class="heading-lg">Everything you need to launch.</h2>
+    <p class="subheading">One platform for wallets, payments, and compliance.</p>
+    <div class="features__grid">
+      <div class="card reveal">
+        <div class="card__icon"><span class="material-symbols-rounded">account_balance_wallet</span></div>
+        <h3 class="card__title">Embedded wallets</h3>
+        <p class="card__body">Create non-custodial wallets for every user with a single API call. No seed phrases to manage.</p>
+      </div>
+      <div class="card reveal">
+        <div class="card__icon"><span class="material-symbols-rounded">swap_horiz</span></div>
+        <h3 class="card__title">On and off ramps</h3>
+        <p class="card__body">Move between fiat and crypto in 40+ countries with built-in KYC and fraud checks.</p>
+      </div>
+      <div class="card reveal">
+        <div class="card__icon"><span class="material-symbols-rounded">verified_user</span></div>
+        <h3 class="card__title">Compliance built in</h3>
+        <p class="card__body">Transaction monitoring, sanctions screening, and reporting handled automatically.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--band" id="how">
+  <div class="container">
+    <h2 class="heading-lg">How it works</h2>
+    <p class="subheading">Three steps from idea to production.</p>
+    <div class="darkband__grid">
+      <div class="darkcard reveal">
+        <div class="step__num">01</div>
+        <h3 class="darkcard__title">Create an account</h3>
+        <p class="darkcard__body">Sign up and get API keys in under a minute. Sandbox included.</p>
+      </div>
+      <div class="darkcard reveal">
+        <div class="step__num">02</div>
+        <h3 class="darkcard__title">Integrate the SDK</h3>
+        <p class="darkcard__body">Drop in our SDK for web, iOS, or Android. Docs and examples included.</p>
+      </div>
+      <div class="darkcard reveal">
+        <div class="step__num">03</div>
+        <h3 class="darkcard__title">Go live</h3>
+        <p class="darkcard__body">Switch to production keys and start moving real money.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h2 class="heading-lg">Loved by builders.</h2>
+    <div class="testimonials__grid">
+      <div class="testimonial reveal">
+        <p class="testimonial__quote">Vela cut our wallet integration from months to a weekend. The API is genuinely well designed.</p>
+        <div class="testimonial__attr">
+          <div class="testimonial__avatar">MR</div>
+          <div>
+            <div class="testimonial__name">Maya Reyes</div>
+            <div class="testimonial__role">CTO, Northwind</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial reveal">
+        <p class="testimonial__quote">Compliance used to be our biggest blocker. Now it is handled and we ship faster.</p>
+        <div class="testimonial__attr">
+          <div class="testimonial__avatar">DK</div>
+          <div>
+            <div class="testimonial__name">Daniel Kim</div>
+            <div class="testimonial__role">Founder, Lumen</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="pricing">
+  <div class="container">
+    <h2 class="heading-lg">Simple pricing.</h2>
+    <p class="subheading">Start free, scale as you grow.</p>
+    <div class="pricing__grid">
+      <div class="pricing-card reveal">
+        <div class="pricing-card__name">Starter</div>
+        <div class="pricing-card__price">$0<span>/mo</span></div>
+        <ul class="pricing-card__features">
+          <li><span class="material-symbols-rounded">check</span>1,000 wallets</li>
+          <li><span class="material-symbols-rounded">check</span>Sandbox access</li>
+          <li><span class="material-symbols-rounded">check</span>Community support</li>
+        </ul>
+        <a class="btn btn--ghost" href="#cta">Get started</a>
+      </div>
+      <div class="pricing-card pricing-card--featured reveal">
+        <div class="pricing-card__name">Growth</div>
+        <div class="pricing-card__price">$299<span>/mo</span></div>
+        <ul class="pricing-card__features">
+          <li><span class="material-symbols-rounded">check</span>Unlimited wallets</li>
+          <li><span class="material-symbols-rounded">check</span>On and off ramps</li>
+          <li><span class="material-symbols-rounded">check</span>Priority support</li>
+        </ul>
+        <a class="btn btn--primary" href="#cta">Start trial</a>
+      </div>
+      <div class="pricing-card reveal">
+        <div class="pricing-card__name">Enterprise</div>
+        <div class="pricing-card__price">Custom</div>
+        <ul class="pricing-card__features">
+          <li><span class="material-symbols-rounded">check</span>Dedicated infra</li>
+          <li><span class="material-symbols-rounded">check</span>SLA and SSO</li>
+          <li><span class="material-symbols-rounded">check</span>White-glove onboarding</li>
+        </ul>
+        <a class="btn btn--ghost" href="#cta">Contact sales</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="faq">
+  <div class="container">
+    <h2 class="heading-lg">Frequently asked.</h2>
+    <div class="faq">
+      <details class="faq__item">
+        <summary class="faq__q">Is Vela non-custodial? <span class="material-symbols-rounded faq__icon">expand_more</span></summary>
+        <div class="faq__a">Yes. Users hold their own keys. Vela never takes custody of funds.</div>
+      </details>
+      <details class="faq__item">
+        <summary class="faq__q">Which chains are supported? <span class="material-symbols-rounded faq__icon">expand_more</span></summary>
+        <div class="faq__a">Ethereum, Polygon, Solana, and Base today, with more on the roadmap.</div>
+      </details>
+      <details class="faq__item">
+        <summary class="faq__q">How does pricing scale? <span class="material-symbols-rounded faq__icon">expand_more</span></summary>
+        <div class="faq__a">Pay per active wallet above the free tier. Volume discounts available.</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="cta-band" id="cta">
+  <div class="container">
+    <h2 class="display">Start building today.</h2>
+    <p class="subheading">Get API keys in under a minute. No credit card required.</p>
+    <a class="btn btn--primary" href="#">Create free account <span class="material-symbols-rounded btn__arrow">arrow_forward</span></a>
+  </div>
+</section>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div>
+        <div class="footer__heading">Product</div>
+        <ul class="footer__links">
+          <li><a class="footer__link" href="#">Wallets</a></li>
+          <li><a class="footer__link" href="#">Payments</a></li>
+          <li><a class="footer__link" href="#">Compliance</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer__heading">Developers</div>
+        <ul class="footer__links">
+          <li><a class="footer__link" href="#">Docs</a></li>
+          <li><a class="footer__link" href="#">API reference</a></li>
+          <li><a class="footer__link" href="#">Status</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer__heading">Company</div>
+        <ul class="footer__links">
+          <li><a class="footer__link" href="#">About</a></li>
+          <li><a class="footer__link" href="#">Blog</a></li>
+          <li><a class="footer__link" href="#">Careers</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer__heading">Legal</div>
+        <ul class="footer__links">
+          <li><a class="footer__link" href="#">Privacy</a></li>
+          <li><a class="footer__link" href="#">Terms</a></li>
+          <li><a class="footer__link" href="#">Security</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span class="footer__copy">Copyright 2026 Vela. All rights reserved.</span>
+      <span class="footer__quote">Money should move like software.</span>
+      <div class="footer__social">
+        <a href="#" aria-label="X"><svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+        <a href="#" aria-label="GitHub"><svg viewBox="0 0 24 24"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56v-2.02c-3.2.7-3.88-1.54-3.88-1.54-.52-1.33-1.28-1.69-1.28-1.69-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.68 1.24 3.33.95.1-.74.4-1.24.73-1.53-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.05 0 0 .96-.31 3.16 1.18a10.9 10.9 0 0 1 5.75 0c2.2-1.49 3.16-1.18 3.16-1.18.62 1.59.23 2.76.11 3.05.74.81 1.18 1.83 1.18 3.09 0 4.42-2.7 5.39-5.27 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.68.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"/></svg></a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var toggle = document.getElementById('theme-toggle');
+  var icon = document.getElementById('theme-icon');
+  function apply(theme){
+    document.documentElement.dataset.theme = theme;
+    var dark = theme === 'dark';
+    toggle.setAttribute('aria-pressed', String(dark));
+    toggle.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+    icon.textContent = dark ? 'light_mode' : 'dark_mode';
+  }
+  apply(document.documentElement.dataset.theme);
+  toggle.addEventListener('click', function(){
+    var next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('theme', next);
+    apply(next);
+  });
+
+  var navToggle = document.getElementById('nav-toggle');
+  var navMobile = document.getElementById('nav-mobile');
+  navToggle.addEventListener('click', function(){
+    var open = navMobile.classList.toggle('is-open');
+    navToggle.setAttribute('aria-expanded', String(open));
+  });
+  navMobile.querySelectorAll('a').forEach(function(a){
+    a.addEventListener('click', function(){ navMobile.classList.remove('is-open'); navToggle.setAttribute('aria-expanded','false'); });
+  });
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape') { navMobile.classList.remove('is-open'); navToggle.setAttribute('aria-expanded','false'); }
+  });
+
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (e.isIntersecting) { e.target.classList.add('is-visible'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(function(el, i){
+    el.style.transitionDelay = (i % 4) * 60 + 'ms';
+    io.observe(el);
+  });
+})();
+</script>
+</body>
+</html>

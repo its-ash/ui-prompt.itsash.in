@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cipherline - Private Proof Gateway</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=PT+Serif:wght@300&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<script>
+(function () {
+  var stored = localStorage.getItem('theme');
+  var theme = stored === 'dark' || stored === 'light' ? stored : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  document.documentElement.dataset.theme = theme;
+})();
+</script>
+<style>
+:root {
+  --primary: #597321;
+  --secondary: #314013;
+  --bg-primary: #fefefe;
+  --bg-secondary: #f4f4f2;
+  --bg-tertiary: #ebebe8;
+  --bg-hover: #e2e2de;
+  --text-primary: #111111;
+  --text-secondary: #333333;
+  --text-muted: #666666;
+  --text-caption: #777777;
+  --border-default: #d8d8d4;
+  --border-strong: #b8b8b2;
+  --border-accent: #597321;
+  --text-success: #314013;
+  --text-error: #b3261e;
+  --border-error: #b3261e;
+  --border-success: #314013;
+  --color-void: #000000;
+  --color-olive-depth: #597321;
+  --color-moss-shadow: #314013;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 4px;
+  --shadow-glow: 0 0 8px 0 rgba(89,115,33,0.35);
+  --spacing-gap: 16px;
+  --transition-fast: 150ms;
+  --transition-normal: 250ms;
+  --ease-standard: cubic-bezier(.4,0,.2,1);
+  --z-dropdown: 100;
+  --z-modal: 200;
+  --z-toast: 300;
+}
+:root[data-theme="dark"] {
+  --primary: #c5ff4a;
+  --secondary: #597321;
+  --bg-primary: #060606;
+  --bg-secondary: #1f1f1f;
+  --bg-tertiary: #252525;
+  --bg-hover: #313131;
+  --text-primary: #ffffff;
+  --text-secondary: #e5e5e5;
+  --text-muted: #7a7a8a;
+  --text-caption: #8a8a8a;
+  --border-default: #252525;
+  --border-strong: #3d3d3d;
+  --border-accent: #c5ff4a;
+  --text-success: #c5ff4a;
+  --text-error: #ff4a4a;
+  --border-error: #ff4a4a;
+  --border-success: #c5ff4a;
+  --color-void: #000000;
+  --color-olive-depth: #597321;
+  --color-moss-shadow: #314013;
+  --shadow-glow: 0 0 8px 0 rgba(197,255,74,0.45);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: 'Inter Tight', system-ui, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration: none; }
+img { max-width: 100%; display: block; }
+button { font: inherit; }
+.container { width: 100%; max-width: 1280px; margin: 0 auto; padding: 0 2rem; }
+@media (max-width: 768px) { .container { padding: 0 1.25rem; } }
+.section { padding: clamp(4rem, 8vw, 7rem) 0; }
+.section--tight { padding: clamp(3rem, 6vw, 5rem) 0; }
+.nav {
+  position: sticky; top: 0; z-index: var(--z-dropdown);
+  height: 64px; display: flex; align-items: center;
+  background: var(--bg-primary); border-bottom: 1px solid var(--border-default);
+}
+.nav__inner { display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 1rem; }
+.nav__brand { font-family: 'PT Serif', serif; font-weight: 300; font-size: 20px; letter-spacing: -0.01em; }
+.nav__links { display: flex; align-items: center; gap: 1.75rem; list-style: none; margin: 0; padding: 0; }
+.nav__link { font-family: 'Inter Tight', sans-serif; font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.18em; color: var(--text-primary); }
+.nav__actions { display: flex; align-items: center; gap: 0.75rem; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  min-height: 44px; padding: 0 1.25rem; border-radius: var(--radius-md);
+  font-family: 'Inter Tight', sans-serif; font-size: 13px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.12em; cursor: pointer;
+  border: 1px solid transparent; transition: transform var(--transition-fast) var(--ease-standard), filter var(--transition-fast) var(--ease-standard), box-shadow var(--transition-fast) var(--ease-standard);
+}
+.btn:active { transform: scale(0.97); }
+.btn:focus-visible { outline: 2px solid var(--border-accent); outline-offset: 2px; }
+.btn--primary { background: var(--primary); color: var(--color-void); box-shadow: var(--shadow-glow); }
+.btn--primary:hover { filter: brightness(1.08); }
+.btn--ghost { background: transparent; color: var(--text-primary); border-color: var(--border-strong); }
+.btn--ghost:hover { background: var(--bg-hover); }
+.btn--sm { min-height: 36px; padding: 0 0.9rem; font-size: 12px; }
+.theme-toggle {
+  width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-md); border: 1px solid var(--border-strong); background: transparent;
+  color: var(--text-primary); cursor: pointer;
+}
+.theme-toggle:focus-visible { outline: 2px solid var(--border-accent); outline-offset: 2px; }
+.material-symbols-rounded { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+.hero { position: relative; overflow: hidden; background: var(--bg-primary); }
+.hero__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: center; min-height: calc(100vh - 64px); }
+@media (max-width: 900px) { .hero__grid { grid-template-columns: 1fr; min-height: auto; padding: 4rem 0; } }
+.hero__eyebrow { font-family: 'Inter Tight', sans-serif; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.22em; color: var(--text-muted); margin-bottom: 1.5rem; }
+.hero__title { font-family: 'PT Serif', serif; font-weight: 300; font-size: clamp(2.75rem, 6vw, 5.5625rem); line-height: 0.94; letter-spacing: -0.031em; margin: 0 0 1.5rem; font-feature-settings: "liga","dlig"; }
+.hero__title em { font-style: italic; color: var(--primary); }
+.hero__body { font-size: 14px; line-height: 1.55; color: var(--text-secondary); max-width: 480px; margin: 0 0 2rem; }
+.hero__actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+.hero__visual { position: relative; min-height: 420px; display: flex; align-items: center; justify-content: center; }
+.dotted-globe { width: 100%; max-width: 460px; aspect-ratio: 1; }
+.dotted-globe circle { fill: var(--text-primary); opacity: 0.55; }
+.hero__divider { height: 6px; background: var(--primary); width: 100%; }
+.section-head { margin-bottom: 3rem; }
+.section-head h2 { font-family: 'PT Serif', serif; font-weight: 300; font-size: clamp(2rem, 4vw, 3rem); line-height: 1.05; letter-spacing: -0.02em; margin: 0 0 0.75rem; font-feature-settings: "liga","dlig"; }
+.section-head p { color: var(--text-secondary); max-width: 65ch; margin: 0; }
+.eyebrow { font-family: 'Inter Tight', sans-serif; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.22em; color: var(--text-muted); margin-bottom: 0.75rem; }
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+@media (max-width: 900px) { .cards { grid-template-columns: 1fr; } }
+.card { background: var(--bg-secondary); border: 1px solid var(--border-default); border-radius: var(--radius-lg); padding: 40px; display: flex; flex-direction: column; gap: 1rem; transition: transform var(--transition-normal) var(--ease-standard), border-color var(--transition-normal) var(--ease-standard); }
+.card:hover { transform: translateY(-2px); border-color: var(--border-strong); }
+.card__meta { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.12em; }
+.card__title { font-family: 'PT Serif', serif; font-weight: 300; font-size: clamp(2rem, 3vw, 2.5rem); line-height: 1.05; margin: 0; font-feature-settings: "liga","dlig"; }
+.card__title em { font-style: italic; color: var(--primary); }
+.card__body { color: var(--text-secondary); font-size: 14px; margin: 0; }
+.code-panel { margin-top: auto; background: var(--bg-tertiary); border: 1px solid var(--border-default); border-radius: var(--radius-sm); padding: 1rem; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.55; color: var(--text-secondary); }
+.code-panel .tok { color: var(--primary); }
+.code-panel .status { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 9999px; border: 1px solid var(--border-accent); color: var(--primary); font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; }
+.steps { display: grid; gap: 2rem; }
+.step { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: center; padding: 2rem 0; border-bottom: 1px solid var(--border-default); }
+.step:last-child { border-bottom: none; }
+@media (max-width: 900px) { .step { grid-template-columns: 1fr; } }
+.step:nth-child(even) .step__text { order: 2; }
+@media (max-width: 900px) { .step:nth-child(even) .step__text { order: 0; } }
+.step__meta { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--primary); text-transform: uppercase; letter-spacing: 0.16em; margin-bottom: 0.75rem; }
+.step__title { font-family: 'PT Serif', serif; font-weight: 300; font-size: clamp(1.75rem, 3vw, 2.25rem); line-height: 1.05; margin: 0 0 0.75rem; font-feature-settings: "liga","dlig"; }
+.step__body { color: var(--text-secondary); margin: 0; max-width: 52ch; }
+.step__panel { background: var(--bg-secondary); border: 1px solid var(--border-default); border-radius: var(--radius-lg); padding: 2rem; min-height: 180px; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; color: var(--text-muted); }
+.testimonials { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+@media (max-width: 900px) { .testimonials { grid-template-columns: 1fr; } }
+.quote-card { background: var(--bg-secondary); border: 1px solid var(--border-default); border-radius: var(--radius-lg); padding: 2rem; display: flex; flex-direction: column; gap: 1.25rem; }
+.quote-card blockquote { margin: 0; font-family: 'PT Serif', serif; font-weight: 300; font-size: 1.125rem; line-height: 1.4; color: var(--text-primary); }
+.quote-card blockquote::before { content: "\201C"; color: var(--primary); margin-right: 0.25rem; }
+.quote-card__author { display: flex; align-items: center; gap: 0.75rem; }
+.avatar { width: 40px; height: 40px; border-radius: 9999px; background: var(--bg-tertiary); border: 1px solid var(--border-strong); display: flex; align-items: center; justify-content: center; font-family: 'Inter Tight', sans-serif; font-weight: 600; font-size: 13px; color: var(--primary); }
+.quote-card__name { font-weight: 600; font-size: 14px; }
+.quote-card__role { color: var(--text-muted); font-size: 13px; }
+.pricing { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; align-items: stretch; }
+@media (max-width: 900px) { .pricing { grid-template-columns: 1fr; } }
+.price-card { background: var(--bg-secondary); border: 1px solid var(--border-default); border-radius: var(--radius-lg); padding: 2rem; display: flex; flex-direction: column; gap: 1.25rem; }
+.price-card--featured { border-color: var(--border-accent); box-shadow: var(--shadow-glow); }
+.price-card__tier { font-family: 'Inter Tight', sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.18em; color: var(--text-muted); }
+.price-card__price { font-family: 'PT Serif', serif; font-weight: 300; font-size: 3rem; line-height: 1; margin: 0; }
+.price-card__price span { font-size: 1rem; color: var(--text-muted); font-family: 'Inter Tight', sans-serif; }
+.price-card__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.6rem; color: var(--text-secondary); font-size: 14px; }
+.price-card__list li::before { content: "+ "; color: var(--primary); font-family: 'JetBrains Mono', monospace; }
+.faq { display: flex; flex-direction: column; gap: 0.75rem; max-width: 800px; }
+.faq details { background: var(--bg-secondary); border: 1px solid var(--border-default); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; }
+.faq details[open] { border-color: var(--border-strong); }
+.faq summary { cursor: pointer; font-weight: 600; font-size: 15px; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; color: var(--primary); font-family: 'JetBrains Mono', monospace; font-size: 18px; }
+.faq details[open] summary::after { content: "-"; }
+.faq details p { color: var(--text-secondary); margin: 0.75rem 0 0; }
+.cta-band { text-align: center; background: var(--bg-secondary); border-top: 1px solid var(--border-default); border-bottom: 1px solid var(--border-default); }
+.cta-band h2 { font-family: 'PT Serif', serif; font-weight: 300; font-size: clamp(2rem, 4vw, 3rem); line-height: 1.05; margin: 0 0 1rem; font-feature-settings: "liga","dlig"; }
+.cta-band h2 em { font-style: italic; color: var(--primary); }
+.cta-band p { color: var(--text-secondary); max-width: 60ch; margin: 0 auto 2rem; }
+.footer { padding: 3rem 0 2rem; border-top: 1px solid var(--border-default); }
+.footer__inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+.footer__links { display: flex; gap: 1.25rem; flex-wrap: wrap; }
+.footer__links a { color: var(--text-muted); font-size: 13px; text-transform: uppercase; letter-spacing: 0.12em; }
+.footer__copy { color: var(--text-muted); font-size: 13px; }
+.reveal { opacity: 0; transform: translateY(16px); transition: opacity var(--transition-normal) var(--ease-standard), transform var(--transition-normal) var(--ease-standard); }
+.reveal.is-visible { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: opacity 200ms ease; }
+  .card, .btn { transition: none; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .card, .price-card, .quote-card { background: var(--bg-secondary); backdrop-filter: none; }
+}
+@media (max-width: 768px) {
+  .nav__links { display: none; }
+  .nav__links.is-open { display: flex; flex-direction: column; position: absolute; top: 64px; left: 0; right: 0; background: var(--bg-primary); border-bottom: 1px solid var(--border-default); padding: 1rem 1.25rem; gap: 1rem; }
+  .nav__toggle { display: inline-flex; }
+}
+.nav__toggle { display: none; }
+[hidden] { display: none !important; }
+</style>
+<style id="pd-icon-fix">.material-symbols-rounded{font-family:'Material Symbols Rounded'!important;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;word-wrap:normal;direction:ltr;font-feature-settings:'liga';-webkit-font-feature-settings:'liga'}</style>
+</head>
+<body>
+<header class="nav">
+  <div class="container nav__inner">
+    <a class="nav__brand" href="#">Cipherline</a>
+    <button class="nav__toggle theme-toggle" id="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">
+      <span class="material-symbols-rounded">menu</span>
+    </button>
+    <ul class="nav__links" id="nav-links">
+      <li><a class="nav__link" href="#features">Features</a></li>
+      <li><a class="nav__link" href="#how">How it works</a></li>
+      <li><a class="nav__link" href="#pricing">Pricing</a></li>
+      <li><a class="nav__link" href="#faq">FAQ</a></li>
+      <li><a class="nav__link" href="#contact">Contact</a></li>
+    </ul>
+    <div class="nav__actions">
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-rounded" id="theme-icon">dark_mode</span>
+      </button>
+      <a class="btn btn--primary btn--sm" href="#cta">Start building</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="container hero__grid">
+      <div>
+        <div class="hero__eyebrow">[ BUILT FOR HUMANS & AGENTS ]</div>
+        <h1 class="hero__title">Prove anything. Reveal <em>nothing.</em></h1>
+        <p class="hero__body">Cipherline turns raw credentials into verifiable proofs your users can share without exposing the underlying data. Ship private verification in minutes.</p>
+        <div class="hero__actions">
+          <a class="btn btn--primary" href="#cta">Start building</a>
+          <a class="btn btn--ghost" href="#how">See how it works</a>
+        </div>
+      </div>
+      <div class="hero__visual" aria-hidden="true">
+        <svg class="dotted-globe" viewBox="0 0 400 400" role="img" aria-label="Dotted globe illustration">
+          <g>
+            <circle cx="200" cy="200" r="150" fill="none" stroke="var(--border-default)" stroke-width="1"/>
+          </g>
+          <g>
+            <circle cx="80" cy="120" r="2"/><circle cx="110" cy="95" r="2"/><circle cx="145" cy="80" r="2"/><circle cx="185" cy="72" r="2"/><circle cx="225" cy="72" r="2"/><circle cx="265" cy="82" r="2"/><circle cx="300" cy="100" r="2"/><circle cx="325" cy="125" r="2"/>
+            <circle cx="65" cy="160" r="2"/><circle cx="95" cy="140" r="2"/><circle cx="130" cy="125" r="2"/><circle cx="170" cy="118" r="2"/><circle cx="210" cy="116" r="2"/><circle cx="250" cy="120" r="2"/><circle cx="290" cy="130" r="2"/><circle cx="325" cy="148" r="2"/><circle cx="345" cy="175" r="2"/>
+            <circle cx="55" cy="200" r="2"/><circle cx="85" cy="182" r="2"/><circle cx="120" cy="170" r="2"/><circle cx="160" cy="164" r="2"/><circle cx="200" cy="162" r="2"/><circle cx="240" cy="164" r="2"/><circle cx="280" cy="172" r="2"/><circle cx="315" cy="186" r="2"/><circle cx="340" cy="210" r="2"/>
+            <circle cx="60" cy="240" r="2"/><circle cx="90" cy="222" r="2"/><circle cx="125" cy="212" r="2"/><circle cx="165" cy="208" r="2"/><circle cx="205" cy="208" r="2"/><circle cx="245" cy="212" r="2"/><circle cx="285" cy="222" r="2"/><circle cx="320" cy="240" r="2"/><circle cx="340" cy="265" r="2"/>
+            <circle cx="75" cy="275" r="2"/><circle cx="105" cy="260" r="2"/><circle cx="140" cy="252" r="2"/><circle cx="180" cy="248" r="2"/><circle cx="220" cy="248" r="2"/><circle cx="260" cy="254" r="2"/><circle cx="295" cy="266" r="2"/><circle cx="320" cy="288" r="2"/>
+            <circle cx="95" cy="305" r="2"/><circle cx="130" cy="295" r="2"/><circle cx="170" cy="290" r="2"/><circle cx="210" cy="290" r="2"/><circle cx="250" cy="296" r="2"/><circle cx="285" cy="310" r="2"/>
+            <circle cx="125" cy="325" r="2"/><circle cx="165" cy="320" r="2"/><circle cx="205" cy="322" r="2"/><circle cx="245" cy="328" r="2"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+    <div class="hero__divider"></div>
+  </section>
+
+  <section class="section" id="features">
+    <div class="container">
+      <div class="section-head">
+        <div class="eyebrow">Features</div>
+        <h2>Private by design, fast by default</h2>
+        <p>Three primitives cover most verification flows. Compose them into full user journeys without touching raw data.</p>
+      </div>
+      <div class="cards">
+        <article class="card reveal">
+          <div class="card__meta">PRIMITIVE / 01</div>
+          <h3 class="card__title">Proof <em>issuance</em></h3>
+          <p class="card__body">Turn a credential into a signed proof in one call. No storage, no data movement, no extra infrastructure.</p>
+          <div class="code-panel">
+            <div><span class="tok">proof</span> = issue(credential, policy)</div>
+            <div><span class="tok">verify</span>(proof) <span class="tok">-></span> true</div>
+            <span class="status">status: ready</span>
+          </div>
+        </article>
+        <article class="card reveal">
+          <div class="card__meta">PRIMITIVE / 02</div>
+          <h3 class="card__title">Policy <em>engine</em></h3>
+          <p class="card__body">Define who can prove what, when, and to whom. Policies live in code and version with your app.</p>
+          <div class="code-panel">
+            <div><span class="tok">policy</span> = { age: ">=18", region: "EU" }</div>
+            <div><span class="tok">enforce</span>(proof, policy)</div>
+            <span class="status">status: active</span>
+          </div>
+        </article>
+        <article class="card reveal">
+          <div class="card__meta">PRIMITIVE / 03</div>
+          <h3 class="card__title">Audit <em>trail</em></h3>
+          <p class="card__body">Every proof leaves a tamper-evident record. Review activity without exposing user payloads.</p>
+          <div class="code-panel">
+            <div><span class="tok">log</span> = audit(proofId)</div>
+            <div><span class="tok">export</span>(log, format="json")</div>
+            <span class="status">status: logged</span>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="how">
+    <div class="container">
+      <div class="section-head">
+        <div class="eyebrow">How it works</div>
+        <h2>Three steps from credential to proof</h2>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <div class="step__text">
+            <div class="step__meta">STEP 01</div>
+            <h3 class="step__title">Connect a source</h3>
+            <p class="step__body">Point Cipherline at the credential issuer or wallet your users already trust. No migration required.</p>
+          </div>
+          <div class="step__panel">source.connect()</div>
+        </div>
+        <div class="step reveal">
+          <div class="step__text">
+            <div class="step__meta">STEP 02</div>
+            <h3 class="step__title">Define the policy</h3>
+            <p class="step__body">Write the rule in plain code. Cipherline checks the proof against it at verification time.</p>
+          </div>
+          <div class="step__panel">policy.define()</div>
+        </div>
+        <div class="step reveal">
+          <div class="step__text">
+            <div class="step__meta">STEP 03</div>
+            <h3 class="step__title">Share the proof</h3>
+            <p class="step__body">Users present a proof, not their data. Verifiers get a yes or no, nothing more.</p>
+          </div>
+          <div class="step__panel">proof.share()</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="testimonials">
+    <div class="container">
+      <div class="section-head">
+        <h2>Teams shipping private verification</h2>
+      </div>
+      <div class="testimonials">
+        <article class="quote-card reveal">
+          <blockquote>We replaced a week of manual checks with a single proof flow. Users never see the difference, which is the point.</blockquote>
+          <div class="quote-card__author">
+            <div class="avatar">MR</div>
+            <div>
+              <div class="quote-card__name">Maya Reyes</div>
+              <div class="quote-card__role">Head of Product, Northwind</div>
+            </div>
+          </div>
+        </article>
+        <article class="quote-card reveal">
+          <blockquote>The policy engine let us enforce region rules without storing passports. Legal signed off in a day.</blockquote>
+          <div class="quote-card__author">
+            <div class="avatar">DK</div>
+            <div>
+              <div class="quote-card__name">Daniel Kwan</div>
+              <div class="quote-card__role">Engineering Lead, Lattice</div>
+            </div>
+          </div>
+        </article>
+        <article class="quote-card reveal">
+          <blockquote>Audit logs gave us the evidence we needed for compliance without exposing user data.</blockquote>
+          <div class="quote-card__author">
+            <div class="avatar">SP</div>
+            <div>
+              <div class="quote-card__name">Sara Patel</div>
+              <div class="quote-card__role">Security Officer, Meridian</div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="pricing">
+    <div class="container">
+      <div class="section-head">
+        <div class="eyebrow">Pricing</div>
+        <h2>Start free, scale with proofs</h2>
+      </div>
+      <div class="pricing">
+        <article class="price-card reveal">
+          <div class="price-card__tier">Starter</div>
+          <h3 class="price-card__price">$0<span>/mo</span></h3>
+          <ul class="price-card__list">
+            <li>1,000 proofs per month</li>
+            <li>Core policy engine</li>
+            <li>Community support</li>
+          </ul>
+          <a class="btn btn--ghost" href="#cta">Start free</a>
+        </article>
+        <article class="price-card price-card--featured reveal">
+          <div class="price-card__tier">Growth</div>
+          <h3 class="price-card__price">$49<span>/mo</span></h3>
+          <ul class="price-card__list">
+            <li>50,000 proofs per month</li>
+            <li>Advanced policies</li>
+            <li>Audit export</li>
+            <li>Email support</li>
+          </ul>
+          <a class="btn btn--primary" href="#cta">Choose growth</a>
+        </article>
+        <article class="price-card reveal">
+          <div class="price-card__tier">Enterprise</div>
+          <h3 class="price-card__price">Custom</h3>
+          <ul class="price-card__list">
+            <li>Unlimited proofs</li>
+            <li>Dedicated instance</li>
+            <li>SLA and onboarding</li>
+          </ul>
+          <a class="btn btn--ghost" href="#cta">Talk to us</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="faq">
+    <div class="container">
+      <div class="section-head">
+        <div class="eyebrow">FAQ</div>
+        <h2>Questions, answered</h2>
+      </div>
+      <div class="faq">
+        <details>
+          <summary>What data does Cipherline store?</summary>
+          <p>None by default. Proofs are generated and verified without storing the underlying credential.</p>
+        </details>
+        <details>
+          <summary>Can I self host?</summary>
+          <p>Yes. Enterprise plans include a dedicated instance you control end to end.</p>
+        </details>
+        <details>
+          <summary>How long does integration take?</summary>
+          <p>Most teams ship a first proof flow in under a day using the starter kit.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="section cta-band" id="cta">
+    <div class="container">
+      <h2>Build private verification <em>today</em></h2>
+      <p>Start with the free tier and ship your first proof before lunch.</p>
+      <a class="btn btn--primary" href="#">Start building</a>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container footer__inner">
+    <div class="nav__brand">Cipherline</div>
+    <div class="footer__links">
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a href="#contact">Contact</a>
+    </div>
+    <div class="footer__copy">Copyright 2026 Cipherline. All rights reserved.</div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var toggle = document.getElementById('theme-toggle');
+  var icon = document.getElementById('theme-icon');
+  var navToggle = document.getElementById('nav-toggle');
+  var navLinks = document.getElementById('nav-links');
+
+  function syncTheme() {
+    var theme = document.documentElement.dataset.theme;
+    var isDark = theme === 'dark';
+    toggle.setAttribute('aria-pressed', String(isDark));
+    toggle.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+    icon.textContent = isDark ? 'light_mode' : 'dark_mode';
+  }
+  syncTheme();
+
+  toggle.addEventListener('click', function () {
+    var next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    localStorage.setItem('theme', next);
+    syncTheme();
+  });
+
+  navToggle.addEventListener('click', function () {
+    var open = navLinks.classList.toggle('is-open');
+    navToggle.setAttribute('aria-expanded', String(open));
+  });
+
+  navLinks.addEventListener('click', function (e) {
+    if (e.target.tagName === 'A') {
+      navLinks.classList.remove('is-open');
+      navToggle.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      navLinks.classList.remove('is-open');
+      navToggle.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll('.reveal').forEach(function (el, i) {
+    el.style.transitionDelay = (i % 4) * 60 + 'ms';
+    observer.observe(el);
+  });
+})();
+</script>
+</body>
+</html>

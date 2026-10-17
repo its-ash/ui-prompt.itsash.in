@@ -6,9 +6,9 @@ const RAW_DIR = path.resolve('design/raw');
 const OUT_FILE = path.resolve('design/categories.json');
 const STATE_FILE = path.resolve('.category-state.json');
 const CONCURRENCY = 8;
-const BASEURL = process.env.OPENROUTER_BASE_URL ?? 'https://openrouter.ai/api/v1';
-const MODEL = process.env.PROMPT_MODEL ?? 'z-ai/glm-5.3-flash';
-const API_KEY = process.env.OPENROUTER_API_KEY;
+const BASEURL = (process.env.LLM_URL ?? process.env.OPENROUTER_BASE_URL ?? 'https://openrouter.ai/api/v1').replace(/\/+$/, '');
+const MODEL = process.env.LLM_MODELS?.split(',')[0].trim() ?? process.env.PROMPT_MODEL ?? 'z-ai/glm-5.3-flash';
+const API_KEY = process.env.LLM_KEY ?? process.env.OPENROUTER_API_KEY;
 
 const CATEGORY_LIST = [
   'Art & Illustration',
@@ -39,7 +39,7 @@ Rules:
 - No markdown fences, no commentary, JSON only.`;
 
 if (!API_KEY) {
-  console.error('[categorize] OPENROUTER_API_KEY is not set');
+  console.error('[categorize] LLM_KEY or OPENROUTER_API_KEY is not set');
   process.exit(1);
 }
 
@@ -79,7 +79,8 @@ async function classify(file) {
             { role: 'user', content: `Theme name: ${title || path.basename(file, '.md')}\nDescription: ${desc}` },
           ],
           temperature: 0.1,
-          max_tokens: 500,
+          max_tokens: 4000,
+          ...(process.env.LLM_REASONING ? { reasoning_effort: process.env.LLM_REASONING } : {}),
           response_format: { type: 'json_object' },
         }),
       });
@@ -87,12 +88,13 @@ async function classify(file) {
       const data = await res.json();
       let text = data.choices?.[0]?.message?.content?.trim() ?? '';
       text = text.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+      text = text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1);
       const obj = JSON.parse(text);
       if (!obj.name || !obj.category || !CATEGORY_LIST.includes(obj.category)) {
         throw new Error(`bad category: ${obj.category}`);
       }
       output[path.basename(file, '.md')] = {
-        name: obj.name,
+        name: obj.name.replace(/\s*[—:-]?\s*Style Reference\s*$/i, '').trim(),
         category: obj.category,
         keywords: Array.isArray(obj.keywords) ? obj.keywords.slice(0, 8) : [],
         era: obj.era ?? '',

@@ -1,0 +1,60 @@
+# Switch-Lit — Landing Page Build Prompt
+
+You are an expert frontend engineer. Build a complete, responsive landing page in the **Switch-Lit** editorial brutalist style: inked editorial grid on warm cream paper. The page must be a single max-width 1200px centered column on a Manuscript Cream canvas, with full-width nav and footer bars. Invent a fictional brand name, product, and all copy — never use any real brand name, logo, trademark, or product name from the source spec.
+
+## 1. Architecture & Rules
+
+**CSS-First, Zero Inline CSS.** All styling lives in `style.css`. No `style="..."` attributes. Use class/ID selectors only. HTML stays semantic and styling-agnostic.
+
+**CSS Variables.** Define all tokens in `:root`:
+- Colors: `--color-manuscript-cream: #f9f9f7`, `--color-press-black: #000000`, `--color-sage-border: #d2ddd2`, `--color-mist-green: #dee5dd`, `--color-paper-shadow: #edf0e9`, `--color-smoke: #c7c7c6`, `--color-highlighter-lime: #edfe5e`, `--color-cornflower-wash: #bed4fb`, `--color-spring-green: #31e992`.
+- Also map to generic tokens: `--primary`, `--bg-primary`, `--bg-secondary`, `--text-primary`, `--text-secondary`, `--border-default`, `--border-error`, `--border-success`, `--text-success`, `--text-error`.
+- Radius: `--radius-sm: 3px`, `--radius-md: 6px`, `--radius-lg: 12px`, `--radius-pill: 24px`.
+- Shadow: `--shadow-sm: rgba(0,0,0,0.2) 0px 2px 6px 0px`.
+- Spacing: use the provided scale tokens `--spacing-5` through `--spacing-160`.
+- Transitions: `--transition-fast: 150ms ease`, `--transition-normal: 250ms ease`, `--ease-standard: ease`.
+- Z-index: `--z-dropdown`, `--z-modal`, `--z-toast`.
+- Font: `--font-base` bound to the Google Font substitute.
+
+**Light Theme Only — Exception Clause.** The Switch-Lit system defines cream as its permanent surface and must never invert to dark mode. Therefore, do NOT implement a dark mode toggle or `prefers-color-scheme: dark` overrides for this theme; this is an explicit one-line exception to the usual mandatory dark mode rule. All contrast pairings still hold: dark text on light backgrounds only.
+
+**Flexbox & Mobile-First.** All layouts use `display: flex` with `align-items: center` by default. Convert rows to columns on small viewports. No horizontal scroll.
+
+**Tailwind / CSS.** Use clean custom CSS driven by Tailwind `@layer`/`@apply` if desired, or plain CSS. All utilities map to CSS variables or reusable classes (`.btn`, `.card`, `.input-group`). Enforce one class-naming convention (BEM) throughout.
+
+**Google Fonts Mandatory.** Use Google Fonts only — no inline SVGs, no local icon files. Use Google Material Symbols for icons. Font substitutes (Google-available): Inter for body/UI (ABCArizonaSans role), Playfair Display or Fraunces for flared serif headings (ABCArizonaFlare role), Oswald or Anton for heavy display (ABCCameraHeavy role), and Inter Bold for subheadings (ABCArizonaMixVariable role). Bind body font to `--font-base`. Include `<link>` tags in `<head>`.
+
+## 2. Typography Scale
+
+Implement tokens: `--text-caption` (11px/1/0.363px), `--text-body` (15px/1.18/0.6px), `--text-body-lg` (18px/1.27/1.206px), `--text-subheading` (20px/1.15/0.5px), `--text-heading-sm` (28px/1.07/-0.056px), `--text-heading` (57px/1.04/0.114px), `--text-display` (68px/0.74/-0.068px). Body text uses positive tracking 0.04–0.067em. Display type uses tight leading 0.74.
+
+## 3. Components to Build
+
+- **Outlined Button:** transparent fill, 1px black border, 6px radius, 12px vertical / 20px horizontal padding. Label Inter 13–15px / 500, tracking 0.04em. Hover: fill Paper Shadow (#edf0e9), no shadow. All button states (hover, focus ring, active scale 0.97, loading spinner, disabled opacity 0.5, success/error) via CSS classes. Min touch target 44x44px.
+- **Accent Filled Button:** lime or cornflower fill, 1px black border, same padding. Black text.
+- **Pill Button:** 24px radius, 29px horizontal padding, 1px black border.
+- **Ghost Text Button:** no border/fill, underline on hover.
+- **Bordered Card:** cream fill, 1–2px black border, 12px radius, 20px padding. No shadow.
+- **Accent Card:** lime/cornflower/spring-green fill, black border, same geometry.
+- **Tag/Chip:** 11px / 700, tracking 0.067em, all caps, 6px radius, 6–8px padding.
+- **Input Field:** cream fill, 1px black border, 6px radius. Placeholder mist green. Focus: border thickens to 2px.
+- **Top Nav Bar:** full-width cream, 1px black bottom border (96px hairline). Wordmark left (Inter 15px / 700), links right (Inter 13px / 500, 23px gap). Active link 1px black underline.
+- **Hero Display Block:** no background/image. Heavy display 64–68px / 700 / line-height 0.74. Left-aligned within 1200px. Followed by body paragraph 18px / 400 / 1.27 / tracking 0.067em, max 65ch.
+- **Section Heading:** flared serif 57px / 300–400 / 1.04.
+- **Subheading/Label:** 20px / 700 / 1.15 / 0.025em.
+- **Body Copy:** 15–18px / 400 / 1.18–1.27 / 0.04–0.067em, left-aligned.
+- **Footer:** cream background, 1px black top hairline. Multi-column link grid, Inter 13px, 20px column gap.
+
+## 4. Sections Required
+
+Hero, Features (3 cards), How It Works (3 steps), Testimonials, Pricing (3 tiers), FAQ, Final CTA, Footer with secondary links. Sections separated by 1px black hairlines, 80px vertical gaps. Card grids: 2–3 columns desktop, 20px gutters, 20px internal padding.
+
+## 5. UX & Accessibility
+
+Responsive by default, no horizontal overflow. CSS transitions on state changes, respect `prefers-reduced-motion`. Sufficient contrast (black on cream). Semantic HTML5, ARIA roles/labels, logical focus order, full keyboard operability, `aria-live` for dynamic feedback. Every interaction has visible feedback. Destructive actions visually distinct. Card hover: `translateY(-2px)`. Focus-within highlights card border. Skeleton shimmer for loading states. Empty states with Material Icon + guidance text. Modal states (opening/open/loading/success/error/closing) with backdrop, close button, Esc/overlay close, focus trapping.
+
+## 6. Deliverables
+
+Separate `index.html`, `style.css`, `script.js`. No inline `<script>` beyond single deferred entry point. BEM naming. No lorem-ipsum where real copy is supplied; placeholders only where unspecified. Invent fictional brand/product/copy. Do not use the real brand name, logo, trademarks, or product names.
+
+Output only the finished prompt. No preamble. Mirror sections 1–4 structure.

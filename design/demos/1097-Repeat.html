@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quillnote - Editorial Highlighter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<style>
+:root {
+  --color-ink: #171717;
+  --color-paper: #ffffff;
+  --color-notebook-cream: #ede7e2;
+  --color-olive-ink: #37352f;
+  --color-highlight-lime: #f5ff7d;
+  --color-lavender-wash: #e2d8ff;
+  --color-periwinkle-wash: #c3d5fc;
+  --bg-primary: var(--color-paper);
+  --bg-secondary: var(--color-notebook-cream);
+  --text-primary: var(--color-ink);
+  --text-secondary: var(--color-olive-ink);
+  --text-success: #1f6f3f;
+  --text-error: #9f2d2d;
+  --border-default: var(--color-ink);
+  --border-error: #9f2d2d;
+  --border-success: #1f6f3f;
+  --radius-sm: 3px;
+  --radius-md: 8px;
+  --radius-lg: 20px;
+  --radius-xl: 25px;
+  --radius-pill: 100px;
+  --shadow-sm: rgba(0,0,0,0.01) 0px 4px 8px -2px;
+  --spacing-4: 4px;
+  --spacing-8: 8px;
+  --spacing-12: 12px;
+  --spacing-16: 16px;
+  --spacing-24: 24px;
+  --spacing-40: 40px;
+  --spacing-48: 48px;
+  --spacing-96: 96px;
+  --spacing-gap: 4px;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --ease-standard: cubic-bezier(.2,.8,.2,1);
+  --z-dropdown: 100;
+  --z-modal: 200;
+  --z-toast: 300;
+  --font-poppins: 'Poppins', sans-serif;
+  --font-montserrat: 'Montserrat', sans-serif;
+  --text-caption: 13px;
+  --text-body-sm: 15px;
+  --text-body: 17px;
+  --text-subheading: 20px;
+  --text-heading-sm: 24px;
+  --text-heading: 29px;
+  --text-heading-lg: 34px;
+  --text-display: 37px;
+  --lh-tight: 1.2;
+  --lh-body: 1.5;
+  --lh-body-loose: 1.6;
+}
+:root[data-theme="dark"] {
+  --color-ink: #f5f5f5;
+  --color-paper: #111111;
+  --color-notebook-cream: #1a1a1a;
+  --color-olive-ink: #c9c5bf;
+  --color-highlight-lime: #d8e86a;
+  --color-lavender-wash: #3a3350;
+  --color-periwinkle-wash: #2b3a5c;
+  --bg-primary: var(--color-paper);
+  --bg-secondary: var(--color-notebook-cream);
+  --text-primary: var(--color-ink);
+  --text-secondary: var(--color-olive-ink);
+  --border-default: var(--color-ink);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-ink: #f5f5f5;
+    --color-paper: #111111;
+    --color-notebook-cream: #1a1a1a;
+    --color-olive-ink: #c9c5bf;
+    --color-highlight-lime: #d8e86a;
+    --color-lavender-wash: #3a3350;
+    --color-periwinkle-wash: #2b3a5c;
+    --bg-primary: var(--color-paper);
+    --bg-secondary: var(--color-notebook-cream);
+    --text-primary: var(--color-ink);
+    --text-secondary: var(--color-olive-ink);
+    --border-default: var(--color-ink);
+  }
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: var(--font-montserrat);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: var(--lh-body);
+}
+img { max-width: 100%; display: block; }
+a { color: inherit; text-decoration: none; }
+.container { width: min(1200px, calc(100% - 2.5rem)); margin: 0 auto; }
+.section { padding: var(--spacing-96) 0; }
+.section--cream { background: var(--bg-secondary); }
+.section--lime { background: var(--color-highlight-lime); color: var(--color-ink); }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--spacing-8);
+  min-height: 44px; padding: var(--spacing-12) var(--spacing-24);
+  border-radius: var(--radius-pill); border: 1px solid var(--border-default);
+  font-family: var(--font-montserrat); font-size: var(--text-body-sm); font-weight: 600;
+  cursor: pointer; transition: var(--transition-normal);
+}
+.btn--primary { background: var(--color-ink); color: var(--color-paper); }
+.btn--primary:hover { filter: brightness(1.08); box-shadow: var(--shadow-sm); }
+.btn--primary:active { transform: scale(0.97); }
+.btn--primary:focus-visible { outline: 3px solid var(--color-highlight-lime); outline-offset: 2px; }
+.btn--primary:disabled { opacity: 0.5; filter: grayscale(1); cursor: not-allowed; }
+.btn--secondary { background: transparent; color: var(--text-primary); }
+.btn--loading { position: relative; color: transparent; }
+.btn--loading::after {
+  content: ''; position: absolute; width: 18px; height: 18px;
+  border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.site-header { position: sticky; top: 0; z-index: var(--z-dropdown); background: var(--bg-primary); border-bottom: 1px solid var(--border-default); }
+.site-header__inner { display: flex; align-items: center; justify-content: space-between; min-height: 68px; gap: var(--spacing-16); }
+.site-nav { display: flex; align-items: center; gap: var(--spacing-24); }
+.site-nav__links { display: flex; gap: var(--spacing-24); list-style: none; margin: 0; padding: 0; }
+.site-nav__link { font-size: var(--text-body-sm); font-weight: 500; }
+.theme-toggle { width: 44px; height: 44px; border-radius: var(--radius-pill); border: 1px solid var(--border-default); background: var(--bg-primary); color: var(--text-primary); }
+.hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: var(--spacing-40); align-items: center; min-height: 78vh; }
+.hero__title { font-family: var(--font-poppins); font-size: var(--text-display); line-height: var(--lh-tight); font-weight: 600; text-transform: uppercase; letter-spacing: -0.02em; }
+.hero__subtitle { font-size: var(--text-body); max-width: 60ch; margin-top: var(--spacing-16); }
+.hero__visual { background: var(--color-lavender-wash); border-radius: var(--radius-xl); min-height: 360px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.hero__card { background: var(--color-paper); border: 1px solid var(--border-default); border-radius: var(--radius-xl); padding: var(--spacing-40); text-align: center; }
+.hero__card a { display: inline-block; margin-top: var(--spacing-16); text-decoration: underline; font-size: var(--text-body-sm); }
+.section__title { font-family: var(--font-poppins); font-size: var(--text-heading); line-height: var(--lh-tight); font-weight: 600; text-transform: uppercase; letter-spacing: -0.02em; }
+.section__title::after { content: ''; display: block; width: 72px; height: 2px; background: var(--border-default); margin-top: var(--spacing-12); }
+.cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-24); margin-top: var(--spacing-40); }
+.card { background: var(--bg-primary); border: 1px solid var(--border-default); border-radius: var(--radius-xl); overflow: hidden; transition: var(--transition-normal); }
+.card:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+.card__image { aspect-ratio: 4/3; background: var(--color-periwinkle-wash); }
+.card__body { padding: var(--spacing-24); }
+.card__title { font-family: var(--font-poppins); font-size: var(--text-subheading); font-weight: 600; }
+.steps { display: grid; grid-template-columns: repeat(3,1fr); gap: var(--spacing-24); margin-top: var(--spacing-40); }
+.step { background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-24); }
+.step__number { font-family: var(--font-poppins); font-size: var(--text-heading); font-weight: 600; }
+.testimonials { display: grid; grid-template-columns: repeat(2,1fr); gap: var(--spacing-24); margin-top: var(--spacing-40); }
+.testimonial { background: var(--bg-primary); border: 1px solid var(--border-default); border-radius: var(--radius-xl); padding: var(--spacing-24); }
+.testimonial__stat { font-family: var(--font-poppins); font-size: var(--text-subheading); font-weight: 600; }
+.pricing { display: grid; grid-template-columns: repeat(3,1fr); gap: var(--spacing-24); margin-top: var(--spacing-40); }
+.pricing__tier { background: var(--bg-primary); border: 1px solid var(--border-default); border-radius: var(--radius-xl); padding: var(--spacing-24); display: flex; flex-direction: column; gap: var(--spacing-16); }
+.pricing__tier--featured { background: var(--color-notebook-cream); box-shadow: var(--shadow-sm); }
+.pricing__price { font-family: var(--font-poppins); font-size: var(--text-heading-lg); font-weight: 600; }
+.faq details { border: 1px solid var(--border-default); border-radius: var(--radius-lg); padding: var(--spacing-16); margin-bottom: var(--spacing-12); }
+.faq summary { cursor: pointer; font-weight: 600; }
+.final-cta { background: var(--color-notebook-cream); text-align: center; padding: var(--spacing-96) 0; }
+.footer { background: var(--bg-secondary); padding: var(--spacing-48) 0; }
+.footer__grid { display: grid; grid-template-columns: repeat(4,1fr); gap: var(--spacing-24); }
+.logo-tile { background: var(--color-olive-ink); color: var(--color-paper); border-radius: var(--radius-xl); aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+.feature-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-40); align-items: center; padding: var(--spacing-40) 0; }
+.feature-row__media { background: var(--color-periwinkle-wash); border-radius: var(--radius-lg); min-height: 280px; }
+.bullets { margin: var(--spacing-16) 0 0; padding-left: var(--spacing-24); }
+@media (max-width: 900px) {
+  .hero, .feature-row, .cards-grid, .steps, .testimonials, .pricing, .footer__grid { grid-template-columns: 1fr; }
+  .site-nav__links { display: none; }
+  .site-nav--open .site-nav__links { display: flex; flex-direction: column; position: absolute; top: 68px; left: 0; right: 0; background: var(--bg-primary); padding: var(--spacing-16); border-bottom: 1px solid var(--border-default); }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+[hidden] { display: none !important; }
+</style>
+<style id="pd-icon-fix">.material-symbols-rounded{font-family:'Material Symbols Rounded'!important;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;word-wrap:normal;direction:ltr;font-feature-settings:'liga';-webkit-font-feature-settings:'liga'}</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a href="#" class="wordmark">Quillnote</a>
+    <nav class="site-nav" id="site-nav">
+      <ul class="site-nav__links">
+        <li><a class="site-nav__link" href="#features">Features</a></li>
+        <li><a class="site-nav__link" href="#how">How it works</a></li>
+        <li><a class="site-nav__link" href="#pricing">Pricing</a></li>
+        <li><a class="site-nav__link" href="#faq">FAQ</a></li>
+      </ul>
+      <button class="btn btn--primary" type="button">Start free</button>
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-rounded" id="theme-icon">dark_mode</span>
+      </button>
+      <button class="btn btn--secondary menu-toggle" id="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+<section class="section section--lime">
+  <div class="container hero">
+    <div>
+      <h1 class="hero__title">Highlight what matters. Keep the rest quiet.</h1>
+      <p class="hero__subtitle">Quillnote turns long reading into clear, shareable notes with one tap. Built for students, researchers, and anyone who reads to learn.</p>
+      <div class="hero__card">
+        <span class="material-symbols-rounded">arrow_forward</span>
+        <a href="#features">See how it works</a>
+      </div>
+    </div>
+    <div class="hero__visual" aria-hidden="true"></div>
+  </div>
+</section>
+
+<section class="section" id="features">
+  <div class="container">
+    <h2 class="section__title">Features that stay out of your way</h2>
+    <div class="cards-grid">
+      <article class="card">
+        <div class="card__image"></div>
+        <div class="card__body">
+          <h3 class="card__title">Instant highlights</h3>
+          <p>Select text and save it in one gesture. No menus, no friction.</p>
+        </div>
+      </article>
+      <article class="card">
+        <div class="card__image"></div>
+        <div class="card__body">
+          <h3 class="card__title">Smart summaries</h3>
+          <p>Turn saved passages into short, readable recaps you can share.</p>
+        </div>
+      </article>
+      <article class="card">
+        <div class="card__image"></div>
+        <div class="card__body">
+          <h3 class="card__title">Calm library</h3>
+          <p>Everything stays organized by topic, source, and date.</p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section section--cream" id="how">
+  <div class="container">
+    <h2 class="section__title">How it works</h2>
+    <div class="steps">
+      <div class="step"><div class="step__number">1</div><h3>Read</h3><p>Open any article, PDF, or web page.</p></div>
+      <div class="step"><div class="step__number">2</div><h3>Highlight</h3><p>Mark the lines that matter.</p></div>
+      <div class="step"><div class="step__number">3</div><h3>Review</h3><p>Revisit clean notes anytime.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h2 class="section__title">Trusted by focused readers</h2>
+    <div class="testimonials">
+      <article class="testimonial">
+        <div class="testimonial__stat">42% less rereading</div>
+        <p>“Quillnote keeps my research tidy without slowing me down.”</p>
+        <p>Maya Chen, Researcher, Northfield Lab</p>
+      </article>
+      <article class="testimonial">
+        <div class="testimonial__stat">3x faster review</div>
+        <p>“My notes finally feel like a real study guide.”</p>
+        <p>Leo Park, Student, Westbridge University</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section section--cream" id="pricing">
+  <div class="container">
+    <h2 class="section__title">Pricing</h2>
+    <div class="pricing">
+      <div class="pricing__tier"><h3>Starter</h3><div class="pricing__price">Free</div><p>For casual reading.</p><button class="btn btn--secondary" type="button">Choose</button></div>
+      <div class="pricing__tier pricing__tier--featured"><h3>Pro</h3><div class="pricing__price">$9/mo</div><p>For daily study and research.</p><button class="btn btn--primary" type="button">Choose</button></div>
+      <div class="pricing__tier"><h3>Team</h3><div class="pricing__price">$29/mo</div><p>Shared notes for groups.</p><button class="btn btn--secondary" type="button">Choose</button></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="faq">
+  <div class="container faq">
+    <h2 class="section__title">FAQ</h2>
+    <details><summary>Does it work offline?</summary><p>Yes. Saved notes stay available without a connection.</p></details>
+    <details><summary>Can I export notes?</summary><p>Yes. Export to Markdown or PDF anytime.</p></details>
+    <details><summary>Is my data private?</summary><p>Yes. Your highlights are never sold or shared.</p></details>
+  </div>
+</section>
+
+<section class="final-cta">
+  <div class="container">
+    <h2 class="section__title">Start reading with intent</h2>
+    <button class="btn btn--primary" type="button">Create free account</button>
+  </div>
+</section>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div><strong>Quillnote</strong></div>
+      <div><a href="#">Product</a></div>
+      <div><a href="#">Blog</a></div>
+      <div><a href="#">Support</a></div>
+    </div>
+    <p style="margin-top:24px">© 2026 Quillnote. All rights reserved.</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const root = document.documentElement;
+  const toggle = document.getElementById('theme-toggle');
+  const icon = document.getElementById('theme-icon');
+  const menuToggle = document.getElementById('menu-toggle');
+  const nav = document.getElementById('site-nav');
+
+  function applyTheme(theme) {
+    root.dataset.theme = theme;
+    const isDark = theme === 'dark';
+    toggle.setAttribute('aria-pressed', String(isDark));
+    toggle.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+    icon.textContent = isDark ? 'light_mode' : 'dark_mode';
+  }
+
+  const stored = localStorage.getItem('theme');
+  const preferred = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  applyTheme(stored === 'dark' || stored === 'light' ? stored : preferred);
+
+  toggle.addEventListener('click', function () {
+    const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('theme', next);
+    applyTheme(next);
+  });
+
+  menuToggle.addEventListener('click', function () {
+    const open = nav.classList.toggle('site-nav--open');
+    menuToggle.setAttribute('aria-expanded', String(open));
+  });
+
+  nav.querySelectorAll('a').forEach(function (link) {
+    link.addEventListener('click', function () {
+      nav.classList.remove('site-nav--open');
+      menuToggle.setAttribute('aria-expanded', 'false');
+    });
+  });
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape') {
+      nav.classList.remove('site-nav--open');
+      menuToggle.setAttribute('aria-expanded', 'false');
+    }
+  });
+})();
+</script>
+</body>
+</html>

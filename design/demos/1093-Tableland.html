@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AetherDB - The decentralized cloud database</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<style>
+:root {
+  --color-abyss-teal: #75b6b5;
+  --color-mint-beacon: #0be291;
+  --color-coral-ember: #f4706b;
+  --color-lavender-mist: #e4cbf2;
+  --color-void: #101e1e;
+  --color-carbon: #1a1a1a;
+  --color-slate: #162929;
+  --color-graphite: #3b4949;
+  --color-fog: #718b8b;
+  --color-ash: #e5e7eb;
+  --color-paper: #ffffff;
+  --primary: var(--color-abyss-teal);
+  --secondary: var(--color-mint-beacon);
+  --bg-primary: var(--color-void);
+  --bg-secondary: var(--color-slate);
+  --text-primary: var(--color-paper);
+  --text-secondary: var(--color-fog);
+  --text-success: var(--color-mint-beacon);
+  --text-error: var(--color-coral-ember);
+  --border-default: var(--color-ash);
+  --border-error: var(--color-coral-ember);
+  --border-success: var(--color-mint-beacon);
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --shadow-sm: none;
+  --shadow-md: none;
+  --spacing-gap: 16px;
+  --transition-fast: 150ms ease-out;
+  --transition-normal: 240ms ease-out;
+  --ease-standard: cubic-bezier(.2,.8,.2,1);
+  --z-dropdown: 100;
+  --z-modal: 200;
+  --z-toast: 300;
+  --font-base: "Poppins", system-ui, sans-serif;
+  --font-monospace: "JetBrains Mono", "IBM Plex Mono", "Fira Code", ui-monospace, monospace;
+  --text-caption: 12px;
+  --text-body-sm: 14px;
+  --text-body: 16px;
+  --text-subheading: 18px;
+  --text-heading-sm: 22px;
+  --text-heading: 24px;
+  --text-heading-lg: 30px;
+  --text-display: 48px;
+  color-scheme: dark;
+}
+:root[data-theme="light"] {
+  --bg-primary: #fefefe;
+  --bg-secondary: #f2f6f6;
+  --text-primary: #101e1e;
+  --text-secondary: #3b4949;
+  --color-paper: #101e1e;
+  --color-void: #fefefe;
+  --color-graphite: #e8eeee;
+  --color-slate: #dce6e6;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: var(--font-base);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.56;
+}
+img, svg { max-width: 100%; display: block; }
+a { color: var(--color-abyss-teal); text-decoration: none; }
+a:hover { opacity: .7; }
+.container {
+  width: min(1200px, 100% - 4rem);
+  margin-inline: auto;
+}
+@media (max-width: 768px) {
+  .container { width: min(1200px, 100% - 2.5rem); }
+}
+.section { padding: clamp(4rem, 8vw, 7rem) 0; }
+.section__heading {
+  font-weight: 300;
+  font-size: var(--text-heading-lg);
+  text-align: center;
+  margin: 0 0 1rem;
+}
+.section__heading--mint { color: var(--color-mint-beacon); }
+.section__heading--white { color: var(--color-paper); }
+.section__sub { text-align: center; color: var(--text-secondary); max-width: 640px; margin: 0 auto 3rem; }
+.skip-link {
+  position: absolute; left: -9999px; top: 0;
+}
+.skip-link:focus { left: 1rem; top: 1rem; z-index: var(--z-toast); background: var(--color-void); color: var(--color-paper); padding: .5rem 1rem; border-radius: var(--radius-sm); }
+.site-header {
+  position: sticky; top: 0; z-index: var(--z-dropdown);
+  background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--color-slate);
+}
+@media (prefers-reduced-transparency: reduce) {
+  .site-header { background: var(--bg-primary); backdrop-filter: none; }
+}
+.site-header__inner {
+  display: flex; align-items: center; justify-content: space-between;
+  min-height: 72px; gap: 1rem;
+}
+.site-header__brand {
+  font-weight: 500; color: var(--color-paper); letter-spacing: -.02em;
+}
+.site-header__nav {
+  display: flex; align-items: center; gap: 1.5rem;
+}
+.site-header__links {
+  display: flex; align-items: center; gap: 1.25rem; list-style: none; margin: 0; padding: 0;
+}
+.site-header__link {
+  color: var(--color-abyss-teal); font-size: var(--text-body-sm); padding: .5rem 0;
+}
+.site-header__link:hover { color: var(--color-mint-beacon); opacity: 1; }
+.site-header__actions { display: flex; align-items: center; gap: .75rem; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  min-height: 44px; padding: 12px 24px; border-radius: var(--radius-sm);
+  font-family: var(--font-base); font-weight: 500; font-size: var(--text-body-sm);
+  border: 0; cursor: pointer; transition: var(--transition-normal);
+}
+.btn--primary {
+  background: var(--color-void); color: var(--color-paper);
+}
+.btn--primary:hover { background: var(--color-carbon); outline: 1px solid var(--color-ash); }
+.btn--ghost {
+  background: transparent; color: var(--color-paper); border: 1px solid var(--color-ash); border-radius: 9999px; padding: 8px 20px;
+}
+.btn--ghost:hover { background: var(--color-ash); color: var(--color-void); }
+.btn:focus-visible { outline: 2px solid var(--color-abyss-teal); outline-offset: 2px; }
+.btn:active { transform: scale(.97); }
+.btn:disabled { opacity: .5; filter: grayscale(1); cursor: not-allowed; }
+.theme-toggle {
+  width: 44px; height: 44px; border-radius: var(--radius-sm);
+  background: transparent; border: 1px solid var(--color-ash); color: var(--color-paper);
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.theme-toggle .material-symbols-rounded { font-size: 20px; }
+.menu-button {
+  display: none; width: 44px; height: 44px; border-radius: var(--radius-sm);
+  background: transparent; border: 1px solid var(--color-ash); color: var(--color-paper);
+  align-items: center; justify-content: center;
+}
+@media (max-width: 768px) {
+  .site-header__links { display: none; flex-direction: column; position: absolute; top: 72px; left: 0; right: 0; background: var(--bg-primary); padding: 1rem; border-bottom: 1px solid var(--color-slate); }
+  .site-header__links.is-open { display: flex; }
+  .menu-button { display: inline-flex; }
+}
+.hero {
+  background: var(--color-lavender-mist); color: var(--color-carbon);
+  padding: clamp(3rem, 6vw, 5rem) 0;
+}
+.hero__grid {
+  display: grid; grid-template-columns: 1.1fr 1fr; gap: 2rem; align-items: center;
+}
+@media (max-width: 768px) {
+  .hero__grid { grid-template-columns: 1fr; }
+}
+.hero__eyebrow {
+  font-size: var(--text-caption); font-weight: 500; text-transform: uppercase; letter-spacing: .12em; color: var(--color-fog); margin-bottom: 1rem;
+}
+.hero__eyebrow strong { color: var(--color-carbon); font-weight: 700; }
+.hero__title {
+  font-weight: 300; font-size: var(--text-display); line-height: 1.0; letter-spacing: -.03em; margin: 0 0 1rem; color: var(--color-carbon);
+}
+.hero__title strong { font-weight: 700; }
+.hero__body { font-size: var(--text-body); color: var(--color-carbon); max-width: 640px; margin: 0 0 1.5rem; }
+.hero__visual {
+  position: relative; min-height: 320px; overflow: hidden; border-radius: var(--radius-md);
+}
+.hero__mountain {
+  position: absolute; right: -8%; bottom: -10%; width: 115%; height: 115%;
+}
+.features__grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px;
+}
+@media (max-width: 768px) {
+  .features__grid { grid-template-columns: 1fr; }
+}
+.feature-card { padding: 0; }
+.feature-card__icon {
+  width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--color-abyss-teal);
+  display: flex; align-items: center; justify-content: center; color: var(--color-abyss-teal); margin-bottom: 1rem;
+}
+.feature-card__title { font-weight: 500; font-size: var(--text-subheading); color: var(--color-paper); margin: 0 0 .5rem; }
+.feature-card__body { font-size: var(--text-body-sm); color: var(--text-secondary); margin: 0 0 1rem; }
+.feature-card__link { color: var(--color-abyss-teal); font-size: var(--text-body-sm); text-decoration: underline; }
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+@media (max-width: 768px) { .steps { grid-template-columns: 1fr; } }
+.step__number { color: var(--color-mint-beacon); font-weight: 700; font-size: var(--text-heading); margin-bottom: .5rem; }
+.step__title { color: var(--color-paper); font-weight: 500; font-size: var(--text-subheading); margin: 0 0 .5rem; }
+.step__body { color: var(--text-secondary); font-size: var(--text-body-sm); }
+.testimonials__track {
+  display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 1rem;
+}
+.testimonial-card {
+  flex: 0 0 320px; background: var(--color-graphite); border: 1px solid var(--color-ash);
+  border-radius: var(--radius-lg); padding: 24px;
+}
+.testimonial-card__head { display: flex; align-items: center; gap: .75rem; margin-bottom: 1rem; }
+.testimonial-card__avatar {
+  width: 32px; height: 32px; border-radius: var(--radius-sm); border: 1px solid var(--color-ash);
+  background: var(--color-slate); color: var(--color-paper); display: flex; align-items: center; justify-content: center; font-weight: 500;
+}
+.testimonial-card__name { color: var(--color-paper); font-weight: 500; font-size: var(--text-body-sm); }
+.testimonial-card__handle { color: var(--text-secondary); font-size: var(--text-caption); }
+.testimonial-card__quote { color: var(--color-paper); font-size: var(--text-body-sm); margin: 0; }
+.pricing__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+@media (max-width: 768px) { .pricing__grid { grid-template-columns: 1fr; } }
+.pricing-card {
+  background: var(--color-slate); border: 1px solid var(--color-ash); border-radius: var(--radius-md); padding: 24px;
+}
+.pricing-card--featured { border-color: var(--color-mint-beacon); background: var(--color-graphite); }
+.pricing-card__tier { color: var(--color-paper); font-weight: 500; margin: 0 0 .5rem; }
+.pricing-card__price { color: var(--color-paper); font-size: var(--text-heading); font-weight: 300; margin: 0 0 1rem; }
+.pricing-card__list { list-style: none; padding: 0; margin: 0 0 1.5rem; color: var(--text-secondary); font-size: var(--text-body-sm); }
+.pricing-card__list li { margin-bottom: .5rem; }
+.faq { max-width: 800px; margin: 0 auto; }
+.faq details { border-bottom: 1px solid var(--color-slate); padding: 1rem 0; }
+.faq summary { cursor: pointer; color: var(--color-paper); font-weight: 500; }
+.faq p { color: var(--text-secondary); margin: .75rem 0 0; }
+.final-cta { text-align: center; }
+.final-cta__title { font-weight: 300; font-size: var(--text-heading-lg); color: var(--color-paper); margin: 0 0 1rem; }
+.final-cta__body { color: var(--text-secondary); max-width: 640px; margin: 0 auto 1.5rem; }
+.site-footer {
+  border-top: 1px solid var(--color-ash); padding: 2rem 0; color: var(--text-secondary); font-size: var(--text-body-sm);
+}
+.site-footer__inner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.site-footer__links { display: flex; gap: 1rem; list-style: none; margin: 0; padding: 0; }
+.code-block {
+  background: var(--color-carbon); border: 1px solid var(--color-slate); border-radius: var(--radius-sm); padding: 24px;
+  font-family: var(--font-monospace); font-size: var(--text-caption); color: var(--color-paper);
+}
+.code-block__bar { display: flex; gap: 6px; margin-bottom: 1rem; }
+.code-block__dot { width: 8px; height: 8px; border-radius: 50%; }
+.code-block__dot--red { background: var(--color-coral-ember); }
+.code-block__dot--green { background: var(--color-mint-beacon); }
+.code-block__dot--blue { background: var(--color-abyss-teal); }
+.reveal { opacity: 0; transform: translateY(12px); transition: opacity 300ms ease-out, transform 300ms ease-out; }
+.reveal.is-visible { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: opacity 200ms ease; }
+}
+[hidden] { display: none !important; }
+</style>
+<style id="pd-icon-fix">.material-symbols-rounded{font-family:'Material Symbols Rounded'!important;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;word-wrap:normal;direction:ltr;font-feature-settings:'liga';-webkit-font-feature-settings:'liga'}</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a class="site-header__brand" href="#">AetherDB</a>
+    <nav class="site-header__nav" aria-label="Primary">
+      <ul class="site-header__links" id="nav-links">
+        <li><a class="site-header__link" href="#features">Features</a></li>
+        <li><a class="site-header__link" href="#how">How it works</a></li>
+        <li><a class="site-header__link" href="#pricing">Pricing</a></li>
+        <li><a class="site-header__link" href="#faq">FAQ</a></li>
+      </ul>
+      <div class="site-header__actions">
+        <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+          <span class="material-symbols-rounded" aria-hidden="true">dark_mode</span>
+        </button>
+        <button class="menu-button" id="menu-button" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">
+          <span class="material-symbols-rounded" aria-hidden="true">menu</span>
+        </button>
+        <a class="btn btn--ghost" href="#cta">Start free</a>
+      </div>
+    </nav>
+  </div>
+</header>
+<main id="main">
+  <section class="hero">
+    <div class="container hero__grid">
+      <div>
+        <p class="hero__eyebrow">READ+WRITE FROM <strong>ANYWHERE</strong></p>
+        <h1 class="hero__title">The <strong>decentralized</strong> cloud database.</h1>
+        <p class="hero__body">AetherDB gives teams a global, SQL-friendly data layer with edge reads, durable writes, and no central bottleneck.</p>
+        <a class="btn btn--primary" href="#cta">Get started <span aria-hidden="true">→</span></a>
+      </div>
+      <div class="hero__visual" aria-hidden="true">
+        <svg class="hero__mountain" viewBox="0 0 600 400" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#f5d4e8"/>
+              <stop offset="100%" stop-color="#e4cbf2"/>
+            </linearGradient>
+          </defs>
+          <rect width="600" height="400" fill="url(#sky)"/>
+          <polygon points="220,400 360,120 500,400" fill="#f4706b"/>
+          <polygon points="300,400 420,180 540,400" fill="#d95f5a"/>
+          <polygon points="120,400 260,220 400,400" fill="#e86560"/>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="features">
+    <div class="container">
+      <h2 class="section__heading section__heading--white">Built for distributed teams</h2>
+      <p class="section__sub">Ship data features without managing regions, replicas, or failover scripts.</p>
+      <div class="features__grid">
+        <article class="feature-card reveal">
+          <div class="feature-card__icon"><span class="material-symbols-rounded" aria-hidden="true">database</span></div>
+          <h3 class="feature-card__title">Edge-first reads</h3>
+          <p class="feature-card__body">Serve queries close to users with automatic cache warming.</p>
+          <a class="feature-card__link" href="#">Learn more</a>
+        </article>
+        <article class="feature-card reveal">
+          <div class="feature-card__icon"><span class="material-symbols-rounded" aria-hidden="true">sync</span></div>
+          <h3 class="feature-card__title">Durable writes</h3>
+          <p class="feature-card__body">Commit once and replicate with conflict-aware merging.</p>
+          <a class="feature-card__link" href="#">Learn more</a>
+        </article>
+        <article class="feature-card reveal">
+          <div class="feature-card__icon"><span class="material-symbols-rounded" aria-hidden="true">shield</span></div>
+          <h3 class="feature-card__title">Fine-grained access</h3>
+          <p class="feature-card__body">Row-level policies that travel with every request.</p>
+          <a class="feature-card__link" href="#">Learn more</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="how">
+    <div class="container">
+      <h2 class="section__heading section__heading--mint">How it works</h2>
+      <div class="steps">
+        <div class="step reveal"><div class="step__number">01</div><h3 class="step__title">Connect</h3><p class="step__body">Point your app at one endpoint and keep your existing SQL.</p></div>
+        <div class="step reveal"><div class="step__number">02</div><h3 class="step__title">Replicate</h3><p class="step__body">Data propagates across regions with automatic conflict resolution.</p></div>
+        <div class="step reveal"><div class="step__number">03</div><h3 class="step__title">Scale</h3><p class="step__body">Add capacity without rewriting queries or migrations.</p></div>
+      </div>
+      <div class="code-block" style="margin-top:2rem">
+        <div class="code-block__bar">
+          <span class="code-block__dot code-block__dot--red"></span>
+          <span class="code-block__dot code-block__dot--green"></span>
+          <span class="code-block__dot code-block__dot--blue"></span>
+        </div>
+        <pre>npm install @aetherdb/client
+const db = new AetherDB(process.env.AETHER_URL);</pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="testimonials">
+    <div class="container">
+      <h2 class="section__heading section__heading--mint">Join the community</h2>
+      <div class="testimonials__track">
+        <article class="testimonial-card">
+          <div class="testimonial-card__head">
+            <div class="testimonial-card__avatar">MR</div>
+            <div>
+              <div class="testimonial-card__name">Maya Reyes</div>
+              <div class="testimonial-card__handle">@maya_builds</div>
+            </div>
+          </div>
+          <p class="testimonial-card__quote">"AetherDB removed our region headaches and kept latency low for every user."</p>
+        </article>
+        <article class="testimonial-card">
+          <div class="testimonial-card__head">
+            <div class="testimonial-card__avatar">JT</div>
+            <div>
+              <div class="testimonial-card__name">Jonas Tamm</div>
+              <div class="testimonial-card__handle">@jonas_ops</div>
+            </div>
+          </div>
+          <p class="testimonial-card__quote">"We migrated in a weekend and never looked back."</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="pricing">
+    <div class="container">
+      <h2 class="section__heading section__heading--white">Pricing</h2>
+      <div class="pricing__grid">
+        <div class="pricing-card">
+          <h3 class="pricing-card__tier">Starter</h3>
+          <p class="pricing-card__price">$0</p>
+          <ul class="pricing-card__list"><li>1 region</li><li>Community support</li><li>1 GB storage</li></ul>
+          <a class="btn btn--ghost" href="#cta">Start free</a>
+        </div>
+        <div class="pricing-card pricing-card--featured">
+          <h3 class="pricing-card__tier">Team</h3>
+          <p class="pricing-card__price">$49</p>
+          <ul class="pricing-card__list"><li>Multi-region</li><li>Priority support</li><li>50 GB storage</li></ul>
+          <a class="btn btn--primary" href="#cta">Choose Team</a>
+        </div>
+        <div class="pricing-card">
+          <h3 class="pricing-card__tier">Enterprise</h3>
+          <p class="pricing-card__price">Custom</p>
+          <ul class="pricing-card__list"><li>Unlimited regions</li><li>Dedicated support</li><li>Custom SLA</li></ul>
+          <a class="btn btn--ghost" href="#cta">Contact sales</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="faq">
+    <div class="container">
+      <h2 class="section__heading section__heading--white">FAQ</h2>
+      <div class="faq">
+        <details><summary>Is AetherDB SQL compatible?</summary><p>Yes. Use standard SQL with distributed consistency controls.</p></details>
+        <details><summary>Can I self-host?</summary><p>Managed cloud is default, with private deployment options for enterprise.</p></details>
+        <details><summary>How do migrations work?</summary><p>Run your existing migration tooling against the AetherDB endpoint.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="section final-cta" id="cta">
+    <div class="container">
+      <h2 class="final-cta__title">Ready to build globally?</h2>
+      <p class="final-cta__body">Start with a free database and scale when your users do.</p>
+      <a class="btn btn--primary" href="#">Create account</a>
+    </div>
+  </section>
+</main>
+<footer class="site-footer">
+  <div class="container site-footer__inner">
+    <span>© 2026 AetherDB</span>
+    <ul class="site-footer__links">
+      <li><a href="#">Privacy</a></li>
+      <li><a href="#">Terms</a></li>
+      <li><a href="#">Status</a></li>
+    </ul>
+  </div>
+</footer>
+<script>
+(function () {
+  const root = document.documentElement;
+  const stored = localStorage.getItem('theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const initial = stored === 'dark' || stored === 'light' ? stored : (prefersDark ? 'dark' : 'light');
+  root.dataset.theme = initial;
+
+  const toggle = document.getElementById('theme-toggle');
+  const menuButton = document.getElementById('menu-button');
+  const navLinks = document.getElementById('nav-links');
+
+  function syncToggle(theme) {
+    const isDark = theme === 'dark';
+    toggle.setAttribute('aria-pressed', String(isDark));
+    toggle.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+    toggle.querySelector('.material-symbols-rounded').textContent = isDark ? 'light_mode' : 'dark_mode';
+  }
+  syncToggle(initial);
+
+  toggle.addEventListener('click', function () {
+    const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+    root.dataset.theme = next;
+    localStorage.setItem('theme', next);
+    syncToggle(next);
+  });
+
+  menuButton.addEventListener('click', function () {
+    const open = navLinks.classList.toggle('is-open');
+    menuButton.setAttribute('aria-expanded', String(open));
+  });
+
+  navLinks.querySelectorAll('a').forEach(function (link) {
+    link.addEventListener('click', function () {
+      navLinks.classList.remove('is-open');
+      menuButton.setAttribute('aria-expanded', 'false');
+    });
+  });
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape') {
+      navLinks.classList.remove('is-open');
+      menuButton.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  const observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll('.reveal').forEach(function (el, index) {
+    el.style.transitionDelay = (index % 3) * 60 + 'ms';
+    observer.observe(el);
+  });
+})();
+</script>
+</body>
+</html>

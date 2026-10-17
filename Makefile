@@ -16,10 +16,19 @@ deploy: docs
 	git push origin main
 
 process:
-	node scripts/process-prompts.mjs
+	node --env-file-if-exists=.env scripts/process-prompts.mjs
 
 categorize:
-	node scripts/categorize.mjs
+	node --env-file-if-exists=.env scripts/categorize.mjs
+
+PIPE ?= 3
+
+pipeline:
+	@ls design/raw | sed -n 's/\.md$$//p' | xargs -P $(PIPE) -I{} sh -c 'PROMPT_ONLY={} node --env-file-if-exists=.env scripts/process-prompts.mjs && DEMO_ONLY={} DEMO_CONCURRENCY=1 node --env-file-if-exists=.env scripts/build-demos.mjs' || true
+	DEMO_CONCURRENCY=$(PIPE) node --env-file-if-exists=.env scripts/build-demos.mjs
+	node scripts/check-dark.mjs
+	node scripts/build-thumbs.mjs
+	node scripts/bake-data.mjs
 
 demos:
 	node --env-file-if-exists=.env scripts/build-demos.mjs
@@ -50,4 +59,4 @@ redo-dark: check-dark
 	node --env-file-if-exists=.env scripts/fix-dark.mjs --redo
 	node scripts/check-dark.mjs
 
-.PHONY: run build docs deploy process categorize demos redesign thumbs brand check-dark fix-dark redo-dark
+.PHONY: run build docs deploy process categorize pipeline demos redesign thumbs brand check-dark fix-dark redo-dark

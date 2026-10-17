@@ -1,0 +1,88 @@
+# Landing Page Prompt — Fictional Audio Brand in the "Bose Coastal Soundstage" Style
+
+## 1. Project Scope & Brand Fictionalization (Mandatory)
+- Build a complete, responsive landing page for a **fictional audio brand** invented by the coding AI. Do NOT use the real brand name "Bose", its logo, trademarks, or product names anywhere in the markup, copy, alt text, or metadata. Invent a fictional brand name, fictional product names, and fictional copy.
+- The visual style, tokens, typography, spacing, and component patterns below are the only things to reuse. All user-facing copy must be written in English.
+- Deliverables: separate `index.html`, `style.css`, `script.js`. No inline `<script>` blocks beyond a single deferred entry-point reference. No inline CSS (`style="..."`). Use one consistent class-naming convention (BEM recommended) across the whole deliverable.
+
+## 2. CSS-First Architecture & Tokens (Mandatory)
+- Keep all styling strictly inside `style.css`. No inline CSS. Target via class/ID selectors only.
+- Store all visual tokens in `:root` (and theme classes) using CSS variables. Required tokens:
+  - Colors: `--color-soprano-white: #ffffff` (use `#fefefe` where a near-white is needed instead of pure white), `--color-studio-mist: #f8f8f8`, `--color-warm-porcelain: #f1efee`, `--color-bass-black: #131317`, `--color-countertenor-gray: #b4bec7`, `--color-steel-gray: #949494`, `--color-charcoal-helper: #40464b`, `--color-pure-black: #000000`, `--color-quiet-placeholder: #545454`, `--color-chord-blue: #005bff`.
+  - Map to semantic aliases: `--primary: var(--color-bass-black)`, `--secondary: var(--color-studio-mist)`, `--bg-primary: var(--color-soprano-white)`, `--bg-secondary: var(--color-studio-mist)`, `--text-primary: var(--color-bass-black)`, `--text-secondary: var(--color-charcoal-helper)`, `--text-success`, `--text-error`, `--border-default: var(--color-steel-gray)`, `--border-error`, `--border-success`.
+  - Contrast pairing: light backgrounds pair with dark text; dark backgrounds pair with light text in every theme.
+  - Radius & shadows: `--radius-sm: 2px`, `--radius-md: 88px`, `--radius-lg: 9999px`, `--shadow-sm: none`, `--shadow-md: none` (surfaces stay flat).
+  - Spacing & transitions: `--spacing-gap: 16px`, `--transition-fast`, `--transition-normal`, `--ease-standard`. Spacing scale tokens `--spacing-4` … `--spacing-120` per spec (4,8,12,16,24,32,40,48,56,64,72,120 px).
+  - Elevation/stacking: `--z-dropdown`, `--z-modal`, `--z-toast`.
+  - Typography: `--font-base` bound to Google Font substitute "Dosis" for display and a sans-serif stack (Arial/Helvetica Neue) for text; load via Google Fonts `<link>`/`@import`. `--font-bose-headline` and `--font-bose-text` aliases acceptable.
+- Provide dark mode under `@media (prefers-color-scheme: dark)` and a `.dark` class, with seamless variable switching. Persist user choice via `localStorage`, falling back to `prefers-color-scheme` on first visit; include a visible toggle with correct `aria-pressed`/`aria-label`.
+- Use Tailwind CSS (or clean custom CSS driven by Tailwind `@layer`/`@apply`) unless another framework is requested. Utility classes must map back to CSS variables or generic reusable classes (`.btn`, `.card`, `.input-group`).
+
+## 3. Typography & Icons (Google Fonts Mandatory)
+- Text via Google Fonts only (Dosis for condensed display; Arial/Helvetica Neue system stack acceptable for body). Bind display to `--font-bose-headline`, body to `--font-bose-text`/`--font-base`.
+- Icons via Google Material Symbols/Icons only. No raw inline SVGs or local icon files.
+- Type scale tokens: `--text-microcopy` (12px/1.33, 400), `--text-nav` (15px/1.2, 400, uppercase), `--text-body` (16px/1.5, 400), `--text-button-label` (16px/1.5, 500), `--text-body-strong` (18px/1.5, 500, -0.36px), `--text-campaign-support` (24px/1.5, 500), `--text-heading` (32px/1.2, 400, 0.96px), `--text-display` (60px/0.88, 900, 1.2px), `--text-hero-display` (96px/0.88, 900, 1.44px).
+
+## 4. Layout & Flexbox (Mandatory)
+- Flexbox for all layout structures. Every flex container defaults to `align-items: center` unless explicitly justified. Mobile-first, responsive, no horizontal scroll. Convert rows to columns on small viewports.
+
+## 5. Component & Section Specifications
+
+### Global Chrome
+- Announcement strip: full-width `#b4bec7` band, centered Bose Text 12px/1.33 weight 400 in `#131317`, compact close icon at far edge, flat (no radius/shadow).
+- Utility header: `#ffffff` bar, `#131317` 15px/18px uppercase Bose Text nav, centered wordmark, nav left-aligned, utility icons right-aligned, separated by 1px rule (no elevation).
+- Pill search field: `#f8f8f8` surface, 9999px radius, 16px vertical / 24px horizontal padding, `#545454` placeholder, `#000000` search icon, no shadow.
+
+### Hero (Campaign Image Hero)
+- Full-bleed photographic panel, square corners, darkened lower image area supporting `#ffffff` copy anchored lower-left.
+- Title: Bose Headline 96px weight 900, 84px line-height, 1.44px tracking. Support: Bose Text 24px weight 500, 36px line-height.
+- White Hero Explore Button: `#ffffff` fill, `#131317` text & border, 2px radius, 12px vertical / 24px horizontal padding, uppercase Bose Text 16px weight 500, 0.8px tracking.
+- Inline Hero Shop Link: transparent, `#ffffff` uppercase text, no padding/radius, thin directional arrow, visually lighter than bordered button.
+
+### Features (3 cards)
+- Trending Product Tile style: square-cornered `#f8f8f8` surface, no shadow, 1px white separators between tiles. Image upper field; title, price, color label, swatches, badge, rating in `#131317` below with compact 12px/16px Bose Text.
+- Product Status Badge: `#131317` fill, `#ffffff` Bose Text, 88px radius, 4px vertical / 12px horizontal padding.
+- Product Color Swatch: circular 50% swatches inside 50px padded `#f8f8f8` disc; selected finish marked with 1px `#131317` ring; inactive outlines `#949494`.
+- Outlined Product Purchase Button: `#ffffff` fill, 1px `#131317` border, `#131317` label, 2px radius, 12px vertical / 24px horizontal padding, uppercase Bose Text 16px weight 500, 0.8px tracking.
+
+### How It Works (3 steps)
+- Reuse card/tile styling: `#f8f8f8` square surfaces, no shadow, 1px white separators, compact Bose Text. Step numbers in Bose Headline 32px/1.2 weight 400 with 0.96px tracking. Body in Bose Text 16px/1.5.
+
+### Testimonials
+- White surface cards with 1px `#949494` fine borders (no shadow), square corners. Quote in Bose Text 18px/1.5 weight 500; attribution in Bose Text 14px/1.33. Optional circular avatar (100% radius) with 1px `#131317` border.
+
+### Pricing (3 tiers)
+- Three `#f8f8f8` square-cornered cards separated by 1px white gutters, no shadow. Tier name in Bose Headline 32px; price in Bose Headline 60px weight 900 with 1.2px tracking. Feature list in Bose Text 16px. CTA uses Outlined Product Purchase Button; featured tier may use a `#131317` fill variant with `#ffffff` text (dark purchase fill) but keep 2px radius and same padding.
+
+### FAQ
+- Accordion items on white surface, separated by 1px `#949494` rules. Question in Bose Text 16px weight 500; answer in Bose Text 16px/1.5. Toggle icon via Material Symbols. Animate open/close via CSS transitions respecting `prefers-reduced-motion`.
+
+### Final CTA
+- Reuse Campaign Image Hero pattern at contained scale: photographic panel, lower-left `#ffffff` copy, Bose Headline 60px weight 900 title (53px line-height, 1.2px tracking), Bose Text 24px support, White Hero Explore Button.
+
+### Footer
+- Dense white utility zone. Links in `#40464b` (Charcoal Helper) Bose Text 14px/1.33. Section labels in uppercase Bose Text 12px. 1px `#949494` top rule. No shadow. Include secondary links, newsletter pill search field, social icons (Material Symbols), copyright.
+
+## 6. Component State Requirements (Mandatory)
+- Buttons: default (flex, `align-items: center`, `justify-content: center`, gap 0.5rem, min 44x44px touch target), hover (brightness/shadow shift, `cursor: pointer`), focus (distinct focus ring via CSS variables), active (`transform: scale(0.97)`), loading (disabled, no double-click, CSS spinner/animated icon without dimension distortion), disabled (`opacity: 0.5`, greyscale, `cursor: not-allowed`), success/error (temporary styles via `--text-success`/`--text-error`).
+- Cards: default (flex, subtle borders, elevation via `--bg-secondary`), hover (`transform: translateY(-2px)` or shadow shift), focus-within (border highlight), loading skeleton (shimmer, no layout jump), empty state (Material Icon + guidance text).
+- Forms/inputs: empty, focused (outline ring), filled, valid (success border/icon), invalid (error border, red text, error icon), disabled, read-only. Flex container wrapping label, input, dedicated error feedback container.
+- Modal/popup (if used): opening/open/loading/success-error/closing animated via CSS; centered flex container, backdrop overlay, Material Icon close button, Esc/overlay close, focus trapping.
+
+## 7. Core UX & Micro-Interactions (Mandatory)
+- Responsive by default, fluid sizing, no horizontal overflow.
+- Smooth CSS transitions on all state changes (`transition: var(--transition-normal)`), respecting `prefers-reduced-motion`.
+- Accessibility: sufficient contrast in both light/dark; never rely on color alone for state; semantic HTML5; correct ARIA roles/labels; logical DOM/focus order; full keyboard operability; `aria-live` regions for dynamic feedback.
+- Mandatory visual feedback on every click/hover/submission.
+- Destructive actions visually distinct in both themes (`.btn-danger`).
+- Surfaces flat: no card/header/search/button shadows; separate layers with `#ffffff` rules and surface changes (white → mist → porcelain).
+- Do NOT use rounded card corners (0px). Do NOT replace Bose Headline with a wide geometric sans or use it below 32px. Do NOT make all buttons dark-filled; use `#ffffff` bordered controls over imagery and product surfaces. Do NOT use `#005bff` as filled action background (inline learning links only). No gradients. Do NOT use `#949494` for body copy (fine borders/inactive outlines only).
+
+## 8. Imagery & Copy Guidance
+- Photography is the dominant expressive layer: fashion-campaign portraits and close product-worn scenes, tightly cropped, color-graded toward muted coastal neutrals or saturated studio backdrops, used as large rectangular story panels. Hero images edge-to-edge with copy over darker lower portion; contained panels split-image with no decorative frame. Product imagery isolated against pale neutral tile backgrounds.
+- Utility icons: thin, monochrome black outlines. Imagery occupies more visual space than text in campaign sections; product rails information-dense below image.
+- Page layout: white centered retail composition framed by slim announcement strip and two-sided public header with logo centered. First screen full-bleed photographic campaign panel with copy anchored lower-left; subsequent content broad white breathing room and square product-carousel tiles. Promotional stories repeat image-led pattern at contained large scale with side-by-side fashion photography and lower-left white copy. Product browsing four-column rail at desktop, small pagination dots and circular next/previous controls below. Footer dense white utility zone.
+- Use placeholder image URLs (e.g., https://picsum.photos) sized appropriately; never embed real brand assets.
+
+## 9. Output
+- Output only the finished coding-AI prompt content as specified. No preamble, no closing commentary. Mirror numbered headers and bolded sub-rules. If any requested item conflicts with a mandatory rule, keep the rule and add a one-line explicit exception clause. All copy in English. All CSS variable names, class names, file names in English/ASCII.

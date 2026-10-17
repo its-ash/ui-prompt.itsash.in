@@ -1,0 +1,126 @@
+# Prompt for Coding AI: Build "Default" Theme Landing Page
+
+## 1. Project Overview & Theme Identity
+
+Build a complete, responsive landing page for a **fictional** SaaS/infrastructure product. Invent a fictional brand name, product name, and all copy — never use any real brand name, logo, trademark, or product name. The visual language is "mission control behind frosted glass": a dark control-room aesthetic with near-black canvas, hairline borders, pill-shaped controls, whisper-weight headlines, and rationed blue accents. This is infrastructure software, not marketing spectacle — calm, dense, technical.
+
+## 2. Strict Architectural Rules
+
+### 2.1 CSS-First Architecture & Zero Inline CSS
+- All styling lives in a single `style.css` file. No `style="..."` attributes in HTML.
+- Target all design via class/ID selectors. Keep HTML semantic and style-agnostic.
+- Use Tailwind CSS utilities mapped to CSS variables or generic reusable classes (`.btn`, `.card`, `.input-group`).
+
+### 2.2 CSS Variables & Theme Tokens
+Define all tokens in `:root` (and `.dark` / `@media (prefers-color-scheme: dark)`). Required tokens:
+
+**Colors:** `--color-void: #0b0c0e`, `--color-graphite: #131416`, `--color-charcoal: #1f1f21`, `--color-smoke: #3c3d3e`, `--color-steel: #71717a`, `--color-fog: #858687`, `--color-ash: #9d9e9f`, `--color-chalk: #cececf`, `--color-snow: #ffffff`, `--color-bone: #f2f2f2`, `--color-ink: #333333`, `--color-signal-blue: #3b82f6`, `--color-arc-blue: #60a5fa`, `--color-ring-blue: #93c5fd`, `--color-mint: #4ade80`, `--color-fern: #22c55e`, `--color-coral: #f87171`, `--color-ember: #ea580c`, `--color-iris: #314ef0`.
+
+Also map to generic tokens: `--primary`, `--secondary`, `--bg-primary`, `--bg-secondary`, `--text-primary`, `--text-secondary`, `--text-success`, `--text-error`, `--border-default`, `--border-error`, `--border-success`.
+
+**Contrast pairing:** Light backgrounds pair with dark text; dark backgrounds pair with light text — enforce for every theme.
+
+**Light mode background:** Do not default to pure white; use `#fefefe` where a white/near-white is needed.
+
+**Border radius & shadows:** `--radius-sm: 8.77px`, `--radius-md: 12px`, `--radius-lg: 16px`, `--shadow-sm`, `--shadow-md` (use provided shadow values).
+
+**Spacing & transitions:** `--spacing-gap: 8px`, `--transition-fast: 150ms`, `--transition-normal: 250ms`, `--ease-standard: cubic-bezier(0.4, 0, 0.2, 1)`.
+
+**Elevation/stacking:** `--z-dropdown: 100`, `--z-modal: 200`, `--z-toast: 300`.
+
+### 2.3 Mandatory Dark Mode
+- Provide dark mode tokens under `@media (prefers-color-scheme: dark)` and/or `.dark` class.
+- Theme switching must work without HTML restructuring.
+- Persist user choice via `localStorage`, falling back to `prefers-color-scheme` on first visit.
+- Include a visible toggle control with correct `aria-pressed`/`aria-label`.
+
+### 2.4 Flexbox Layout & Mobile-First
+- Use Flexbox for all layouts. Every flex container defaults to `align-items: center` unless explicitly justified otherwise.
+- Mobile-responsive out of the box (rows → columns on small viewports). No horizontal scrolling.
+
+### 2.5 Typography & Icons (Google Fonts Mandatory)
+- Use Google Fonts for text and icons. Text: Inter (variable) with features `'ss01'` and `'ss03'` enabled. Bind to `--font-base`.
+- Icons: Google Material Symbols/Icons only. No raw inline SVGs or local icon files.
+
+## 3. Theme-Specific Design Tokens
+
+### 3.1 Typography
+Inter variable font, weights 400, 420, 440, 450, 480, 500, 580. Sizes: 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 32, 42, 44, 48, 52, 64px. Line heights and letter spacing per spec (tighten aggressively at body sizes). OpenType features `"ss01" on, "ss03" on`.
+
+Type scale tokens: `--text-body-lg` (14px, 1.43, -0.32px), `--text-body-xl` (16px, 1.5, 0px), `--text-subheading` (18px, 1, -0.61px), `--text-heading` (32px, 1.25, -0.64px), `--text-heading-lg` (42px, 1.2, -0.88px), `--text-display` (52px, 1, -1.3px), `--text-display-lg` (64px, 0.94, -1.28px).
+
+### 3.2 Spacing & Shapes
+Base unit 4px, compact density. Spacing scale: 4, 8, 12, 16, 20, 24, 28, 32, 36, 48, 52, 64, 68, 80, 96, 116px (as `--spacing-*`).
+
+Border radius: lg 16px, md 12px, sm 8.77px, xl 20px, xs 5.26px, 2xl 24px, cards 12px, pills 10px, buttons 10px.
+
+Shadows per spec (sm, sm-2, subtle, subtle-2, xl, xl-2, sm-3, subtle-3, sm-4, subtle-4, sm-5, sm-6). Elevation: primary action button `0 1px 4px rgba(0,0,0,0.1), 0 0 1px rgba(0,0,0,0.1)`; card `inset 0 1px 0 rgba(255,255,255,0.08), 0 0 0 0.5px rgba(255,255,255,0.07), 0 20px 44px rgba(0,0,0,0.14), 0 4px 10px rgba(0,0,0,0.08)`; panel `inset 0 1px 0 rgba(255,255,255,0.09), 0 0 0 0.5px rgba(255,255,255,0.07), 0 16px 36px rgba(0,0,0,0.12)`; icon `0 0 0 1px rgba(0,0,0,0.04), 0 1px 1px -0.5px rgba(0,0,0,0.06), 0 3px 3px -1.5px rgba(0,0,0,0.06)`.
+
+Layout: page max-width 1080px, section gap 96px, card padding 28px, element gap 8px.
+
+### 3.3 Surfaces
+- Level 0 (Void): `#0b0c0e` — page canvas, hero background, footer.
+- Level 1 (Graphite): `#131416` — card surfaces, panels, elevated containers.
+- Level 2 (Charcoal): `#1f1f21` — nested surfaces, input fields, secondary panels.
+- Level 3 (Soft Fill): `#ffffff0f` — hover states, ghost button backgrounds, subtle interactive surfaces.
+
+### 3.4 Component Styling Rules
+- **Primary Pill Button (Bone):** background `#f2f2f2`, text `#333333`, no border, radius 10px, padding 8px 20px, font-size 14px weight 400, shadow `0 1px 4px rgba(0,0,0,0.1), 0 0 1px rgba(0,0,0,0.1)`. The only bright element — single confident click target.
+- **Secondary Pill Button (Ghost):** background `rgba(255,255,255,0.05)`, text `#ffffff`, no border, radius 10px, padding 8px 16px, font-size 14px weight 400.
+- **Text Link Button:** transparent bg, text `rgba(255,255,255,0.92)`, no border, no padding, radius 0, font-size 14px weight 400.
+- **Announcement Bar:** full-bleed top strip, background `#0b0c0e`, text 14px weight 400 centered, 'Read more' link `#ffffff` underlined, dismissible × at 92% opacity.
+- **Feature Card (Tabbed Content):** background `#121316`, radius 12px, padding 28px 32px, no shadow. Left column tab labels with 16px icon in signal blue, text `#ffffff` 14px weight 400. Active tab white underline indicator.
+- **Product Mockup Card (Floating Panel):** background `rgba(21,22,24,0.8)`, radius 7px, layered shadow (0 100px 106px rgba(0,0,0,0.05), 0 42px 44px rgba(0,0,0,0.04), 0 22px 24px rgba(0,0,0,0.03), 0 12px 12px rgba(0,0,0,0.03)). Tab bar top, data table/workflow canvas inside, status badges green/blue text.
+- **Logo Strip Card:** transparent bg, logos in `#858687` with `brightness(0) invert(1)` filter, no container, single row 48–64px gap, monochrome.
+- **Status Badge (Live/Active):** transparent or `rgba(74,222,128,0.1)` bg, text `#4ade80`, border 1px `#4ade80`, radius 5.26px, padding 2px 6px, font-size 9–10px weight 500, small green dot prefix.
+- **Workflow Node Card:** background `#131416`, border 1px `rgba(255,255,255,0.08)`, radius 8.77px, padding 12px. Icon 16px node-specific color (blue triggers, green actions, orange enrichment), title 12px weight 500 `#ffffff`, description 10px weight 400 `#858687`. Connected by thin lines with circular handle dots.
+- **Nav Header:** height 72px, transparent over hero, semi-transparent + backdrop blur on scroll. Logo left, nav items centered (Platform dropdown, Agent, Resources) 14px weight 400, Login text link + Request a Demo pill button right. Border-bottom 0.5px `rgba(255,255,255,0.07)` when scrolled.
+- **Data Table Row:** background `#131416`, border-bottom 0.5px `rgba(255,255,255,0.05)`, padding 8px 12px. Cell text 10–12px weight 400 `#cececf`. Avatar circles 16px, company name `#ffffff`, numeric values right-aligned. Column headers 9px weight 500 `#858687` with sort indicators.
+- **Icon Tile (Tool Icon):** background `rgba(255,255,255,0.03)`, border 0.5px `rgba(255,255,255,0.08)`, radius 8.77px, size 48–64px, single monochrome icon 24px in `#858687` or `#b6b6b7`. Varied opacity/blur for depth.
+- **Footer:** background `#171717`, padding 48px vertical, border-top 0.5px `rgba(255,255,255,0.07)`. Columns of links 12px weight 400 `#858687`, section headers 9px weight 500 `#71717a`. Minimal, institutional.
+
+### 3.5 Do's and Don'ts
+**Do:** weight 400 for headlines 32px+; primary buttons `#f2f2f2` fill `#333333` text 10px radius; 0.5px solid borders (never 1px); Inter with ss01/ss03; three-level surface stack; tight letter-spacing at body sizes; Signal Blue only for active states/links/icon accents.
+
+**Don't:** weight 600+ headlines; chromatic CTA colors; 1px+ borders; large drop shadows on cards; more than one 500+ weight per text block; gradients on UI elements; green/red as decorative color.
+
+### 3.6 Imagery
+No photography. Pure UI: product mockups, workflow node diagrams, data tables, tool icon tiles. Embedded screenshots show dark CRM-like interface with green status badges, blue workflow nodes, tabular data. 'Revenue stack' section uses floating icon tiles at varying opacity with backdrop blur. Hero features large multi-panel product mockup with chat panel, workflow canvas with connected nodes, form builder. All imagery in same dark palette — no light-mode content, no lifestyle photography, no abstract gradients.
+
+### 3.7 Layout
+Max-width 1080px centered, full-bleed feel but content contained. Hero two-column split: headline left 60%, supporting copy + CTA right 40%, multi-panel product mockup below full width. Below hero: logo strip (single row centered), then feature section with dark canvas and floating icon tiles bleeding beyond content column. Infrastructure section tabbed two-column: left 30% tab labels with icons/descriptions, right 70% active product mockup. Cards/panels 12px radius with 28px 32px padding. Section gaps 96px+. Nav single sticky top bar 72px — no sidebar, no mega-menu, just 'Platform' dropdown trigger.
+
+## 4. Component State Requirements
+
+### 4.1 Button
+Default: flex, align-items center, justify-content center, gap 0.5rem, min 44x44px touch target. Hover: brightness/shadow shift, cursor pointer. Focus: distinct focus ring via CSS variables. Active/Pressed: transform scale(0.97). Loading: disables interactions, prevents double-clicks, CSS spinner or animated Google Icon without distorting dimensions. Disabled: opacity 0.5, greyscale, cursor not-allowed. Success/Error: temporary feedback via `--text-success`/`--text-error`.
+
+### 4.2 Card
+Default: flexible flexbox, subtle borders/elevation via `--bg-secondary` and CSS vars. Hover: elevation/shadow shift or translateY(-2px). Focus-within: highlights borders when child link/button focused. Loading (Skeleton): shimmer animation in CSS, no layout jumps. Empty State: Google Icon + clear guidance text.
+
+### 4.3 Form & Input
+States: Empty, Focused (outline ring), Filled, Valid (success border/icon), Invalid (error border, red text, error icon), Disabled, Read-only. Structure: flex container wrapping label, input, dedicated error feedback container.
+
+### 4.4 Modal / Popup
+States: Opening, Open, Loading, Success/Error, Closing (all CSS transitions). UX: centered flex container (align-items center), backdrop overlay, Google Icon close button, keyboard focus trapping, close via Esc or overlay click.
+
+## 5. Core UX & Micro-Interactions
+
+- Responsive by default, fluid sizing, no horizontal overflow.
+- Smooth animations via CSS transitions (`transition: var(--transition-normal)`), respecting `prefers-reduced-motion`.
+- Accessibility: sufficient contrast both modes; never rely solely on color for state; semantic HTML5; correct ARIA roles/labels; logical DOM/focus order; full keyboard operability; `aria-live` regions for dynamic feedback.
+- Mandatory visual feedback on every click/hover/submission.
+- Destructive actions visually distinct in both light and dark themes.
+
+## 6. Deliverables
+
+- Separate `index.html`, `style.css`, `script.js`. No inline `<script>` beyond single deferred entry-point reference.
+- One consistent class-naming convention (BEM or fixed utility set) throughout — never mix.
+- No lorem-ipsum-only submissions where real copy/labels supplied; placeholders only where content genuinely unspecified.
+- All user-facing copy in English.
+
+## 7. Landing Page Sections Required
+
+Build these sections in order: Hero, Features (3 cards), How It Works (3 steps), Testimonials, Pricing (3 tiers), FAQ, Final CTA, Footer with secondary links.
+
+Use the component specs above for styling. Ensure all sections are responsive, accessible, and follow the dark control-room aesthetic. Invent fictional brand name, product, and copy. Never use real brand names, logos, trademarks, or product names.

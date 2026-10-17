@@ -14,6 +14,7 @@ Prompt library site. Users filter by category, open a design full view, copy the
 - `make deploy` - build docs, commit to main, push
 - `make process` - regenerate prompts from `design/raw` via `design/agent.md` (needs `OPENROUTER_API_KEY`)
 - `make categorize` - regenerate `design/categories.json`
+- `make pipeline` - per raw file: prompt (`process-prompts.mjs`) then demo (`build-demos.mjs`), then missing demos, dark check, thumbs, site data. Run `make categorize` first (it reads `design/raw`). `PIPE=3` sets parallel files. LLM endpoint from `.env`: `LLM_URL`, `LLM_KEY`, `LLM_MODELS`, `LLM_REASONING=none` (router models otherwise reason past its 300s cut-off and return empty). OpenAI-compatible; falls back to NVIDIA
 - `make demos` - build missing demo pages in `design/demos` via NVIDIA (needs `NVIDIA_API_KEY` in `.env`); skips done demos. System prompt = output rules + `design/design-brief.md`; each page must pass the Playwright dark-mode check. Env: `DEMO_ONLY=id1,id2` (rebuild those), `DEMO_MODELS=...` (override model list), `DEMO_NOTE="..."` (redesign notes), `DEMO_TIMEOUT_MS`
 - `make thumbs` - screenshot new/changed demos to `design/thumbs/*.jpg` (Playwright); also runs in `npm run generate`
 - `make check-dark` - Playwright check that each demo has a working dark mode (toggle click or prefers-color-scheme); results in `design/dark-check.json`
