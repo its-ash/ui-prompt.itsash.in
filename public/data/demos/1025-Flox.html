@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aether - Build faster with clarity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<script>
+(function () {
+  var stored = localStorage.getItem("theme");
+  var theme = stored === "dark" || stored === "light" ? stored : (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  document.documentElement.dataset.theme = theme;
+})();
+</script>
+<style>
+:root {
+  --color-graphite-ink: #020817;
+  --color-hairline-slate: #e2e8f0;
+  --color-paper-white: #ffffff;
+  --color-carbon: #1b1b1b;
+  --color-mist: #f3f3f3;
+  --color-obsidian: #0c0c0c;
+  --color-iris-glow: #8247ff;
+  --color-magenta-pulse: #f47bff;
+  --color-ember-orange: #ff8a3d;
+  --color-rose-hot: #ff4fae;
+
+  --primary: #8247ff;
+  --secondary: #f47bff;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f3f3f3;
+  --text-primary: #020817;
+  --text-secondary: #1b1b1b;
+  --text-success: #16a34a;
+  --text-error: #dc2626;
+  --border-default: #e2e8f0;
+  --border-error: #dc2626;
+  --border-success: #16a34a;
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 12px;
+  --shadow-sm: rgba(0,0,0,0.04) 0px 2px 8px 0px, rgba(0,0,0,0.08) 0px 8px 24px 0px, rgba(0,0,0,0.12) 0px 16px 48px 0px;
+  --shadow-md: rgba(255,255,255,0.2) 0px -2px 1px 0px inset, rgba(255,255,255,0.1) 0px 4px 16px 0px inset, rgba(0,0,0,0.08) 0px 6px 16px 0px;
+  --spacing-gap: 16px;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --ease-standard: cubic-bezier(0.4,0,0.2,1);
+  --z-dropdown: 100;
+  --z-modal: 1000;
+  --z-toast: 2000;
+
+  --font-geistsans: "Geist", "Inter", system-ui, sans-serif;
+  --font-geistmono: "Geist Mono", "JetBrains Mono", ui-monospace, monospace;
+
+  --on-primary: #ffffff;
+  --on-obsidian: #ffffff;
+  --surface-glass: rgba(255,255,255,0.7);
+}
+:root[data-theme="dark"] {
+  --bg-primary: #0c0c0c;
+  --bg-secondary: #1b1b1b;
+  --text-primary: #f3f3f3;
+  --text-secondary: #e2e8f0;
+  --border-default: #2a2a2a;
+  --color-hairline-slate: #2a2a2a;
+  --color-mist: #1b1b1b;
+  --color-paper-white: #0c0c0c;
+  --color-carbon: #e2e8f0;
+  --color-graphite-ink: #f3f3f3;
+  --color-obsidian: #f3f3f3;
+  --on-obsidian: #0c0c0c;
+  --surface-glass: rgba(12,12,12,0.7);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: var(--font-geistsans);
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  line-height: 1.4;
+}
+[hidden] { display: none !important; }
+img { max-width: 100%; display: block; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; }
+.container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+@media (max-width: 768px) { .container { padding: 0 1.25rem; } }
+
+.site-header {
+  position: sticky; top: 0; z-index: var(--z-dropdown);
+  background: var(--surface-glass);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-default);
+}
+@media (prefers-reduced-transparency: reduce) {
+  .site-header { background: var(--bg-primary); backdrop-filter: none; }
+}
+.nav {
+  display: flex; align-items: center; justify-content: space-between;
+  min-height: 68px; gap: 1rem;
+}
+.nav__brand { font-weight: 600; letter-spacing: -0.02em; }
+.nav__links { display: flex; align-items: center; gap: 1.5rem; list-style: none; margin: 0; padding: 0; }
+.nav__links a { font-size: 0.95rem; }
+.nav__actions { display: flex; align-items: center; gap: 0.75rem; }
+.nav__toggle { display: none; }
+@media (max-width: 768px) {
+  .nav__links { display: none; flex-direction: column; position: absolute; top: 68px; left: 0; right: 0; background: var(--bg-primary); border-bottom: 1px solid var(--border-default); padding: 1rem 1.25rem; }
+  .nav__links.is-open { display: flex; }
+  .nav__toggle { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; border: 1px solid var(--border-default); border-radius: var(--radius-sm); background: transparent; color: var(--text-primary); cursor: pointer; }
+}
+.theme-toggle {
+  min-width: 44px; min-height: 44px; border: 1px solid var(--border-default); border-radius: var(--radius-sm);
+  background: transparent; color: var(--text-primary); cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+}
+.ghost-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  min-height: 44px; padding: 4px 16px; border: 1px solid var(--color-graphite-ink); border-radius: var(--radius-sm);
+  background: transparent; color: var(--color-graphite-ink); font-size: 14px; font-weight: 500; cursor: pointer;
+}
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  min-height: 44px; padding: 10px 25px; border-radius: var(--radius-sm); border: none;
+  font-size: 14px; font-weight: 500; cursor: pointer; transition: transform var(--transition-fast), box-shadow var(--transition-fast), filter var(--transition-fast);
+}
+.btn--primary {
+  background: linear-gradient(92deg, #8247ff, #f47bff); color: var(--on-primary); box-shadow: var(--shadow-md);
+}
+.btn--obsidian { background: var(--color-obsidian); color: var(--on-obsidian); }
+.btn:hover { filter: brightness(1.05); transform: translateY(-1px); }
+.btn:active { transform: scale(0.97); }
+.btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.btn:disabled { opacity: 0.5; filter: grayscale(1); cursor: not-allowed; }
+
+.hero { padding: clamp(3rem, 8vw, 6rem) 0; }
+.hero__grid { display: flex; gap: 2rem; align-items: center; flex-wrap: wrap; }
+.hero__content { flex: 1 1 320px; }
+.hero__visual { flex: 1 1 320px; }
+.hero__title { font-size: 76px; line-height: 1.0; letter-spacing: -3.5px; font-weight: 400; margin: 0 0 1rem; }
+.hero__title .gradient-word { background: linear-gradient(92deg, #8247ff, #f47bff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.sparkle { display: inline-block; width: 20px; height: 20px; background: linear-gradient(92deg, #8247ff, #f47bff); clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); vertical-align: middle; }
+.hero__sub { font-size: 18px; line-height: 1.35; color: var(--text-secondary); max-width: 60ch; margin: 0 0 1.5rem; }
+.hero__actions { display: flex; gap: 16px; flex-wrap: wrap; }
+
+.terminal {
+  background: var(--bg-primary); border-radius: var(--radius-md); padding: 24px; box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-default);
+}
+.terminal__dots { display: flex; gap: 6px; }
+.terminal__dot { width: 8px; height: 8px; border-radius: 999px; background: var(--color-mist); }
+.terminal__body { font-family: var(--font-geistmono); font-size: 14px; font-weight: 500; padding-top: 16px; }
+.terminal__prompt { color: var(--color-rose-hot); }
+.terminal__cmd { color: var(--color-graphite-ink); }
+
+.section { padding: 80px 0; }
+.section__title { font-size: clamp(2rem, 4vw, 2.75rem); line-height: 1.1; letter-spacing: -0.02em; margin: 0 0 0.75rem; }
+.section__sub { color: var(--text-secondary); max-width: 65ch; }
+
+.features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+@media (max-width: 768px) { .features { grid-template-columns: 1fr; } }
+.feature { padding: 0; }
+.feature__head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+.feature__icon { font-size: 24px; }
+.feature__icon--iris { color: var(--color-iris-glow); }
+.feature__icon--ember { color: var(--color-ember-orange); }
+.feature__icon--rose { color: var(--color-rose-hot); }
+.feature__title { font-size: 24px; letter-spacing: -0.29px; font-weight: 400; margin: 0.5rem 0; }
+.feature__pill { display: inline-block; font-size: 14px; padding: 2px 8px; border-radius: 999px; }
+.feature__pill--iris { color: var(--color-iris-glow); background: rgba(130,71,255,0.1); }
+.feature__pill--ember { color: var(--color-ember-orange); background: rgba(255,138,61,0.1); }
+.feature__pill--rose { color: var(--color-rose-hot); background: rgba(255,79,174,0.1); }
+.feature__list { list-style: none; padding: 0; margin: 1rem 0 0; display: grid; gap: 4px; }
+.feature__list li { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; color: var(--text-secondary); }
+.feature__list li::before { content: ">"; color: inherit; }
+
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+@media (max-width: 768px) { .steps { grid-template-columns: 1fr; } }
+.step { border: 1px solid var(--border-default); border-radius: var(--radius-md); padding: 24px; }
+.step__marker { width: 32px; height: 32px; border-radius: 999px; background: var(--bg-secondary); display: inline-flex; align-items: center; justify-content: center; font-weight: 600; margin-bottom: 1rem; }
+.step__title { font-size: 18px; margin: 0 0 0.5rem; }
+.step__desc { color: var(--text-secondary); font-size: 14px; line-height: 1.5; }
+
+.testimonials-wrap { position: relative; overflow: hidden; }
+.tiled-bg { position: absolute; inset: 0; background-image: linear-gradient(var(--border-default) 1px, transparent 1px), linear-gradient(90deg, var(--border-default) 1px, transparent 1px); background-size: 40px 40px; opacity: 0.6; }
+.tile-wash { position: absolute; width: 80px; height: 80px; background: rgba(255,79,174,0.08); border-radius: 8px; }
+.testimonial-card { position: relative; background: var(--bg-primary); border: 1px solid var(--border-default); border-radius: var(--radius-md); padding: 16px; max-width: 520px; margin: 0 auto; }
+.testimonial__head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.avatar { width: 24px; height: 24px; border-radius: 999px; background: var(--bg-secondary); display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
+.testimonial__name { font-size: 14px; font-weight: 600; }
+.testimonial__handle { font-size: 12px; color: var(--text-primary); }
+.testimonial__quote { font-size: 14px; line-height: 1.6; color: var(--text-secondary); margin: 0; }
+
+.pricing { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+@media (max-width: 768px) { .pricing { grid-template-columns: 1fr; } }
+.price-card { border: 1px solid var(--border-default); border-radius: var(--radius-md); padding: 24px; background: var(--bg-primary); }
+.price-card--featured { box-shadow: var(--shadow-sm); }
+.price { font-size: 2rem; font-weight: 600; margin: 0.5rem 0; }
+.price__list { list-style: none; padding: 0; margin: 1rem 0 1.5rem; display: grid; gap: 8px; }
+.price__list li { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; color: var(--text-secondary); }
+.price__list li::before { content: ">"; color: var(--primary); }
+
+.faq { display: grid; gap: 12px; max-width: 800px; }
+.faq details { border: 1px solid var(--border-default); border-radius: var(--radius-md); padding: 16px; }
+.faq summary { cursor: pointer; font-weight: 500; }
+.faq p { color: var(--text-secondary); margin: 0.75rem 0 0; }
+
+.cta-band { text-align: center; padding: 80px 0; background: var(--bg-secondary); border-top: 1px solid var(--border-default); border-bottom: 1px solid var(--border-default); }
+.cta-band__actions { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 1.5rem; }
+
+.footer { padding: 40px 0; border-top: 1px solid var(--border-default); }
+.footer__row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+.footer__links { display: flex; gap: 1rem; list-style: none; padding: 0; margin: 0; }
+.social { display: inline-flex; width: 32px; height: 32px; align-items: center; justify-content: center; }
+.social svg { width: 18px; height: 18px; fill: currentColor; }
+
+.reveal { opacity: 0; transform: translateY(12px); transition: opacity 300ms ease, transform 300ms ease; }
+.reveal.is-visible { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: opacity 200ms ease; }
+}
+</style>
+<style id="pd-icon-fix">.material-symbols-rounded{font-family:'Material Symbols Rounded'!important;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;word-wrap:normal;direction:ltr;font-feature-settings:'liga';-webkit-font-feature-settings:'liga'}</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="container">
+    <nav class="nav" aria-label="Primary">
+      <a class="nav__brand" href="#">Aether</a>
+      <button class="nav__toggle" id="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Toggle navigation">Menu</button>
+      <ul class="nav__links" id="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+      <div class="nav__actions">
+        <button class="ghost-btn" type="button">Sign in</button>
+        <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+          <span class="material-symbols-rounded" id="theme-icon">dark_mode</span>
+        </button>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="container">
+      <div class="hero__grid">
+        <div class="hero__content">
+          <h1 class="hero__title">Build products with <span class="gradient-word">clarity</span> <span class="sparkle" aria-hidden="true"></span></h1>
+          <p class="hero__sub">Aether helps teams ship clean interfaces, track feedback, and keep every release focused on what matters.</p>
+          <div class="hero__actions">
+            <button class="btn btn--primary" type="button">Start free</button>
+            <button class="btn btn--obsidian" type="button">View demo</button>
+          </div>
+        </div>
+        <div class="hero__visual">
+          <div class="terminal">
+            <div class="terminal__dots">
+              <span class="terminal__dot"></span>
+              <span class="terminal__dot"></span>
+              <span class="terminal__dot"></span>
+            </div>
+            <div class="terminal__body">
+              <span class="terminal__prompt">$</span> <span class="terminal__cmd">aether deploy --env prod</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="features" class="section">
+    <div class="container">
+      <h2 class="section__title">Features that stay out of the way</h2>
+      <p class="section__sub">Simple tools for teams who value speed and clarity.</p>
+      <div class="features" style="margin-top:2rem;">
+        <article class="feature">
+          <div class="feature__head">
+            <div>
+              <h3 class="feature__title">Fast feedback</h3>
+              <span class="feature__pill feature__pill--iris">For product teams</span>
+            </div>
+            <span class="material-symbols-rounded feature__icon feature__icon--iris">bolt</span>
+          </div>
+          <ul class="feature__list">
+            <li>Collect input in one place</li>
+            <li>Tag and route issues</li>
+            <li>Track resolution time</li>
+            <li>Share weekly summaries</li>
+          </ul>
+        </article>
+        <article class="feature">
+          <div class="feature__head">
+            <div>
+              <h3 class="feature__title">Clean releases</h3>
+              <span class="feature__pill feature__pill--ember">For engineers</span>
+            </div>
+            <span class="material-symbols-rounded feature__icon feature__icon--ember">deployed_code</span>
+          </div>
+          <ul class="feature__list">
+            <li>Preview every change</li>
+            <li>Roll back in seconds</li>
+            <li>Monitor key metrics</li>
+            <li>Keep changelogs tidy</li>
+          </ul>
+        </article>
+        <article class="feature">
+          <div class="feature__head">
+            <div>
+              <h3 class="feature__title">Shared context</h3>
+              <span class="feature__pill feature__pill--rose">For leaders</span>
+            </div>
+            <span class="material-symbols-rounded feature__icon feature__icon--rose">groups</span>
+          </div>
+          <ul class="feature__list">
+            <li>One source of truth</li>
+            <li>Clear ownership</li>
+            <li>Simple reporting</li>
+            <li>Less status noise</li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="how" class="section">
+    <div class="container">
+      <h2 class="section__title">How it works</h2>
+      <p class="section__sub">Three steps from idea to shipped value.</p>
+      <div class="steps" style="margin-top:2rem;">
+        <div class="step">
+          <div class="step__marker">1</div>
+          <h3 class="step__title">Connect</h3>
+          <p class="step__desc">Link your tools and import the context your team already uses.</p>
+        </div>
+        <div class="step">
+          <div class="step__marker">2</div>
+          <h3 class="step__title">Prioritize</h3>
+          <p class="step__desc">Rank work by impact and effort with a simple shared view.</p>
+        </div>
+        <div class="step">
+          <div class="step__marker">3</div>
+          <h3 class="step__title">Ship</h3>
+          <p class="step__desc">Release with confidence and learn from real usage.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section testimonials-wrap">
+    <div class="tiled-bg" aria-hidden="true"></div>
+    <div class="tile-wash" style="top:40px;left:60px;" aria-hidden="true"></div>
+    <div class="tile-wash" style="bottom:60px;right:80px;" aria-hidden="true"></div>
+    <div class="container" style="position:relative;">
+      <h2 class="section__title">Loved by focused teams</h2>
+      <div class="testimonial-card reveal">
+        <div class="testimonial__head">
+          <span class="avatar">MK</span>
+          <div>
+            <div class="testimonial__name">Maya Kline</div>
+            <div class="testimonial__handle">@mayakline</div>
+          </div>
+        </div>
+        <p class="testimonial__quote">"Aether cut our release noise in half and made priorities obvious."</p>
+      </div>
+      <div class="testimonial-card reveal" style="margin-top:1rem;">
+        <div class="testimonial__head">
+          <span class="avatar">JR</span>
+          <div>
+            <div class="testimonial__name">Jon Reyes</div>
+            <div class="testimonial__handle">@jonreyes</div>
+          </div>
+        </div>
+        <p class="testimonial__quote">"The terminal view and clean cards make daily work feel lighter."</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing" class="section">
+    <div class="container">
+      <h2 class="section__title">Pricing that scales with you</h2>
+      <p class="section__sub">Start small and grow when ready.</p>
+      <div class="pricing" style="margin-top:2rem;">
+        <article class="price-card">
+          <h3>Starter</h3>
+          <div class="price">$19</div>
+          <p style="color:var(--text-secondary);font-size:14px;">For small teams</p>
+          <ul class="price__list">
+            <li>Up to 5 members</li>
+            <li>Basic analytics</li>
+            <li>Email support</li>
+          </ul>
+          <button class="btn btn--obsidian" type="button">Choose Starter</button>
+        </article>
+        <article class="price-card price-card--featured">
+          <h3>Pro</h3>
+          <div class="price">$49</div>
+          <p style="color:var(--text-secondary);font-size:14px;">For growing teams</p>
+          <ul class="price__list">
+            <li>Unlimited members</li>
+            <li>Advanced analytics</li>
+            <li>Priority support</li>
+          </ul>
+          <button class="btn btn--primary" type="button">Choose Pro</button>
+        </article>
+        <article class="price-card">
+          <h3>Scale</h3>
+          <div class="price">$99</div>
+          <p style="color:var(--text-secondary);font-size:14px;">For large orgs</p>
+          <ul class="price__list">
+            <li>SSO and audit logs</li>
+            <li>Dedicated support</li>
+            <li>Custom limits</li>
+          </ul>
+          <button class="btn btn--obsidian" type="button">Choose Scale</button>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq" class="section">
+    <div class="container">
+      <h2 class="section__title">Frequently asked questions</h2>
+      <div class="faq" style="margin-top:2rem;">
+        <details>
+          <summary>Can I try Aether for free?</summary>
+          <p>Yes. Start with a 14 day trial and upgrade when ready.</p>
+        </details>
+        <details>
+          <summary>Do you support SSO?</summary>
+          <p>SSO is available on the Scale plan with standard providers.</p>
+        </details>
+        <details>
+          <summary>How do I cancel?</summary>
+          <p>You can cancel anytime from billing settings without penalties.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-band">
+    <div class="container">
+      <h2 class="section__title">Ready to build with clarity?</h2>
+      <p class="section__sub" style="margin:0 auto;">Join teams shipping focused products every week.</p>
+      <div class="cta-band__actions">
+        <button class="btn btn--primary" type="button">Start free <span class="sparkle" aria-hidden="true"></span></button>
+        <button class="btn btn--obsidian" type="button">Talk to sales</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__row">
+      <span>Aether</span>
+      <ul class="footer__links">
+        <li><a href="#">Privacy</a></li>
+        <li><a href="#">Terms</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+      <span>Copyright 2026 Aether</span>
+    </div>
+    <div style="margin-top:1rem;display:flex;gap:0.75rem;">
+      <a class="social" href="#" aria-label="Twitter">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231z"/></svg>
+      </a>
+      <a class="social" href="#" aria-label="GitHub">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56v-2.02c-3.2.7-3.88-1.54-3.88-1.54-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.05 11.05 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.69 5.39-5.25 5.68.41.35.77 1.05.77 2.12v3.14c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"/></svg>
+      </a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var toggle = document.getElementById("theme-toggle");
+  var icon = document.getElementById("theme-icon");
+  var navToggle = document.getElementById("nav-toggle");
+  var navLinks = document.getElementById("nav-links");
+
+  function applyTheme(theme) {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem("theme", theme);
+    var isDark = theme === "dark";
+    toggle.setAttribute("aria-pressed", String(isDark));
+    toggle.setAttribute("aria-label", isDark ? "Switch to light mode" : "Switch to dark mode");
+    icon.textContent = isDark ? "light_mode" : "dark_mode";
+  }
+
+  var initial = document.documentElement.dataset.theme || "light";
+  applyTheme(initial);
+
+  toggle.addEventListener("click", function () {
+    var next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+    applyTheme(next);
+  });
+
+  navToggle.addEventListener("click", function () {
+    var open = navLinks.classList.toggle("is-open");
+    navToggle.setAttribute("aria-expanded", String(open));
+  });
+  navLinks.querySelectorAll("a").forEach(function (link) {
+    link.addEventListener("click", function () {
+      navLinks.classList.remove("is-open");
+      navToggle.setAttribute("aria-expanded", "false");
+    });
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+      navLinks.classList.remove("is-open");
+      navToggle.setAttribute("aria-expanded", "false");
+    }
+  });
+
+  var reveals = document.querySelectorAll(".reveal");
+  if ("IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-visible");
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    reveals.forEach(function (el, i) {
+      el.style.transitionDelay = (i * 60) + "ms";
+      io.observe(el);
+    });
+  } else {
+    reveals.forEach(function (el) { el.classList.add("is-visible"); });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+You are an expert front-end coding AI. Build a complete, production-quality Landing Page in the "a16z speedrun" visual style described below. The deliverable must be three separate files: index.html, style.css, and script.js. No inline CSS (no style="..." attributes). No inline <script> blocks beyond a single deferred entry-point reference. Use one consistent class-naming convention (BEM) across the entire deliverable. Invent a fictional brand name, product, and copy — never use the real brand name, logo, trademarks, or product names from the reference.
+
+## 1. CSS-First Architecture & Theme Tokens
+- Keep all styling strictly in style.css. Class/ID selectors only.
+- Store all visual tokens in :root and a .dark class plus @media (prefers-color-scheme: dark) using CSS variables.
+- Required color tokens: --primary, --secondary, --bg-primary, --bg-secondary, --text-primary, --text-secondary, --text-success, --text-error, --border-default, --border-error, --border-success. Plus theme-specific tokens: --color-cloud-gray (#e5e7eb), --color-obsidian (#000000), --color-paper-white (#ffffff), --color-sand-beige (#e2dfd8), --color-graphite (#5e5d5c), --color-speedrun-gradient (linear-gradient(90deg, #00c6c6 0%, #00b5f4 20%, #00a1ff 40%, #398cff 50%, #757aff 60%, #906dff 75%, #a162ff 100%)).
+- Light-mode background must not be pure white; use #e5e7eb as page canvas and #fefefe where near-white is needed. Dark mode must define equivalent tokens with proper contrast pairing (light text on dark bg, dark text on light bg).
+- Border radius tokens: --radius-sm (8px), --radius-md (12px), --radius-lg (12px). Shadow tokens: --shadow-sm, --shadow-md (no visible shadows — keep values at none/0 to honor the no-shadow rule).
+- Spacing/transition tokens: --spacing-gap, --transition-fast, --transition-normal, --ease-standard. Elevation/stacking: --z-dropdown, --z-modal, --z-toast.
+- Dark mode: implement under @media (prefers-color-scheme: dark) and .dark class. Theme choice persists via localStorage, falling back to prefers-color-scheme on first visit. Provide a visible toggle with correct aria-pressed/aria-label.
+
+## 2. Typography & Icons
+- Google Fonts mandatory. Use Inter as substitute for messinaSans (weights 600,700,900) and Inter Tight as substitute for messinaSansCondensed (weight 600, uppercase). Bind to --font-base and --font-condensed.
+- Google Material Symbols/Icons only. No raw inline SVGs or local icon files.
+- Type scale tokens: --text-caption (12px), --text-body (16px), --text-subheading (20px), --text-heading-sm (32px), --text-heading (48px), --text-heading-lg (64px), --text-display (72px), --text-hero (243px) with specified line-heights and letter-spacing (-0.074em at 243px scaling to -0.01em at 16px; condensed labels +0.04em to +0.06em).
+
+## 3. Layout & Flexbox
+- Flexbox for all layout. Every flex container defaults to align-items: center unless explicitly justified.
+- Mobile-first, responsive, no horizontal scroll. Max content width 1200px centered; hero sections full-bleed. 3-column card grid at desktop, 12px column gap, 40px row gap. Section gaps 40px. Card padding 12px. Element gap 12px.
+- Tailwind CSS or clean custom CSS via @layer/@apply. Utility classes map to CSS variables or generic reusable classes (.btn, .card, .input-group).
+
+## 4. Component States (enforce for all interactive components)
+- Button: default (flex, align-items center, justify-content center, gap 0.5rem, min 44x44px), hover (brightness/shadow shift, cursor pointer), focus (distinct focus ring via CSS vars), active (transform scale 0.97), loading (disabled interactions, CSS spinner/animated icon, no dimension distortion), disabled (opacity 0.5, greyscale, cursor not-allowed), success/error (temporary feedback via --text-success/--text-error).
+- Card: default (flex, subtle border, elevation via vars), hover (translateY(-2px) or shadow shift), focus-within (highlight border), loading skeleton (shimmer CSS), empty state (Google Icon + guidance text).
+- Form/Input: empty, focused (outline ring), filled, valid (success border/icon), invalid (error border, red text, error icon), disabled, read-only. Flex container wrapping label, input, error feedback.
+- Modal: opening, open, loading, success/error, closing (CSS transitions). Centered flex, backdrop overlay, Google Icon close button, focus trapping, close via Esc/overlay click.
+
+## 5. Core UX
+- Smooth CSS transitions on state changes (transition: var(--transition-normal)), respecting prefers-reduced-motion.
+- Accessibility: sufficient contrast both themes, never color-only state, semantic HTML5, correct ARIA roles/labels, logical focus order, full keyboard operability, aria-live for dynamic feedback.
+- Mandatory visual feedback on every click/hover/submission.
+- Destructive actions visually distinct in both themes.
+
+## 6. Page Sections
+Build these sections in order: Hero (full-bleed dark photography with left-aligned stack: gradient eyebrow, white 48–72px display headline weight 900, gradient APPLY NOW button), Features (3 cards on #e5e7eb canvas, white cards 12px radius, 24px padding, image top, category label, heading, body), How It Works (3 steps), Testimonials, Pricing (3 tiers), FAQ, Final CTA, Footer with secondary links.
+
+## 7. Style Rules (a16z speedrun)
+- Near-zero chroma: cool grays, warm beige washes, pure white surfaces. One signature gradient (mint→cyan→blue→purple) as the only chromatic fill, used exclusively on one element per view (primary CTA or logo wordmark). Never as background/panel/section wash.
+- Typography: messinaSans (Inter substitute) weights 600–900, aggressively tight tracking on display (-0.05em or tighter at 64px+). messinaSansCondensed (Inter Tight substitute) uppercase eyebrows with +0.06em tracking.
+- Flat components: no shadows, only hairline borders. Color reserved for brand expression and single primary action.
+- 12px radius for cards/images, 8px for buttons. No third radius value.
+- 90%+ achromatic. Section gaps 40px, card padding 12px, 56px horizontal padding on gradient buttons.
+- Dark photography heroes desaturated/near-monochrome so gradient CTA is sole color.
+- Gradient direction always 90deg left-to-right. Violet radial bloom (#a162ff fading to transparent) as ambient atmosphere behind hero text only, positioned 0% horizontal, 0–8% vertical. Never full background.
+- No #000000 large filled areas in content sections (text, nav, footer, obsidian buttons only). No drop-shadows. No messinaSans below weight 600. No positive letter-spacing on messinaSans. No mixing color temperatures.
+
+## 8. Deliverables
+- index.html, style.css, script.js. Separate files. No inline style attributes. No lorem-ipsum-only where real copy is implied; invent fictional copy/labels. BEM naming throughout. Include dark mode toggle with localStorage persistence. All user-facing copy in English.

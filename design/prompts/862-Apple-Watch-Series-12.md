@@ -1,0 +1,69 @@
+# Coding AI Prompt — Apple-Inspired Landing Page (Fictional Brand)
+
+## 1. Project Overview
+Build a complete, responsive landing page for a **fictional** consumer-electronics brand. The visual language is inspired by the provided Apple style reference, but you must invent a fictional brand name, product name, logo mark, and all user-facing copy. Never use the real brand name "Apple", its logo, trademarks, or product names (Apple Watch, SF Pro, etc.) anywhere in the page. All copy must be written in English.
+
+Deliverables: separate `index.html`, `style.css`, and `script.js` files. No inline `<script>` blocks beyond a single deferred entry-point reference.
+
+## 2. Architecture & Styling Rules
+- **CSS-First, Zero Inline CSS:** All styling lives in `style.css`. No `style="..."` attributes in HTML. Target elements via class/ID selectors only. Keep HTML semantic and styling-agnostic.
+- **CSS Variables:** Define all tokens in `:root` and theme classes. Required tokens: `--primary`, `--secondary`, `--bg-primary`, `--bg-secondary`, `--text-primary`, `--text-secondary`, `--text-success`, `--text-error`, `--border-default`, `--border-error`, `--border-success`, `--radius-sm`, `--radius-md`, `--radius-lg`, `--shadow-sm`, `--shadow-md`, `--spacing-gap`, `--transition-fast`, `--transition-normal`, `--ease-standard`, `--z-dropdown`, `--z-modal`, `--z-toast`. Map the provided color/spacing/radius tokens onto these variables plus the named brand tokens (e.g. `--color-gallery-black`, `--color-charcoal-stage`, etc.).
+- **Contrast Pairing:** Every light background token pairs with a dark text token; every dark background token pairs with a light text token, in both themes.
+- **Light Mode Background:** Do not default to pure white; use `#fefefe` where near-white is needed.
+- **Dark Mode Mandatory:** Provide dark tokens under `@media (prefers-color-scheme: dark)` and/or a `.dark` class. Theme choice persists via `localStorage`, falling back to `prefers-color-scheme` on first visit. Include a visible toggle with correct `aria-pressed`/`aria-label`.
+- **Flexbox Layout:** Use `display: flex` for all layout structures. Every flex container defaults to `align-items: center` unless explicitly justified. Mobile-first: convert rows to columns on small viewports; no horizontal scrolling.
+- **Framework:** Tailwind CSS (or clean custom CSS via `@layer`/`@apply`) mapping utilities to CSS variables and reusable classes (`.btn`, `.card`, `.input-group`).
+- **Typography & Icons:** Google Fonts only. Use Inter as the substitute for SF Pro Display/Text. Include Google Material Symbols/Icons via `<link>`; forbid raw inline SVGs or local icon files. Bind fonts to `--font-base` (and `--font-display`/`--font-text`).
+
+## 3. Design Tokens (Apple-Inspired, Fictional Brand)
+Apply the following visual system:
+
+**Colors:** Gallery Black `#000000`, Charcoal Stage `#111111`, Ink `#1d1d1f`, Porcelain `#f5f5f7`, Paper `#ffffff`, Steel `#86868b`, Graphite `#6e6e73`, Control Charcoal `#333336`, Cloud Gray `#e8e8ed`, Apple Blue `#0071e3` (purchase/focus only), Link Blue `#0066cc` (inline links only), Pulse Red `#ff3037` (health metrics only), Vital Green `#00d959` (battery/health metrics only), Signal Orange `#ff791b` (availability badge text), New Orange `#b64400` (new-item badge text on light), Burnt Badge Wash `#311400` (badge bg).
+
+**Typography (Inter substitute):** Display 600 weight at 19/21/28/48/56/64/80px with tight negative tracking (-1.2px at 80px, -0.576px at 64px, -0.28px at 56px, -0.144px at 48px); Text 400/600 at 10/12/14/17/20/26/34/44px. Use the provided type-scale tokens (`--text-nav`, `--text-body`, `--text-hero-display`, etc.) with exact line-heights and letter-spacing.
+
+**Spacing:** 4px base unit; scale 4/8/12/16/20/24/28/32/40/48/52/76/80/120/144/208. Section gap 24px, card padding 16px, element gap 4px.
+
+**Shapes:** Cards 28px radius; links 10px; badges 5px; inputs 980px; buttons 9999px; utility controls 36px. No drop shadows — hierarchy via surface steps (`#000000` → `#111111`) and 28px corners. Single subtle shadow token `rgb(245,245,247) 0px -1px 0px 0px` where needed.
+
+## 4. Component & Section Specifications
+
+**Global Navigation Bar:** 44px tall, `#111111` background, SF Pro Text substitute 12px/400 at -0.12px tracking, 80% white labels. Brand name in 17px/600. Glyph icons in `#cccccc`. Include a dark-mode toggle.
+
+**Local Product Navigation:** 52px bar beneath global nav, dark field, `#f5f5f7` product text, single Apple Blue purchase pill for the buy route.
+
+**Hero:** Full-bleed Gallery Black. Large isolated hardware render (placeholder image) center-right. Porcelain headline in display 80px/600, 84px line-height, -1.2px tracking at lower left. Floating Control Charcoal financing capsule with Apple Blue purchase pill at trailing edge. No container borders/shadows.
+
+**Features (3 cards):** Black Feature Media Cards — `#000000` fill, 28px radius, no shadow. Pair Porcelain 17px/600 copy with product render. Reserve Pulse Red and Vital Green for quantified health/battery metrics only.
+
+**How It Works (3 steps):** Charcoal Stage comparison module, 28px corners. Lead statement in Porcelain display 56px/600, 60px line-height. Three Gallery Black 28px metric tiles per row, 16px padding, Steel labels, optional Vital Green/Pulse Red values.
+
+**Testimonials:** White Merchandising Cards — Paper `#ffffff`, 28px radius, no shadow. Ink text. Include avatar placeholder, quote, name, role.
+
+**Pricing (3 tiers):** White Merchandising Cards with Ink text. Highlighted tier uses Apple Blue purchase pill. Include feature lists, price, CTA. Use Pill Select Input (`rgba(255,255,255,0.04)` fill, 1px Graphite outline, `#f5f5f7` text, 980px radius) where a selector is needed.
+
+**FAQ:** Accordion items with smooth CSS transitions, keyboard accessible, `aria-expanded` states. Ink text on Paper or Porcelain on dark depending on section.
+
+**Final CTA:** Gallery Black stage with Porcelain display headline and Apple Blue purchase pill. Availability Badge (Burnt Badge Wash bg, Signal Orange text, 5px radius, 4px 6px padding) where applicable.
+
+**Footer:** Dark field with secondary links in Steel/Link Blue, small SF Pro Text substitute sizes, compact tracking.
+
+## 5. Component State Requirements
+- **Buttons:** Default (flex, center, gap 0.5rem, min 44x44px), Hover (brightness/shadow, cursor pointer), Focus (distinct ring via CSS vars), Active (scale 0.97), Loading (disabled, spinner, no dimension change), Disabled (opacity 0.5, greyscale, not-allowed), Success/Error (temporary `--text-success`/`--text-error`).
+- **Cards:** Default, Hover (translateY -2px), Focus-within (border highlight), Loading skeleton (shimmer), Empty state (icon + guidance text).
+- **Forms/Inputs:** Empty, Focused, Filled, Valid, Invalid (error border/text/icon), Disabled, Read-only. Flex wrapper with label, input, error container.
+- **Modals:** Opening/Open/Loading/Success/Error/Closing animated via CSS. Centered flex, backdrop, Google Icon close button, focus trapping, Esc/overlay close.
+
+## 6. UX & Accessibility
+- Responsive by default, fluid sizing, no horizontal overflow.
+- CSS transitions on all state changes (`transition: var(--transition-normal)`), respecting `prefers-reduced-motion`.
+- Sufficient contrast in both themes; never rely on color alone for state. Semantic HTML5, correct ARIA roles/labels, logical focus order, full keyboard operability, `aria-live` regions for dynamic feedback.
+- Mandatory visual feedback on every click/hover/submission.
+- Destructive actions visually distinct in both themes.
+
+## 7. Naming & Deliverables
+- One consistent class-naming convention (BEM) across the entire deliverable; never mix conventions.
+- No lorem-ipsum-only submissions where real copy is supplied; placeholders only where content is genuinely unspecified.
+- No new HTML elements beyond what the section structure requires; work within existing markup when editing.
+
+Generate the complete landing page now.

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nimbus - Adaptive inference, without the overhead</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@400;600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  (function(){const t=localStorage.getItem('theme')||(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.dataset.theme=t;})();
+</script>
+<style>
+  :root{
+    --primary:#272421;--secondary:#edebe8;--bg-primary:#ffffff;--bg-secondary:#edebe8;--bg-tertiary:#e3e3e2;
+    --text-primary:#272421;--text-secondary:#7d7c7a;--text-success:#7d7c7a;--text-error:#7d7c7a;
+    --border-default:#edebe8;--border-error:#7d7c7a;--border-success:#7d7c7a;
+    --color-charcoal:#333333;--color-mist:#eeeeed;
+    --radius-sm:9px;--radius-md:9px;--radius-lg:9px;
+    --shadow-sm:none;--shadow-md:0px 4px 12px rgba(39,36,33,0.1);
+    --spacing-gap:8px;--spacing-section:96px;
+    --transition-fast:150ms;--transition-normal:250ms;--ease-standard:cubic-bezier(0.4,0,0.2,1);
+    --z-dropdown:100;--z-modal:200;--z-toast:300;
+    --font-serif:'Source Serif Pro',serif;--font-sans:'Inter',sans-serif;--font-mono:'JetBrains Mono',monospace;
+  }
+  :root[data-theme="dark"]{
+    --primary:#ffffff;--secondary:#3a3734;--bg-primary:#272421;--bg-secondary:#33312e;--bg-tertiary:#3a3734;
+    --text-primary:#ffffff;--text-secondary:#b5b3b0;--text-success:#b5b3b0;--text-error:#b5b3b0;
+    --border-default:#3a3734;--border-error:#b5b3b0;--border-success:#b5b3b0;
+    --color-charcoal:#eeeeed;--color-mist:#33312e;
+    --shadow-md:0px 4px 12px rgba(0,0,0,0.4);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --primary:#ffffff;--secondary:#3a3734;--bg-primary:#272421;--bg-secondary:#33312e;--bg-tertiary:#3a3734;
+      --text-primary:#ffffff;--text-secondary:#b5b3b0;--text-success:#b5b3b0;--text-error:#b5b3b0;
+      --border-default:#3a3734;--border-error:#b5b3b0;--border-success:#b5b3b0;
+      --color-charcoal:#eeeeed;--color-mist:#33312e;
+      --shadow-md:0px 4px 12px rgba(0,0,0,0.4);
+    }
+  }
+  [hidden]{display:none!important}
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:var(--font-sans);color:var(--text-primary);background:var(--bg-primary);font-size:15px;line-height:1.6;transition:background var(--transition-normal) var(--ease-standard),color var(--transition-normal) var(--ease-standard)}
+  .container{max-width:1200px;margin:0 auto;padding:0 24px}
+  section{padding:var(--spacing-section) 0}
+  h1,h2,h3{font-family:var(--font-serif);margin:0;letter-spacing:-0.03em;line-height:1.05}
+  .display{font-size:clamp(48px,8vw,94px);font-weight:400}
+  .heading-lg{font-size:48px;font-weight:400}
+  .heading{font-size:32px;font-weight:400}
+  .heading-sm{font-size:24px;font-weight:400}
+  .subheading{font-size:18px}
+  .body{font-size:15px}
+  .caption{font-size:11px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.09em;color:var(--text-secondary)}
+  .mono{font-family:var(--font-mono)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 24px;border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:13px;font-weight:500;letter-spacing:0.09em;text-transform:uppercase;cursor:pointer;border:none;transition:transform var(--transition-fast) var(--ease-standard),filter var(--transition-fast) var(--ease-standard),background var(--transition-fast) var(--ease-standard),color var(--transition-fast) var(--ease-standard),box-shadow var(--transition-fast) var(--ease-standard)}
+  .btn:active{transform:scale(0.97)}
+  .btn:focus-visible{outline:2px solid var(--text-primary);outline-offset:2px}
+  .btn:disabled{opacity:0.5;filter:grayscale(1);cursor:not-allowed}
+  .btn-filled{background:#272421;color:#ffffff}
+  :root[data-theme="dark"] .btn-filled{background:#ffffff;color:#272421}
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn-filled{background:#ffffff;color:#272421}}
+  .btn-filled:hover{filter:brightness(1.1)}
+  .btn-ghost{background:transparent;color:var(--text-primary);border:1px solid var(--border-default)}
+  .btn-ghost:hover{background:var(--bg-secondary)}
+  .card{background:var(--bg-secondary);border-radius:var(--radius-md);padding:24px;box-shadow:var(--shadow-md)}
+  .usecase{position:relative;overflow:hidden;border-radius:var(--radius-md);aspect-ratio:4/3;display:flex;align-items:flex-end;padding:20px;background:linear-gradient(135deg,#d9d6d1,#a9a49e)}
+  .usecase-label{background:#ffffff;color:#272421;padding:6px 12px;border-radius:9999px;font-size:15px;font-weight:500}
+  .platform{display:grid;grid-template-columns:160px 1fr;gap:24px;align-items:start}
+  .platform-icon{width:160px;height:160px;background:var(--primary);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:var(--bg-primary)}
+  .step-label{font-size:11px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.09em;color:var(--text-secondary)}
+  .nav{height:72px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:var(--z-dropdown);background:var(--bg-primary);border-bottom:1px solid var(--border-default);backdrop-filter:blur(8px)}
+  .nav-links{display:flex;gap:24px;align-items:center}
+  .nav-links a{color:var(--text-primary);text-decoration:none;font-size:13px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.09em}
+  .theme-toggle{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-sm);border:1px solid var(--border-default);background:transparent;cursor:pointer;color:var(--text-primary)}
+  .theme-toggle .material-symbols-rounded{font-size:20px}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:24px}
+  .pill{border-radius:9999px;padding:10px 20px;font-family:var(--font-mono);font-size:13px;text-transform:uppercase;letter-spacing:0.09em}
+  .pill-active{background:#272421;color:#ffffff}
+  :root[data-theme="dark"] .pill-active{background:#ffffff;color:#272421}
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .pill-active{background:#ffffff;color:#272421}}
+  .pill-inactive{background:transparent;color:var(--text-primary);border:1px solid #272421}
+  :root[data-theme="dark"] .pill-inactive{border-color:#ffffff}
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .pill-inactive{border-color:#ffffff}}
+  .logo-strip{display:flex;gap:48px;align-items:center;justify-content:center;flex-wrap:wrap;color:var(--text-secondary);font-family:var(--font-mono);font-size:12px;text-transform:uppercase;letter-spacing:0.09em}
+  .testimonial{padding:24px;border-top:1px solid var(--border-default)}
+  .pricing-card{background:var(--bg-secondary);border-radius:var(--radius-md);padding:32px;display:flex;flex-direction:column;gap:16px}
+  .pricing-card.featured{background:var(--primary);color:var(--bg-primary)}
+  .pricing-card.featured .btn-filled{background:var(--bg-primary);color:var(--primary)}
+  .faq-item{border-bottom:1px solid var(--border-default);padding:20px 0}
+  .faq-item summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;font-family:var(--font-serif);font-size:24px}
+  .faq-item summary::-webkit-details-marker{display:none}
+  .footer-links{display:flex;gap:24px;flex-wrap:wrap}
+  .footer-links a{color:var(--text-secondary);text-decoration:none;font-family:var(--font-mono);font-size:11px;text-transform:uppercase;letter-spacing:0.09em}
+  .social{display:flex;gap:12px}
+  .social a{width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:9999px;border:1px solid var(--border-default);color:var(--text-primary);text-decoration:none}
+  .reveal{opacity:0;transform:translateY(12px);transition:opacity 300ms var(--ease-standard),transform 300ms var(--ease-standard)}
+  .reveal.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:opacity 200ms ease}}
+  @media (max-width:768px){.grid-3,.grid-2,.platform{grid-template-columns:1fr}.nav-links{display:none}.nav-links.open{display:flex;position:absolute;top:72px;left:0;right:0;flex-direction:column;background:var(--bg-primary);padding:16px;border-bottom:1px solid var(--border-default}}.menu-btn{display:flex}}
+  .menu-btn{display:none;width:44px;height:44px;align-items:center;justify-content:center;border:1px solid var(--border-default);border-radius:var(--radius-sm);background:transparent;color:var(--text-primary);cursor:pointer}
+  .mobile-menu{display:none}
+  @media (max-width:768px){.mobile-menu.open{display:flex;flex-direction:column;gap:12px;padding:16px;border-bottom:1px solid var(--border-default);background:var(--bg-primary)}}
+  .hero-visual{background:linear-gradient(135deg,#edebe8,#c9c6c1);border-radius:var(--radius-lg);min-height:360px;display:flex;align-items:center;justify-content:center}
+  .hero{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+  @media (max-width:768px){.hero{grid-template-columns:1fr}}
+  .footer-mark{display:flex;align-items:center;gap:8px}
+  .footer-mark .dots{display:flex;gap:4px}
+  .footer-mark .dots span{width:6px;height:6px;border-radius:50%;background:var(--text-primary)}
+  .footer-mark .word{font-family:var(--font-sans);font-weight:500;font-size:18px}
+  .footer-mark .ml{font-family:var(--font-mono);font-size:11px;letter-spacing:0.09em;vertical-align:super}
+</style>
+<style id="pd-icon-fix">.material-symbols-rounded{font-family:'Material Symbols Rounded'!important;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;word-wrap:normal;direction:ltr;font-feature-settings:'liga';-webkit-font-feature-settings:'liga'}</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="container" style="display:flex;align-items:center;justify-content:space-between;width:100%">
+    <div class="footer-mark"><div class="dots"><span></span><span></span><span></span></div><span class="word">Nimbus</span><span class="ml">ML</span></div>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="menu-btn" id="menu-btn" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu"><span class="material-symbols-rounded">menu</span></button>
+      <button id="theme-toggle" type="button" class="theme-toggle" aria-pressed="false" aria-label="Switch to dark mode"><span class="material-symbols-rounded" id="theme-icon">dark_mode</span></button>
+    </div>
+  </div>
+</nav>
+<div id="mobile-menu" class="mobile-menu container">
+  <a href="#features">Features</a><a href="#how">How it works</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a>
+</div>
+
+<section>
+  <div class="container hero">
+    <div>
+      <p class="caption" style="margin-bottom:16px">Adaptive inference platform</p>
+      <h1 class="display">Inference that scales with your data, not your bill.</h1>
+      <p class="body" style="color:var(--text-secondary);margin:24px 0;max-width:520px">Nimbus routes, caches, and compresses model calls so teams ship AI features without runaway costs.</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <button class="btn btn-filled">Start free <span class="material-symbols-rounded">arrow_forward</span></button>
+        <button class="btn btn-ghost">Read docs</button>
+      </div>
+    </div>
+    <div class="hero-visual"><span class="material-symbols-rounded" style="font-size:96px;color:var(--text-secondary)">insights</span></div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="container">
+    <h2 class="heading-lg" style="margin-bottom:48px">Built for production workloads</h2>
+    <div class="grid-3">
+      <div class="usecase" style="background:linear-gradient(135deg,#e3e3e2,#b5b3b0)"><span class="usecase-label">Smart routing</span></div>
+      <div class="usecase" style="background:linear-gradient(135deg,#edebe8,#9a9690)"><span class="usecase-label">Semantic cache</span></div>
+      <div class="usecase" style="background:linear-gradient(135deg,#d9d6d1,#7d7c7a)"><span class="usecase-label">Token compression</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="container">
+    <h2 class="heading-lg" style="margin-bottom:48px">How it works</h2>
+    <div class="grid-2">
+      <div class="card platform">
+        <div class="platform-icon"><span class="material-symbols-rounded" style="font-size:64px">route</span></div>
+        <div>
+          <p class="step-label">001 ADAPT</p>
+          <h3 class="heading-sm" style="margin:8px 0">Connect your models</h3>
+          <p class="body" style="color:var(--text-secondary)">Point Nimbus at any provider. We handle auth, retries, and failover.</p>
+        </div>
+      </div>
+      <div class="card platform">
+        <div class="platform-icon"><span class="material-symbols-rounded" style="font-size:64px">cached</span></div>
+        <div>
+          <p class="step-label">002 CACHE</p>
+          <h3 class="heading-sm" style="margin:8px 0">Serve from cache</h3>
+          <p class="body" style="color:var(--text-secondary)">Semantic dedup cuts repeat calls before they reach a provider.</p>
+        </div>
+      </div>
+      <div class="card platform">
+        <div class="platform-icon"><span class="material-symbols-rounded" style="font-size:64px">compress</span></div>
+        <div>
+          <p class="step-label">003 SHIP</p>
+          <h3 class="heading-sm" style="margin:8px 0">Ship with confidence</h3>
+          <p class="body" style="color:var(--text-secondary)">Dashboards track cost, latency, and quality per feature.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="logo-strip" style="margin-bottom:32px">
+      <span>Northwind</span><span>Helix</span><span>Parallax</span><span>Fieldwork</span><span>Orbit</span>
+    </div>
+    <div class="grid-2">
+      <div class="testimonial">
+        <p class="body" style="color:var(--text-secondary);font-family:var(--font-serif);font-size:18px">"Nimbus cut our inference spend by half in the first month, with no quality regression."</p>
+        <p class="caption" style="margin-top:12px">Mara Chen, Head of AI, Northwind</p>
+      </div>
+      <div class="testimonial">
+        <p class="body" style="color:var(--text-secondary);font-family:var(--font-serif);font-size:18px">"The semantic cache alone paid for the platform. Setup took an afternoon."</p>
+        <p class="caption" style="margin-top:12px">Diego Alvarez, Staff Engineer, Helix</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="pricing">
+  <div class="container">
+    <h2 class="heading-lg" style="margin-bottom:48px">Pricing</h2>
+    <div class="grid-3">
+      <div class="pricing-card">
+        <p class="caption">Starter</p>
+        <p class="display" style="font-size:48px">$0</p>
+        <p class="body" style="color:var(--text-secondary)">For prototypes and side projects.</p>
+        <button class="btn btn-ghost">Get started</button>
+      </div>
+      <div class="pricing-card featured">
+        <p class="caption" style="color:var(--bg-primary)">Team</p>
+        <p class="display" style="font-size:48px">$99</p>
+        <p class="body">For teams shipping AI features.</p>
+        <button class="btn btn-filled">Start trial</button>
+      </div>
+      <div class="pricing-card">
+        <p class="caption">Enterprise</p>
+        <p class="display" style="font-size:48px">Custom</p>
+        <p class="body" style="color:var(--text-secondary)">For regulated and high-volume workloads.</p>
+        <button class="btn btn-ghost">Contact sales</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="container" style="max-width:800px">
+    <h2 class="heading-lg" style="margin-bottom:32px">FAQ</h2>
+    <details class="faq-item">
+      <summary>Which providers do you support? <span class="material-symbols-rounded">expand_more</span></summary>
+      <p class="body" style="color:var(--text-secondary);margin-top:12px">OpenAI, Anthropic, Google, and any OpenAI-compatible endpoint.</p>
+    </details>
+    <details class="faq-item">
+      <summary>How is caching billed? <span class="material-symbols-rounded">expand_more</span></summary>
+      <p class="body" style="color:var(--text-secondary);margin-top:12px">Cache hits are free. You only pay for upstream calls.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Can I self-host? <span class="material-symbols-rounded">expand_more</span></summary>
+      <p class="body" style="color:var(--text-secondary);margin-top:12px">Yes, on Team and Enterprise plans with full data residency.</p>
+    </details>
+  </div>
+</section>
+
+<section>
+  <div class="container" style="text-align:center">
+    <h2 class="display" style="font-size:clamp(40px,6vw,77px)">Ship AI without the bill shock.</h2>
+    <div style="margin-top:32px"><button class="btn btn-filled">Start free <span class="material-symbols-rounded">arrow_forward</span></button></div>
+  </div>
+</section>
+
+<footer style="padding:48px 0;border-top:1px solid var(--border-default)">
+  <div class="container" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:24px">
+    <div class="footer-mark"><div class="dots"><span></span><span></span><span></span></div><span class="word">Nimbus</span><span class="ml">ML</span></div>
+    <div class="footer-links">
+      <a href="#">Privacy</a><a href="#">Terms</a><a href="#">Docs</a><a href="#">Status</a>
+    </div>
+    <div class="social">
+      <a href="#" aria-label="X"><span class="material-symbols-rounded">close</span></a>
+      <a href="#" aria-label="GitHub"><span class="material-symbols-rounded">code</span></a>
+    </div>
+  </div>
+  <div class="container" style="margin-top:24px;color:var(--text-secondary);font-size:12px">© 2026 Nimbus. All rights reserved.</div>
+</footer>
+
+<script>
+(function(){
+  const toggle=document.getElementById('theme-toggle');
+  const icon=document.getElementById('theme-icon');
+  const menuBtn=document.getElementById('menu-btn');
+  const mobileMenu=document.getElementById('mobile-menu');
+  function applyTheme(theme){
+    document.documentElement.dataset.theme=theme;
+    const dark=theme==='dark';
+    toggle.setAttribute('aria-pressed',String(dark));
+    toggle.setAttribute('aria-label',dark?'Switch to light mode':'Switch to dark mode');
+    icon.textContent=dark?'light_mode':'dark_mode';
+  }
+  applyTheme(document.documentElement.dataset.theme);
+  toggle.addEventListener('click',function(){
+    const next=document.documentElement.dataset.theme==='dark'?'light':'dark';
+    localStorage.setItem('theme',next);
+    applyTheme(next);
+  });
+  menuBtn.addEventListener('click',function(){
+    const open=mobileMenu.classList.toggle('open');
+    menuBtn.setAttribute('aria-expanded',String(open));
+  });
+  mobileMenu.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){mobileMenu.classList.remove('open');menuBtn.setAttribute('aria-expanded','false');});});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'){mobileMenu.classList.remove('open');menuBtn.setAttribute('aria-expanded','false');}});
+  const io=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');}});},{threshold:0.1});
+  document.querySelectorAll('.reveal').forEach(function(el){io.observe(el);});
+})();
+</script>
+</body>
+</html>

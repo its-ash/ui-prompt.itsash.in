@@ -1,0 +1,149 @@
+# ARTU Landing Page — Coding Prompt
+
+## 1. Strict Rules & Architecture
+
+**1.1 CSS-First Architecture & Zero Inline CSS**
+- Keep all styling in `style.css`. Forbid `style="..."` attributes entirely. Target everything via class/ID selectors. Keep HTML semantic, clean, and agnostic of visual styling so the look can change by editing CSS only.
+
+**1.2 CSS Variables & Theme Tokens**
+Store all tokens in `:root` (and theme classes). Required tokens:
+- Colors: `--primary`, `--secondary`, `--bg-primary`, `--bg-secondary`, `--text-primary`, `--text-secondary`, `--text-success`, `--text-error`, `--border-default`, `--border-error`, `--border-success`.
+- ARTU overrides (must be defined): `--color-canvas-white: #ffffff`, `--color-ink-black: #000000`, `--color-terminal-lime: #d7ff66`, `--color-signal-red: #ff1313`.
+- Contrast pairing: light bg tokens pair with dark text tokens and vice versa for every theme.
+- Light mode background must not be pure white where a near-white is needed — use `#fefefe`; the canvas itself is `#ffffff` per spec.
+- Radius/shadows: `--radius-sm`, `--radius-md`, `--radius-lg`, `--shadow-sm`, `--shadow-md` — all radius values must resolve to `0px`.
+- Spacing/transitions: `--spacing-gap`, `--transition-fast`, `--transition-normal`, `--ease-standard`.
+- Elevation: `--z-dropdown`, `--z-modal`, `--z-toast`.
+
+**1.3 Mandatory Dark Mode**
+- Define dark mode tokens under `@media (prefers-color-scheme: dark)` and a `.dark` class selector. Background/text variables must switch seamlessly without HTML restructuring.
+- Persist user choice via `localStorage`, falling back to `prefers-color-scheme` on first visit. Provide a visible toggle with correct `aria-pressed`/`aria-label`.
+- In dark mode, invert the canvas/ink pairing: dark background, light text; keep the lime footer band and red decorative strokes as accent tokens but ensure contrast pairing rules hold.
+
+**1.4 Flexbox Layout & Mobile-First**
+- Build all layouts with Flexbox. Every flex container must default to `align-items: center` unless explicitly justified. Mobile-responsive out of the box (rows → columns on small viewports). No horizontal scrolling.
+
+**1.5 Framework**
+- Use Tailwind CSS (or clean custom CSS via `@layer`/`@apply`). Utility classes must map back to CSS variables or reusable class names (`.btn`, `.card`, `.input-group`).
+
+**1.6 Typography & Icons**
+- Google Fonts only. Use Inter (or Neue Haas Grotesk substitute) bound to `--font-base`/`--font-helveticaneuepro`. Single weight 400 only — no bold, no light, no italic. Icons via Google Material Symbols/Icons. Forbid raw inline SVGs or local icon files.
+
+## 2. Component Specifications
+
+**2.1 Buttons**
+- Default: flex, `align-items: center`, `justify-content: center`, `gap: 0.5rem`, min 44x44px touch target, 0px radius.
+- Hover: brightness/shadow shift, `cursor: pointer`. Active: `transform: scale(0.97)`. Focus: distinct ring via CSS variables. Loading: disabled interactions, CSS spinner, no dimension distortion. Disabled: `opacity: 0.5`, greyscale, `cursor: not-allowed`. Success/Error: temporary feedback via `--text-success`/`--text-error`.
+
+**2.2 Cards (Features)**
+- Default: flex layout, subtle borders, elevation via `--bg-secondary` and CSS variables, 0px radius.
+- Hover: `transform: translateY(-2px)` or shadow shift. Focus-within: highlight border. Loading (skeleton): shimmer animation, no layout jump. Empty state: Google Icon + guidance text.
+
+**2.3 Forms & Inputs (FAQ/CTA forms if any)**
+- States: Empty, Focused (ring), Filled, Valid, Invalid (error border/text/icon), Disabled, Read-only. Flex container wrapping label, input, and error feedback container.
+
+**2.4 Modal/Popup**
+- States: Opening, Open, Loading, Success/Error, Closing (CSS transitions). Centered flex, backdrop overlay, Google Icon close button, focus trapping, close via Esc/overlay click.
+
+## 3. Core UX & Micro-Interactions
+- Responsive by default, fluid sizing, no horizontal overflow.
+- CSS transitions on all state changes (`transition: var(--transition-normal)`), respect `prefers-reduced-motion`.
+- Accessibility: sufficient contrast in both modes; never rely on color alone; semantic HTML5; correct ARIA roles/labels; logical focus order; full keyboard operability; `aria-live` regions for dynamic feedback.
+- Mandatory visual feedback on every click/hover/submission.
+- Destructive actions visually distinct in both themes.
+
+## 4. Deliverables
+- Separate `index.html`, `style.css`, `script.js`. No inline `<script>` beyond a single deferred entry-point reference.
+- One consistent class-naming convention (BEM or fixed utility set) throughout — never mix.
+- No lorem-ipsum-only submissions where real copy is supplied; placeholders only where content genuinely unspecified.
+
+## 5. ARTU Theme Application (Overrides)
+
+**Brand & Copy:** Invent a fictional brand name, products, and copy. Never use the real brand name "ARTU", its logo, trademarks, or product names anywhere in the page.
+
+**Typography:** Single family (Inter substitute for HelveticaNeuePro), weight 400 only. Sizes 18/20/24/32px. Line height 1.00–1.20. Letter spacing 0.014em body → 0.024em display. All navigation and footer text uppercase with positive tracking. Logo lowercase. Hierarchy via size, case, and tracking only — no bold.
+
+**Colors:** Canvas `#ffffff` background, ink `#000000` text/borders/nav. Terminal lime `#d7ff66` only for the footer band (and a single terminal surface). Signal red `#ff1313` only as thin decorative strokes (1px) — never body text/CTAs/headings. No drop shadows, gradients, or glass. No rounded corners anywhere (0px radius on images, cards, buttons, tags).
+
+**Layout:** Single-column gallery scroll. Top nav: logo left (lowercase, 400, 18–20px, black), then PRODUCTS, STORES, ABOUT, NEWS, CONTACTS comma-separated all-caps 400 0.022em tracking, far right EN, CART (0), MENU same style. 17px padding-top, 32px gap between items, 11px row gap. No background fill, no border, no sticky behavior. Hero: full-bleed image, 0px radius, 1px black hairline bottom, no overlay/caption/button, carousel arrows (← →) 18px black at bottom-right on white margin. Hairline dividers (1px solid black) between sections. Editorial image grid: asymmetric, mixed scales, white gutters ≤32px, no captions. Footer: full-width lime band ~24–32px tall, no text, closes page; optional footer link row above (all-caps 400 18px comma-separated, 29–37px margin-bottom between rows).
+
+**Sections to build:** Hero, Features (3 cards), How It Works (3 steps), Testimonials, Pricing (3 tiers), FAQ, Final CTA, Footer with secondary links. Adapt each to the ARTU aesthetic: flat, sharp, hairline-separated, single-weight type, generous whitespace, photography-forward. No sticky header, sidebar, or modal unless explicitly required by a section's interaction.
+
+**Do's:** one family/one weight; all-caps nav/footer with positive tracking; lime only as footer band; 1px black hairlines; photography fills viewport at 0px radius; 0px radius everywhere.
+
+**Don'ts:** no second weight/serif/display face; no red for body/CTAs; no shadows/gradients/glass; no rounded corners; no lime spread across page; no sticky header/sidebar/modal; no mixed-case nav items.
+
+Output only the finished prompt.# ARTU Landing Page — Coding Prompt
+
+## 1. Strict Rules & Architecture
+
+**1.1 CSS-First Architecture & Zero Inline CSS**
+- Keep all styling in `style.css`. Forbid `style="..."` attributes entirely. Target everything via class/ID selectors. Keep HTML semantic, clean, and agnostic of visual styling so the look can change by editing CSS only.
+
+**1.2 CSS Variables & Theme Tokens**
+Store all tokens in `:root` (and theme classes). Required tokens:
+- Colors: `--primary`, `--secondary`, `--bg-primary`, `--bg-secondary`, `--text-primary`, `--text-secondary`, `--text-success`, `--text-error`, `--border-default`, `--border-error`, `--border-success`.
+- ARTU overrides (must be defined): `--color-canvas-white: #ffffff`, `--color-ink-black: #000000`, `--color-terminal-lime: #d7ff66`, `--color-signal-red: #ff1313`.
+- Contrast pairing: light bg tokens pair with dark text tokens and vice versa for every theme.
+- Light mode background must not be pure white where a near-white is needed — use `#fefefe`; the canvas itself is `#ffffff` per spec.
+- Radius/shadows: `--radius-sm`, `--radius-md`, `--radius-lg`, `--shadow-sm`, `--shadow-md` — all radius values must resolve to `0px`.
+- Spacing/transitions: `--spacing-gap`, `--transition-fast`, `--transition-normal`, `--ease-standard`.
+- Elevation: `--z-dropdown`, `--z-modal`, `--z-toast`.
+
+**1.3 Mandatory Dark Mode**
+- Define dark mode tokens under `@media (prefers-color-scheme: dark)` and a `.dark` class selector. Background/text variables must switch seamlessly without HTML restructuring.
+- Persist user choice via `localStorage`, falling back to `prefers-color-scheme` on first visit. Provide a visible toggle with correct `aria-pressed`/`aria-label`.
+- In dark mode, invert the canvas/ink pairing: dark background, light text; keep the lime footer band and red decorative strokes as accent tokens but ensure contrast pairing rules hold.
+
+**1.4 Flexbox Layout & Mobile-First**
+- Build all layouts with Flexbox. Every flex container must default to `align-items: center` unless explicitly justified. Mobile-responsive out of the box (rows → columns on small viewports). No horizontal scrolling.
+
+**1.5 Framework**
+- Use Tailwind CSS (or clean custom CSS via `@layer`/`@apply`). Utility classes must map back to CSS variables or reusable class names (`.btn`, `.card`, `.input-group`).
+
+**1.6 Typography & Icons**
+- Google Fonts only. Use Inter (or Neue Haas Grotesk substitute) bound to `--font-base`/`--font-helveticaneuepro`. Single weight 400 only — no bold, no light, no italic. Icons via Google Material Symbols/Icons. Forbid raw inline SVGs or local icon files.
+
+## 2. Component Specifications
+
+**2.1 Buttons**
+- Default: flex, `align-items: center`, `justify-content: center`, `gap: 0.5rem`, min 44x44px touch target, 0px radius.
+- Hover: brightness/shadow shift, `cursor: pointer`. Active: `transform: scale(0.97)`. Focus: distinct ring via CSS variables. Loading: disabled interactions, CSS spinner, no dimension distortion. Disabled: `opacity: 0.5`, greyscale, `cursor: not-allowed`. Success/Error: temporary feedback via `--text-success`/`--text-error`.
+
+**2.2 Cards (Features)**
+- Default: flex layout, subtle borders, elevation via `--bg-secondary` and CSS variables, 0px radius.
+- Hover: `transform: translateY(-2px)` or shadow shift. Focus-within: highlight border. Loading (skeleton): shimmer animation, no layout jump. Empty state: Google Icon + guidance text.
+
+**2.3 Forms & Inputs (FAQ/CTA forms if any)**
+- States: Empty, Focused (ring), Filled, Valid, Invalid (error border/text/icon), Disabled, Read-only. Flex container wrapping label, input, and error feedback container.
+
+**2.4 Modal/Popup**
+- States: Opening, Open, Loading, Success/Error, Closing (CSS transitions). Centered flex, backdrop overlay, Google Icon close button, focus trapping, close via Esc/overlay click.
+
+## 3. Core UX & Micro-Interactions
+- Responsive by default, fluid sizing, no horizontal overflow.
+- CSS transitions on all state changes (`transition: var(--transition-normal)`), respect `prefers-reduced-motion`.
+- Accessibility: sufficient contrast in both modes; never rely on color alone; semantic HTML5; correct ARIA roles/labels; logical focus order; full keyboard operability; `aria-live` regions for dynamic feedback.
+- Mandatory visual feedback on every click/hover/submission.
+- Destructive actions visually distinct in both themes.
+
+## 4. Deliverables
+- Separate `index.html`, `style.css`, `script.js`. No inline `<script>` beyond a single deferred entry-point reference.
+- One consistent class-naming convention (BEM or fixed utility set) throughout — never mix.
+- No lorem-ipsum-only submissions where real copy is supplied; placeholders only where content genuinely unspecified.
+
+## 5. ARTU Theme Application (Overrides)
+
+**Brand & Copy:** Invent a fictional brand name, products, and copy. Never use the real brand name "ARTU", its logo, trademarks, or product names anywhere in the page.
+
+**Typography:** Single family (Inter substitute for HelveticaNeuePro), weight 400 only. Sizes 18/20/24/32px. Line height 1.00–1.20. Letter spacing 0.014em body → 0.024em display. All navigation and footer text uppercase with positive tracking. Logo lowercase. Hierarchy via size, case, and tracking only — no bold.
+
+**Colors:** Canvas `#ffffff` background, ink `#000000` text/borders/nav. Terminal lime `#d7ff66` only for the footer band (and a single terminal surface). Signal red `#ff1313` only as thin decorative strokes (1px) — never body text/CTAs/headings. No drop shadows, gradients, or glass. No rounded corners anywhere (0px radius on images, cards, buttons, tags).
+
+**Layout:** Single-column gallery scroll. Top nav: logo left (lowercase, 400, 18–20px, black), then PRODUCTS, STORES, ABOUT, NEWS, CONTACTS comma-separated all-caps 400 0.022em tracking, far right EN, CART (0), MENU same style. 17px padding-top, 32px gap between items, 11px row gap. No background fill, no border, no sticky behavior. Hero: full-bleed image, 0px radius, 1px black hairline bottom, no overlay/caption/button, carousel arrows (← →) 18px black at bottom-right on white margin. Hairline dividers (1px solid black) between sections. Editorial image grid: asymmetric, mixed scales, white gutters ≤32px, no captions. Footer: full-width lime band ~24–32px tall, no text, closes page; optional footer link row above (all-caps 400 18px comma-separated, 29–37px margin-bottom between rows).
+
+**Sections to build:** Hero, Features (3 cards), How It Works (3 steps), Testimonials, Pricing (3 tiers), FAQ, Final CTA, Footer with secondary links. Adapt each to the ARTU aesthetic: flat, sharp, hairline-separated, single-weight type, generous whitespace, photography-forward. No sticky header, sidebar, or modal unless explicitly required by a section's interaction.
+
+**Do's:** one family/one weight; all-caps nav/footer with positive tracking; lime only as footer band; 1px black hairlines; photography fills viewport at 0px radius; 0px radius everywhere.
+
+**Don'ts:** no second weight/serif/display face; no red for body/CTAs; no shadows/gradients/glass; no rounded corners; no lime spread across page; no sticky header/sidebar/modal; no mixed-case nav items.

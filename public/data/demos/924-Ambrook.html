@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Harvest Ledger - Accounting for working lands</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<style>
+:root{
+  --color-parchment:#fcfaf1;--color-bone:#efe9e0;--color-pure-white:#ffffff;--color-loam:#c7bcaf;--color-bark:#96897b;--color-saddle:#50463c;--color-ink:#211b15;--color-charcoal-olive:#252a23;--color-deep-olive:#434f40;--color-sage:#7a9779;--color-honey-amber:#e8b672;--color-wheat:#f0c891;
+  --primary:var(--color-honey-amber);--bg-primary:var(--color-parchment);--bg-secondary:var(--color-bone);--text-primary:var(--color-ink);--text-secondary:var(--color-saddle);--text-muted:var(--color-bark);--border-default:var(--color-loam);--border-strong:var(--color-ink);--border-subtle:var(--color-bone);
+  --radius-sm:3.75px;--radius-md:7.5px;--radius-pill:9999px;
+  --spacing-4:4px;--spacing-8:8px;--spacing-40:40px;--spacing-60:60px;--spacing-68:68px;--spacing-120:120px;
+  --transition-fast:150ms ease-out;--transition-normal:250ms ease-out;--ease-standard:cubic-bezier(.2,.8,.2,1);
+  --z-dropdown:10;--z-modal:50;--z-toast:100;
+  --font-lateral:'Inter',sans-serif;--font-lateral-display:'Source Serif Pro',serif;--font-lateral-narrow:'Inter',sans-serif;
+  --text-caption:11px;--text-eyebrow:13px;--text-body:15px;--text-body-lg:17px;--text-subheading:19px;--text-heading-sm:30px;--text-heading:38px;--text-heading-lg:53px;--text-display:68px;
+  --text-success:#2f6b3a;--text-error:#9c2f2f;
+}
+:root[data-theme="dark"]{
+  --bg-primary:var(--color-charcoal-olive);--bg-secondary:var(--color-deep-olive);--text-primary:var(--color-parchment);--text-secondary:var(--color-wheat);--text-muted:var(--color-bark);--border-default:var(--color-saddle);--border-strong:var(--color-parchment);--border-subtle:var(--color-deep-olive);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg-primary:var(--color-charcoal-olive);--bg-secondary:var(--color-deep-olive);--text-primary:var(--color-parchment);--text-secondary:var(--color-wheat);--text-muted:var(--color-bark);--border-default:var(--color-saddle);--border-strong:var(--color-parchment);--border-subtle:var(--color-deep-olive);}}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-lateral);font-size:var(--text-body);line-height:1.6;color:var(--text-primary);background:var(--bg-primary);-webkit-font-smoothing:antialiased}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer;border:none;background:none}
+[hidden]{display:none!important}
+.container{max-width:1200px;margin:0 auto;padding:0 2rem}
+@media(max-width:768px){.container{padding:0 1.25rem}}
+section{padding:clamp(4rem,8vw,7rem) 0}
+.flex{display:flex} .flex-col{flex-direction:column} .items-center{align-items:center} .justify-center{justify-content:center} .justify-between{justify-content:space-between} .gap-4{gap:var(--spacing-4)} .gap-8{gap:var(--spacing-8)} .gap-40{gap:var(--spacing-40)}
+.grid{display:grid}
+.nav{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--bg-primary);border-bottom:1px solid var(--border-subtle);height:72px;display:flex;align-items:center}
+.nav__inner{display:flex;align-items:center;justify-content:space-between;width:100%}
+.nav__links{display:flex;align-items:center;gap:var(--spacing-40)}
+.nav__links a{font-size:var(--text-body);color:var(--text-secondary)}
+.nav__actions{display:flex;align-items:center;gap:var(--spacing-8)}
+.nav__toggle{display:none;width:44px;height:44px;align-items:center;justify-content:center;border:1px solid var(--border-default);border-radius:var(--radius-sm)}
+@media(max-width:768px){.nav__links{display:none;position:absolute;top:72px;left:0;right:0;flex-direction:column;background:var(--bg-primary);border-bottom:1px solid var(--border-subtle);padding:var(--spacing-40);gap:var(--spacing-8)} .nav__links.is-open{display:flex} .nav__toggle{display:flex}}
+.btn{display:flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;min-width:44px;padding:9px 15px;border-radius:var(--radius-sm);font-weight:500;transition:var(--transition-normal);cursor:pointer}
+.btn--primary{background:var(--primary);color:var(--color-ink);padding:15px 30px}
+.btn--primary:hover{filter:brightness(.92)}
+.btn--ghost{background:transparent;border:1px solid var(--border-strong);color:var(--text-primary)}
+.btn--ghost:hover{background:var(--bg-secondary)}
+.btn:active{transform:scale(.97)}
+.btn:focus-visible{outline:2px solid var(--border-strong);outline-offset:2px}
+.btn:disabled{opacity:.5;filter:grayscale(1);cursor:not-allowed}
+.theme-toggle{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border-default);border-radius:var(--radius-sm);color:var(--text-primary)}
+.eyebrow{font-size:var(--text-eyebrow);letter-spacing:.058em;text-transform:uppercase;color:var(--text-muted);font-weight:500}
+.hero{display:grid;grid-template-columns:1fr 1fr;gap:var(--spacing-60);align-items:center}
+@media(max-width:768px){.hero{grid-template-columns:1fr;gap:var(--spacing-40)}}
+.hero__headline{font-family:var(--font-lateral-display);font-size:var(--text-display);font-weight:500;letter-spacing:-.011em;line-height:1.05}
+.hero__sub{font-size:var(--text-body-lg);color:var(--text-secondary);max-width:52ch;margin-top:var(--spacing-8)}
+.email-capture{display:flex;margin-top:var(--spacing-40);border:1px solid var(--border-strong);border-radius:var(--radius-sm);overflow:hidden;max-width:460px}
+.email-capture input{flex:1;border:none;padding:12px 16px;font:inherit;background:var(--bg-primary);color:var(--text-primary)}
+.email-capture input::placeholder{color:var(--text-muted)}
+.email-capture button{background:var(--primary);color:var(--color-ink);padding:0 20px;font-weight:500}
+.trust-row{display:flex;flex-wrap:wrap;gap:var(--spacing-8);margin-top:var(--spacing-40);font-size:var(--text-eyebrow);color:var(--text-primary)}
+.trust-row span{display:flex;align-items:center;gap:6px}
+.trust-row .material-symbols-rounded{font-size:16px}
+.hero__visual{position:relative;aspect-ratio:4/3;border:1px solid var(--border-default);border-radius:var(--radius-md);overflow:hidden;background:var(--bg-secondary);display:flex;align-items:center;justify-content:center}
+.collage{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--spacing-8);padding:var(--spacing-40)}
+.collage img{border:2px solid var(--color-parchment);transform:rotate(var(--r,0deg));aspect-ratio:4/3;object-fit:cover}
+@media(max-width:768px){.collage{grid-template-columns:repeat(2,1fr)}}
+.features{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--spacing-40)}
+@media(max-width:768px){.features{grid-template-columns:1fr}}
+.card{border:1px solid var(--border-default);border-radius:var(--radius-md);padding:45px 30px;display:flex;flex-direction:column;gap:var(--spacing-8);transition:var(--transition-normal)}
+.card:hover{transform:translateY(-2px);border-color:var(--border-strong)}
+.card__art{height:80px;display:flex;align-items:center;color:var(--text-primary)}
+.card__label{font-size:var(--text-body);font-weight:500;display:flex;align-items:center;justify-content:space-between}
+.steps{display:flex;gap:var(--spacing-60)}
+@media(max-width:768px){.steps{flex-direction:column;gap:var(--spacing-40)}}
+.step{flex:1;display:flex;flex-direction:column;gap:var(--spacing-8)}
+.step__num{font-family:var(--font-lateral-display);font-size:var(--text-heading-lg);color:var(--text-muted)}
+.testimonial{text-align:center;max-width:720px;margin:0 auto}
+.testimonial__quote{font-family:var(--font-lateral-display);font-size:var(--text-heading);font-weight:500;line-height:1.2;margin-bottom:var(--spacing-40)}
+.testimonial__author{font-size:var(--text-body);color:var(--text-secondary)}
+.testimonial__author::before{content:"";display:block;width:60px;height:1px;background:var(--border-default);margin:0 auto var(--spacing-8)}
+.pricing{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--spacing-40)}
+@media(max-width:768px){.pricing{grid-template-columns:1fr}}
+.price-card{border:1px solid var(--border-default);border-radius:var(--radius-md);padding:var(--spacing-40);display:flex;flex-direction:column;gap:var(--spacing-8)}
+.price-card--featured{border-color:var(--primary);background:var(--bg-secondary)}
+.price-card__tier{font-size:var(--text-eyebrow);letter-spacing:.058em;text-transform:uppercase;color:var(--text-muted)}
+.price-card__price{font-family:var(--font-lateral-display);font-size:var(--text-heading-lg);font-weight:500}
+.price-card__features{list-style:none;display:flex;flex-direction:column;gap:var(--spacing-8);margin:var(--spacing-8) 0}
+.price-card__features li{display:flex;align-items:center;gap:var(--spacing-8);font-size:var(--text-body)}
+.faq{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:var(--spacing-8)}
+.faq details{border:1px solid var(--border-default);border-radius:var(--radius-md);padding:var(--spacing-8) var(--spacing-40)}
+.faq summary{cursor:pointer;font-weight:500;display:flex;justify-content:space-between;align-items:center;list-style:none}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary .material-symbols-rounded{transition:transform var(--transition-normal)}
+.faq details[open] summary .material-symbols-rounded{transform:rotate(180deg)}
+.faq details p{margin-top:var(--spacing-8);color:var(--text-secondary)}
+.cta-band{text-align:center;background:var(--bg-secondary);border-radius:var(--radius-md);padding:var(--spacing-120) var(--spacing-40)}
+.footer{background:var(--bg-secondary);padding:var(--spacing-60) 0}
+.footer__grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:var(--spacing-40)}
+@media(max-width:768px){.footer__grid{grid-template-columns:1fr 1fr}}
+.footer a{display:block;font-size:var(--text-eyebrow);color:var(--text-secondary);padding:4px 0;border-bottom:1px solid var(--border-subtle)}
+.reveal{opacity:0;transform:translateY(12px);transition:opacity .5s var(--ease-standard),transform .5s var(--ease-standard)}
+.reveal.is-visible{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:opacity 200ms ease}}
+@media(prefers-reduced-transparency:reduce){.email-capture{background:var(--bg-primary)}}
+</style>
+<style id="pd-icon-fix">.material-symbols-rounded{font-family:'Material Symbols Rounded'!important;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;word-wrap:normal;direction:ltr;font-feature-settings:'liga';-webkit-font-feature-settings:'liga'}</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="container nav__inner">
+    <a href="#" style="font-weight:600;font-size:19px">Harvest Ledger</a>
+    <div class="nav__links" id="nav-links">
+      <a href="#features">Product</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a href="#contact">Contact</a>
+    </div>
+    <div class="nav__actions">
+      <a href="#" class="btn btn--ghost">Log In</a>
+      <a href="#" class="btn btn--primary">Sign Up</a>
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="material-symbols-rounded" id="theme-icon">dark_mode</span>
+      </button>
+      <button class="nav__toggle" id="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">
+        <span class="material-symbols-rounded">menu</span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<main>
+<section>
+  <div class="container hero">
+    <div>
+      <p class="eyebrow">Accounting software</p>
+      <h1 class="hero__headline">Books that keep pace with the land.</h1>
+      <p class="hero__sub">Invoicing, payroll, and tax-ready reports for farms, fleets, and field crews, without the spreadsheet sprawl.</p>
+      <form class="email-capture" onsubmit="return false">
+        <input type="email" placeholder="Enter your email" aria-label="Email address">
+        <button type="submit">Start free <span class="material-symbols-rounded">arrow_forward</span></button>
+      </form>
+      <div class="trust-row">
+        <span><span class="material-symbols-rounded">check_circle</span>30-day free trial</span>
+        <span><span class="material-symbols-rounded">support_agent</span>Live onboarding</span>
+        <span><span class="material-symbols-rounded">location_on</span>US-based support</span>
+        <span><span class="material-symbols-rounded">star</span>4.7 Trustpilot</span>
+      </div>
+    </div>
+    <div class="hero__visual">
+      <img src="https://placehold.co/640x480/efe9e0/211b15?text=Field+dashboard" alt="Product preview">
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container collage">
+    <img src="https://placehold.co/400x300/c7bcaf/211b15?text=Welder" alt="Welder" style="transform:rotate(-2deg)">
+    <img src="https://placehold.co/400x300/c7bcaf/211b15?text=Rancher" alt="Rancher" style="transform:rotate(1deg)">
+    <img src="https://placehold.co/400x300/c7bcaf/211b15?text=Trucker" alt="Trucker" style="transform:rotate(-1deg)">
+    <img src="https://placehold.co/400x300/c7bcaf/211b15?text=Farmer" alt="Farmer" style="transform:rotate(2deg)">
+    <img src="https://placehold.co/400x300/c7bcaf/211b15?text=Mechanic" alt="Mechanic" style="transform:rotate(-3deg)">
+    <img src="https://placehold.co/400x300/c7bcaf/211b15?text=Crew" alt="Crew" style="transform:rotate(1.5deg)">
+  </div>
+</section>
+
+<section id="features">
+  <div class="container">
+    <p class="eyebrow">Built for the field</p>
+    <h2 style="font-family:var(--font-lateral-display);font-size:var(--text-heading-lg);font-weight:500;margin:var(--spacing-8) 0 var(--spacing-40)">Three tools, one ledger.</h2>
+    <div class="features">
+      <div class="card reveal">
+        <div class="card__art"><span class="material-symbols-rounded" style="font-size:48px">agriculture</span></div>
+        <div class="card__label">Farm operations <span class="material-symbols-rounded">arrow_forward</span></div>
+      </div>
+      <div class="card reveal">
+        <div class="card__art"><span class="material-symbols-rounded" style="font-size:48px">local_shipping</span></div>
+        <div class="card__label">Fleet and freight <span class="material-symbols-rounded">arrow_forward</span></div>
+      </div>
+      <div class="card reveal">
+        <div class="card__art"><span class="material-symbols-rounded" style="font-size:48px">construction</span></div>
+        <div class="card__label">Contractor crews <span class="material-symbols-rounded">arrow_forward</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <p class="eyebrow">How it works</p>
+    <h2 style="font-family:var(--font-lateral-display);font-size:var(--text-heading-lg);font-weight:500;margin:var(--spacing-8) 0 var(--spacing-40)">Three steps to clean books.</h2>
+    <div class="steps">
+      <div class="step reveal">
+        <span class="step__num">01</span>
+        <h3 style="font-size:var(--text-subheading);font-weight:500">Connect accounts</h3>
+        <p style="color:var(--text-secondary)">Link banks, cards, and payroll in minutes.</p>
+      </div>
+      <div class="step reveal">
+        <span class="step__num">02</span>
+        <h3 style="font-size:var(--text-subheading);font-weight:500">Categorize once</h3>
+        <p style="color:var(--text-secondary)">Rules learn your vendors and jobs.</p>
+      </div>
+      <div class="step reveal">
+        <span class="step__num">03</span>
+        <h3 style="font-size:var(--text-subheading);font-weight:500">File with confidence</h3>
+        <p style="color:var(--text-secondary)">Export tax-ready reports anytime.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container testimonial">
+    <p class="testimonial__quote">“Harvest Ledger gave us back our evenings. Payroll that used to take a day now takes twenty minutes.”</p>
+    <p class="testimonial__author">Mara Ellison, Owner, Ellison Cattle Co.</p>
+  </div>
+</section>
+
+<section id="pricing">
+  <div class="container">
+    <p class="eyebrow">Pricing</p>
+    <h2 style="font-family:var(--font-lateral-display);font-size:var(--text-heading-lg);font-weight:500;margin:var(--spacing-8) 0 var(--spacing-40)">Simple plans.</h2>
+    <div class="pricing">
+      <div class="price-card reveal">
+        <span class="price-card__tier">Starter</span>
+        <span class="price-card__price">$29</span>
+        <ul class="price-card__features">
+          <li><span class="material-symbols-rounded">check</span>1 business</li>
+          <li><span class="material-symbols-rounded">check</span>Bank sync</li>
+          <li><span class="material-symbols-rounded">check</span>Email support</li>
+        </ul>
+        <a href="#" class="btn btn--ghost">Choose Starter</a>
+      </div>
+      <div class="price-card price-card--featured reveal">
+        <span class="price-card__tier">Pro</span>
+        <span class="price-card__price">$79</span>
+        <ul class="price-card__features">
+          <li><span class="material-symbols-rounded">check</span>Unlimited businesses</li>
+          <li><span class="material-symbols-rounded">check</span>Payroll</li>
+          <li><span class="material-symbols-rounded">check</span>Priority support</li>
+        </ul>
+        <a href="#" class="btn btn--primary">Choose Pro</a>
+      </div>
+      <div class="price-card reveal">
+        <span class="price-card__tier">Enterprise</span>
+        <span class="price-card__price">Custom</span>
+        <ul class="price-card__features">
+          <li><span class="material-symbols-rounded">check</span>Dedicated manager</li>
+          <li><span class="material-symbols-rounded">check</span>SSO</li>
+          <li><span class="material-symbols-rounded">check</span>Custom reports</li>
+        </ul>
+        <a href="#" class="btn btn--ghost">Contact sales</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="container">
+    <p class="eyebrow">FAQ</p>
+    <h2 style="font-family:var(--font-lateral-display);font-size:var(--text-heading-lg);font-weight:500;margin:var(--spacing-8) 0 var(--spacing-40)">Questions, answered.</h2>
+    <div class="faq">
+      <details>
+        <summary>Is there a free trial? <span class="material-symbols-rounded">expand_more</span></summary>
+        <p>Yes, 30 days with full access. No card required.</p>
+      </details>
+      <details>
+        <summary>Can I import from QuickBooks? <span class="material-symbols-rounded">expand_more</span></summary>
+        <p>Yes, import CSV or connect directly.</p>
+      </details>
+      <details>
+        <summary>Do you support multiple entities? <span class="material-symbols-rounded">expand_more</span></summary>
+        <p>Pro and Enterprise plans support unlimited businesses.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="container">
+    <div class="cta-band">
+      <h2 style="font-family:var(--font-lateral-display);font-size:var(--text-heading-lg);font-weight:500">Ready to close the books faster?</h2>
+      <p style="color:var(--text-secondary);margin:var(--spacing-8) 0 var(--spacing-40)">Start your free trial today.</p>
+      <a href="#" class="btn btn--primary">Get started</a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="footer">
+  <div class="container footer__grid">
+    <div>
+      <strong>Harvest Ledger</strong>
+      <p style="color:var(--text-secondary);margin-top:var(--spacing-8)">Accounting for working lands.</p>
+    </div>
+    <div><a href="#">Product</a><a href="#">Pricing</a><a href="#">Docs</a></div>
+    <div><a href="#">Company</a><a href="#">Blog</a><a href="#">Careers</a></div>
+    <div><a href="#">Legal</a><a href="#">Privacy</a><a href="#">Terms</a></div>
+  </div>
+  <div class="container" style="margin-top:var(--spacing-40);font-size:var(--text-caption);color:var(--text-muted)">© 2026 Harvest Ledger. All rights reserved.</div>
+</footer>
+
+<script>
+(function(){
+  const root=document.documentElement;
+  const stored=localStorage.getItem('theme');
+  const prefers=window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const initial=stored==='dark'||stored==='light'?stored:(prefers?'dark':'light');
+  root.dataset.theme=initial;
+  const btn=document.getElementById('theme-toggle');
+  const icon=document.getElementById('theme-icon');
+  function apply(t){
+    root.dataset.theme=t;
+    localStorage.setItem('theme',t);
+    btn.setAttribute('aria-pressed',t==='dark'?'true':'false');
+    btn.setAttribute('aria-label',t==='dark'?'Switch to light mode':'Switch to dark mode');
+    icon.textContent=t==='dark'?'light_mode':'dark_mode';
+  }
+  apply(initial);
+  btn.addEventListener('click',()=>apply(root.dataset.theme==='dark'?'light':'dark'));
+  const navToggle=document.getElementById('nav-toggle');
+  const navLinks=document.getElementById('nav-links');
+  navToggle.addEventListener('click',()=>{
+    const open=navLinks.classList.toggle('is-open');
+    navToggle.setAttribute('aria-expanded',open?'true':'false');
+  });
+  navLinks.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{navLinks.classList.remove('is-open');navToggle.setAttribute('aria-expanded','false');}));
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){navLinks.classList.remove('is-open');navToggle.setAttribute('aria-expanded','false');}});
+  const io=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('is-visible');io.unobserve(e.target);}});
+  },{threshold:.1});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+})();
+</script>
+</body>
+</html>

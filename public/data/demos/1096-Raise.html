@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Raise - Expense approvals that stay calm</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet">
+  <script>
+    (function () {
+      const stored = localStorage.getItem('theme');
+      const theme = stored === 'dark' || stored === 'light' ? stored : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.dataset.theme = theme;
+    })();
+  </script>
+  <style>
+    :root {
+      --color-collective-navy: #0c2764;
+      --color-inkwell: #0f172b;
+      --color-slate-ink: #1d293d;
+      --color-pencil-graphite: #314158;
+      --color-muted-slate: #45556c;
+      --color-distant-mist: #62748e;
+      --color-frost-border: #e2e8f0;
+      --color-silver-whisper: #c3c6cb;
+      --color-paper-white: #ffffff;
+      --color-cloud-mist: #f1f5f9;
+      --color-success-green: #16a34a;
+      --color-success-green-light: #dcfce7;
+      --color-warning-amber: #d97706;
+      --color-warning-amber-light: #fef3c7;
+      --color-error-red: #dc2626;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+      --shadow-md: rgba(0,0,0,0.1) 0px 10px 15px -3px, rgba(0,0,0,0.1) 0px 4px 6px -4px;
+      --spacing-gap: 16px;
+      --transition-fast: 150ms ease;
+      --transition-normal: 250ms ease;
+      --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+      --z-dropdown: 100;
+      --z-modal: 200;
+      --z-toast: 300;
+      --font-base: 'Inter', sans-serif;
+      --text-caption: 14px;
+      --text-body-sm: 16px;
+      --text-body: 18px;
+      --text-subheading: 20px;
+      --text-heading-sm: 32px;
+      --text-heading: 40px;
+      --text-heading-lg: 60px;
+      --text-display: 72px;
+      --bg-page: #ffffff;
+      --bg-surface: #ffffff;
+      --bg-elevated: #f1f5f9;
+      --text-primary: #0f172b;
+      --text-secondary: #45556c;
+      --text-muted: #62748e;
+      --border-color: #e2e8f0;
+      --accent: #0c2764;
+      --on-accent: #ffffff;
+      --shadow-color: rgba(15,23,43,0.08);
+    }
+    :root[data-theme="dark"] {
+      --bg-page: #0b1220;
+      --bg-surface: #111827;
+      --bg-elevated: #1f2937;
+      --text-primary: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --text-muted: #94a3b8;
+      --border-color: #334155;
+      --accent: #93aaf5;
+      --on-accent: #0b1220;
+      --shadow-color: rgba(0,0,0,0.35);
+      --color-paper-white: #111827;
+      --color-cloud-mist: #1f2937;
+      --color-frost-border: #334155;
+      --color-inkwell: #f8fafc;
+      --color-slate-ink: #e2e8f0;
+      --color-pencil-graphite: #cbd5e1;
+      --color-muted-slate: #94a3b8;
+      --color-distant-mist: #94a3b8;
+      --color-collective-navy: #93aaf5;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; overflow-x: hidden; }
+    body {
+      font-family: var(--font-base);
+      background: var(--bg-page);
+      color: var(--text-primary);
+      line-height: 1.6;
+      font-size: var(--text-body);
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      font-feature-settings: "calt" 1, "rlig" 1;
+      letter-spacing: -0.025em;
+    }
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+    .container { width: min(1200px, 100%); margin-inline: auto; padding-inline: 1.25rem; }
+    @media (min-width: 1024px) { .container { padding-inline: 2rem; } }
+    .section { padding-block: clamp(3rem, 7vw, 5rem); }
+    .section--tight { padding-block: clamp(2rem, 5vw, 3rem); }
+    .nav {
+      position: sticky; top: 0; z-index: var(--z-dropdown);
+      background: var(--bg-surface); border-bottom: 1px solid var(--border-color);
+      height: 72px; display: flex; align-items: center;
+    }
+    .nav__inner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 100%; }
+    .nav__brand { display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: var(--text-primary); }
+    .nav__mark {
+      width: 28px; height: 28px; border-radius: 8px; background: var(--accent);
+      color: var(--on-accent); display: grid; place-items: center; font-weight: 700;
+    }
+    .nav__links { display: none; align-items: center; gap: 1.25rem; }
+    .nav__links a { color: var(--text-primary); font-size: var(--text-body-sm); font-weight: 500; }
+    .nav__actions { display: flex; align-items: center; gap: 0.75rem; }
+    .nav__toggle, .menu-btn { min-width: 44px; min-height: 44px; border: 0; background: transparent; color: var(--text-primary); cursor: pointer; border-radius: var(--radius-sm); }
+    .menu-btn { display: inline-flex; align-items: center; justify-content: center; }
+    .theme-btn { display: inline-flex; align-items: center; justify-content: center; }
+    .mobile-panel { display: none; border-top: 1px solid var(--border-color); background: var(--bg-surface); padding: 1rem 1.25rem; }
+    .mobile-panel.is-open { display: block; }
+    .mobile-panel a { display: block; padding: 0.75rem 0; color: var(--text-primary); }
+    @media (min-width: 1024px) {
+      .nav__links { display: flex; }
+      .menu-btn { display: none; }
+      .mobile-panel { display: none !important; }
+    }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+      min-height: 44px; padding: 8px 16px; border-radius: var(--radius-md); border: 1px solid transparent;
+      font-family: inherit; font-size: var(--text-body-sm); font-weight: 600; cursor: pointer;
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
+    }
+    .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .btn:active { transform: scale(0.97); }
+    .btn--primary { background: var(--accent); color: var(--on-accent); }
+    .btn--primary:hover { filter: brightness(1.08); box-shadow: var(--shadow-sm); }
+    .btn--ghost { background: transparent; color: var(--text-primary); }
+    .btn--ghost:hover { background: var(--bg-elevated); }
+    .btn--outline { background: var(--bg-surface); color: var(--text-primary); border-color: var(--border-color); }
+    .btn--outline:hover { border-color: var(--accent); color: var(--accent); }
+    .btn--danger { background: var(--color-error-red); color: #fff; }
+    .btn[disabled] { opacity: 0.5; filter: grayscale(1); cursor: not-allowed; }
+    .hero { text-align: center; }
+    .hero__headline {
+      font-size: clamp(2.25rem, 6vw, 4.5rem); line-height: 1.05; font-weight: 800;
+      color: var(--accent); margin: 0 0 1rem; letter-spacing: -0.025em;
+    }
+    .hero__sub { max-width: 640px; margin: 0 auto 2rem; color: var(--color-pencil-graphite); font-size: var(--text-body); line-height: 1.63; }
+    .hero__actions { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2.5rem; }
+    .hero__visual { display: grid; grid-template-columns: 1fr; gap: 1rem; max-width: 980px; margin-inline: auto; }
+    @media (min-width: 900px) { .hero__visual { grid-template-columns: 1fr 1fr; } }
+    .card {
+      background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md);
+      padding: 2rem; box-shadow: var(--shadow-sm); transition: transform var(--transition-normal), box-shadow var(--transition-normal), border-color var(--transition-normal);
+    }
+    .card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .card:focus-within { border-color: var(--accent); }
+    .expense { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+    .expense__left { display: flex; align-items: center; gap: 0.75rem; min-width: 0; }
+    .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--bg-elevated); color: var(--text-muted); display: grid; place-items: center; font-size: 12px; font-weight: 600; flex: 0 0 auto; }
+    .expense__title { font-weight: 600; color: var(--text-primary); font-size: var(--text-body-sm); }
+    .expense__meta { color: var(--text-secondary); font-size: var(--text-caption); }
+    .expense__amount { font-weight: 600; color: var(--text-primary); font-size: var(--text-body-sm); text-align: right; }
+    .pill { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: var(--radius-md); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+    .pill--approved { background: var(--color-success-green-light); color: var(--color-success-green); }
+    .pill--pending { background: var(--color-warning-amber-light); color: var(--color-warning-amber); }
+    .balance__row { display: flex; justify-content: space-between; gap: 1rem; padding-block: 0.75rem; }
+    .balance__label { color: var(--text-secondary); font-size: var(--text-caption); font-weight: 500; }
+    .balance__value { color: var(--text-primary); font-size: var(--text-heading-sm); font-weight: 700; }
+    .balance__currency { color: var(--text-muted); font-size: var(--text-body-sm); font-weight: 400; margin-left: 0.25rem; }
+    .watercolor {
+      min-height: 180px; border-radius: var(--radius-lg); position: relative; overflow: hidden;
+      background: radial-gradient(circle at 20% 30%, rgba(226,232,240,0.9), transparent 45%), radial-gradient(circle at 80% 70%, rgba(203,213,225,0.8), transparent 50%), linear-gradient(135deg, #fefefe, #f1f5f9);
+    }
+    .features { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+    @media (min-width: 768px) { .features { grid-template-columns: repeat(3, 1fr); } }
+    .feature__icon { color: var(--accent); font-size: 32px; margin-bottom: 1rem; }
+    .feature__title { color: var(--color-slate-ink); font-size: var(--text-subheading); font-weight: 600; margin: 0 0 0.5rem; }
+    .feature__text { color: var(--color-muted-slate); font-size: var(--text-body-sm); margin: 0; }
+    .steps { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+    @media (min-width: 900px) { .steps { grid-template-columns: repeat(3, 1fr); } }
+    .step { position: relative; }
+    .step__badge { width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: var(--on-accent); display: grid; place-items: center; font-weight: 700; margin-bottom: 1rem; }
+    .step__title { color: var(--color-slate-ink); font-size: var(--text-subheading); font-weight: 600; margin: 0 0 0.5rem; }
+    .step__text { color: var(--color-muted-slate); font-size: var(--text-body-sm); margin: 0; }
+    .testimonials { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+    @media (min-width: 768px) { .testimonials { grid-template-columns: repeat(2, 1fr); } }
+    .quote { color: var(--text-primary); font-size: var(--text-body); font-style: italic; margin: 0 0 1.5rem; }
+    .author { display: flex; align-items: center; gap: 0.75rem; }
+    .author__name { font-weight: 600; color: var(--text-primary); font-size: var(--text-body-sm); }
+    .author__role { color: var(--text-muted); font-size: var(--text-caption); }
+    .pricing { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+    @media (min-width: 900px) { .pricing { grid-template-columns: repeat(3, 1fr); } }
+    .pricing__name { color: var(--color-slate-ink); font-size: var(--text-subheading); font-weight: 600; margin: 0 0 0.5rem; }
+    .pricing__price { color: var(--accent); font-size: var(--text-heading); font-weight: 800; margin: 0; }
+    .pricing__period { color: var(--text-muted); font-size: var(--text-body-sm); margin: 0 0 1rem; }
+    .pricing__features { list-style: none; padding: 0; margin: 0 0 1.5rem; display: grid; gap: 0.5rem; }
+    .pricing__features li { display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); font-size: var(--text-body-sm); }
+    .pricing__features .material-symbols-outlined { color: var(--color-success-green); font-size: 20px; }
+    .pricing--highlighted { border: 2px solid var(--accent); box-shadow: var(--shadow-md); transform: translateY(-4px); }
+    .badge { display: inline-block; margin-bottom: 0.75rem; background: var(--bg-elevated); color: var(--accent); padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+    .faq { display: grid; gap: 0; }
+    .faq__item { border-bottom: 1px solid var(--border-color); padding-block: 1rem; }
+    .faq__question { display: flex; align-items: center; justify-content: space-between; gap: 1rem; cursor: pointer; font-weight: 600; color: var(--text-primary); font-size: var(--text-body); }
+    .faq__answer { color: var(--text-secondary); font-size: var(--text-body-sm); padding-top: 0.75rem; max-height: 0; overflow: hidden; transition: max-height var(--transition-normal); }
+    .faq__item.is-open .faq__answer { max-height: 240px; }
+    .faq__chevron { transition: transform var(--transition-fast); }
+    .faq__item.is-open .faq__chevron { transform: rotate(180deg); }
+    .cta-band { background: var(--bg-elevated); border-radius: var(--radius-lg); padding: 3rem 1.5rem; text-align: center; }
+    .cta-band__title { color: var(--accent); font-size: var(--text-heading); font-weight: 700; margin: 0 0 0.75rem; }
+    .cta-band__text { color: var(--color-pencil-graphite); font-size: var(--text-body); margin: 0 0 1.5rem; }
+    .footer { border-top: 1px solid var(--border-color); padding-top: 3rem; }
+    .footer__grid { display: grid; grid-template-columns: 1fr; gap: 2rem; }
+    @media (min-width: 768px) { .footer__grid { grid-template-columns: 2fr 1fr 1fr 1fr; } }
+    .footer__title { font-weight: 600; color: var(--text-primary); margin: 0 0 0.75rem; }
+    .footer__links { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.5rem; }
+    .footer__links a { color: var(--text-secondary); font-size: var(--text-body-sm); }
+    .footer__bottom { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); color: var(--text-muted); font-size: var(--text-caption); display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+    .social { display: flex; gap: 0.75rem; color: var(--text-muted); }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+    }
+    @media (prefers-reduced-transparency: reduce) {
+      .card, .cta-band { backdrop-filter: none; background: var(--bg-surface); }
+    }
+  </style>
+<style id="pd-icon-fix">.material-symbols-outlined{font-family:'Material Symbols Outlined'!important;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;word-wrap:normal;direction:ltr;font-feature-settings:'liga';-webkit-font-feature-settings:'liga'}</style>
+</head>
+<body>
+  <header class="nav">
+    <div class="container nav__inner">
+      <a class="nav__brand" href="#top"><span class="nav__mark">C</span><span>Raise Ledger</span></a>
+      <nav class="nav__links" aria-label="Primary">
+        <a href="#features">Features</a>
+        <a href="#how">How it works</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+      <div class="nav__actions">
+        <button class="nav__toggle theme-btn" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+          <span class="material-symbols-outlined">dark_mode</span>
+        </button>
+        <button class="menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="mobile-panel" aria-label="Open menu">
+          <span class="material-symbols-outlined">menu</span>
+        </button>
+        <a class="btn btn--ghost" href="#login">Log In</a>
+        <a class="btn btn--primary" href="#signup">Sign Up</a>
+      </div>
+    </div>
+  </header>
+  <div class="mobile-panel" id="mobile-panel">
+    <a href="#features">Features</a>
+    <a href="#how">How it works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#faq">FAQ</a>
+  </div>
+
+  <main id="top">
+    <section class="section hero">
+      <div class="container">
+        <h1 class="hero__headline">Expense approvals without the chase</h1>
+        <p class="hero__sub">Raise keeps every request, receipt, and approval in one calm ledger so finance teams stop hunting for context.</p>
+        <div class="hero__actions">
+          <a class="btn btn--primary" href="#signup">Start free</a>
+          <a class="btn btn--outline" href="#demo">See demo</a>
+        </div>
+        <div class="hero__visual">
+          <article class="card">
+            <div class="expense">
+              <div class="expense__left">
+                <div class="avatar">MR</div>
+                <div>
+                  <div class="expense__title">Team offsite travel</div>
+                  <div class="expense__meta">Travel · 2 hours ago</div>
+                </div>
+              </div>
+              <div>
+                <div class="expense__amount">$1,240.00</div>
+                <span class="pill pill--pending">Pending</span>
+              </div>
+            </div>
+            <div style="display:flex;gap:0.5rem;margin-top:1rem;">
+              <button class="btn btn--primary" type="button">Approve</button>
+              <button class="btn btn--outline" type="button">Reject</button>
+            </div>
+          </article>
+          <article class="card">
+            <div class="balance__row"><span class="balance__label">Open requests</span><span class="balance__value">18</span></div>
+            <div class="balance__row"><span class="balance__label">Approved this month</span><span class="balance__value">$42,800<span class="balance__currency">USD</span></span></div>
+            <div class="balance__row"><span class="balance__label">Avg. approval time</span><span class="balance__value">4.2h</span></div>
+            <div class="watercolor" aria-hidden="true"></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="features">
+      <div class="container">
+        <h2 class="hero__headline" style="font-size:clamp(2rem,4vw,3rem)">Built for finance clarity</h2>
+        <p class="hero__sub">Three focused tools that replace scattered threads and spreadsheets.</p>
+        <div class="features">
+          <article class="card">
+            <span class="material-symbols-outlined feature__icon">receipt_long</span>
+            <h3 class="feature__title">Clear requests</h3>
+            <p class="feature__text">Every expense arrives with receipts, category, and owner attached.</p>
+          </article>
+          <article class="card">
+            <span class="material-symbols-outlined feature__icon">approval_delegation</span>
+            <h3 class="feature__title">Fast approvals</h3>
+            <p class="feature__text">Route by amount, team, or policy without building complex workflows.</p>
+          </article>
+          <article class="card">
+            <span class="material-symbols-outlined feature__icon">insights</span>
+            <h3 class="feature__title">Live spend</h3>
+            <p class="feature__text">See committed and approved spend before month-end surprises.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="how">
+      <div class="container">
+        <h2 class="hero__headline" style="font-size:clamp(2rem,4vw,3rem)">How Raise works</h2>
+        <div class="steps">
+          <div class="step">
+            <div class="step__badge">1</div>
+            <h3 class="step__title">Submit</h3>
+            <p class="step__text">Capture a receipt and add context in seconds.</p>
+          </div>
+          <div class="step">
+            <div class="step__badge">2</div>
+            <h3 class="step__title">Review</h3>
+            <p class="step__text">Approvers see policy, history, and amount in one view.</p>
+          </div>
+          <div class="step">
+            <div class="step__badge">3</div>
+            <h3 class="step__title">Reconcile</h3>
+            <p class="step__text">Approved items sync to your ledger automatically.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <h2 class="hero__headline" style="font-size:clamp(2rem,4vw,3rem)">Teams trust the ledger</h2>
+        <div class="testimonials">
+          <article class="card">
+            <p class="quote">“Raise removed the weekly chase and gave us a clean audit trail.”</p>
+            <div class="author">
+              <div class="avatar">AL</div>
+              <div><div class="author__name">Avery Lin</div><div class="author__role">Finance Lead, Northwind</div></div>
+            </div>
+          </article>
+          <article class="card">
+            <p class="quote">“Approvers finally have enough context to say yes quickly.”</p>
+            <div class="author">
+              <div class="avatar">JS</div>
+              <div><div class="author__name">Jordan Shah</div><div class="author__role">Operations Manager, Fieldstone</div></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="pricing">
+      <div class="container">
+        <h2 class="hero__headline" style="font-size:clamp(2rem,4vw,3rem)">Simple pricing</h2>
+        <div class="pricing">
+          <article class="card">
+            <h3 class="pricing__name">Starter</h3>
+            <p class="pricing__price">$0</p>
+            <p class="pricing__period">per month</p>
+            <ul class="pricing__features">
+              <li><span class="material-symbols-outlined">check</span>Up to 5 users</li>
+              <li><span class="material-symbols-outlined">check</span>Basic approvals</li>
+              <li><span class="material-symbols-outlined">check</span>Email support</li>
+            </ul>
+            <a class="btn btn--outline" href="#signup">Choose Starter</a>
+          </article>
+          <article class="card pricing--highlighted">
+            <span class="badge">Most Popular</span>
+            <h3 class="pricing__name">Team</h3>
+            <p class="pricing__price">$49</p>
+            <p class="pricing__period">per month</p>
+            <ul class="pricing__features">
+              <li><span class="material-symbols-outlined">check</span>Unlimited users</li>
+              <li><span class="material-symbols-outlined">check</span>Policy routing</li>
+              <li><span class="material-symbols-outlined">check</span>Priority support</li>
+            </ul>
+            <a class="btn btn--primary" href="#signup">Choose Team</a>
+          </article>
+          <article class="card">
+            <h3 class="pricing__name">Scale</h3>
+            <p class="pricing__price">$149</p>
+            <p class="pricing__period">per month</p>
+            <ul class="pricing__features">
+              <li><span class="material-symbols-outlined">check</span>Custom policies</li>
+              <li><span class="material-symbols-outlined">check</span>Audit exports</li>
+              <li><span class="material-symbols-outlined">check</span>Dedicated support</li>
+            </ul>
+            <a class="btn btn--outline" href="#signup">Choose Scale</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="faq">
+      <div class="container">
+        <h2 class="hero__headline" style="font-size:clamp(2rem,4vw,3rem)">Questions</h2>
+        <div class="faq">
+          <div class="faq__item">
+            <button class="faq__question" type="button" aria-expanded="false">
+              <span>Can I import existing expenses?</span>
+              <span class="material-symbols-outlined faq__chevron">expand_more</span>
+            </button>
+            <div class="faq__answer">Yes. Upload a CSV or connect your accounting tool and map fields in minutes.</div>
+          </div>
+          <div class="faq__item">
+            <button class="faq__question" type="button" aria-expanded="false">
+              <span>Does Raise support multiple approvers?</span>
+              <span class="material-symbols-outlined faq__chevron">expand_more</span>
+            </button>
+            <div class="faq__answer">Yes. Create sequential or parallel approval chains by amount and department.</div>
+          </div>
+          <div class="faq__item">
+            <button class="faq__question" type="button" aria-expanded="false">
+              <span>Is my data secure?</span>
+              <span class="material-symbols-outlined faq__chevron">expand_more</span>
+            </button>
+            <div class="faq__answer">All data is encrypted in transit and at rest, with role-based access controls.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="cta-band">
+          <h2 class="cta-band__title">Start with one clean ledger</h2>
+          <p class="cta-band__text">Bring your team into Raise and stop chasing receipts across inboxes.</p>
+          <a class="btn btn--primary" href="#signup">Create account</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__grid">
+        <div>
+          <div class="nav__brand"><span class="nav__mark">C</span><span>Raise Ledger</span></div>
+          <p class="feature__text" style="margin-top:0.75rem">Calm expense approvals for growing teams.</p>
+        </div>
+        <div>
+          <h3 class="footer__title">Product</h3>
+          <ul class="footer__links"><li><a href="#features">Features</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#demo">Demo</a></li></ul>
+        </div>
+        <div>
+          <h3 class="footer__title">Company</h3>
+          <ul class="footer__links"><li><a href="#about">About</a></li><li><a href="#careers">Careers</a></li><li><a href="#contact">Contact</a></li></ul>
+        </div>
+        <div>
+          <h3 class="footer__title">Legal</h3>
+          <ul class="footer__links"><li><a href="#privacy">Privacy</a></li><li><a href="#terms">Terms</a></li><li><a href="#security">Security</a></li></ul>
+        </div>
+      </div>
+      <div class="footer__bottom">
+        <span>© 2026 Raise Ledger. All rights reserved.</span>
+        <div class="social">
+          <a href="#" aria-label="LinkedIn"><span class="material-symbols-outlined">work</span></a>
+          <a href="#" aria-label="X"><span class="material-symbols-outlined">close</span></a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      const root = document.documentElement;
+      const toggle = document.getElementById('theme-toggle');
+      const menuBtn = document.getElementById('menu-btn');
+      const panel = document.getElementById('mobile-panel');
+      function applyTheme(theme) {
+        root.dataset.theme = theme;
+        localStorage.setItem('theme', theme);
+        const dark = theme === 'dark';
+        toggle.setAttribute('aria-pressed', String(dark));
+        toggle.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+        toggle.querySelector('.material-symbols-outlined').textContent = dark ? 'light_mode' : 'dark_mode';
+      }
+      toggle.addEventListener('click', function () {
+        applyTheme(root.dataset.theme === 'dark' ? 'light' : 'dark');
+      });
+      menuBtn.addEventListener('click', function () {
+        const open = panel.classList.toggle('is-open');
+        menuBtn.setAttribute('aria-expanded', String(open));
+      });
+      panel.querySelectorAll('a').forEach(function (link) {
+        link.addEventListener('click', function () {
+          panel.classList.remove('is-open');
+          menuBtn.setAttribute('aria-expanded', 'false');
+        });
+      });
+      document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+          panel.classList.remove('is-open');
+          menuBtn.setAttribute('aria-expanded', 'false');
+        }
+      });
+      document.querySelectorAll('.faq__question').forEach(function (button) {
+        button.addEventListener('click', function () {
+          const item = button.closest('.faq__item');
+          const open = item.classList.toggle('is-open');
+          button.setAttribute('aria-expanded', String(open));
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

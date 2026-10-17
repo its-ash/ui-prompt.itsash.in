@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Verdant - Command Center for Distributed Systems</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL@24,400,0&display=swap" rel="stylesheet">
+<script>
+  (function(){try{var t=localStorage.getItem('theme');if(t!=='dark'&&t!=='light'){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}document.documentElement.dataset.theme=t;}catch(e){document.documentElement.dataset.theme='dark';}})();
+</script>
+<style>
+:root{
+  --color-signal-orange:#ff6314;
+  --color-node-green:#33ffac;--color-node-violet:#5b76ff;--color-node-magenta:#ff2ad4;--color-node-cyan:#16c4ff;
+  --color-abyss:#04070a;--color-void:#000000;--color-obsidian:#0f1214;--color-charcoal:#1a1d1f;--color-carbon:#090c0f;
+  --color-steel:#676f7a;--color-cloud:#c6ced7;--color-mist:#e1e6eb;--color-snow:#f0f5fa;--color-white:#ffffff;
+  --primary:var(--color-signal-orange);--secondary:var(--color-node-violet);
+  --bg-primary:#fefefe;--bg-secondary:#f0f5fa;--text-primary:#04070a;--text-secondary:#676f7a;
+  --text-success:#1a7f5a;--text-error:#c0392b;
+  --border-default:#e1e6eb;--border-error:#c0392b;--border-success:#1a7f5a;
+  --radius-sm:4px;--radius-md:8px;--radius-lg:24px;
+  --shadow-sm:inset 0 0 0 1px #e1e6eb;--shadow-md:inset 0 0 0 1px #c6ced7;
+  --spacing-gap:24px;--transition-fast:150ms ease-out;--transition-normal:250ms ease-out;
+  --ease-standard:cubic-bezier(.2,.8,.2,1);--z-dropdown:100;--z-modal:200;--z-toast:300;
+  --font-base:'Inter',system-ui,sans-serif;--font-display:'Space Grotesk','Inter',sans-serif;--font-mono:'DM Mono',monospace;
+}
+:root[data-theme="dark"]{
+  --bg-primary:var(--color-abyss);--bg-secondary:var(--color-carbon);
+  --text-primary:var(--color-snow);--text-secondary:var(--color-steel);
+  --border-default:var(--color-charcoal);--border-error:#ff6b6b;--border-success:var(--color-node-green);
+  --text-success:var(--color-node-green);--text-error:#ff6b6b;
+  --shadow-sm:inset 0 0 0 1px var(--color-charcoal);--shadow-md:inset 0 0 0 1px var(--color-steel);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+img{max-width:100%;display:block}
+.container{max-width:1280px;margin:0 auto;padding:0 2rem}
+@media(max-width:768px){.container{padding:0 1.25rem}}
+.section{padding:clamp(4rem,8vw,7rem) 0}
+h1,h2,h3{font-family:var(--font-display);letter-spacing:.033em;font-weight:600}
+h1{font-size:clamp(2.25rem,5vw,4rem);line-height:1.05}
+h2{font-size:clamp(1.75rem,3.5vw,2.3rem);line-height:1.1}
+h3{font-size:1.3rem;line-height:1.2}
+p{max-width:65ch}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:0 1.5rem;border-radius:var(--radius-lg);font-family:var(--font-display);font-weight:500;font-size:15px;letter-spacing:.033em;text-transform:uppercase;transition:var(--transition-fast)}
+.btn-primary{background:var(--primary);color:#04070a}
+.btn-primary:hover{filter:brightness(1.08)}
+.btn-ghost{border:1px solid var(--text-primary);color:var(--text-primary)}
+.btn-ghost:hover{background:var(--bg-secondary)}
+.btn:active{transform:scale(.97)}
+.btn:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.announcement{background:var(--color-node-green);color:#04070a;height:40px;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:500;font-size:14px;text-transform:uppercase;letter-spacing:.033em;position:relative}
+.announcement button{position:absolute;right:1rem;top:50%;transform:translateY(-50%);color:#04070a;font-size:20px}
+.nav{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--color-obsidian);height:60px;display:flex;align-items:center}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;width:100%}
+.nav-links{display:flex;gap:1.5rem;align-items:center}
+.nav-links a{font-family:var(--font-display);font-weight:500;font-size:14px;color:var(--color-snow);letter-spacing:.033em}
+.nav-right{display:flex;align-items:center;gap:1rem}
+.nav-cta{background:var(--primary);color:#04070a;padding:0 1.25rem;min-height:36px;border-radius:var(--radius-lg);font-family:var(--font-display);font-weight:500;font-size:14px;text-transform:uppercase;letter-spacing:.033em}
+.theme-toggle{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--color-snow)}
+.theme-toggle .material-symbols-rounded{font-size:22px}
+.menu-btn{display:none;width:44px;height:44px;align-items:center;justify-content:center;color:var(--color-snow)}
+@media(max-width:768px){.nav-links{display:none}.menu-btn{display:flex}.nav-links.open{display:flex;flex-direction:column;position:absolute;top:60px;left:0;right:0;background:var(--color-obsidian);padding:1rem 2rem;gap:1rem}}
+.hero{padding-top:3rem;padding-bottom:4rem}
+.hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:center}
+@media(max-width:768px){.hero-grid{grid-template-columns:1fr}}
+.hero h1{color:var(--text-primary)}
+.hero-sub{font-size:clamp(1.1rem,2vw,1.4rem);color:var(--color-snow);margin:.75rem 0 1rem;font-family:var(--font-display);font-weight:500}
+.hero-body{color:var(--color-cloud);font-size:19px;opacity:.85;margin-bottom:1.5rem}
+.hero-ctas{display:flex;gap:1rem;flex-wrap:wrap}
+.trust-strip{display:flex;gap:2rem;flex-wrap:wrap;margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--color-charcoal)}
+.trust-item{display:flex;align-items:center;gap:.5rem;font-family:var(--font-mono);font-size:12px;color:var(--color-steel)}
+.trust-dot{width:8px;height:8px;border-radius:50%;background:var(--color-node-cyan)}
+.lattice{position:relative;aspect-ratio:1/1;background:var(--color-abyss);border:1px solid var(--color-charcoal);border-radius:var(--radius-md);overflow:hidden;display:grid;place-items:center}
+.lattice svg{width:100%;height:100%}
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
+@media(max-width:768px){.features-grid{grid-template-columns:1fr}}
+.card{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:1.5rem}
+.card-orange{background:var(--primary);color:#04070a;border:none}
+.card-orange .card-tag{color:rgba(4,7,10,.7)}
+.card-orange .card-body{color:rgba(4,7,10,.85)}
+.card-tag{font-family:var(--font-mono);font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:.5rem}
+.card h3{margin-bottom:.5rem}
+.card-body{color:var(--text-secondary);font-size:15px}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
+@media(max-width:768px){.steps{grid-template-columns:1fr}}
+.step-num{width:40px;height:40px;border-radius:50%;background:var(--primary);color:#04070a;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:600;margin-bottom:1rem}
+.testimonials{display:grid;grid-template-columns:repeat(2,1fr);gap:1.5rem}
+@media(max-width:768px){.testimonials{grid-template-columns:1fr}}
+.quote{font-size:17px;line-height:1.5;margin-bottom:1rem}
+.quote::before{content:"\201C";font-size:2rem;color:var(--primary);line-height:1;margin-right:.25rem}
+.author{display:flex;align-items:center;gap:.75rem}
+.avatar{width:40px;height:40px;border-radius:50%;background:var(--color-charcoal);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:600;color:var(--color-snow)}
+.pricing{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;align-items:stretch}
+@media(max-width:768px){.pricing{grid-template-columns:1fr}}
+.price-card{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:2rem;display:flex;flex-direction:column;gap:1rem}
+.price-card.featured{border:2px solid var(--primary);background:var(--color-carbon)}
+.price{font-size:2.5rem;font-family:var(--font-display);font-weight:600}
+.price span{font-size:1rem;color:var(--text-secondary)}
+.features-list{list-style:none;display:flex;flex-direction:column;gap:.5rem;font-size:14px;color:var(--text-secondary)}
+.faq details{border:1px solid var(--border-default);border-radius:var(--radius-md);padding:1rem 1.25rem;margin-bottom:1rem;background:var(--bg-secondary)}
+.faq summary{cursor:pointer;font-family:var(--font-display);font-weight:500;font-size:16px;list-style:none;display:flex;justify-content:space-between;align-items:center}
+.faq summary::after{content:"+";color:var(--primary);font-size:20px}
+.faq details[open] summary::after{content:"−"}
+.faq details p{margin-top:.75rem;color:var(--text-secondary);font-size:15px}
+.cta-band{background:var(--color-carbon);border:1px solid var(--color-charcoal);border-radius:var(--radius-md);padding:3rem 2rem;text-align:center}
+.footer{padding:3rem 0;border-top:1px solid var(--border-default)}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:2rem}
+@media(max-width:768px){.footer-grid{grid-template-columns:1fr 1fr}}
+.footer h4{font-family:var(--font-display);font-size:14px;margin-bottom:.75rem;text-transform:uppercase;letter-spacing:.033em}
+.footer a{display:block;font-size:14px;color:var(--text-secondary);margin-bottom:.4rem}
+.footer-bottom{margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border-default);display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem;font-size:13px;color:var(--text-secondary)}
+.socials{display:flex;gap:.75rem}
+.socials a{width:36px;height:36px;border-radius:50%;border:1px solid var(--border-default);display:flex;align-items:center;justify-content:center;color:var(--text-secondary)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+[hidden]{display:none!important}
+</style>
+<style id="pd-icon-fix">.material-symbols-rounded{font-family:'Material Symbols Rounded'!important;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;word-wrap:normal;direction:ltr;font-feature-settings:'liga';-webkit-font-feature-settings:'liga'}</style>
+</head>
+<body>
+<div class="announcement" id="ann">New: Verdant 2.0 ships distributed tracing out of the box <button aria-label="Dismiss" onclick="document.getElementById('ann').hidden=true">&times;</button></div>
+<nav class="nav">
+  <div class="container nav-inner">
+    <a href="#" style="font-family:var(--font-display);font-weight:600;font-size:18px;letter-spacing:.033em">Verdant</a>
+    <button class="menu-btn" aria-label="Menu" onclick="document.querySelector('.nav-links').classList.toggle('open')"><span class="material-symbols-rounded">menu</span></button>
+    <div class="nav-links">
+      <a href="#features">Features</a><a href="#how">How it works</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a>
+    </div>
+    <div class="nav-right">
+      <button id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode" class="theme-toggle"><span class="material-symbols-rounded">dark_mode</span></button>
+      <a href="#cta" class="nav-cta">Get started</a>
+    </div>
+  </div>
+</nav>
+<main>
+<section class="hero">
+  <div class="container">
+    <div class="hero-grid">
+      <div>
+        <h1>Command center for distributed systems</h1>
+        <p class="hero-sub">One pane for every service, signal, and shard.</p>
+        <p class="hero-body">Verdant unifies telemetry, deploys, and incidents into a single operational surface your whole team can read at a glance.</p>
+        <div class="hero-ctas">
+          <a href="#cta" class="btn btn-primary">Start free trial</a>
+          <a href="#features" class="btn btn-ghost">See how it works</a>
+        </div>
+        <div class="trust-strip">
+          <div class="trust-item"><span class="trust-dot"></span>99.99% uptime</div>
+          <div class="trust-item"><span class="trust-dot" style="background:var(--color-node-green)"></span>SOC 2 Type II</div>
+          <div class="trust-item"><span class="trust-dot" style="background:var(--color-node-violet)"></span>GDPR ready</div>
+        </div>
+      </div>
+      <div class="lattice">
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff2ad4"/><stop offset="1" stop-color="#5b76ff"/></linearGradient></defs>
+          <g fill="none" stroke="#1a1d1f" stroke-width="1">
+            <path d="M100 10 L190 100 L100 190 L10 100 Z"/>
+            <path d="M100 40 L160 100 L100 160 L40 100 Z"/>
+            <path d="M100 70 L130 100 L100 130 L70 100 Z"/>
+          </g>
+          <circle cx="100" cy="100" r="6" fill="#16c4ff"/>
+          <circle cx="40" cy="60" r="4" fill="#33ffac"/>
+          <circle cx="160" cy="140" r="4" fill="#5b76ff"/>
+          <polygon points="90,85 110,85 115,105 95,115 85,100" fill="url(#g)" opacity=".9"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+<section id="features" class="section">
+  <div class="container">
+    <h2>Everything in one operational surface</h2>
+    <p style="margin:.5rem 0 2rem;color:var(--text-secondary)">Three core modules, one consistent model.</p>
+    <div class="features-grid">
+      <div class="card">
+        <div class="card-tag">Telemetry</div>
+        <h3>Unified signals</h3>
+        <p class="card-body">Metrics, logs, and traces correlated by service and deploy.</p>
+      </div>
+      <div class="card card-orange">
+        <div class="card-tag">Deploys</div>
+        <h3>Safe rollouts</h3>
+        <p class="card-body">Canary, blue-green, and instant rollback with one click.</p>
+      </div>
+      <div class="card">
+        <div class="card-tag">Incidents</div>
+        <h3>On-call clarity</h3>
+        <p class="card-body">Runbooks, timelines, and postmortems in one place.</p>
+      </div>
+    </div>
+  </div>
+</section>
+<section id="how" class="section" style="background:var(--bg-secondary)">
+  <div class="container">
+    <h2>How it works</h2>
+    <p style="margin:.5rem 0 2rem;color:var(--text-secondary)">Three steps to full visibility.</p>
+    <div class="steps">
+      <div><div class="step-num">1</div><h3>Connect</h3><p style="color:var(--text-secondary);font-size:15px">Point Verdant at your clusters, queues, and services.</p></div>
+      <div><div class="step-num">2</div><h3>Correlate</h3><p style="color:var(--text-secondary);font-size:15px">Signals merge into a single operational graph.</p></div>
+      <div><div class="step-num">3</div><h3>Act</h3><p style="color:var(--text-secondary);font-size:15px">Resolve incidents and ship changes with confidence.</p></div>
+    </div>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <h2>Trusted by platform teams</h2>
+    <div class="testimonials" style="margin-top:2rem">
+      <div class="card">
+        <p class="quote">Verdant cut our mean time to resolution in half within a month.</p>
+        <div class="author"><div class="avatar">MK</div><div><strong>Mira Kowalski</strong><br><span style="font-size:13px;color:var(--text-secondary)">Staff Engineer, Lattice Labs</span></div></div>
+      </div>
+      <div class="card">
+        <p class="quote">Finally a tool my whole team actually reads during an incident.</p>
+        <div class="author"><div class="avatar">JR</div><div><strong>Jon Reyes</strong><br><span style="font-size:13px;color:var(--text-secondary)">VP Engineering, Northwind</span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+<section id="pricing" class="section" style="background:var(--bg-secondary)">
+  <div class="container">
+    <h2>Pricing that scales with you</h2>
+    <div class="pricing" style="margin-top:2rem">
+      <div class="price-card"><h3>Starter</h3><div class="price">$29<span>/mo</span></div><ul class="features-list"><li>Up to 5 services</li><li>7-day retention</li><li>Email support</li></ul><a href="#cta" class="btn btn-ghost" style="margin-top:auto">Choose starter</a></div>
+      <div class="price-card featured"><h3>Team</h3><div class="price">$99<span>/mo</span></div><ul class="features-list"><li>Unlimited services</li><li>90-day retention</li><li>Priority support</li></ul><a href="#cta" class="btn btn-primary" style="margin-top:auto">Choose team</a></div>
+      <div class="price-card"><h3>Enterprise</h3><div class="price">Custom</div><ul class="features-list"><li>SSO and RBAC</li><li>Unlimited retention</li><li>Dedicated CSM</li></ul><a href="#cta" class="btn btn-ghost" style="margin-top:auto">Contact sales</a></div>
+    </div>
+  </div>
+</section>
+<section id="faq" class="section">
+  <div class="container">
+    <h2>Frequently asked questions</h2>
+    <div class="faq" style="margin-top:2rem;max-width:760px">
+      <details><summary>Does Verdant support my stack?</summary><p>Yes. We integrate with Kubernetes, AWS, GCP, and most major queues and databases.</p></details>
+      <details><summary>How is data secured?</summary><p>Encryption in transit and at rest, SOC 2 Type II, and optional single-tenant deployment.</p></details>
+      <details><summary>Can I try before buying?</summary><p>Every plan includes a 14-day free trial with no credit card required.</p></details>
+    </div>
+  </div>
+</section>
+<section id="cta" class="section">
+  <div class="container">
+    <div class="cta-band">
+      <h2>Ready to see your whole system at once?</h2>
+      <p style="margin:.75rem auto 1.5rem;color:var(--text-secondary)">Start a free trial in under five minutes.</p>
+      <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+        <a href="#" class="btn btn-primary">Start free trial</a>
+        <a href="#" class="btn btn-ghost">Talk to sales</a>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div><a href="#" style="font-family:var(--font-display);font-weight:600;font-size:18px">Verdant</a><p style="margin-top:.75rem;font-size:14px;color:var(--text-secondary)">Command center for distributed systems.</p></div>
+      <div><h4>Product</h4><a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a></div>
+      <div><h4>Company</h4><a href="#">About</a><a href="#">Careers</a><a href="#">Contact</a></div>
+      <div><h4>Legal</h4><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Security</a></div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 Verdant. All rights reserved.</span>
+      <div class="socials">
+        <a href="#" aria-label="Twitter"><span class="material-symbols-rounded" style="font-size:18px">alternate_email</span></a>
+        <a href="#" aria-label="GitHub"><span class="material-symbols-rounded" style="font-size:18px">code</span></a>
+      </div>
+    </div>
+  </div>
+</footer>
+<script>
+(function(){
+  var btn=document.getElementById('theme-toggle');
+  function apply(theme){
+    document.documentElement.dataset.theme=theme;
+    var dark=theme==='dark';
+    btn.setAttribute('aria-pressed',String(dark));
+    btn.setAttribute('aria-label',dark?'Switch to light mode':'Switch to dark mode');
+    btn.querySelector('.material-symbols-rounded').textContent=dark?'light_mode':'dark_mode';
+    try{localStorage.setItem('theme',theme);}catch(e){}
+  }
+  btn.addEventListener('click',function(){
+    apply(document.documentElement.dataset.theme==='dark'?'light':'dark');
+  });
+  apply(document.documentElement.dataset.theme);
+})();
+</script>
+</body>
+</html>

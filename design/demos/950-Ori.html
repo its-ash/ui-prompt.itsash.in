@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cinder - Infrastructure at the edge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet">
+<style>
+:root{
+  --color-ember-orange:#ff4f2b;
+  --color-void-black:#000000;
+  --color-carbon:#1a1a1a;
+  --color-graphite-border:#3c3c3c;
+  --color-steel-mid:#737373;
+  --color-fog-light:#bfbfbf;
+  --color-bone-white:#f5f5f5;
+  --primary:var(--color-ember-orange);
+  --secondary:var(--color-steel-mid);
+  --bg-primary:#fefefe;
+  --bg-secondary:#f2f2f2;
+  --text-primary:#1a1a1a;
+  --text-secondary:#3c3c3c;
+  --text-success:#1a7f37;
+  --text-error:#b42318;
+  --border-default:#d9d9d9;
+  --border-error:#b42318;
+  --border-success:#1a7f37;
+  --radius-sm:0px;--radius-md:0px;--radius-lg:0px;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.06);
+  --shadow-md:0 4px 12px rgba(0,0,0,.08);
+  --spacing-gap:16px;
+  --transition-fast:150ms ease-out;
+  --transition-normal:250ms ease-out;
+  --ease-standard:cubic-bezier(.2,.8,.2,1);
+  --z-dropdown:100;--z-modal:200;--z-toast:300;
+  --font-base:'Inter',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,monospace;
+  --text-caption:14px;--text-body:16px;--text-subheading:18px;
+  --text-heading-sm:24px;--text-heading:36px;--text-heading-lg:48px;
+  --text-display:72px;--text-display-lg:96px;
+}
+:root[data-theme="dark"]{
+  --bg-primary:#000000;
+  --bg-secondary:#1a1a1a;
+  --text-primary:#f5f5f5;
+  --text-secondary:#bfbfbf;
+  --border-default:#3c3c3c;
+  --text-success:#4ade80;
+  --text-error:#ff6b6b;
+  --border-success:#4ade80;
+  --border-error:#ff6b6b;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg-primary:#000000;--bg-secondary:#1a1a1a;--text-primary:#f5f5f5;--text-secondary:#bfbfbf;--border-default:#3c3c3c;--text-success:#4ade80;--text-error:#ff6b6b;--border-success:#4ade80;--border-error:#ff6b6b;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);background:var(--bg-primary);color:var(--text-primary);line-height:1.4;-webkit-font-smoothing:antialiased}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+.container{max-width:1280px;margin:0 auto;padding:0 2rem}
+@media(max-width:768px){.container{padding:0 1.25rem}}
+.section{padding:clamp(4rem,8vw,7rem) 0}
+.section--tight{padding:2rem 0}
+.eyebrow{font-family:var(--font-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-secondary)}
+.mono{font-family:var(--font-mono)}
+.display{font-weight:300;font-size:clamp(2.25rem,6vw,6rem);line-height:1.0;letter-spacing:-.02em}
+.display em{font-style:italic;color:var(--primary);font-weight:300}
+.h2{font-weight:300;font-size:clamp(2rem,4vw,3rem);line-height:1.1;letter-spacing:-.02em}
+.h3{font-weight:400;font-size:24px;line-height:1.3;letter-spacing:-.01em}
+.body{font-size:16px;line-height:1.5;color:var(--text-secondary)}
+.caption{font-size:14px;line-height:1.4;color:var(--text-secondary)}
+/* announcement */
+.announcement{background:var(--bg-secondary);padding:6px 0;text-align:center;font-size:14px;font-family:var(--font-base);color:var(--text-primary)}
+.announcement a{color:var(--primary);font-family:var(--font-mono);font-size:13px}
+/* nav */
+.nav{position:sticky;top:0;z-index:var(--z-dropdown);background:var(--bg-primary);border-bottom:1px solid var(--border-default);height:64px;display:flex;align-items:center}
+.nav__inner{display:flex;align-items:center;justify-content:space-between;gap:1rem;width:100%}
+.nav__brand{font-family:var(--font-mono);font-size:16px;letter-spacing:.04em}
+.nav__links{display:flex;align-items:center;gap:1.25rem}
+.nav__link{font-family:var(--font-mono);font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-secondary);transition:color var(--transition-fast)}
+.nav__link:hover{color:var(--text-primary)}
+.nav__actions{display:flex;align-items:center;gap:.75rem}
+.nav__toggle{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border-default);color:var(--text-primary)}
+.nav__menu-btn{display:none;width:44px;height:44px;align-items:center;justify-content:center;border:1px solid var(--border-default)}
+@media(max-width:768px){
+  .nav__links{display:none;position:absolute;top:64px;left:0;right:0;flex-direction:column;background:var(--bg-primary);border-bottom:1px solid var(--border-default);padding:1rem 1.25rem;gap:.75rem;align-items:flex-start}
+  .nav__links.is-open{display:flex}
+  .nav__menu-btn{display:flex}
+  .nav__actions .btn--ghost{display:none}
+}
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:.5rem;padding:8px 16px;font-family:var(--font-mono);font-size:13px;text-transform:uppercase;letter-spacing:.08em;min-height:44px;transition:all var(--transition-fast);border:1px solid transparent}
+.btn--filled{background:var(--primary);color:#000000}
+.btn--filled:hover{filter:brightness(1.1)}
+.btn--ghost{background:transparent;border-color:var(--text-primary);color:var(--text-primary)}
+.btn--ghost:hover{background:var(--text-primary);color:var(--bg-primary)}
+.btn:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.5;filter:grayscale(1);cursor:not-allowed}
+.btn .material-symbols-rounded{font-size:16px}
+/* hero */
+.hero{min-height:100dvh;display:flex;align-items:center;padding-top:4rem;padding-bottom:4rem;border-bottom:1px solid var(--border-default)}
+.hero__grid{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center}
+.hero__visual{aspect-ratio:4/3;background:var(--bg-secondary);border:1px solid var(--border-default);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.hero__visual::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 39px,var(--border-default) 39px 40px),repeating-linear-gradient(90deg,transparent 0 39px,var(--border-default) 39px 40px);opacity:.4}
+.hero__visual-tag{font-family:var(--font-mono);font-size:12px;color:var(--primary);z-index:1}
+.hero__cta-row{display:flex;gap:1rem;flex-wrap:wrap;margin-top:2rem}
+@media(max-width:768px){.hero__grid{grid-template-columns:1fr}.hero__visual{aspect-ratio:16/9}}
+/* features */
+.features__grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:3rem}
+.feature-card{background:var(--bg-secondary);border:1px solid var(--border-default);padding:24px;display:flex;flex-direction:column;gap:1rem;transition:transform var(--transition-normal)}
+.feature-card:hover{transform:translateY(-2px)}
+.feature-card__icon{font-family:var(--font-mono);font-size:12px;color:var(--primary);letter-spacing:.1em}
+.feature-card__title{font-weight:400;font-size:20px;line-height:1.3}
+.feature-card__body{font-size:14px;line-height:1.5;color:var(--text-secondary)}
+@media(max-width:768px){.features__grid{grid-template-columns:1fr}}
+/* statement band */
+.statement{background:var(--primary);color:#000000;padding:clamp(4rem,8vw,7rem) 0;text-align:center}
+.statement .display{color:#000000;font-size:clamp(2rem,5vw,4rem)}
+/* steps */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;margin-top:3rem}
+.step{border-top:1px solid var(--border-default);padding-top:1.5rem}
+.step__num{font-family:var(--font-mono);font-size:13px;color:var(--primary);margin-bottom:.75rem}
+.step__title{font-weight:400;font-size:20px;margin-bottom:.5rem}
+.step__body{font-size:14px;color:var(--text-secondary);line-height:1.5}
+@media(max-width:768px){.steps{grid-template-columns:1fr}}
+/* testimonials */
+.testimonials{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-top:3rem}
+.testimonial{border:1px solid var(--border-default);padding:24px;background:var(--bg-secondary)}
+.testimonial__quote{font-size:18px;line-height:1.4;font-weight:300;margin-bottom:1.5rem}
+.testimonial__attr{font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.08em}
+@media(max-width:768px){.testimonials{grid-template-columns:1fr}}
+/* pricing */
+.pricing{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:3rem}
+.tier{border:1px solid var(--border-default);padding:24px;display:flex;flex-direction:column;gap:1rem;background:var(--bg-primary)}
+.tier--featured{background:var(--bg-secondary);border-color:var(--primary)}
+.tier__name{font-family:var(--font-mono);font-size:13px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-secondary)}
+.tier__price{font-weight:300;font-size:48px;line-height:1;letter-spacing:-.02em}
+.tier__price span{font-size:14px;color:var(--text-secondary);font-family:var(--font-mono)}
+.tier__features{list-style:none;display:flex;flex-direction:column;gap:.5rem;font-size:14px;color:var(--text-secondary)}
+.tier__features li::before{content:', ';color:var(--primary)}
+@media(max-width:768px){.pricing{grid-template-columns:1fr}}
+/* faq */
+.faq{margin-top:2rem;border-top:1px solid var(--border-default)}
+.faq details{border-bottom:1px solid var(--border-default);padding:1.25rem 0}
+.faq summary{cursor:pointer;font-size:18px;font-weight:400;list-style:none;display:flex;justify-content:space-between;align-items:center}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:'+';font-family:var(--font-mono);color:var(--primary)}
+.faq details[open] summary::after{content:', '}
+.faq__answer{margin-top:1rem;font-size:14px;color:var(--text-secondary);line-height:1.6;max-width:65ch}
+/* final cta */
+.final-cta{text-align:center;padding:clamp(5rem,10vw,9rem) 0;border-top:1px solid var(--border-default)}
+/* footer */
+.footer{border-top:1px solid var(--border-default);padding:3rem 0 2rem}
+.footer__grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:2rem}
+.footer__col h4{font-family:var(--font-mono);font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-secondary);margin-bottom:1rem}
+.footer__col a{display:block;font-size:14px;color:var(--text-primary);margin-bottom:.5rem;font-family:var(--font-mono)}
+.footer__bottom{margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--border-default);display:flex;justify-content:space-between;font-size:12px;color:var(--text-secondary);font-family:var(--font-mono)}
+@media(max-width:768px){.footer__grid{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.footer__grid{grid-template-columns:1fr}}
+/* reveal */
+.reveal{opacity:0;transform:translateY(12px);transition:opacity .5s ease-out,transform .5s ease-out}
+.reveal.is-visible{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
+/* hidden */
+[hidden]{display:none!important}
+.material-symbols-rounded{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
+</style>
+<style id="pd-icon-fix">.material-symbols-rounded{font-family:'Material Symbols Rounded'!important;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;word-wrap:normal;direction:ltr;font-feature-settings:'liga';-webkit-font-feature-settings:'liga'}</style>
+</head>
+<body>
+<div class="announcement">
+  System status: all regions operational. <a href="#status">View status</a>
+</div>
+<nav class="nav">
+  <div class="container nav__inner">
+    <a class="nav__brand" href="#">CINDER</a>
+    <button class="nav__menu-btn" id="menu-btn" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links"><span class="material-symbols-rounded">menu</span></button>
+    <div class="nav__links" id="nav-links">
+      <a class="nav__link" href="#features">Features</a>
+      <a class="nav__link" href="#how">How it works</a>
+      <a class="nav__link" href="#pricing">Pricing</a>
+      <a class="nav__link" href="#faq">FAQ</a>
+    </div>
+    <div class="nav__actions">
+      <a class="btn btn--ghost" href="#login">Login</a>
+      <a class="btn btn--filled" href="#start">Start free</a>
+      <button class="nav__toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode"><span class="material-symbols-rounded" id="theme-icon">dark_mode</span></button>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="container hero__grid">
+    <div>
+      <p class="eyebrow">Edge infrastructure platform</p>
+      <h1 class="display">Deploy closer to <em>users</em>, not data centers.</h1>
+      <p class="body" style="margin-top:1.5rem;max-width:540px">Cinder runs your workloads on a global edge network with sub-50ms cold starts and zero configuration. Ship faster, scale without thinking.</p>
+      <div class="hero__cta-row">
+        <a class="btn btn--filled" href="#start">Start free</a>
+        <a class="btn btn--ghost" href="#demo">View demo</a>
+      </div>
+    </div>
+    <div class="hero__visual">
+      <span class="hero__visual-tag">region: eu-west-1 · 12ms</span>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="features">
+  <div class="container">
+    <h2 class="h2">Built for the edge.</h2>
+    <p class="body" style="margin-top:1rem;max-width:65ch">Three primitives. One platform. No glue code.</p>
+    <div class="features__grid">
+      <article class="feature-card reveal">
+        <span class="feature-card__icon">01 / ROUTE</span>
+        <h3 class="feature-card__title">Smart routing</h3>
+        <p class="feature-card__body">Anycast DNS and latency-aware routing send every request to the nearest healthy node automatically.</p>
+      </article>
+      <article class="feature-card reveal">
+        <span class="feature-card__icon">02 / RUN</span>
+        <h3 class="feature-card__title">Isolate runtime</h3>
+        <p class="feature-card__body">V8 isolates spin up in under 5ms. No containers, no cold starts, no idle cost.</p>
+      </article>
+      <article class="feature-card reveal">
+        <span class="feature-card__icon">03 / STORE</span>
+        <h3 class="feature-card__title">Edge storage</h3>
+        <p class="feature-card__body">Key-value and object storage replicated to 200+ points of presence with strong consistency.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="statement">
+  <div class="container">
+    <p class="display">One region is never enough.</p>
+  </div>
+</section>
+
+<section class="section" id="how">
+  <div class="container">
+    <h2 class="h2">How it works.</h2>
+    <div class="steps">
+      <div class="step reveal">
+        <p class="step__num">STEP 01</p>
+        <h3 class="step__title">Connect</h3>
+        <p class="step__body">Point your DNS at Cinder. We provision certificates and routing in under a minute.</p>
+      </div>
+      <div class="step reveal">
+        <p class="step__num">STEP 02</p>
+        <h3 class="step__title">Deploy</h3>
+        <p class="step__body">Push with git or CLI. Code runs at every edge location within seconds.</p>
+      </div>
+      <div class="step reveal">
+        <p class="step__num">STEP 03</p>
+        <h3 class="step__title">Observe</h3>
+        <p class="step__body">Logs, metrics and traces stream in real time from every node.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h2 class="h2">Trusted by teams shipping at the edge.</h2>
+    <div class="testimonials">
+      <blockquote class="testimonial reveal">
+        <p class="testimonial__quote">"Cinder cut our p99 latency from 340ms to 28ms. We stopped thinking about regions entirely."</p>
+        <footer class="testimonial__attr">Mira Chen · Head of Platform, Northwind</footer>
+      </blockquote>
+      <blockquote class="testimonial reveal">
+        <p class="testimonial__quote">"Deploys that used to take twenty minutes now finish in under ten seconds. Genuinely changed how we ship."</p>
+        <footer class="testimonial__attr">Tomás Reyes · Staff Engineer, Lattice</footer>
+      </blockquote>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="pricing">
+  <div class="container">
+    <h2 class="h2">Simple pricing.</h2>
+    <div class="pricing">
+      <div class="tier reveal">
+        <p class="tier__name">Hobby</p>
+        <p class="tier__price">$0<span>/mo</span></p>
+        <ul class="tier__features">
+          <li>100k requests / day</li>
+          <li>3 projects</li>
+          <li>Community support</li>
+        </ul>
+        <a class="btn btn--ghost" href="#start">Start free</a>
+      </div>
+      <div class="tier tier--featured reveal">
+        <p class="tier__name">Pro</p>
+        <p class="tier__price">$29<span>/mo</span></p>
+        <ul class="tier__features">
+          <li>10M requests / month</li>
+          <li>Unlimited projects</li>
+          <li>Priority support</li>
+        </ul>
+        <a class="btn btn--filled" href="#start">Start free</a>
+      </div>
+      <div class="tier reveal">
+        <p class="tier__name">Enterprise</p>
+        <p class="tier__price">Custom</p>
+        <ul class="tier__features">
+          <li>Unlimited requests</li>
+          <li>Dedicated nodes</li>
+          <li>SLA + SSO</li>
+        </ul>
+        <a class="btn btn--ghost" href="#contact">Contact sales</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="faq">
+  <div class="container">
+    <h2 class="h2">Questions.</h2>
+    <div class="faq">
+      <details>
+        <summary>How does billing work?</summary>
+        <p class="faq__answer">You pay for requests and compute time. No base fee on Hobby. Pro is a flat monthly rate with overage billed per million requests.</p>
+      </details>
+      <details>
+        <summary>Can I migrate from another provider?</summary>
+        <p class="faq__answer">Yes. Our CLI imports existing functions and storage buckets. Most migrations finish in under an hour.</p>
+      </details>
+      <details>
+        <summary>Is there a free tier for open source?</summary>
+        <p class="faq__answer">Open source projects get Pro free forever. Apply with a link to your repository.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="final-cta">
+  <div class="container">
+    <h2 class="display" style="font-size:clamp(2rem,5vw,4rem)">Ship to the edge today.</h2>
+    <p class="body" style="margin:1.5rem auto 2rem;max-width:540px">Create a free account in thirty seconds. No credit card required.</p>
+    <a class="btn btn--filled" href="#start">Start free</a>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div>
+        <p class="nav__brand">CINDER</p>
+        <p class="caption" style="margin-top:.75rem">Infrastructure for the edge.</p>
+      </div>
+      <div class="footer__col">
+        <h4>Product</h4>
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#status">Status</a>
+      </div>
+      <div class="footer__col">
+        <h4>Company</h4>
+        <a href="#about">About</a>
+        <a href="#blog">Blog</a>
+        <a href="#careers">Careers</a>
+      </div>
+      <div class="footer__col">
+        <h4>Legal</h4>
+        <a href="#terms">Terms</a>
+        <a href="#privacy">Privacy</a>
+        <a href="#security">Security</a>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span>© 2026 Cinder Labs. All rights reserved.</span>
+      <span>Built on the edge.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  const root = document.documentElement;
+  const stored = localStorage.getItem('theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const initial = stored === 'dark' || stored === 'light' ? stored : (prefersDark ? 'dark' : 'light');
+  root.dataset.theme = initial;
+
+  const toggle = document.getElementById('theme-toggle');
+  const icon = document.getElementById('theme-icon');
+  function apply(theme){
+    root.dataset.theme = theme;
+    const isDark = theme === 'dark';
+    toggle.setAttribute('aria-pressed', String(isDark));
+    toggle.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+    icon.textContent = isDark ? 'light_mode' : 'dark_mode';
+  }
+  apply(initial);
+  toggle.addEventListener('click', function(){
+    const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('theme', next);
+    apply(next);
+  });
+
+  const menuBtn = document.getElementById('menu-btn');
+  const navLinks = document.getElementById('nav-links');
+  menuBtn.addEventListener('click', function(){
+    const open = navLinks.classList.toggle('is-open');
+    menuBtn.setAttribute('aria-expanded', String(open));
+  });
+  navLinks.querySelectorAll('a').forEach(function(a){
+    a.addEventListener('click', function(){ navLinks.classList.remove('is-open'); menuBtn.setAttribute('aria-expanded','false'); });
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape'){ navLinks.classList.remove('is-open'); menuBtn.setAttribute('aria-expanded','false'); }
+  });
+
+  const io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('is-visible'); io.unobserve(e.target); } });
+  }, {threshold:.15});
+  document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+
+  // contact form demo not present; nothing else
+})();
+</script>
+</body>
+</html>

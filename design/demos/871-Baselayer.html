@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baselayer - Electric Ledger in Midnight</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<style>
+:root {
+  --color-ledger-navy: linear-gradient(90deg, #09234f 0%, #384ce3 100%);
+  --color-registry-blue: #384ce3;
+  --color-network-teal: #1888a2;
+  --color-paper-white: #fefefe;
+  --color-ink-black: #000000;
+  --color-carbon: #121012;
+  --color-mint-paper: #eff5f0;
+  --color-sky-paper: #c4f0ff;
+  --color-rule-gray: #e5e5e5;
+  --color-steel-rule: #ced3dc;
+  --color-quiet-gray: #595959;
+  --primary: #384ce3;
+  --secondary: #1888a2;
+  --bg-primary: #fefefe;
+  --bg-secondary: #eff5f0;
+  --text-primary: #000000;
+  --text-secondary: #595959;
+  --text-success: #1888a2;
+  --text-error: #d32f2f;
+  --border-default: #e5e5e5;
+  --border-error: #d32f2f;
+  --border-success: #1888a2;
+  --radius-sm: 4px;
+  --radius-md: 4px;
+  --radius-lg: 4px;
+  --shadow-sm: none;
+  --shadow-md: none;
+  --spacing-gap: 12px;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --z-dropdown: 100;
+  --z-modal: 200;
+  --z-toast: 300;
+  --font-base: 'DM Sans', sans-serif;
+  --font-display: 'Cormorant Garamond', serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --text-eyebrow: 500 12px/1.15 var(--font-mono);
+  --text-nav: 500 15px/0.8 var(--font-base);
+  --text-body: 400 16px/1.5 var(--font-base);
+  --text-mono-action: 500 16px/1.15 var(--font-mono);
+  --text-body-large: 400 20px/1.4 var(--font-base);
+  --text-panel-heading: 500 24px/1.35 var(--font-base);
+  --text-section-heading: 515 48px/1.1 var(--font-display);
+  --text-hero-display: 515 72px/1.02 var(--font-display);
+}
+:root[data-theme="dark"] {
+  --bg-primary: #121012;
+  --bg-secondary: #09234f;
+  --text-primary: #fefefe;
+  --text-secondary: #ced3dc;
+  --border-default: #384ce3;
+  --color-paper-white: #fefefe;
+  --color-ink-black: #fefefe;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font: var(--text-body); color: var(--text-primary); background: var(--bg-primary); min-height: 100dvh; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; cursor: pointer; border: none; background: none; }
+img { max-width: 100%; display: block; }
+.container { max-width: 1312px; margin: 0 auto; padding: 0 2rem; }
+@media (max-width: 768px) { .container { padding: 0 1.25rem; } }
+.section { padding: clamp(4rem, 8vw, 7rem) 0; }
+.grid { display: grid; gap: var(--spacing-gap); }
+.flex { display: flex; align-items: center; gap: var(--spacing-gap); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; min-height: 44px; min-width: 44px; padding: 0 20px; border-radius: var(--radius-sm); font: var(--text-mono-action); text-transform: uppercase; transition: var(--transition-normal); }
+.btn--primary { background: var(--color-ledger-navy); color: var(--color-paper-white); }
+.btn--primary:hover { filter: brightness(1.1); }
+.btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.btn:active { transform: scale(0.97); }
+.card { border: 1px solid var(--border-default); border-radius: 0px; padding: 20px; background: var(--bg-primary); }
+.card--carbon { background: var(--color-carbon); color: var(--color-paper-white); }
+.card:hover { transform: translateY(-2px); transition: var(--transition-normal); }
+.nav { height: 80px; display: flex; align-items: center; background: var(--color-ledger-navy); color: var(--color-paper-white); border-bottom: 1px solid rgba(255,255,255,0.2); }
+.nav--light { background: var(--color-paper-white); color: var(--color-ink-black); border-bottom: 1px solid var(--border-default); }
+.nav__inner { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+.nav__links { display: flex; gap: 24px; list-style: none; font: var(--text-nav); }
+.nav__links a { color: inherit; }
+.theme-toggle { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
+.hero { background: var(--color-ledger-navy); color: var(--color-paper-white); padding: 6rem 0; position: relative; overflow: hidden; }
+.hero__grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(56,76,227,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(56,76,227,0.15) 1px, transparent 1px); background-size: 40px 40px; }
+.hero__content { position: relative; z-index: 1; text-align: center; }
+.hero__title { font: var(--text-hero-display); letter-spacing: -0.36px; line-height: 1.02; }
+.hero__cta { margin-top: 20px; }
+.hero__console { margin-top: 40px; background: var(--color-registry-blue); padding: 20px; border-radius: var(--radius-sm); }
+.section-heading { font: var(--text-section-heading); letter-spacing: -0.24px; }
+.eyebrow { font: var(--text-eyebrow); text-transform: uppercase; letter-spacing: 0; }
+.card-trio { display: grid; grid-template-columns: 1fr; gap: 12px; }
+@media (min-width: 768px) { .card-trio { grid-template-columns: repeat(3, 1fr); } }
+.steps { display: grid; gap: 20px; }
+.step { padding: 20px 0; border-bottom: 1px solid var(--border-default); }
+.step__num { font: var(--text-mono-action); color: var(--secondary); }
+.mosaic { display: grid; grid-template-columns: 1fr; gap: 0; border: 1px solid var(--border-default); }
+@media (min-width: 768px) { .mosaic { grid-template-columns: repeat(3, 1fr); } }
+.mosaic__cell { padding: 20px; border: 1px solid var(--border-default); }
+.mosaic__cell--photo { background: var(--color-mint-paper); }
+.mosaic__cell--brand { background: var(--color-mint-paper); }
+.mosaic__cell--logo { background: var(--color-ink-black); color: var(--color-paper-white); }
+.pricing { display: grid; grid-template-columns: 1fr; gap: 12px; }
+@media (min-width: 768px) { .pricing { grid-template-columns: repeat(3, 1fr); } }
+.metric-tile { padding: 20px; border: 1px solid var(--border-default); }
+.metric-label { font: var(--text-eyebrow); text-transform: uppercase; }
+.metric-value { font: var(--text-hero-display); font-size: 48px; }
+.faq details { border-bottom: 1px solid var(--border-default); padding: 20px 0; }
+.faq summary { font: var(--text-mono-action); cursor: pointer; list-style: none; }
+.faq summary::-webkit-details-marker { display: none; }
+.final-cta { background: var(--color-ledger-navy); color: var(--color-paper-white); text-align: center; padding: clamp(4rem,8vw,7rem) 0; }
+.footer { background: var(--color-carbon); color: var(--color-paper-white); padding: 40px 0; border-top: 1px solid rgba(255,255,255,0.2); }
+.logo-rail { background: var(--color-paper-white); padding: 20px 0; border-top: 1px solid var(--border-default); border-bottom: 1px solid var(--border-default); }
+.logo-rail__row { display: flex; gap: 40px; justify-content: center; flex-wrap: wrap; color: var(--color-ink-black); font: var(--text-nav); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+@media (prefers-reduced-transparency: reduce) { .hero__console { backdrop-filter: none; background: var(--color-registry-blue); } }
+.mobile-menu-btn { display: none; }
+@media (max-width: 768px) { .nav__links { display: none; } .mobile-menu-btn { display: inline-flex; } .nav__links.open { display: flex; flex-direction: column; position: absolute; top: 80px; left: 0; right: 0; background: var(--color-paper-white); padding: 20px; } }
+</style>
+<script>
+(function(){
+  const stored = localStorage.getItem('theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const theme = stored === 'dark' || stored === 'light' ? stored : (prefersDark ? 'dark' : 'light');
+  document.documentElement.dataset.theme = theme;
+})();
+</script>
+<style id="pd-icon-fix">.material-symbols-rounded{font-family:'Material Symbols Rounded'!important;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;word-wrap:normal;direction:ltr;font-feature-settings:'liga';-webkit-font-feature-settings:'liga'}</style>
+</head>
+<body>
+<header class="nav" id="site-nav">
+  <div class="container nav__inner">
+    <a href="#" class="logo">Baselayer</a>
+    <nav>
+      <ul class="nav__links" id="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+    </nav>
+    <button id="theme-toggle" type="button" class="theme-toggle" aria-pressed="false" aria-label="Switch to dark mode">
+      <span class="material-symbols-rounded" id="theme-icon">dark_mode</span>
+    </button>
+    <button class="mobile-menu-btn" id="menu-btn" aria-expanded="false" aria-controls="nav-links">
+      <span class="material-symbols-rounded">menu</span>
+    </button>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero__grid"></div>
+  <div class="container hero__content">
+    <p class="eyebrow">Electric ledger in midnight</p>
+    <h1 class="hero__title">Risk analysis opened as an institutional document.</h1>
+    <div class="hero__cta">
+      <button class="btn btn--primary">Start analysis</button>
+    </div>
+    <div class="hero__console">
+      <p>Registry verification console, live</p>
+    </div>
+  </div>
+</section>
+
+<div class="logo-rail">
+  <div class="container logo-rail__row">
+    <span>Meridian Bank</span><span>Northwind</span><span>Atlas Capital</span><span>Helix Group</span><span>Vanguard Trust</span>
+  </div>
+</div>
+
+<section id="features" class="section">
+  <div class="container">
+    <h2 class="section-heading">Capability surfaces</h2>
+    <div class="card-trio" style="margin-top:24px;">
+      <div class="card card--carbon">
+        <h3 class="text-panel">API Registry</h3>
+        <p>Structured endpoints for ledger ingestion and verification.</p>
+      </div>
+      <div class="card">
+        <h3 class="text-panel">Risk Scoring</h3>
+        <p>Composite scores across counterparties and instruments.</p>
+      </div>
+      <div class="card">
+        <h3 class="text-panel">Audit Trail</h3>
+        <p>Immutable records for every analysis run.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="how" class="section">
+  <div class="container">
+    <h2 class="section-heading">How it works</h2>
+    <div class="steps" style="margin-top:24px;">
+      <div class="step">
+        <span class="step__num">01</span>
+        <p>Connect your data sources to the registry.</p>
+      </div>
+      <div class="step">
+        <span class="step__num">02</span>
+        <p>Run analysis across counterparties and instruments.</p>
+      </div>
+      <div class="step">
+        <span class="step__num">03</span>
+        <p>Review verified results and export reports.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h2 class="section-heading">Customer stories</h2>
+    <div class="mosaic" style="margin-top:24px;">
+      <div class="mosaic__cell">
+        <p>"Baselayer turned our quarterly review into a single afternoon."</p>
+        <p style="margin-top:12px;font:var(--text-nav);">, Dana Reeves, Risk Lead, Meridian Bank</p>
+      </div>
+      <div class="mosaic__cell mosaic__cell--photo">
+        <p>Portrait crop</p>
+      </div>
+      <div class="mosaic__cell mosaic__cell--brand">
+        <p>Northwind</p>
+      </div>
+      <div class="mosaic__cell mosaic__cell--logo">
+        <p>Atlas Capital</p>
+      </div>
+      <div class="mosaic__cell">
+        <p>"The audit trail alone saved us weeks."</p>
+        <p style="margin-top:12px;font:var(--text-nav);">, Sam Okonkwo, CFO, Helix Group</p>
+      </div>
+      <div class="mosaic__cell mosaic__cell--brand">
+        <p>Vanguard Trust</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="pricing" class="section">
+  <div class="container">
+    <h2 class="section-heading">Pricing</h2>
+    <div class="pricing" style="margin-top:24px;">
+      <div class="metric-tile">
+        <p class="metric-label">Starter</p>
+        <p class="metric-value">$49</p>
+        <p>per month</p>
+      </div>
+      <div class="metric-tile" style="background:var(--color-mint-paper);">
+        <p class="metric-label">Growth</p>
+        <p class="metric-value">$149</p>
+        <p>per month</p>
+      </div>
+      <div class="metric-tile">
+        <p class="metric-label">Enterprise</p>
+        <p class="metric-value">Custom</p>
+        <p>contact us</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="faq" class="section">
+  <div class="container">
+    <h2 class="section-heading">FAQ</h2>
+    <div class="faq" style="margin-top:24px;">
+      <details>
+        <summary>How does Baselayer verify data?</summary>
+        <p style="margin-top:12px;">Every record is cross-checked against the registry before scoring.</p>
+      </details>
+      <details>
+        <summary>Can I export reports?</summary>
+        <p style="margin-top:12px;">Yes, export to PDF or CSV from any analysis run.</p>
+      </details>
+      <details>
+        <summary>Is there a free trial?</summary>
+        <p style="margin-top:12px;">A 14-day trial is available on the Growth plan.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="final-cta">
+  <div class="container">
+    <h2 class="section-heading" style="color:var(--color-paper-white);">Open the ledger.</h2>
+    <div style="margin-top:24px;">
+      <button class="btn btn--primary">Start analysis</button>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <nav>
+      <ul class="nav__links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+    </nav>
+    <p style="margin-top:20px;font:var(--text-nav);">© 2026 Baselayer. All rights reserved.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  const toggle = document.getElementById('theme-toggle');
+  const icon = document.getElementById('theme-icon');
+  const menuBtn = document.getElementById('menu-btn');
+  const navLinks = document.getElementById('nav-links');
+  function applyTheme(theme) {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem('theme', theme);
+    const isDark = theme === 'dark';
+    toggle.setAttribute('aria-pressed', String(isDark));
+    toggle.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+    icon.textContent = isDark ? 'light_mode' : 'dark_mode';
+  }
+  const stored = localStorage.getItem('theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const initial = stored === 'dark' || stored === 'light' ? stored : (prefersDark ? 'dark' : 'light');
+  applyTheme(initial);
+  toggle.addEventListener('click', function() {
+    const current = document.documentElement.dataset.theme;
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+  });
+  menuBtn.addEventListener('click', function() {
+    const open = navLinks.classList.toggle('open');
+    menuBtn.setAttribute('aria-expanded', String(open));
+  });
+  navLinks.querySelectorAll('a').forEach(function(a){
+    a.addEventListener('click', function(){ navLinks.classList.remove('open'); menuBtn.setAttribute('aria-expanded','false'); });
+  });
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape') { navLinks.classList.remove('open'); menuBtn.setAttribute('aria-expanded','false'); }
+  });
+})();
+</script>
+</body>
+</html>

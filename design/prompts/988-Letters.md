@@ -1,0 +1,150 @@
+# Coding AI Prompt — Complete Landing Page (Letters Theme)
+
+You are a senior front-end developer. Build a complete, production-ready landing page using the **Letters** visual style system described below. Invent a fictional brand name, product name, and all copy — never use the real brand name "Letters", its logo, trademarks, or product names anywhere in the page.
+
+## 1. Architectural Rules (Mandatory)
+
+**1.1 CSS-First Architecture & Zero Inline CSS**
+- Keep all styling strictly inside `style.css`. Forbid `style="..."` attributes entirely.
+- Target all design properties via class/ID selectors only.
+- Keep HTML clean, semantic, and agnostic of visual styling.
+
+**1.2 CSS Variables & Theme Tokens**
+Store all visual tokens in `:root` using CSS variables. Required tokens:
+
+Colors:
+- `--color-obsidian: #070709`
+- `--color-paper-white: #ffffff`
+- `--color-cloud-gray: #f5f5f5`
+- `--color-sky-tint: #d7e6f5`
+- `--color-charcoal: #60606c`
+- `--color-slate: #8b8b8b`
+- `--color-ink: #151515`
+- `--color-surgical-blue: #2597d0`
+- `--color-sky-gradient: linear-gradient(180deg, #779bc1 0%, #9abfda 58%, #cbdcec 100%)`
+- `--bg-primary`, `--bg-secondary`, `--text-primary`, `--text-secondary`, `--text-success`, `--text-error`, `--border-default`, `--border-error`, `--border-success`
+- `--primary: #070709`, `--secondary: #60606c`
+
+Contrast pairing: light backgrounds pair with dark text; dark backgrounds pair with light text in every theme.
+
+Border radius & shadows:
+- `--radius-sm: 8px`, `--radius-md: 12px`, `--radius-lg: 18px`, `--radius-pill: 100px`
+- `--shadow-subtle`, `--shadow-subtle-2`, `--shadow-subtle-3`, `--shadow-xl` (values from spec)
+- `--shadow-button` (four-layer stack: `rgba(36,36,40,0.1) 0 1px 2px, rgba(36,36,40,0.09) 0 3px 3px, rgba(36,36,40,0.05) 0 6px 4px, rgba(36,36,40,0.01) 0 11px 4px`)
+- `--shadow-feature-card` (`rgba(16,55,132,0.03) 0 17px 37px, rgba(16,55,132,0.03) 0 67px 67px, rgba(16,55,132,0.02) 0 150px 90px`)
+
+Spacing & transitions:
+- `--spacing-gap`, `--transition-fast`, `--transition-normal`, `--ease-standard`
+- `--z-dropdown`, `--z-modal`, `--z-toast`
+
+**1.3 Mandatory Dark Mode**
+- Provide dark mode tokens under `@media (prefers-color-scheme: dark)` and a `.dark` class selector.
+- Switch background/text variables seamlessly without HTML restructuring.
+- Persist theme choice via `localStorage`, falling back to `prefers-color-scheme` on first visit.
+- Include a visible toggle control with correct `aria-pressed`/`aria-label`.
+
+**1.4 Flexbox Layout & Mobile-First**
+- Use Flexbox for all layout structures.
+- Every flex container defaults to `align-items: center` unless explicitly justified.
+- Mobile-responsive out of the box (rows → columns on small viewports). No horizontal scrolling.
+
+**1.5 Framework Default**
+- Use Tailwind CSS (or clean custom CSS driven by Tailwind's `@layer`/`@apply`). Utility classes map to CSS variables or reusable class names (`.btn`, `.card`, `.input-group`).
+
+**1.6 Typography & Icons (Google Fonts Mandatory)**
+- Use Google Fonts for text and icons. Include `<link>`/`@import` tags.
+- Text: Open Runde (substitute Inter Tight, General Sans, or Manrope via Google Fonts), Inter, and a handwritten face (Caveat or Kalam) for decorative use only.
+- Bind primary face to `--font-base` (Open Runde). Inter to `--font-inter`. Handwritten to `--font-handwritten`.
+- Icons: Google Material Symbols. Forbid raw inline SVGs or local icon files.
+
+## 2. Visual Style Specification
+
+**Theme:** Light, medical-aspirational, 99% monochrome. Pure white canvas (#ffffff), near-black text (#070709), pill-shaped dark CTAs (100px radius), 18px rounded cards on hairline shadows. One vivid blue (#2597d0) reserved for functional punctuation — icons, micro-graphics, waveform players — never buttons or large fills.
+
+**Typography:**
+- Display: 80px / line-height 0.90 / letter-spacing -0.04em / weight 600 (Open Runde)
+- Heading: 44px / 1.10 / -0.04em / weight 600
+- Subheading: 28px / 1.20 / -0.04em / weight 600
+- Body: 16-18px / 1.40-1.49 / -0.01em / weight 400
+- Caption: 12px / 1.20 / -0.01em / weight 500
+- Open Runde OpenType feature `'ss01' on`.
+
+**Spacing:** Base unit 4px. Comfortable density. Section gap 80-120px. Card padding 40-48px. Element gap 12-16px. Page max-width 1200px.
+
+**Border radius:** tags/buttons/pills 100px, cards 18px, inputs 12px, icons 8px, large-cards 32-48px.
+
+**Shadows:** Use only low-opacity, large-radius shadows. Feature cards use the blue-tinted atmospheric stack. Buttons use the four-layer soft stack. Never exceed 0.1 opacity on card shadows.
+
+**Do's:**
+- 100px radius for all buttons, tags, pills.
+- Display headings at 80px Open Runde weight 600, -0.04em, 0.90 line-height.
+- #070709 for all filled CTAs — near-black is the action color.
+- Sky gradient only on hero band; all other sections white or #f5f5f5.
+- #2597d0 only for icons, waveforms, small accents under 24px.
+- Blue-tinted shadow stack for feature cards.
+- Center-align section headings and hero text.
+- 40-48px internal padding on feature cards.
+
+**Don'ts:**
+- Never chromatic CTA button background.
+- Never flatten letter-spacing on large headings.
+- Never apply sky gradient below hero.
+- Never shadows with opacity >0.1 on cards.
+- Don't pair Open Runde with Helvetica/Roboto.
+- Never use handwritten font for functional UI text.
+- Don't place white cards on sky gradient without padding.
+- Avoid #2597d0 for text longer than 2 words.
+
+## 3. Component Specifications
+
+**Pill Primary Button:** Filled pill, 100px radius, 12-16px vertical / 24px horizontal padding, #070709 bg, white text, Open Runde 14-16px weight 500, -0.01em tracking, four-layer shadow. States: hover (brightness/shadow shift, cursor pointer), focus (distinct ring via CSS vars), active (scale 0.97), loading (spinner, no dimension change, disabled interactions), disabled (opacity 0.5, greyscale, not-allowed), success/error (temporary feedback via --text-success/--text-error). Min touch target 44x44px.
+
+**Outlined Ghost Button:** Pill, transparent fill, 1px border #000 or #bebecc, Open Runde 14px weight 500, #070709 text.
+
+**Feature Card:** White, 18-32px radius, 40-48px padding, blue-tinted shadow stack. Inside: pill tag (100px radius, 1px black border, 4-6px/10-14px padding) with icon in #2597d0 + label; 28-44px Open Runde weight 600 heading; supporting copy in #60606c. States: hover (translateY -2px), focus-within (border highlight), loading skeleton (shimmer), empty state (icon + guidance text).
+
+**Upload Drop Zone:** Dashed 1px border #bebecc, 12px radius, 16px padding. Centered icon in #2597d0 + 12px Open Runde label. Hover: border darkens to #8b8b8b.
+
+**Waveform Audio Player:** White card, 12px radius, 16px padding. Horizontal waveform in #2597d0. Play/pause dot in matching blue.
+
+**Before/After Document Card:** Two overlapping white cards, 12-18px radius, slight rotation. Before: handwritten font cursive. After: Open Runde body. Pill tag with checkmark icon in #2597d0 at top.
+
+**Top Navigation Bar:** Sticky white bar, 1px bottom border. Left: wordmark + icon. Center: nav links in Inter 14px weight 500, #070709. Right: ghost 'Login' + filled pill 'Sign up'.
+
+**Pill Tag/Chip:** 100px radius, 4-6px/10-14px padding, white bg, 1px black border, icon in #2597d0 + label Open Runde 12-14px weight 500, #070709.
+
+**Section Heading Block:** Centered stack, 28-44px Open Runde weight 600, -0.04em, #070709. Optional inline number/emoji in #2597d0. No subtitle.
+
+**Hero Headline:** 80px Open Runde weight 600, 0.90 line-height, -0.04em, white, two lines, 20-28px gap.
+
+**Hero Subtext:** 16-18px Open Runde weight 400, 1.49 line-height, -0.01em, white at 90% opacity, max-width ~480px, centered.
+
+## 4. Required Sections & Deliverables
+
+Build a complete landing page with these sections in order:
+1. **Hero** — full-bleed sky gradient, centered headline + subtext, filled pill CTA.
+2. **Features** — 3 feature cards (2-column grid, centered section heading above).
+3. **How It Works** — 3 steps with icons and short descriptions.
+4. **Testimonials** — 3 testimonial cards.
+5. **Pricing** — 3 tiers.
+6. **FAQ** — accordion-style questions.
+7. **Final CTA** — centered headline + pill button on white or #f5f5f5.
+8. **Footer** — secondary links, logo, copyright.
+
+**File structure:** Separate `index.html`, `style.css`, `script.js`. No inline `<script>` beyond a single deferred entry-point reference.
+
+**Naming convention:** BEM throughout (e.g., `.hero`, `.hero__headline`, `.hero--dark`). Never mix conventions.
+
+**No unrequested placeholders:** Use real, invented copy for all labels, headings, and CTAs. Lorem ipsum only where content was genuinely unspecified.
+
+**Accessibility:** Semantic HTML5, ARIA roles/labels on custom widgets, logical focus order, full keyboard operability, `aria-live` regions for dynamic feedback, sufficient contrast in both light/dark modes, never rely solely on color for state, respect `prefers-reduced-motion`.
+
+**Responsive:** Fluid sizing, breakpoints, no horizontal overflow. Convert rows to columns on small viewports.
+
+**Micro-interactions:** CSS transitions on all state changes (`transition: var(--transition-normal)`), respect `prefers-reduced-motion`. Every click/hover/submission triggers visible feedback. Destructive actions visually distinct in both themes.
+
+**Modal/Popup (if used):** Opening/open/loading/success/error/closing states animated via CSS. Centered flex container, backdrop overlay, Material Icon close button, focus trapping, close via Esc or overlay click.
+
+**Form/Input (if used):** Empty, focused, filled, valid, invalid, disabled, read-only states. Flex container wrapping label, input, error feedback.
+
+Output only the finished prompt. No preamble or closing commentary. Mirror the structure above.

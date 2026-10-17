@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SnapFrame - Capture, annotate, and share in seconds</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@400;450;550;600&family=Inter:wght@400;450;550;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet">
+<style>
+:root{
+ --color-paper-white:#ffffff;
+ --color-absolute-ink:#000000;
+ --color-graphite:#161618;
+ --color-soft-charcoal:#6a6a6b;
+ --color-studio-black:#0f0f12;
+ --color-electric-capture-blue:#0d44e8;
+ --color-electric-blue-sweep:linear-gradient(90deg,#161618 0%,#161618 60%,#174ef2 100%);
+ --color-near-white:#fefefe;
+ --spacing-4:4px;--spacing-8:8px;--spacing-12:12px;--spacing-16:16px;--spacing-20:20px;--spacing-24:24px;--spacing-32:32px;--spacing-40:40px;--spacing-48:48px;--spacing-64:64px;--spacing-80:80px;--spacing-96:96px;--spacing-120:120px;--spacing-160:160px;--spacing-200:200px;
+ --radius-sm:14px;--radius-md:20px;--radius-lg:40px;--radius-pill:9999px;
+ --shadow-sm:0 1px 2px rgba(22,22,24,.08);
+ --shadow-sm-2:0 2px 6px rgba(22,22,24,.10);
+ --shadow-sm-3:0 4px 12px rgba(22,22,24,.12);
+ --shadow-lg:0 24px 60px rgba(22,22,24,.18);
+ --shadow-card:0 2px 4px rgba(22,22,24,.06),0 8px 20px rgba(22,22,24,.08),0 24px 48px rgba(22,22,24,.10),0 1px 0 rgba(255,255,255,.6) inset;
+ --shadow-button-blue:inset 0 1px 0 rgba(255,255,255,.25),0 8px 18px rgba(13,68,232,.28);
+ --transition-fast:150ms ease;
+ --transition-normal:250ms ease;
+ --ease-standard:cubic-bezier(.2,.8,.2,1);
+ --z-dropdown:20;--z-modal:40;--z-toast:60;
+ --font-base:"Google Sans Flex","Inter",system-ui,sans-serif;
+ --text-micro-label:550 13px/1.23 var(--font-base);
+ --text-caption:450 13px/1.23 var(--font-base);
+ --text-metadata:550 14px/1.43 var(--font-base);
+ --text-body-small:450 14px/1.43 var(--font-base);
+ --text-nav:550 15px/1.6 var(--font-base);
+ --text-body:450 18px/1.67 var(--font-base);
+ --text-feature-heading:600 20px/1.4 var(--font-base);
+ --text-section-heading:600 40px/1.2 var(--font-base);
+ --text-display:600 60px/1.1 var(--font-base);
+ --bg:var(--color-paper-white);
+ --surface:var(--color-near-white);
+ --text:var(--color-graphite);
+ --text-soft:var(--color-soft-charcoal);
+ --border:rgba(22,22,24,.10);
+ --accent:var(--color-electric-capture-blue);
+}
+:root[data-theme="dark"]{
+ --bg:var(--color-studio-black);
+ --surface:#17171b;
+ --text:var(--color-paper-white);
+ --text-soft:#b7b7bc;
+ --border:rgba(255,255,255,.12);
+ --accent:#4b7bff;
+}
+@media (prefers-color-scheme:dark){
+ :root:not([data-theme="light"]){
+  --bg:var(--color-studio-black);
+  --surface:#17171b;
+  --text:var(--color-paper-white);
+  --text-soft:#b7b7bc;
+  --border:rgba(255,255,255,.12);
+  --accent:#4b7bff;
+ }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font:var(--text-body);letter-spacing:.18px;color:var(--text);background:var(--bg);transition:background var(--transition-normal),color var(--transition-normal)}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+button{font:inherit}
+.container{width:min(1200px,calc(100% - 2.5rem));margin-inline:auto}
+@media(min-width:768px){.container{width:min(1200px,calc(100% - 4rem))}}
+.section{padding:clamp(4rem,8vw,7rem) 0}
+.nav{position:sticky;top:0;z-index:var(--z-dropdown);backdrop-filter:blur(12px);background:color-mix(in srgb,var(--bg) 82%,transparent);border-bottom:1px solid var(--border)}
+@media(prefers-reduced-transparency:reduce){.nav{background:var(--bg);backdrop-filter:none}}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:72px}
+.brand{display:flex;align-items:center;gap:.6rem;font-weight:600}
+.brand-mark{width:34px;height:34px;border-radius:10px;background:var(--color-electric-capture-blue);color:#fff;display:grid;place-items:center;font-weight:600}
+.nav-links{display:flex;align-items:center;gap:1.25rem}
+.nav-links a{font:var(--text-nav);color:var(--text-soft)}
+.nav-links a:hover{color:var(--text)}
+.nav-actions{display:flex;align-items:center;gap:.75rem}
+.btn{min-height:44px;border-radius:var(--radius-sm);padding:0 16px;display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid transparent;cursor:pointer;transition:transform var(--transition-fast),box-shadow var(--transition-fast),filter var(--transition-fast)}
+.btn:active{transform:scale(.97)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn-primary{background:var(--color-electric-capture-blue);color:#fff;box-shadow:var(--shadow-button-blue)}
+.btn-primary:hover{filter:brightness(1.06)}
+.btn-secondary{background:#fff;color:var(--color-graphite);border-color:var(--color-graphite);padding-inline:20px}
+:root[data-theme="dark"] .btn-secondary{background:var(--surface);color:var(--text);border-color:var(--border)}
+.btn-ghost{background:transparent;border-color:var(--color-graphite);padding:0 16px 0 13px}
+:root[data-theme="dark"] .btn-ghost{border-color:var(--border);color:var(--text)}
+.btn-icon{width:40px;height:40px;padding:0;border-radius:var(--radius-pill);background:rgba(22,22,24,.05);color:var(--text)}
+:root[data-theme="dark"] .btn-icon{background:rgba(255,255,255,.08)}
+.badge{display:inline-flex;align-items:center;gap:8px;padding:8px 8px 8px 13px;border-radius:var(--radius-sm);font:var(--text-body-small);font-weight:550;letter-spacing:.14px}
+.badge-dark{background:var(--color-studio-black);color:#fff}
+.badge-light{background:#fff;color:var(--color-graphite);box-shadow:var(--shadow-sm)}
+.hero{padding-top:clamp(4rem,8vw,6rem)}
+.hero-grid{display:grid;grid-template-columns:1fr;gap:2rem;align-items:center}
+@media(min-width:900px){.hero-grid{grid-template-columns:1.05fr .95fr}}
+.hero h1{font:var(--text-display);letter-spacing:-1.2px;line-height:1.1;margin:1rem 0 1rem;color:var(--color-absolute-ink)}
+:root[data-theme="dark"] .hero h1{color:var(--text)}
+.hero h1 .accent{background:var(--color-electric-blue-sweep);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{font:var(--text-body);line-height:1.67;color:var(--color-soft-charcoal);max-width:42ch;margin:0 0 1.5rem}
+.hero-actions{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center}
+.guarantee{font:var(--text-caption);color:var(--text-soft);margin-top:.75rem}
+.hero-visual{position:relative;border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-lg);background:var(--surface)}
+.hero-visual img{width:100%;height:auto;aspect-ratio:16/10;object-fit:cover}
+.hero-glow{position:absolute;inset:-20% -10% auto -10%;height:70%;background:radial-gradient(circle at 50% 50%,rgba(13,68,232,.18),transparent 62%);pointer-events:none}
+.window-bar{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--border);background:var(--surface)}
+.dot{width:10px;height:10px;border-radius:50%;background:rgba(22,22,24,.18)}
+.section-head{text-align:center;max-width:720px;margin:0 auto 2.5rem}
+.section-head h2{font:var(--text-section-heading);letter-spacing:-.8px;margin:0 0 .75rem}
+.section-head p{font:var(--text-body);color:var(--text-soft);margin:0}
+.cards{display:grid;grid-template-columns:1fr;gap:1.25rem}
+@media(min-width:768px){.cards{grid-template-columns:repeat(3,1fr)}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1.5rem;box-shadow:var(--shadow-card);transition:transform var(--transition-fast)}
+.card:hover{transform:translateY(-2px)}
+.card h3{font:var(--text-feature-heading);margin:.75rem 0 .5rem}
+.card p{font:var(--text-body-small);color:var(--text-soft);margin:0}
+.icon-chip{width:44px;height:44px;border-radius:var(--radius-sm);display:grid;place-items:center;background:rgba(13,68,232,.10);color:var(--accent)}
+.steps{display:grid;grid-template-columns:1fr;gap:1.25rem}
+@media(min-width:768px){.steps{grid-template-columns:repeat(3,1fr)}}
+.step{padding:1.5rem;border-radius:var(--radius-md);background:var(--surface);border:1px solid var(--border)}
+.step-num{font:var(--text-metadata);color:var(--accent);margin-bottom:.5rem}
+.step h3{font:var(--text-feature-heading);margin:.25rem 0 .5rem}
+.step p{font:var(--text-body-small);color:var(--text-soft);margin:0}
+.testimonials{display:grid;grid-template-columns:1fr;gap:1.25rem}
+@media(min-width:768px){.testimonials{grid-template-columns:repeat(3,1fr)}}
+.quote-card{background:#fff;color:var(--color-graphite);border-radius:var(--radius-md);padding:1.5rem;box-shadow:var(--shadow-card)}
+:root[data-theme="dark"] .quote-card{background:var(--surface);color:var(--text)}
+.quote{font:var(--text-body-small);line-height:1.5;margin:0 0 1rem}
+.meta{font:var(--text-metadata);color:var(--color-soft-charcoal)}
+:root[data-theme="dark"] .meta{color:var(--text-soft)}
+.pricing{display:grid;grid-template-columns:1fr;gap:1.25rem}
+@media(min-width:768px){.pricing{grid-template-columns:repeat(3,1fr)}}
+.price-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1.75rem;display:flex;flex-direction:column;gap:1rem}
+.price-card.featured{border-color:var(--accent);box-shadow:var(--shadow-lg)}
+.price{font:var(--text-display);letter-spacing:-1.2px;line-height:1}
+.price span{font:var(--text-body-small);color:var(--text-soft)}
+.price-card ul{list-style:none;padding:0;margin:0;display:grid;gap:.5rem}
+.price-card li{font:var(--text-body-small);color:var(--text-soft)}
+.faq{display:grid;gap:.75rem}
+details{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem 1.25rem}
+summary{cursor:pointer;font:var(--text-feature-heading);list-style:none}
+summary::-webkit-details-marker{display:none}
+details p{font:var(--text-body-small);color:var(--text-soft);margin:.75rem 0 0}
+.cta-band{background:var(--color-studio-black);color:#fff;border-radius:var(--radius-lg);padding:clamp(2.5rem,6vw,4rem);display:grid;gap:1rem;align-items:center}
+:root[data-theme="dark"] .cta-band{background:var(--surface);color:var(--text)}
+.cta-band h2{font:var(--text-section-heading);letter-spacing:-.8px;margin:0}
+.cta-band p{font:var(--text-body);color:#b7b7bc;margin:0;max-width:52ch}
+.studio-band{background:var(--color-electric-blue-sweep);color:#fff;border-radius:var(--radius-lg);padding:clamp(2rem,5vw,3rem);display:grid;gap:1rem}
+.studio-band input{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.24);border-radius:var(--radius-sm);padding:0 18px;min-height:44px}
+.studio-band input::placeholder{color:rgba(255,255,255,.6)}
+.footer{border-top:1px solid var(--border);padding:2rem 0;color:var(--text-soft);font:var(--text-body-small)}
+.footer-grid{display:grid;grid-template-columns:1fr;gap:1.5rem}
+@media(min-width:768px){.footer-grid{grid-template-columns:2fr 1fr 1fr 1fr}}
+.footer a{color:var(--text-soft)}
+.footer a:hover{color:var(--text)}
+.trust{display:flex;flex-wrap:wrap;gap:8px 15px;align-items:center;justify-content:center;color:var(--text-soft);font:var(--text-caption)}
+@media(max-width:767px){.nav-links{display:none}.nav-links.open{display:flex;flex-direction:column;position:absolute;top:72px;left:0;right:0;background:var(--bg);padding:1rem;border-bottom:1px solid var(--border}}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+[hidden]{display:none!important}
+</style>
+<style id="pd-icon-fix">.material-symbols-rounded{font-family:'Material Symbols Rounded'!important;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;word-wrap:normal;direction:ltr;font-feature-settings:'liga';-webkit-font-feature-settings:'liga'}</style>
+</head>
+<body>
+<nav class="nav">
+ <div class="container nav-inner">
+  <a class="brand" href="#"><span class="brand-mark">S</span>SnapFrame</a>
+  <div class="nav-links" id="nav-links">
+   <a href="#features">Features</a>
+   <a href="#how">How it works</a>
+   <a href="#pricing">Pricing</a>
+   <a href="#faq">FAQ</a>
+  </div>
+  <div class="nav-actions">
+   <button class="btn btn-ghost" type="button">Sign in</button>
+   <button id="theme-toggle" class="btn btn-icon" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+    <span class="material-symbols-rounded">dark_mode</span>
+   </button>
+   <button class="btn btn-primary" type="button" id="menu-btn" aria-expanded="false" aria-controls="nav-links">Menu</button>
+  </div>
+ </div>
+</nav>
+
+<main>
+<section class="hero">
+ <div class="container hero-grid">
+  <div>
+   <span class="badge badge-dark">New release: SnapFrame 3.0</span>
+   <h1>Capture your screen with <span class="accent">precision</span></h1>
+   <p>SnapFrame turns quick screenshots into polished, share ready visuals for product teams, support, and docs.</p>
+   <div class="hero-actions">
+    <button class="btn btn-primary" type="button">Start free trial</button>
+    <button class="btn btn-secondary" type="button"><span class="material-symbols-rounded">play_arrow</span>Watch demo</button>
+   </div>
+   <div class="guarantee">No credit card required. Cancel anytime.</div>
+  </div>
+  <div class="hero-visual">
+   <div class="hero-glow"></div>
+   <div class="window-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+   <img src="https://picsum.photos/seed/snapframe-hero/960/600" alt="SnapFrame editor showing an annotated screenshot" width="960" height="600">
+  </div>
+ </div>
+</section>
+
+<section id="features" class="section">
+ <div class="container">
+  <div class="section-head">
+   <h2>Everything you need to explain faster</h2>
+   <p>From capture to annotation to sharing, every step stays fast and clear.</p>
+  </div>
+  <div class="cards">
+   <article class="card"><div class="icon-chip"><span class="material-symbols-rounded">screenshot_monitor</span></div><h3>Instant capture</h3><p>Grab any window, region, or full screen in one keystroke.</p></article>
+   <article class="card"><div class="icon-chip"><span class="material-symbols-rounded">draw</span></div><h3>Smart annotations</h3><p>Add arrows, blur, text, and numbered steps without leaving the app.</p></article>
+   <article class="card"><div class="icon-chip"><span class="material-symbols-rounded">cloud_upload</span></div><h3>Share anywhere</h3><p>Copy a link, save to cloud, or export to your favorite tools.</p></article>
+  </div>
+ </div>
+</section>
+
+<section id="how" class="section">
+ <div class="container">
+  <div class="section-head"><h2>How it works</h2><p>Three steps from capture to delivery.</p></div>
+  <div class="steps">
+   <div class="step"><div class="step-num">01</div><h3>Capture</h3><p>Choose a mode and record the exact moment you need.</p></div>
+   <div class="step"><div class="step-num">02</div><h3>Annotate</h3><p>Highlight details and remove sensitive information.</p></div>
+   <div class="step"><div class="step-num">03</div><h3>Share</h3><p>Send a clean link or export a polished image.</p></div>
+  </div>
+ </div>
+</section>
+
+<section class="section">
+ <div class="container">
+  <div class="section-head"><h2>Loved by teams who explain things</h2><p>Real feedback from product and support teams.</p></div>
+  <div class="testimonials">
+   <article class="quote-card"><p class="quote">"SnapFrame cut our bug report time in half and made handoffs cleaner."</p><div class="meta">Maya Chen, Product Lead, Northwind</div></article>
+   <article class="quote-card"><p class="quote">"The annotation tools feel native and fast. Our docs look better overnight."</p><div class="meta">Jordan Lee, Support Manager, Fieldstone</div></article>
+   <article class="quote-card"><p class="quote">"We replaced three tools with one simple capture workflow."</p><div class="meta">Priya Nair, Engineering Manager, Lumen Labs</div></article>
+  </div>
+ </div>
+</section>
+
+<section id="pricing" class="section">
+ <div class="container">
+  <div class="section-head"><h2>Simple pricing</h2><p>Pick the plan that fits your workflow.</p></div>
+  <div class="pricing">
+   <article class="price-card"><h3>Starter</h3><div class="price">$0<span>/mo</span></div><ul><li>Basic capture</li><li>Local exports</li><li>Community support</li></ul><button class="btn btn-ghost" type="button">Get started</button></article>
+   <article class="price-card featured"><h3>Pro</h3><div class="price">$12<span>/mo</span></div><ul><li>Unlimited captures</li><li>Cloud sharing</li><li>Advanced annotations</li></ul><button class="btn btn-primary" type="button">Start trial</button></article>
+   <article class="price-card"><h3>Team</h3><div class="price">$39<span>/mo</span></div><ul><li>Shared workspace</li><li>Admin controls</li><li>Priority support</li></ul><button class="btn btn-ghost" type="button">Contact sales</button></article>
+  </div>
+ </div>
+</section>
+
+<section id="faq" class="section">
+ <div class="container">
+  <div class="section-head"><h2>Frequently asked questions</h2></div>
+  <div class="faq">
+   <details><summary>Does SnapFrame work offline?</summary><p>Yes. Capture and annotation work offline; cloud sharing resumes when connected.</p></details>
+   <details><summary>Can I blur sensitive data?</summary><p>Yes. Use blur, redact, and crop tools before sharing.</p></details>
+   <details><summary>Is there a team plan?</summary><p>Yes. Team includes shared libraries and admin controls.</p></details>
+  </div>
+ </div>
+</section>
+
+<section class="section">
+ <div class="container">
+  <div class="studio-band">
+   <h2>Stay in the loop</h2>
+   <p>Get product updates and capture tips in your inbox.</p>
+   <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+    <input type="email" placeholder="you@company.com" aria-label="Email address">
+    <button class="btn btn-primary" type="button">Subscribe</button>
+   </div>
+  </div>
+ </div>
+</section>
+
+<section class="section">
+ <div class="container cta-band">
+  <h2>Ready to make every screenshot count?</h2>
+  <p>Start your free trial and capture your first polished visual in minutes.</p>
+  <div><button class="btn btn-primary" type="button">Start free trial</button></div>
+ </div>
+</section>
+</main>
+
+<footer class="footer">
+ <div class="container footer-grid">
+  <div><strong>SnapFrame</strong><p>Capture, annotate, and share with clarity.</p></div>
+  <div><a href="#features">Features</a><br><a href="#pricing">Pricing</a></div>
+  <div><a href="#faq">FAQ</a><br><a href="#">Docs</a></div>
+  <div><a href="#">Privacy</a><br><a href="#">Terms</a></div>
+ </div>
+ <div class="container" style="margin-top:1.5rem">Copyright 2026 SnapFrame. All rights reserved.</div>
+</footer>
+
+<script>
+(function(){
+ const root=document.documentElement;
+ const key='theme';
+ const saved=localStorage.getItem(key);
+ const initial=saved==='dark'||saved==='light'?saved:(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+ root.dataset.theme=initial;
+ const btn=document.getElementById('theme-toggle');
+ function apply(theme){
+  root.dataset.theme=theme;
+  localStorage.setItem(key,theme);
+  btn.setAttribute('aria-pressed',theme==='dark');
+  btn.setAttribute('aria-label',theme==='dark'?'Switch to light mode':'Switch to dark mode');
+  const icon=btn.querySelector('.material-symbols-rounded');
+  if(icon) icon.textContent=theme==='dark'?'light_mode':'dark_mode';
+ }
+ apply(initial);
+ btn.addEventListener('click',()=>apply(root.dataset.theme==='dark'?'light':'dark'));
+ const menu=document.getElementById('menu-btn');
+ const links=document.getElementById('nav-links');
+ menu.addEventListener('click',()=>{const open=links.classList.toggle('open');menu.setAttribute('aria-expanded',open);});
+ links.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{links.classList.remove('open');menu.setAttribute('aria-expanded','false');}));
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'){links.classList.remove('open');menu.setAttribute('aria-expanded','false');}});
+})();
+</script>
+</body>
+</html>

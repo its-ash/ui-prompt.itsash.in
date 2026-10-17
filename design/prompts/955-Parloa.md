@@ -1,0 +1,91 @@
+# Landing Page Build Prompt — Parloa Editorial Style (Fictional Brand)
+
+## 1. Project Scope & Brand Constraint
+Build a complete, responsive landing page for a **fictional brand** (invent a name, product, and copy — never use "Parloa" or any of its trademarks, logos, or product names). Reuse only the visual style described below. Deliverable: separate `index.html`, `style.css`, `script.js` files. No inline CSS (`style="..."` forbidden); no inline `<script>` beyond a single deferred entry-point reference. Enforce one consistent class-naming convention (BEM) across the entire deliverable.
+
+## 2. CSS-First Architecture & Theme Tokens
+All styling lives in `style.css`. Define every visual token inside `:root` (and a `.dark` class / `@media (prefers-color-scheme: dark)`) as CSS variables. Required tokens:
+
+**Colors (Light mode):**
+- `--color-ink-black: #1f1c1b` (primary text, filled buttons, dark surfaces)
+- `--color-paper-white: #ffffff` (card surfaces, button text on dark fills)
+- `--color-canvas-cream: #ebe9e1` (page background)
+- `--color-linen: #f5f4f0` (nav bar, section banding)
+- `--color-stone: #a69b92` (muted text, input borders)
+- `--color-hairline: #d9d6ce` (link underlines, card borders, dividers)
+- `--color-espresso: #2d2724` (announcement bar, secondary dark surfaces)
+- `--color-charcoal: #000000` (SVG icon fills only)
+- `--color-cobblestone: #c7c1b7` (secondary borders)
+- `--color-highlighter-orange: #ff7714` (accent — outlines, links, icon strokes only, never fills)
+
+Map these to generic semantic tokens: `--primary` (ink black), `--secondary` (stone), `--bg-primary` (canvas cream), `--bg-secondary` (linen), `--text-primary` (ink black), `--text-secondary` (stone), `--text-success`, `--text-error`, `--border-default` (hairline), `--border-error`, `--border-success`. Enforce contrast pairing for every theme.
+
+**Spacing & Shape:**
+- Base unit 4px. Spacing tokens: `--spacing-4` (4px), `--spacing-8` (8px), `--spacing-12` (12px), `--spacing-16` (16px), `--spacing-20` (20px), `--spacing-24` (24px), `--spacing-32` (32px), `--spacing-40` (40px), `--spacing-48` (48px), `--spacing-60` (60px), `--spacing-64` (64px), `--spacing-72` (72px).
+- `--radius-sm: 2px`, `--radius-md: 2px`, `--radius-lg: 4px` (max 4px anywhere — print feel).
+- `--shadow-sm`, `--shadow-md`: define as `none` (no shadows anywhere — flat editorial).
+- `--transition-fast`, `--transition-normal`, `--ease-standard`.
+- `--z-dropdown`, `--z-modal`, `--z-toast`.
+
+**Typography:**
+- Google Font `<link>`/`@import` for text: Exposure30 substitute (Fraunces, Playfair Display, or DM Serif Display) for display serif; Geist substitute (Inter, Manrope, or system-ui) for body/UI. Bind to `--font-base` (body) and `--font-display` (headings).
+- Google Material Symbols/Icons for all icons. No raw inline SVGs or local icon files.
+- Type scale tokens: `--text-caption` (10px/1.2/0.2px), `--text-body` (16px/1.5/0.16px), `--text-subheading` (18px/1.4/0.18px), `--text-heading-sm` (24px/1.3/0.24px), `--text-heading` (42px/1.1/-0.42px), `--text-heading-lg` (82px/1.05/-0.82px), `--text-display` (96px/1/-0.96px).
+
+## 3. Mandatory Dark Mode
+Provide dark mode tokens under `@media (prefers-color-scheme: dark)` and a `.dark` class selector. Invert canvas to a warm dark surface, keep orange accent, swap text to light cream. Persist user choice via `localStorage`, falling back to `prefers-color-scheme` on first visit. Include a visible toggle control with correct `aria-pressed`/`aria-label`. Ensure all contrast pairings hold in dark mode.
+
+## 4. Layout & Framework Rules
+- Use Tailwind CSS (or clean custom CSS via `@layer`/`@apply`) unless another framework requested. All utility classes map back to CSS variables or generic reusable classes (`.btn`, `.card`, `.input-group`).
+- Flexbox for all layout structures. Every flex container defaults to `align-items: center` unless explicitly justified. Mobile-first: rows collapse to columns on small viewports; prevent horizontal scroll.
+- Page max-width 1200px centered; hero and announcement bar full-bleed. Section gap 80px. Card padding 24px. Element gap 16px.
+
+## 5. Component State Requirements
+Enforce all states via CSS classes (no inline styles):
+
+**Buttons:** Default (flex, align-items center, justify-content center, gap 0.5rem, min 44x44px touch target), Hover (brightness/shadow shift, cursor pointer), Focus (distinct focus ring via CSS vars), Active (transform scale 0.97), Loading (disabled interactions, CSS spinner or animated Google Icon, no dimension distortion), Disabled (opacity 0.5, greyscale, cursor not-allowed), Success/Error (temporary feedback via `--text-success`/`--text-error`).
+
+**Cards:** Default (flex layout, subtle borders, elevation via `--bg-secondary` + vars), Hover (shadow shift or translateY(-2px)), Focus-within (border highlight on child focus), Loading (shimmer animation in CSS, no layout jump), Empty state (Google Icon + guidance text).
+
+**Forms/Inputs:** Empty, Focused (outline ring), Filled, Valid (success border/icon), Invalid (error border, red text, error icon), Disabled, Read-only. Structure: flex container wrapping label, input, dedicated error feedback container.
+
+**Modals:** Opening, Open, Loading, Success/Error, Closing (CSS transitions). Centered flex container, backdrop overlay, Google Icon close button, keyboard focus trapping, close via Esc or overlay click.
+
+## 6. Global UX & Micro-Interactions
+- Responsive by default, fluid sizing, no horizontal overflow.
+- CSS transitions on all state changes (`transition: var(--transition-normal)`), respecting `prefers-reduced-motion`.
+- Accessibility: sufficient contrast both modes; never rely solely on color for state; semantic HTML5; correct ARIA roles/labels; logical DOM/focus order; full keyboard operability; `aria-live` regions for dynamic feedback.
+- Mandatory visual feedback on every click/hover/submission.
+- Destructive actions visually distinct in both themes.
+
+## 7. Required Sections (in order)
+1. **Top Announcement Bar** — full-bleed dark (#2d2724), Geist 14px weight 400 in orange (#ff7714) headline, white body, orange 'Learn more →' link right, 8px vertical padding, single line.
+2. **Primary Navigation** — sticky dark bar (#1f1c1b), logo left (fictional wordmark), nav links center (Geist 14px weight 400 white, 2px gaps), right: search icon, language selector, outlined 'Book a demo' button (1px white border, white text, 2px radius, 8px 12px padding). 8px vertical padding, 11-12px horizontal padding on items.
+3. **Hero** — full-viewport-height warm-lit photograph with diagonal gradient overlay (transparent → cream). Exposure30 82-96px weight 350 in #1f1c1b, letter-spacing -0.01em, bottom-left. No card chrome. Use a placeholder image URL.
+4. **Logo Trust Bar** — 7-8 grayscale partner logos on cream canvas, even spacing 2px-8px gaps, no card backgrounds.
+5. **Features** — 3 cards: white (#ffffff), 0px radius, 24px padding, 1px hairline border. Outlined icon (stroke only) in ink black at top, Exposure30 24px heading, Geist 14px body in stone. Leftmost card has small orange dot accent top-left.
+6. **How It Works** — 3 steps, two-column split layout: left Exposure30 42px heading + Geist 16px body + dark filled CTA; right white card with circular abstract graphic + description.
+7. **Testimonials** — white cards on cream, serif quote, stone attribution, no shadows.
+8. **Pricing** — 3 tiers, white cards, 0px radius, hairline borders, dark filled CTA on recommended tier.
+9. **FAQ** — accordion with keyboard support, aria-expanded, smooth transitions.
+10. **Final CTA** — dark surface band, white serif heading, orange outlined link, dark filled button.
+11. **Footer** — secondary links, dark background, Geist 14px, orange hover on links.
+
+## 8. Style Rules (Do/Don't)
+- Do: Exposure30 weight 350 for display headings (42px+); ink black filled buttons with white text; orange only for outlines/links/icon strokes; white cards on cream with 1px hairline borders at 0px radius; Geist 16px weight 400 body with 0.01em tracking and 1.50 line-height; 4px base spacing; photography in hero.
+- Don't: orange as filled button/large background; box-shadows/drop-shadows on cards; bold (600+) heading weights; border-radius above 4px; pure black for body text/large surfaces; colored backgrounds beneath cards; vivid colors for body text.
+
+## 9. Elevation Philosophy
+No shadows. Depth via color contrast (cream canvas, white cards, dark surfaces). Cards use 1px hairline borders. Buttons flat. Only "elevation" is the small orange outlined accent on the leftmost industry card.
+
+## 10. Imagery
+Warm-lit intimate portraiture, golden-hour tones, full-bleed with diagonal gradient overlay (transparent → cream). No illustrations, no abstract graphics in content areas except the blue circular abstract graphic inside product preview cards. Icons exclusively outlined/stroked thin black strokes, never filled, never multicolor.
+
+## 11. Output Requirements
+- File structure: `index.html`, `style.css`, `script.js`.
+- Naming: BEM throughout.
+- No lorem-ipsum-only submissions where real copy is supplied; invent fictional copy/labels consistent with the brand.
+- No new HTML elements in edit mode (N/A for fresh build).
+- All user-facing copy in English.
+
+Generate the three files now. Ensure dark mode toggle works, all states are styled, and the page is fully responsive mobile-first.

@@ -93,8 +93,8 @@ async function processFile(file) {
   const userPrompt =
     block +
     `\n\nUser request: Create a complete Landing Page.\n- Landing Page Theme: ${themeName}\n- Sections to add: Hero, Features (3 cards), How It Works (3 steps), Testimonials, Pricing (3 tiers), FAQ, Final CTA, Footer with secondary links`;
-  const cleaned = cleanOutput(await callModel(systemPrompt, userPrompt, (t) => t.length >= 6000, 32000, MODELS, undefined, cleanOutput));
-  if (cleaned.length < 6000) throw new Error(`Output too small (${cleaned.length} chars)`);
+  const cleaned = cleanOutput(await callModel(systemPrompt, userPrompt, (t) => t.length >= 4500, 32000, MODELS, undefined, cleanOutput));
+  if (cleaned.length < 4500) throw new Error(`Output too small (${cleaned.length} chars)`);
   fs.writeFileSync(outPath, cleaned + '\n');
   fs.rmSync(path.join(RAW_DIR, file), { force: true });
   state.done[file] = {

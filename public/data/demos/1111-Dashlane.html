@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VaultKey - Passkey-first password manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500&family=JetBrains+Mono:wght@300&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=dark_mode,light_mode,arrow_forward,check,lock,shield,key,visibility,visibility_off,menu,close,chevron_down,chevron_up,star,person,business,email,phone,globe,lock_open,chevron_left,chevron_right,chat,code,expand_more,check_circle" rel="stylesheet">
+<style>
+:root{
+  --color-cocoa-black:#200f0a;--color-cream-mist:#fcfaf9;--color-warm-sand:#e3ccc0;--color-ash-gray:#e5e7eb;
+  --color-stone:#a69f9d;--color-deep-plum:#2b2538;--color-aubergine:#4d3f3b;--color-mint-keyhole:#a2f6f5;
+  --color-iris:#858df9;--color-periwinkle:#6c74df;--color-lavender-mist:#b6bbfb;
+  --bg-page:var(--color-cocoa-black);--bg-card:var(--color-deep-plum);--bg-card-elevated:var(--color-aubergine);
+  --text-primary:var(--color-cream-mist);--text-secondary:var(--color-stone);--text-on-primary:var(--color-cocoa-black);
+  --text-on-secondary:var(--color-iris);--border-hairline:var(--color-warm-sand);--border-secondary:var(--color-ash-gray);
+  --accent-primary:var(--color-mint-keyhole);--accent-secondary:var(--color-iris);--accent-tertiary:var(--color-lavender-mist);
+  --font-base:'Inter',system-ui,sans-serif;--font-mono:'JetBrains Mono',monospace;
+  --font-weight-light:300;--font-weight-medium:500;
+  --text-caption:clamp(.75rem,.7rem+.25vw,.875rem);--text-body-sm:clamp(.875rem,.825rem+.25vw,1rem);
+  --text-body:clamp(1rem,.95rem+.25vw,1.125rem);--text-subheading:clamp(1.125rem,1.05rem+.375vw,1.25rem);
+  --text-heading-sm:clamp(1.5rem,1.3rem+1vw,2rem);--text-heading:clamp(2rem,1.7rem+1.5vw,2.75rem);
+  --text-heading-lg:clamp(2.5rem,2rem+2.5vw,3.5rem);--text-display:clamp(2.75rem,2.2rem+2.8vw,4rem);
+  --lh-display:1.10;--lh-heading:1.17;--lh-subheading:1.20;--lh-body:1.50;
+  --space-4:4px;--space-8:8px;--space-10:10px;--space-12:12px;--space-16:16px;--space-20:20px;--space-24:24px;
+  --space-32:32px;--space-40:40px;--space-48:48px;--space-56:56px;--space-64:64px;--space-80:80px;--space-120:120px;
+  --radius-pill:9999px;--radius-card:8px;--radius-input:4px;--radius-img:8px;
+  --shadow-floating:0 4px 24px rgba(0,0,0,.4),0 0 0 1px rgba(227,204,192,.1);--shadow-card:none;
+  --transition-fast:150ms var(--ease-standard);--transition-normal:250ms var(--ease-standard);
+  --ease-standard:cubic-bezier(.4,0,.2,1);--z-nav:100;--z-modal:200;--z-toast:300;--z-chat:400;
+  --container-max:1200px;--section-gap:var(--space-80);--card-padding:var(--space-40);--element-gap:var(--space-24);
+}
+@media (prefers-color-scheme:light){:root:not(.dark){--bg-page:#fefefe;--bg-card:#ffffff;--bg-card-elevated:#f5f2f0;--text-primary:#200f0a;--text-secondary:#4d3f3b;--text-on-primary:#200f0a;--text-on-secondary:#858df9;--border-hairline:#e3ccc0;--border-secondary:#e5e7eb}}
+:root[data-theme="light"]{--bg-page:#fefefe;--bg-card:#ffffff;--bg-card-elevated:#f5f2f0;--text-primary:#200f0a;--text-secondary:#4d3f3b;--text-on-primary:#200f0a;--text-on-secondary:#858df9;--border-hairline:#e3ccc0;--border-secondary:#e5e7eb}
+:root[data-theme="dark"]{--bg-page:var(--color-cocoa-black);--bg-card:var(--color-deep-plum);--bg-card-elevated:var(--color-aubergine);--text-primary:var(--color-cream-mist);--text-secondary:var(--color-stone);--text-on-primary:var(--color-cocoa-black);--text-on-secondary:var(--color-iris);--border-hairline:var(--color-warm-sand);--border-secondary:var(--color-ash-gray)}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-base);font-weight:var(--font-weight-light);font-size:var(--text-body);line-height:var(--lh-body);color:var(--text-primary);background:var(--bg-page);overflow-x:hidden}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer;border:none;background:none}
+.container{max-width:var(--container-max);margin:0 auto;padding:0 var(--space-20)}
+@media(min-width:1024px){.container{padding:0 var(--space-32)}}
+.section{padding:var(--section-gap) 0}
+.section--alt{background:var(--bg-card-elevated)}
+.ms{font-family:'Material Symbols Rounded';font-weight:400;font-style:normal;font-size:24px;line-height:1;display:inline-block;vertical-align:middle;-webkit-font-feature-settings:'liga';font-feature-settings:'liga';text-transform:none;letter-spacing:normal;word-wrap:normal;white-space:nowrap;direction:ltr}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-8);min-height:44px;min-width:44px;border-radius:var(--radius-pill);font-family:var(--font-base);font-weight:var(--font-weight-medium);font-size:var(--text-body-sm);padding:var(--space-12) var(--space-24);transition:var(--transition-normal);border:none}
+.btn--primary{background:var(--accent-primary);color:var(--text-on-primary)}
+.btn--primary:hover{filter:brightness(1.1);box-shadow:0 4px 16px rgba(162,246,245,.3)}
+.btn--secondary{background:transparent;color:var(--accent-secondary);border:1px solid var(--accent-secondary)}
+.btn--secondary:hover{background:rgba(133,141,249,.1)}
+.btn--ghost{background:transparent;color:var(--text-primary);padding:var(--space-8) var(--space-16)}
+.btn:focus-visible{outline:2px solid var(--accent-primary);outline-offset:2px}
+.btn:active{transform:scale(.97)}
+.btn--loading{position:relative;color:transparent!important;pointer-events:none}
+.btn--loading::after{content:"";width:20px;height:20px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .6s linear infinite;position:absolute}
+.btn:disabled,.btn[disabled]{opacity:.5;cursor:not-allowed;pointer-events:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.card{background:var(--bg-card);border-radius:var(--radius-card);padding:var(--card-padding);border:1px solid color-mix(in srgb,var(--border-hairline) 30%,transparent);transition:var(--transition-normal)}
+.card:hover{transform:translateY(-4px);box-shadow:var(--shadow-floating);border-color:color-mix(in srgb,var(--border-hairline) 60%,transparent)}
+.card:focus-within{border-color:var(--accent-primary)}
+.announcement{background:var(--bg-page);border-bottom:1px solid color-mix(in srgb,var(--border-hairline) 20%,transparent);padding:var(--space-8) var(--space-16);text-align:center;font-size:var(--text-body-sm);font-weight:var(--font-weight-medium);color:var(--text-primary);display:flex;align-items:center;justify-content:center;gap:var(--space-12)}
+.announcement__close{margin-left:auto;color:var(--text-secondary)}
+.nav{position:sticky;top:0;z-index:var(--z-nav);background:var(--bg-page);border-bottom:1px solid color-mix(in srgb,var(--border-hairline) 20%,transparent)}
+.nav__inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:var(--space-16)}
+.nav__logo{display:flex;align-items:center;gap:var(--space-8);font-weight:var(--font-weight-medium);font-size:var(--text-body-sm);text-transform:uppercase;letter-spacing:.02em;color:var(--text-primary)}
+.nav__logo .ms{color:var(--accent-primary)}
+.nav__links{display:none;gap:var(--space-24);align-items:center}
+@media(min-width:1024px){.nav__links{display:flex}}
+.nav__links a{font-weight:var(--font-weight-medium);font-size:var(--text-body-sm);color:var(--text-primary)}
+.nav__links a:hover{color:var(--accent-primary)}
+.nav__actions{display:none;gap:var(--space-12);align-items:center}
+@media(min-width:1024px){.nav__actions{display:flex}}
+.nav__toggle{display:flex;align-items:center;justify-content:center;width:44px;height:44px;color:var(--text-primary)}
+@media(min-width:1024px){.nav__toggle{display:none}}
+.nav__drawer{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:calc(var(--z-nav)+1);display:none}
+.nav__drawer--open{display:block}
+.nav__drawer-panel{position:absolute;top:0;right:0;width:min(320px,85vw);height:100%;background:var(--bg-card);padding:var(--space-24);display:flex;flex-direction:column;gap:var(--space-16);transform:translateX(100%);transition:transform var(--transition-normal)}
+.nav__drawer--open .nav__drawer-panel{transform:translateX(0)}
+.nav__drawer a{font-weight:var(--font-weight-medium);font-size:var(--text-body);color:var(--text-primary);padding:var(--space-12) 0;border-bottom:1px solid color-mix(in srgb,var(--border-hairline) 20%,transparent)}
+#theme-toggle{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-pill);color:var(--text-primary)}
+.hero{padding:var(--space-48) 0 var(--space-64)}
+.hero__grid{display:grid;grid-template-columns:1fr;gap:var(--space-32);align-items:center}
+@media(min-width:1024px){.hero__grid{grid-template-columns:1.1fr 1fr;gap:var(--space-48)}}
+.hero__eyebrow{font-family:var(--font-mono);font-weight:300;font-size:var(--text-caption);letter-spacing:.06em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:var(--space-12)}
+.hero__headline{font-weight:var(--font-weight-light);font-size:var(--text-display);line-height:var(--lh-display);letter-spacing:.01em;color:var(--text-primary);margin-bottom:var(--space-16)}
+.hero__headline--accent{color:var(--accent-primary)}
+.hero__sub{font-size:var(--text-body);color:var(--text-secondary);line-height:var(--lh-body);max-width:52ch;margin-bottom:var(--space-24)}
+.hero__ctas{display:flex;flex-wrap:wrap;gap:var(--space-12)}
+.hero__illustration{background:var(--bg-card);border-radius:var(--radius-card);padding:var(--space-24);display:flex;align-items:center;justify-content:center;aspect-ratio:1/1;max-width:400px;margin:0 auto;position:relative;overflow:hidden}
+.radar{position:relative;width:100%;height:100%}
+.radar__ring{position:absolute;inset:0;border-radius:50%;border:1px solid color-mix(in srgb,var(--accent-primary) 30%,transparent)}
+.radar__ring:nth-child(2){inset:12%}
+.radar__ring:nth-child(3){inset:24%}
+.radar__ring:nth-child(4){inset:36%}
+.radar__sweep{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,transparent 0deg,color-mix(in srgb,var(--accent-primary) 40%,transparent) 60deg,transparent 90deg);animation:spin 4s linear infinite}
+.radar__core{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;background:var(--accent-primary);box-shadow:0 0 20px var(--accent-primary)}
+.trust-strip{text-align:center}
+.trust-strip__label{font-family:var(--font-mono);font-weight:300;font-size:var(--text-caption);letter-spacing:.06em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:var(--space-24)}
+.trust-strip__logos{display:flex;justify-content:center;align-items:center;gap:var(--space-32);flex-wrap:wrap}
+.trust-strip__logo{font-family:var(--font-base);font-weight:500;font-size:var(--text-body);color:var(--text-primary);opacity:.5;transition:var(--transition-fast)}
+.trust-strip__logo:hover{opacity:1;color:var(--accent-primary)}
+.features__grid{display:grid;grid-template-columns:1fr;gap:var(--space-24)}
+@media(min-width:768px){.features__grid{grid-template-columns:repeat(3,1fr)}}
+.feature-card__icon{width:48px;height:48px;border-radius:50%;background:color-mix(in srgb,var(--accent-primary) 15%,transparent);display:flex;align-items:center;justify-content:center;margin-bottom:var(--space-16)}
+.feature-card__icon .ms{color:var(--accent-primary)}
+.feature-card__title{font-weight:var(--font-weight-medium);font-size:var(--text-heading-sm);color:var(--text-primary);margin-bottom:var(--space-8)}
+.feature-card__desc{font-size:var(--text-body);color:var(--text-secondary);line-height:var(--lh-body)}
+.steps__grid{display:grid;grid-template-columns:1fr;gap:var(--space-48);margin-top:var(--space-32)}
+@media(min-width:768px){.steps__grid{grid-template-columns:repeat(3,1fr);gap:var(--space-24)}}
+.step-card{position:relative;padding-top:var(--space-64);text-align:center}
+.step-card__number{position:absolute;top:calc(-1*var(--space-32));left:50%;transform:translateX(-50%);width:64px;height:64px;border-radius:50%;background:var(--accent-primary);color:var(--text-on-primary);font-weight:var(--font-weight-light);font-size:var(--text-heading-lg);display:flex;align-items:center;justify-content:center}
+.step-card__title{font-weight:var(--font-weight-medium);font-size:var(--text-heading-sm);color:var(--text-primary);margin-bottom:var(--space-8)}
+.step-card__desc{font-size:var(--text-body);color:var(--text-secondary);line-height:var(--lh-body)}
+.testimonials__wrap{position:relative}
+.carousel{display:grid;grid-template-columns:1fr;gap:var(--space-24);overflow:hidden}
+@media(min-width:768px){.carousel{grid-template-columns:repeat(2,1fr)}}
+.testimonial-card__logo{filter:brightness(0) invert(1);opacity:.8;margin-bottom:var(--space-16);font-weight:500}
+.testimonial-card__quote{font-weight:var(--font-weight-light);font-size:var(--text-subheading);line-height:var(--lh-subheading);color:var(--text-primary);margin-bottom:var(--space-24)}
+.testimonial-card__author{display:flex;align-items:center;gap:var(--space-12)}
+.testimonial-card__avatar{width:40px;height:40px;border-radius:50%;background:var(--accent-primary);color:var(--text-on-primary);display:flex;align-items:center;justify-content:center;font-weight:500;font-size:var(--text-body-sm)}
+.testimonial-card__name{font-weight:var(--font-weight-medium);font-size:var(--text-body-sm);color:var(--text-primary)}
+.testimonial-card__role{font-weight:var(--font-weight-medium);font-size:var(--text-body-sm);color:var(--text-secondary)}
+.carousel__controls{display:flex;align-items:center;justify-content:center;gap:var(--space-16);margin-top:var(--space-24)}
+.carousel__dot{width:10px;height:10px;border-radius:50%;background:var(--border-hairline);opacity:.4;border:none;transition:var(--transition-fast)}
+.carousel__dot--active{opacity:1;background:var(--accent-primary)}
+.pricing__grid{display:grid;grid-template-columns:1fr;gap:var(--space-24)}
+@media(min-width:1024px){.pricing__grid{grid-template-columns:repeat(3,1fr)}}
+.pricing-card{display:flex;flex-direction:column}
+.pricing-card--popular{border-color:var(--accent-primary);box-shadow:0 0 0 1px var(--accent-primary)}
+.pricing-card__badge{display:inline-block;align-self:flex-start;background:var(--accent-primary);color:var(--text-on-primary);font-size:var(--text-caption);padding:var(--space-4) var(--space-12);border-radius:var(--radius-pill);margin-bottom:var(--space-12)}
+.pricing-card__name{font-weight:var(--font-weight-medium);font-size:var(--text-heading-sm);color:var(--text-primary);margin-bottom:var(--space-8)}
+.pricing-card__price{font-weight:var(--font-weight-light);font-size:var(--text-display);color:var(--text-primary)}
+.pricing-card__period{color:var(--text-secondary);font-size:var(--text-body-sm)}
+.pricing-card__features{display:flex;flex-direction:column;gap:var(--space-12);margin-top:auto;padding-top:var(--space-24)}
+.pricing-card__feature{display:flex;align-items:center;gap:var(--space-10);color:var(--text-secondary);font-size:var(--text-body-sm)}
+.pricing-card__feature .ms{color:var(--accent-primary);font-size:20px}
+.pricing-card .btn{width:100%;margin-top:var(--space-24)}
+.faq__list{display:flex;flex-direction:column;gap:var(--space-4)}
+.accordion__item{border-bottom:1px solid color-mix(in srgb,var(--border-hairline) 20%,transparent)}
+.accordion__trigger{width:100%;display:flex;justify-content:space-between;align-items:center;padding:var(--space-16) 0;font-weight:var(--font-weight-medium);font-size:var(--text-subheading);color:var(--text-primary);background:none;border:none;cursor:pointer;text-align:left}
+.accordion__icon{transition:transform var(--transition-fast)}
+.accordion__trigger[aria-expanded="true"] .accordion__icon{transform:rotate(180deg)}
+.accordion__content{overflow:hidden;max-height:0;transition:max-height var(--transition-normal) ease-out}
+.accordion__content--open{max-height:500px}
+.accordion__panel{padding-top:var(--space-16);color:var(--text-secondary);line-height:var(--lh-body);padding-bottom:var(--space-16)}
+.cta-final{background:var(--bg-card-elevated);text-align:center}
+.cta-final__headline{font-weight:var(--font-weight-light);font-size:var(--text-display);color:var(--text-primary);margin-bottom:var(--space-16)}
+.cta-final__headline--accent{color:var(--accent-primary)}
+.cta-final__sub{font-size:var(--text-body);color:var(--text-secondary);max-width:52ch;margin:0 auto var(--space-24)}
+.cta-final__ctas{display:flex;flex-wrap:wrap;gap:var(--space-12);justify-content:center}
+.footer{background:var(--bg-card);border-top:1px solid color-mix(in srgb,var(--border-hairline) 20%,transparent);padding:var(--space-80) var(--space-20) var(--space-32)}
+.footer__grid{display:grid;grid-template-columns:1fr;gap:var(--space-32)}
+@media(min-width:768px){.footer__grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:1024px){.footer__grid{grid-template-columns:2fr 1fr 1fr 1fr}}
+.footer__brand p{color:var(--text-secondary);font-size:var(--text-body-sm);margin-top:var(--space-12);max-width:32ch}
+.footer__col h4{font-weight:var(--font-weight-medium);font-size:var(--text-body-sm);color:var(--text-primary);margin-bottom:var(--space-12);text-transform:uppercase;letter-spacing:.06em}
+.footer__col a{display:block;font-size:var(--text-body-sm);color:var(--text-secondary);padding:var(--space-4) 0;transition:var(--transition-fast)}
+.footer__col a:hover{color:var(--accent-primary)}
+.footer__social{display:flex;gap:var(--space-16);margin-top:var(--space-16)}
+.footer__social a{color:var(--text-secondary);transition:var(--transition-fast)}
+.footer__social a:hover{color:var(--accent-primary)}
+.footer__bottom{border-top:1px solid color-mix(in srgb,var(--border-hairline) 15%,transparent);margin-top:var(--space-48);padding-top:var(--space-24);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--space-16)}
+.footer__bottom p{font-size:var(--text-caption);color:var(--text-secondary)}
+.footer__bottom a{font-size:var(--text-caption);color:var(--text-secondary);margin-left:var(--space-16)}
+.chat-widget{position:fixed;bottom:var(--space-24);right:var(--space-24);z-index:var(--z-chat)}
+.chat-widget__toggle{background:var(--color-cocoa-black);color:var(--color-cream-mist);padding:var(--space-12) var(--space-16);border-radius:var(--radius-pill);display:flex;align-items:center;gap:var(--space-8);box-shadow:var(--shadow-floating);font-weight:var(--font-weight-medium);font-size:var(--text-body-sm)}
+.chat-widget__panel{position:absolute;bottom:calc(100% + var(--space-12));right:0;width:320px;max-width:calc(100vw - 32px);background:var(--color-cream-mist);color:var(--color-cocoa-black);border-radius:var(--radius-card);padding:var(--space-16) var(--space-20);box-shadow:var(--shadow-floating);opacity:0;transform:translateY(10px);pointer-events:none;transition:var(--transition-normal)}
+.chat-widget__panel--open{opacity:1;transform:translateY(0);pointer-events:auto}
+.chat-widget__panel p{font-size:var(--text-body-sm);margin-bottom:var(--space-12)}
+.modal{position:fixed;inset:0;z-index:var(--z-modal);display:none}
+.modal--open{display:block}
+.modal__backdrop{position:absolute;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px)}
+.modal__content{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(.95);background:var(--bg-card);border-radius:var(--radius-card);padding:var(--space-32);max-width:90vw;max-height:80vh;overflow:auto;box-shadow:var(--shadow-floating);opacity:0;transition:var(--transition-normal)}
+.modal--open .modal__content{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.modal__close{position:absolute;top:var(--space-12);right:var(--space-12)}
+.form-group{display:flex;flex-direction:column;gap:var(--space-4);margin-bottom:var(--space-16)}
+.label{font-size:var(--text-body-sm);font-weight:var(--font-weight-medium);color:var(--text-primary)}
+.input{background:var(--bg-page);border:1px solid var(--border-hairline);border-radius:var(--radius-input);color:var(--text-primary);font-family:var(--font-base);font-weight:var(--font-weight-medium);font-size:var(--text-body);padding:var(--space-12) var(--space-16);width:100%;transition:var(--transition-fast)}
+.input::placeholder{color:var(--text-secondary)}
+.input:focus{border-color:var(--accent-primary);outline:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--accent-primary) 20%,transparent)}
+.error-message{font-size:var(--text-caption);color:var(--color-iris);min-height:1em}
+.section__title{font-weight:var(--font-weight-light);font-size:var(--text-heading);color:var(--text-primary);margin-bottom:var(--space-12);text-align:center}
+.section__sub{font-size:var(--text-body);color:var(--text-secondary);text-align:center;max-width:60ch;margin:0 auto var(--space-40)}
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .6s ease,transform .6s ease}
+.reveal--visible{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}.radar__sweep{animation:none}}
+@media(prefers-reduced-transparency:reduce){.modal__backdrop{backdrop-filter:none;background:rgba(0,0,0,.8)}}
+@media(max-width:640px){.hero__illustration{max-width:280px}.step-card__number{width:56px;height:56px;font-size:var(--text-heading)}}
+@media(max-width:390px){.container{padding:0 var(--space-16)}.hero__ctas .btn{width:100%}}
+</style>
+</head>
+<body>
+<div class="announcement" role="region" aria-label="Announcement">
+  <span>VaultKey 2.0 is here, faster autofill, passkey support, and team vaults.</span>
+  <a href="#features" class="btn btn--ghost">Learn more</a>
+  <button class="announcement__close btn btn--ghost" aria-label="Dismiss announcement"><span class="ms">close</span></button>
+</div>
+<header class="nav">
+  <div class="container nav__inner">
+    <a href="#" class="nav__logo"><span class="ms">lock</span> VAULTKEY</a>
+    <nav class="nav__links" aria-label="Primary">
+      <a href="#features">Features</a><a href="#security">Security</a><a href="#pricing">Pricing</a><a href="#enterprise">Enterprise</a><a href="#resources">Resources</a>
+    </nav>
+    <div class="nav__actions">
+      <button class="btn btn--ghost">EN ▼</button>
+      <button class="btn btn--ghost">Log in</button>
+      <button class="btn btn--primary" data-loading>Start Free</button>
+      <button class="btn btn--secondary">Contact Sales</button>
+      <button id="theme-toggle" type="button" aria-pressed="true" aria-label="Switch to light mode"><span class="ms">light_mode</span></button>
+    </div>
+    <button class="nav__toggle" aria-expanded="false" aria-controls="nav-drawer" aria-label="Open menu"><span class="ms">menu</span></button>
+  </div>
+  <div class="nav__drawer" id="nav-drawer">
+    <div class="nav__drawer-panel">
+      <a href="#features">Features</a><a href="#security">Security</a><a href="#pricing">Pricing</a><a href="#enterprise">Enterprise</a><a href="#resources">Resources</a>
+      <button class="btn btn--primary">Start Free</button>
+      <button class="btn btn--secondary">Contact Sales</button>
+      <button id="theme-toggle-mobile" type="button" aria-pressed="true" aria-label="Switch to light mode"><span class="ms">light_mode</span></button>
+    </div>
+  </div>
+</header>
+<main>
+<section class="hero">
+  <div class="container hero__grid">
+    <div>
+      <p class="hero__eyebrow">Passkey-first security</p>
+      <h1 class="hero__headline"><span class="hero__headline--accent">Secure</span> every password instantly</h1>
+      <p class="hero__sub">VaultKey replaces fragile passwords with encrypted passkeys, biometric unlock, and zero-knowledge architecture.</p>
+      <div class="hero__ctas">
+        <button class="btn btn--primary" data-loading>Start Free Trial</button>
+        <button class="btn btn--secondary">Watch Demo (3 min)</button>
+      </div>
+    </div>
+    <div class="hero__illustration" aria-label="Abstract security radar visualization showing encrypted data flow">
+      <div class="radar">
+        <div class="radar__ring"></div><div class="radar__ring"></div><div class="radar__ring"></div><div class="radar__ring"></div>
+        <div class="radar__sweep"></div><div class="radar__core"></div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="section trust-strip">
+  <div class="container">
+    <p class="trust-strip__label">Trusted by security-first teams</p>
+    <div class="trust-strip__logos">
+      <span class="trust-strip__logo">ApexCloud</span><span class="trust-strip__logo">MeridianOps</span><span class="trust-strip__logo">NexusFlow</span><span class="trust-strip__logo">OrbitData</span><span class="trust-strip__logo">PulseSecurity</span><span class="trust-strip__logo">QuantumLeap</span><span class="trust-strip__logo">VertexAI</span>
+    </div>
+  </div>
+</section>
+<section class="section" id="features">
+  <div class="container">
+    <h2 class="section__title">Built for zero-trust teams</h2>
+    <p class="section__sub">Three pillars of passkey-first security.</p>
+    <div class="features__grid">
+      <article class="card feature-card"><div class="feature-card__icon"><span class="ms">key</span></div><h3 class="feature-card__title">Passkey-First Auth</h3><p class="feature-card__desc">Replace passwords with cryptographic passkeys synced across devices. Phishing-resistant by design.</p></article>
+      <article class="card feature-card"><div class="feature-card__icon"><span class="ms">shield</span></div><h3 class="feature-card__title">Zero-Knowledge Vault</h3><p class="feature-card__desc">Your data is encrypted locally before it ever leaves your device. We cannot see your secrets.</p></article>
+      <article class="card feature-card"><div class="feature-card__icon"><span class="ms">visibility</span></div><h3 class="feature-card__title">Team Vaults & Sharing</h3><p class="feature-card__desc">Share credentials without revealing them. Granular access controls, audit logs, instant revocation.</p></article>
+    </div>
+  </div>
+</section>
+<section class="section section--alt" id="how">
+  <div class="container">
+    <h2 class="section__title">How it works</h2>
+    <p class="section__sub">Three steps to passwordless.</p>
+    <div class="steps__grid">
+      <article class="card step-card"><div class="step-card__number">1</div><h3 class="step-card__title">Connect</h3><p class="step-card__desc">Install the browser extension or mobile app. Sign in with biometric or master password.</p></article>
+      <article class="card step-card"><div class="step-card__number">2</div><h3 class="step-card__title">Import</h3><p class="step-card__desc">One-click import from any manager or CSV. Detects duplicates and weak entries.</p></article>
+      <article class="card step-card"><div class="step-card__number">3</div><h3 class="step-card__title">Autofill Everywhere</h3><p class="step-card__desc">Log in to any site or app with a single tap across iOS, Android, Windows, macOS.</p></article>
+    </div>
+  </div>
+</section>
+<section class="section" id="testimonials">
+  <div class="container">
+    <h2 class="section__title">Loved by engineering teams</h2>
+    <p class="section__sub">Real stories from security-first companies.</p>
+    <div class="testimonials__wrap">
+      <div class="carousel" id="carousel">
+        <article class="card testimonial-card"><p class="testimonial-card__logo">ApexCloud</p><p class="testimonial-card__quote">"VaultKey cut our credential reset tickets by 84% in the first month."</p><div class="testimonial-card__author"><div class="testimonial-card__avatar">SC</div><div><div class="testimonial-card__name">Sarah Chen</div><div class="testimonial-card__role">VP Engineering</div></div></div></article>
+        <article class="card testimonial-card"><p class="testimonial-card__logo">MeridianOps</p><p class="testimonial-card__quote">"Finally a password manager that doesn't fight our developers."</p><div class="testimonial-card__author"><div class="testimonial-card__avatar">MW</div><div><div class="testimonial-card__name">Marcus Webb</div><div class="testimonial-card__role">Staff Engineer</div></div></div></article>
+        <article class="card testimonial-card"><p class="testimonial-card__logo">NexusFlow</p><p class="testimonial-card__quote">"Compliance audits used to take weeks. Now minutes."</p><div class="testimonial-card__author"><div class="testimonial-card__avatar">PP</div><div><div class="testimonial-card__name">Priya Patel</div><div class="testimonial-card__role">Security Lead</div></div></div></article>
+        <article class="card testimonial-card"><p class="testimonial-card__logo">OrbitData</p><p class="testimonial-card__quote">"Shared vaults eliminated our sticky-note problem."</p><div class="testimonial-card__author"><div class="testimonial-card__avatar">JO</div><div><div class="testimonial-card__name">James Okafor</div><div class="testimonial-card__role">IT Director</div></div></div></article>
+      </div>
+      <div class="carousel__controls">
+        <button class="btn btn--ghost" id="carousel-prev" aria-label="Previous"><span class="ms">chevron_left</span></button>
+        <div class="carousel__dots" id="carousel-dots"></div>
+        <button class="btn btn--ghost" id="carousel-next" aria-label="Next"><span class="ms">chevron_right</span></button>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="section section--alt" id="pricing">
+  <div class="container">
+    <h2 class="section__title">Simple, transparent pricing</h2>
+    <p class="section__sub">Free for personal. 14-day trial for teams.</p>
+    <div class="pricing__grid">
+      <article class="card pricing-card">
+        <h3 class="pricing-card__name">Personal</h3>
+        <div><span class="pricing-card__price">$0</span><span class="pricing-card__period"> /month</span></div>
+        <ul class="pricing-card__features">
+          <li class="pricing-card__feature"><span class="ms">check</span>Unlimited passwords</li>
+          <li class="pricing-card__feature"><span class="ms">check</span>Passkeys on 2 devices</li>
+          <li class="pricing-card__feature"><span class="ms">check</span>Biometric unlock</li>
+          <li class="pricing-card__feature"><span class="ms">check</span>Security dashboard</li>
+          <li class="pricing-card__feature"><span class="ms">check</span>2FA codes</li>
+          <li class="pricing-card__feature"><span class="ms">check</span>Email support</li>
+        </ul>
+        <button class="btn btn--primary">Get Started Free</button>
+      </article>
+      <article class="card pricing-card pricing-card--popular">
+        <span class="pricing-card__badge">Most Popular</span>
+        <h3 class="pricing-card__name">Teams</h3>
+        <div><span class="pricing-card__price">$4</span><span class="pricing-card__period"> /user/mo</span></div>
+        <ul class="pricing-card__features">
+          <li class="pricing-card__feature"><span class="ms">check</span>Everything in Personal</li>
+          <li class="pricing-card__feature"><span class="ms">check</span>Unlimited shared vaults</li>
+          <li class="pricing-card__feature"><span class="ms">check</span>Admin console</li>
+          <li class="pricing-card__feature"><span class="ms">check</span>Audit logs</li>
+          <li class="pricing-card__feature"><span class="ms">check</span>SSO (SAML/OIDC)</li>
+          <li class="pricing-card__feature"><span class="ms">check</span>Priority support</li>
+        </ul>
+        <button class="btn btn--primary">Start 14-Day Trial</button>
+      </article>
+      <article class="card pricing-card">
+        <h3 class="pricing-card__name">Enterprise</h3>
+        <div><span class="pricing-card__price">$8</span><span class="pricing-card__period"> /user/mo</span></div>
+        <ul class="pricing-card__features">
+          <li class="pricing-card__feature"><span class="ms">check</span>Everything in Teams</li>
+          <li class="pricing-card__feature"><span class="ms">check</span>SCIM provisioning</li>
+          <li class="pricing-card__feature"><span class="ms">check</span>SIEM integration</li>
+          <li class="pricing-card__feature"><span class="ms">check</span>Custom policies</li>
+          <li class="pricing-card__feature"><span class="ms">check</span>Dedicated success manager</li>
+          <li class="pricing-card__feature"><span class="ms">check</span>SLA & DPA</li>
+        </ul>
+        <button class="btn btn--secondary">Contact Sales</button>
+      </article>
+    </div>
+  </div>
+</section>
+<section class="section" id="faq">
+  <div class="container">
+    <h2 class="section__title">Frequently asked questions</h2>
+    <div class="faq__list">
+      <div class="accordion__item"><button class="accordion__trigger" aria-expanded="false">What makes VaultKey different? <span class="ms accordion__icon">expand_more</span></button><div class="accordion__content"><div class="accordion__panel">VaultKey is built on passkeys, not passwords. Zero-knowledge architecture means we cannot access your data.</div></div></div>
+      <div class="accordion__item"><button class="accordion__trigger" aria-expanded="false">Can I import from other managers? <span class="ms accordion__icon">expand_more</span></button><div class="accordion__content"><div class="accordion__panel">Yes. One-click importers for all major managers plus CSV/JSON. Flags weak entries.</div></div></div>
+      <div class="accordion__item"><button class="accordion__trigger" aria-expanded="false">How does sharing work? <span class="ms accordion__icon">expand_more</span></button><div class="accordion__content"><div class="accordion__panel">Recipients get a cryptographic token that autofills but never displays the secret.</div></div></div>
+      <div class="accordion__item"><button class="accordion__trigger" aria-expanded="false">Is VaultKey compliant? <span class="ms accordion__icon">expand_more</span></button><div class="accordion__content"><div class="accordion__panel">SOC 2 Type II certified, GDPR-ready, HIPAA BAA on Enterprise.</div></div></div>
+      <div class="accordion__item"><button class="accordion__trigger" aria-expanded="false">Lost device or master password? <span class="ms accordion__icon">expand_more</span></button><div class="accordion__content"><div class="accordion__panel">Recovery kit or admin-initiated reset. Personal accounts without kit cannot be recovered.</div></div></div>
+      <div class="accordion__item"><button class="accordion__trigger" aria-expanded="false">Non-profit or school discounts? <span class="ms accordion__icon">expand_more</span></button><div class="accordion__content"><div class="accordion__panel">Verified non-profits get 50% off Teams. Open-source maintainers get Personal free.</div></div></div>
+    </div>
+  </div>
+</section>
+<section class="cta-final section">
+  <div class="container">
+    <h2 class="cta-final__headline"><span class="cta-final__headline--accent">Ready</span> to kill passwords for good?</h2>
+    <p class="cta-final__sub">Join 10,000+ teams who've switched to passkey-first security.</p>
+    <div class="cta-final__ctas">
+      <button class="btn btn--primary">Start Free Trial</button>
+      <button class="btn btn--secondary">Contact Sales</button>
+    </div>
+  </div>
+</section>
+</main>
+<footer class="footer">
+  <div class="container footer__grid">
+    <div class="footer__brand">
+      <a href="#" class="nav__logo"><span class="ms">lock</span> VAULTKEY</a>
+      <p>VaultKey, Passkey-first password management for modern teams.</p>
+      <div class="footer__social">
+        <a href="#" aria-label="Twitter"><span class="ms">person</span></a>
+        <a href="#" aria-label="GitHub"><span class="ms">code</span></a>
+        <a href="#" aria-label="LinkedIn"><span class="ms">business</span></a>
+        <a href="#" aria-label="Mastodon"><span class="ms">globe</span></a>
+      </div>
+    </div>
+    <div class="footer__col"><h4>Product</h4><a href="#">Features</a><a href="#">Security</a><a href="#">Pricing</a><a href="#">Integrations</a></div>
+    <div class="footer__col"><h4>Company</h4><a href="#">About</a><a href="#">Blog</a><a href="#">Careers</a><a href="#">Contact</a></div>
+    <div class="footer__col"><h4>Legal</h4><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Security</a><a href="#">Cookies</a></div>
+  </div>
+  <div class="container footer__bottom">
+    <p>© 2026 VaultKey, Inc. All rights reserved.</p>
+    <div><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Security</a></div>
+  </div>
+</footer>
+<div class="chat-widget">
+  <div class="chat-widget__panel" id="chat-panel"><p>Hi! How can we help?</p><button class="btn btn--primary" id="open-chat-modal">Start chat</button></div>
+  <button class="chat-widget__toggle" id="chat-toggle"><span class="ms">chat</span> Chat</button>
+</div>
+<div class="modal" id="contact-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal__backdrop" data-close></div>
+  <div class="modal__content">
+    <button class="modal__close btn btn--ghost" data-close aria-label="Close modal"><span class="ms">close</span></button>
+    <h2 id="modal-title">Contact us</h2>
+    <div class="form-group"><label class="label" for="m-name">Name</label><input class="input" id="m-name" type="text" placeholder="Your name"></div>
+    <div class="form-group"><label class="label" for="m-email">Email</label><input class="input" id="m-email" type="email" placeholder="you@company.com"></div>
+    <div class="form-group"><label class="label" for="m-msg">Message</label><textarea class="input" id="m-msg" rows="4"></textarea></div>
+    <button class="btn btn--primary" style="width:100%">Send</button>
+  </div>
+</div>
+<script>
+(function(){
+  const html=document.documentElement;
+  function applyTheme(t){
+    html.classList.toggle('dark',t==='dark');
+    html.classList.toggle('light',t==='light');
+    const pressed=t==='dark';
+    document.querySelectorAll('#theme-toggle,#theme-toggle-mobile').forEach(b=>{
+      if(!b)return;
+      b.setAttribute('aria-pressed',pressed);
+      b.setAttribute('aria-label',pressed?'Switch to light mode':'Switch to dark mode');
+      const ic=b.querySelector('.ms'); if(ic) ic.textContent=pressed?'light_mode':'dark_mode';
+    });
+  }
+  const stored=localStorage.getItem('theme');
+  const prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;
+  applyTheme(stored||(prefersDark?'dark':'light'));
+  document.querySelectorAll('#theme-toggle,#theme-toggle-mobile').forEach(b=>b.addEventListener('click',()=>{
+    const isDark=html.classList.toggle('dark');
+    html.classList.toggle('light',!isDark);
+    localStorage.setItem('theme',isDark?'dark':'light');
+    applyTheme(isDark?'dark':'light');
+  }));
+  // mobile nav
+  const toggle=document.querySelector('.nav__toggle');
+  const drawer=document.getElementById('nav-drawer');
+  toggle.addEventListener('click',()=>{
+    const open=drawer.classList.toggle('nav__drawer--open');
+    toggle.setAttribute('aria-expanded',open);
+    toggle.querySelector('.ms').textContent=open?'close':'menu';
+  });
+  drawer.addEventListener('click',e=>{if(e.target===drawer||e.target.tagName==='A'){drawer.classList.remove('nav__drawer--open');toggle.setAttribute('aria-expanded','false');toggle.querySelector('.ms').textContent='menu';}});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){drawer.classList.remove('nav__drawer--open');toggle.setAttribute('aria-expanded','false');toggle.querySelector('.ms').textContent='menu';}});
+  // announcement close
+  document.querySelector('.announcement__close').addEventListener('click',e=>{e.target.closest('.announcement').hidden=true;});
+  // accordion
+  document.querySelectorAll('.accordion__trigger').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const item=btn.parentElement;
+      const content=item.querySelector('.accordion__content');
+      const open=btn.getAttribute('aria-expanded')==='true';
+      document.querySelectorAll('.accordion__trigger').forEach(b=>{b.setAttribute('aria-expanded','false');b.parentElement.querySelector('.accordion__content').classList.remove('accordion__content--open');});
+      if(!open){btn.setAttribute('aria-expanded','true');content.classList.add('accordion__content--open');}
+    });
+  });
+  // carousel
+  const carousel=document.getElementById('carousel');
+  const items=carousel?carousel.children.length:0;
+  let idx=0,perView=window.innerWidth>=768?2:1;
+  const dots=document.getElementById('carousel-dots');
+  function renderDots(){if(!dots)return;dots.innerHTML='';const pages=Math.ceil(items/perView);for(let i=0;i<pages;i++){const d=document.createElement('button');d.className='carousel__dot'+(i===0?' carousel__dot--active':'');d.setAttribute('aria-label','Page '+(i+1));d.addEventListener('click',()=>{idx=i;update();});dots.appendChild(d);}}
+  function update(){if(!carousel)return;const pages=Math.ceil(items/perView);idx=Math.max(0,Math.min(idx,pages-1));carousel.style.transform='translateX(-'+(idx*100)+'%)';dots.querySelectorAll('.carousel__dot').forEach((d,i)=>d.classList.toggle('carousel__dot--active',i===idx));}
+  renderDots();update();
+  document.getElementById('carousel-prev')?.addEventListener('click',()=>{idx--;update();});
+  document.getElementById('carousel-next')?.addEventListener('click',()=>{idx++;update();});
+  let auto=setInterval(()=>{idx++;if(idx>=Math.ceil(items/perView))idx=0;update();},6000);
+  carousel?.addEventListener('mouseenter',()=>clearInterval(auto));
+  // chat widget
+  const chatToggle=document.getElementById('chat-toggle');
+  const chatPanel=document.getElementById('chat-panel');
+  chatToggle.addEventListener('click',()=>chatPanel.classList.toggle('chat-widget__panel--open'));
+  document.getElementById('open-chat-modal')?.addEventListener('click',()=>{document.getElementById('contact-modal').classList.add('modal--open');chatPanel.classList.remove('chat-widget__panel--open');});
+  document.querySelectorAll('[data-close]').forEach(el=>el.addEventListener('click',()=>document.getElementById('contact-modal').classList.remove('modal--open')));
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('contact-modal').classList.remove('modal--open');});
+  // loading buttons
+  document.querySelectorAll('.btn[data-loading]').forEach(b=>b.addEventListener('click',()=>{b.classList.add('btn--loading');setTimeout(()=>b.classList.remove('btn--loading'),2000);}));
+  // reveal
+  const io=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('reveal--visible');});},{threshold:.1});
+  document.querySelectorAll('section').forEach(s=>{s.classList.add('reveal');io.observe(s);});
+})();
+</script>
+</body>
+</html>
