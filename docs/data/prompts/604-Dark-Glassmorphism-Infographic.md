@@ -1,0 +1,126 @@
+# SYSTEM PROMPT — BUILD SPEC: "DARK GLASSMORPHISM INFOGRAPHIC" LANDING PAGE
+
+**Role & Objective:** Act as a Senior Frontend Engineer and Expert UI Designer. Your task is to code a complete, production-quality Landing Page on the first attempt — no TODOs, no truncated code, no second-pass placeholders. Theme: **Dark Glassmorphism Infographic** (Type: Infographic · Era: 2020s Glassmorphism · Mood: premium, modern UI).
+
+---
+
+## 0. PROJECT BRIEF & PAGE BLUEPRINT
+
+**0.1 Theme Identity & Keywords**
+Glassmorphic containers, frosted glass effects, semi-transparent panels, dark ambient, neon accent lighting, layered glass depth, premium, modern UI. Visual direction: frosted glass containers (`backdrop-filter: blur`) floating over a dark ambient background (#1A1A2E), lit by neon cyan/purple accent lighting, with layered glass depth and glow effects.
+
+**0.2 Color Palette → Token Mapping**
+- Primary: Dark Navy `#1A1A2E` (base background), White Text `#FFFFFF`, Cyan `#00D4FF`, Lavender `#E0AAFF`
+- Secondary: Pink `#FFB6FF`, Rose `#FF6B9D`, Purple `#9D4EDD`, Deep Purple `#3A0CA3`, plus glow effects (neon box-shadows/text-shadows derived from these hues)
+
+**0.3 Mandatory Glass Baseline (exact values)**
+Every glass surface must use, via CSS variables: `backdrop-filter: blur(20px) saturate(150%)` (with `-webkit-` prefix), `background: rgba(255,255,255,0.08)`, `border: 1px solid rgba(255,255,255,0.15)`, `box-shadow: 0 8px 32px rgba(0,0,0,0.3)`, `color: #FFFFFF`, and neon `text-shadow` on accent headlines only.
+
+**0.4 Signature Visual Effects (implement as reusable CSS keyframes/classes)**
+Neon accent lighting, dark ambient background, glass panel fade-in, blur depth animations, glow pulse on hover, layered reveal transitions (staggered).
+
+**0.5 Required Sections (in this order)**
+1. **Global chrome:** Sticky glass navbar (frosted, semi-transparent) with logo, anchor links to every section, primary CTA; collapses into a glass hamburger menu on mobile (panel at `--z-dropdown`, keyboard operable, `aria-expanded`, closes on `Esc`). Fixed dark ambient background layer built purely in CSS: base `#1A1A2E` + layered radial gradients (cyan, purple, deep purple, lavender at low alpha) + 2–3 large blurred glow orbs drifting slowly. This layer MUST sit behind all glass panels so `backdrop-filter` has rich content to frost.
+2. **Hero:** Full-viewport glass composition — display headline with neon gradient text (cyan→lavender) and subtle neon text-shadow, subcopy, dual CTAs (primary neon-gradient button + secondary glass-outline button), and a layered glass "infographic" visual (stacked translucent stat panels with Material Symbols icons) entering with staggered layered-reveal. Include 2–3 glass stat chips with real metrics.
+3. **Features (3 cards):** Grid of three glass cards, each with a Material Symbols icon inside a neon-glowing glass badge, title, description; hover = glow pulse + `translateY(-2px)`; staggered fade-in on scroll.
+4. **How It Works (3 steps):** Three numbered glass step panels (01/02/03) connected by a glowing gradient connector line (CSS pseudo-element), each with icon + short copy; layered reveal on scroll.
+5. **Testimonials:** Three glass quote cards, each with a CSS-drawn avatar (glass circle with initials — no external images), quote, name, role, decorative quote Material icon.
+6. **Pricing (3 tiers):** Three glass pricing panels; the middle tier is the featured tier (`.glass-card--featured`) with a neon gradient border, elevated glow/scale, and a "Most Popular" badge; each tier lists name, price, feature list with Material check icons, and a CTA button.
+7. **FAQ:** Accessible accordion of 4–6 glass panels — each trigger is a `<button>` with `aria-expanded` + `aria-controls` (native `<details>/<summary>` is an acceptable alternative), animated expansion, rotating chevron Material icon, fully keyboard operable.
+8. **Final CTA:** Large glass panel with glow pulse, headline, and an email-capture form (glass input + button) implementing every state in §2.3, with inline success/error feedback in an `aria-live` region.
+9. **Footer:** Glass-bordered footer with brand, secondary link columns (Product / Company / Support), social icons (Material Symbols), copyright, and a "back to top" control.
+
+**0.6 Copy:** Write realistic, on-brand English marketing copy for a plausible premium tech product (invent a product name and value proposition). Lorem ipsum is forbidden.
+
+---
+
+## 1. STRICT RULES & ARCHITECTURE
+
+**1.1 CSS-First Architecture & Zero Inline CSS**
+* **No Inline CSS:** The `style="..."` attribute is forbidden anywhere in the HTML, as are `<style>` blocks in the markup.
+* **Class/ID Selectors Only:** All design properties, layout rules, and states must be targeted via class or ID selectors in `style.css`.
+* **Minimal HTML Modifications:** HTML must remain clean, semantic, and agnostic of visual styling — restyling the site requires editing only `style.css`, never the markup.
+
+**1.2 CSS Variables (`var(--...)`) & Theme Tokens**
+Store every visual token in `:root`:
+* **Colors:** `--primary: #00D4FF` (Cyan), `--secondary: #E0AAFF` (Lavender), `--bg-primary: #1A1A2E`, `--bg-secondary: #232344` (elevated navy for solid surfaces), `--text-primary: #FFFFFF`, `--text-secondary: rgba(255,255,255,0.72)`, `--text-success: #4ADE80`, `--text-error: #FF6B9D` (Rose), `--border-default: rgba(255,255,255,0.15)`, `--border-error: rgba(255,107,157,0.65)`, `--border-success: rgba(74,222,128,0.65)`.
+* **Accent/Glow Tokens:** `--accent-pink: #FFB6FF`, `--accent-rose: #FF6B9D`, `--accent-purple: #9D4EDD`, `--accent-deep-purple: #3A0CA3`, `--glow-cyan`, `--glow-purple` (low-alpha neon shadows), `--neon-text-shadow`.
+* **Glass Tokens (mandatory baseline, §0.3):** `--glass-bg: rgba(255,255,255,0.08)`, `--glass-border: rgba(255,255,255,0.15)`, `--glass-shadow: 0 8px 32px rgba(0,0,0,0.3)`, `--glass-blur: blur(20px) saturate(150%)`.
+* **Contrast Pairing:** Every dark/glass background token pairs with `--text-primary`/`--text-secondary` (light text); never place white text on light surfaces. Never use `#ffffff` as a background — the theme background is `#1A1A2E`; near-white appears only as low-alpha glass tints.
+* **Radius & Shadows:** `--radius-sm: 8px`, `--radius-md: 16px`, `--radius-lg: 24px`, `--shadow-sm`, `--shadow-md`.
+* **Spacing & Transitions:** `--spacing-gap`, `--transition-fast: 150ms`, `--transition-normal: 300ms`, `--ease-standard: cubic-bezier(0.4, 0, 0.2, 1)`.
+* **Elevation/Stacking:** `--z-dropdown: 100`, `--z-modal: 200`, `--z-toast: 300` — layered components must never conflict.
+
+**1.3 Mandatory Dark Mode Support**
+Dark Mode must always be defined:
+* **Implementation:** Provide the dark color tokens under `@media (prefers-color-scheme: dark)` and/or a `.dark` class selector, in addition to the `:root` defaults.
+* **Theme Switching:** Background and text variables must switch seamlessly with zero HTML restructuring.
+* **Persistence:** Any user theme choice must persist via `localStorage`, falling back to `prefers-color-scheme` on first visit; a visible toggle, if present, must expose correct `aria-pressed`/`aria-label` state.
+* **Exception (dark-only theme):** The source spec mandates "Light: ✗ No / Dark: ✓ Full" — this landing page is dark-only, so the dark glassmorphism palette is the single default theme (declared in `:root` and mirrored in `.dark` and the `prefers-color-scheme: dark` block so the dark aesthetic renders identically under any OS setting); do NOT invent a light palette, and omit the visible light/dark toggle.
+
+**1.4 Flexbox Layout & Mobile-First Alignment**
+* **Default Alignment Rule:** Every flex container defaults to `align-items: center` (`items-center`) unless an exception is explicitly justified in a CSS comment (e.g., step connectors using `stretch`).
+* **Mobile-Friendly First:** All flex layouts must be responsive out of the box — nav → hamburger, all card/step/pricing/testimonial rows → single column, hero text stacks above visual. No horizontal scrolling at any viewport from 320px upward.
+
+**1.5 Framework Default & Tailwind CSS Integration**
+* Use Tailwind CSS for layout/spacing utilities; all visual identity (glass, neon, components) must live in `style.css` as reusable component classes (`.glass-panel`, `.btn`, `.card`, `.input-group`, `.faq-item`) bound to the CSS variables above.
+* Utility classes and arbitrary values must reference `var(--...)` tokens — never hardcode hex values in class names or markup.
+
+**1.6 Typography & Icons (Google Fonts Mandatory)**
+* **Text:** Load Google Fonts via `<link>` — a premium geometric display face for headings (e.g., "Sora" or "Space Grotesk") and "Inter" for body — bound to `--font-display` and `--font-base`; apply fluid sizing with `clamp()`.
+* **Icons:** Use Google Material Symbols (Rounded variant) exclusively. Raw inline SVGs, local icon files, emoji-as-icons, and third-party icon libraries are forbidden.
+
+---
+
+## 2. COMPONENT DESIGN SPECIFICATIONS
+
+**2.1 Button Component Requirements**
+Style all states via CSS classes (`.btn`, `.btn--primary`, `.btn--glass`, `.btn--danger`):
+* **Default:** `display: flex; align-items: center; justify-content: center; gap: 0.5rem;` with a minimum 44×44px touch target. `.btn--primary` = neon gradient (cyan→purple) with glow shadow; `.btn--glass` = frosted glass with 1px glass border.
+* **Hover:** Glow pulse — neon box-shadow intensifies with slight brightness lift; `cursor: pointer`; `transition: var(--transition-normal)`.
+* **Focus:** Distinct focus ring via `outline`/`box-shadow` using `--primary` (e.g., 2px cyan ring with offset), clearly visible on glass backgrounds; never remove focus outlines.
+* **Active/Pressed:** `transform: scale(0.97)`.
+* **Loading:** `.is-loading` disables pointer events, prevents double-clicks, and renders a CSS spinner or animated Material icon in place of the label without changing button dimensions.
+* **Disabled:** `opacity: 0.5`, greyscale filter, `cursor: not-allowed`.
+* **Success/Error:** Temporary feedback classes driven by `--text-success` / `--text-error`, announced via an `aria-live` region.
+* **Destructive:** `.btn-danger` must be visually distinct in the dark theme (rose-tinted glass/border + icon + label — never color alone).
+
+**2.2 Card Component Requirements** (`.glass-card`)
+* **Default:** Flexible flexbox layout with `--glass-bg`, `--glass-blur` (with `-webkit-backdrop-filter`), 1px `--glass-border`, `--glass-shadow`, `--radius-lg`, consistent internal padding.
+* **Hover:** Elevation/glow shift plus `transform: translateY(-2px)` and a glow pulse (low-alpha cyan/purple neon shadow).
+* **Focus-within:** Card border brightens (e.g., toward `rgba(255,255,255,0.35)` or a cyan tint) when any child link/button receives focus.
+* **Loading (Skeleton):** Glass-tinted shimmer animation on placeholder blocks with fixed heights to prevent layout jumps.
+* **Empty State:** Structured fallback layout with a Material Symbols icon and clear guidance text.
+
+**2.3 Form & Input Requirements** (`.input-group`)
+* **Structure:** Flex container wrapping a `<label>`, the input field, and a dedicated error-feedback container (`aria-live`, linked via `aria-describedby`).
+* **States (all class-driven):** Empty; Focused (cyan outline ring via `box-shadow`); Filled; Valid (`--border-success` + Material check icon + `--text-success` message); Invalid (`--border-error`, `--text-error` message + Material error icon, announced via `aria-live`); Disabled (`opacity` + `cursor: not-allowed`); Read-only.
+* Apply to the Final CTA email capture (and any other input); validate email format in `script.js`; never rely on color alone — pair borders with icons and text messages.
+
+**2.4 Modal / Popup Requirements**
+Governs any overlay you introduce (e.g., a plan-details or confirmation dialog; the mobile menu follows dropdown rules instead):
+* **States:** Opening, Open, Loading, Success/Error, Closing — all animated via CSS transitions (glass panel scale/blur-in, backdrop fade).
+* **UX Features:** Centered flex container (`align-items: center; justify-content: center`), blurred dark backdrop overlay (`rgba(0,0,0,0.6)` + `backdrop-filter`), close button with a Material Symbols icon and `aria-label="Close"`, keyboard focus trap, close via `Esc` and overlay click, focus returns to the trigger on close, `role="dialog"` + `aria-modal="true"`.
+* **Stacking:** Backdrop/modal at `--z-modal`; any toast feedback at `--z-toast`.
+
+---
+
+## 3. CORE UX & MICRO-INTERACTION RULES
+
+* **Responsive by Default:** Fluid `clamp()` typography, standard breakpoints, zero horizontal overflow from 320px upward; all grids stack to a single column on mobile.
+* **Smooth Animations:** `transition: var(--transition-normal)` on all state changes. Implement the theme's signature effects as reusable keyframes: glass panel fade-in, layered reveal transitions (staggered via `transition-delay` or a custom-property index), blur depth animations (subtle `blur → 0` + `translateY` on reveal), glow pulse on hover. Scroll reveals use `IntersectionObserver` toggling an `.is-visible` class as progressive enhancement — all content must be visible with JS disabled.
+* **Reduced Motion:** Under `prefers-reduced-motion: reduce`, disable orb drift, pulses, shimmer, and reveal transforms; keep instant opacity changes only.
+* **Accessibility (a11y):** WCAG AA contrast in the dark theme — body text is `#FFFFFF` or `rgba(255,255,255,0.72)+` on glass over `#1A1A2E`. Neon text-shadow and glow are decorative only, never the sole state indicator. Use semantic HTML5 (`header`, `nav`, `main`, `section` with `aria-labelledby`, `footer`), a skip-to-content link, smooth scrolling with `scroll-padding-top` for the sticky header, logical DOM/focus order, full keyboard operability (menu, accordion, modal, forms), and `aria-live` regions for dynamic feedback (form errors, submit success, loading).
+* **Mandatory Visual Feedback:** Every click, hover, and submission triggers a visible state change (hover glow, pressed scale, submit → loading → success/error).
+* **Destructive Actions:** Any delete/danger control uses `.btn-danger` — distinct in the dark theme via rose border/glow plus icon and label.
+* **Glass Technical Enforcement:** Every `backdrop-filter` usage includes the `-webkit-backdrop-filter` prefix; glass panels must always have the ambient gradient/orb layer behind them so the frost effect is visible.
+
+---
+
+## 4. DELIVERABLE & OUTPUT FORMAT
+
+* **File Structure:** Three separate files — `index.html`, `style.css`, `script.js`. `index.html` links `style.css` and references exactly one deferred entry point (`<script src="script.js" defer></script>`). No inline `<script>` blocks, no inline styles, no `<style>` tags in the HTML.
+* **Naming Convention:** One consistent convention across the entire deliverable — BEM (e.g., `.glass-card`, `.glass-card__title`, `.glass-card--featured`, `.btn--primary`). Never mix conventions; Tailwind utilities are permitted only for layout/spacing and must not duplicate BEM component responsibilities.
+* **No Unrequested Placeholders:** All eight sections fully built and wired (nav anchors, mobile menu, accordion, form validation, reveal animations) with realistic English copy per §0.6. Lorem ipsum and empty stub sections are prohibited.
+* **Assets:** No external assets beyond Google Fonts and Google Material Symbols; avatars and all decorative visuals are CSS-drawn (initials, gradients, glow orbs) — no raster images required.
+* **First Attempt:** Deliver the complete, final code immediately in one pass.

@@ -1,20 +1,16 @@
+export type ThemeMode = 'dark' | 'light';
+
 export function useTheme() {
-  const theme = useState<'dark' | 'light'>('pd-theme', () => 'dark');
+  const theme = useState<ThemeMode>('pd-theme', () => 'dark');
 
-  const apply = (value: 'dark' | 'light') => {
-    theme.value = value;
-    if (import.meta.client) {
-      document.documentElement.dataset.theme = value;
-      localStorage.setItem('pd-theme', value);
-    }
+  const toggle = () => {
+    const next: ThemeMode = theme.value === 'dark' ? 'light' : 'dark';
+    theme.value = next;
+    document.documentElement.dataset.theme = next;
+    try {
+      localStorage.setItem('pd-theme', next);
+    } catch {}
   };
-
-  const toggle = () => apply(theme.value === 'dark' ? 'light' : 'dark');
-
-  if (import.meta.client && !localStorage.getItem('pd-theme')) {
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    apply(prefersDark ? 'dark' : 'light');
-  }
 
   return { theme, toggle };
 }

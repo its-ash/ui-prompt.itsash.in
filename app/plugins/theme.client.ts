@@ -1,9 +1,12 @@
-import { defineNuxtPlugin } from 'nuxt/app';
+import type { ThemeMode } from '~/composables/useTheme';
 
 export default defineNuxtPlugin(() => {
-  if (import.meta.server) return;
-  const stored = localStorage.getItem('pd-theme');
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const theme = stored ?? (prefersDark ? 'dark' : 'light');
-  document.documentElement.dataset.theme = theme;
+  const theme = useState<ThemeMode>('pd-theme', () => 'dark');
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  const read = () => {
+    const set = document.documentElement.dataset.theme;
+    theme.value = set === 'light' || set === 'dark' ? set : mq.matches ? 'dark' : 'light';
+  };
+  read();
+  mq.addEventListener('change', read);
 });

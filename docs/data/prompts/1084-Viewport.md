@@ -1,0 +1,169 @@
+# Coding AI Prompt: Build a Complete Landing Page — "Viewport" Theme
+
+## 1. Project Overview
+Build a complete, responsive landing page using the "Viewport" visual style. The page must include: Hero, Features (3 cards), How It Works (3 steps), Testimonials, Pricing (3 tiers), FAQ, Final CTA, and Footer with secondary links. Invent a fictional brand name, product, and all copy — never use the real brand name "Viewport", its logo, trademarks, or product names. All user-facing copy must be in English.
+
+## 2. Strict Architecture Rules
+
+### 2.1 CSS-First Architecture & Zero Inline CSS
+- Keep all styling strictly inside `style.css`. No `style="..."` attributes in HTML. Target all design properties via class/ID selectors only. HTML must remain clean, semantic, and styling-agnostic.
+
+### 2.2 CSS Variables & Theme Tokens
+Store all visual tokens inside `:root` using CSS variables. Required tokens include:
+- Colors: `--primary`, `--secondary`, `--bg-primary`, `--bg-secondary`, `--text-primary`, `--text-secondary`, `--text-success`, `--text-error`, `--border-default`, `--border-error`, `--border-success`.
+- Contrast pairing: light backgrounds pair with dark text; dark backgrounds pair with light text — enforce for every theme.
+- Light mode background: do not default to pure white; use `#fefefe` where near-white is needed. For this theme, canvas is `#ffffff` per spec but `#fefefe` is acceptable where a near-white is required.
+- Border radius & shadows: `--radius-sm`, `--radius-md`, `--radius-lg`, `--shadow-sm`, `--shadow-md`.
+- Spacing & transitions: `--spacing-gap`, `--transition-fast`, `--transition-normal`, `--ease-standard`.
+- Elevation/stacking: `--z-dropdown`, `--z-modal`, `--z-toast`.
+
+Theme-specific tokens (map from spec):
+- `--color-indigo-voltage`: `linear-gradient(0deg, rgb(0,202,242) 0%, rgb(77,77,255) 100%)` — primary CTA fill only.
+- `--color-mint-whisper`: `radial-gradient(102% 82% at 50% 107.7%, rgba(0,202,242,0.3) 0%, rgb(241,243,245) 100%)` — signature section surface.
+- `--color-cyan-pulse`: `#00caf2`
+- `--color-cyan-mist`: `#66dff7`
+- `--color-ink-black`: `#000000`
+- `--color-paper-white`: `#ffffff`
+- `--color-fog-veil`: `#f8f9fa`
+- `--color-ash-border`: `#c8c9cf`
+- `--color-graphite-depth`: `#333333`
+- `--color-steel-caption`: `#7f8087`
+- `--color-haze-card`: `#e3e6ec`
+- `--color-mint-surface`: `#c5fbee`
+- `--color-indigo-accent`: `#4d4dff`
+- `--color-danger`: `#ff4d4d`
+
+### 2.3 Mandatory Dark Mode Support
+- Provide dark mode color tokens under `@media (prefers-color-scheme: dark)` and/or a `.dark` class selector.
+- Background and text CSS variables must switch seamlessly without HTML restructuring.
+- Persist user theme choice via `localStorage`, falling back to `prefers-color-scheme` on first visit. Include a visible toggle control with correct `aria-pressed`/`aria-label` state.
+
+Note: The spec says "don't use dark mode patterns — canvas is always white." However, the mandatory dark mode rule from the meta-prompt takes precedence. Add an explicit exception clause: provide a functional dark mode that re-themes tokens (e.g., dark canvas, light text) while keeping the light mode as the default aesthetic described in the spec.
+
+### 2.4 Flexbox Layout & Mobile-First Alignment
+- Build all layouts with Flexbox. Every flex container must default to `align-items: center` unless explicitly justified otherwise.
+- Mobile-responsive out of the box: convert rows to columns on small viewports. Prevent horizontal scrolling.
+
+### 2.5 Framework Default & Tailwind CSS Integration
+- Use Tailwind CSS (or clean custom CSS driven by Tailwind's `@layer`/`@apply`) unless another framework is requested. Utility classes must map back to CSS variables or generic reusable class names (`.btn`, `.card`, `.input-group`).
+
+### 2.6 Typography & Icons (Google Fonts Mandatory)
+- Use Google Fonts for text and icons. Include `<link>` or `@import` tags. Bind fonts to `--font-base`.
+- Text: Manrope (substitute for HK Sentiments) for display headings; Inter (substitute for Silka) for body/UI; Inter Italic for accent italic.
+- Icons: Google Material Symbols/Icons. Forbid raw inline SVGs or local icon files.
+
+## 3. Component Design Specifications
+
+### 3.1 Button Component
+- Default: flex layout (`display: flex; align-items: center; justify-content: center; gap: 0.5rem;`), min touch target 44x44px.
+- Hover: visual shift (brightness/shadow) with `cursor: pointer`.
+- Focus: distinct focus ring using CSS variables.
+- Active/Pressed: `transform: scale(0.97)`.
+- Loading: disables interactions, prevents double-clicks, renders CSS spinner or animated Google Icon without distorting dimensions.
+- Disabled: `opacity: 0.5`, greyscale, `cursor: not-allowed`.
+- Success/Error: temporary feedback styles driven by `--text-success`/`--text-error`.
+
+Variants:
+- Primary CTA: vertical gradient `#00caf2` → `#4d4dff`, white text, Silka Medium 16px, 12px radius, padding 12px 24px, no border, shadow `rgba(0,0,0,0.25) 0 8px 16px`. One per section max.
+- Outlined Sign-In: transparent fill, 1px solid `#000000` border, 12px radius, Silka Medium 14px `#000000`, padding 8px 16px.
+- Ghost Link: Silka Regular 14px `#7f8087`, 1px dotted underline `#7f8087`, hover adds cyan glow ring `rgba(0,202,242,0.6) 0 4px 12px`.
+
+### 3.2 Card Component
+- Default: flexible flexbox layout, subtle borders and elevation using `--bg-secondary` and CSS variables.
+- Hover: elevation/shadow shift or `transform: translateY(-2px)`.
+- Focus-within: highlight card borders when child link/button receives focus.
+- Loading (Skeleton): shimmer animation in CSS to prevent layout jumps.
+- Empty State: structured fallback with Google Icon and guidance text.
+
+Variants:
+- Before/After Comparison Card: 16px radius, `#f8f9fa` fill, 24px padding, 40px circular status badge (red `#ff4d4d` X or indigo `#4d4dff` check) floating 8px above card center, product screenshot inside, Silka Regular 14px `#333333` caption below.
+- Product Screenshot Frame: white card, 16px radius, 1px hairline border `#c8c9cf`, inner padding 0 (image bleeds), shadow `rgba(0,0,0,0.1) 0 15px 20px -5px`. Centered inside Mint Feature Panel.
+- Brand Showcase Carousel Card: wide card, multi-image grid, 20px radius, layered over cyan radial wash background. Labeled sub-panels in white with 12px radius and small captions.
+- Mint Feature Panel: full-bleed `#c5fbee` background, 64px vertical padding, centered product screenshot framed inside white card 16px radius with soft drop shadow.
+
+### 3.3 Form & Input Requirements
+- States: Empty, Focused (outline ring), Filled, Valid (success border/icon), Invalid (error border, red text, error icon), Disabled, Read-only.
+- Structure: flex container wrapping label, input field, dedicated error feedback container.
+
+### 3.4 Modal / Popup Requirements
+- States: Opening, Open, Loading, Success/Error, Closing (all animated via CSS transitions).
+- UX: centered flex container (`align-items: center`), backdrop overlay, Google Icon close button, keyboard focus trapping, close via Esc or overlay click.
+
+### 3.5 Section Tag Pill
+- 100px pill radius, `#e3e6ec` background, uppercase Silka SemiBold 12px `#4d4dff`, padding 6px 14px.
+
+### 3.6 Top Navigation Bar
+- White background, no border, 64px height, flex row: logo left, links centered (Silka Medium 14px `#333333`), CTA pair right-aligned. Sticky.
+
+### 3.7 Footer Link Group
+- Stacked Silka Regular 14px links `#7f8087`, 10px row gap, 24px column gap between groups. Group headings Silka SemiBold 12px uppercase `#333333`.
+
+### 3.8 Section Heading Block
+- Centered stack: HK Sentiments Bold (Manrope 700) 28-32px `#000000` with -0.476 to -0.576px letter-spacing. Optional one-line subtitle Silka Regular (Inter) 18px `#7f8087`. 16px vertical rhythm between lines.
+
+### 3.9 Status Icon Badge
+- 40px circle, solid fill `#4d4dff` (positive) or warm red (negative), white icon centered, 8px gap above card.
+
+## 4. Core UX & Micro-Interaction Rules
+- Responsive by default: fluid sizing, responsive breakpoints, no horizontal overflow.
+- Smooth animations: CSS transitions on all state changes (`transition: var(--transition-normal)`), respecting `prefers-reduced-motion`.
+- Accessibility: sufficient contrast in both light and dark modes. Never rely solely on color for state. Semantic HTML5, correct ARIA roles/labels, logical DOM/focus order, full keyboard operability, `aria-live` regions for dynamic feedback.
+- Mandatory visual feedback on every click/hover/submission.
+- Destructive actions visually distinct in both themes.
+
+## 5. Deliverables
+- File structure: separate `index.html`, `style.css`, `script.js`. No inline `<script>` blocks beyond a single deferred entry-point reference.
+- Naming convention: enforce one consistent convention (BEM) across the entire deliverable — never mix conventions.
+- No unrequested placeholders: prohibit lorem-ipsum-only submissions where real copy/labels are supplied; placeholders only where content was genuinely unspecified.
+
+## 6. Page Structure & Layout
+- Max-width 1200px centered, fixed top nav.
+- Hero: centered single-column stack — eyebrow-style headline HK Sentiments Bold 32px, one-sentence subtitle Silka Regular 18px `#7f8087`, gradient CTA, then two-column comparison row with 24px gap.
+- Sections alternate between white canvas and Mint Whisper (`#c5fbee`) full-bleed bands, separated by 64px vertical padding.
+- Each feature section: optional tag pill, centered heading block, then single wide product frame or 2-3 column grid of product previews.
+- Navigation: minimal sticky top bar — no sidebar, no mega-menu.
+- Content density low; each section claims full viewport-width with generous breathing room.
+
+## 7. Typography Scale (map to CSS variables)
+- caption: 12px, line-height 1.2, letter-spacing 0
+- body-sm: 14px, line-height 1.2, letter-spacing -0.144px
+- body: 16px, line-height 1.3, letter-spacing -0.176px
+- subheading: 18px, line-height 1.2, letter-spacing -0.198px
+- heading-sm: 24px, line-height 1.2, letter-spacing -0.144px
+- heading: 28px, line-height 1.2, letter-spacing -0.476px
+- display: 32px, line-height 1.1, letter-spacing -0.576px
+
+## 8. Spacing & Shapes
+- Base unit: 4px. Density: comfortable.
+- Spacing scale: 8, 12, 16, 20, 24, 32, 40, 60, 72, 80, 100, 120 (px).
+- Border radius: tags 100px, cards 16px, inputs 8px, buttons 12px, featureFrames 20px.
+- Shadows: md `rgba(0,202,242,0.6) 0px 4px 12px 0px` (cyan link glow); md-2 `rgba(0,0,0,0.25) 0px 8px 16px 0px` (CTA); lg `rgba(0,0,0,0.1) 0px 15px 20px -5px` (product frames).
+- Page max-width: 1200px. Section gap: 64px. Card padding: 24px. Element gap: 12px.
+
+## 9. Do's and Don'ts
+Do:
+- Use cyan→indigo vertical gradient only on the single highest-priority CTA per section; never on cards, nav, or secondary buttons.
+- Reserve `#c5fbee` Mint Whisper for full-bleed feature panels behind product screenshots; never as small accent or badge fill.
+- Set hero/section headings in Manrope 700 28-32px with -0.476 to -0.576px letter-spacing.
+- Apply 16px radius to all cards, 12px to all buttons, 100px to all tags/pills.
+- Use 1px solid `#000000` or `#c8c9cf` for hairline borders; never thicker decorative borders.
+- Center every section's heading block (tag pill + title + optional subtitle); let product screenshots do the visual work below.
+- Pull Inter tracking to -0.036em on SemiBold 14-16px.
+
+Don't:
+- Don't introduce new saturated colors — chromatic system is exactly two: indigo `#4d4dff` and mint `#c5fbee`, connected by cyan in the gradient.
+- Don't use `#c5fbee` on a white card as hover state or chip fill; it is surface-level only.
+- Don't apply shadows to text, nav, or tags; elevation only on product frames, comparison cards, and gradient CTA.
+- Don't switch to serif or display script for headings — Manrope 700 is the only display voice; tracking stays negative at every size.
+- Don't stack multiple feature blocks per section; one headline, one product frame, one breath of space.
+- Don't substitute the cyan→indigo gradient with flat `#4d4dff` fill on the hero CTA.
+- Don't use real brand name "Viewport", its logo, trademarks, or product names — invent a fictional brand.
+
+## 10. Imagery
+- Product screenshots dominate: real UI captures presented as floating white cards on mint surface with hairline borders and soft shadows. No gradients or color overlays on screenshots.
+- No lifestyle photography, no people, no hero illustration — the product IS the hero.
+- Icons minimal and outlined, using `#4d4dff` or `#000000` matching surrounding text.
+- Decorative graphics limited to cyan radial wash behind brand showcase carousel.
+
+## 11. Output
+Output only the three files: `index.html`, `style.css`, `script.js`. No preamble, no closing commentary. Ensure all rules above are enforced. Use BEM naming convention consistently. All copy in English. Invent fictional brand name, product, and content.

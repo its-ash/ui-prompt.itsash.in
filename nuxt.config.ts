@@ -1,5 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import fs from 'node:fs';
+import path from 'node:path';
 
 const GA_ID = 'G-3W9CR9BTM8';
 const SITE_URL = 'https://ui-prompt.itsash.in';
@@ -8,7 +9,9 @@ const SITE_DESC =
   'Free library of 833 UI theme prompts with live demos. Pick a design style, preview the landing page, and copy the build prompt into your AI coding agent.';
 
 // Prerender every theme page explicitly (trailing slash matches GitHub Pages URLs).
-const INDEX_FILE = 'public/data/library-index.json';
+// design/ is the only data source; Nitro serves it under /data (no copies in public/).
+const INDEX_FILE = '.cache/data/library-index.json';
+const abs = (p: string) => path.resolve(import.meta.dirname, p);
 const designRoutes: string[] = fs.existsSync(INDEX_FILE)
   ? JSON.parse(fs.readFileSync(INDEX_FILE, 'utf8')).index.map((i: { id: string }) => `/design/${i.id}/`)
   : [];
@@ -21,6 +24,12 @@ export default defineNuxtConfig({
     public: { siteUrl: SITE_URL, siteName: SITE_NAME, siteDescription: SITE_DESC },
   },
   nitro: {
+    publicAssets: [
+      { dir: abs('design/demos'), baseURL: '/data/demos', maxAge: 3600 },
+      { dir: abs('design/thumbs'), baseURL: '/data/thumbs', maxAge: 3600 },
+      { dir: abs('design/prompts'), baseURL: '/data/prompts', maxAge: 3600 },
+      { dir: abs('.cache/data'), baseURL: '/data', maxAge: 3600 },
+    ],
     prerender: {
       crawlLinks: true,
       routes: ['/', ...designRoutes],
@@ -37,8 +46,8 @@ export default defineNuxtConfig({
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         { name: 'description', content: SITE_DESC },
         { name: 'robots', content: 'index, follow, max-image-preview:large' },
-        { name: 'theme-color', content: '#0c0d10', media: '(prefers-color-scheme: dark)' },
-        { name: 'theme-color', content: '#fbfbfc', media: '(prefers-color-scheme: light)' },
+        { name: 'theme-color', content: '#12110f', media: '(prefers-color-scheme: dark)' },
+        { name: 'theme-color', content: '#f4f1ea', media: '(prefers-color-scheme: light)' },
         { name: 'application-name', content: SITE_NAME },
         { property: 'og:site_name', content: SITE_NAME },
         { property: 'og:locale', content: 'en_US' },
@@ -59,7 +68,7 @@ export default defineNuxtConfig({
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
         {
           rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap',
+          href: 'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap',
         },
         {
           rel: 'stylesheet',

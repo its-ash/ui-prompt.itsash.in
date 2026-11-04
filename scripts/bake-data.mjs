@@ -6,15 +6,10 @@ const CATS_FILE = path.join(ROOT, 'design/categories.json');
 const PROMPTS_DIR = path.join(ROOT, 'design/prompts');
 const DEMOS_DIR = path.join(ROOT, 'design/demos');
 const THUMBS_DIR = path.join(ROOT, 'design/thumbs');
-const OUT_DIR = path.join(ROOT, 'public/data');
+const OUT_DIR = path.join(ROOT, '.cache/data');
 const SITE_URL = 'https://ui-prompt.itsash.in';
 
-fs.rmSync(path.join(OUT_DIR, 'prompts'), { recursive: true, force: true });
-fs.rmSync(path.join(OUT_DIR, 'demos'), { recursive: true, force: true });
-fs.rmSync(path.join(OUT_DIR, 'thumbs'), { recursive: true, force: true });
-fs.mkdirSync(path.join(OUT_DIR, 'prompts'), { recursive: true });
-fs.mkdirSync(path.join(OUT_DIR, 'demos'), { recursive: true });
-fs.mkdirSync(path.join(OUT_DIR, 'thumbs'), { recursive: true });
+fs.mkdirSync(OUT_DIR, { recursive: true });
 
 const cats = JSON.parse(fs.readFileSync(CATS_FILE, 'utf8'));
 
@@ -42,9 +37,6 @@ for (const [id, meta] of Object.entries(cats)) {
     hasThumb,
   });
   categoriesSet.add(meta.category ?? 'Uncategorized');
-  if (prompt) fs.writeFileSync(path.join(OUT_DIR, 'prompts', `${id}.json`), JSON.stringify({ id, prompt }));
-  if (demo) fs.writeFileSync(path.join(OUT_DIR, 'demos', `${id}.html`), demo);
-  if (hasThumb) fs.copyFileSync(thumbPath, path.join(OUT_DIR, 'thumbs', `${id}.jpg`));
 }
 
 index.sort((a, b) => a.id.localeCompare(b.id, 'en', { numeric: true }));
@@ -66,6 +58,6 @@ fs.writeFileSync(
 fs.writeFileSync(path.join(ROOT, 'public/robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${SITE_URL}/sitemap.xml\n`);
 
 console.log(
-  `[bake-data] ${index.length} themes, ${index.filter((i) => i.ready).length} ready, ${index.filter((i) => i.hasDemo).length} demos, ${index.filter((i) => i.hasThumb).length} thumbs, ${categories.length} categories; per-theme prompts in public/data/prompts`
+  `[bake-data] ${index.length} themes, ${index.filter((i) => i.ready).length} ready, ${index.filter((i) => i.hasDemo).length} demos, ${index.filter((i) => i.hasThumb).length} thumbs, ${categories.length} categories; index in .cache/data, assets served from design/`
 );
 console.log(`[bake-data] index size: ${Math.round(fs.statSync(path.join(OUT_DIR, 'library-index.json')).size / 1024)} KB`);

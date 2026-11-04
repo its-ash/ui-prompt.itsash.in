@@ -1,0 +1,67 @@
+# Voicenotes-Style Landing Page — Coding Prompt
+
+## 1. Project Overview & Style Reuse
+You are building a complete, responsive landing page for a **fictional** note-taking product. Reuse the Voicenotes visual style only — warm parchment canvas, near-monochrome palette, single green trust accent, Instrument Serif display + Inter UI. Invent a fictional brand name, product name, tagline, and all copy. Never use the real brand name, logo, trademarks, or product names anywhere in the page.
+
+## 2. Strict Architecture Rules
+- **CSS-First, Zero Inline CSS:** All styling lives in `style.css`. No `style="..."` attributes. Semantic HTML only.
+- **CSS Variables in `:root`:** Define all tokens as variables (`--color-parchment`, `--color-paper-white`, `--color-soft-sky`, `--color-hairline`, `--color-bone`, `--color-ash`, `--color-pebble`, `--color-slate-dark`, `--color-charcoal`, `--color-ink`, `--color-jet`, `--color-confirm-green`, `--font-display`, `--font-ui`, `--radius-pill`, `--radius-card`, `--radius-image`, `--shadow-float`, `--spacing-*`, `--transition-fast`, `--transition-normal`, `--ease-standard`, `--z-dropdown`, `--z-modal`, `--z-toast`).
+- **Contrast Pairing:** Light backgrounds pair with dark text; dark surfaces (Ink Overlay) pair with light text.
+- **Light Mode Background:** Page canvas `#faf9f5` (Parchment), never pure white. Use `#fefefe` only where near-white is needed.
+- **Dark Mode Mandatory:** Provide tokens under `@media (prefers-color-scheme: dark)` and a `.dark` class. Persist user choice in `localStorage`, falling back to `prefers-color-scheme`. Include a visible toggle with correct `aria-pressed`/`aria-label`.
+- **Flexbox Layout:** Default `align-items: center` on every flex container unless justified. Mobile-first, no horizontal scroll.
+- **Tailwind CSS:** Use Tailwind utilities mapped to CSS variables / reusable classes (`.btn`, `.card`, `.input-group`). Use `@layer`/`@apply` where appropriate.
+- **Typography & Icons:** Google Fonts only — Instrument Serif (display) and Inter (UI). Google Material Symbols for icons. No inline SVGs or local icon files.
+
+## 3. Design Tokens (Voicenotes Palette)
+- Parchment `#faf9f5` (canvas), Paper White `#ffffff` (cards), Soft Sky `#eaf2f8` (accent panels)
+- Hairline `#e5e7eb`, Bone `#cbcac7` (borders)
+- Ash `#717171`, Pebble `#848381`, Slate Dark `#646462` (secondary text)
+- Charcoal `#222222` (headlines), Ink `#0d0d0d` (primary actions), Jet `#000000` (body text)
+- Confirm Green `#34c759` (status/trust dots only)
+- Radius: buttons/tags 9999px, cards 12–16px, images 16px, inputs 12px, links 6px
+- Shadow: only `rgba(0,0,0,0.15) 0px 0px 10px` for floating elements
+- Spacing base 4px; section gap 80px; card padding 20px; element gap 16px; page max-width 1200px
+- Type scale: caption 10px, body 16px, subheading 18px, heading-sm 20px, heading 60px, display 80px. Instrument Serif 400 at 60–80px with -0.02em tracking. Inter 400/500/600/700.
+
+## 4. Component States to Implement
+- **Buttons:** default, hover (brightness/shadow + cursor pointer), focus (ring via CSS vars), active (scale 0.97), loading (spinner, disabled), disabled (opacity 0.5, greyscale, not-allowed), success/error (temporary, driven by success/error tokens). Min touch target 44x44px. Flex with gap 0.5rem.
+- **Cards:** default, hover (translateY -2px), focus-within (border highlight), loading skeleton (shimmer), empty state (icon + guidance).
+- **Forms/Inputs:** empty, focused, filled, valid, invalid, disabled, read-only. Flex container with label, input, error feedback.
+- **Modal/Popup:** opening, open, loading, success/error, closing (CSS transitions). Centered flex, backdrop, Google Icon close button, focus trap, Esc/overlay close.
+
+## 5. Core UX & Micro-Interactions
+- Responsive by default, fluid sizing, no horizontal overflow.
+- CSS transitions on all state changes (`transition: var(--transition-normal)`), respect `prefers-reduced-motion`.
+- Accessibility: sufficient contrast both themes, never color-only state, semantic HTML5, ARIA roles/labels, logical focus order, full keyboard operability, `aria-live` for dynamic feedback.
+- Mandatory visual feedback on every interaction.
+- Destructive actions visually distinct in both themes.
+
+## 6. Sections Required
+Build all sections with fictional copy:
+1. **Hero** — centered editorial serif headline (60–80px), 3-line subtext, pill CTA, trust badges (green dot compliance, amber star rating), full-bleed product screenshot on paint-splash texture.
+2. **Features** — 3 cards (white, bone border, 12–16px radius, 20px padding) with screenshot, title, description.
+3. **How It Works** — 3 numbered steps with icon + title + description.
+4. **Testimonials** — 3 quote cards with avatar, name, role.
+5. **Pricing** — 3 tiers (name, price, feature list, CTA button). Highlight recommended tier.
+6. **FAQ** — accordion with expand/collapse, keyboard accessible.
+7. **Final CTA** — centered serif headline + pill button on parchment.
+8. **Footer** — logo, secondary links, copyright.
+
+Additional components from style: Tab Nav (emoji + Inter, underline active), Note Card grid (3–4 cols, timestamp/title/summary/duration badge), Integration Logo Cluster (grayscale, 32px gap), Search Overlay (pill, shadow, blue send button), Status Indicator Dots.
+
+## 7. Deliverables
+- Separate `index.html`, `style.css`, `script.js`. No inline script blocks beyond single deferred entry-point reference.
+- One consistent naming convention (BEM) across all classes.
+- No lorem-ipsum-only where real copy is supplied; placeholders only where content genuinely unspecified.
+- All user-facing copy in English.
+
+## 8. Do's and Don'ts (Enforce)
+- Do: parchment canvas; Instrument Serif headlines 60–80px -0.02em; Inter body/UI with weight by emphasis; 9999px pills; 12–16px cards; chromatic color only for status dots/trust; soft sky tint sparingly.
+- Don't: no brand accent beyond confirm green; no drop shadows for elevation (borders + surface contrast); no body text below 14px Inter 400 or below 10px any weight; no serif below 20px; no centered body paragraphs >2 lines; no ink fill except single primary action per view; no mixing pill+card radius in one component family.
+
+## 9. Imagery & Layout
+- Product screenshots in meeting-interface context against colorful paint-splash textures (contained outside UI frame). No lifestyle photography, no stock imagery.
+- Single-column centered max-1200px container; hero centered text stack; 3-column grids; horizontal logo rows; full-bleed mockup bands; thin top nav (logo left, centered emoji tab nav, right ghost + primary pills). Compact density.
+
+Output only the finished prompt.The prompt above is the complete, ready-to-use instruction set for the coding AI. It enforces all mandatory architecture, component states, UX rules, and the Voicenotes style tokens while requiring a fictional brand and English copy.

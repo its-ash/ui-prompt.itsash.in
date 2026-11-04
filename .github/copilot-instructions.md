@@ -31,7 +31,7 @@ Prompt library site. Users filter by category, open a design full view, copy the
 - `design/demos/*.html` - generated single-file demo page per prompt
 - `design/thumbs/*.jpg` - demo screenshots shown on library cards
 - `app/` - Nuxt 4 source. Index page lists themes grouped by category with demo thumbnails, `/design/[id]` demo iframe left + prompt right + copy
-- `server/api/` - API reads `design/` at runtime; generation step bakes data at build time
+- Data lives only in `design/`. Nitro `publicAssets` (nuxt.config.ts) serves `design/{demos,thumbs,prompts}` at `/data/...`; `bake-data.mjs` writes only `.cache/data/library-index.json` (gitignored), sitemap and robots. Never copy data into `public/`
 - `docs/` - GitHub Pages artifact, committed to the repo
 
 ## Demo generation rules

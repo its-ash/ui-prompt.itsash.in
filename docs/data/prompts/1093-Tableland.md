@@ -1,0 +1,167 @@
+# Coding AI Prompt — Tableland-Themed Landing Page
+
+## 1. Project Overview & Theme
+
+Build a complete, responsive landing page for a fictional product. **Do not use the real brand name "Tableland" or any of its trademarks, logos, or product names.** Invent a fictional brand name, product, and copy throughout. Reuse only the visual style described below.
+
+**Theme:** Dark-mode developer surface with a single painted hero moment — a lavender-coral hero landscape giving way to a calm, infrastructure-feeling interior. Geometric humanist typography (Poppins), whisper-weight display headings, teal interactive voice, mint emphasized headings, coral hero accents, lavender hero sky, near-black layered surfaces.
+
+**Deliverables:** Separate `index.html`, `style.css`, and `script.js` files. No inline `<script>` blocks beyond a single deferred entry-point reference. No inline CSS (`style="..."`) anywhere. Use one consistent class-naming convention (BEM) across the entire deliverable.
+
+---
+
+## 2. CSS-First Architecture & Theme Tokens
+
+Store all visual tokens in `:root` and a `.dark` class / `@media (prefers-color-scheme: dark)` block. Define the following CSS variables:
+
+**Colors:**
+- `--color-abyss-teal: #75b6b5` (interactive voice — nav, icons, links, learn-more)
+- `--color-mint-beacon: #0be291` (emphasized section headings only)
+- `--color-coral-ember: #f4706b` (decorative icon accent, hero mountain highlights)
+- `--color-lavender-mist: #e4cbf2` (hero atmosphere only — never in components/chrome)
+- `--color-void: #101e1e` (page canvas + filled CTA background)
+- `--color-carbon: #1a1a1a` (code blocks, deepest elevated layers)
+- `--color-slate: #162929` (mid surface, hairline borders)
+- `--color-graphite: #3b4949` (elevated cards, hover fills)
+- `--color-fog: #718b8b` (muted text, inactive nav icons)
+- `--color-ash: #e5e7eb` (universal 1px border color)
+- `--color-paper: #ffffff` (primary text and icon fill)
+
+**Semantic aliases (map to the above):** `--primary`, `--secondary`, `--bg-primary`, `--bg-secondary`, `--text-primary`, `--text-secondary`, `--text-success`, `--text-error`, `--border-default`, `--border-error`, `--border-success`. Enforce contrast pairing: light backgrounds pair with dark text, dark backgrounds pair with light text, in every theme.
+
+**Light-mode background:** Do not default to pure white; use `#fefefe` where a near-white is needed.
+
+**Border radius:** `--radius-sm: 4px`, `--radius-md: 8px`, `--radius-lg: 16px`.
+
+**Shadows:** Define `--shadow-sm` and `--shadow-md` but set them to `none` — this design uses no shadows; depth comes from surface color steps only.
+
+**Spacing & transitions:** `--spacing-gap: 16px`, `--transition-fast`, `--transition-normal`, `--ease-standard`. Use the spacing scale: 8, 16, 24, 32, 40, 80, 128, 144px.
+
+**Elevation/stacking:** `--z-dropdown`, `--z-modal`, `--z-toast`.
+
+**Typography tokens:** `--font-base` bound to Google Font Poppins (weights 300, 400, 500, 700) and `--font-monospace` bound to a monospace stack (JetBrains Mono / IBM Plex Mono / Fira Code / system monospace). Include Google Fonts `<link>` tags. Use Google Material Symbols/Icons for all icons — no raw inline SVGs or local icon files.
+
+**Type scale tokens:** `--text-caption: 12px`, `--text-body-sm: 14px`, `--text-body: 16px`, `--text-subheading: 18px`, `--text-heading-sm: 22px`, `--text-heading: 24px`, `--text-heading-lg: 30px`, `--text-display: 48px`.
+
+**Dark mode:** Provide dark mode tokens under `@media (prefers-color-scheme: dark)` and/or a `.dark` class. Theme switching must persist via `localStorage`, falling back to `prefers-color-scheme` on first visit. Provide a visible toggle control with correct `aria-pressed`/`aria-label`.
+
+---
+
+## 3. Layout, Flexbox & Responsive Rules
+
+- Use Flexbox (`display: flex`) for all layout structures. Every flex container **must default to `align-items: center`** unless there is an explicitly justified exception.
+- Mobile-first: convert rows to columns on smaller viewports; prevent horizontal scrolling.
+- Page max-width: 1200px, centered, with 80px horizontal padding on desktop.
+- Section gap: 128px vertical.
+- Card padding: 24px. Element gap: 16px.
+- Use Tailwind CSS (or clean custom CSS driven by Tailwind's `@layer` / `@apply`) unless another framework is requested. All utility classes must map back to CSS variables or generic reusable class names (`.btn`, `.card`, `.input-group`).
+
+---
+
+## 4. Component Specifications
+
+### Primary CTA Button (filled)
+- Background `#101e1e` (void), text `#ffffff`, 4px radius, padding 12px vertical × 24px horizontal, Poppins 500 at 14px, arrow glyph (→) follows label in same white. No border.
+- Hover: lifts to `#1a1a1a` or adds subtle 1px `#e5e7eb` outline.
+- All button states required: default, hover, focus (distinct focus ring via CSS variables), active/pressed (`transform: scale(0.97)`), loading (disabled interactions, CSS spinner/animated Google Icon without distorting dimensions), disabled (`opacity: 0.5`, greyscale, `cursor: not-allowed`), success/error (temporary feedback via `--text-success`/`--text-error`).
+- Minimum touch target 44×44px. Flex layout with `align-items: center`, `justify-content: center`, `gap: 0.5rem`.
+
+### Ghost Nav Button
+- Transparent or `#101e1e` background, 1px `#e5e7eb` border, `#ffffff` text, 9999px radius (pill), Poppins 500 at 14px, padding 8px vertical × 20px horizontal.
+- Hover: inverts (background `#e5e7eb`, text `#101e1e`).
+- Same full state set as above.
+
+### Nav Link
+- Text-only, no underline. Poppins 400 at 14px, `#75b6b5` (teal). 8px vertical padding. Hover: opacity 0.7 or shifts to `#0be291`. No background, no border.
+
+### Code Terminal Block
+- `#1a1a1a` background, 4px radius, 1px `#162929` border, 24px padding. Monospace 12px white text. Optional top bar with three 8px traffic-light dots: `#f4706b`, `#0be291`, `#75b6b5`. Full-width within parent.
+
+### Feature Card
+- No background fill (sits on `#101e1e` canvas). Icon container: 32px circle, 1px `#75b6b5` border, icon stroke in `#75b6b5` or `#0be291`. Heading Poppins 500 at 18px `#ffffff`. Body Poppins 400 at 14px `#718b8b`. "Learn more" link in `#75b6b5` with underline, Poppins 400 14px. No card border or background. Include hover (elevation/shadow shift or `translateY(-2px)`), focus-within (highlight borders when child link/button receives focus), loading skeleton (shimmer animation in CSS), and empty state (Google Icon + guidance text) if interactive.
+
+### Testimonial Card
+- `#3b4949` background, 1px `#e5e7eb` border, 16px radius, 24px padding. Avatar 32px rounded square with 1px `#e5e7eb` border, top-left. Display name Poppins 500 at 14px `#ffffff` beside `@handle` in `#718b8b`. Quote body Poppins 400 at 14px `#ffffff`. Cards may overflow horizontally with peek effect at section edges.
+
+### Section Heading (mint)
+- Poppins 300 at 30px, `#0be291`, centered. Mint is the only chromatic heading color — signals most important reading. No underline/decoration.
+
+### Section Heading (white)
+- Poppins 300 at 30px, `#ffffff`, centered. Default heading voice.
+
+### Display Headline
+- Poppins 300 at 48px, line-height 1.0, `#1a1a1a` on lavender hero. The word "decentralized" bolded (weight 700) in same color. Small eyebrow label above: Poppins 500 at 12px uppercase `#718b8b` with "ANYWHERE" bolded in `#1a1a1a`.
+
+### Body Paragraph
+- Poppins 400 at 16px, line-height 1.56, `#ffffff`. Max-width ~640px. No drop cap or first-line indent.
+
+### Helper / Metadata Text
+- Poppins 400 at 12px, `#718b8b`. For @handles, subtitles, footnotes, de-emphasized metadata.
+
+### Icon Container (circular)
+- 32px–40px circle, 1px `#75b6b5` or `#e5e7eb` border, transparent or `#101e1e` fill. Icon inside 1.5px stroke, `#75b6b5` or matching border color.
+
+### Hero Landscape Illustration
+- Illustrated mountain ridge in `#f4706b` (coral) with darker shadow planes, on soft `#e4cbf2` to `#f5d4e8` gradient sky. Flat illustration, no outlines, geometric facets. Anchored right side of hero, bleeding off right edge. The single brand signature — no other decorative graphics in the dark interior.
+
+### Modal / Popup (if used)
+- States: opening, open, loading, success/error, closing (all animated via CSS transitions). Centered flex container with `align-items: center`, backdrop overlay, Google Icon close button, keyboard focus trapping, close via Esc or overlay clicks.
+
+### Form & Input (if used)
+- States: empty, focused (outline ring), filled, valid (success border/icon), invalid (error border, red text, error icon), disabled, read-only. Flex container wrapping label, input field, dedicated error feedback container.
+
+---
+
+## 5. Core UX & Micro-Interaction Rules
+
+- Responsive by default: fluid sizing and breakpoints without horizontal overflow.
+- Smooth animations: CSS transitions on all state changes (`transition: var(--transition-normal)`), respecting `prefers-reduced-motion`.
+- Accessibility: sufficient contrast in both light/dark modes; never rely solely on color to communicate state; semantic HTML5; correct ARIA roles/labels on custom widgets; logical DOM/focus order; full keyboard operability; `aria-live` regions for dynamic feedback.
+- Mandatory visual feedback on every click, hover, or submission.
+- Destructive actions (`.btn-danger`) visually distinct in both light and dark themes.
+
+---
+
+## 6. Page Sections to Build
+
+Build these sections in order: **Hero, Features (3 cards), How It Works (3 steps), Testimonials, Pricing (3 tiers), FAQ, Final CTA, Footer with secondary links.**
+
+- **Hero:** Lavender (`#e4cbf2`) background, split layout. Left column: eyebrow "READ+WRITE FROM ANYWHERE" (Poppins 500 12px uppercase `#718b8b`, "ANYWHERE" bold in `#1a1a1a`), headline "The decentralized cloud database." (Poppins 300 48px `#1a1a1a`, line-height 1.0, "decentralized" weight 700), body 16px Poppins 400 `#1a1a1a`, primary button (`#101e1e` fill, white text, 4px radius, 12px 24px padding, Poppins 500 14px, → arrow). Right column: coral geometric mountain illustration bleeding off right edge.
+- **Features:** 4-column grid on `#101e1e` canvas (adapt to 3 cards as requested), 40px column gap. Each card: no background fill, icon container 32px circle with 1px `#75b6b5` border and teal icon stroke, heading Poppins 500 18px `#ffffff`, body Poppins 400 14px `#718b8b`, "Learn more" link in `#75b6b5` with underline.
+- **How It Works:** 3 steps on `#101e1e` canvas, numbered with teal/mint accents, Poppins headings, muted body text.
+- **Testimonials:** Section background `#101e1e`, heading "Join the community" Poppins 300 30px `#0be291` centered. Cards `#3b4949` background, 1px `#e5e7eb` border, 16px radius, 24px padding. Avatar 32px square with 1px `#e5e7eb` border. Name Poppins 500 14px `#ffffff`, @handle `#718b8b`. Quote Poppins 400 14px `#ffffff`. Horizontal overflow with edge peek.
+- **Pricing:** 3 tiers on `#101e1e` canvas. Use surface steps and `#e5e7eb` borders. Highlight one tier with mint accent or elevated surface.
+- **FAQ:** Accordion-style on `#101e1e` canvas. Use semantic details/summary or ARIA-expanded. Smooth transitions.
+- **Final CTA:** Centered mint or white heading, body copy, primary filled button.
+- **Footer:** Secondary links, muted text, `#e5e7eb` top border, `#101e1e` background.
+
+---
+
+## 7. Do's and Don'ts (Design Restraint)
+
+**Do:**
+- Use Poppins 300 for all display and section headings — the whisper-weight is the signature voice.
+- Reserve `#0be291` (mint) exclusively for emphasized section headings; never apply to body, links, or backgrounds.
+- Use `#75b6b5` (teal) for all interactive voice — nav links, icon strokes, learn-more affordances.
+- Layer surfaces: `#101e1e` (page) → `#162929` (mid) → `#3b4949` (elevated card) → `#1a1a1a` (terminal).
+- Use 4px radius for buttons/code blocks, 8px for content cards, 16px for elevated testimonial cards, 9999px only for tags and icon containers.
+- Center-align section headings; give each section at least 128px vertical breathing room.
+- Keep the lavender hero as the single painted moment — no gradients or illustrations in the dark interior.
+
+**Don't:**
+- Do not use weight 600+ on display headings — light-weight restraint IS the brand voice.
+- Do not apply `#0be291` to links, icons, or backgrounds.
+- Do not use pill radius (9999px) on buttons or cards — pills reserved for tags and icon containers only.
+- Do not introduce shadows or elevation effects — surface color steps only.
+- Do not use pure black (`#000000`) — all darks are slightly green-tinted.
+- Do not add accent colors beyond teal, mint, coral, lavender.
+- Do not use more than one chromatic color per UI region.
+
+---
+
+## 8. Output Requirements
+
+- File structure: `index.html`, `style.css`, `script.js`. No inline `<script>` blocks beyond a single deferred entry-point reference.
+- Naming convention: BEM throughout; never mix conventions.
+- No lorem-ipsum-only submissions where real copy/labels are supplied; placeholders allowed only where content was genuinely left unspecified. Invent fictional brand name, product, and copy — never use the real brand name, logo, trademarks, or product names.
+- All user-facing copy must be in English.

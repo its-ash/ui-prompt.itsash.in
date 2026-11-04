@@ -1,0 +1,160 @@
+# CODING AGENT PROMPT — "CORDEL DIGITAL" LANDING PAGE
+
+**Role:** You are a Senior Frontend Engineer and Expert UI Designer. Your task is to code a complete, production-ready Landing Page on the first attempt — fully styled, fully functional, no placeholders, no follow-up questions.
+
+**Project:** "Cordel Digital" — a Cultural & Heritage landing page that translates Brazilian cordel literature (woodcut/xylography folk booklets of the northeastern sertão) into a digital experience. Aesthetic: narrative, illustrated, cultural, poetic, handcrafted, traditional.
+
+**Required sections:** Header/Nav, Hero, Features (3 cards), How It Works (3 steps), Testimonials, Pricing (3 tiers), FAQ, Final CTA, Footer with secondary links.
+
+---
+
+## 1. STRICT RULES & ARCHITECTURE
+
+### 1.1 CSS-First Architecture & Zero Inline CSS
+* **No Inline CSS:** The `style="..."` attribute is forbidden anywhere in the HTML. All styling lives exclusively in `style.css`.
+* **Class/ID Selectors Only:** All design properties, layout rules, and states must be targeted via class or ID selectors.
+* **Minimal HTML Modifications:** HTML must remain clean, semantic (HTML5 landmarks: `header`, `nav`, `main`, `section`, `article`, `footer`), and agnostic of visual styling — changing the site's look must require editing only `style.css`.
+
+### 1.2 CSS Variables & Theme Tokens
+Store all visual tokens in `:root` (light theme "Pergaminho") and override in `.dark` (see 1.3):
+
+* **Colors (light):** `--primary: #8B4513` (rustic brown — structure, buttons, borders); `--secondary: #8B0000` (blood red — emphasis, danger); `--bg-primary: #F5DEB3` (parchment yellow — page field); `--bg-secondary: #FEFEFE` (near-white booklet page for cards — **never use `#ffffff`**; map the palette's "Branco" to `#fefefe`); `--text-primary: #000000` (ink black on parchment); `--text-secondary: #5C4024` (deep sepia); `--text-success: #556B2F` (caatinga green); `--text-error: #8B0000`; `--border-default: #8B4513`; `--border-error: #8B0000`; `--border-success: #556B2F`.
+* **Accent inks (restrained use — illustrations, badges, step numerals):** `--accent-sertao: #4682B4`; `--accent-caatinga: #556B2F`; `--accent-crepusculo: #CD853F`.
+* **Contrast Pairing:** Every light background token pairs with a dark text token and vice versa — enforce for both themes. Verify WCAG AA (≥ 4.5:1) for all text/background combinations in both modes and adjust token values if any pair fails.
+* **Radius & Shadows:** `--radius-sm: 2px`; `--radius-md: 4px`; `--radius-lg: 8px` (the aesthetic is angular/handcrafted — keep radii minimal); `--shadow-sm: 0 1px 3px rgba(59,35,16,0.2)`; `--shadow-md: 0 4px 12px rgba(59,35,16,0.25)`; plus `--shadow-paper: inset 0 0 20px rgba(139,69,19,0.2)` for aged-paper depth.
+* **Spacing & Transitions:** `--spacing-gap: 1.5rem`; `--transition-fast: 150ms`; `--transition-normal: 300ms`; `--ease-standard: cubic-bezier(0.4, 0, 0.2, 1)`.
+* **Elevation/Stacking:** `--z-dropdown: 100`; `--z-modal: 200`; `--z-toast: 300`. The sticky header must sit below dropdown/modal/toast layers.
+
+### 1.3 Mandatory Dark Mode Support
+* **Exception clause (explicit):** The source style specification requested light mode only — dark mode remains architecturally mandatory; implement it as a **"Noite no Sertão" (Sertão Night)** variant, not as an afterthought.
+* **Tokens (`.dark`):** `--bg-primary: #1A120B` (deep ink-brown night); `--bg-secondary: #2B1F13` (aged leather); `--text-primary: #F5DEB3` (parchment); `--text-secondary: #D8B98C` (faded parchment); `--primary: #CD853F` (interactive elements shift to twilight orange, paired with dark text `#1A120B`); `--border-default: #A0714A`; `--text-error: #E0796B`; `--text-success: #A8BC7A`. Brighten accent inks as needed for AA contrast on dark backgrounds.
+* **Implementation:** Provide tokens under both a `.dark` class selector and `@media (prefers-color-scheme: dark)` fallback logic. Backgrounds and text must switch purely via CSS variables — no HTML restructuring.
+* **Persistence:** Store the user's choice in `localStorage`; fall back to `prefers-color-scheme` on first visit; apply the class before first paint to prevent flash-of-wrong-theme.
+* **Toggle:** A visible header toggle using Google Material Symbols (sun/moon), with correct `aria-pressed` and `aria-label` ("Switch to dark mode" / "Switch to light mode").
+
+### 1.4 Flexbox Layout & Mobile-First Alignment
+* Build all layout structures with **Flexbox** (`display: flex` / Tailwind flex utilities).
+* **Default Alignment Rule:** Every flex container defaults to `align-items: center` (`items-center`) unless an exception is explicitly justified in a CSS comment (e.g., equal-height card columns may use `stretch`).
+* **Mobile-Friendly First:** All flex rows convert to columns below ~768px. No horizontal scrolling at any viewport — use `max-width` containers (~72rem, centered), fluid type/sizing, and `overflow-x: clip` on `body` (not `hidden`, to preserve sticky positioning).
+
+### 1.5 Framework Default & Tailwind CSS Integration
+* Use **Tailwind CSS via the Play CDN** (`<script src="https://cdn.tailwindcss.com"></script>` in `<head>` — this library reference is permitted; it does not count as an inline script block). Use Tailwind utilities for structural layout only (flex, gap, padding, responsive prefixes).
+* All design tokens, component classes, states, and theming live in `style.css` as plain CSS referencing `var(--...)`. Define generic reusable classes — `.btn`, `.card`, `.input-group`, `.accordion__item`, `.pricing-card` — never style via one-off utility soup. Never mix naming conventions.
+
+### 1.6 Typography & Icons (Google Fonts Mandatory)
+* **Text (Google Fonts `<link>` with preconnect):** `Playfair Display` (display headings, weights 400/700/900 + italic) bound to `--font-display`; `Merriweather` (body, 300/400/700 + italic) bound to `--font-base`; `Special Elite` (kickers, labels, badges, accents) bound to `--font-accent`.
+* **Icons:** Google Material Symbols (Rounded) for every icon. **Explicitly forbidden:** raw inline SVGs, local icon files, emoji-as-icons, and any other icon font.
+* **Reading rhythm:** Narrative body paragraphs use `text-align: justify` and `line-height: 1.8`; headings, buttons, and labels are exempt from justification.
+
+---
+
+## 2. COMPONENT DESIGN SPECIFICATIONS
+
+### 2.1 Button Component
+Style all states via CSS classes on `.btn` (BEM variants: `.btn--primary`, `.btn--secondary`, `.btn--danger`):
+* **Default:** `display: flex; align-items: center; justify-content: center; gap: 0.5rem;` minimum touch target 44×44px; 2px solid `var(--border-default)`; Special Elite or bold Merriweather label.
+* **Hover:** Brightness/shadow shift with `cursor: pointer`.
+* **Focus:** Distinct visible focus ring via `box-shadow`/`outline` using theme variables — never remove outlines.
+* **Active/Pressed:** `transform: scale(0.97)` feedback.
+* **Loading (`.is-loading`):** Disables interaction, prevents double-clicks, renders a CSS border spinner or animated Material Symbol without changing button dimensions; set `aria-busy="true"`.
+* **Disabled:** `opacity: 0.5`, grayscale, `cursor: not-allowed`.
+* **Success/Error:** Temporary feedback styles driven by `--text-success` / `--text-error` (used by the Final CTA form submit).
+* **Danger:** `.btn--danger` (blood red) must be visually distinct in **both** light and dark themes.
+
+### 2.2 Card Component
+* **Default:** Flexible flexbox layout, `--bg-secondary` surface, `border: 2-3px solid var(--border-default)`, `--shadow-paper` inset depth, decorative corner accents via pseudo-elements.
+* **Hover:** `transform: translateY(-2px)` plus elevation shift to `--shadow-md`.
+* **Focus-within:** Card border highlights when a child link/button receives keyboard focus.
+* **Loading (Skeleton):** `.card--skeleton` shimmer animation defined in CSS to prevent layout jumps.
+* **Empty State:** Structured fallback with a Material Symbol and clear guidance text (style it even if unused on first render).
+
+### 2.3 Form & Input Requirements
+Used in the Final CTA email capture:
+* **Structure:** `.input-group` flex container wrapping a `<label>`, the input, and a dedicated error feedback element (`aria-live="polite"`).
+* **States:** Empty, Focused (outline ring via variables), Filled, Valid (success border + check Material Symbol), Invalid (error border, error text, error icon + message), Disabled, Read-only — all as CSS classes.
+
+### 2.4 FAQ Accordion
+* Each question is a `<button>` with `aria-expanded` and `aria-controls`; each answer panel has `role="region"` and `aria-labelledby`.
+* Open/close animated via CSS transitions (`grid-template-rows: 0fr → 1fr` or `max-height`); Material Symbol `expand_more` rotates 180° when open.
+* Fully keyboard operable; only one panel open at a time is acceptable; visible focus states on question buttons.
+
+### 2.5 Modal / Popup (Conditional)
+Not required by the section list — do not add one. If any overlay is ever introduced, it must use: centered flex container (`align-items: center`), backdrop, Material Symbol close button, focus trapping, `Esc`/overlay-click closing, and CSS-animated open/close states.
+
+---
+
+## 3. CORE UX & MICRO-INTERACTION RULES
+
+* **Responsive by Default:** Fluid sizing and breakpoints with zero horizontal overflow at any width from 320px up.
+* **Smooth Animations:** `transition: var(--transition-normal)` on all state changes; fully respect `prefers-reduced-motion` (disable shimmer, transforms, and parallax; reduce to opacity-only fades).
+* **Accessibility (a11y):** AA contrast in both light and dark modes. Never rely on color alone — pair color states with icons and text. Semantic HTML5, correct ARIA roles/labels on custom widgets, logical DOM/focus order, full keyboard operability, a "Skip to main content" link, `aria-live` regions for dynamic feedback (form errors, loading, success toasts), and `aria-hidden="true"` on all purely decorative elements.
+* **Mandatory Visual Feedback:** Every click, hover, and submission triggers a visible state change.
+* **Destructive Actions:** Any delete/danger action is visually distinct in both themes.
+* **Anchor Navigation:** Smooth in-page scrolling (respecting reduced motion) with `scroll-margin-top` compensating for the sticky header.
+
+---
+
+## 4. DELIVERABLE & OUTPUT FORMAT
+
+* **File Structure:** Separate `index.html`, `style.css`, and `script.js`. No inline `<script>` blocks beyond the single deferred `script.js` entry-point reference (plus the permitted Tailwind CDN library tag).
+* **Naming Convention:** BEM (`block__element--modifier`) consistently across the entire deliverable — never mix conventions.
+* **No Unrequested Placeholders:** Write real, complete English copy for every section (see Section 7). Lorem ipsum is prohibited.
+* **Complete on First Attempt:** The deliverable must run in a browser as-is, with no build step beyond the Tailwind CDN.
+
+---
+
+## 5. THEME DIRECTION — "CORDEL DIGITAL"
+
+### 5.1 Visual Language
+The page must read like a hand-printed cordel booklet ("folheto") brought to the screen: serif typography reminiscent of cordel pamphlets, layouts simulating booklet pages/spreads, narrative compositions that visually tell a story, and handcrafted frame elements throughout.
+
+### 5.2 Textures & Illustrations (CSS-Only)
+* **Aged paper backgrounds:** Achieved purely with CSS — layered `radial-gradient` mottling, subtle `repeating-linear-gradient` paper fiber, and `box-shadow: inset 0 0 20px rgba(139,69,19,0.2)` for depth. No image files, no SVG.
+* **Woodcut-style illustrations:** Compose the hero's main visual (a stylized sertão scene — hatched sun with rays, layered hill silhouettes, cactus/bird shapes) using layered CSS gradients, `clip-path` silhouettes, and `repeating-linear-gradient` hatching that mimics xylography engraving lines. Mark decorative art `aria-hidden="true"`.
+* **Icon treatment:** Render Material Symbols in `--primary` ink with a subtle double `text-shadow` to suggest woodcut-printed glyphs.
+
+### 5.3 Decorative Borders & Dividers
+* **Cordel-pattern borders:** Use `border-image` or pseudo-element `repeating-linear-gradient` patterns (string/dash motifs) and double-line frames (2–3px solid `#8B4513`) around major panels.
+* **Section dividers:** Xylographic divider strips — a horizontal rule built from repeating gradients with a centered rotated diamond frame containing a Material Symbol glyph (e.g., `auto_stories`, `wb_sunny`, `local_florist`).
+
+### 5.4 Color Usage
+Parchment field, black ink text, rustic brown structure and frames; blood red reserved for emphasis and danger; sertão blue, caatinga green, and twilight orange used sparingly as illustration inks, badges, and step numerals — never as large fills.
+
+---
+
+## 6. PAGE STRUCTURE & SECTION SPECIFICATIONS
+
+### 6.1 Header (Sticky)
+Wordmark "Cordel Digital" in Playfair Display; nav links (Features, How It Works, Testimonials, Pricing, FAQ) as anchors; theme toggle (per 1.3). On mobile, collapse the nav behind a button with `aria-expanded`/`aria-controls`, or wrap it — either way, keyboard accessible.
+
+### 6.2 Hero — "The Booklet Cover"
+Booklet-cover composition inside a decorative double frame: Special Elite kicker ("Vol. 1 — Digital Edition"), large Playfair Display headline, an italic Merriweather verse tagline, two CTAs (`.btn--primary` "Start Your Story" + `.btn--secondary` "Read the Tale" anchor), the CSS woodcut sertão illustration, and a small cover-details row (edition note + price nod, as cordel covers traditionally carry).
+
+### 6.3 Features — 3 Cards
+Three `.card` components in a responsive flex row (column on mobile): engraved Material Symbol, Playfair Display title, justified Merriweather body. Full card states per 2.2. Suggested angles: the digital folheto publisher, the woodcut illustration studio, the living cordel archive.
+
+### 6.4 How It Works — 3 Steps
+Three narrative "chapters" styled like poem stanzas (numerals in framed diamonds using accent inks), connected by xylographic dividers: write the verses, cut the woodblocks, hang the booklet on the digital string ("cordel" = string — booklets hang on strings at market stalls; use this metaphor).
+
+### 6.5 Testimonials
+Three verse-style quote cards: oversized decorative quotation pseudo-elements, italic Merriweather quotes written as short verse, attributions with plausible Brazilian names and roles (poet, illustrator, teacher). Flex row → column on mobile.
+
+### 6.6 Pricing — 3 Tiers
+Three `.pricing-card` components: "Wanderer" (free — read the archive), "Poet" (featured middle tier with a ribbon badge "Most Sung", visually elevated), "Master of Cordel" (workshops, print-ready exports). Each: price, feature list with Material Symbol check icons, CTA button with full state set per 2.1.
+
+### 6.7 FAQ
+5–6 question accordion per 2.4 (e.g., what cordel is, whether Portuguese is required, licensing, printing/export, cancellation).
+
+### 6.8 Final CTA
+Full-width parchment panel with decorative frame: verse headline ("Hang your story on the string"), supporting line, email `.input-group` per 2.3, and a submit `.btn` cycling Default → Loading → Success/Error with `aria-live` feedback.
+
+### 6.9 Footer
+Secondary links (About, Cordel Archive, Workshops, Cultural Notes, Contact, Privacy, Terms) in responsive flex columns, a small xylographic motif divider, and a copyright line.
+
+---
+
+## 7. COPY & CONTENT DIRECTION
+
+* **Language:** Write ALL user-facing copy in **English** (the source specification was Portuguese — translate all guidance, labels, and descriptions). Portuguese cultural terms ("cordel", "sertão", "folheto", "repente", "xylography") may appear as flavor where natural.
+* **Tone:** Poetic, warm, narrative — the voice of a cordel pamphlet storyteller. Short rhymed taglines are encouraged where they land naturally; body copy stays clear and readable.
+* **Completeness:** Every heading, paragraph, button label, testimonial, FAQ answer, and footer link carries real, final English copy — no placeholders anywhere.

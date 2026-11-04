@@ -1,0 +1,91 @@
+# Coding-AI Prompt: Linearity-Themed Landing Page (Fictional Brand)
+
+You are building a complete, production-ready landing page for a fictional SaaS brand. Do NOT use the real brand name "Linearity," its logo, trademarks, or product names anywhere in the page. Invent an original fictional brand name, product name, and all copy. The page must follow the visual style specification below and the mandatory architectural rules in this prompt.
+
+## 1. File Structure & Architecture
+- Deliver three separate files: `index.html`, `style.css`, `script.js`.
+- No inline `style="..."` attributes anywhere in HTML. All styling lives in `style.css`.
+- Use semantic HTML5 elements (`header`, `main`, `section`, `footer`, `nav`, `article`).
+- Use one consistent class-naming convention (BEM) throughout. Never mix conventions.
+- No inline `<script>` blocks beyond a single deferred entry-point reference: `<script src="script.js" defer></script>`.
+
+## 2. CSS-First Architecture & Variables
+Store all tokens in `:root` using CSS variables. Implement dark mode under `@media (prefers-color-scheme: dark)` and a `.dark` class selector. User theme choice must persist via `localStorage`, falling back to `prefers-color-scheme` on first visit, with a visible toggle control carrying correct `aria-pressed`/`aria-label`.
+
+Required color tokens (dark theme — Void canvas):
+- `--color-void: #000000` (page canvas)
+- `--color-near-black: #050505`
+- `--color-carbon: #292929`
+- `--color-graphite: #4d4d4d`
+- `--color-ash: #666666`
+- `--color-steel: #808080`
+- `--color-fog: #999999`
+- `--color-silver: #bfbfbf`
+- `--color-white: #ffffff`
+- `--color-signal-orange: #ff4800`
+- `--color-ember: #ff5e23`
+- `--color-burnt-orange: #ca4e17`
+- `--color-electric-yellow: #ffd900`
+- `--color-vector-green: linear-gradient(to right, #08c380 0%, #fd7c0f 31.73%, #ff2b2b 62.5%, #9500ff 100%)`
+
+Map these to the standard semantic tokens: `--bg-primary`, `--bg-secondary`, `--text-primary`, `--text-secondary`, `--text-success`, `--text-error`, `--border-default`, `--border-error`, `--border-success`, `--primary`, `--secondary`.
+
+Spacing tokens: `--spacing-4: 4px`, `--spacing-8: 8px`, `--spacing-12: 12px`, `--spacing-16: 16px`, `--spacing-24: 24px`, `--spacing-56: 56px`, `--spacing-168: 168px`.
+Radius tokens: `--radius-sm: 8.57143px`, `--radius-md: 17.1429px`, `--radius-lg: 25.7143px`, `--radius-pill: 9999px`.
+Shadow tokens: `--shadow-subtle: rgba(255, 94, 35, 0.4) 0px 0px 0px 1px inset`.
+Transition tokens: `--transition-fast`, `--transition-normal`, `--ease-standard`.
+Elevation tokens: `--z-dropdown`, `--z-modal`, `--z-toast`.
+
+Font tokens: `--font-inter` (Inter, weights 400/500/600), `--font-acidgrotesk` (Space Grotesk substitute, weights 400/500), `--font-acidgrotesksubset` (Space Grotesk substitute, weights 400/500). Load via Google Fonts `<link>` or `@import`. Use Google Material Symbols for all icons — no raw inline SVGs or local icon files.
+
+Type scale tokens: `--text-micro-label` (Inter 400 10px/1.4), `--text-button-label` (Inter 500 12px/1.5), `--text-body` (Inter 400 14px/1.5), `--text-nav` (Inter 500 14px/1.4), `--text-footer-body` (AcidGroteskSubset 400 14px/1.5), `--text-hero-display` (AcidGrotesk 400 34px/1.2), `--text-section-display-tight` (AcidGrotesk 400 45px/1.0), `--text-section-display` (AcidGrotesk 400 45px/1.2), `--text-section-display-compressed` (AcidGrotesk 400 45px/0.9).
+
+Contrast pairing: every light background token pairs with a dark text token and vice versa. Light-mode background must not be pure white; use `#fefefe` where near-white is needed.
+
+## 3. Layout & Flexbox Rules
+- All layout structures use Flexbox (`display: flex`). Every flex container defaults to `align-items: center` unless a justified exception exists.
+- Mobile-first responsive: convert rows to columns on small viewports. Prevent horizontal scrolling. Page max-width 1680px with 40px horizontal container padding. Section gap 27px.
+
+## 4. Page Sections (in order)
+1. **Header/Nav** — slim top nav on Void. Navigation links in Silver/White Inter 14px/1.4 weight 500. "Get Started" pill: White 5% translucent fill, 1px White border, 9999px radius, 10.2857px 17.1429px padding, Inter 12px weight 500 White label, Carbon halo.
+2. **Hero** — centered on Void. AcidGrotesk 34px weight 400 White headline (line-height 1.2). Carbon prompt composer (17.1429px radius, 20.5714px padding) with Inter 12px/1.71 Steel placeholder text, small brand token, and circular Signal Orange send orb (9999px radius). Supporting copy in Fog. Paired conversion row: Dark Outline Pill Button (White 5% fill, White text, 1px White border, 9999px radius, 10.2857px 17.1429px padding) + Signal Orange Pill Button (Signal Orange fill, White text, 1px White border, 9999px radius, 12px 20.5714px padding, Electric Yellow glow, Ember hover). Both Inter 12px weight 500.
+3. **Trust Marquee** — 1px White 10% top divider, subdued Silver/Graphite logos, compact 12px labels, isolated dark pill play-control.
+4. **Features** — 3 cards. Each: 17.1429px radius, 17.1429px padding, translucent white surface (5-10%), 1px low-opacity white outline, subtle inset white glow. Hover: elevation shift `translateY(-2px)`. Focus-within highlights border. Skeleton loading shimmer. Empty state with Google Icon + guidance text.
+5. **How It Works** — 3 steps. Clean flex layout, numbered indicators, Inter body copy.
+6. **Testimonials** — card-based, same card styling rules.
+7. **Pricing** — 3 tiers. Highlighted tier uses Signal Orange accent. Buttons follow pill button rules.
+8. **FAQ** — accordion-style, keyboard accessible, `aria-expanded` toggling.
+9. **Final CTA** — centered editorial statement in AcidGrotesk 45px weight 400 White. Short Spectrum Rail gradient (`--color-vector-green`) underline beneath one emphasized phrase only. Paired pill buttons.
+10. **Footer** — AcidGroteskSubset 14px/1.5 footer links, secondary navigation, theme toggle.
+
+## 5. Component State Requirements
+**Buttons:** Default (flex, `align-items: center; justify-content: center; gap: 0.5rem`, min 44x44px touch target), Hover (brightness/shadow, `cursor: pointer`), Focus (distinct focus ring via CSS variables), Active/Pressed (`transform: scale(0.97)`), Loading (disabled, CSS spinner, no dimension distortion), Disabled (`opacity: 0.5`, greyscale, `cursor: not-allowed`), Success/Error (temporary feedback via `--text-success`/`--text-error`).
+
+**Cards:** Default (flex, subtle borders, elevation via `--bg-secondary`), Hover (shadow shift + `translateY(-2px)`), Focus-within (border highlight), Loading (skeleton shimmer), Empty state (Google Icon + guidance text).
+
+**Forms/Inputs:** Empty, Focused (outline ring), Filled, Valid (success border/icon), Invalid (error border, red text, error icon), Disabled, Read-only. Flex container wrapping label, input, error feedback.
+
+**Modal/Popup:** Opening, Open, Loading, Success/Error, Closing (CSS transitions). Centered flex (`align-items: center`), backdrop overlay, Google Icon close button, keyboard focus trapping, close via Esc or overlay click.
+
+## 6. UX & Micro-Interaction Rules
+- Smooth CSS transitions on all state changes (`transition: var(--transition-normal)`), respecting `prefers-reduced-motion`.
+- Accessibility: sufficient contrast in both modes, never rely solely on color for state, semantic HTML5, correct ARIA roles/labels, logical DOM/focus order, full keyboard operability, `aria-live` regions for dynamic feedback.
+- Mandatory visual feedback on every click, hover, submission.
+- Destructive actions visually distinct in both themes.
+- No heavy floating-card shadows; use 1px low-opacity outlines, translucency, occasional white inset glow. Orange conversion controls carry Electric Yellow glow.
+
+## 7. Do's and Don'ts
+- Do: Void as default canvas, large uninterrupted black areas. 9999px radius on public buttons/chips/links. AcidGrotesk weight 400 for display (34px/1.2 hero, 45px/1.0 or 45px/1.2 sections). Inter 14px/1.5 body/nav. 17.1429px radius + padding for standard dark cards, 25.7143px for large product-demo panels. Spectrum Rail gradient only as contained underline/stroke/abstract accent.
+- Don't: No light page sections, white cards, or pale gray canvases. No 4px/6px/square corners on public buttons/chips/links. No bold display headlines. No Signal Orange as general surface or panel fill. No neutral gray shadow on orange buttons. No heavy floating-card shadows. No Spectrum Rail across full backgrounds or body text.
+
+## 8. Imagery & Decorative Accents
+- Product UI and abstract graphic treatment, not lifestyle photography. Decorative graphics bold, simple, high-chroma: broad Vector Green curved stroke and Spectrum Rail gradient as sparse editorial interruptions. Icons compact, monochrome white/gray line marks, orange circular role symbols as principal multicolor accent.
+- Use Google Material Symbols for all icons.
+
+## 9. Edit Mode — Not Applicable
+This is a from-scratch build. All rules in Section 1–8 apply fully.
+
+## 10. Copy & Content
+Write all user-facing copy in English. Invent a fictional brand name, product name, feature descriptions, testimonials, pricing tier names, and FAQ content. No lorem-ipsum-only submissions; use realistic, meaningful copy throughout. No placeholders where content is specified.
+
+Output only the three files' contents as described. No preamble, no closing commentary.

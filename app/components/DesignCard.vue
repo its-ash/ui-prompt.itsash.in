@@ -1,228 +1,308 @@
 <script setup lang="ts">
 import type { DesignItem } from '~/types';
 
-const props = defineProps<{ item: DesignItem }>();
+const props = defineProps<{ item: DesignItem; eager?: boolean }>();
+const emit = defineEmits<{ copied: [name: string, ok: boolean] }>();
 
-const swatch = computed(() => {
-  let h = 0;
-  for (const ch of props.item.id) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
-  const hue = h % 360;
-  const sat = 30 + (h % 25);
-  return `hsl(${hue} ${sat}% 52% / 0.22)`;
-});
+const num = computed(() => props.item.id.split('-')[0]);
+const href = computed(() => `/design/${props.item.id}/`);
+const state = ref<'idle' | 'busy' | 'done'>('idle');
+let timer: ReturnType<typeof setTimeout> | undefined;
 
-const meta = computed(() => props.item.era || props.item.category);
+async function copy() {
+  if (state.value === 'busy') return;
+  state.value = 'busy';
+  const ok = await copyFrom(() => fetchPrompt(props.item.id));
+  state.value = ok ? 'done' : 'idle';
+  emit('copied', props.item.name, ok);
+  clearTimeout(timer);
+  if (ok) timer = setTimeout(() => (state.value = 'idle'), 1600);
+}
+
+onBeforeUnmount(() => clearTimeout(timer));
 </script>
 
 <template>
-  <NuxtLink :to="`/design/${item.id}/`" class="tk" :aria-label="`View ${item.name} theme and prompt`">
-    <span class="tk__frame" aria-hidden="true">
-      <span class="tk__shot" :style="item.hasThumb ? undefined : { background: swatch }">
-        <img
-          v-if="item.hasThumb"
-          :src="`/data/thumbs/${item.id}.jpg`"
-          alt=""
-          width="480"
-          height="300"
-          loading="lazy"
-          decoding="async"
-        />
-        <span v-else class="tk__noshot mono">{{ item.ready ? 'Demo pending' : 'Prompt pending' }}</span>
-      </span>
-    </span>
-    <span class="tk__body">
-      <span class="tk__text">
-        <span class="tk__name">{{ item.name }}</span>
-        <span class="tk__meta mono">{{ meta }}</span>
-      </span>
-      <span v-if="!item.ready" class="tk__badge mono" title="Prompt generating">Pending</span>
-      <span v-else class="tk__go material-symbols-rounded" aria-hidden="true">arrow_outward</span>
-    </span>
-  </NuxtLink>
+  <article class="cd">
+    <div class="cd__shot">
+      <img
+        v-if="item.hasThumb"
+        :src="`/data/thumbs/${item.id}.jpg`"
+        alt=""
+        width="480"
+        height="300"
+        :loading="eager ? 'eager' : 'lazy'"
+        :fetchpriority="eager ? 'high' : 'auto'"
+        decoding="async"
+      />
+      <span v-else class="cd__noshot mono">Preview pending</span>
+    </div>
+
+    <div class="cd__body">
+      <p class="cd__no mono">
+        <span>No. {{ num }}</span>
+        <span class="cd__era">{{ item.era || 'Timeless' }}</span>
+      </p>
+      <h3 class="cd__name">
+        <NuxtLink :to="href" class="cd__link" prefetch-on="interaction">{{ item.name }}</NuxtLink>
+      </h3>
+      <div class="cd__foot">
+        <span class="cd__cat">{{ item.category }}</span>
+        <button
+          type="button"
+          class="cd__copy"
+          :class="{ 'cd__copy--done': state === 'done' }"
+          :aria-label="`Copy prompt for ${item.name}`"
+          :aria-busy="state === 'busy'"
+          :disabled="!item.ready"
+          @click="copy"
+        >
+          <span class="material-symbols-rounded" aria-hidden="true">{{ state === 'done' ? 'check' : 'content_copy' }}</span>
+          <span class="cd__copytxt">{{ state === 'done' ? 'Copied' : 'Copy' }}</span>
+        </button>
+      </div>
+    </div>
+  </article>
 </template>
 
 <style scoped>
-.tk {
+.cd {
+  container-type: inline-size;
+  position: relative;
   display: flex;
   flex-direction: column;
+  height: 100%;
+  padding: 0.375rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: var(--bg-raised);
-  color: var(--text);
-  text-decoration: none;
-  overflow: hidden;
   transition:
-    border-color var(--transition-normal),
+    border-color var(--transition-fast),
     box-shadow var(--transition-normal),
-    transform var(--transition-normal);
+    opacity 260ms var(--ease-standard),
+    translate 260ms var(--ease-standard);
 }
 
-.tk:focus-visible {
-  outline: 2px solid var(--text);
-  outline-offset: 2px;
+@starting-style {
+  .cd {
+    opacity: 0;
+    translate: 0 8px;
+  }
 }
 
-.tk:active {
-  transform: scale(0.985);
-  transition-duration: 100ms;
+.cd:has(.cd__link:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
 
-/* preview */
-
-.tk__frame {
-  display: block;
-  padding: 0.375rem 0.375rem 0;
-}
-
-.tk__shot {
+.cd__shot {
   position: relative;
   display: grid;
   place-items: center;
   aspect-ratio: 16 / 10;
-  border-radius: calc(var(--radius-lg) - 0.375rem);
-  background: color-mix(in srgb, var(--text) 5%, transparent);
   overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: var(--bg-hover);
 }
 
-.tk__shot::after {
+.cd__shot::after {
   content: '';
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 9%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 10%, transparent);
   pointer-events: none;
 }
 
-.tk__shot img {
+.cd__shot img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: top;
-  transition: transform 450ms var(--ease-standard);
+  transition: scale 360ms var(--ease-standard);
 }
 
-.tk__noshot {
-  font-size: 0.6875rem;
-  color: var(--text-dim);
+.cd__noshot {
+  font-size: 0.75rem;
+  color: var(--text-faint);
 }
 
-/* body */
-
-.tk__body {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 0.875rem 0.8125rem;
-}
-
-.tk__text {
+.cd__body {
   flex: 1;
-  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.1875rem;
+  gap: 0.25rem;
+  padding: 0.75rem 0.5rem 0.25rem;
 }
 
-.tk__name {
-  font-size: 0.875rem;
-  font-weight: 500;
-  line-height: 1.3;
-  letter-spacing: -0.01em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.tk__meta {
+.cd__no {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
   font-size: 0.6875rem;
-  line-height: 1.3;
   color: var(--text-faint);
-  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.cd__era {
+  min-width: 0;
   overflow: hidden;
+  white-space: nowrap;
   text-overflow: ellipsis;
 }
 
-.tk__go {
-  flex-shrink: 0;
-  display: grid;
-  place-items: center;
-  width: 1.75rem;
-  height: 1.75rem;
-  border-radius: 999px;
-  font-size: 1rem;
-  color: var(--text-faint);
-  background: color-mix(in srgb, var(--text) 5%, transparent);
-  opacity: 0;
-  transform: translate(-0.25rem, 0.25rem);
-  transition:
-    opacity var(--transition-normal),
-    transform var(--transition-normal),
-    color var(--transition-normal);
+.cd__name {
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  font-weight: 400;
+  line-height: 1.12;
+  letter-spacing: -0.005em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
 }
 
-.tk__badge {
-  flex-shrink: 0;
-  padding: 0.125rem 0.5rem;
-  border: 1px solid var(--border-strong);
-  border-radius: 999px;
-  font-size: 0.625rem;
+.cd__link {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.cd__link:focus-visible {
+  outline: none;
+}
+
+.cd__link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.cd__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.375rem;
+}
+
+.cd__cat {
+  min-width: 0;
+  font-size: 0.8125rem;
   color: var(--text-dim);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.cd__copy {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  min-width: 44px;
+  height: 44px;
+  margin-right: -0.25rem;
+  padding: 0 0.75rem;
+  border: 1px solid var(--border-ui);
+  border-radius: var(--radius-md);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--bg-raised);
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast),
+    scale var(--transition-fast);
+}
+
+.cd__copy .material-symbols-rounded {
+  font-size: 18px;
+}
+
+.cd__copy--done {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--ink-on);
+}
+
+.cd__copy[aria-busy='true'] {
+  cursor: progress;
+}
+
+.cd__copy:not(:disabled):active {
+  scale: 0.96;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .tk:hover {
-    border-color: var(--border-strong);
-    box-shadow: 0 10px 28px -14px rgb(0 0 0 / 0.35);
-    transform: translateY(-2px);
+  .cd:hover {
+    border-color: var(--border-ui);
+    box-shadow: 0 18px 32px -24px var(--shadow);
   }
 
-  .tk:hover .tk__shot img {
-    transform: scale(1.025);
+  .cd:hover .cd__shot img {
+    scale: 1.035;
   }
 
-  .tk:hover .tk__go {
-    opacity: 1;
-    transform: none;
-    color: var(--text);
+  .cd__copy:not(:disabled):not(.cd__copy--done):hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-ink);
   }
 }
 
-.tk:focus-visible .tk__go {
-  opacity: 1;
-  transform: none;
-}
+@container (max-width: 230px) {
+  .cd__body {
+    padding: 0.625rem 0.25rem 0;
+  }
 
-@media (hover: none) {
-  .tk__go {
-    opacity: 1;
-    transform: none;
+  .cd__name {
+    font-size: 1.125rem;
+  }
+
+  .cd__era,
+  .cd__copytxt {
+    display: none;
+  }
+
+  .cd__copy {
+    padding: 0;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tk,
-  .tk__shot img,
-  .tk__go {
-    transition: opacity 150ms ease;
+  .cd {
+    transition:
+      border-color var(--transition-fast),
+      opacity 200ms ease-out;
   }
 
-  .tk:hover,
-  .tk:active,
-  .tk:hover .tk__shot img {
-    transform: none;
+  @starting-style {
+    .cd {
+      translate: none;
+    }
+  }
+
+  .cd__shot img,
+  .cd__copy {
+    transition: none;
+  }
+
+  .cd:hover .cd__shot img,
+  .cd__copy:not(:disabled):active {
+    scale: none;
   }
 }
 
 @media (prefers-contrast: more) {
-  .tk {
-    border-color: var(--text-faint);
-  }
-}
-
-@media (max-width: 640px) {
-  .tk__body {
-    padding: 0.625rem 0.75rem 0.6875rem;
+  .cd {
+    border-color: var(--border-ui);
   }
 }
 </style>

@@ -1,0 +1,81 @@
+# Landing Page Build Prompt — "arte*" Harvest Editorial Theme (Fictional Brand)
+
+You are an expert frontend developer. Build a complete, production-ready landing page using the "arte*" harvest editorial visual style. The page must invent a fictional brand name, product, and all copy — never use the real brand name "arte*", its logo, trademarks, or product names anywhere in the markup or content.
+
+## 1. Strict Architecture Rules
+
+**1.1 CSS-First, Zero Inline CSS.** All styling lives in `style.css`. No `style="..."` attributes in HTML. Target all design via class/ID selectors. Keep HTML semantic and styling-agnostic so the look can change by editing CSS alone.
+
+**1.2 CSS Variables & Theme Tokens.** Define all tokens in `:root` (and theme classes) using `var(--...)`. Required tokens: `--primary`, `--secondary`, `--bg-primary`, `--bg-secondary`, `--text-primary`, `--text-secondary`, `--text-success`, `--text-error`, `--border-default`, `--border-error`, `--border-success`, `--radius-sm`, `--radius-md`, `--radius-lg`, `--shadow-sm`, `--shadow-md`, `--spacing-gap`, `--transition-fast`, `--transition-normal`, `--ease-standard`, `--z-dropdown`, `--z-modal`, `--z-toast`. Enforce contrast pairing for every theme. Light-mode background must not be pure white; use `#fefefe` where near-white is needed. Dark mode must be defined.
+
+**1.3 Mandatory Dark Mode.** Provide dark tokens under `@media (prefers-color-scheme: dark)` and/or a `.dark` class. Background/text variables switch seamlessly. Persist user choice via `localStorage`, falling back to `prefers-color-scheme` on first visit. Include a visible toggle with correct `aria-pressed`/`aria-label`.
+
+**1.4 Flexbox, Mobile-First.** All layouts use `display: flex`. Every flex container defaults to `align-items: center` unless explicitly justified otherwise. Mobile-responsive out of the box (rows become columns on small viewports). No horizontal scrolling.
+
+**1.5 Framework.** Use Tailwind CSS or clean custom CSS driven by Tailwind `@layer`/`@apply`. Utility classes map back to CSS variables or reusable names (`.btn`, `.card`, `.input-group`).
+
+**1.6 Typography & Icons.** Google Fonts mandatory for text and icons. Text: bind Google Font (Poppins for body/UI; Bricolage Grotesque as substitute for the display font) to `--font-base`. Icons: Google Material Symbols/Icons only — no inline SVGs or local icon files.
+
+## 2. Theme Tokens (arte* Harvest Editorial)
+
+- `--color-wheat-cream`: `#e5dccd` (page canvas, card surfaces)
+- `--color-harvest-copper`: `#ab5700` (primary text/ink, borders)
+- `--color-citron-beam`: `#e8e359` (logo, hero overlays, accent borders)
+- `--color-morning-glory`: `#7997ff` (inline highlights, links, focus)
+- `--color-amber-glow`: `#d99623`
+- `--color-forest-floor`: `#214534` (button borders, deep contrast)
+- `--color-deep-moss`: `#103d26`
+- `--color-olive-branch`: `#568037`
+- `--color-slate-bloom`: `#3d549c`
+- `--color-coral-petal`: `#e99686`
+
+Fonts: `--font-poppins` (Poppins 400/500, line-height 1.40) for body/UI; `--font-parafina` (Bricolage Grotesque 500 as substitute) for display/headings. Type scale: caption 12px/1.4, body 16px/1.4, subheading 20px/1.0, heading-sm 30px/0.9, heading 56px/0.9, heading-lg 70px/0.85, display 104px/0.85, display-xl 173px/0.80.
+
+Spacing base 4px. Radius: tags 9999px, cards 20px, buttons 31px, other 64px. Page max-width 1200px. Section gap 80–120px. Card padding 24px. Element gap 24px. No shadows — depth via photography, whitespace, 1px hairline borders.
+
+## 3. Component Requirements
+
+**Buttons:** Default flex (`align-items: center; justify-content: center; gap: 0.5rem`), min touch target 44x44px. Hover visual shift + `cursor: pointer`. Focus ring via CSS vars. Active `transform: scale(0.97)`. Loading disables interaction + spinner/icon without dimension change. Disabled `opacity: 0.5`, greyscale, `cursor: not-allowed`. Success/Error temporary states via `--text-success`/`--text-error`.
+
+**Cards:** Flex layout, subtle borders/elevation via `--bg-secondary` + vars. Hover elevation/`translateY(-2px)`. Focus-within highlights border. Loading skeleton shimmer. Empty state with Google Icon + guidance text.
+
+**Forms/Inputs:** States: empty, focused (outline ring), filled, valid, invalid, disabled, read-only. Flex container wrapping label, input, error feedback.
+
+**Modals:** States: opening, open, loading, success/error, closing (CSS transitions). Centered flex, backdrop, Google Icon close, focus trap, close via Esc/overlay.
+
+## 4. UX & Micro-Interactions (Global)
+
+Responsive by default, fluid sizing, no horizontal overflow. Smooth transitions on state changes (`transition: var(--transition-normal)`), respect `prefers-reduced-motion`. Accessibility: sufficient contrast in both modes, never color-only state, semantic HTML5, correct ARIA, logical focus order, full keyboard operability, `aria-live` for dynamic feedback. Mandatory visual feedback on every interaction. Destructive actions visually distinct in both themes.
+
+## 5. Deliverables
+
+Separate `index.html`, `style.css`, `script.js`. No inline `<script>` beyond single deferred entry-point reference. One consistent class-naming convention (BEM) throughout. No lorem-ipsum-only where real copy is supplied; placeholders only where content genuinely unspecified. All user-facing copy in English.
+
+## 6. Page Structure (Sections)
+
+Build these sections in order, all on the Wheat Cream canvas except full-bleed hero photography:
+
+1. **Hero** — Full-bleed forest canopy photo. Overlaid centered display type: fictional brand name in display font 120px, line-height 0.85, Citron Beam. Subheadline 28px below, 24px gap. Top-right ghost "MENU" pill (transparent, 1px Citron Beam border, 31px radius, 6px 24px padding, Poppins 13px uppercase). Scroll indicator "[scroll down]" 12px Citron Beam at bottom.
+2. **Features** — 3 cards on cream canvas, 20px radius, 1px Harvest Copper border, 24px padding, no shadow. Each: Google Icon + heading (Parafina 30px) + body (Poppins 16px Harvest Copper).
+3. **How It Works** — 3 steps, single-column editorial, large display numerals (Parafina 56px Morning Glory) + heading + body. 80–120px vertical gaps.
+4. **Testimonials** — Editorial blocks: quote in Poppins 16px Harvest Copper, author name in Morning Glory. No card grid.
+5. **Pricing** — 3 tiers as cards (20px radius, hairline border). Tier name (Parafina 30px), price (display 56px), feature list (Poppins 16px), pill CTA button. Highlighted tier uses Citron Beam filled button.
+6. **FAQ** — Accordion using existing elements only; questions in Poppins 16px Harvest Copper, answers below. No new markup beyond structure.
+7. **Final CTA** — Full-bleed photo with overlaid display headline (Parafina 70–104px Citron Beam) + pill button.
+8. **Footer** — Secondary links in Poppins 13px uppercase Harvest Copper, minimal, on cream canvas.
+
+## 7. Style Fidelity
+
+- Display type always Parafina-substitute weight 500, line-height 0.80–0.90. Never bold above 500.
+- Body/list text default Harvest Copper `#ab5700` — never black/gray.
+- Inline emphasis switches to Morning Glory `#7997ff` without weight/style change.
+- All interactive elements 31px radius (not 9999px, not 8px).
+- No drop shadows, blurs, or elevation. Cards defined by outline only.
+- Full-bleed photography as surface layer with type directly overlaid — no text boxes/gradients on photos.
+- Wheat Cream `#e5dccd` is the only canvas background.
+
+## 8. Edit-Mode Compliance
+
+If modifying existing markup: no new HTML tags/components/DOM nodes; CSS classes only for existing elements; no JS for validation/modals/utilities (ask user instead); if a style change needs new markup, stop and ask.
+
+Output only the finished prompt above — no preamble, no closing commentary. Mirror numbered headers and bolded sub-rules. If any request conflicts with a mandatory rule, keep the rule and add a one-line explicit exception clause. All copy in English.

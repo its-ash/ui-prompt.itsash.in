@@ -1,0 +1,130 @@
+# Generated Prompt for Coding AI
+
+You are an expert front-end developer. Build a complete, production-quality landing page for a fictional brand (invent a fictional brand name, product, and all copy — never use "Eraser", its logo, trademarks, or product names). The visual style must follow the "Eraser" design system described below. Deliver three separate files: `index.html`, `style.css`, and `script.js`. No inline `<script>` blocks beyond a single deferred entry-point reference. Use one consistent class-naming convention (BEM) throughout — never mix conventions. No lorem-ipsum-only submissions; invent real, on-brand copy for every section.
+
+## 1. Architecture & Rules
+
+**1.1 CSS-First, Zero Inline CSS**
+- All styling lives in `style.css`. Forbid `style="..."` attributes in HTML.
+- Target all design via class/ID selectors. Keep HTML semantic, clean, and agnostic of visual styling.
+
+**1.2 CSS Variables & Theme Tokens**
+Store all tokens in `:root` (and theme classes) using CSS variables. Required tokens:
+
+Colors:
+- `--color-iris-glow: #9985ff`
+- `--color-pale-lavender: #ddccff`
+- `--color-violet-deep: #363054`
+- `--color-sky-pulse: #94dbff`
+- `--color-saffron-whisper: #d6ca6f`
+- `--color-rose-quartz: #ffa3c2`
+- `--color-bone: #e3e3e3`
+- `--color-obsidian: #181818`
+- `--color-charcoal: #4b4b4b`
+- `--color-ink-black: #080808`
+- `--color-pure-white: #ffffff`
+- `--color-pearl: #f6f6f6`
+- `--color-slate: #2a2b2b`
+- `--color-graphite: #878787`
+- `--color-ash: #666666`
+
+Plus the standard system tokens: `--primary`, `--secondary`, `--bg-primary`, `--bg-secondary`, `--text-primary`, `--text-secondary`, `--text-success`, `--text-error`, `--border-default`, `--border-error`, `--border-success`, `--radius-sm`, `--radius-md`, `--radius-lg`, `--shadow-sm`, `--shadow-md`, `--spacing-gap`, `--transition-fast`, `--transition-normal`, `--ease-standard`, `--z-dropdown`, `--z-modal`, `--z-toast`, `--font-base`.
+
+Map the theme colors onto the system tokens for the dark (default) theme: `--bg-primary: var(--color-obsidian)`, `--text-primary: var(--color-bone)`, etc. Enforce contrast pairing for every theme.
+
+Light mode background must not be pure white; use `#fefefe` where a white/near-white is needed.
+
+Typography tokens:
+- `--font-national-2-condensed` → substitute `Bebas Neue` or `Oswald` (700) from Google Fonts
+- `--font-inter` → `Inter` (Google Fonts), weights 400/500/600/700
+- `--font-jetbrains-mono` → `JetBrains Mono` (Google Fonts), weights 400/600
+- Type scale tokens `--text-tiny` (11px/1.23), `--text-caption` (14px/1.5), `--text-body-sm` (16px/1.5), `--text-body` (18px/1.35), `--text-heading-sm` (20px/1.25), `--text-subheading` (26px/1.15), `--text-heading` (48px/0.85), `--text-heading-lg` (72px/0.85), `--text-display` (90px/0.85). Apply letter-spacing per the spec (-0.019em on Inter sizes; -0.005em to -0.007em on display).
+
+Spacing tokens `--spacing-4` through `--spacing-120` per the 4px base scale. Radius: buttons 4px, medium 8px, cards 16px, pills 9999px. Shadows: `--shadow-subtle: 6px 6px 0px 0px #080808`, `--shadow-subtle-2: 6px 6px 0px 0px rgba(153,133,255,0.3)`.
+
+**1.3 Mandatory Dark Mode**
+- Provide dark mode tokens under `@media (prefers-color-scheme: dark)` and a `.dark` class selector. Default theme is dark (Obsidian canvas).
+- Provide a light mode alternative as well (light canvas with dark text) using `#fefefe`-based backgrounds.
+- Theme choice persists via `localStorage`, falling back to `prefers-color-scheme` on first visit. Include a visible toggle control with correct `aria-pressed`/`aria-label`.
+
+**1.4 Flexbox & Mobile-First**
+- All layouts use Flexbox. Every flex container defaults to `align-items: center` unless explicitly justified.
+- Mobile-responsive out of the box; convert rows to columns on small viewports. No horizontal scrolling.
+
+**1.5 Framework**
+- Use Tailwind CSS (or clean custom CSS driven by Tailwind `@layer`/`@apply`) mapping utilities to CSS variables and reusable classes (`.btn`, `.card`, `.input-group`).
+
+**1.6 Typography & Icons**
+- Google Fonts only: Inter, Bebas Neue (or Oswald), JetBrains Mono. Include `<link>` tags.
+- Icons: Google Material Symbols/Icons only. No raw inline SVGs or local icon files.
+
+## 2. Component Specifications
+
+**2.1 Buttons**
+- Default: flex, `align-items: center`, `justify-content: center`, `gap: 0.5rem`, min 44x44px touch target.
+- Hover: brightness/shadow shift, `cursor: pointer`.
+- Focus: distinct focus ring via CSS variables.
+- Active: `transform: scale(0.97)`.
+- Loading: disables interaction, CSS spinner or animated Google Icon, no dimension distortion.
+- Disabled: `opacity: 0.5`, greyscale, `cursor: not-allowed`.
+- Success/Error: temporary feedback via `--text-success`/`--text-error`.
+- Primary CTA: white fill, `#181818` text, 4px radius, 14px vertical / 24px horizontal padding, Inter 500 14px with -0.019em tracking, label ends with `→`.
+- Ghost: transparent fill, 1px `#e3e3e3` border, `#e3e3e3` text, 4px radius, 14px vertical padding.
+
+**2.2 Cards**
+- Default: flex layout, subtle borders, elevation via `--bg-secondary` and CSS variables.
+- Hover: elevation/shadow shift or `transform: translateY(-2px)`.
+- Focus-within: highlight border when child link/button focused.
+- Loading (Skeleton): shimmer animation in CSS, no layout jumps.
+- Empty State: Google Icon + guidance text.
+- Standard Card: `#181818` fill, 16px radius, 1px `#e3e3e3` border, 16px padding, shadow `6px 6px 0px 0px #080808`.
+- Brand Highlight Card: same but shadow `6px 6px 0px 0px #363054`.
+
+**2.3 Forms & Inputs**
+- States: Empty, Focused (outline ring), Filled, Valid (success border/icon), Invalid (error border, red text, error icon), Disabled, Read-only.
+- Structure: flex container wrapping label, input, dedicated error feedback container.
+
+**2.4 Modal / Popup**
+- States: Opening, Open, Loading, Success/Error, Closing (CSS transitions).
+- Centered flex (`align-items: center`), backdrop overlay, Google Icon close button, keyboard focus trapping, close via Esc or overlay click.
+
+## 3. Core UX & Micro-Interactions
+
+- Responsive by default; fluid sizing; no horizontal overflow.
+- CSS transitions on all state changes (`transition: var(--transition-normal)`), respecting `prefers-reduced-motion`.
+- Accessibility: sufficient contrast in both themes; never rely on color alone; semantic HTML5; correct ARIA roles/labels; logical DOM/focus order; full keyboard operability; `aria-live` regions for dynamic feedback.
+- Mandatory visual feedback on every click/hover/submission.
+- Destructive actions visually distinct in both themes.
+
+## 4. Page Sections Required
+
+Build these sections in order: Hero, Features (3 cards), How It Works (3 steps), Testimonials, Pricing (3 tiers), FAQ, Final CTA, Footer with secondary links.
+
+- **Hero:** announcement bar at top, nav, centered multi-color display headline (first word Iris Glow, second Sky Pulse, third Saffron Whisper, fourth Rose Quartz, rest Bone) at 90px National-2-Condensed substitute, line-height 0.85, tracking -0.007em, over a single CTA. Floating pill annotations absolutely positioned around the headline. Product screenshot placeholder below at near-full width.
+- **Features:** 3 standard cards with hover lift.
+- **How It Works:** 3 steps, numbered, with icons.
+- **Testimonials:** customer quotes with monochrome logos.
+- **Pricing:** 3 tiers, one highlighted as brand card.
+- **FAQ:** accordion with keyboard support.
+- **Final CTA:** centered headline + button.
+- **Footer:** secondary links, multi-column.
+
+## 5. Style-Specific Rules (Eraser)
+
+- Display headlines: condensed grotesque 700, line-height 0.85, tracking -0.005em to -0.007em. Multi-color word treatment reserved for display sizes only.
+- Hard 6px solid-offset shadows only — never blurred drop-shadows.
+- Bone (`#e3e3e3`) for primary text and dominant borders on Obsidian (`#181818`) canvas.
+- 4px radius buttons, 8px medium, 16px cards, 9999px pills.
+- White-filled CTAs with `#181818` text and trailing `→`.
+- Iris Glow borders specifically for AI-related panels.
+- No lighter fill to distinguish cards — border + offset shadow is the only elevation.
+- No new accent hues beyond the four-color pastel palette.
+- Trust logo strip: monochrome `#878787` logos, 48px gap, framed by thin `#e3e3e3` border with corner brackets `[ ]`.
+
+## 6. Deliverables
+
+- `index.html`, `style.css`, `script.js` only.
+- BEM naming throughout.
+- Invent fictional brand name, product, and copy. Never reference "Eraser" or its trademarks.
+
+Output only the three files' contents, clearly separated, with no preamble.

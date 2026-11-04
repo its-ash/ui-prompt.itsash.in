@@ -1,4 +1,5 @@
 run:
+	node scripts/bake-data.mjs
 	npm run dev
 
 build:

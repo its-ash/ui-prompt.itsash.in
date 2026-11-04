@@ -4,7 +4,7 @@ const id = computed(() => String(route.params.id));
 
 const library = await useLibrary();
 const meta = computed(() => library.value.index.find((i) => i.id === id.value));
-const { data: promptData } = await useAsyncData(`prompt-${id.value}`, () => usePromptFetch(id.value));
+const { data: promptData } = await useAsyncData(`prompt-${id.value}`, () => fetchPrompt(id.value));
 const prompt = computed(() => promptData.value ?? '');
 const notFound = computed(() => library.value.index.length > 0 && !meta.value);
 const demoSrc = computed(() => `/data/demos/${id.value}.html`);
@@ -20,20 +20,6 @@ onMounted(() => {
   mq.addEventListener('change', cb);
   onUnmounted(() => mq.removeEventListener('change', cb));
 });
-
-async function usePromptFetch(themeId: string): Promise<string> {
-  if (import.meta.server) {
-    const fs = await import('node:fs');
-    const file = `${process.cwd()}/public/data/prompts/${themeId}.json`;
-    return fs.existsSync(file) ? (JSON.parse(fs.readFileSync(file, 'utf8')) as { prompt: string }).prompt : '';
-  }
-  try {
-    const res = await fetch(`/data/prompts/${themeId}.json`);
-    return res.ok ? ((await res.json()) as { prompt: string }).prompt : '';
-  } catch {
-    return '';
-  }
-}
 
 const copied = ref(false);
 
@@ -366,10 +352,11 @@ useHead(() => ({
 }
 
 .vv__name {
-  font-size: 1.375rem;
-  font-weight: 600;
-  letter-spacing: -0.025em;
-  line-height: 1.12;
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
   text-wrap: balance;
 }
 

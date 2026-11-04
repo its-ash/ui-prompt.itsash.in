@@ -1,0 +1,124 @@
+# UI/UX Coding Prompt — Planpoint-Themed Landing Page
+
+You are a frontend coding agent. Build a complete, responsive landing page using the Planpoint visual system described below. Output three separate files: `index.html`, `style.css`, and `script.js`. No inline `<script>` blocks beyond a single deferred entry-point reference. No inline `style="..."` attributes anywhere in the HTML. All styling must live in `style.css` and be driven by CSS variables and class/ID selectors only. Use one consistent class-naming convention (BEM) across the entire deliverable.
+
+## 1. Brand & Copy (Fictional Only)
+Invent a fictional brand name, product, and all user-facing copy. Never use the real brand name "Planpoint", its logo, trademarks, or product names. All user-facing copy must be in English. Use realistic, non-lorem placeholder text where content is unspecified.
+
+## 2. CSS-First Architecture & Theme Tokens
+Store all visual tokens in `:root` (and a `.dark` class / `@media (prefers-color-scheme: dark)`) using CSS variables. Enforce contrast pairing: light backgrounds pair with dark text, dark backgrounds pair with light text in every theme.
+
+### Light Mode Tokens (default)
+- `--color-ink: #1d1d1f` (primary text, icon strokes, dark button fills — never pure black)
+- `--color-white: #fefefe` (page background, card surfaces, button text on dark fills, inputs)
+- `--color-mist: #f0f2f4` (subtle surface elevation, inactive button fills, secondary card backgrounds)
+- `--color-fog: #e5e6e8` (hairline borders, dividers, section separators)
+- `--color-carbon: #000000` (navigation borders, pure-black accents where max contrast needed)
+- `--color-slate: #333333` (muted helper text, secondary image borders)
+- `--color-midnight: #00051a` (violet action color for filled buttons, selected nav states)
+- `--color-signal-blue: #0f68ea` (primary CTA fill/outline, active nav accent — single chromatic action color)
+- `--color-link-blue: #007aff` (hyperlink color, icon stroke accent)
+- `--color-highlight: #ffcb00` (yellow novelty/status badge fill only)
+- `--color-deep-navy: #000a3b` (rare dark surface for featured cards/hero blocks)
+
+### Dark Mode Tokens
+Provide a complete dark theme under `.dark` and `@media (prefers-color-scheme: dark)` that inverts surfaces/text while preserving the bichromatic-plus-yellow palette and contrast pairing. Persist user theme choice via `localStorage`, falling back to `prefers-color-scheme` on first visit. Include a visible toggle control with correct `aria-pressed`/`aria-label`.
+
+### Typography Tokens
+- `--font-base: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif` (load Inter via Google Fonts `<link>`)
+- OpenType features: `"cv11", "ss01"`
+- Weights: 400, 500, 600, 700
+- Type scale tokens: `--text-caption: 14px`, `--text-body-sm: 16px`, `--text-body: 18px`, `--text-subheading: 22px`, `--text-heading-sm: 29px`, `--text-heading: 43px`, `--text-heading-lg: 50px`, `--text-display: 72px`, `--text-display-xl: 144px`
+- Letter spacing: -0.98px (14px), -1.07px (16px), -1.17px (18px), -1.32px (22px), -1.28px (29px), -1.55px (43px), -1.65px (50px), -2.23px (72px), -3.89px (144px)
+- Line heights: 1.50–1.60 body, 1.10–1.30 headings, 0.90–1.00 display
+
+### Spacing, Radius, Shadow Tokens
+- Base unit 4px; density spacious.
+- Spacing: `--spacing-4: 4px`, `--spacing-8: 8px`, `--spacing-12: 12px`, `--spacing-16: 16px`, `--spacing-20: 20px`, `--spacing-28: 28px`, `--spacing-40: 40px`, `--spacing-64: 64px`, `--spacing-72: 72px`, `--spacing-108: 108px`, `--spacing-140: 140px`, `--spacing-240: 240px`
+- `--radius-sm: 18px`, `--radius-md: 28.8px`, `--radius-lg: 46.8px`, `--radius-pill: 100px`
+- `--shadow-sm: rgba(0,0,0,0.06) 0px 8px 48px 0px`, `--shadow-md: rgba(0,0,0,0.06) 0px 8px 48px 0px`
+- `--spacing-gap: 14px`, `--transition-fast: 150ms ease`, `--transition-normal: 250ms ease`, `--ease-standard: cubic-bezier(0.4,0,0.2,1)`
+- Elevation/stacking: `--z-dropdown`, `--z-modal`, `--z-toast`
+
+## 3. Layout & Framework Rules
+- Use Tailwind CSS (or clean custom CSS via `@layer`/`@apply`) unless otherwise specified. All utility classes must map back to CSS variables or reusable class names (`.btn`, `.card`, `.input-group`).
+- Flexbox for all layout structures. Every flex container must default to `align-items: center` unless explicitly justified otherwise. Mobile-first: convert rows to columns on small viewports, prevent horizontal scrolling.
+- Page max-width 1200px centered. Section gaps 80px. Card padding 24px. Element gap 14px.
+- Google Fonts mandatory for text (Inter) and icons (Google Material Symbols). Forbid raw inline SVGs or local icon files. Load via `<link>`.
+
+## 4. Component Specifications
+
+### Buttons
+- Primary Pill: `#0f68ea` fill, white text, 16px Inter weight 600, 100px radius, 20px 22px padding, soft shadow. Min touch target 44x44px.
+- Dark Pill: `#1d1d1f` fill, white text, 100px radius, 20px 22px padding.
+- Outline Pill: transparent fill, 1px border in `#1d1d1f` or `#fefefe`, matching text color, 100px radius, 22px padding.
+- States for all: Hover (brightness/shadow shift, cursor pointer), Focus (distinct focus ring via CSS vars), Active (transform scale 0.97), Loading (disabled, CSS spinner, no dimension distortion), Disabled (opacity 0.5, greyscale, cursor not-allowed), Success/Error (temporary feedback via `--text-success`/`--text-error`).
+- Destructive actions visually distinct in both themes.
+
+### Cards
+- White or Mist background, 28.8px radius, 24px padding, optional 1px border in Mist/Fog, soft shadow when elevated.
+- If interactive: Hover (elevation/shadow shift or translateY -2px), Focus-within (border highlight), Loading (CSS shimmer skeleton), Empty state (Google Icon + guidance text).
+
+### Inputs
+- White fill, 1px Fog border, 18px radius, 16px Inter placeholder in Slate. Focus: border shifts to Signal Blue.
+- States: Empty, Focused, Filled, Valid, Invalid (error border, red text, error icon), Disabled, Read-only. Structure: flex container with label, input, error feedback container.
+
+### Modal/Popup
+- States: Opening, Open, Loading, Success/Error, Closing (CSS transitions). Centered flex container (align-items center), backdrop overlay, Google Icon close button, keyboard focus trapping, close via Esc/overlay click.
+
+### New Badge
+- Yellow fill `#ffcb00`, dark text `#1d1d1f` at 14px Inter weight 500, 100px radius, 2px 10px padding. Used as novelty punctuation only (≤1% screen area).
+
+### Top Navigation Bar
+- White background, 64–80px tall. Left: blue diamond logo glyph + fictional wordmark in Ink. Center-left: 16px Inter weight 500 nav links in Ink. Right: language flag icon, "Support", "Login" text links, then dark pill CTA "Free trial" with right-arrow icon. Fixed top.
+
+### Hero Section
+- White canvas, centered headline at 72px Inter weight 700, -2.23px tracking, Ink color. Subhead at 18px Ink/muted gray. Below: 16:9 video embed with solid blue `#0f68ea` background frame and white play button. Full-width blue band breaks out of max-width.
+
+### Trust Headline
+- Centered 43px Inter weight 600, Ink, -1.55px tracking, line-height 1.15. Two lines: "Trusted by successful developers, property owners & marketing teams alike." (adapt copy to fictional brand). 80px vertical padding above/below.
+
+### Logo Cloud
+- 3-row grids of 6–7 columns. Each logo in Mist pill container with 18px radius, 14px padding. Logos centered, native brand colors.
+
+### Card Surface (Features)
+- 3 feature cards: white/Mist bg, 28.8px radius, 24px padding, optional border, soft shadow. Include icon (Google Material Symbol), title, description.
+
+### How It Works
+- 3 steps: numbered circle (Signal Blue or Ink), title, description. Vertical stack or horizontal row, mobile-responsive.
+
+### Testimonials
+- Cards with quote, author name, role, avatar placeholder. White/Mist bg, 28.8px radius.
+
+### Pricing
+- 3 tiers: card per tier with name, price, feature list, CTA button. Middle tier highlighted (Signal Blue border or Mist bg). Use Mist for elevated surface.
+
+### FAQ
+- Accordion: question row with chevron icon, answer expands via CSS transition. Keyboard accessible, aria-expanded.
+
+### Final CTA
+- Centered headline + subhead + primary pill button on white canvas, 80px+ vertical padding.
+
+### Footer
+- Secondary links in columns, fictional brand wordmark, copyright. Ink text on white/Mist bg. Mobile stacks to single column.
+
+## 5. UX & Micro-Interactions (Global)
+- Responsive by default, fluid sizing, no horizontal overflow.
+- CSS transitions on all state changes (`transition: var(--transition-normal)`), respect `prefers-reduced-motion`.
+- Accessibility: sufficient contrast both themes; never rely solely on color for state; semantic HTML5; correct ARIA roles/labels; logical DOM/focus order; full keyboard operability; `aria-live` regions for dynamic feedback (form errors, toasts, loading).
+- Mandatory visual feedback on every click/hover/submission.
+- No gradients anywhere. No decorative shadows beyond the single 6% shadow. No additional accent hues. No square/low-radius buttons (under 50px). Display type never below weight 600 or above 72px without reason.
+
+## 6. Deliverables
+- `index.html`, `style.css`, `script.js` — separate files.
+- BEM naming convention throughout.
+- No lorem-ipsum-only submissions where real copy/labels were supplied; placeholders only where genuinely unspecified.
+- No new HTML elements beyond what the layout requires; work within existing structure if editing.
+
+## 7. Dark Mode Toggle & Persistence
+Implement toggle button with `aria-pressed`/`aria-label`. Persist via `localStorage`, fallback to `prefers-color-scheme`. Switch CSS variables seamlessly without HTML restructuring.
+
+## 8. Notes
+- Use `#fefefe` instead of pure white where a near-white is needed.
+- Icons must be Google Material Symbols loaded via `<link>`.
+- All copy in English. Invent fictional brand name and product. Never reference "Planpoint".

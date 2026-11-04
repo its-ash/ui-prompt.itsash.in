@@ -1,134 +1,139 @@
 <script setup lang="ts">
-import type { LibraryIndex } from '~/types';
-
+const props = withDefaults(defineProps<{ search?: boolean }>(), { search: true });
 const { theme, toggle } = useTheme();
-defineProps<{ count?: number }>();
+const q = ref('');
+const field = useTemplateRef<HTMLInputElement>('field');
 
-const search = useState('search', () => '');
-const category = useState('category', () => 'All');
-const library = useState<LibraryIndex | null>('library');
-const route = useRoute();
+const submit = () => {
+  const v = q.value.trim().slice(0, 80);
+  navigateTo({ path: '/', query: v ? { q: v } : {} });
+};
 
-const options = computed(() => {
-  const index = library.value?.index ?? [];
-  const counts = new Map<string, number>();
-  for (const i of index) counts.set(i.category, (counts.get(i.category) ?? 0) + 1);
-  return [
-    { value: 'All', label: `All categories (${index.length})` },
-    ...(library.value?.categories ?? []).map((c) => ({ value: c, label: `${c} (${counts.get(c) ?? 0})` })),
-  ];
-});
+const typing = (t: EventTarget | null) =>
+  t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
 
-function onSearch() {
-  if (route.path !== '/') navigateTo('/');
-}
+const onKey = (e: KeyboardEvent) => {
+  if (!props.search || !field.value) return;
+  if ((e.key === '/' && !typing(e.target)) || (e.key.toLowerCase() === 'k' && (e.metaKey || e.ctrlKey))) {
+    e.preventDefault();
+    field.value.focus();
+    field.value.select();
+  }
+};
+
+onMounted(() => window.addEventListener('keydown', onKey));
+onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
 </script>
 
 <template>
   <header class="hd">
-    <div class="hd__bar">
-      <NuxtLink to="/" class="hd__brand" aria-label="UI-Prompt home">
-        <img class="hd__mark" src="/favicon.svg" width="18" height="18" alt="" />
-        <span class="hd__name">UI-Prompt</span>
-        <span v-if="count" class="hd__count mono">{{ count }}</span>
-      </NuxtLink>
-      <form class="hd__search" role="search" @submit.prevent="onSearch">
-        <span class="material-symbols-rounded hd__sicon" aria-hidden="true">search</span>
-        <input
-          v-model="search"
-          type="search"
-          class="hd__input"
-          placeholder="Search themes or keywords"
-          aria-label="Search themes"
-          maxlength="80"
-          @input="onSearch"
-        />
-        <span class="hd__sep" aria-hidden="true"></span>
-        <label class="hd__cat">
-          <span class="sr-only">Category</span>
-          <select v-model="category" class="hd__select mono" aria-label="Filter by category" @change="onSearch">
-            <option v-for="o in options" :key="o.value" :value="o.value">{{ o.label }}</option>
-          </select>
-          <span class="material-symbols-rounded hd__caret" aria-hidden="true">expand_more</span>
-        </label>
-      </form>
-      <div class="hd__right">
-        <button
-          class="hd__mode"
-          type="button"
-          :aria-pressed="theme === 'dark'"
-          :aria-label="theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
-          @click="toggle"
-        >
-          <span class="material-symbols-rounded" aria-hidden="true">
-            {{ theme === 'dark' ? 'light_mode' : 'dark_mode' }}
-          </span>
-        </button>
-      </div>
-    </div>
+    <NuxtLink to="/" class="hd__brand" aria-label="UI-Prompt, library home">
+      <img class="hd__mark" src="/favicon.svg" width="22" height="22" alt="" />
+      <span class="hd__word">UI<em>-Prompt</em></span>
+    </NuxtLink>
+
+    <form v-if="search" class="hd__search" role="search" @submit.prevent="submit">
+      <label for="hd-q" class="sr-only">Search the library</label>
+      <span class="material-symbols-rounded hd__icon" aria-hidden="true">search</span>
+      <input
+        id="hd-q"
+        ref="field"
+        v-model="q"
+        class="hd__input"
+        type="search"
+        placeholder="Search the library"
+        autocomplete="off"
+        maxlength="80"
+        enterkeyhint="search"
+      />
+      <kbd class="hd__kbd mono" aria-hidden="true">/</kbd>
+    </form>
+
+    <button
+      class="hd__mode"
+      type="button"
+      aria-label="Dark theme"
+      :aria-pressed="theme === 'dark'"
+      data-allow-mismatch="attribute"
+      @click="toggle"
+    >
+      <span class="material-symbols-rounded hd__sun" aria-hidden="true">light_mode</span>
+      <span class="material-symbols-rounded hd__moon" aria-hidden="true">dark_mode</span>
+    </button>
   </header>
 </template>
 
 <style scoped>
 .hd {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: color-mix(in srgb, var(--bg) 86%, transparent);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  .hd {
-    background: var(--bg);
-    backdrop-filter: none;
-  }
-}
-
-.hd__bar {
-  padding: 0 1.25rem;
-  height: 60px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 1rem;
+  height: 60px;
+  padding: 0 clamp(1rem, 3vw, 2rem);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.hd__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-height: 44px;
+  margin-right: auto;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.hd__mark {
+  display: block;
+  width: 22px;
+  height: 22px;
+  image-rendering: pixelated;
+}
+
+.hd__word {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.hd__word em {
+  color: var(--accent);
 }
 
 .hd__search {
-  flex: 1;
+  flex: 0 1 26rem;
   min-width: 0;
-  max-width: 40rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  height: 38px;
-  padding: 0 0.875rem;
-  border: 1px solid var(--border);
-  border-radius: 999px;
+  height: 44px;
+  padding: 0 0.5rem 0 0.75rem;
+  border: 1px solid var(--border-ui);
+  border-radius: var(--radius-md);
   background: var(--bg-raised);
-  color: var(--text-faint);
   transition: border-color var(--transition-fast);
 }
 
 .hd__search:focus-within {
-  border-color: var(--border-strong);
-  color: var(--text);
+  border-color: var(--text);
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
-.hd__sicon {
-  font-size: 18px;
+.hd__icon {
+  font-size: 20px;
+  color: var(--text-faint);
 }
 
 .hd__input {
   flex: 1;
   min-width: 0;
   height: 100%;
-  border: none;
+  border: 0;
   background: none;
-  color: var(--text);
-  font-family: inherit;
-  font-size: 0.8438rem;
+  font-size: 0.9375rem;
 }
 
 .hd__input:focus {
@@ -139,168 +144,94 @@ function onSearch() {
   color: var(--text-faint);
 }
 
-.hd__sep {
-  width: 1px;
-  height: 18px;
-  background: var(--border);
-  flex-shrink: 0;
-}
-
-.hd__cat {
-  position: relative;
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  min-width: 0;
-  max-width: 45%;
-  height: 100%;
-}
-
-.hd__select {
+.hd__input::-webkit-search-cancel-button {
   appearance: none;
-  width: 100%;
-  height: 100%;
-  padding: 0 1.375rem 0 0.25rem;
-  border: none;
-  background: none;
-  color: var(--text-dim);
+}
+
+.hd__kbd {
+  display: grid;
+  place-items: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
   font-size: 0.75rem;
-  text-overflow: ellipsis;
-  cursor: pointer;
-}
-
-.hd__select:focus-visible {
-  outline: 2px solid var(--border-strong);
-  outline-offset: 2px;
-  border-radius: 4px;
-}
-
-.hd__select option {
-  background: var(--bg-raised);
-  color: var(--text);
-}
-
-.hd__caret {
-  position: absolute;
-  right: 0;
-  font-size: 18px;
-  pointer-events: none;
   color: var(--text-faint);
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-}
-
-.hd__brand {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  text-decoration: none;
-  color: var(--text);
-}
-
-.hd__mark {
-  width: 18px;
-  height: 18px;
-  display: block;
-  image-rendering: pixelated;
-}
-
-.hd__name {
-  font-size: 0.9063rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-}
-
-.hd__count {
-  font-size: 0.6875rem;
-  color: var(--text-faint);
-  margin-left: 0.25rem;
-}
-
-.hd__right {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.hd__demo {
-  display: inline-flex;
-  align-items: center;
-  height: 34px;
-  padding: 0 0.875rem;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  font-size: 0.8125rem;
-  color: var(--text-dim);
-  text-decoration: none;
-  transition:
-    color var(--transition-fast),
-    border-color var(--transition-fast),
-    background var(--transition-fast);
-}
-
-.hd__demo:hover {
-  color: var(--text);
-  border-color: var(--border-strong);
-  background: var(--bg-hover);
-}
-
-.hd__demo:active {
-  transform: scale(0.98);
 }
 
 .hd__mode {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  color: var(--text-dim);
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border-ui);
+  border-radius: var(--radius-md);
+  color: var(--text);
   transition:
-    color var(--transition-fast),
-    border-color var(--transition-fast);
+    background-color var(--transition-fast),
+    transform var(--transition-fast);
 }
 
-.hd__mode:hover {
-  color: var(--text);
-  border-color: var(--border-strong);
+.hd__mode .material-symbols-rounded {
+  font-size: 20px;
+}
+
+.hd__sun {
+  display: none;
+}
+
+html[data-theme='dark'] .hd__sun {
+  display: block;
+}
+
+html[data-theme='dark'] .hd__moon {
+  display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme='light']) .hd__sun {
+    display: block;
+  }
+
+  html:not([data-theme='light']) .hd__moon {
+    display: none;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hd__mode:hover {
+    background: var(--bg-hover);
+  }
 }
 
 .hd__mode:active {
-  transform: scale(0.94);
-}
-
-.hd {
-  border-bottom: 1px solid var(--border);
+  transform: scale(0.95);
 }
 
 @media (max-width: 640px) {
-  .hd__bar {
-    padding: 0 1rem;
+  .hd {
     gap: 0.5rem;
   }
 
-  .hd__search {
-    padding: 0 0.625rem;
-  }
-
-  .hd__cat {
-    max-width: 38%;
-  }
-
-  .hd__demo,
-  .hd__count,
-  .hd__name {
+  .hd__kbd {
     display: none;
+  }
+
+  .hd__search {
+    flex-basis: 12rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .hd__word {
+    font-size: 1.3rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hd__mode:active {
+    transform: none;
   }
 }
 </style>

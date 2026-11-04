@@ -1,0 +1,115 @@
+# CODING AGENT PROMPT — "TERRAZZO" LANDING PAGE (FULL BUILD)
+
+**Role:** You are a Senior Frontend Engineer and Expert UI Designer. Build the complete landing page described below in a single attempt. Every rule in this document is mandatory. Where the provided design tokens conflict with a rule here, the rule wins and the explicit exception clause noted beside it applies.
+
+---
+
+## 0. PROJECT BRIEF & PAGE STRUCTURE
+
+**0.1 Theme:** "Terrazzo" — a speckled multicolor chip pattern composited on a solid warm ground; playful, tactile, retro-modern; the 2018-era graphic revival of ancient Venetian composite flooring. The signature move is a layered-radial-gradient "chip" texture applied to the nav, cards, and badges.
+
+**0.2 Product & Copy:** Invent one coherent fictional product/brand that fits terrazzo's tactile, interior-design heritage (e.g., a surface-materials studio, a design toolkit, or a playful productivity product). Write **all user-facing copy in English** — realistic, on-brand marketing copy for every section. Lorem ipsum is forbidden.
+
+**0.3 Required Sections (in order):**
+- **Header/Nav:** sticky pill-shaped nav (per the `.nav` reference class) with logo, anchor links to each section, theme toggle, and a primary CTA. On mobile it collapses to a menu button opening an accessible dropdown panel (uses `--z-dropdown`).
+- **Hero:** badge, display headline, subhead, primary + secondary CTA buttons, a terrazzo-textured visual panel, and 2–3 proof stats.
+- **Features:** exactly 3 cards, each with a Google Material Symbol icon on a chip-colored tile (rotate chip-a/b/c), title, and description.
+- **How It Works:** exactly 3 numbered steps with chip-colored markers and a connector line on desktop, stacked on mobile.
+- **Testimonials:** 3 quote cards with initials-based avatars on chip-colored circles, name, role, and a star rating (icon plus accessible text label — never icon-only).
+- **Pricing:** 3 tiers; the middle tier is highlighted with a "Most Popular" badge using the terrazzo chip pattern; feature lists with check icons; one CTA button per tier.
+- **FAQ:** 5–6 accordion items (see 2.4).
+- **Final CTA:** terrazzo-textured panel with headline, email capture form (see 2.3), and privacy microcopy.
+- **Footer:** grouped secondary link columns (Product, Company, Resources, Legal), social icons via Material Symbols, and a copyright line.
+
+---
+
+## 1. STRICT RULES & ARCHITECTURE
+
+**1.1 CSS-First Architecture & Zero Inline CSS**
+- All styling lives in `style.css`. The `style="..."` attribute is forbidden anywhere in the HTML.
+- All design properties, layout rules, and states are applied via class or ID selectors only.
+- HTML stays semantic and style-agnostic: changing the site's look must require editing only CSS (plus the theme class toggled by JS).
+
+**1.2 CSS Variables & Theme Tokens**
+Define the mandatory semantic token set in `:root`, populated with the Terrazzo palette:
+- **Colors:** `--primary: #e2574c; --secondary: #2f9e8f; --bg-primary: #f7f3ec; --bg-secondary: #fefefe; --bg-secondary-strong: #efe8db; --text-primary: #221f1a; --text-secondary: #5c564a; --text-success:` (a darkened, AA-contrast green derived from `#2f9e8f`, e.g. `#1e7f70`); `--text-error:` (a red visually distinct from `--primary`, e.g. `#b3261e`); `--border-default: #e0d6c2; --border-error:` (matching the error family); `--border-success: #2f9e8f`.
+- **Near-white exception clause:** the source palette lists surface `#ffffff`; per the near-white standard it is normalized to `#fefefe` everywhere a white surface is needed — never use `#ffffff` as a background.
+- **Terrazzo namespace:** keep the source spec's extra tokens — `--color-chip-a: #f2b705; --color-chip-b: #7c5cff; --color-chip-c: #2f9e8f; --color-chip-d: #e2574c;` plus `--terrazzo-chips` (the six layered radial gradients exactly as provided) and `--terrazzo-size: 140px 140px`. Components must consume the semantic tokens; the chip/pattern tokens feed the signature texture. If you reuse the reference component CSS verbatim, alias its `--color-*` references to the semantic tokens (e.g., `--color-surface: var(--bg-secondary)`) so there is a single source of truth.
+- **Radius & shadows:** `--radius-sm: 8px; --radius-md: 14px; --radius-lg: 22px;` (plus `--radius-pill: 999px`); `--shadow-sm`, `--shadow-md` (plus `--shadow-lg`) exactly as given in the reference tokens.
+- **Spacing & transitions:** keep the `--space-*` and `--text-*` scales from the reference; add `--spacing-gap: 24px`, `--transition-fast: 0.15s`, `--transition-normal: 0.25s`, both bound to `--ease-standard: cubic-bezier(0.34, 1.4, 0.64, 1)`.
+- **Elevation:** define `--z-dropdown: 1000; --z-modal: 1100; --z-toast: 1200;` and use them for every layered component (mobile menu, any dialog, any toast).
+- **Contrast pairing:** every light background token pairs with dark text tokens and every dark background token pairs with light text tokens — enforced in both light and dark themes. Body text must meet WCAG AA (4.5:1); large text and UI borders at least 3:1.
+
+**1.3 Mandatory Dark Mode Support**
+- Dark mode is required even though the source spec does not declare it — the source instruction "source does not declare modes; validate in both light and dark before publishing" is a build requirement, not an option.
+- Implement dark tokens under a `.dark` class on `<html>` that overrides the semantic tokens. Suggested starting values (validate contrast before publishing): `--bg-primary: #1b1915; --bg-secondary: #262219; --bg-secondary-strong: #2e2a20; --text-primary: #f4efe4; --text-secondary: #b5ac9c; --border-default: #3d3830;` with `--primary`/`--secondary`/chips brightened just enough to stay visible on the dark ground (e.g., `--primary: #ec6a5f; --secondary: #3fb3a3`).
+- The terrazzo chip pattern must remain perceptible in dark mode: keep the chip hues but lighten/desaturate them for the dark ground (re-map the chip variables or define a `--terrazzo-chips` override inside `.dark`).
+- Theme switching must not require HTML restructuring — only variable overrides.
+- **Persistence:** store the user's choice in `localStorage`; on first visit fall back to `prefers-color-scheme`. The single deferred `script.js` must apply the theme class as its very first action to minimize flash.
+- Provide a visible toggle control (sun/moon Material Symbol) with correct `aria-pressed` and `aria-label` that updates with state.
+
+**1.4 Flexbox Layout & Mobile-First Alignment**
+- Build every layout structure with Flexbox.
+- Every flex container defaults to `align-items: center` unless an exception is explicitly justified in a code comment (e.g., `stretch` for equal-height pricing cards).
+- Mobile-first: rows become columns at breakpoints; no horizontal scrolling at any viewport width; fluid type via the `--text-*` scale with `clamp()` where needed.
+
+**1.5 Framework Decision**
+- The reference spec is pure custom CSS, so build with clean, hand-written CSS (no framework), extending the provided component classes (`.nav`, `.btn`, `.card`, `.input`, `.badge`) per Section 2. If you introduce Tailwind, it must be via `@layer`/`@apply` mapping to the same tokens — but the default and expected path is custom CSS.
+
+**1.6 Typography & Icons (Google Fonts Mandatory)**
+- Load Google Fonts via `<link>`: Poppins as the primary sans bound to `--font-base`/`--font-sans`, plus Nunito and Fraunces per the reference tokens (`--font-display` may pair Poppins/Fraunces for hero headlines).
+- Icons are Google Material Symbols (Rounded axis fits the playful mood), loaded via the official Google Fonts link with the `FILL`/`wght` axes configured. Raw inline SVGs and local icon files are forbidden.
+
+**1.7 Terrazzo Signature Texture**
+- The chip pattern is built exclusively from the layered radial gradients in `--terrazzo-chips` composited over a solid ground (e.g., `background: var(--terrazzo-chips), var(--bg-secondary); background-size: var(--terrazzo-size);`). No images, no sprites.
+- Apply it to the nav, the highlighted pricing card, badges, and the hero/Final-CTA panels — as texture, never behind body text at full strength; keep text on solid or softened areas and verify readability in both themes.
+- Vary scale where the reference does (badges use a smaller `background-size`, e.g., `60px 60px`).
+
+---
+
+## 2. COMPONENT DESIGN SPECIFICATIONS
+
+**2.1 Buttons**
+Style all states via classes (base `.btn`; modifiers `.btn--primary`, `.btn--secondary`, `.btn--danger`):
+- **Default:** `display: flex; align-items: center; justify-content: center; gap: 0.5rem;` minimum touch target 44×44px; pill radius per reference.
+- **Hover:** `translateY(-2px)` + `--shadow-md`, `cursor: pointer`.
+- **Focus:** distinct `:focus-visible` ring using `--secondary` (outline + offset per reference).
+- **Active/Pressed:** add `transform: scale(0.97)` click feedback (in addition to the reference's return-to-baseline).
+- **Loading:** class-driven state that disables interaction, prevents double submits, and renders a CSS spinner (or animated Material Symbol) without changing button dimensions.
+- **Disabled:** `opacity: 0.5`, greyscale, `cursor: not-allowed`, no transforms.
+- **Success/Error:** temporary feedback styles driven by `--text-success`/`--text-error` (used by the Final CTA form submit).
+- `.btn--danger` must be visually distinct from `.btn--primary` in both themes.
+
+**2.2 Cards**
+- **Default:** flexible Flexbox layout, `--bg-secondary` ground, `--border-default` border, `--radius-lg`, `--shadow-md`.
+- **Hover:** elevation shift and/or `translateY(-2px)`.
+- **Focus-within:** border highlight when a child link/button receives focus.
+- **Loading (Skeleton):** define a shimmer animation utility class in CSS (no layout shift) and apply it to any region whose content renders dynamically.
+- **Empty State:** define a structured fallback (Material Symbol + guidance text) for any dynamic region that can return no content.
+
+**2.3 Forms & Inputs**
+The Final CTA email form (and any other input) must account for: **Empty, Focused** (accent ring per the reference `.input:focus`), **Filled, Valid** (success border + check icon), **Invalid** (error border, error text, error icon, message rendered into a dedicated error container), **Disabled, Read-only**.
+- Structure: a flex `.input-group` wrapping label, input, and a dedicated error-feedback container; errors are announced via an `aria-live="polite"` region; never color alone — pair color with icon + text.
+
+**2.4 FAQ Accordion (and Modal, if used)**
+- **Accordion:** each item header is a `<button>` with `aria-expanded`/`aria-controls` toggling a panel (`role="region"`, `aria-labelledby`); open/close is animated via CSS only (e.g., `grid-template-rows: 0fr → 1fr`); a chevron Material Symbol rotates with the state; fully keyboard operable; respects `prefers-reduced-motion`.
+- **If any modal/dialog is introduced** (e.g., plan selection), it must implement: opening/open/loading/success/closing states animated via CSS, a centered flex container with backdrop overlay, a Material Symbol close button, keyboard focus trapping, close via `Esc` or overlay click, and `--z-modal` elevation.
+
+---
+
+## 3. CORE UX & MICRO-INTERACTION RULES
+
+- **Responsive by default:** fluid sizing, standard breakpoints, zero horizontal overflow.
+- **Smooth animations:** every state change transitions with `var(--transition-normal)` / `var(--ease-standard)`; all motion is disabled under `prefers-reduced-motion: reduce`.
+- **Accessibility (a11y):** semantic HTML5 landmarks (`header`/`nav`/`main`/`section`/`footer`), logical heading order with a single `h1`, a skip-to-content link, visible focus states everywhere, full keyboard operability (nav menu, accordion, forms, theme toggle), ARIA roles/labels on all custom widgets, `aria-live` regions for dynamic feedback (form errors, loading, success), and WCAG AA contrast in both themes. Never rely on color alone to communicate state.
+- **Mandatory visual feedback:** every click, hover, and submission produces a visible state change.
+- **Destructive actions:** any destructive action uses `.btn--danger` and is visually distinct in both light and dark themes.
+
+---
+
+## 4. DELIVERABLE & OUTPUT FORMAT
+
+- **Files:** separate `index.html`, `style.css`, and `script.js`. No inline `<script>` blocks beyond the single deferred `script.js` reference; no inline CSS anywhere.
+- **Naming:** one consistent BEM convention across all classes (`.btn`, `.btn--primary`, `.card__title`, `.nav__link`, …), matching the reference spec's `.btn--primary` style. Never mix conventions.
+- **Copy:** realistic English marketing copy per 0.2 — no lorem ipsum and no placeholder text where real copy is expected; placeholders are permitted only for genuinely unspecified data (e.g., a fictional address).
+- **Completion:** ship the full page in one attempt — all sections, all component states, both themes — and validate contrast in light and dark before considering the work done.

@@ -1,0 +1,104 @@
+# Applied Labs — Complete Landing Page Build Prompt
+
+## 1. Project Context & Brand Fidelity
+Build a complete, single-page marketing landing page for a **fictional** AI-powered customer support product. Invent a fictional brand name, product name, and all copy. **Never** use the real brand name "Applied Labs", its logo, trademarks, or product names anywhere in the deliverable. Reuse only the visual style system described below.
+
+**Theme:** Light, warm editorial — sunlit cream paper with cobalt punctuation and floating conversation cards.
+
+## 2. Strict Architecture Rules
+- **CSS-First, Zero Inline CSS:** All styling lives in `style.css`. No `style="..."` attributes. Use class/ID selectors only. HTML stays semantic and style-agnostic.
+- **CSS Variables:** Define all tokens in `:root` (and `.dark` / `@media (prefers-color-scheme: dark)`). Required tokens: `--primary`, `--secondary`, `--bg-primary`, `--bg-secondary`, `--text-primary`, `--text-secondary`, `--text-success`, `--text-error`, `--border-default`, `--border-error`, `--border-success`, `--radius-sm`, `--radius-md`, `--radius-lg`, `--shadow-sm`, `--shadow-md`, `--spacing-gap`, `--transition-fast`, `--transition-normal`, `--ease-standard`, `--z-dropdown`, `--z-modal`, `--z-toast`. Light backgrounds pair with dark text and vice versa in every theme.
+- **Light Mode Background:** Do not use pure white for the page canvas; use `#fefefe` where a near-white is needed. Cream sections use `#f7f7f4`.
+- **Mandatory Dark Mode:** Provide dark tokens under `@media (prefers-color-scheme: dark)` and `.dark`. Persist user choice via `localStorage`, falling back to `prefers-color-scheme`. Include a visible toggle with correct `aria-pressed`/`aria-label`.
+- **Flexbox Layout:** Default `align-items: center` on every flex container unless explicitly justified. Mobile-first, responsive, no horizontal overflow.
+- **Framework:** Tailwind CSS (or clean custom CSS via `@layer`/`@apply`) mapping utilities to CSS variables and reusable classes (`.btn`, `.card`, `.input-group`).
+- **Typography & Icons:** Google Fonts only. Text: Geist (substitute Inter if unavailable) via `<link>`/`@import`, bound to `--font-base`. Icons: Google Material Symbols/Icons. No inline SVGs or local icon files.
+
+## 3. Design Tokens (Applied Labs Style)
+**Colors:**
+- `--color-white: #ffffff` (page canvas, base card, nav)
+- `--color-cream: #f7f7f4` (warm section backgrounds)
+- `--color-fog: #f5f5f5` (elevated cards)
+- `--color-ash: #e4e4e7` (hairline borders/dividers)
+- `--color-stone: #8c8c8c` (tertiary text, placeholders, disabled)
+- `--color-steel: #737373` (secondary body text)
+- `--color-graphite: #666666`
+- `--color-charcoal: #4d4d4d` (nav labels, subdued headings)
+- `--color-warm-gray: #7d7c78` (icon fills)
+- `--color-espresso: #26251e` (primary text on cream, dark accents)
+- `--color-midnight: #09090b` (primary text on white)
+- `--color-pure-black: #000000`
+- `--color-deep-ink: #111111` (footer/nav dark accents)
+- `--color-slate-blue: #5c7aa1` (cool accent sections, max 10-15% surface)
+- `--color-warm-sand: #b39987` (trust band, max 10-15% surface)
+- `--color-cobalt-spark: #0051ff` (links/inline emphasis only — never filled buttons)
+- `--color-emerald: #00cb39` (supporting accent, not status)
+
+**Typography:** Geist (Inter fallback), weights 300/400/500. Sizes 10-48px. Line heights 1.00-1.55. Tight tracking on display (-0.96px@48, -0.72px@36, -0.29px@24); near-zero body (0.08px@16); open micro (0.14px@14, 0.12px@12). OpenType `"ss01" on, "cv11" on`. Headlines weight 300 (never 600-700). Cobalt used for at most one inline link/accent per section.
+
+**Spacing & Shapes:** Base 4px, comfortable density. Radius: tags/pills 9999px, cards 8px, inputs 4px, buttons 8px, large cards 24px. Shadows: `--shadow-xl: rgba(38,37,30,0.14) 0px 18px 36px 0px`; elevated: `rgba(0,0,0,0.03) -65px 67px 56px 0px, rgba(0,0,0,0.05) -29px 30px 41px 0px, rgba(0,0,0,0.05) -7px 7px 23px 0px`. Max content width 1200px. Section gaps 80-120px. Card padding 12-16px. Element gap 12px.
+
+**Surfaces:** Canvas #ffffff (0), Cream #f7f7f4 (1), Fog #f5f5f5 (2), Warm Sand #b39987 (3), Slate Blue #5c7aa1 (4).
+
+## 4. Component Specifications
+Enforce all states via CSS classes:
+
+**Buttons:**
+- Default: flex, `align-items: center; justify-content: center; gap: 0.5rem`, min 44x44px touch target.
+- Hover: brightness/shadow shift, `cursor: pointer`.
+- Focus: distinct focus ring via CSS vars.
+- Active: `transform: scale(0.97)`.
+- Loading: disabled, spinner/animated Google Icon, no dimension distortion.
+- Disabled: `opacity: 0.5`, greyscale, `cursor: not-allowed`.
+- Success/Error: temporary styles via `--text-success`/`--text-error`.
+- Variants: Primary CTA (dark filled #000000/#26251e, white text, 8px radius, 14px 24px padding, Geist 500 14px, 0.14px tracking, hover elevation shadow, no border); Pill CTA (full pill 9999px, 8px 16px padding); Ghost text link (no bg/border, Midnight 14px Geist 400, hover Cobalt); Cobalt inline link (Cobalt, no underline default, underline on hover). Never fill buttons with Cobalt.
+
+**Cards:** Default flex, subtle borders, elevation via surface color. Hover: `translateY(-2px)` or shadow shift. Focus-within: border highlight. Loading skeleton: shimmer CSS, no layout jump. Empty state: Google Icon + guidance text. No shadows unless floating overlay/modal.
+
+**Forms/Inputs:** States: empty, focused (outline ring), filled, valid (success border/icon), invalid (error border, red text, error icon), disabled, read-only. Structure: flex container wrapping label, input, error feedback. Underline style: borderless top/sides, 1px #e4e4e7 bottom only, 12px vertical padding, 14px Geist 400 Midnight text, Stone placeholder, focus bottom border → Midnight. No background fill. Select: same underline + right-aligned chevron in Charcoal.
+
+**Modal/Popup:** States opening/open/loading/success-error/closing (CSS transitions). Centered flex container, backdrop overlay, Google Icon close button, focus trapping, close via Esc/overlay click.
+
+**Sticky Nav (64-72px):** White bg, #e4e4e7 bottom border. Logo (sparkle icon + wordmark) left. Links (Product, Industries, Pricing, Assurance, Company) 14px Geist 500 Midnight, 24-32px spacing. Right: "Log In" ghost link + "Get Demo" pill button. Padding 0 24px.
+
+**Hero:** Full-bleed warm photography (right half) with translucent chat bubbles overlaid (12-16px radius, rgba(255,255,255,0.85) fill). Left: headline 48px Geist 300 Midnight, -0.96px tracking, line-height 1.08. Subhead 16-18px Geist 400 Steel. Dark CTA below. Photo no border-radius.
+
+**Chat Bubbles:** User: semi-transparent cream/white, 12px radius, 12px 16px padding, 14px Geist 400 Midnight, avatar dot/icon prefix. Agent: semi-transparent dark or cobalt-tinted, white text, 12px radius, slightly larger, agent name caption prefix.
+
+**Trust Logo Strip:** Full-width band, Warm Sand or Cream bg. Centered caption "Trusted by millions of customers" 12-13px Steel, 24px bottom margin. Row of 6-8 monochrome logos (Midnight/Charcoal), spaced 48px, optically aligned.
+
+**Section Heading Block:** 80-120px top padding, max-width 720px. Headline 36px Geist 300 Midnight, -0.72px tracking, line-height 1.17. Optional subhead 18px Geist 400 Steel, 16px top margin. No decoration.
+
+**Feature Card:** 8px radius, 1px #e4e4e7 border, 16px padding, white bg. 24px icon Midnight/Cobalt. Heading 16-18px Geist 500. Body 14px Geist 400 Steel, 12px margin-top. No shadow. (24px radius for large hero-feature cards.)
+
+**Form Section:** 50/50 split — form left (white/cream), full-bleed photo right. Headline 36px Geist 300, body 16px Steel, 3-4 stacked inputs with 24-32px vertical gap. Submit: full-width, filled Midnight/Espresso, white text, 8px radius, 14px 24px padding, Geist 500 14px.
+
+**Footer:** White/Cream bg, top border #e4e4e7. Logo left, link columns center, legal/social right. 12-13px Geist 400 Steel. 40-60px vertical padding.
+
+## 5. Core UX & Micro-Interactions
+- Responsive by default, fluid sizing, no horizontal overflow.
+- CSS transitions on all state changes (`transition: var(--transition-normal)`), respect `prefers-reduced-motion`.
+- Accessibility: sufficient contrast both themes; never color-only state communication; semantic HTML5; correct ARIA roles/labels; logical DOM/focus order; full keyboard operability; `aria-live` for dynamic feedback.
+- Mandatory visual feedback on every click/hover/submission.
+- Destructive actions visually distinct in both themes.
+
+## 6. Deliverables
+Files: `index.html`, `style.css`, `script.js` (no inline `<script>` beyond single deferred entry-point). One consistent class-naming convention (BEM or fixed utility set) — never mix. No lorem-ipsum-only where real copy was supplied; placeholders only where genuinely unspecified. Imagery: real warm-toned photography only (use placeholder image URLs), no illustrations/3D renders. Chat bubbles composited over photography. Icons minimal 1-1.5px stroke outlined, Midnight/Cobalt.
+
+## 7. Page Structure (Sections)
+1. Sticky Navigation Bar
+2. Hero (headline + subhead + CTA + photo with chat bubbles)
+3. Trust Logo Strip
+4. Features (3 cards)
+5. How It Works (3 steps)
+6. Testimonials
+7. Pricing (3 tiers)
+8. FAQ
+9. Final CTA
+10. Footer (secondary links)
+
+## 8. Dark Mode Color Mapping
+Under `.dark`/`prefers-color-scheme: dark`, swap tokens: canvas → near-black, cream → dark warm gray, text → light, borders → dark gray, cobalt stays (ensure contrast), CTA buttons invert to light fills with dark text. Maintain contrast pairing for every token.
+
+## 9. Edit/Build Notes
+This is a from-scratch build. Do not introduce unrequested elements. If a requested style cannot be achieved without added markup, stop and ask before inserting HTML. Write all user-facing copy in English. Ensure all CSS variable names, class names, and file names are English/ASCII. Include the Google Fonts link for Geist (Inter fallback) and Material Symbols in `<head>`.The prompt has been generated above following all meta-prompt rules: CSS-first architecture, mandatory dark mode with localStorage persistence, zero inline CSS, flexbox with default `align-items: center`, Tailwind/custom CSS mapping, Google Fonts/Icons, full component state coverage, accessibility requirements, responsive mobile-first layout, and the Applied Labs visual token system. The fictional-brand instruction and English-only copy rule are included. All CSS variables, class names, and file names are in English/ASCII.

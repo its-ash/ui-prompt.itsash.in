@@ -1,0 +1,187 @@
+# SYSTEM PROMPT — CODING AI BUILD SPECIFICATION
+
+**Project:** Complete Landing Page — Theme: **"Isometric Gaming / Voxel"**
+**Role:** Act as a Senior Frontend Engineer and Expert UI Designer. Deliver a complete, production-ready landing page on the first attempt.
+**Theme Identity:** Isometric projection, voxel-style, Minecraft-esque, floating platforms, gamified, pixel-3D, step-down progression, playful 3D, 2020s Gaming Culture. Full Light Mode **and** Full Dark Mode are mandatory.
+**Required Sections (in this order):** Hero → Features (3 cards) → How It Works (3 steps) → Testimonials → Pricing (3 tiers) → FAQ → Final CTA → Footer with secondary links.
+
+---
+
+## 1. STRICT RULES & ARCHITECTURE
+
+### 1.1 CSS-First Architecture & Zero Inline CSS
+- All styling must live exclusively in `style.css`. **The `style="..."` attribute is forbidden anywhere in the HTML.**
+- All design properties, layout rules, and states must be targeted via class or ID selectors only.
+- HTML must remain clean, semantic, and style-agnostic — reskinning the page must only require editing `style.css`.
+- All decorative voxel/isometric elements must be built from real DOM elements styled via classes (CSS-drawn cubes, platforms, gradients) — **no external image files, no inline SVGs.**
+
+### 1.2 CSS Variables & Theme Tokens
+Store every visual token in `:root` and theme overrides. Required tokens:
+
+```css
+:root {
+  /* Light Mode — "Overworld" */
+  --primary: #69F0AE;        /* Mint Green — primary actions */
+  --secondary: #80DEEA;      /* Aqua */
+  --bg-primary: #E8F0FE;     /* Sky Blue page background */
+  --bg-secondary: #fefefe;   /* Card surfaces — never #ffffff */
+  --text-primary: #5D4037;   /* Warm Brown — dark text on light bg */
+  --text-secondary: #8D6E63;
+  --text-success: #2E7D32;
+  --text-error: #C62828;
+  --border-default: #5D4037;
+  --border-error: #C62828;
+  --border-success: #2E7D32;
+  --accent-peach: #FFCCBC;
+  --accent-yellow: #FFF59D;
+  --accent-pink: #F48FB1;
+  --accent-lavender: #B39DDB;
+
+  /* Voxel depth + ambient light */
+  --voxel-shadow: rgba(93, 64, 55, 0.85);          /* hard, blur-free block shadow */
+  --shadow-voxel: 6px 6px 0 var(--voxel-shadow);   /* blocky extrusion */
+  --shadow-sm: 0 8px 20px rgba(179, 157, 219, 0.30); /* gentle pastel ambient */
+  --shadow-md: 0 14px 34px rgba(179, 157, 219, 0.40);
+
+  /* Radius — VOXEL EXCEPTION CLAUSE: all radius tokens MUST resolve to 0px
+     to enforce blocky, pixel-perfect edges. Tokens exist for structure only. */
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+
+  --spacing-gap: 1.5rem;
+  --transition-fast: 150ms;
+  --transition-normal: 300ms;
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1); /* playful bounce */
+
+  --z-dropdown: 1000;
+  --z-modal: 2000;
+  --z-toast: 3000;
+
+  --font-display: "Press Start 2P", monospace;
+  --font-base: "Inter", sans-serif;
+}
+```
+
+- **Contrast pairing (enforced in every theme):** every pastel fill (`--primary`, `--accent-yellow`, `--secondary`, `--accent-peach`) must pair with dark text (`--text-primary` Warm Brown or near-black). Pastel colors may be used as *text* only on dark backgrounds. Light background tokens always pair with dark text tokens and vice versa — in both Light and Dark modes.
+- `--shadow-voxel` (hard, blur-free offset) is for blocky extrusion depth; `--shadow-sm/md` (soft pastel blur) is for ambient card elevation. Use both deliberately.
+
+### 1.3 Mandatory Dark Mode Support — "Night Biome"
+- Define a full dark palette under **both** `@media (prefers-color-scheme: dark)` **and** a `.dark` class on `<html>`: deep night backgrounds (e.g., `--bg-primary: #141522`, `--bg-secondary: #1F2130`), light text (`--text-primary: #F3F0FA`, `--text-secondary: #B9B4CC`), darkened `--voxel-shadow` (e.g., `rgba(0,0,0,0.55)`), and deeper soft shadows. The pastel accents (mint, aqua, pink, lavender) remain and read as glowing "neon voxel" colors against the dark bg.
+- Theme switching must work purely by swapping CSS variables — **zero HTML restructuring**.
+- Persist the user's choice in `localStorage` (fallback to `prefers-color-scheme` on first visit). `script.js` must apply the stored theme as its **very first action** to minimize flash. Render a visible voxel-block toggle button in the header with correct `aria-pressed` and `aria-label` ("Toggle dark mode"), swapping Google Material icons `light_mode` / `dark_mode`.
+
+### 1.4 Flexbox Layout & Mobile-First Alignment
+- Build all structural layout (header, sections, card rows, footer) with **Flexbox**. Every flex container must default to `align-items: center` unless an explicitly justified exception is documented in a CSS comment.
+- Mobile-first: all flex rows must wrap or convert to `flex-direction: column` on small viewports. **No horizontal scrolling at any breakpoint.**
+- **Exception clause:** CSS Grid is permitted *only inside the decorative isometric hero scene* to position voxel blocks. All functional layout remains Flexbox.
+
+### 1.5 Framework Default & Tailwind CSS Integration
+- Use Tailwind CSS, or clean custom CSS organized with Tailwind's `@layer` / `@apply` directives. All utilities must map back to the CSS variables and generic reusable classes: `.btn`, `.card`, `.input-group`, `.badge`, `.voxel`, `.iso-scene`, `.step`, `.faq-item`, `.pricing-card`, `.reveal`, `.toast`.
+
+### 1.6 Typography & Icons (Google Fonts Mandatory)
+- Load **Google Fonts** via `<link>`: **"Press Start 2P"** for display type (logo, headlines, section titles, card titles — use sparingly at reduced sizes for legibility) and **"Inter"** for all body copy. Bind them to `--font-display` and `--font-base`.
+- Use **Google Material Symbols** for every icon. **Inline SVGs, local icon files, and emoji-as-icons are forbidden.** Suggested icons: `sports_esports`, `rocket_launch`, `diamond`, `construction`, `terrain`, `extension`, `emoji_events`, `bolt`, `auto_awesome`, `star`, `check`, `close`, `expand_more`, `menu`, `person`, `light_mode`, `dark_mode`.
+
+---
+
+## 2. COMPONENT DESIGN SPECIFICATIONS
+
+### 2.1 Button Component Requirements
+Style all states via CSS classes on a `.btn` base (flex; `align-items: center; justify-content: center; gap: 0.5rem;` min touch target 44×44px; `border-radius: 0`; 2px solid border):
+- **Voxel press mechanic (signature interaction):** default state carries a hard extrusion shadow `box-shadow: 0 6px 0 <darker shade of the button fill>`; `:hover` lifts (`translateY(-2px)`, shadow grows to 8px) with `--ease-bounce`; `:active` presses down (`translateY(6px)`, shadow collapses to 0) — a physical Minecraft-esque block press.
+- **Focus:** distinct `:focus-visible` ring (3px solid accent, 2px offset) for keyboard navigation.
+- **Loading:** disables pointer events, prevents double-submits, shows a CSS spinner or pulsing Material icon — button dimensions must not change.
+- **Disabled:** `opacity: 0.5`, greyscale filter, `cursor: not-allowed`.
+- **Success/Error:** temporary feedback states driven by `--text-success` / `--text-error`, always paired with an icon + text label (never color alone).
+- **Variants:** `.btn-primary` (mint fill, Warm Brown text), `.btn-secondary` (aqua or peach fill, dark text), `.btn-outline` (transparent, 2px border), `.btn-danger` (visually distinct in both themes).
+
+### 2.2 Card Component Requirements
+- **Default:** Flexbox column layout, `--bg-secondary` surface, 2px solid `--border-default` (reduced-opacity in dark mode), combined `--shadow-voxel` + `--shadow-sm` elevation, `border-radius: 0`.
+- **Hover:** `translateY(-2px)` or subtle bounce via `--ease-bounce`, shadow growth.
+- **Focus-within:** border color shifts to an accent when a child link/button receives focus.
+- **Loading (Skeleton):** define a shimmer `@keyframes` skeleton utility class for any dynamically populated area.
+- **Empty State:** structured fallback layout with a Google Material icon and clear guidance text.
+
+### 2.3 Form & Input Requirements
+- The Final CTA contains a newsletter email capture. Structure: `.input-group` flex container wrapping `<label>`, `<input type="email">`, and a dedicated error feedback element with `aria-live="polite"`.
+- **States:** Empty, Focused (accent outline ring), Filled, Valid (success border + `check` icon), Invalid (error border, `--text-error` message, `close` icon), Disabled, Read-only.
+- Inputs are blocky: `border-radius: 0`, 2px border, inset voxel shadow on focus. Validation is client-side in `script.js` with visible inline feedback — no browser-default styling.
+
+### 2.4 Modal / Popup Requirements
+- Clicking a Pricing tier's "Select Plan" CTA opens a plan-confirmation modal. **States:** Opening (scale + fade in via CSS), Open, Loading (on confirm), Success/Error, Closing (animated out).
+- **UX:** centered flex container (`align-items: center`), backdrop overlay, Material icon `close` button, keyboard focus trapping, `role="dialog"`, `aria-modal="true"`, `aria-labelledby`, close via `Esc` and overlay click, focus returns to the triggering button on close.
+
+---
+
+## 3. CORE UX & MICRO-INTERACTION RULES
+
+- **Responsive by default:** fluid `clamp()` sizing, no horizontal overflow. On mobile (<640px), the isometric hero scene must scale down (transform scale) or reduce decorative voxel count while keeping the hero message fully intact.
+- **Smooth animations:** `transition: var(--transition-normal)` on all state changes. Required theme animations:
+  - **Float:** `@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }` applied to decorative voxel blocks/platforms with staggered `animation-delay` (0s–4s), infinite alternate ease-in-out.
+  - **Bounce on interaction:** hover/active transitions use `--ease-bounce`.
+  - **Step-down reveal:** sections and sequential cards start `opacity: 0; transform: translateY(24px)` and gain `.is-visible` via `IntersectionObserver` in `script.js`, cascading with `transition-delay: calc(var(--step-index) * 120ms)` so items appear like descending blocks.
+- **`prefers-reduced-motion`:** disable float, bounce, reveal-translate, and isometric scene animation entirely; keep instant opacity changes; scene becomes static.
+- **Accessibility (a11y):** sufficient contrast in both modes (pastel-on-pastel text is forbidden). Never communicate state by color alone — always icon + text. Semantic HTML5 (`header`, `nav`, `main`, `section`, `article`, `footer`), a "Skip to main content" link, logical DOM/focus order, full keyboard operability, `aria-expanded`/`aria-controls` on the FAQ accordion and mobile menu, `aria-live` regions for form errors and toasts.
+- **Mandatory visual feedback:** every click, hover, and submission triggers a visible state change (nav links, buttons, accordion toggles, pricing CTAs, form submit → loading → success bounce + icon swap).
+- **Destructive actions:** define `.btn-danger` as visually distinct in both Light and Dark themes.
+
+---
+
+## 4. DELIVERABLE & OUTPUT FORMAT
+
+- **Files:** separate `index.html`, `style.css`, `script.js`. The only script reference is a single `<script src="script.js" defer></script>` — no inline `<script>` blocks, no inline styles, no inline SVG.
+- **Naming:** strict **BEM** throughout (e.g., `.hero`, `.hero__title`, `.feature-card`, `.feature-card__icon`, `.pricing-card__badge`, `.faq-item__question`, `.footer__link-group`). Never mix conventions.
+- **Copy:** write original, playful, gamer-flavored **English** copy — no lorem ipsum. Invent one coherent product concept (e.g., a voxel world-building/game-creation platform with "build worlds, one block at a time" messaging) and keep terminology consistent across all sections.
+- **No unrequested placeholders** and no unrequested components beyond the specified sections.
+
+---
+
+## 5. THEME VISUAL DIRECTION — ISOMETRIC GAMING / VOXEL
+
+- **Isometric projection is decorative-only.** Apply `transform: rotateX(60deg) rotateZ(45deg)` (inside a `perspective` container) exclusively to the hero scene and step graphics. **Never apply isometric transforms to text, buttons, inputs, or any interactive control.**
+- **Voxel cube construction:** build cubes from CSS 3D faces — a top face and two side faces, each a different shade of one pastel hue (light top, mid right, dark left) to fake soft high-key ambient lighting. Alternatively, stacked flat blocks with hard `--shadow-voxel` extrusion are acceptable.
+- **Floating island platforms:** the hero scene contains a floating island — pastel green "grass" top face, Warm Brown "dirt" side faces — with 3–5 smaller floating cubes (mint, peach, yellow, lavender) orbiting nearby via the `float` keyframes. Optionally include a small CSS voxel character built from block divs.
+- **Lighting:** Light mode uses soft high-key pastel ambient gradients (e.g., radial pastel glow behind the hero scene); Dark mode shifts to a moonlit night gradient with the pastel cubes reading as glowing.
+- **Pixel-perfect edges:** whole-pixel 2px/3px borders, `border-radius: 0` everywhere, crisp hard shadows — no rounded corners anywhere in the UI.
+- All decorative layers: `aria-hidden="true"`, `pointer-events: none`, no focusable children.
+
+---
+
+## 6. PAGE SECTION SPECIFICATIONS
+
+### 6.0 Global Header
+Sticky flex header: CSS voxel-cube logo mark + "Press Start 2P" wordmark, nav links, theme toggle (voxel block button), primary CTA. Below 768px: `menu` icon toggles a slide-down flex panel (`aria-expanded`, `Esc` closes, focus managed).
+
+### 6.1 Hero
+Two-column flex (stacks on mobile): left — eyebrow badge, "Press Start 2P" headline, subcopy, dual CTAs ("Start Building" primary / "Explore Features" outline), trust row; right — the isometric floating-island scene per Section 5.
+
+### 6.2 Features — 3 Cards
+Flex row → column on mobile. Each `.feature-card`: Material icon inside a colored voxel tile (mint / aqua / lavender), small display-font title, body copy. Step-down reveal stagger; hover bounce + shadow growth.
+
+### 6.3 How It Works — 3 Steps
+**Step-down progression layout:** on desktop, three steps sit as descending isometric floating platforms (step 1 highest → step 3 lowest, achieved with `margin-top` offsets or translateZ on decorative platforms); on mobile, a vertical stack with a dotted voxel path connecting them. Each step: numbered voxel block badge (01/02/03), Material icon, title, copy. Cascade reveal via `--step-index` delays.
+
+### 6.4 Testimonials
+Three quote cards with rotating pastel accents. Avatars are CSS voxel blocks containing a Material `person` icon or pixel initials — no external images. Quote, name, gamer handle/role, 5-star rating via repeated Material `star` icons (icon-based, not color-only).
+
+### 6.5 Pricing — 3 Tiers
+Three `.pricing-card` tiers with themed names (e.g., Explorer / Builder / Worldsmith). Middle tier: "Most Popular" voxel badge, slight elevation/scale on desktop. Each: tier name, price, feature list with Material `check` icons (unavailable features use `close` icon + strikethrough — not color-only), and a "Select Plan" button opening the confirmation modal (Section 2.4).
+
+### 6.6 FAQ
+Accordion of 5–6 items. Each `.faq-item`: `<button>` question with `aria-expanded` + `aria-controls`, rotating `expand_more` icon (180° when open), and an animated panel (CSS height/grid transition). Fully keyboard operable with visible focus states.
+
+### 6.7 Final CTA
+Full-width band: pastel gradient (Light) / night gradient (Dark), display-font headline, newsletter `.input-group` per Section 2.3. On submit: button loading → success state; success confirmed by a fixed-position **toast** (`--z-toast`, `aria-live="polite"`, slide-in animation, Material icon, auto-dismiss, close button). Decorative floating voxels in the background.
+
+### 6.8 Footer
+Multi-column flex: brand block (voxel logo + tagline), secondary link columns (Product, Resources, Company), Material icon social links, and a bottom bar with copyright + legal links. All links have hover/feedback states.
+
+### 6.9 JavaScript Responsibilities (`script.js`)
+Theme toggle + persistence (first action on load), mobile menu, FAQ accordion, IntersectionObserver reveal logic, newsletter validation + toast, pricing modal with focus trap. **No inline event handlers in HTML** — all listeners attached in `script.js`.
+
+---
+
+## DEFINITION OF DONE
+✅ Zero inline CSS/SVG · ✅ All tokens via CSS variables · ✅ Dark mode with persistence + accessible toggle · ✅ Flexbox layouts, `align-items: center` default, no horizontal scroll · ✅ Google Fonts + Material Symbols only · ✅ All button/card/form/modal states implemented · ✅ Float, bounce, step-down reveal with `prefers-reduced-motion` fallback · ✅ Blocky `border-radius: 0` everywhere · ✅ Full keyboard + screen-reader accessibility · ✅ BEM naming, three separate files, single deferred script · ✅ Original English copy, all eight sections delivered.

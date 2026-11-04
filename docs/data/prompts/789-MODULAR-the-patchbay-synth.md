@@ -1,0 +1,118 @@
+# CODING AGENT PROMPT — "MODULAR — The Patchbay Synth" Landing Page
+
+**Role:** You are a Senior Frontend Engineer and Expert UI Designer. Build the complete, production-ready landing page in a single pass — no follow-up questions, no stubs, no TODOs. All user-facing copy must be written in English.
+
+**Objective:** A fully responsive, accessible landing page for **MODULAR — the patchbay synth**, a contemporary (2020s) audio/music product. Visual language: warm neumorphism, synth-hardware motifs (knobs, jack sockets, patch cables), soft gradients, tactile hover feedback. **Light mode is the primary, default presentation.**
+
+---
+
+## 1. STRICT RULES & ARCHITECTURE
+
+**1.1 CSS-First Architecture & Zero Inline CSS**
+* All styling lives exclusively in `style.css`. **Forbidden:** `style="..."` attributes, `<style>` blocks, and inline event handlers in the HTML.
+* All layout, design properties, and states are targeted via **class or ID selectors only**.
+* HTML must remain semantic and agnostic of visual styling — changing the site's entire look must require editing only `style.css`, never the markup.
+
+**1.2 CSS Variables & Theme Tokens**
+Define all tokens in `:root` (light mode default):
+
+* **Colors:** `--primary: #3e2c1a` (deep brown — primary surfaces/buttons), `--secondary: #8a7050` (warm tan accent), `--bg-primary: #d8cfc0` (warm cream page background), `--bg-secondary: #fefefe` (elevated card surfaces), `--text-primary: #171310`, `--text-secondary` (darkened derivative of `#8a7050`, e.g. `#5c4630`, to guarantee ≥4.5:1 on cream — do **not** use raw `#8a7050` as body text on `#d8cfc0`), `--text-success` (theme-harmonized green, e.g. `#2f6b4a`), `--text-error` (rust red, e.g. `#b3402b`), `--border-default: rgba(62,44,26,0.18)`, `--border-success`, `--border-error`.
+* **Contrast Pairing:** Every light background token pairs with a dark text token, and every dark background token pairs with a light text token — enforce this in **both** themes.
+* **Light Mode Background:** Never pure white. The cream `#d8cfc0` is the page canvas; use `#fefefe` only where a near-white surface is required. Never use `#ffffff`.
+* **Radii, Shadows & Neumorphism:** `--radius-sm: 8px`, `--radius-md: 16px`, `--radius-lg: 28px` (rounded, tactile), `--shadow-sm`, `--shadow-md`, plus neumorphic tokens: `--shadow-neu-out` (dual shadow — dark `rgba(23,19,16,…)` bottom-right + light `rgba(254,254,254,…)` top-left) and `--shadow-neu-in` (inset variant for inputs, sockets, pressed states).
+* **Spacing & Transitions:** `--spacing-gap`, `--transition-fast: 150ms`, `--transition-normal: 300ms`, `--ease-standard: cubic-bezier(0.4, 0, 0.2, 1)`.
+* **Elevation:** `--z-dropdown`, `--z-modal`, `--z-toast` to prevent layered-component conflicts.
+* **Gradient Tokens:** `--gradient-warm: linear-gradient(135deg, #3e2c1a, #2c1e10)` (CTA panels, primary buttons), `--gradient-cable: linear-gradient(90deg, #8a7050, #d8cfc0, #8a7050)` (patch-cable decorations), `--gradient-panel` (subtle radial warmth for section backgrounds).
+* **Typography Tokens:** `--font-heading`, `--font-base`, `--font-mono` bound to the Google Fonts in 1.6.
+
+**1.3 Mandatory Dark Mode Support**
+* Dark mode **must be fully defined** under a `.dark` class selector that swaps only token values — zero HTML restructuring. Suggested dark tokens: `--bg-primary: #1c130a`, `--bg-secondary: #2c1e10`, `--text-primary: #d8cfc0`, `--text-secondary: #a8906d` (lightened `#8a7050` for contrast on dark), flipped neumorphic shadows (cream-tinted highlight, near-black dark shadow).
+* User theme choice persists via `localStorage` (e.g., key `modular-theme`). Provide a **visible toggle** in the header with correct `aria-pressed` state and `aria-label` ("Switch to dark mode" / "Switch to light mode"), using Material Symbols `dark_mode` / `light_mode`.
+* **Exception clause:** Per the style specification's Light-first directive (✓ Light / ○ Dark), the first-visit default must be **Light** regardless of `prefers-color-scheme`; the mandatory toggle and `localStorage` persistence remain fully implemented, and all dark tokens must still be built and maintained.
+
+**1.4 Flexbox Layout & Mobile-First Alignment**
+* Build every layout container with Flexbox. Every flex container **must default to `align-items: center`** (`items-center`) unless a CSS comment documents an explicit exception.
+* Mobile-first: multi-column rows collapse to columns at sensible breakpoints (e.g., 640px / 768px / 1024px). **No horizontal scrolling** at any viewport ≥320px — decorative cable/gradient elements must be clipped or hidden so they never force `overflow-x`.
+
+**1.5 Framework Default & Tailwind CSS Integration**
+* Build with clean, hand-authored CSS organized around the tokens above, **or** Tailwind utilities mapped 1:1 to the same CSS variables. Either way, all components must resolve to generic reusable classes (`.btn`, `.card`, `.input-group`); utility soup must not replace the token system.
+
+**1.6 Typography & Icons (Google Fonts Mandatory)**
+* Load via `<link>` in `<head>`: **Space Grotesk** (headings → `--font-heading`), **Inter** (body → `--font-base`), **Space Mono** (technical synth-panel labels such as "MOD-01", "PATCH 03", "OUT" → `--font-mono`).
+* Icons exclusively via **Google Material Symbols (Rounded variant)** stylesheet, referenced by ligature name (e.g., `cable`, `tune`, `graphic_eq`, `album`, `check_circle`, `expand_more`, `close`, `star`). **Explicitly forbidden:** raw inline SVGs, local icon files, emoji used as icons.
+
+---
+
+## 2. COMPONENT DESIGN SPECIFICATIONS
+
+**2.1 Button Component (`.btn`, `.btn--primary`, `.btn--secondary`, `.btn--danger`)**
+* **Default:** `display: flex; align-items: center; justify-content: center; gap: 0.5rem;` — minimum touch target **44×44px**, `--radius-md`.
+* **Primary:** `--gradient-warm` background with cream `#d8cfc0` text. **Hover:** `filter: brightness(1.08)` + `translateY(-1px)` + `cursor: pointer`. **Focus-visible:** distinct ring (2px `--secondary` outline, 3px offset) — neumorphism's low contrast must never hide keyboard focus. **Active/Pressed:** `transform: scale(0.97)` + inset neumorphic "pressed" shadow.
+* **Secondary:** raised neumorphic cream surface with `--text-primary`; hover expands the shadow; active presses it inward.
+* **Loading (`.is-loading`):** disables interaction and prevents double-clicks; renders Material Symbol `progress_activity` with a CSS rotation — button dimensions must not shift.
+* **Disabled:** `opacity: 0.5`, greyscale, `cursor: not-allowed`.
+* **Success/Error (`.is-success` / `.is-error`):** temporary feedback styled from `--text-success` / `--text-error`; never communicated by color alone — pair with an icon and `aria-live` text.
+* `.btn--danger` must be visually distinct in **both** themes (define it even if unused).
+
+**2.2 Card Component (`.card` — Features, Testimonials, Pricing)**
+* **Default:** neumorphic raised surface on the page background, `--radius-lg`, generous padding, flex column layout.
+* **Hover:** `transform: translateY(-2px)` plus expanded neumorphic shadow.
+* **Focus-within:** card border highlights when a child link/button receives focus.
+* **Skeleton:** define reusable shimmer `.skeleton` styles in CSS (no layout jumps) for any asynchronously populated content.
+* **Empty state:** structured `.card--empty` fallback with a Google Icon and clear guidance text.
+
+**2.3 Form & Input Component (`.input-group` — newsletter signup in the Final CTA)**
+* **Structure:** flex column wrapping a visible `<label>` (linked via `for`/`id`), the `<input type="email">` (inset neumorphic surface), and a dedicated error feedback element with `aria-live="polite"`.
+* **States, all class/selector driven:** empty, `:focus` (outline ring in `--secondary`), filled, valid (`--border-success` + `check_circle` icon), invalid (`--border-error`, error icon, red text, human-readable message — never color alone), disabled, read-only.
+* Submit follows the loading → success/error sequence from 2.1, with a visible confirmation message ("You're on the list").
+
+**2.4 FAQ Accordion (`.faq__item`)**
+* Question is a `<button>` with `aria-expanded` + `aria-controls`; panel has `role="region"` and `aria-labelledby`. Height animates via CSS (`grid-template-rows: 0fr → 1fr` or equivalent) over `--transition-normal`; Material Symbol `expand_more` rotates 180° when open. Fully keyboard operable (Enter/Space), visible focus, multiple items may be open simultaneously.
+
+**2.5 Modal / Popup (`.modal` — Hero "Watch the Demo")**
+* **States:** opening (fade + scale from 0.96), open, loading (spinner in the panel body — simulate a short 800ms "demo loading" then reveal content), success/error, closing (reverse animation).
+* **UX:** centered flex overlay (`align-items: center`) with `rgba(23,19,16,0.6)` backdrop blur; `role="dialog"`, `aria-modal="true"`, labelled by the modal title; Google Icon close button; keyboard focus trapping; close via `Esc` and overlay click; focus returns to the trigger; body scroll locked; rendered at `--z-modal`.
+
+---
+
+## 3. PAGE STRUCTURE & CONTENT (all copy in English — real, on-brand copy; no lorem ipsum)
+
+**3.1 Header (sticky):** Wordmark "MODULAR" (Space Grotesk, letter-spaced) with mono subtag "the patchbay synth"; anchor nav (Features, How It Works, Testimonials, Pricing, FAQ); the theme toggle; compact primary "Pre-order" button. On mobile the nav collapses behind an accessible hamburger (`aria-expanded`/`aria-controls`) opening a full-screen flex overlay menu at `--z-dropdown`.
+
+**3.2 Hero:** Split flex layout (copy left, CSS-built synth panel right; stacks on mobile). Copy: mono badge ("OS 2.0 — NOW SHIPPING"), `h1` featuring "MODULAR" with a gradient-text accent word, subheadline, dual CTAs — primary "Pre-order — $499" and secondary "Watch the demo" (opens the 2.5 modal). The synth panel is pure CSS: a neumorphic slab containing knobs (conic-gradient indicators that rotate on hover), jack sockets (inset radial-gradient circles), and patch cables (thick `--gradient-cable` pseudo-element curves); a subtle animated "signal flow" along the cables must disable under `prefers-reduced-motion`. No images, no SVG. Decorative art carries `aria-hidden="true"`.
+
+**3.3 Features (3 cards):** Flex row → column. Each card: Material Symbol icon inside a neumorphic socket (`cable`, `tune`, `graphic_eq`), mono module label ("MOD-01"), `h3`, and realistic copy covering the patch matrix, analog-modeled engine, and CV/MIDI connectivity. A decorative gradient cable links the cards on desktop only.
+
+**3.4 How It Works (3 steps):** Three numbered "rack modules" (01–03, mono numerals) connected by a gradient patch cable: "Patch it" → "Shape it" → "Play it", each with an icon and concise copy.
+
+**3.5 Testimonials (3 quotes):** Neumorphic quote cards; avatars are CSS gradient circles with initials (no images); fictional-but-realistic producer/engineer names and roles; 5-star ratings using Material Symbol `star`.
+
+**3.6 Pricing (3 tiers):** e.g., "MODULAR Kit" / "MODULAR Studio" (featured) / "MODULAR Lifetime". Each tier: name, price (mono font), feature list with `check_circle` icons, CTA (featured gets `.btn--primary`, others `.btn--secondary`). The featured card uses a gradient ring and a "Most Popular" badge, distinct in light **and** dark mode. Fine print under the grid.
+
+**3.7 FAQ (6 items):** Accordion per 2.4, covering compatibility (DAW/standalone), shipping regions, warranty, firmware updates, returns, and system requirements.
+
+**3.8 Final CTA:** Full-width `--gradient-warm` panel with cream text, `h2`, supporting line, and the `.input-group` newsletter capture (email + subscribe) implementing all 2.3 states, plus decorative CSS jack/cable accents.
+
+**3.9 Footer:** Flex layout with wordmark + tagline, secondary link groups (Product, Resources, Company — docs, community, support, privacy, terms), social icons via Material Symbols, and copyright with a dynamically injected year. Links are 44px touch targets; columns stack on mobile. Include a skip-to-content link as the first focusable element.
+
+---
+
+## 4. CORE UX & MICRO-INTERACTION RULES
+
+* **Responsive by default:** fluid `clamp()` typography, standard breakpoints, zero horizontal overflow at any viewport.
+* **Smooth animations:** every state change transitions with `var(--transition-normal)` / `var(--transition-fast)`; knobs rotate, cards lift, buttons press, chevrons flip. All animation is disabled or reduced under `@media (prefers-reduced-motion: reduce)`.
+* **Accessibility:** WCAG AA contrast in light **and** dark mode; never rely on color alone for state; semantic landmarks (`header`/`nav`/`main`/`section[aria-labelledby]`/`footer`); a single `h1` with logical heading order; full keyboard operability everywhere; `aria-live` regions for form feedback and dynamic messages; visible `:focus-visible` styling on all interactive elements — neumorphic subtlety must never mask focus.
+* **Mandatory visual feedback:** every click, hover, and submission triggers a visible state change.
+* Decorative CSS artwork (knobs, cables, sockets) is purely visual — `aria-hidden="true"`, never carries content.
+* Anchor navigation uses smooth scrolling, disabled under `prefers-reduced-motion`.
+
+---
+
+## 5. DELIVERABLE & OUTPUT FORMAT
+
+* **Files:** separate `index.html`, `style.css`, `script.js`. Exactly one `<script src="script.js" defer>` reference; zero inline `<style>` blocks, zero inline event handlers, zero `style="..."` attributes.
+* **`<head>`:** Google Fonts links (Space Grotesk, Inter, Space Mono), Material Symbols Rounded stylesheet, viewport meta, descriptive `<title>` ("MODULAR — The Patchbay Synth"), meta description.
+* **Naming convention:** BEM only, used consistently (`.hero__title`, `.features__grid`, `.pricing-card__price`, `.faq__question`, `.theme-toggle`, `.modal__panel`). Never mix conventions.
+* **`script.js` (vanilla, no frameworks):** theme toggle + `localStorage` persistence (first visit defaults to Light); mobile menu; FAQ accordion; modal logic (open/close, focus trap, `Esc`, overlay click, focus restoration); newsletter validation with simulated loading → success/error and `aria-live` feedback; dynamic footer year.
+* **Copy:** realistic, on-brand English copy authored by you — placeholders only where content was genuinely left unspecified (none is anticipated here).
+* **Single pass:** deliver the complete, functional page in your first output — no stubs, no follow-ups.

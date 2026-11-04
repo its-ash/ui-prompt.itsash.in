@@ -19,3 +19,20 @@ export async function copyText(text: string): Promise<boolean> {
     }
   }
 }
+
+export async function copyFrom(get: () => Promise<string>): Promise<boolean> {
+  if (!import.meta.client) return false;
+  const once = get();
+  if (typeof ClipboardItem !== 'undefined' && navigator.clipboard?.write) {
+    try {
+      const blob = once.then((t) => {
+        if (!t) throw new Error('empty');
+        return new Blob([t], { type: 'text/plain' });
+      });
+      await navigator.clipboard.write([new ClipboardItem({ 'text/plain': blob })]);
+      return true;
+    } catch {}
+  }
+  const text = await once.catch(() => '');
+  return text ? copyText(text) : false;
+}
